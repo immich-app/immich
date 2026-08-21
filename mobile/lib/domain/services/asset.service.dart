@@ -17,10 +17,10 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 class AssetService {
   final RemoteAssetRepository _remoteRepository;
   final RemoteExifRepository _exifRepository;
-  final DriftLocalAssetRepository _localRepository;
+  final LocalAssetRepository _localRepository;
   final AssetApiRepository _apiRepository;
   final AssetMediaRepository _mediaRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalRepository;
+  final TrashedLocalAssetRepository _trashedLocalRepository;
 
   const AssetService({
     required this._remoteRepository,
@@ -136,13 +136,13 @@ class AssetService {
       location: location,
       dateTimeOriginal: dateTime,
     );
-    await _remoteRepository.update(
+    await _remoteRepository.updateAssets(
       remoteIds,
       isFavorite: isFavorite,
       visibility: visibility,
       createdAt: parsedDateTime,
     );
-    await _exifRepository.update(
+    await _exifRepository.updateExif(
       remoteIds,
       location: location,
       dateTimeOriginal: parsedDateTime,
@@ -165,7 +165,7 @@ class AssetService {
     }
 
     await _apiRepository.delete(remoteIds, true);
-    await _remoteRepository.delete(remoteIds);
+    await _remoteRepository.deleteAssets(remoteIds);
   }
 
   Future<void> applyEdits(String remoteId, List<AssetEdit> edits) async {
@@ -189,7 +189,7 @@ class AssetService {
     if (trash && CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
       await _trashedLocalRepository.applyTrashedAssets(deletedIds);
     } else {
-      await _localRepository.delete(deletedIds);
+      await _localRepository.deleteAssets(deletedIds);
     }
     return deletedIds.length;
   }

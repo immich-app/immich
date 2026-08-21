@@ -47,6 +47,15 @@ describe(SharedLinkController.name, () => {
       expect(service.create).toHaveBeenCalledWith(undefined, expect.objectContaining({ expiresAt: null }));
     });
 
+    it('should require an albumId for share type Album', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/shared-links')
+        .send({ type: SharedLinkType.Album });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: [], message: 'albumId is required for type ALBUM' }]));
+      expect(service.create).not.toHaveBeenCalled();
+    });
+
     it('should not allow an albumId for share type Individual', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/shared-links')

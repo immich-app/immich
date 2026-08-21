@@ -9,11 +9,11 @@ import '../repository.mocks.dart';
 void main() {
   late CleanupService sut;
 
-  late MockDriftLocalAssetRepository localAssetRepository;
+  late MockLocalAssetRepository localAssetRepository;
   late MockAssetMediaRepository assetMediaRepository;
 
   setUp(() {
-    localAssetRepository = MockDriftLocalAssetRepository();
+    localAssetRepository = MockLocalAssetRepository();
     assetMediaRepository = MockAssetMediaRepository();
     sut = CleanupService(localAssetRepository, assetMediaRepository);
   });
@@ -24,7 +24,7 @@ void main() {
 
       expect(result, 0);
       verifyNever(() => assetMediaRepository.deleteAll(any()));
-      verifyNever(() => localAssetRepository.delete(any()));
+      verifyNever(() => localAssetRepository.deleteAssets(any()));
     });
 
     test('deletes in a single batch when under limit', () async {
@@ -33,13 +33,13 @@ void main() {
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((invocation) async {
         return (invocation.positionalArguments.first as List<String>).toList();
       });
-      when(() => localAssetRepository.delete(any())).thenAnswer((_) async {});
+      when(() => localAssetRepository.deleteAssets(any())).thenAnswer((_) async {});
 
       final result = await sut.deleteLocalAssets(ids);
 
       expect(result, ids.length);
       verify(() => assetMediaRepository.deleteAll(ids)).called(1);
-      verify(() => localAssetRepository.delete(ids)).called(1);
+      verify(() => localAssetRepository.deleteAssets(ids)).called(1);
     });
 
     test('deletes in platform-specific batches when over limit', () async {
@@ -52,7 +52,7 @@ void main() {
         capturedBatches.add(batch);
         return batch;
       });
-      when(() => localAssetRepository.delete(any())).thenAnswer((_) async {});
+      when(() => localAssetRepository.deleteAssets(any())).thenAnswer((_) async {});
 
       final result = await sut.deleteLocalAssets(ids);
 
@@ -67,7 +67,7 @@ void main() {
       expect(capturedBatches[1].last, 'asset-${batchSize * 2 - 1}');
       expect(capturedBatches[2].first, 'asset-${batchSize * 2}');
       expect(capturedBatches[2].last, 'asset-${batchSize * 2 + 500}');
-      verify(() => localAssetRepository.delete(any())).called(3);
+      verify(() => localAssetRepository.deleteAssets(any())).called(3);
     });
   });
 }

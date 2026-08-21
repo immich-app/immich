@@ -26,7 +26,7 @@ import 'factories/user_factory.dart';
 
 class RepositoryMocks {
   final localAlbum = LocalAlbumRepositoryStub(MockLocalAlbumRepository());
-  final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
+  final localAsset = LocalAssetRepositoryStub(MockLocalAssetRepository());
   final remoteAsset = RemoteAssetRepositoryStub(MockRemoteAssetRepository());
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
@@ -87,7 +87,7 @@ class RepositoryMocks {
   void _stubLocalAssetRepository() {
     when(localAsset.reconcileHashesFromCloudId).thenAnswer((_) async => {});
     when(localAsset.updateHashes).thenAnswer((_) async => {});
-    when(localAsset.delete).thenAnswer((_) async => {});
+    when(localAsset.deleteAssets).thenAnswer((_) async => {});
   }
 
   void _stubNativeSyncApi() {
@@ -254,16 +254,16 @@ extension type const LocalAlbumRepositoryStub(MockLocalAlbumRepository repo) imp
       () => repo.getAssetsToHash(any());
 }
 
-extension type const LocalAssetRepositoryStub(MockDriftLocalAssetRepository repo)
-    implements Stub<MockDriftLocalAssetRepository> {
+extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo)
+    implements Stub<MockLocalAssetRepository> {
   Future<void> Function() get reconcileHashesFromCloudId =>
       () => repo.reconcileHashesFromCloudId();
 
   Future<void> Function() get updateHashes =>
       () => repo.updateHashes(any());
 
-  Future<void> Function() get delete =>
-      () => repo.delete(any());
+  Future<void> Function() get deleteAssets =>
+      () => repo.deleteAssets(any());
 }
 
 extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
@@ -275,7 +275,7 @@ extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
       () => repo.getAssetEdits(any());
 
   Future<void> Function() get update =>
-      () => repo.update(
+      () => repo.updateAssets(
         any(),
         isFavorite: any(named: 'isFavorite'),
         visibility: any(named: 'visibility'),
@@ -285,7 +285,7 @@ extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
 
 extension type const RemoteExifRepositoryStub(MockRemoteExifRepository repo) implements Stub<MockRemoteExifRepository> {
   Future<void> Function() get update =>
-      () => repo.update(
+      () => repo.updateExif(
         any(),
         dateTimeOriginal: any(named: 'dateTimeOriginal'),
         timeZone: any(named: 'timeZone'),

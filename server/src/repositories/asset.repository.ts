@@ -37,6 +37,7 @@ import {
   anyUuid,
   asUuid,
   hasPeople,
+  inSharedAlbum,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
@@ -53,7 +54,7 @@ import {
   withTagId,
   withTags,
 } from 'src/utils/database';
-import { globToSqlPattern } from 'src/utils/misc';
+import { globToPostgresRegex } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -124,7 +125,7 @@ interface AssetGetByChecksumOptions {
 
 interface GetByIdsRelations {
   exifInfo?: boolean;
-  faces?: { person?: boolean; withDeleted?: boolean };
+  faces?: { person?: boolean; withDeleted?: boolean; viewingUserId?: string };
   files?: boolean;
   library?: boolean;
   owner?: boolean;
@@ -448,6 +449,9 @@ export class AssetRepository {
 
   @ChunkedArray({ chunkSize: 4000 })
   async createAll(assets: Insertable<AssetTable>[]) {
+    if (assets.length === 0) {
+      return [];
+    }
     const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
     return ids.map(({ id }) => id);
   }
@@ -510,12 +514,12 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @ChunkedArray()
-  getByIdsWithAllRelationsButStacks(ids: string[]) {
+  @ChunkedArray({ paramIndex: 0 })
+  getByIdsWithAllRelationsButStacks(ids: string[], viewingUserId?: string) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
-      .select(withFacesAndPeople)
+      .select(withFacesAndPeople({ viewingUserId }))
       .select(withTags)
       .$call(withExif)
       .where('asset.id', '=', anyUuid(ids))
@@ -574,7 +578,11 @@ export class AssetRepository {
       .selectAll('asset')
       .where('asset.id', '=', asUuid(id))
       .$if(!!exifInfo, withExif)
-      .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces).$narrowType<{ faces: NotNull }>())
+      .$if(!!faces, (qb) =>
+        qb
+          .select(faces?.person ? withFacesAndPeople({ viewingUserId: faces.viewingUserId! }) : withFaces)
+          .$narrowType<{ faces: NotNull }>(),
+      )
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
       .$if(!!smartSearch, withSmartSearch)
@@ -591,10 +599,10 @@ export class AssetRepository {
                   eb
                     .selectFrom('asset as stacked')
                     .selectAll('stack')
-                    .select((eb) =>
-                      eb
-                        .fn<ShallowDehydrateObject<Selectable<AssetTable>>>('array_agg', [eb.table('stacked')])
-                        .as('assets'),
+                    .select(
+                      sql<
+                        ShallowDehydrateObject<Selectable<AssetTable>>[]
+                      >`array_agg(to_json(stacked) ORDER BY stacked."fileCreatedAt" ASC)`.as('assets'),
                     )
                     .whereRef('stacked.stackId', '=', 'stack.id')
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
@@ -636,12 +644,12 @@ export class AssetRepository {
         .selectFrom('asset')
         .selectAll('asset')
         .$call(withExif)
-        .$call((qb) => qb.select(withFacesAndPeople))
+        .$call((qb) => qb.select(withFaces))
         .$call((qb) => qb.select(withEdits))
         .executeTakeFirst();
     }
 
-    return this.getById(asset.id, { exifInfo: true, faces: { person: true }, edits: true });
+    return this.getById(asset.id, { exifInfo: true, faces: {}, edits: true });
   }
 
   async remove(asset: { id: string }): Promise<void> {
@@ -740,8 +748,8 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [{}] })
-  async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
+  @GenerateSql({ params: [{}, { user: { id: DummyValue.UUID } }] })
+  async getTimeBuckets(options: TimeBucketOptions, auth: AuthDto): Promise<TimeBucketItem[]> {
     return this.db
       .with('asset', (qb) =>
         qb
@@ -778,7 +786,13 @@ export class AssetRepository {
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds, (qb) =>
+            qb.where((eb) => {
+              // TODO this should become a shared `hasAccess` style helper once implement sharing in more places
+              const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
+              return options.personId ? eb.or([isOwner, inSharedAlbum(eb, auth.user.id)]) : isOwner;
+            }),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -864,7 +878,12 @@ export class AssetRepository {
             ),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds, (qb) =>
+            qb.where((eb) => {
+              const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
+              return options.personId ? eb.or([isOwner, inSharedAlbum(eb, auth.user.id)]) : isOwner;
+            }),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -1067,7 +1086,7 @@ export class AssetRepository {
     exclusionPatterns: string[],
   ): Promise<UpdateResult> {
     const paths = importPaths.map((importPath) => `${importPath}%`);
-    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
+    const exclusions = exclusionPatterns.map((pattern) => globToPostgresRegex(pattern));
 
     return this.db
       .updateTable('asset')
@@ -1081,7 +1100,7 @@ export class AssetRepository {
       .where((eb) =>
         eb.or([
           eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb.or(exclusions.map((path) => eb('originalPath', 'like', path))),
+          eb.or(exclusions.map((pattern) => eb('originalPath', '~', pattern))),
         ]),
       )
       .executeTakeFirstOrThrow();
