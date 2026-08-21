@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart' hide Query;
-import 'package:immich_mobile/data/db/table/exif.drift.dart';
-import 'package:immich_mobile/data/db/table/remote_asset.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';

@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/table/user.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 

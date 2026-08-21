@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:immich_mobile/data/db/person.dart';
+import 'package:immich_mobile/data/db/main/dao/person.dart';
 import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 

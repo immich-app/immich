@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/table/user.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_stack_primary_asset_id ON stack_entity (primary_asset_id)')

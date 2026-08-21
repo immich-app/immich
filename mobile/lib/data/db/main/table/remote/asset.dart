@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/table/remote_asset.drift.dart';
-import 'package:immich_mobile/data/db/table/user.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.dart';
 import 'package:immich_mobile/data/db/util/asset_mixin.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';

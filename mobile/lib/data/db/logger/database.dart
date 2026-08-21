@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
-import 'package:immich_mobile/data/db/logger.drift.dart';
-import 'package:immich_mobile/data/db/table/log.dart';
+import 'package:immich_mobile/data/db/logger/database.drift.dart';
+import 'package:immich_mobile/data/db/logger/table/log.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:sqlite_async/sqlite_async.dart';
 

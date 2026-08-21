@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/database.dart';
-import 'package:immich_mobile/data/db/table/store.drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/app/store.drift.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.drift.dart';

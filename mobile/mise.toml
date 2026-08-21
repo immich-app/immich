@@ -28,7 +28,7 @@ sources = [
   "pubspec.yaml",
   "build.yaml",
   "lib/**/*.dart",
-  "lib/data/db/table/*.drift",
+  "lib/**/*.drift",
 ]
 outputs = { auto = true }
 run = [

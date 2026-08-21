@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/table/user.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)')

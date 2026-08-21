@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/database.dart';
-import 'package:immich_mobile/data/db/table/user_metadata.drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 
 @DriftAccessor()
