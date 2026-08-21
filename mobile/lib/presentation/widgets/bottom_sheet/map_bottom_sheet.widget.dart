@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
@@ -55,7 +60,43 @@ class _ScopedMapTimeline extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: const Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
+      child: const _MapTimelineContent(),
+    );
+  }
+}
+
+class _MapTimelineContent extends ConsumerStatefulWidget {
+  const _MapTimelineContent();
+
+  @override
+  ConsumerState<_MapTimelineContent> createState() => _MapTimelineContentState();
+}
+
+class _MapTimelineContentState extends ConsumerState<_MapTimelineContent> {
+  StreamSubscription? _reloadSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _reloadSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final count = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
+    return Column(
+      children: [
+        Text(context.t.map_assets_in_bounds(count: count), style: context.themeData.textTheme.headlineSmall),
+        const Expanded(
+          child: Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
+        ),
+      ],
     );
   }
 }
