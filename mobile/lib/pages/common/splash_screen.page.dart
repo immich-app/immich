@@ -340,6 +340,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                       // TODO: Bring back when the soft freeze issue is addressed
                       // backgroundManager.syncCloudIds(),
                     ]);
+                    await backgroundManager.syncTrash();
                   } else {
                     await backgroundManager.hashAssets();
                   }

@@ -6,10 +6,10 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
@@ -218,9 +218,13 @@ Future<int> _cleanupLocalAssets(
   final requiresPrompt =
       requestCustomPrompt &&
       CurrentPlatform.isAndroid &&
-      ref.read(storeServiceProvider).get(.manageLocalMediaAndroid, false);
+      await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
 
   if (requiresPrompt) {
+    if (!context.mounted) {
+      return 0;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => ConfirmDialog(

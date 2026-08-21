@@ -32,11 +32,8 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
 
   @visibleForTesting
   static Future<void> reset() async {
-    final instance = _instance;
-    if (instance != null) {
-      await instance.clear(SettingsKey.values);
-      _instance = null;
-    }
+    await _instance?.clear(SettingsKey.values);
+    _instance = null;
   }
 
   @override

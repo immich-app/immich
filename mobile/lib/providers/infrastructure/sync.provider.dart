@@ -7,18 +7,13 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
 
 final syncStreamServiceProvider = Provider((ref) {
   final db = ref.watch(driftProvider);
   return SyncStreamService(
     syncApiRepository: ref.watch(syncApiRepositoryProvider),
     syncStreamRepository: db.syncStreamRepository,
-    localAssetRepository: db.localAssetRepository,
-    trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
-    permissionRepository: ref.watch(permissionRepositoryProvider),
+    trashSyncRepository: db.trashSyncRepository,
     syncMigrationRepository: db.syncMigrationRepository,
     api: ref.watch(apiServiceProvider),
     cancellation: ref.watch(cancellationProvider),
@@ -32,9 +27,7 @@ final localSyncServiceProvider = Provider((ref) {
   return LocalSyncService(
     localAlbumRepository: db.localAlbumRepository,
     localAssetRepository: db.localAssetRepository,
-    trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
-    permissionRepository: ref.watch(permissionRepositoryProvider),
+    trashSyncRepository: db.trashSyncRepository,
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     cancellation: ref.watch(cancellationProvider),
   );
@@ -46,7 +39,6 @@ final hashServiceProvider = Provider((ref) {
     localAlbumRepository: db.localAlbumRepository,
     localAssetRepository: db.localAssetRepository,
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
-    trashedLocalAssetRepository: db.trashedLocalAssetRepository,
     cancellation: ref.watch(cancellationProvider),
   );
 });

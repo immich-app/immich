@@ -25,11 +25,11 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/server_deleted_checksum.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
@@ -50,7 +50,7 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
 import 'package:logging/logging.dart';
@@ -82,7 +82,8 @@ import 'package:sqlite_async/sqlite_async.dart';
     PersonEntity,
     AssetFaceEntity,
     StoreEntity,
-    TrashedLocalAssetEntity,
+    TrashSyncEntity,
+    ServerDeletedChecksumEntity,
     AssetEditEntity,
     SettingsEntity,
     AssetOcrEntity,
@@ -106,7 +107,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     SyncMigrationRepository,
     SyncStreamRepository,
     TimelineRepository,
-    TrashedLocalAssetRepository,
+    TrashSyncRepository,
     UserMetadataRepository,
     UserRepository,
   ],
@@ -161,7 +162,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -262,7 +263,7 @@ class Drift extends $Drift {
                 await m.alterTable(
                   TableMigration(
                     v15.trashedLocalAssetEntity,
-                    columnTransformer: {v15.trashedLocalAssetEntity.source: Constant(TrashOrigin.localSync.index)},
+                    columnTransformer: {v15.trashedLocalAssetEntity.source: const Constant(0)}, // TrashOrigin.localSync
                     newColumns: [v15.trashedLocalAssetEntity.source],
                   ),
                 );
@@ -321,11 +322,7 @@ class Drift extends $Drift {
                     durationMs: v23.remoteAssetEntity.durationMs * const Constant(1000),
                   ),
                 );
-                await trashedLocalAssetEntity.update().write(
-                  TrashedLocalAssetEntityCompanion.custom(
-                    durationMs: v23.trashedLocalAssetEntity.durationMs * const Constant(1000),
-                  ),
-                );
+                await customStatement('UPDATE trashed_local_asset_entity SET duration_ms = duration_ms * 1000');
               },
               from23To24: (m, v24) async {
                 await customStatement('DROP INDEX IF EXISTS idx_remote_album_owner_id');
@@ -358,6 +355,13 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
+              },
+              from31To32: (m, v32) async {
+                await m.createTable(v32.trashSync);
+                await m.create(v32.idxTrashSyncChecksum);
+                await m.createTable(v32.serverDeletedChecksum);
+                await m.create(v32.idxRemoteAssetSoftDeletedChecksum);
+                await m.deleteTable('trashed_local_asset_entity');
               },
             ),
           ),

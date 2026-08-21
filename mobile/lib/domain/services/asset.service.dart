@@ -2,13 +2,9 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
@@ -20,7 +16,6 @@ class AssetService {
   final LocalAssetRepository _localRepository;
   final AssetApiRepository _apiRepository;
   final AssetMediaRepository _mediaRepository;
-  final TrashedLocalAssetRepository _trashedLocalRepository;
 
   const AssetService({
     required this._remoteRepository,
@@ -28,7 +23,6 @@ class AssetService {
     required this._localRepository,
     required this._apiRepository,
     required this._mediaRepository,
-    required this._trashedLocalRepository,
   });
 
   Future<BaseAsset?> getAsset(BaseAsset asset) {
@@ -186,11 +180,7 @@ class AssetService {
       return 0;
     }
 
-    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-      await _trashedLocalRepository.applyTrashedAssets(deletedIds);
-    } else {
-      await _localRepository.deleteAssets(deletedIds);
-    }
+    await _localRepository.deleteAssets(deletedIds);
     return deletedIds.length;
   }
 
