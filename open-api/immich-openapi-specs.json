@@ -3467,7 +3467,7 @@
     },
     "/asset-files": {
       "get": {
-        "description": "Returns a metadata about a specific asset file.",
+        "description": "Returns all matching asset files.",
         "operationId": "searchAssetFiles",
         "parameters": [
           {
@@ -3544,7 +3544,7 @@
             "api_key": []
           }
         ],
-        "summary": "Retrieve an asset file",
+        "summary": "Search asset files",
         "tags": [
           "Asset files"
         ],
@@ -3612,7 +3612,7 @@
         "x-immich-state": "Alpha"
       },
       "get": {
-        "description": "Returns a metadata about a specific asset file.",
+        "description": "Returns metadata about a specific asset file.",
         "operationId": "getAssetFile",
         "parameters": [
           {

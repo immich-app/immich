@@ -4342,7 +4342,7 @@ export function rotateApiKey({ id }: {
     }));
 }
 /**
- * Retrieve an asset file
+ * Search asset files
  */
 export function searchAssetFiles({ assetId, isEdited, isProgressive, isTransparent, $type }: {
     assetId: string;
