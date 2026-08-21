@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import _ from 'lodash';
 import { Socket } from 'socket.io';
-import { SystemConfig } from 'src/config';
 import { Asset } from 'src/database';
 import { EventConfig } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -41,6 +41,9 @@ type EventMap = {
   AlbumUpdate: [{ id: string; userIds: string[]; recipientIds: string[] }];
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
 
+  // cluster group events
+  ClusterGroupRequest: [{ clusterGroupId: string; userId: string; senderName: string }];
+
   // asset events
   AssetCreate: [{ asset: Pick<Asset, 'id' | 'ownerId'>; file?: UploadFile }];
   AssetTag: [{ assetId: string; userId: string }];
@@ -56,25 +59,15 @@ type EventMap = {
   AssetDeleteAll: [{ assetIds: string[]; userId: string }];
   AssetRestoreAll: [{ assetIds: string[]; userId: string }];
 
-  /**
-  a worker receives a job and emits this event to run it
-  */
+  /** a worker receives a job and emits this event to run it */
   JobRun: [QueueName, JobItem];
-  /**
-  job pre-hook
-  */
+  /** job pre-hook */
   JobStart: [QueueName, JobItem];
-  /**
-  job post-hook
-  */
+  /** job post-hook */
   JobComplete: [QueueName, JobItem];
-  /**
-  job finishes without error
-  */
+  /** job finishes without error */
   JobSuccess: [JobSuccessEvent];
-  /**
-  job finishes with error
-  */
+  /** job finishes with error */
   JobError: [JobErrorEvent];
 
   // queue events
@@ -94,13 +87,9 @@ type EventMap = {
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];
   UserCreate: [UserEvent];
-  /**
-  user is soft deleted
-  */
+  /** user is soft deleted */
   UserTrash: [UserEvent];
-  /**
-  user is permanently deleted
-  */
+  /** user is permanently deleted */
   UserDelete: [UserEvent];
   UserRestore: [UserEvent];
 

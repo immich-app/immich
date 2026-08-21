@@ -1,9 +1,9 @@
 import { ShallowDehydrateObject } from 'kysely';
-import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import { AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
@@ -34,10 +34,10 @@ import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T
-  : T extends Record<string, unknown>
-    ? { [K in keyof T]?: DeepPartial<T[K]> }
-    : T extends Array<infer R>
-      ? DeepPartial<R>[]
+  : T extends Array<infer R>
+    ? DeepPartial<R>[]
+    : T extends object
+      ? { [K in keyof T]?: DeepPartial<T[K]> }
       : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
@@ -105,33 +105,19 @@ export interface AudioStreamInfo {
   bitrate: number;
 }
 
-/**
-Packet-derived video data needed for accurate HLS playlists.
-*/
+/** Packet-derived video data needed for accurate HLS playlists. */
 export interface VideoPacketInfo {
-  /**
-  Sum of source packet duration across all packets (includes discard).
-  */
+  /** Sum of source packet duration across all packets (includes discard). */
   totalDuration: number;
-  /**
-  Post-discard packet count.
-  */
+  /** Post-discard packet count. */
   packetCount: number;
-  /**
-  Output CFR frame count at `packetCount / format.duration`.
-  */
+  /** Output CFR frame count at `packetCount / format.duration`. */
   outputFrames: number;
-  /**
-  All keyframe PTS in source ticks, including pre-roll discard keyframes.
-  */
+  /** All keyframe PTS in source ticks, including pre-roll discard keyframes. */
   keyframePts: number[];
-  /**
-  Cumulative packet duration through each keyframe, inclusive.
-  */
+  /** Cumulative packet duration through each keyframe, inclusive. */
   keyframeAccDuration: number[];
-  /**
-  Each keyframe's own packet duration (needed for VFR).
-  */
+  /** Each keyframe's own packet duration (needed for VFR). */
   keyframeOwnDuration: number[];
 }
 
@@ -224,13 +210,16 @@ export interface IBaseJob {
 }
 
 export interface IDelayedJob extends IBaseJob {
-  /**
-  The minimum time to wait to execute this job, in milliseconds.
-  */
+  /** The minimum time to wait to execute this job, in milliseconds. */
   delay?: number;
 }
 
 export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
+export interface IPersonJob {
+  ownerId: string;
+  personGroupId: string;
+}
+
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;
@@ -368,7 +357,7 @@ export type JobItem =
   // Migration
   | { name: JobName.FileMigrationQueueAll; data?: IBaseJob }
   | { name: JobName.AssetFileMigration; data: IEntityJob }
-  | { name: JobName.PersonFileMigration; data: IEntityJob }
+  | { name: JobName.PersonFileMigration; data: IPersonJob }
 
   // Metadata Extraction
   | { name: JobName.AssetExtractMetadataQueueAll; data: IBaseJob }
@@ -387,7 +376,7 @@ export type JobItem =
   | { name: JobName.AssetDetectFaces; data: IEntityJob }
   | { name: JobName.FacialRecognitionQueueAll; data: INightlyJob }
   | { name: JobName.FacialRecognition; data: IDeferrableJob }
-  | { name: JobName.PersonGenerateThumbnail; data: IEntityJob }
+  | { name: JobName.PersonGenerateThumbnail; data: IPersonJob }
 
   // Smart Search
   | { name: JobName.SmartSearchQueueAll; data: IBaseJob }
@@ -468,9 +457,7 @@ export interface ExtensionVersion {
 
 export interface ImmichFile extends Express.Multer.File {
   uuid: string;
-  /**
-  sha1 hash of file
-  */
+  /** sha1 hash of file */
   checksum: Buffer;
 }
 
@@ -540,9 +527,7 @@ export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
   { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto } | { isMaintenanceMode: false };
 export type MemoriesState = {
-  /**
-  memories have already been created through this date
-  */
+  /** memories have already been created through this date */
   lastOnThisDayDate: string;
 };
 export type MediaLocation = { location: string };

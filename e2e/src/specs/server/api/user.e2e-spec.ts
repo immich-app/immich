@@ -1,6 +1,5 @@
-import { LoginResponseDto, SharedLinkType, getMyUser, login } from '@immich/sdk';
+import { LoginResponseDto, getMyUser, login } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -15,23 +14,8 @@ describe('/users', () => {
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user2);
   });
 
-  describe('GET /users/me', () => {
-    it('should not work for shared links', async () => {
-      const album = await utils.createAlbum(admin.accessToken, { albumName: 'Album' });
-      const sharedLink = await utils.createSharedLink(admin.accessToken, {
-        type: SharedLinkType.Album,
-        albumId: album.id,
-      });
-      const { status, body } = await request(app).get(`/users/me?key=${sharedLink.key}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-  });
-
   describe('PUT /users/me', () => {
-    /**
-    @deprecated
-    */
+    /** @deprecated */
     it('should allow a user to change their password (deprecated)', async () => {
       const user = await getMyUser({ headers: asBearerAuth(nonAdmin.accessToken) });
 

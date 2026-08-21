@@ -187,6 +187,7 @@ export class MediaRepository {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
+      limitInputChannels: false,
       limitInputPixels: false,
       raw: options.raw,
       unlimited: true,
@@ -464,9 +465,7 @@ export class MediaRepository {
     return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
   }
 
-  /**
-  Parse a rational like "60000/1001" or "1/600" into `{ num, den }`.
-  */
+  /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */
   private parseRational(value: string | undefined): { num: number; den: number } | null {
     if (value) {
       const [num, den = 1] = value.split('/').map(Number);

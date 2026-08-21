@@ -136,24 +136,16 @@ export interface GenerateSqlQueries {
 export const Telemetry = (options: { enabled?: boolean }) =>
   SetMetadata(MetadataKey.TelemetryEnabled, options?.enabled ?? true);
 
-/**
-Decorator to enable versioning/tracking of generated Sql
-*/
+/** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
 
 export type EventConfig = {
   name: EmitEvent;
-  /**
-  handle socket.io server events as well
-  */
+  /** handle socket.io server events as well */
   server?: boolean;
-  /**
-  lower value has higher priority, defaults to 0
-  */
+  /** lower value has higher priority, defaults to 0 */
   priority?: number;
-  /**
-  register events for these workers, defaults to all workers
-  */
+  /** register events for these workers, defaults to all workers */
   workers?: ImmichWorker[];
 };
 export const OnEvent = (config: EventConfig) => SetMetadata(MetadataKey.EventConfig, config);
@@ -191,9 +183,7 @@ type HistoryEntry = {
 };
 
 type DeprecatedOptions = {
-  /**
-  replacement operationId
-  */
+  /** replacement operationId */
   replacementId?: string;
 };
 

@@ -3,6 +3,7 @@ import { hash } from 'bcrypt';
 import { Kysely } from 'kysely';
 import { AuthType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
@@ -26,6 +27,7 @@ const setup = (db?: Kysely<DB>) => {
     database: db || defaultDatabase,
     real: [
       AccessRepository,
+      ClusterGroupRepository,
       ConfigRepository,
       CryptoRepository,
       DatabaseRepository,

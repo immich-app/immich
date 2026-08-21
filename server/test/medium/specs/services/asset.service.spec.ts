@@ -45,6 +45,19 @@ beforeAll(async () => {
 });
 
 describe(AssetService.name, () => {
+  describe('get', () => {
+    it('should not return an asset of another user', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await expect(sut.get(factory.auth({ user: otherUser }), asset.id)).rejects.toThrow(
+        'Not found or no asset.read access',
+      );
+    });
+  });
+
   describe('getStatistics', () => {
     it('should return stats as numbers, not strings', async () => {
       const { sut, ctx } = setup();
@@ -334,6 +347,17 @@ describe(AssetService.name, () => {
   });
 
   describe('update', () => {
+    it('should not update an asset of another user', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await expect(sut.update(factory.auth({ user: otherUser }), asset.id, {})).rejects.toThrow(
+        'Not found or no asset.update access',
+      );
+    });
+
     it('should automatically lock lockable columns', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(JobRepository).queue.mockResolvedValue();

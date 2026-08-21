@@ -48,9 +48,7 @@ const probeStubDefault: VideoInfo = {
   audioStreams: probeStubDefaultAudioStream,
 };
 
-/**
-Fixtures in the shape `mediaRepository.probe()` returns (arrays of streams, raw ffprobe format).
-*/
+/** Fixtures in the shape `mediaRepository.probe()` returns (arrays of streams, raw ffprobe format). */
 export const videoInfoStub = {
   noVideoStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, videoStreams: [] }),
   noAudioStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, audioStreams: [] }),

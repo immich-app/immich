@@ -1,32 +1,30 @@
 <script lang="ts">
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import Combobox from '../Combobox.svelte';
+  import SearchButton from './SearchButton.svelte';
 
-  interface Props {
-    rating?: number | null;
-  }
-
-  let { rating = $bindable() }: Props = $props();
+  let rating = $derived(searchManager.filter.rating);
 
   const options = [
-    { value: 'null', label: $t('rating_count', { values: { count: 0 } }) },
-    { value: '1', label: $t('rating_count', { values: { count: 1 } }) },
-    { value: '2', label: $t('rating_count', { values: { count: 2 } }) },
-    { value: '3', label: $t('rating_count', { values: { count: 3 } }) },
-    { value: '4', label: $t('rating_count', { values: { count: 4 } }) },
-    { value: '5', label: $t('rating_count', { values: { count: 5 } }) },
+    { value: 5, label: '★★★★★' },
+    { value: 4, label: '★★★★' },
+    { value: 3, label: '★★★' },
+    { value: 2, label: '★★' },
+    { value: 1, label: '★' },
   ];
 </script>
 
 <div class="flex flex-col">
-  <Text class="mb-2" fontWeight="medium">{$t('rating')}</Text>
-  <Combobox
-    label={$t('rating')}
-    placeholder={$t('search_rating')}
-    hideLabel
-    {options}
-    selectedOption={rating === undefined ? undefined : options[rating === null ? 0 : rating]}
-    onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
-  />
+  <Text class="my-5" fontWeight="medium">{$t('rating')}</Text>
+  <div class="flex flex-wrap gap-2">
+    {#each options as option (option.value)}
+      <SearchButton
+        active={rating === option.value}
+        onclick={() => (searchManager.filter.rating = rating === option.value ? undefined : option.value)}
+      >
+        {option.label}
+      </SearchButton>
+    {/each}
+  </div>
 </div>

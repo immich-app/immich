@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
@@ -92,6 +93,25 @@ void main() {
       await pumpLock(tester, {merged});
 
       verifyNever(() => assetService.deleteLocal(any()));
+    });
+
+    testWidgets('offers an undo that locks the unlocked assets again', (tester) async {
+      final asset = owned(visibility: .locked);
+
+      await pumpLock(tester, {asset});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+
+      verify(() => assetService.update([asset.id], visibility: const .some(.locked))).called(1);
+    });
+
+    testWidgets('offers no undo for locking', (tester) async {
+      await pumpLock(tester, {owned()});
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Undo'), findsNothing);
     });
 
     testWidgets('clears the selection once the update succeeds', (tester) async {
