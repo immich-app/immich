@@ -69,12 +69,12 @@ void main() {
     fakeAsync((async) {
       final image = _task(
         'live-image',
-        metaData: LivePhotosMetadata(part: LivePhotosPart.image, id: 'live-1').toJson(),
+        metaData: const LivePhotosMetadata(part: LivePhotosPart.image, id: 'live-1').toJson(),
       );
       final video = _task(
         'live-video',
         filename: 'photo.MOV',
-        metaData: LivePhotosMetadata(part: LivePhotosPart.video, id: 'live-1').toJson(),
+        metaData: const LivePhotosMetadata(part: LivePhotosPart.video, id: 'live-1').toJson(),
       );
       onProgress(TaskProgressUpdate(image, 0.9));
       onProgress(TaskProgressUpdate(video, 0.9));
