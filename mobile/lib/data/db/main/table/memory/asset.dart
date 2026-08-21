@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/table/memory.dart';
-import 'package:immich_mobile/data/db/table/remote_asset.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 
 class MemoryAssetEntity extends Table with DriftDefaultsMixin {

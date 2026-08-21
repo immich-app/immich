@@ -6,35 +6,35 @@ import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart' show StreamQueryStore;
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/data/db/database.drift.dart';
-import 'package:immich_mobile/data/db/database.steps.dart';
-import 'package:immich_mobile/data/db/person.dart';
-import 'package:immich_mobile/data/db/table/asset_edit.dart';
-import 'package:immich_mobile/data/db/table/asset_face.dart';
-import 'package:immich_mobile/data/db/table/asset_ocr.dart';
-import 'package:immich_mobile/data/db/table/auth_user.dart';
-import 'package:immich_mobile/data/db/table/exif.dart';
-import 'package:immich_mobile/data/db/table/local_album.dart';
-import 'package:immich_mobile/data/db/table/local_album_asset.dart';
-import 'package:immich_mobile/data/db/table/local_asset.dart';
-import 'package:immich_mobile/data/db/table/local_asset.drift.dart';
-import 'package:immich_mobile/data/db/table/memory.dart';
-import 'package:immich_mobile/data/db/table/memory_asset.dart';
-import 'package:immich_mobile/data/db/table/partner.dart';
-import 'package:immich_mobile/data/db/table/person.dart';
-import 'package:immich_mobile/data/db/table/remote_album.dart';
-import 'package:immich_mobile/data/db/table/remote_album_asset.dart';
-import 'package:immich_mobile/data/db/table/remote_album_user.dart';
-import 'package:immich_mobile/data/db/table/remote_asset.dart';
-import 'package:immich_mobile/data/db/table/remote_asset.drift.dart';
-import 'package:immich_mobile/data/db/table/remote_asset_cloud_id.dart';
-import 'package:immich_mobile/data/db/table/settings.dart';
-import 'package:immich_mobile/data/db/table/stack.dart';
-import 'package:immich_mobile/data/db/table/store.dart';
-import 'package:immich_mobile/data/db/table/trashed_local_asset.dart';
-import 'package:immich_mobile/data/db/table/trashed_local_asset.drift.dart';
-import 'package:immich_mobile/data/db/table/user.dart';
-import 'package:immich_mobile/data/db/table/user_metadata.dart';
+import 'package:immich_mobile/data/db/main/dao/person.dart';
+import 'package:immich_mobile/data/db/main/database.drift.dart';
+import 'package:immich_mobile/data/db/main/database.steps.dart';
+import 'package:immich_mobile/data/db/main/table/app/settings.dart';
+import 'package:immich_mobile/data/db/main/table/app/store.dart';
+import 'package:immich_mobile/data/db/main/table/asset/edit.dart';
+import 'package:immich_mobile/data/db/main/table/asset/ocr.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.dart';
+import 'package:immich_mobile/data/db/main/table/local/album_asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/asset.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.dart';
+import 'package:immich_mobile/data/db/main/table/people/person.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_asset.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_user.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/cloud_id.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.dart';
+import 'package:immich_mobile/data/db/main/table/remote/stack.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.dart';
+import 'package:immich_mobile/data/db/main/table/user/metadata.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -87,7 +87,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     SettingsEntity,
     AssetOcrEntity,
   ],
-  include: {'package:immich_mobile/data/db/table/merged_asset.drift'},
+  include: {'package:immich_mobile/data/db/main/query/merged_asset.drift'},
   daos: [
     AuthUserRepository,
     BackupRepository,

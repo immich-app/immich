@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/table/log.drift.dart';
+import 'package:immich_mobile/data/db/logger/table/log.drift.dart';
 import 'package:immich_mobile/domain/models/log.model.dart' as domain;
 
 class LogMessageEntity extends Table {

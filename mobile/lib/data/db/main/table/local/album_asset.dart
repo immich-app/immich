@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/table/local_album.dart';
-import 'package:immich_mobile/data/db/table/local_asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 
 @TableIndex.sql(

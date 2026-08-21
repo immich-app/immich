@@ -14,14 +14,10 @@ targets:
            data_class_to_companions: false
            # Required for make-migrations
            databases:
-             main: lib/data/db/database.dart
+             main: lib/data/db/main/database.dart
          generate_for: &drift_generate_for
-           - lib/data/db/table/*.dart
-           - lib/data/db/table/*.drift
-           - lib/data/db/database.dart
-           - lib/data/db/logger.dart
-           - lib/data/db/person.dart
-           - lib/infrastructure/repositories/*.repository.dart
+           - lib/data/db/**
+           - lib/infrastructure/repositories/**
        drift_dev:modular:
          enabled: true
          options: *drift_options
