@@ -4,23 +4,20 @@ import { createSHA1 } from 'hash-wasm';
 
 const HASH_CHUNK_SIZE = 5 * 1024 * 1024;
 
-export const hashFileWasm = async (file: File): Promise<string> => {
+export async function hashFileWasm(file: File): Promise<string> {
   const sha1Factory = await createSHA1();
   const hasher = sha1Factory.init();
-  const chunkSize = HASH_CHUNK_SIZE;
-  let offset = 0;
 
-  const getNextBuffer = () => file.slice(offset, offset + chunkSize).arrayBuffer();
-  const calculate = async (buffer: ArrayBuffer): Promise<string> => {
+  for (let offset = 0; offset < file.size; offset += HASH_CHUNK_SIZE) {
+    const slice = file.slice(offset, Math.min(offset + HASH_CHUNK_SIZE, file.size));
+
+    const buffer = await slice.arrayBuffer();
+
     hasher.update(new Uint8Array(buffer));
-    offset += chunkSize;
-    if (offset > file.size) {
-      return hasher.digest();
-    }
-    return calculate(await getNextBuffer());
-  };
-  return calculate(await getNextBuffer());
-};
+  }
+
+  return hasher.digest();
+}
 
 export async function hashFileJs(file: File): Promise<string> {
   const hasher = sha1.create();
@@ -40,7 +37,6 @@ export async function hashFile(file: File): Promise<string> {
   try {
     return await hashFileWasm(file);
   } catch {
-    // fall through to the pure-JS implementation below
     return hashFileJs(file);
   }
 }
