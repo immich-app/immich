@@ -13,6 +13,16 @@ if (keystorePropertiesFile.exists()) {
   keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
 
+def androidApplicationId = System.getenv("ANDROID_APPLICATION_ID")?.trim()
+if (!androidApplicationId) {
+  androidApplicationId = "app.alextran.immich"
+}
+
+def androidAppLabel = System.getenv("ANDROID_APP_LABEL")?.trim()
+if (!androidAppLabel) {
+  androidAppLabel = "Immich"
+}
+
 android {
   compileSdk = flutter.compileSdkVersion
   ndkVersion = flutter.ndkVersion
@@ -37,11 +47,12 @@ android {
   }
 
   defaultConfig {
-    applicationId "app.alextran.immich"
+    applicationId androidApplicationId
     minSdk = 26
     targetSdk = flutter.targetSdkVersion
     versionCode flutter.versionCode
     versionName flutter.versionName
+    manifestPlaceholders = [appLabel: androidAppLabel]
   }
 
   signingConfigs {
