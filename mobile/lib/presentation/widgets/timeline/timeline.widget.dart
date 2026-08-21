@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
@@ -113,6 +112,21 @@ class _AlwaysReadOnlyNotifier extends ReadOnlyModeNotifier {
   void toggleReadonlyMode() {}
 }
 
+// animateTo blocks hit testing while it runs, hiding the rows that move under a held finger
+class _DragScrollActivity extends DrivenScrollActivity {
+  _DragScrollActivity(
+    super.delegate, {
+    required super.from,
+    required super.to,
+    required super.duration,
+    required super.curve,
+    required super.vsync,
+  });
+
+  @override
+  bool get shouldIgnorePointer => false;
+}
+
 class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
@@ -149,7 +163,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   // Drag selection state
   bool _dragging = false;
   TimelineAssetIndex? _dragAnchorIndex;
-  final Set<BaseAsset> _draggedAssets = HashSet();
+  final List<BaseAsset> _draggedAssets = [];
+  int? _dragRangeStart;
+  // bumped by every tick and by lift, so a slow range load can only land while it is still the newest
+  int _dragGeneration = 0;
   ScrollPhysics? _scrollPhysics;
 
   int _perRow = 4;
@@ -346,9 +363,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         });
       }
     });
+    _dragGeneration++;
     setState(() {
       _dragging = false;
       _draggedAssets.clear();
+      _dragRangeStart = null;
     });
     final timelineState = ref.read(timelineStateProvider.notifier);
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -356,11 +375,17 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     });
   }
 
-  Future<void> _dragScroll(ScrollDirection direction) {
-    return _scrollController.animateTo(
-      _scrollController.offset + (direction == ScrollDirection.forward ? 175 : -175),
-      duration: const Duration(milliseconds: 125),
-      curve: Curves.easeOut,
+  void _dragScroll(ScrollDirection direction) {
+    final position = _scrollController.position;
+    position.beginActivity(
+      _DragScrollActivity(
+        position as ScrollActivityDelegate,
+        from: position.pixels,
+        to: position.pixels + (direction == ScrollDirection.forward ? 175 : -175),
+        duration: const Duration(milliseconds: 125),
+        curve: Curves.easeOut,
+        vsync: position.context.vsync,
+      ),
     );
   }
 
@@ -369,30 +394,50 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
       return;
     }
 
-    final timelineService = ref.read(timelineServiceProvider);
-    final dragAnchorIndex = _dragAnchorIndex!;
+    final anchorIndex = _dragAnchorIndex!.assetIndex;
+    unawaited(_selectDragRange(math.min(anchorIndex, index.assetIndex), math.max(anchorIndex, index.assetIndex)));
+  }
 
-    // Calculate the range of assets to select
-    final startIndex = math.min(dragAnchorIndex.assetIndex, index.assetIndex);
-    final endIndex = math.max(dragAnchorIndex.assetIndex, index.assetIndex);
-    final count = endIndex - startIndex + 1;
+  // old and new ranges both end at the anchor, so each tick loads at most one chunk and drops one
+  Future<void> _selectDragRange(int start, int end) async {
+    final generation = ++_dragGeneration;
+    final rangeStart = _dragRangeStart;
+    final rangeEnd = rangeStart == null ? null : rangeStart + _draggedAssets.length - 1;
 
-    // Load the assets in the range
-    if (timelineService.hasRange(startIndex, count)) {
-      final selectedAssets = timelineService.getAssets(startIndex, count);
-
-      // Clear previous drag selection and add new range
-      final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
-      for (final asset in _draggedAssets) {
-        multiSelectNotifier.deselectAsset(asset);
-      }
-      _draggedAssets.clear();
-
-      for (final asset in selectedAssets) {
-        multiSelectNotifier.selectAsset(asset);
-        _draggedAssets.add(asset);
-      }
+    final prepend = rangeStart != null && start < rangeStart;
+    final int loadStart;
+    final int loadCount;
+    if (rangeStart == null) {
+      loadStart = start;
+      loadCount = end - start + 1;
+    } else if (prepend) {
+      loadStart = start;
+      loadCount = rangeStart - start;
+    } else {
+      loadStart = rangeEnd! + 1;
+      loadCount = end - rangeEnd;
     }
+
+    final added = loadCount > 0
+        ? await ref.read(timelineServiceProvider).loadAssets(loadStart, loadCount)
+        : const <BaseAsset>[];
+    // the finger moved on (or lifted) while the assets were loading
+    if (!mounted || generation != _dragGeneration) {
+      return;
+    }
+
+    final keepFrom = rangeStart == null ? 0 : math.max(start, rangeStart) - rangeStart;
+    final keepTo = rangeStart == null ? 0 : math.min(end, rangeEnd!) - rangeStart + 1;
+    final kept = _draggedAssets.skip(keepFrom).take(keepTo - keepFrom).toList();
+
+    ref
+        .read(multiSelectProvider.notifier)
+        .updateSelection(added: added, removed: [..._draggedAssets.take(keepFrom), ..._draggedAssets.skip(keepTo)]);
+
+    _draggedAssets
+      ..clear()
+      ..addAll(prepend ? [...added, ...kept] : [...kept, ...added]);
+    _dragRangeStart = start;
   }
 
   @override
@@ -510,7 +555,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                   onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
                   onAssetEnter: _handleDragAssetEnter,
                   onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
-                  onScroll: (direction) => unawaited(_dragScroll(direction)),
+                  onScroll: _dragScroll,
                   onScrollStart: () {
                     // Minimize the bottom sheet when drag selection starts
                     ref.read(timelineStateProvider.notifier).setScrolling(true);

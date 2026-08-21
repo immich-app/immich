@@ -37,8 +37,10 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
 
   // Scroll related state
   static const double scrollOffset = 0.10;
+  static const int maxProbeSteps = 10;
   double? topScrollOffset;
   double? bottomScrollOffset;
+  Offset? pointerPosition;
   Timer? scrollTimer;
   late bool scrollNotified;
 
@@ -134,36 +136,73 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
     }
 
     final currentDy = event.localPosition.dy;
+    pointerPosition = event.globalPosition;
 
+    ScrollDirection? autoScroll;
     if (currentDy > bottomScrollOffset!) {
-      scrollTimer ??= Timer.periodic(
-        const Duration(milliseconds: 50),
-        (_) => widget.onScroll?.call(ScrollDirection.forward),
-      );
+      autoScroll = ScrollDirection.forward;
+      scrollTimer ??= _startAutoScroll(autoScroll);
     } else if (currentDy < topScrollOffset!) {
-      scrollTimer ??= Timer.periodic(
-        const Duration(milliseconds: 50),
-        (_) => widget.onScroll?.call(ScrollDirection.reverse),
-      );
+      autoScroll = ScrollDirection.reverse;
+      scrollTimer ??= _startAutoScroll(autoScroll);
     } else {
       scrollTimer?.cancel();
       scrollTimer = null;
     }
 
-    final currentlyTouchingAsset = _getValueKeyAtPosition(event.globalPosition);
-    if (currentlyTouchingAsset == null) {
+    _enterAssetUnderPointer(autoScroll);
+  }
+
+  Timer _startAutoScroll(ScrollDirection direction) {
+    return Timer.periodic(const Duration(milliseconds: 50), (_) {
+      widget.onScroll?.call(direction);
+      // the rows move under a finger that is holding still, so the selection has to follow them
+      _enterAssetUnderPointer(direction);
+    });
+  }
+
+  TimelineAssetIndex? _assetAtHeight(Offset position) {
+    var asset = _getValueKeyAtPosition(position);
+    // a short row (the last of a day) leaves the pointer beside its tiles: walk towards the row start
+    if (asset == null) {
+      final step = (context.size?.width ?? 0) / maxProbeSteps;
+      final towardsRowStart = Directionality.maybeOf(context) == TextDirection.rtl ? step : -step;
+      for (var i = 1; i <= maxProbeSteps && asset == null; i++) {
+        asset = _getValueKeyAtPosition(position.translate(towardsRowStart * i, 0));
+      }
+    }
+
+    return asset;
+  }
+
+  void _enterAssetUnderPointer(ScrollDirection? autoScroll) {
+    final position = pointerPosition;
+    if (position == null) {
       return;
     }
 
-    if (assetUnderPointer != currentlyTouchingAsset) {
-      if (!scrollNotified) {
-        scrollNotified = true;
-        widget.onScrollStart?.call();
+    var currentlyTouchingAsset = _assetAtHeight(position);
+    // in the scroll zones the pointer usually sits on the sheet or the app bar, so step back
+    // towards the grid until a row answers
+    if (currentlyTouchingAsset == null && autoScroll != null) {
+      final step = topScrollOffset! / 2;
+      final towardsGrid = autoScroll == ScrollDirection.forward ? -step : step;
+      for (var i = 1; i <= maxProbeSteps && currentlyTouchingAsset == null; i++) {
+        currentlyTouchingAsset = _assetAtHeight(position.translate(0, towardsGrid * i));
       }
-
-      widget.onAssetEnter?.call(currentlyTouchingAsset);
-      assetUnderPointer = currentlyTouchingAsset;
     }
+
+    if (currentlyTouchingAsset == null || currentlyTouchingAsset == assetUnderPointer) {
+      return;
+    }
+
+    if (!scrollNotified) {
+      scrollNotified = true;
+      widget.onScrollStart?.call();
+    }
+
+    widget.onAssetEnter?.call(currentlyTouchingAsset);
+    assetUnderPointer = currentlyTouchingAsset;
   }
 }
 
