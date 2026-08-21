@@ -2063,6 +2063,8 @@
   "skip_to_folders": "Skip to folders",
   "skip_to_tags": "Skip to tags",
   "slideshow": "Slideshow",
+  "slideshow_animate": "Animate slideshow",
+  "slideshow_animate_zoom_strength": "Zoom strength percentage",
   "slideshow_body": "Sit back and watch your photos play in a full-screen slideshow.",
   "slideshow_metadata_overlay_mode": "Overlay content",
   "slideshow_metadata_overlay_mode_description_only": "Description only",
