@@ -1602,6 +1602,8 @@ export type UserConfigDto = {
     user: UserConfigUserDto;
 };
 export type DownloadArchiveDto = {
+    /** The name of the archive to download, without extension */
+    archiveName?: string;
     /** Asset IDs */
     assetIds: string[];
     /** Download edited asset if available */
