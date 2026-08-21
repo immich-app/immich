@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
+import 'package:immich_mobile/platform/view_intent_api.g.dart' as pigeon;
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -243,7 +244,7 @@ void main() {
   });
 
   test('onAppResumed returns to the main screen when the incoming view intent is unavailable', () async {
-    viewIntentService.consumeError = PlatformException(code: 'VIEW_INTENT_UNAVAILABLE');
+    viewIntentService.consumeError = PlatformException(code: pigeon.viewIntentUnavailableErrorCode);
 
     await handler.onAppResumed();
 

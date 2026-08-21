@@ -8,8 +8,6 @@ import 'package:path_provider/path_provider.dart';
 
 final viewIntentServiceProvider = Provider((ref) => ViewIntentService(ViewIntentHostApi()));
 
-const viewIntentUnavailableErrorCode = 'VIEW_INTENT_UNAVAILABLE';
-
 class ViewIntentService {
   final ViewIntentHostApi _viewIntentHostApi;
   final Future<Directory> Function() _temporaryDirectory;
