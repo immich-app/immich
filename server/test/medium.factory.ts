@@ -24,6 +24,7 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
@@ -253,6 +254,17 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { albumUser: { albumId, userId, role }, result };
   }
 
+  /** An album owned by one user, containing one asset, shared with a second user */
+  async newSharedAlbum(dto: { role?: AlbumUserRole } = {}) {
+    const { user: owner } = await this.newUser();
+    const { user: sharedWith } = await this.newUser();
+    const { asset } = await this.newAsset({ ownerId: owner.id });
+    const { album } = await this.newAlbum({ ownerId: owner.id }, [asset.id]);
+    await this.newAlbumUser({ albumId: album.id, userId: sharedWith.id, role: dto.role ?? AlbumUserRole.Editor });
+
+    return { album, asset, owner, sharedWith };
+  }
+
   async softDeleteAsset(assetId: string) {
     await this.database.updateTable('asset').set({ deletedAt: new Date() }).where('id', '=', assetId).execute();
   }
@@ -462,6 +474,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case ApiKeyRepository:
     case AssetRepository:
     case AssetEditRepository:
+    case AssetFileRepository:
     case AssetJobRepository:
     case ClusterGroupRepository:
     case DuplicateRepository:

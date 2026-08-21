@@ -109,6 +109,49 @@ describe(TagRepository.name, () => {
     });
   });
 
+  describe('update', () => {
+    it('should update a tag color', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+
+      const { tag } = await ctx.newTag({
+        userId: user.id,
+        value: 'tagA',
+        color: '#000000',
+      });
+
+      await sut.update(tag.id, { color: '#FFFFFF' });
+
+      await expect(
+        ctx.database
+          .selectFrom('tag')
+          .select(['userId', 'value', 'color', 'parentId'])
+          .where('id', '=', tag.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ userId: user.id, value: 'tagA', color: '#FFFFFF', parentId: null });
+    });
+    it('should update a top-level tag value', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+
+      const { tag } = await ctx.newTag({
+        userId: user.id,
+        value: 'tagA',
+        color: '#000000',
+      });
+
+      await sut.update(tag.id, { value: 'updatedTagA' });
+
+      await expect(
+        ctx.database
+          .selectFrom('tag')
+          .select(['userId', 'value', 'color', 'parentId'])
+          .where('id', '=', tag.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ userId: user.id, value: 'updatedTagA', color: '#000000', parentId: null });
+    });
+  });
+
   describe('delete', () => {
     it('should delete top-level tag without descendants', async () => {
       const { ctx, sut } = setup();

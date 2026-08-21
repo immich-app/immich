@@ -3465,6 +3465,266 @@
         "x-immich-permission": "apiKey.rotate"
       }
     },
+    "/asset-files": {
+      "get": {
+        "description": "Returns all matching asset files.",
+        "operationId": "searchAssetFiles",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "query",
+            "description": "Asset ID to filter files by",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isEdited",
+            "required": false,
+            "in": "query",
+            "description": "The file was generated from an edit",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isProgressive",
+            "required": false,
+            "in": "query",
+            "description": "The file is a progressively encoded JPEG",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTransparent",
+            "required": false,
+            "in": "query",
+            "description": "The file is transparent",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by type of file",
+            "schema": {
+              "$ref": "#/components/schemas/AssetFileType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetFileResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Search asset files",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "assetFile.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/asset-files/{id}": {
+      "delete": {
+        "description": "Delete a file and remove it from the database.",
+        "operationId": "deleteAssetFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete an asset file",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "assetFile.delete",
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Returns metadata about a specific asset file.",
+        "operationId": "getAssetFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetFileResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve an asset file",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "assetFile.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/asset-files/{id}/download": {
+      "get": {
+        "description": "Serve the contents of a specific asset file.",
+        "operationId": "downloadAssetFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download an asset file",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "assetFile.download",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/assets": {
       "delete": {
         "description": "Deletes multiple assets at the same time.",
@@ -17106,6 +17366,10 @@
       "description": "An asset is an image or video that has been uploaded to Immich."
     },
     {
+      "name": "Asset files",
+      "description": "An asset file is a file associated with an asset, including edited versions, thumbnails, etc."
+    },
+    {
       "name": "Authentication",
       "description": "Endpoints related to user authentication, including OAuth."
     },
@@ -19529,6 +19793,71 @@
         ],
         "type": "object"
       },
+      "AssetFileResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Creation date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Asset file ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "isEdited": {
+            "description": "The file was generated from an edit",
+            "type": "boolean"
+          },
+          "isProgressive": {
+            "description": "The file is a progressively encoded JPEG",
+            "type": "boolean"
+          },
+          "isTransparent": {
+            "description": "The file is transparent",
+            "type": "boolean"
+          },
+          "path": {
+            "description": "File path",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetFileType"
+          },
+          "updatedAt": {
+            "description": "Update date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "isEdited",
+          "isProgressive",
+          "isTransparent",
+          "path",
+          "type",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AssetFileType": {
+        "description": "Type of file",
+        "enum": [
+          "fullsize",
+          "preview",
+          "thumbnail",
+          "sidecar",
+          "encoded_video"
+        ],
+        "type": "string"
+      },
       "AssetIdErrorReason": {
         "description": "Error reason if failed",
         "enum": [
@@ -20799,6 +21128,10 @@
       },
       "DownloadArchiveDto": {
         "properties": {
+          "archiveName": {
+            "description": "The name of the archive to download, without extension",
+            "type": "string"
+          },
           "assetIds": {
             "description": "Asset IDs",
             "items": {
@@ -22917,6 +23250,9 @@
           "asset.upload",
           "asset.copy",
           "asset.derive",
+          "assetFile.read",
+          "assetFile.delete",
+          "assetFile.download",
           "asset.edit.get",
           "asset.edit.create",
           "asset.edit.delete",
@@ -27856,6 +28192,11 @@
             "description": "Tag color (hex)",
             "nullable": true,
             "pattern": "^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+            "type": "string"
+          },
+          "name": {
+            "description": "Tag name",
+            "pattern": "^[^/]*$",
             "type": "string"
           }
         },
