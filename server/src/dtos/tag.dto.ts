@@ -52,14 +52,11 @@ const TagBulkAddRemoveAssetsResponseSchema = z
   })
   .meta({ id: 'TagBulkAddRemoveAssetsResponseDto' });
 
-export const TagsForAssetsQuerySchema = z
+export const TagsForAssetsSchema = z
   .object({
-    assetIds: z.preprocess(
-      (val) => (typeof val === 'string' ? [val] : val),
-      z.array(z.uuidv4()).describe('Asset IDs to retrieve tags for'),
-    ),
+    assetIds: z.array(z.uuidv4()).min(1).max(10_000).describe('Asset IDs to retrieve tags for'),
   })
-  .meta({ id: 'TagsForAssetsQueryDto' });
+  .meta({ id: 'TagsForAssetsDto' });
 
 export const TagsForAssetsResponseSchema = z
   .object({
@@ -90,7 +87,7 @@ export class TagBulkAddRemoveAssetsDto extends createZodDto(TagBulkAddRemoveAsse
 export class TagBulkAssetsResponseDto extends createZodDto(TagBulkAssetsResponseSchema) {}
 export class TagBulkAddRemoveAssetsResponseDto extends createZodDto(TagBulkAddRemoveAssetsResponseSchema) {}
 export class TagResponseDto extends createZodDto(TagResponseSchema) {}
-export class TagsForAssetsQueryDto extends createZodDto(TagsForAssetsQuerySchema) {}
+export class TagsForAssetsDto extends createZodDto(TagsForAssetsSchema) {}
 export class TagsForAssetsResponseDto extends createZodDto(TagsForAssetsResponseSchema) {}
 
 export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {

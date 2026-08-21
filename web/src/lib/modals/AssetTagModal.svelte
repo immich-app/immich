@@ -3,7 +3,7 @@
   import { tagUntagAssets } from '$lib/utils/asset-utils';
   import {
     getAllTags,
-    getAllTagsForAssets,
+    queryTagsForAssets,
     upsertTags,
     type TagResponseDto,
     type TagsForAssetsResponseDto,
@@ -31,7 +31,7 @@
 
   onMount(async () => {
     allTags = await getAllTags();
-    existingTagsForAssets = await getAllTagsForAssets({ assetIds });
+    existingTagsForAssets = await queryTagsForAssets({ tagsForAssetsDto: { assetIds } });
 
     for (const tagForAsset of existingTagsForAssets) {
       selectedTags.add({

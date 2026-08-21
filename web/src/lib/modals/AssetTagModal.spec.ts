@@ -1,6 +1,6 @@
 import {
   getAllTags,
-  getAllTagsForAssets,
+  queryTagsForAssets,
   upsertTags,
   type TagResponseDto,
   type TagsForAssetsResponseDto,
@@ -16,7 +16,7 @@ import AssetTagModal from './AssetTagModal.svelte';
 vi.mock('@immich/sdk', () => {
   return {
     getAllTags: vi.fn(),
-    getAllTagsForAssets: vi.fn(),
+    queryTagsForAssets: vi.fn(),
     upsertTags: vi.fn(),
   };
 });
@@ -27,7 +27,7 @@ vi.mock('$lib/utils/asset-utils', () => {
 });
 const mockTagUntagAssets = vi.mocked(tagUntagAssets);
 const mockGetAllTags = vi.mocked(getAllTags);
-const mockGetAllTagsForAssets = vi.mocked(getAllTagsForAssets);
+const mockQueryTagsForAssets = vi.mocked(queryTagsForAssets);
 const mockUpsertTags = vi.mocked(upsertTags);
 
 describe('AssetTagModal component', () => {
@@ -85,7 +85,7 @@ describe('AssetTagModal component', () => {
 
   test('renders combobox with available tags', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
 
     render(AssetTagModal, {
       props: {
@@ -95,7 +95,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     await fireEvent.focus(getTagsCombobox());
@@ -108,7 +108,7 @@ describe('AssetTagModal component', () => {
 
   test('does not render tag pills if no existing tags present', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
 
     render(AssetTagModal, {
       props: {
@@ -118,7 +118,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     const tagPills = getTagPills();
@@ -127,7 +127,7 @@ describe('AssetTagModal component', () => {
 
   test('renders tag pills if existing tags are present', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([
+    mockQueryTagsForAssets.mockResolvedValueOnce([
       { tagId: simpleTag.id, assetIds: ['asset-id'] },
       { tagId: parentTag.id, assetIds: ['asset-id'] },
     ] as TagsForAssetsResponseDto[]);
@@ -140,7 +140,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     const tagPills = getTagPills();
@@ -151,7 +151,7 @@ describe('AssetTagModal component', () => {
 
   test('removes available tags from combobox as they are selected and displays as pills', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
 
     render(AssetTagModal, {
       props: {
@@ -161,7 +161,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     // Select first option (simpleTag)
@@ -198,7 +198,7 @@ describe('AssetTagModal component', () => {
 
   test('makes tags available in combobox if the remove button is clicked on pill', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([
+    mockQueryTagsForAssets.mockResolvedValueOnce([
       { tagId: simpleTag.id, assetIds: ['asset-id'] },
       { tagId: parentTag.id, assetIds: ['asset-id'] },
     ] as TagsForAssetsResponseDto[]);
@@ -211,7 +211,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     const tagPillRemoveButtons = getTagPillRemoveButtons();
@@ -235,7 +235,7 @@ describe('AssetTagModal component', () => {
 
   test('renders pill as partial if only some assets have that tag', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([
+    mockQueryTagsForAssets.mockResolvedValueOnce([
       { tagId: simpleTag.id, assetIds: ['asset-id', 'asset-id2'] },
       { tagId: parentTag.id, assetIds: ['asset-id'] },
     ] as TagsForAssetsResponseDto[]);
@@ -248,7 +248,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     // One tag should have bg-primary class, the other should have bg-grey-500 class indicating partial
@@ -260,7 +260,7 @@ describe('AssetTagModal component', () => {
 
   test('allows partial tag to be selected in dropdown, and turns into full tag when selected', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([
+    mockQueryTagsForAssets.mockResolvedValueOnce([
       { tagId: simpleTag.id, assetIds: ['asset-id', 'asset-id2'] },
       { tagId: parentTag.id, assetIds: ['asset-id'] },
     ] as TagsForAssetsResponseDto[]);
@@ -273,7 +273,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     // Partial tag should be available in tag dropdown, full tag should not
@@ -301,7 +301,7 @@ describe('AssetTagModal component', () => {
 
   test('filters the list of available tags in the combobox when search string entered', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
 
     render(AssetTagModal, {
       props: {
@@ -311,7 +311,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     const combobox = getTagsCombobox();
@@ -325,7 +325,7 @@ describe('AssetTagModal component', () => {
 
   test('adds a new tag when text entered in the combobox does not match an existing tag', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
     mockUpsertTags.mockResolvedValueOnce([
       {
         id: 'new-tag-id',
@@ -346,7 +346,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     const combobox = getTagsCombobox();
@@ -364,7 +364,7 @@ describe('AssetTagModal component', () => {
 
   test('displays confirmation dialog with correct asset count if modifying tags for over 40 assets', async () => {
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
 
     render(AssetTagModal, {
       props: {
@@ -374,7 +374,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     await fireEvent.focus(getTagsCombobox());
@@ -409,7 +409,7 @@ describe('AssetTagModal component', () => {
     const tagDtosLocal = [...tagDtos, addedTag1, addedTag2] as TagResponseDto[];
 
     mockGetAllTags.mockResolvedValueOnce(tagDtosLocal);
-    mockGetAllTagsForAssets.mockResolvedValueOnce([
+    mockQueryTagsForAssets.mockResolvedValueOnce([
       { tagId: simpleTag.id, assetIds: ['asset-id', 'asset-id2', 'asset-id3'] },
       { tagId: parentTag.id, assetIds: ['asset-id', 'asset-id2'] },
       { tagId: childTag.id, assetIds: ['asset-id'] },
@@ -423,7 +423,7 @@ describe('AssetTagModal component', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalled();
     });
 
     // Remove an existing full tag and partial tag first

@@ -10,7 +10,7 @@ import {
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
-  TagsForAssetsQueryDto,
+  TagsForAssetsDto,
   TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
@@ -94,18 +94,16 @@ export class TagController {
     return this.service.bulkTagUntagAssets(auth, dto);
   }
 
-  @Get('getAllTagsForAssets')
+  @Post('assets/queryTags')
+  @HttpCode(HttpStatus.OK)
   @Authenticated({ permission: Permission.TagRead })
   @Endpoint({
     summary: 'Retrieve tags for assets',
     description: 'Retrieve all tags associated with the specified assets.',
     history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
   })
-  getAllTagsForAssets(
-    @Auth() auth: AuthDto,
-    @Query() { assetIds }: TagsForAssetsQueryDto,
-  ): Promise<TagsForAssetsResponseDto[]> {
-    return this.service.getAllForAssets(auth, assetIds);
+  queryTagsForAssets(@Auth() auth: AuthDto, @Body() dto: TagsForAssetsDto): Promise<TagsForAssetsResponseDto[]> {
+    return this.service.getAllForAssets(auth, dto.assetIds);
   }
 
   @Get(':id')

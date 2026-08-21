@@ -14813,26 +14813,21 @@
         "x-immich-state": "Stable"
       }
     },
-    "/tags/getAllTagsForAssets": {
-      "get": {
+    "/tags/assets/queryTags": {
+      "post": {
         "description": "Retrieve all tags associated with the specified assets.",
-        "operationId": "getAllTagsForAssets",
-        "parameters": [
-          {
-            "name": "assetIds",
-            "required": true,
-            "in": "query",
-            "description": "Asset IDs to retrieve tags for",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        "operationId": "queryTagsForAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagsForAssetsDto"
               }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -28114,6 +28109,25 @@
         },
         "required": [
           "tags"
+        ],
+        "type": "object"
+      },
+      "TagsForAssetsDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs to retrieve tags for",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "maxItems": 10000,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
         ],
         "type": "object"
       },
