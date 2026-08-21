@@ -22,8 +22,8 @@ export class AssetFilesController {
   @Get()
   @Authenticated({ permission: Permission.AssetFileRead })
   @Endpoint({
-    summary: 'Retrieve an asset file',
-    description: 'Returns a metadata about a specific asset file.',
+    summary: 'Search asset files',
+    description: 'Returns all matching asset files.',
     history: new HistoryBuilder().added('v3.2.0').alpha('v3.2.0'),
   })
   searchAssetFiles(@Auth() auth: AuthDto, @Query() dto: AssetFileSearchDto): Promise<AssetFileResponseDto[]> {
