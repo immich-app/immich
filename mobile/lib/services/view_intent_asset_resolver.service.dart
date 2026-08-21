@@ -133,10 +133,7 @@ class ViewIntentAssetResolver {
     }
 
     if (remoteAsset == null && checksum != null) {
-      final candidates = await timelineRepository.getViewableRemoteAssetsByChecksum(
-        await timelineUsers(),
-        checksum,
-      );
+      final candidates = await timelineRepository.getViewableRemoteAssetsByChecksum(await timelineUsers(), checksum);
       if (candidates.isNotEmpty) {
         remoteAsset = candidates.first;
         _logger.fine('resolve matched remote asset by checksum: $checksum, asset=$remoteAsset');
