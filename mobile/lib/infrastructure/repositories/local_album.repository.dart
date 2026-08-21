@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -129,6 +130,10 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
       }
       await _removeAssets(localAlbum.id, toDelete);
     });
+  }
+
+  Future<void> resetSync() {
+    return _db.localAlbumEntity.update().write(LocalAlbumEntityCompanion(updatedAt: .new(kLocalAlbumNeverSynced)));
   }
 
   Future<void> updateAll(Iterable<LocalAlbum> albums) {
@@ -324,6 +329,21 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
       return Future.value();
     }
 
+    await _db.batch((batch) async {
+      for (final asset in localAssets) {
+        batch.update(
+          _db.localAssetEntity,
+          const LocalAssetEntityCompanion(checksum: Value(null)),
+          where: (row) =>
+              row.id.equals(asset.id) &
+              (row.updatedAt.isNotValue(asset.updatedAt) |
+                  row.size.isNotExp(Variable(asset.size)) |
+                  row.width.isNotExp(Variable(asset.width)) |
+                  row.height.isNotExp(Variable(asset.height))),
+        );
+      }
+    });
+
     return _db.batch((batch) async {
       for (final asset in localAssets) {
         final companion = LocalAssetEntityCompanion.insert(
@@ -335,15 +355,15 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
           height: Value(asset.height),
           durationMs: Value(asset.durationMs),
           id: asset.id,
-          checksum: const Value(null),
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
           playbackStyle: Value(asset.playbackStyle),
+          size: Value(asset.size),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
-          companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+          companion.copyWith(checksum: const Value(null)),
+          onConflict: DoUpdate((_) => companion),
         );
       }
     });

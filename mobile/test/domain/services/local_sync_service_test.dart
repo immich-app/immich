@@ -20,6 +20,7 @@ import '../../fixtures/asset.stub.dart';
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
+import '../../unit/factories/local_asset_factory.dart';
 
 void main() {
   late LocalSyncService sut;
@@ -239,6 +240,54 @@ void main() {
       expect(localAsset.createdAt.millisecondsSinceEpoch ~/ 1000, 1700000000);
       expect(localAsset.updatedAt.millisecondsSinceEpoch ~/ 1000, 1732000000);
       expect(localAsset.updatedAt, isNot(localAsset.createdAt));
+    });
+  });
+
+  group('assetsEqual - Android', () {
+    test('ignores fields not from local sync', () {
+      final fromDevice = LocalAssetFactory.create();
+      final fromDb = fromDevice.copyWith(checksum: 'checksum', remoteId: 'remote', cloudId: 'cloud');
+
+      expect(fromDb == fromDevice, isFalse);
+      expect(sut.assetsEqual(fromDb, fromDevice), isTrue);
+    });
+
+    test('updates on size change', () {
+      final asset = LocalAssetFactory.create().copyWith(size: 123);
+      expect(sut.assetsEqual(asset, asset.copyWith(size: 1234)), isFalse);
+    });
+
+    test('updates on dimension change', () {
+      final asset = LocalAssetFactory.create().copyWith(width: 12, height: 34);
+      expect(sut.assetsEqual(asset, asset.copyWith(width: 34, height: 12)), isFalse);
+    });
+
+    test('updates on modified time change', () {
+      final asset = LocalAssetFactory.create();
+      expect(sut.assetsEqual(asset, asset.copyWith(updatedAt: asset.updatedAt.add(const .new(seconds: 1)))), isFalse);
+    });
+  });
+
+  group('assetsEqual - iOS', () {
+    setUp(() => debugDefaultTargetPlatformOverride = .iOS);
+    tearDown(() => debugDefaultTargetPlatformOverride = .android);
+
+    test('ignores fields not from local sync', () {
+      final fromDevice = LocalAssetFactory.create();
+      final fromDb = fromDevice.copyWith(checksum: 'checksum', remoteId: 'remote', cloudId: 'cloud');
+
+      expect(fromDb == fromDevice, isFalse);
+      expect(sut.assetsEqual(fromDb, fromDevice), isTrue);
+    });
+
+    test('updates on adjustmentTime change', () {
+      final asset = LocalAssetFactory.create();
+      expect(sut.assetsEqual(asset, asset.copyWith(adjustmentTime: .utc(2023, 1, 23))), isFalse);
+    });
+
+    test('ignores the modified time', () {
+      final asset = LocalAssetFactory.create();
+      expect(sut.assetsEqual(asset, asset.copyWith(updatedAt: asset.updatedAt.add(const .new(seconds: 1)))), isTrue);
     });
   });
 }
