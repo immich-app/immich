@@ -95,9 +95,68 @@ export class TagRepository {
     return this.db.insertInto('tag').values(tag).returningAll().executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { color: DummyValue.STRING }] })
-  update(id: string, dto: Updateable<TagTable>) {
-    return this.db.updateTable('tag').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+  @GenerateSql({ params: [DummyValue.UUID, { value: DummyValue.STRING, color: DummyValue.STRING }] })
+  async update(id: string, dto: Updateable<TagTable>) {
+    return this.db.transaction().execute(async (tx) => {
+      // Get previous tag value for reference if the current update contains a new value
+      const previousTag =
+        dto.value === undefined
+          ? undefined
+          : await tx.selectFrom('tag').select('value').where('id', '=', id).executeTakeFirst();
+
+      // Perform main tag update
+      const updated = await tx
+        .updateTable('tag')
+        .set(dto)
+        .where('id', '=', id)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      // Check if value has changed, trigger value updates on all children if so
+      if (previousTag && dto.value !== previousTag.value) {
+        await tx
+          // Use a recursive cte to get all levels of nested child tags that need to be updated
+          .withRecursive('descendants(id, value)', (qb) => {
+            const directChildren = qb
+              .selectFrom('tag as child')
+              .select((eb) => [
+                'child.id as id',
+                eb
+                  .fn<string>('concat', [
+                    eb.cast<string>(eb.val(updated.value), 'text'),
+                    eb.cast<string>(eb.val('/'), 'text'),
+                    eb.fn<string>('regexp_replace', ['child.value', eb.val('^.*/'), eb.val('')]),
+                  ])
+                  .as('value'),
+              ])
+              .where('child.parentId', '=', id);
+
+            const nestedChildren = qb
+              .selectFrom('tag as child')
+              .innerJoin('descendants as parent', 'parent.id', 'child.parentId')
+              .select((eb) => [
+                'child.id as id',
+                eb
+                  .fn<string>('concat', [
+                    'parent.value',
+                    eb.cast<string>(eb.val('/'), 'text'),
+                    eb.fn<string>('regexp_replace', ['child.value', eb.val('^.*/'), eb.val('')]),
+                  ])
+                  .as('value'),
+              ]);
+
+            return directChildren.unionAll(nestedChildren);
+          })
+          .updateTable('tag')
+          .from('descendants')
+          .set((eb) => ({
+            value: eb.ref('descendants.value'),
+          }))
+          .whereRef('tag.id', '=', 'descendants.id')
+          .execute();
+      }
+      return updated;
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

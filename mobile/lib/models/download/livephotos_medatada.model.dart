@@ -1,17 +1,16 @@
 import 'dart:convert';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'livephotos_medatada.model.freezed.dart';
+
 enum LivePhotosPart { video, image }
 
-class LivePhotosMetadata {
-  // enum
-  LivePhotosPart part;
+@Freezed(fromJson: false, toJson: false)
+abstract class LivePhotosMetadata with _$LivePhotosMetadata {
+  const LivePhotosMetadata._();
 
-  String id;
-  LivePhotosMetadata({required this.part, required this.id});
-
-  LivePhotosMetadata copyWith({LivePhotosPart? part, String? id}) {
-    return LivePhotosMetadata(part: part ?? this.part, id: id ?? this.id);
-  }
+  const factory LivePhotosMetadata({required LivePhotosPart part, required String id}) = _LivePhotosMetadata;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'part': part.index, 'id': id};
@@ -25,19 +24,4 @@ class LivePhotosMetadata {
 
   factory LivePhotosMetadata.fromJson(String source) =>
       LivePhotosMetadata.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() => 'LivePhotosMetadata(part: $part, id: $id)';
-
-  @override
-  bool operator ==(covariant LivePhotosMetadata other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.part == part && other.id == id;
-  }
-
-  @override
-  int get hashCode => part.hashCode ^ id.hashCode;
 }

@@ -86,13 +86,22 @@ returning
   *
 
 -- TagRepository.update
+begin
+select
+  "value"
+from
+  "tag"
+where
+  "id" = $1
 update "tag"
 set
-  "color" = $1
+  "value" = $1,
+  "color" = $2
 where
-  "id" = $2
+  "id" = $3
 returning
   *
+rollback
 
 -- TagRepository.delete
 delete from "tag"

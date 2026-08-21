@@ -1005,6 +1005,23 @@ export type ApiKeyUpdateDto = {
     /** List of permissions */
     permissions?: Permission[];
 };
+export type AssetFileResponseDto = {
+    /** Creation date */
+    createdAt: string;
+    /** Asset file ID */
+    id: string;
+    /** The file was generated from an edit */
+    isEdited: boolean;
+    /** The file is a progressively encoded JPEG */
+    isProgressive: boolean;
+    /** The file is transparent */
+    isTransparent: boolean;
+    /** File path */
+    path: string;
+    "type": AssetFileType;
+    /** Update date */
+    updatedAt: string;
+};
 export type AssetBulkDeleteDto = {
     /** Force delete even if in use */
     force?: boolean;
@@ -1602,6 +1619,8 @@ export type UserConfigDto = {
     user: UserConfigUserDto;
 };
 export type DownloadArchiveDto = {
+    /** The name of the archive to download, without extension */
+    archiveName?: string;
     /** Asset IDs */
     assetIds: string[];
     /** Download edited asset if available */
@@ -2881,6 +2900,8 @@ export type TagsForAssetsResponseDto = {
 export type TagUpdateDto = {
     /** Tag color (hex) */
     color?: string | null;
+    /** Tag name */
+    name?: string;
 };
 export type TimeBucketAssetResponseDto = {
     /** Array of city names extracted from EXIF GPS data */
@@ -4350,6 +4371,66 @@ export function rotateApiKey({ id }: {
     }>(`/api-keys/${encodeURIComponent(id)}/rotate`, {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * Search asset files
+ */
+export function searchAssetFiles({ assetId, isEdited, isProgressive, isTransparent, $type }: {
+    assetId: string;
+    isEdited?: boolean;
+    isProgressive?: boolean;
+    isTransparent?: boolean;
+    $type?: AssetFileType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetFileResponseDto[];
+    }>(`/asset-files${QS.query(QS.explode({
+        assetId,
+        isEdited,
+        isProgressive,
+        isTransparent,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Delete an asset file
+ */
+export function deleteAssetFile({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/asset-files/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve an asset file
+ */
+export function getAssetFile({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetFileResponseDto;
+    }>(`/asset-files/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Download an asset file
+ */
+export function downloadAssetFile({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/asset-files/${encodeURIComponent(id)}/download`, {
+        ...opts
     }));
 }
 /**
@@ -7716,6 +7797,9 @@ export enum Permission {
     AssetUpload = "asset.upload",
     AssetCopy = "asset.copy",
     AssetDerive = "asset.derive",
+    AssetFileRead = "assetFile.read",
+    AssetFileDelete = "assetFile.delete",
+    AssetFileDownload = "assetFile.download",
     AssetEditGet = "asset.edit.get",
     AssetEditCreate = "asset.edit.create",
     AssetEditDelete = "asset.edit.delete",
@@ -7860,6 +7944,13 @@ export enum Permission {
     AdminUserDelete = "adminUser.delete",
     AdminSessionRead = "adminSession.read",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
+}
+export enum AssetFileType {
+    Fullsize = "fullsize",
+    Preview = "preview",
+    Thumbnail = "thumbnail",
+    Sidecar = "sidecar",
+    EncodedVideo = "encoded_video"
 }
 export enum AssetMediaStatus {
     Created = "created",

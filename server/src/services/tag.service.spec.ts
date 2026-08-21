@@ -104,7 +104,15 @@ describe(TagService.name, () => {
   describe('update', () => {
     it('should throw an error for no update permission', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set());
-      await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).rejects.toBeInstanceOf(
+      await expect(sut.update(authStub.admin, 'tag-1', { name: 'tag', color: '#000000' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mocks.tag.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if updated tag name has a slash', async () => {
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-parent']));
+      await expect(sut.update(authStub.admin, 'tag-1', { name: 'tag/test2', color: '#000000' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(mocks.tag.update).not.toHaveBeenCalled();
@@ -113,8 +121,11 @@ describe(TagService.name, () => {
     it('should update a tag', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
       mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
-      await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).resolves.toEqual(tagResponseStub.color1);
-      expect(mocks.tag.update).toHaveBeenCalledWith('tag-1', { color: '#000000' });
+      mocks.tag.get.mockResolvedValue(tagStub.tag);
+      await expect(sut.update(authStub.admin, 'tag-1', { name: 'tag', color: '#000000' })).resolves.toEqual(
+        tagResponseStub.color1,
+      );
+      expect(mocks.tag.update).toHaveBeenCalledWith('tag-1', { value: 'tag', color: '#000000' });
     });
   });
 
