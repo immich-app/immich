@@ -1845,6 +1845,7 @@
   "search": "Search",
   "search_albums": "Search albums",
   "search_by_context": "Search by context",
+  "search_by_context_example": "Describe the photo you want to find, e.g. \"Children jumping on a trampoline\"",
   "search_by_description": "Search by description",
   "search_by_description_example": "Hiking day in Sapa",
   "search_by_filename": "Search by file name or extension",
