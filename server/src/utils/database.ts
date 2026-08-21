@@ -470,11 +470,7 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(!!options.originalPath, (qb) =>
       tokenizeForSearch(options.originalPath!).reduce(
         (query, token) =>
-          query.where(
-            sql`f_unaccent(asset."originalPath")`,
-            'ilike',
-            sql`'%' || f_unaccent(${token}) || '%'`,
-          ),
+          query.where(sql`f_unaccent(asset."originalPath")`, 'ilike', sql`'%' || f_unaccent(${token}) || '%'`),
         qb,
       ),
     )
