@@ -193,6 +193,14 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      minAspectRatioWidth: $t('min_aspect_ratio_width'),
+      minAspectRatioHeight: $t('min_aspect_ratio_height'),
+      maxAspectRatioWidth: $t('max_aspect_ratio_width'),
+      maxAspectRatioHeight: $t('max_aspect_ratio_height'),
+      minWidth: $t('min_width'),
+      maxWidth: $t('max_width'),
+      minHeight: $t('min_height'),
+      maxHeight: $t('max_height'),
     };
     return keyMap[key] || key;
   }
