@@ -34,14 +34,14 @@ describe('/api-keys', () => {
           permissions: [Permission.ApiKeyRead],
         });
       expect(body).toEqual({
+        id: expect.any(String),
+        name: 'API Key',
+        permissions: [Permission.ApiKeyRead],
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
         secret: expect.any(String),
-        apiKey: {
-          id: expect.any(String),
-          name: 'API Key',
-          permissions: [Permission.ApiKeyRead],
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        },
+        // TODO: remove in v4
+        apiKey: expect.any(Object),
       });
       expect(status).toBe(201);
     });
@@ -72,14 +72,14 @@ describe('/api-keys', () => {
         .send({ name: 'API Key', permissions: [Permission.All] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual({
-        apiKey: {
-          id: expect.any(String),
-          name: 'API Key',
-          permissions: [Permission.All],
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        },
+        id: expect.any(String),
+        name: 'API Key',
+        permissions: [Permission.All],
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
         secret: expect.any(String),
+        // TODO: remove in v4
+        apiKey: expect.any(Object),
       });
       expect(status).toEqual(201);
     });
@@ -93,23 +93,30 @@ describe('/api-keys', () => {
     });
 
     it('should return a list of api keys', async () => {
-      const [{ apiKey: apiKey1 }, { apiKey: apiKey2 }, { apiKey: apiKey3 }] = await Promise.all([
+      const [apiKey1, apiKey2, apiKey3] = await Promise.all([
         create(admin.accessToken, [Permission.All]),
         create(admin.accessToken, [Permission.All]),
         create(admin.accessToken, [Permission.All]),
       ]);
+
       const { status, body } = await request(app).get('/api-keys').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toHaveLength(3);
-      expect(body).toEqual(expect.arrayContaining([apiKey1, apiKey2, apiKey3]));
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: apiKey1.id }),
+          expect.objectContaining({ id: apiKey2.id }),
+          expect.objectContaining({ id: apiKey3.id }),
+        ]),
+      );
       expect(status).toEqual(200);
     });
   });
 
   describe('GET /api-keys/:id', () => {
     it('should get api key details', async () => {
-      const { apiKey } = await create(user.accessToken, [Permission.All]);
+      const { id } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
-        .get(`/api-keys/${apiKey.id}`)
+        .get(`/api-keys/${id}`)
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -124,9 +131,9 @@ describe('/api-keys', () => {
 
   describe('PUT /api-keys/:id', () => {
     it('should update api key details', async () => {
-      const { apiKey } = await create(user.accessToken, [Permission.All]);
+      const { id } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
-        .put(`/api-keys/${apiKey.id}`)
+        .put(`/api-keys/${id}`)
         .send({
           name: 'new name',
           permissions: [Permission.ActivityCreate, Permission.ActivityRead, Permission.ActivityUpdate],
@@ -145,9 +152,9 @@ describe('/api-keys', () => {
 
   describe('DELETE /api-keys/:id', () => {
     it('should delete an api key', async () => {
-      const { apiKey } = await create(user.accessToken, [Permission.All]);
+      const { id } = await create(user.accessToken, [Permission.All]);
       const { status } = await request(app)
-        .delete(`/api-keys/${apiKey.id}`)
+        .delete(`/api-keys/${id}`)
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(204);
     });

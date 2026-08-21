@@ -54,11 +54,11 @@ class DriftSearchPage extends HookConsumerWidget {
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: {},
-        location: SearchLocationFilter(),
-        camera: SearchCameraFilter(),
-        date: SearchDateFilter(),
+        location: const SearchLocationFilter(),
+        camera: const SearchCameraFilter(),
+        date: const SearchDateFilter(),
         display: const SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
-        rating: SearchRatingFilter(),
+        rating: const SearchRatingFilter(),
         mediaType: AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
         tagIds: [],
@@ -218,7 +218,7 @@ class DriftSearchPage extends HookConsumerWidget {
 
       void handleClear() {
         locationCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(location: SearchLocationFilter()));
+        search(filter.value.copyWith(location: const SearchLocationFilter()));
       }
 
       void handleApply() {
@@ -266,7 +266,7 @@ class DriftSearchPage extends HookConsumerWidget {
 
       void handleClear() {
         cameraCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(camera: SearchCameraFilter()));
+        search(filter.value.copyWith(camera: const SearchCameraFilter()));
       }
 
       void handleApply() {
@@ -300,7 +300,7 @@ class DriftSearchPage extends HookConsumerWidget {
       dateInputFilter.value = selectedDate;
       if (selectedDate == null) {
         dateRangeCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(date: SearchDateFilter()));
+        search(filter.value.copyWith(date: const SearchDateFilter()));
         return;
       }
 
@@ -429,7 +429,7 @@ class DriftSearchPage extends HookConsumerWidget {
 
       void handleClear() {
         ratingCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(rating: SearchRatingFilter()));
+        search(filter.value.copyWith(rating: const SearchRatingFilter()));
       }
 
       void handleApply() {

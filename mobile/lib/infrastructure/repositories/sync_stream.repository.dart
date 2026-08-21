@@ -227,6 +227,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -266,6 +267,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
