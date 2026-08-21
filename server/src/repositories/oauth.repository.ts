@@ -136,10 +136,7 @@ export class OAuthRepository {
       throw new Error(`Failed to fetch picture: ${response.statusText}`);
     }
 
-    return {
-      data: await response.arrayBuffer(),
-      contentType: response.headers.get('content-type'),
-    };
+    return response.arrayBuffer();
   }
 
   private jwksClients: Map<string, JWTVerifyGetKey> = new Map(); // useful for caching and performnce
