@@ -41,7 +41,7 @@ export const TagBulkAddRemoveAssetsSchema = z
   .object({
     tagIdsToAdd: z.array(z.uuidv4()).describe('Tag IDs to add to assets'),
     tagIdsToRemove: z.array(z.uuidv4()).describe('Tag IDs to remove from assets'),
-    assetIds: z.array(z.uuidv4()).describe('Asset IDs to tag/untag'),
+    assetIds: z.array(z.uuidv4()).min(1).describe('Asset IDs to tag/untag'),
   })
   .meta({ id: 'TagBulkAddRemoveAssetsDto' });
 

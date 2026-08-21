@@ -52,29 +52,68 @@ describe(TagController.name, () => {
       await request(ctx.getHttpServer()).post('/tags/assets');
       expect(ctx.authenticate).toHaveBeenCalled();
     });
+    it('should require valid asset uuids', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/tags/assets')
+        .send({
+          tagIdsToAdd: [factory.uuid()],
+          tagIdsToRemove: [factory.uuid()],
+          assetIds: ['badid1', 'badid2'],
+        });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: ['assetIds', 1], message: 'Invalid UUID' }]));
+    });
+    it('should require valid tag to add uuids', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/tags/assets')
+        .send({
+          tagIdsToAdd: ['badid1', 'badid2'],
+          tagIdsToRemove: [factory.uuid()],
+          assetIds: [factory.uuid()],
+        });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: ['tagIdsToAdd', 1], message: 'Invalid UUID' }]));
+    });
+    it('should require valid tag to remove uuids', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/tags/assets')
+        .send({
+          tagIdsToRemove: ['badid1', 'badid2'],
+          tagIdsToAdd: [factory.uuid()],
+          assetIds: [factory.uuid()],
+        });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: ['tagIdsToRemove', 1], message: 'Invalid UUID' }]));
+    });
+    it('should require at least one asset uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/tags/assets').send({ assetIds: [] });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['assetIds'], message: 'Too small: expected array to have >=1 items' }]),
+      );
+    });
   });
 
-  describe('GET /tags/getAllTagsForAssets', () => {
+  describe('POST /tags/assets/queryTags', () => {
     it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=${factory.uuid()}`);
+      await request(ctx.getHttpServer())
+        .post('/tags/assets/queryTags')
+        .send({ assetIds: [factory.uuid()] });
       expect(ctx.authenticate).toHaveBeenCalled();
     });
-
-    it('should require a valid uuid', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=123`);
+    it('should require valid asset uuids', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/tags/assets/queryTags')
+        .send({ assetIds: ['badid1', 'badid2'] });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.validationError([{ path: ['assetIds', 0], message: 'Invalid UUID' }]));
+      expect(body).toEqual(errorDto.validationError([{ path: ['assetIds', 1], message: 'Invalid UUID' }]));
     });
-
-    it('should allow passing an array of assetIds or a single assetId as a string', async () => {
-      const uuid1 = factory.uuid();
-      const uuid2 = factory.uuid();
-      await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=${uuid1}`);
-      expect(service.getAllForAssets).toHaveBeenCalledWith(undefined, [uuid1]);
-
-      service.resetAllMocks();
-      await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=${uuid1}&assetIds=${uuid2}`);
-      expect(service.getAllForAssets).toHaveBeenCalledWith(undefined, [uuid1, uuid2]);
+    it('should require at least one asset uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/tags/assets/queryTags').send({ assetIds: [] });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['assetIds'], message: 'Too small: expected array to have >=1 items' }]),
+      );
     });
   });
 
