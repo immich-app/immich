@@ -58,6 +58,27 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.main,
   );
 
+  Future<List<RemoteAsset>> getViewableRemoteAssetsByChecksum(List<String> userIds, String checksum) {
+    if (userIds.isEmpty) {
+      return Future.value(const []);
+    }
+
+    final currentUserId = _db.selectOnly(_db.authUserEntity)
+      ..addColumns([_db.authUserEntity.id])
+      ..limit(1);
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            row.checksum.equals(checksum) &
+            row.deletedAt.isNull() &
+            row.visibility.equalsValue(AssetVisibility.timeline) &
+            row.ownerId.isIn(userIds),
+      )
+      ..orderBy([(row) => OrderingTerm(expression: row.ownerId.isInQuery(currentUserId), mode: OrderingMode.desc)]);
+
+    return query.map((row) => row.toDto()).get();
+  }
+
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");

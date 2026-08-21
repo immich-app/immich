@@ -2,8 +2,10 @@
 
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
+import 'package:immich_mobile/platform/view_intent_api.g.dart' as pigeon;
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -56,6 +58,15 @@ void main() {
 
     expect(result, isNull);
     verify(() => hostApi.consumeViewIntent()).called(1);
+  });
+
+  test('consumeViewIntent preserves an unavailable view intent error', () async {
+    when(() => hostApi.consumeViewIntent()).thenThrow(PlatformException(code: pigeon.viewIntentUnavailableErrorCode));
+
+    await expectLater(
+      service.consumeViewIntent(),
+      throwsA(isA<PlatformException>().having((error) => error.code, 'code', pigeon.viewIntentUnavailableErrorCode)),
+    );
   });
 
   test('setManagedTempFilePath cleans previous managed temp file', () async {

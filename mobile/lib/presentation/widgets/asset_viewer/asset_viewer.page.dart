@@ -24,6 +24,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -283,13 +284,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
       unawaited(_onAssetChanged(index));
-    } else if (currentAsset is RemoteAsset && currentAsset.stackId != null && assetIndex == null) {
-      final timelineAsset = timelineService.getAssetSafe(index);
-      if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+    } else if (currentAsset != null &&
+        assetIndex == null &&
+        !_shouldIgnoreMissingAssetOnTimelineReload(currentAsset, timelineService)) {
+      if (currentAsset is RemoteAsset && currentAsset.stackId != null) {
+        final timelineAsset = timelineService.getAssetSafe(index);
+        if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+          unawaited(_onAssetChanged(index));
+        }
+      } else {
         unawaited(_onAssetChanged(index));
       }
-    } else if (currentAsset != null && assetIndex == null) {
-      unawaited(_onAssetChanged(index));
     }
 
     if (_totalAssets != totalAssets) {
@@ -297,6 +302,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         _totalAssets = totalAssets;
       });
     }
+  }
+
+  // A view intent can update currentAsset before the previous viewer route is
+  // disposed. Do not let the old viewer's timeline reload restore its previous asset.
+  bool _shouldIgnoreMissingAssetOnTimelineReload(BaseAsset currentAsset, TimelineService timelineService) {
+    if (timelineService.origin == TimelineOrigin.deepLink) {
+      return true;
+    }
+
+    final localAssetId = ref.read(activeViewIntentPayloadProvider)?.localAssetId;
+    return localAssetId != null && currentAsset.localId == localAssetId;
   }
 
   Future<void> _setSystemUIMode(bool controls, bool details) {

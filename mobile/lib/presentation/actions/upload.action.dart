@@ -6,6 +6,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/providers/asset_upload_coordinator.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -36,7 +37,7 @@ class UploadAction extends AssetActionBuilder {
   Future<void> _upload(BuildContext context, WidgetRef ref, List<LocalAsset> assets) async {
     try {
       if (!showProgress) {
-        await uploadAssets(context, ref, assets);
+        await uploadAssets(context, ref, assets, source: source);
         return;
       }
 
@@ -51,7 +52,7 @@ class UploadAction extends AssetActionBuilder {
         ).whenComplete(() => isDialogOpen = false),
       );
 
-      await uploadAssets(context, ref, assets);
+      await uploadAssets(context, ref, assets, source: source);
 
       if (isDialogOpen && context.mounted) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -63,9 +64,14 @@ class UploadAction extends AssetActionBuilder {
 }
 
 @visibleForTesting
-Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> assets) async {
+Future<void> uploadAssets(
+  BuildContext context,
+  WidgetRef ref,
+  List<LocalAsset> assets, {
+  required ActionSource source,
+}) async {
   final progress = ref.read(assetUploadProgressProvider.notifier);
-  final uploads = ref.read(foregroundUploadServiceProvider);
+  final uploads = ref.read(assetUploadCoordinatorProvider);
   final toastService = ref.read(toastServiceProvider);
   final errorMessage = context.t.scaffold_body_error_occurred;
 
@@ -79,8 +85,9 @@ Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> 
   }
 
   try {
-    await uploads.uploadManual(
-      assets,
+    await uploads.upload(
+      source: source,
+      assets: assets,
       cancelToken: cancelToken,
       callbacks: UploadCallbacks(
         onProgress: (id, _, bytes, total) => progress.setProgress(id, total > 0 ? bytes / total : 0.0),

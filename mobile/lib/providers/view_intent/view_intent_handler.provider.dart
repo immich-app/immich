@@ -11,7 +11,7 @@ abstract class ViewIntentHandler {
 
   Future<void> flushDeferredViewIntent();
 
-  Future<void> handle(ViewIntentPayload attachment);
+  Future<void> handle(ViewIntentPayload payload);
 }
 
 final viewIntentHandlerProvider = Provider<ViewIntentHandler>((ref) {

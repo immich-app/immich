@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -257,6 +259,38 @@ void main() {
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
+    });
+
+    testWidgets('clears selection when local cleanup finishes after the action context is disposed', (tester) async {
+      final asset = LocalAssetFactory.create();
+      final cleanupResult = Completer<int>();
+      when(() => cleanupService.deleteLocalAssets([asset.id])).thenAnswer((_) => cleanupResult.future);
+
+      await tester.pumpTestWidget(
+        context,
+        const ActionIconButton(action: DeleteAction(source: .timeline)),
+        overrides: context.selected({asset}),
+      );
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      unawaited(
+        navigator.push<void>(
+          MaterialPageRoute(
+            builder: (_) => const Scaffold(
+              body: ActionIconButton(action: DeleteAction(source: .timeline)),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(ImmichIconButton));
+      await tester.pump();
+      navigator.pop();
+      await tester.pumpAndSettle();
+      cleanupResult.complete(1);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ImmichIconButton), findsNothing, reason: 'successful cleanup clears the selection');
     });
   });
 

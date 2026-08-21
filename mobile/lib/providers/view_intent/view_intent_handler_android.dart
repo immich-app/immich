@@ -1,12 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
@@ -41,7 +44,19 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   Future<void> flushDeferredViewIntent() => _flushPending();
 
   Future<void> _checkForViewIntent() async {
-    final attachment = await _viewIntentService.consumeViewIntent();
+    final ViewIntentPayload? attachment;
+    try {
+      attachment = await _viewIntentService.consumeViewIntent();
+    } on PlatformException catch (error, stackTrace) {
+      if (error.code != viewIntentUnavailableErrorCode) {
+        rethrow;
+      }
+
+      _logger.warning('Incoming view intent is unavailable', error, stackTrace);
+      _ref.read(toastServiceProvider).error(StaticTranslations.instance.asset_not_found_on_device_android);
+      await _router.replaceAll([const TabShellRoute()]);
+      return;
+    }
     if (attachment != null) {
       await handle(attachment);
       return;
@@ -61,26 +76,59 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   }
 
   @override
-  Future<void> handle(ViewIntentPayload attachment) async {
+  Future<void> handle(ViewIntentPayload payload) async {
     _logger.info(
-      'handle attachment, mimeType:${attachment.mimeType}, localAssetId=${attachment.localAssetId}, path=${attachment.path}, isAuthenticated:${_ref.read(authProvider).isAuthenticated}',
+      'handle attachment, mimeType:${payload.mimeType}, localAssetId=${payload.localAssetId}, path=${payload.path}, isAuthenticated:${_ref.read(authProvider).isAuthenticated}',
     );
 
     if (!_ref.read(authProvider).isAuthenticated) {
-      _ref.read(viewIntentPendingProvider.notifier).defer(attachment);
+      _clearCurrentViewIntent();
+      _ref.read(viewIntentPendingProvider.notifier).defer(payload);
       return;
     }
 
-    final resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
+    _activateViewIntent(payload);
+
+    final ViewIntentResolution resolvedAsset;
+    try {
+      resolvedAsset = await _viewIntentAssetResolver.resolve(payload);
+    } catch (_) {
+      _ref.read(activeViewIntentPayloadProvider.notifier).clearIfMatch(payload);
+      rethrow;
+    }
+    if (!identical(_ref.read(activeViewIntentPayloadProvider), payload)) {
+      await resolvedAsset.timelineService.dispose();
+      return;
+    }
+
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     await _openAssetViewer(
-      resolvedAsset.asset,
-      resolvedAsset.timelineService,
+      asset: resolvedAsset.asset,
+      timelineService: resolvedAsset.timelineService,
+      attachment: payload,
       viewIntentFilePath: resolvedAsset.viewIntentFilePath,
     );
   }
 
-  Future<void> _openAssetViewer(BaseAsset asset, TimelineService timelineService, {String? viewIntentFilePath}) async {
+  void _activateViewIntent(ViewIntentPayload attachment) {
+    _ref.read(activeViewIntentPayloadProvider.notifier).setPayload(attachment);
+    _ref.read(viewIntentFilePathProvider.notifier).clear();
+    unawaited(_viewIntentService.cleanupManagedTempFile());
+    _router.popUntilRoot();
+  }
+
+  void _clearCurrentViewIntent() {
+    _ref.read(activeViewIntentPayloadProvider.notifier).clear();
+    _ref.read(viewIntentFilePathProvider.notifier).clear();
+    unawaited(_viewIntentService.cleanupManagedTempFile());
+  }
+
+  Future<void> _openAssetViewer({
+    required BaseAsset asset,
+    required TimelineService timelineService,
+    required ViewIntentPayload attachment,
+    String? viewIntentFilePath,
+  }) async {
     final notifier = _ref.read(assetViewerProvider.notifier);
     notifier.reset();
     if (asset.isVideo) {
@@ -96,9 +144,14 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       unawaited(_viewIntentService.cleanupManagedTempFile());
     }
 
-    await _router.replaceAll([
-      const TabShellRoute(),
-      AssetViewerRoute(key: UniqueKey(), initialIndex: 0, timelineService: timelineService),
-    ]);
+    try {
+      await _router.push(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
+    } finally {
+      _ref.read(activeViewIntentPayloadProvider.notifier).clearIfMatch(attachment);
+      if (viewIntentFilePath != null) {
+        _ref.read(viewIntentFilePathProvider.notifier).clearIfMatch(viewIntentFilePath);
+        await _viewIntentService.cleanupManagedTempFileIfCurrent(viewIntentFilePath);
+      }
+    }
   }
 }
