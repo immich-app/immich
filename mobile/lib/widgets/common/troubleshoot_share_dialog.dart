@@ -99,7 +99,7 @@ class _TroubleshootShareDialogState extends ConsumerState<TroubleshootShareDialo
             onChanged: _isSharing ? null : (value) => setState(() => _includeLogs = value!),
           ),
           CheckboxListTile(
-            title: Text(context.t.troubleshoot_share_app_config),
+            title: Text(context.t.app_config),
             value: _includeConfig,
             onChanged: _isSharing ? null : (value) => setState(() => _includeConfig = value!),
           ),
