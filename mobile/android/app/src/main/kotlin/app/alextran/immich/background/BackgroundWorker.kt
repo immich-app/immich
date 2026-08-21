@@ -184,13 +184,15 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     close()
   }
 
-  private fun handleHostResult(result: kotlin.Result<Unit>) {
+  private fun handleHostResult(result: kotlin.Result<Boolean>) {
     if (isComplete) {
       return
     }
 
     result.fold(
-      onSuccess = { _ -> complete(Result.success()) },
+      onSuccess = { didComplete ->
+        complete(if (didComplete) Result.success() else Result.retry())
+      },
       onFailure = { _ -> onStopped() }
     )
   }

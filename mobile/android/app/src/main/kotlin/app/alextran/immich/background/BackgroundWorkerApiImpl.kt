@@ -7,6 +7,7 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -95,7 +96,10 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun enqueueBackgroundWorker(ctx: Context) {
-      val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
+      val constraints = Constraints.Builder().apply {
+        setRequiredNetworkType(NetworkType.CONNECTED)
+        setRequiresBatteryNotLow(true)
+      }.build()
       val work = OneTimeWorkRequestBuilder<BackgroundWorker>()
         .setConstraints(constraints)
         .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)

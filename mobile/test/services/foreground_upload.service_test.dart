@@ -1,15 +1,18 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -195,6 +198,74 @@ void main() {
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
 
       expect(names, equals(['DJI_0001.jpg']));
+    });
+  });
+
+  group('uploadCandidates', () {
+    void stubAssetFiles(LocalAsset asset) {
+      final mockEntity = MockAssetEntity();
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => File('/path/${asset.name}'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => asset.name);
+    }
+
+    setUp(() {
+      when(() => mockStorageRepository.clearCache()).thenAnswer((_) async {});
+    });
+
+    test('fires onSuccess per uploaded candidate and onError for a failed one', () async {
+      final assets = [LocalAssetStub.image1, LocalAssetStub.image2];
+      when(() => mockBackupRepository.getCandidates('user1')).thenAnswer((_) async => assets);
+      when(() => mockConnectivityApi.getCapabilities()).thenAnswer((_) async => [NetworkCapability.unmetered]);
+      assets.forEach(stubAssetFiles);
+      var calls = 0;
+      when(
+        () => mockUploadRepository.uploadFile(
+          file: any(named: 'file'),
+          originalFileName: any(named: 'originalFileName'),
+          fields: any(named: 'fields'),
+          cancelToken: any(named: 'cancelToken'),
+          onProgress: any(named: 'onProgress'),
+          logContext: any(named: 'logContext'),
+        ),
+      ).thenAnswer(
+        (_) async => ++calls == 1
+            ? UploadResult.success(remoteAssetId: 'remote-1')
+            : UploadResult.error(errorMessage: 'no route to host'),
+      );
+
+      var uploaded = 0;
+      final errors = <String>[];
+      await sut.uploadCandidates(
+        'user1',
+        Completer<void>(),
+        callbacks: UploadCallbacks(onSuccess: (_, _) => uploaded++, onError: (_, message) => errors.add(message)),
+        useSequentialUpload: true,
+      );
+
+      expect(uploaded, 1);
+      expect(errors, ['no route to host']);
+    });
+
+    test('skips wifi-only candidates on a metered network', () async {
+      when(() => mockBackupRepository.getCandidates('user1')).thenAnswer((_) async => [LocalAssetStub.image1]);
+      when(() => mockConnectivityApi.getCapabilities()).thenAnswer((_) async => [NetworkCapability.cellular]);
+      final captured = captureFields();
+
+      var uploaded = 0;
+      var skipped = 0;
+      await sut.uploadCandidates(
+        'user1',
+        Completer<void>(),
+        callbacks: UploadCallbacks(onSuccess: (_, _) => uploaded++, onSkipped: (_) => skipped++),
+        useSequentialUpload: true,
+      );
+
+      expect(uploaded, 0);
+      expect(skipped, 1);
+      expect(captured, isEmpty);
     });
   });
 }

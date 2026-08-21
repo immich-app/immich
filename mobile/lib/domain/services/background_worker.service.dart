@@ -139,7 +139,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   @override
-  Future<void> onAndroidUpload(int? maxMinutes) async {
+  Future<bool> onAndroidUpload(int? maxMinutes) async {
     final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
     await _optimizeDB();
@@ -197,7 +197,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _backgroundLoop({
+  Future<bool> _backgroundLoop({
     required Duration hashTimeout,
     required Duration? backupTimeout,
     required String debugLabel,
@@ -209,7 +209,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     try {
       if (!await _syncAssets(hashTimeout: hashTimeout)) {
         _logger.warning("Remote sync did not complete successfully, skipping backup");
-        return;
+        return false;
       }
 
       final backupFuture = _handleBackup();
@@ -223,12 +223,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         });
       }
       try {
-        await backupFuture;
+        return await backupFuture;
       } finally {
         cancelTimer?.cancel();
       }
     } catch (error, stack) {
       _logger.severe("Failed to complete $debugLabel", error, stack);
+      return false;
     } finally {
       sw.stop();
       _logger.info("$debugLabel completed in ${sw.elapsed.inSeconds}s");
@@ -289,7 +290,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _handleBackup() async {
+  Future<bool> _handleBackup() async {
+    var didComplete = true;
     await runZonedGuarded(
       () async {
         if (_isCleanedUp) {
@@ -311,14 +313,25 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
         }
 
-        return _ref
-            ?.read(foregroundUploadServiceProvider)
-            .uploadCandidates(currentUser.id, _cancellationToken, useSequentialUpload: true);
+        final uploadService = _ref?.read(foregroundUploadServiceProvider);
+        final candidates = await uploadService?.getBackupCandidates(currentUser.id) ?? const [];
+        var uploaded = 0;
+        var skipped = 0;
+        await uploadService?.uploadCandidates(
+          currentUser.id,
+          _cancellationToken,
+          callbacks: UploadCallbacks(onSuccess: (_, _) => uploaded++, onSkipped: (_) => skipped++),
+          useSequentialUpload: true,
+        );
+        // Retry only when nothing moved; skipped candidates wait for the periodic worker instead
+        didComplete = uploaded > 0 || uploaded + skipped >= candidates.length;
       },
       (error, stack) {
+        didComplete = false;
         dPrint(() => "Error in backup zone $error, $stack");
       },
     );
+    return didComplete;
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {
