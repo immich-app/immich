@@ -34,7 +34,7 @@ export class AssetFilesController {
   @Authenticated({ permission: Permission.AssetFileRead })
   @Endpoint({
     summary: 'Retrieve an asset file',
-    description: 'Returns a metadata about a specific asset file.',
+    description: 'Returns metadata about a specific asset file.',
     history: new HistoryBuilder().added('v3.2.0').alpha('v3.2.0'),
   })
   getAssetFile(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetFileResponseDto> {
