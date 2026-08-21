@@ -289,18 +289,13 @@ class AssetMediaRepository {
     return null;
   }
 
-  /// Renames downloaded files to their display name before sharing, since
-  /// receiving apps only see the on-disk filename. Runs once over the whole
-  /// batch: gallery originals cannot be renamed, so when names collide the
-  /// downloads give way and get an ` (n)` suffix instead.
+  /// Renames downloaded files to their display name before sharing, since receivers
+  /// only see the on-disk filename. Gallery originals cannot be renamed, so a
+  /// colliding download takes the first free ` (n)` suffix instead.
   Future<void> _resolveShareFiles(List<_ShareFile> files) async {
     final usedNames = {
       for (final shareFile in files)
         if (shareFile.tempEntity is! Directory) p.basename(shareFile.file.path),
-    };
-    final reservedNames = {
-      for (final shareFile in files)
-        if (shareFile.tempEntity is Directory) shareFile.displayName,
     };
     for (var index = 0; index < files.length; index++) {
       final shareFile = files[index];
@@ -310,16 +305,13 @@ class AssetMediaRepository {
 
       var occurrence = 0;
       var displayName = shareFile.displayName;
-      while (usedNames.contains(displayName) ||
-          (displayName != shareFile.displayName && reservedNames.contains(displayName))) {
+      while (usedNames.contains(displayName)) {
         displayName = _ordinalShareFilename(shareFile.displayName, ++occurrence);
       }
 
       usedNames.add(displayName);
-      if (p.basename(shareFile.file.path) != displayName) {
-        final file = await shareFile.file.rename(p.join(shareFile.file.parent.path, displayName));
-        files[index] = (file: file, tempEntity: shareFile.tempEntity, displayName: displayName);
-      }
+      final file = await shareFile.file.rename(p.join(shareFile.file.parent.path, displayName));
+      files[index] = (file: file, tempEntity: shareFile.tempEntity, displayName: displayName);
     }
   }
 
