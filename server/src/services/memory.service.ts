@@ -6,11 +6,15 @@ import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
+import { YearMonthDay } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { findOrFail } from 'src/utils/misc';
+import { findOrFail, shuffle } from 'src/utils/misc';
 
 const DAYS = 3;
+const DAYS_UNTIL_BIRTHDAY = 3;
+const BIRTHDAY_MEMORY_ASSETS_PER_YEAR = 5;
+const MEMORY_ASSET_LIMIT = 25;
 
 @Injectable()
 export class MemoryService extends BaseService {
@@ -32,7 +36,14 @@ export class MemoryService extends BaseService {
 
         this.logger.log(`Creating memories for ${target.toISO()}`);
         try {
-          await Promise.all(users.map((owner) => this.createOnThisDayMemories(owner.id, target)));
+          await Promise.all(
+            users.map((owner) =>
+              Promise.all([
+                this.createOnThisDayMemories(owner.id, target),
+                this.createBirthdayMemories(owner.id, target),
+              ]),
+            ),
+          );
         } catch (error) {
           this.logger.error(`Failed to create memories for ${target.toISO()}: ${error}`);
         }
@@ -66,6 +77,68 @@ export class MemoryService extends BaseService {
     );
   }
 
+  private async createBirthdayMemories(ownerId: string, target: DateTime) {
+    const people = await this.personRepository.getPeopleWithBirthday(ownerId, target);
+    if (people.length === 0) {
+      return;
+    }
+
+    const showAt = target.minus({ days: DAYS_UNTIL_BIRTHDAY }).startOf('day').toISO();
+    const hideAt = target.endOf('day').toISO();
+
+    await Promise.all(
+      people.map(async ({ personGroupId, name: personName, birthDate }) => {
+        const assets = await this.getBirthdayAssets(ownerId, personGroupId, birthDate, target);
+        if (assets.length === 0) {
+          return;
+        }
+
+        await this.memoryRepository.create(
+          {
+            ownerId,
+            type: MemoryType.Birthday,
+            data: { personGroupId, personName, year: birthDate.year },
+            memoryAt: target.startOf('day').toISO()!,
+            showAt,
+            hideAt,
+          },
+          new Set(assets.map(({ id }) => id)),
+        );
+      }),
+    );
+  }
+
+  private async getBirthdayAssets(
+    ownerId: string,
+    personGroupId: string,
+    birthDate: YearMonthDay,
+    until: YearMonthDay,
+  ) {
+    const years = await this.assetRepository.getPersonBirthdayYears(ownerId, personGroupId, birthDate, until);
+    if (years.length === 0) {
+      return [];
+    }
+
+    let birthdayYears = years;
+    let assetsPerYear = Math.min(BIRTHDAY_MEMORY_ASSETS_PER_YEAR, Math.floor(MEMORY_ASSET_LIMIT / years.length));
+
+    // Select random birthdays if there are more than 25 birthdays with assets
+    if (years.length > MEMORY_ASSET_LIMIT) {
+      birthdayYears = shuffle(years)
+        .slice(0, MEMORY_ASSET_LIMIT)
+        .sort((a, b) => b - a);
+      assetsPerYear = 1;
+    }
+
+    const assets = await Promise.all(
+      birthdayYears.map((year) =>
+        this.assetRepository.getPersonAssetsByDate(ownerId, personGroupId, { ...birthDate, year }, assetsPerYear),
+      ),
+    );
+
+    return assets.flat();
+  }
+
   @OnJob({ name: JobName.MemoryCleanup, queue: QueueName.BackgroundTask })
   async onMemoriesCleanup() {
     await this.memoryRepository.cleanup();
@@ -89,19 +162,21 @@ export class MemoryService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: MemoryCreateDto) {
-    // TODO validate type/data combination
-
     const assetIds = dto.assetIds || [];
     const allowedAssetIds = await this.checkAccess({
       auth,
       permission: Permission.AssetShare,
       ids: assetIds,
     });
+    const data =
+      dto.type === MemoryType.Birthday
+        ? { year: dto.data.year, personGroupId: dto.data.personGroupId, personName: dto.data.personName }
+        : { year: dto.data.year };
     const memory = await this.memoryRepository.create(
       {
         ownerId: auth.user.id,
         type: dto.type,
-        data: dto.data,
+        data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
         showAt: dto.showAt,

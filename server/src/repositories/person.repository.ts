@@ -5,12 +5,14 @@ import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum';
+import { YearMonthDay } from 'src/repositories/asset.repository';
 import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonGroupTable } from 'src/schema/tables/person-group.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database';
+import { isLeapDayObserved } from 'src/utils/date';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
@@ -202,6 +204,42 @@ export class PersonRepository {
       .$if(!!options.faceAssetId, (qb) => qb.where('person.faceAssetId', '=', options.faceAssetId!))
       .$if(options.isHidden !== undefined, (qb) => qb.where('person.isHidden', '=', options.isHidden!))
       .stream();
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, { year: 2025, month: 1, day: 1 }] },
+    { name: 'leap day fallback', params: [DummyValue.UUID, { year: 2025, month: 2, day: 28 }] },
+  )
+  async getPeopleWithBirthday(ownerId: string, { year, month, day }: YearMonthDay) {
+    const isLeapDayBirthday = isLeapDayObserved({ year, month, day });
+
+    const people = await this.db
+      .selectFrom('person')
+      .select(['person.personGroupId', 'person.name'])
+      .select(sql<number>`date_part('year', person."birthDate")::int`.as('birthYear'))
+      .select(sql<number>`date_part('month', person."birthDate")::int`.as('birthMonth'))
+      .select(sql<number>`date_part('day', person."birthDate")::int`.as('birthDay'))
+      .where('person.ownerId', '=', ownerId)
+      .where('person.isHidden', '=', false)
+      .where('person.name', '!=', '')
+      .where('person.birthDate', 'is not', null)
+      .where((eb) => {
+        const bornOn = (month: number, day: number) =>
+          eb.and([
+            eb(sql`date_part('month', person."birthDate")::int`, '=', month),
+            eb(sql`date_part('day', person."birthDate")::int`, '=', day),
+          ]);
+
+        return isLeapDayBirthday ? eb.or([bornOn(month, day), bornOn(2, 29)]) : bornOn(month, day);
+      })
+      .where(sql`date_part('year', person."birthDate")::int`, '<', year)
+      .execute();
+
+    return people.map(({ personGroupId, name, birthYear, birthMonth, birthDay }) => ({
+      personGroupId,
+      name,
+      birthDate: { year: birthYear, month: birthMonth, day: birthDay },
+    }));
   }
 
   @GenerateSql()

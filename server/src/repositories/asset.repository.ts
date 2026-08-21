@@ -112,6 +112,9 @@ export interface YearMonthDay {
   year: number;
 }
 
+const asMakeDateFn = (eb: ExpressionBuilder<DB, 'asset'>, { year, month, day }: YearMonthDay) =>
+  eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]);
+
 interface AssetExploreFieldOptions {
   maxFields: number;
   minAssetsPerField: number;
@@ -504,6 +507,64 @@ export class AssetRepository {
       .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
+      .execute();
+  }
+
+  private personAssets(ownerId: string, personGroupId: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.ownerId', '=', ownerId)
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_face')
+            .whereRef('asset_face.assetId', '=', 'asset.id')
+            .where('asset_face.personGroupId', '=', personGroupId)
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true),
+        ),
+      )
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      );
+  }
+
+  @GenerateSql({
+    params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, { year: 2025, month: 1, day: 1 }],
+  })
+  async getPersonBirthdayYears(
+    ownerId: string,
+    personGroupId: string,
+    birthDate: YearMonthDay,
+    until: YearMonthDay,
+  ): Promise<number[]> {
+    const rows = await this.personAssets(ownerId, personGroupId)
+      .where(sql`date_part('month', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.month)
+      .where(sql`date_part('day', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.day)
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '>=', asMakeDateFn(eb, birthDate)))
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '<', asMakeDateFn(eb, until)))
+      .select(sql<number>`date_part('year', (asset."localDateTime" at time zone 'UTC')::date)::int`.as('year'))
+      .distinct()
+      .orderBy(sql`year`, 'desc')
+      .execute();
+
+    return rows.map(({ year }) => year);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, 5] })
+  getPersonAssetsByDate(ownerId: string, personGroupId: string, date: YearMonthDay, limit: number) {
+    return this.personAssets(ownerId, personGroupId)
+      .select(['asset.id'])
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', asMakeDateFn(eb, date)))
+      .orderBy('asset.localDateTime', 'desc')
+      .limit(limit)
       .execute();
   }
 

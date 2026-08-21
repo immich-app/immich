@@ -345,3 +345,16 @@ export const globToPostgresRegex = (glob: string) => picomatch.makeRe(glob).sour
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
+
+export const shuffle = <T>(items: T[]): T[] => {
+  const result = [...items];
+
+  for (let index = result.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    const swap = result[index];
+    result[index] = result[randomIndex];
+    result[randomIndex] = swap;
+  }
+
+  return result;
+};

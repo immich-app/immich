@@ -27,6 +27,7 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
             ),
           ])
           ..where(_db.memoryEntity.ownerId.equals(ownerId))
+          ..where(_db.memoryEntity.type.equalsValue(MemoryTypeEnum.onThisDay))
           ..where(_db.memoryEntity.deletedAt.isNull())
           ..where(_db.memoryEntity.showAt.isNull() | _db.memoryEntity.showAt.isSmallerOrEqualValue(localUtc))
           ..where(_db.memoryEntity.hideAt.isNull() | _db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc))

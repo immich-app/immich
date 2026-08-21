@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { MemoryType } from 'src/enum';
 import { MemoryService } from 'src/services/memory.service';
 import { OnThisDayData } from 'src/types';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -91,7 +92,7 @@ describe(MemoryService.name, () => {
 
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
-          type: memory.type,
+          type: MemoryType.OnThisDay,
           data: memory.data as OnThisDayData,
           memoryAt: memory.memoryAt,
           isSaved: memory.isSaved,
@@ -121,7 +122,7 @@ describe(MemoryService.name, () => {
 
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
-          type: memory.type,
+          type: MemoryType.OnThisDay,
           data: memory.data as OnThisDayData,
           assetIds: memory.assets.map((asset) => asset.id),
           memoryAt: memory.memoryAt,
@@ -141,7 +142,7 @@ describe(MemoryService.name, () => {
 
       await expect(
         sut.create(factory.auth(), {
-          type: memory.type,
+          type: MemoryType.OnThisDay,
           data: memory.data as OnThisDayData,
           memoryAt: memory.memoryAt,
         }),

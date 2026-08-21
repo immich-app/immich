@@ -165,6 +165,82 @@ group by
 order by
   ("localDateTime" at time zone 'UTC')::date desc
 
+-- AssetRepository.getPersonBirthdayYears
+select distinct
+  date_part(
+    'year',
+    (asset."localDateTime" at time zone 'UTC')::date
+  )::int as "year"
+from
+  "asset"
+where
+  "asset"."ownerId" = $1
+  and "asset"."visibility" = $2
+  and "asset"."deletedAt" is null
+  and exists (
+    select
+    from
+      "asset_face"
+    where
+      "asset_face"."assetId" = "asset"."id"
+      and "asset_face"."personGroupId" = $3
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+  )
+  and exists (
+    select
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $4
+  )
+  and date_part(
+    'month',
+    (asset."localDateTime" at time zone 'UTC')::date
+  )::int = $5
+  and date_part(
+    'day',
+    (asset."localDateTime" at time zone 'UTC')::date
+  )::int = $6
+  and (asset."localDateTime" at time zone 'UTC')::date >= make_date($7::int, $8::int, $9::int)
+  and (asset."localDateTime" at time zone 'UTC')::date < make_date($10::int, $11::int, $12::int)
+order by
+  year desc
+
+-- AssetRepository.getPersonAssetsByDate
+select
+  "asset"."id"
+from
+  "asset"
+where
+  "asset"."ownerId" = $1
+  and "asset"."visibility" = $2
+  and "asset"."deletedAt" is null
+  and exists (
+    select
+    from
+      "asset_face"
+    where
+      "asset_face"."assetId" = "asset"."id"
+      and "asset_face"."personGroupId" = $3
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+  )
+  and exists (
+    select
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $4
+  )
+  and (asset."localDateTime" at time zone 'UTC')::date = make_date($5::int, $6::int, $7::int)
+order by
+  "asset"."localDateTime" desc
+limit
+  $8
+
 -- AssetRepository.getByIds
 select
   "asset".*

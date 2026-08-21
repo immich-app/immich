@@ -9,6 +9,7 @@ part 'memory.model.freezed.dart';
 enum MemoryTypeEnum {
   // do not change this order!
   onThisDay,
+  birthday,
 }
 
 @Freezed(fromJson: false, toJson: false)

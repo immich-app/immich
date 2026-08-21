@@ -1,4 +1,4 @@
-import { asDateString, asDateTimeString } from 'src/utils/date';
+import { asDateString, asDateTimeString, isLeapDayObserved, isLeapYear } from 'src/utils/date';
 import { describe, expect, it } from 'vitest';
 
 describe('asDateString', () => {
@@ -17,6 +17,41 @@ describe('asDateString', () => {
 
   it('should correctly pad years with a leading 0', () => {
     expect(asDateString(new Date('280-12-12'))).toBe('0280-12-12');
+  });
+});
+
+describe('isLeapYear', () => {
+  it('should return true for years divisible by 4 but not 100', () => {
+    expect(isLeapYear(2024)).toBe(true);
+    expect(isLeapYear(1996)).toBe(true);
+  });
+
+  it('should return false for years not divisible by 4', () => {
+    expect(isLeapYear(2025)).toBe(false);
+  });
+
+  it('should return false for years divisible by 100 but not 400', () => {
+    expect(isLeapYear(1900)).toBe(false);
+    expect(isLeapYear(2100)).toBe(false);
+  });
+
+  it('should return true for years divisible by 400', () => {
+    expect(isLeapYear(2000)).toBe(true);
+  });
+});
+
+describe('isLeapDayObserved', () => {
+  it('should return true on february 28th in a non-leap year', () => {
+    expect(isLeapDayObserved({ year: 2025, month: 2, day: 28 })).toBe(true);
+  });
+
+  it('should return false on february 28th in a leap year', () => {
+    expect(isLeapDayObserved({ year: 2024, month: 2, day: 28 })).toBe(false);
+  });
+
+  it('should return false on other days', () => {
+    expect(isLeapDayObserved({ year: 2025, month: 2, day: 27 })).toBe(false);
+    expect(isLeapDayObserved({ year: 2025, month: 3, day: 28 })).toBe(false);
   });
 });
 
