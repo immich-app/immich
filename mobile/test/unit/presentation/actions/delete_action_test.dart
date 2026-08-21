@@ -4,20 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_asset_action_coordinator.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -26,20 +19,6 @@ import '../../../service.mocks.dart';
 import '../../factories/local_asset_factory.dart';
 import '../../factories/remote_asset_factory.dart';
 import '../presentation_context.dart';
-
-class _MockViewIntentAssetActionCoordinator extends Mock implements ViewIntentAssetActionCoordinator {}
-
-class _ViewerNotifier extends AssetViewerStateNotifier {
-  _ViewerNotifier(this.asset);
-
-  final BaseAsset asset;
-
-  @override
-  AssetViewerState build() {
-    super.build();
-    return AssetViewerState(currentAsset: asset);
-  }
-}
 
 void main() {
   late PresentationContext context;
@@ -65,27 +44,6 @@ void main() {
         deletedAt: deletedAt,
         localId: localId,
       );
-
-  TimelineService viewIntentTimeline(BaseAsset asset, TimelineOrigin origin) => TimelineService((
-    assetSource: (_, __) async => [asset],
-    bucketSource: () => Stream.value(const [Bucket(assetCount: 1)]),
-    origin: origin,
-  ));
-
-  Future<void> pumpViewerDelete(WidgetTester tester, BaseAsset asset, TimelineService timeline, String filePath) async {
-    await tester.pumpTestWidget(
-      context,
-      const ActionIconButton(action: DeleteAction(source: .viewer)),
-      overrides: [
-        timelineServiceProvider.overrideWithValue(timeline),
-        assetViewerProvider.overrideWith(() => _ViewerNotifier(asset)),
-      ],
-    );
-
-    final scope = ProviderScope.containerOf(tester.element(find.byType(ActionIconButton)), listen: false);
-    scope.read(viewIntentFilePathProvider.notifier).setPath(filePath);
-    await tester.pumpAndSettle();
-  }
 
   Future<void> pumpDelete(WidgetTester tester, Set<BaseAsset> selection, {bool trashEnabled = true}) async {
     if (!trashEnabled) {
@@ -301,69 +259,6 @@ void main() {
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
-    });
-
-    group('view intent', () {
-      testWidgets('delegates a successful delete to the view intent coordinator', (tester) async {
-        final asset = owned();
-        final timeline = viewIntentTimeline(asset, TimelineOrigin.deepLink);
-        final coordinator = _MockViewIntentAssetActionCoordinator();
-        addTearDown(timeline.dispose);
-        when(() => coordinator.canDelete(ActionSource.viewer)).thenReturn(true);
-        when(
-          () => coordinator.afterDelete(source: ActionSource.viewer, remoteAssetIds: [asset.id], movedToTrash: true),
-        ).thenAnswer((_) async {});
-
-        await tester.pumpTestWidget(
-          context,
-          const ActionIconButton(action: DeleteAction(source: .viewer)),
-          overrides: [
-            timelineServiceProvider.overrideWithValue(timeline),
-            assetViewerProvider.overrideWith(() => _ViewerNotifier(asset)),
-            viewIntentAssetActionCoordinatorProvider.overrideWithValue(coordinator),
-          ],
-        );
-        await tester.tap(find.byType(ImmichIconButton));
-        await tester.pumpAndSettle();
-
-        verify(
-          () => coordinator.afterDelete(source: ActionSource.viewer, remoteAssetIds: [asset.id], movedToTrash: true),
-        ).called(1);
-      });
-
-      testWidgets('clears timeline selection before the post-delete transition completes', (tester) async {
-        final asset = owned();
-        final coordinator = _MockViewIntentAssetActionCoordinator();
-        final transition = Completer<void>();
-        when(() => coordinator.canDelete(ActionSource.timeline)).thenReturn(true);
-        when(
-          () => coordinator.afterDelete(source: ActionSource.timeline, remoteAssetIds: [asset.id], movedToTrash: true),
-        ).thenAnswer((_) => transition.future);
-
-        await tester.pumpTestAction(
-          context,
-          const DeleteAction(source: .timeline),
-          overrides: [
-            ...context.selected({asset}),
-            viewIntentAssetActionCoordinatorProvider.overrideWithValue(coordinator),
-          ],
-        );
-        await tester.pump();
-
-        expect(find.byType(ImmichIconButton), findsNothing, reason: 'successful deletion clears the selection');
-        transition.complete();
-        await tester.pumpAndSettle();
-      });
-
-      testWidgets('is hidden for a synthetic file-backed asset', (tester) async {
-        final asset = LocalAssetFactory.create(id: '-42');
-        final timeline = viewIntentTimeline(asset, TimelineOrigin.deepLink);
-        addTearDown(timeline.dispose);
-
-        await pumpViewerDelete(tester, asset, timeline, '/tmp/materialized.jpg');
-
-        expect(find.byType(ImmichIconButton), findsNothing);
-      });
     });
 
     testWidgets('clears selection when local cleanup finishes after the action context is disposed', (tester) async {

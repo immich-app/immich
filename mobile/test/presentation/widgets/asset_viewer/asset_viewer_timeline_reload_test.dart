@@ -39,7 +39,7 @@ class _UploadedAssetViewerNotifier extends AssetViewerStateNotifier {
 
 TimelineService _viewIntentTimeline() {
   return TimelineService((
-    assetSource: (_, __) async => [LocalAssetStub.image1],
+    assetSource: (_, _) async => [LocalAssetStub.image1],
     bucketSource: () => Stream.value(const [Bucket(assetCount: 1)]),
     origin: TimelineOrigin.deepLink,
   ));

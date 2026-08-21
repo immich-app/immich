@@ -15,16 +15,9 @@ import 'package:logging/logging.dart';
 class ViewIntentResolution {
   final BaseAsset asset;
   final TimelineService timelineService;
-  final bool isTrashScoped;
-
   final String? viewIntentFilePath;
 
-  const ViewIntentResolution({
-    required this.asset,
-    required this.timelineService,
-    this.isTrashScoped = false,
-    this.viewIntentFilePath,
-  });
+  const ViewIntentResolution({required this.asset, required this.timelineService, this.viewIntentFilePath});
 }
 
 final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
@@ -68,11 +61,7 @@ class ViewIntentAssetResolver {
         checksum: resolvedLocal.checksum,
       );
       if (remoteAsset != null) {
-        return ViewIntentResolution(
-          asset: remoteAsset,
-          timelineService: _timelineFor(remoteAsset),
-          isTrashScoped: remoteAsset.isTrashed,
-        );
+        return ViewIntentResolution(asset: remoteAsset, timelineService: _timelineFor(remoteAsset));
       }
     }
 
@@ -144,7 +133,7 @@ class ViewIntentAssetResolver {
       }
     }
 
-    if (remoteAsset == null) {
+    if (remoteAsset == null || remoteAsset.isTrashed) {
       return null;
     }
     final asset = remoteAsset.copyWith(localId: localAssetId);

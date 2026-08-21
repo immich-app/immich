@@ -5,7 +5,6 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_asset_action_coordinator.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
 final _stateProvider = Provider.family.autoDispose<List<String>?, ActionSource>((ref, source) {
@@ -36,13 +35,11 @@ class RestoreAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
-    final viewIntentCoordinator = ref.read(viewIntentAssetActionCoordinatorProvider);
 
     try {
       await assetService.restoreTrash(assetIds);
       toastService.success(message, toast: .new(onUndo: () => assetService.trash(assetIds)));
       clearSelection();
-      await viewIntentCoordinator.afterRestore(source: source, remoteAssetIds: assetIds);
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to restore assets");
     }

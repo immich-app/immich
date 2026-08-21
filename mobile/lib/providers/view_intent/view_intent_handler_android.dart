@@ -8,14 +8,11 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_trash_scope.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
@@ -104,7 +101,6 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       return;
     }
 
-    _ref.read(viewIntentTrashScopeProvider.notifier).set(resolvedAsset.isTrashScoped);
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     await _openAssetViewer(
       asset: resolvedAsset.asset,
@@ -112,38 +108,6 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       attachment: payload,
       viewIntentFilePath: resolvedAsset.viewIntentFilePath,
     );
-  }
-
-  @override
-  Future<bool> reopenRemoteAsset(String remoteAssetId) async {
-    final attachment = _ref.read(activeViewIntentPayloadProvider);
-    if (attachment == null) {
-      return false;
-    }
-
-    final asset = await _ref.read(assetServiceProvider).getRemoteAsset(remoteAssetId);
-    if (asset == null || !identical(_ref.read(activeViewIntentPayloadProvider), attachment)) {
-      return false;
-    }
-
-    final reopenedAttachment = ViewIntentPayload(
-      path: attachment.path,
-      mimeType: attachment.mimeType,
-      localAssetId: attachment.localAssetId,
-    );
-    _activateViewIntent(reopenedAttachment);
-
-    _ref.read(viewIntentTrashScopeProvider.notifier).set(asset.isTrashed);
-    final timelineService = _ref.read(timelineFactoryProvider).fromAssets([asset], TimelineOrigin.deepLink);
-    unawaited(
-      _openAssetViewer(asset: asset, timelineService: timelineService, attachment: reopenedAttachment).catchError((
-        Object error,
-        StackTrace stackTrace,
-      ) {
-        _logger.severe('Failed to reopen remote view intent asset', error, stackTrace);
-      }),
-    );
-    return true;
   }
 
   void _activateViewIntent(ViewIntentPayload attachment) {
@@ -156,7 +120,6 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   void _clearCurrentViewIntent() {
     _ref.read(activeViewIntentPayloadProvider.notifier).clear();
     _ref.read(viewIntentFilePathProvider.notifier).clear();
-    _ref.read(viewIntentTrashScopeProvider.notifier).clear();
     unawaited(_viewIntentService.cleanupManagedTempFile());
   }
 

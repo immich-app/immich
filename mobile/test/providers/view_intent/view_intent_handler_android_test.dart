@@ -21,7 +21,6 @@ import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_p
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_trash_scope.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
@@ -58,7 +57,7 @@ class FakeTimelineService extends Fake implements TimelineService {}
 
 class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
-  Object? consumeError;
+  PlatformException? consumeError;
   int cleanupStaleTempFilesCalls = 0;
   int cleanupManagedTempFileCalls = 0;
   final List<String> managedTempPaths = [];
@@ -68,7 +67,7 @@ class TestViewIntentService extends ViewIntentService {
 
   @override
   Future<ViewIntentPayload?> consumeViewIntent() async {
-    if (consumeError case final Object error) {
+    if (consumeError case final PlatformException error) {
       throw error;
     }
     return consumedAttachment;
@@ -359,66 +358,6 @@ void main() {
     expect(container.read(activeViewIntentPayloadProvider), isNull);
     expect(container.read(viewIntentFilePathProvider), isNull);
     expect(viewIntentService.cleanedManagedTempPaths, [path]);
-  });
-
-  test('reopenRemoteAsset opens the restored asset in a regular deep-link timeline', () async {
-    final restoredAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
-    final restoredTimeline = await _createReadyTimelineService([restoredAsset], TimelineOrigin.deepLink);
-    addTearDown(restoredTimeline.dispose);
-    container.read(activeViewIntentPayloadProvider.notifier).setPayload(payload);
-
-    when(() => assetService.getRemoteAsset(restoredAsset.id)).thenAnswer((_) async => restoredAsset);
-    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenReturn(restoredTimeline);
-
-    final reopened = await handler.reopenRemoteAsset(restoredAsset.id);
-    await Future<void>.delayed(Duration.zero);
-
-    expect(reopened, isTrue);
-    expect(container.read(assetViewerProvider).currentAsset, restoredAsset);
-    expect(container.read(viewIntentTrashScopeProvider), isFalse);
-    verify(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).called(1);
-    verify(() => router.popUntilRoot()).called(1);
-    final route = verify(() => router.push<Object?>(captureAny())).captured.single as PageRouteInfo<dynamic>;
-    expect(route.routeName, AssetViewerRoute.name);
-  });
-
-  test('reopenRemoteAsset opens a trashed asset in a trash-scoped deep-link timeline', () async {
-    final trashedAsset = _remoteAsset(id: 'remote-trashed', localId: 'local-1', deletedAt: DateTime(2026, 8, 4));
-    final trashTimeline = await _createReadyTimelineService([trashedAsset], TimelineOrigin.deepLink);
-    addTearDown(trashTimeline.dispose);
-    container.read(activeViewIntentPayloadProvider.notifier).setPayload(payload);
-
-    when(() => assetService.getRemoteAsset(trashedAsset.id)).thenAnswer((_) async => trashedAsset);
-    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenReturn(trashTimeline);
-
-    final reopened = await handler.reopenRemoteAsset(trashedAsset.id);
-    await Future<void>.delayed(Duration.zero);
-
-    expect(reopened, isTrue);
-    expect(container.read(assetViewerProvider).currentAsset, trashedAsset);
-    expect(trashTimeline.origin, TimelineOrigin.deepLink);
-    expect(container.read(viewIntentTrashScopeProvider), isTrue);
-    verify(() => router.popUntilRoot()).called(1);
-    final route = verify(() => router.push<Object?>(captureAny())).captured.single as PageRouteInfo<dynamic>;
-    expect(route.routeName, AssetViewerRoute.name);
-  });
-
-  test('reopenRemoteAsset does not replace a newer view intent', () async {
-    final restoredAsset = _remoteAsset(id: 'remote-delayed', localId: 'local-1');
-    final lookup = Completer<RemoteAsset?>();
-    final newerPayload = ViewIntentPayload(path: '/tmp/newer.jpg', mimeType: 'image/jpeg', localAssetId: 'local-2');
-    container.read(activeViewIntentPayloadProvider.notifier).setPayload(payload);
-    when(() => assetService.getRemoteAsset(restoredAsset.id)).thenAnswer((_) => lookup.future);
-
-    final reopening = handler.reopenRemoteAsset(restoredAsset.id);
-    await pumpEventQueue();
-    container.read(activeViewIntentPayloadProvider.notifier).setPayload(newerPayload);
-    lookup.complete(restoredAsset);
-
-    expect(await reopening, isFalse);
-    verifyNever(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink));
-    verifyNever(() => router.popUntilRoot());
-    verifyNever(() => router.push<Object?>(any()));
   });
 }
 

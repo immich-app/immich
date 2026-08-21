@@ -10,7 +10,6 @@ import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_asset_action_coordinator.provider.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
@@ -50,11 +49,6 @@ class DeleteAction extends AssetActionBuilder {
 
   @override
   ActionItem? create(BuildContext context, WidgetRef ref) {
-    final viewIntentCoordinator = ref.watch(viewIntentAssetActionCoordinatorProvider);
-    if (!viewIntentCoordinator.canDelete(source)) {
-      return null;
-    }
-
     final trash = ref.watch(_stateProvider(source).select((state) => state?.trash));
     if (trash == null) {
       return null;
@@ -77,7 +71,6 @@ class DeleteAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
-    final viewIntentCoordinator = ref.read(viewIntentAssetActionCoordinatorProvider);
 
     try {
       final String? message;
@@ -98,7 +91,6 @@ class DeleteAction extends AssetActionBuilder {
 
       toastService.success(message, toast: undo);
       clearSelection();
-      await viewIntentCoordinator.afterDelete(source: source, remoteAssetIds: remoteIds, movedToTrash: trash);
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to delete assets");
     }
