@@ -6,7 +6,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  memoryManager.filters = { size: 12, order: MemorySearchOrder.Desc };
+  memoryManager.setFilters({ size: 12, order: MemorySearchOrder.Desc });
 
   const [explore, people] = await Promise.all([
     getExploreData(),

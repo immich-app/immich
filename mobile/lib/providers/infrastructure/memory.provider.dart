@@ -27,6 +27,6 @@ final driftAllMemoriesProvider = FutureProvider.autoDispose<List<DriftMemory>>((
     return const [];
   }
 
-  final service = ref.watch(driftMemoryServiceProvider);
+  final service = DriftMemoryService(ref.watch(driftProvider).memoryRepository);
   return service.getAllMemories(userId);
 });

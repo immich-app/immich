@@ -8067,6 +8067,17 @@
             }
           },
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Memory ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "isSaved",
             "required": false,
             "in": "query",
@@ -8080,6 +8091,15 @@
             "required": false,
             "in": "query",
             "description": "Include trashed memories",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isUpcoming",
+            "required": false,
+            "in": "query",
+            "description": "Filter by memories that have not been shown yet",
             "schema": {
               "type": "boolean"
             }
@@ -8247,6 +8267,17 @@
             }
           },
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Memory ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "isSaved",
             "required": false,
             "in": "query",
@@ -8260,6 +8291,15 @@
             "required": false,
             "in": "query",
             "description": "Include trashed memories",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isUpcoming",
+            "required": false,
+            "in": "query",
+            "description": "Filter by memories that have not been shown yet",
             "schema": {
               "type": "boolean"
             }
@@ -22203,11 +22243,16 @@
           "enabled": {
             "description": "Whether memories are enabled",
             "type": "boolean"
+          },
+          "sidebarWeb": {
+            "description": "Whether memories appear in web sidebar",
+            "type": "boolean"
           }
         },
         "required": [
           "duration",
-          "enabled"
+          "enabled",
+          "sidebarWeb"
         ],
         "type": "object"
       },
@@ -22221,6 +22266,10 @@
           },
           "enabled": {
             "description": "Whether memories are enabled",
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "description": "Whether memories appear in web sidebar",
             "type": "boolean"
           }
         },
