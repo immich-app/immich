@@ -46,6 +46,8 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
   }
+
+  func hasMediaReadPermission() throws -> Bool { PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized }
   
   @available(iOS 16, *)
   private func getChangeToken() -> PHPersistentChangeToken? {

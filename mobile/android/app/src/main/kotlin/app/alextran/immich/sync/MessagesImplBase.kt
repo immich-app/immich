@@ -1,8 +1,10 @@
 package app.alextran.immich.sync
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.os.ext.SdkExtensions
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
 import app.alextran.immich.core.ImmichPlugin
 import com.bumptech.glide.Glide
@@ -108,6 +111,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
           SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21)
   }
 
+  fun hasMediaReadPermission(): Boolean =
+    (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+    } else arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+      .all { ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED }
+
   protected fun getCursor(
     volume: String,
     selection: String,
@@ -175,11 +184,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
             MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2L
             else -> 0L
           }
-          // Date taken is milliseconds since epoch, Date added is seconds since epoch
-          val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
-            ?: c.getLong(dateAddedColumn)
-          // Date modified is seconds since epoch
+          // Date taken is in ms; added/modified are in seconds, and modified can be 0 when unset.
+          // If EXIF date taken exists use it, else if modified is empty use added, else the earliest of the two.
           val modifiedAt = c.getLong(dateModifiedColumn)
+          val addedAt = c.getLong(dateAddedColumn)
+          val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
+            ?: if (modifiedAt <= 0) addedAt else minOf(modifiedAt, addedAt)
           val width = c.getInt(widthColumn).toLong()
           val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
@@ -314,13 +324,14 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     val selection =
       "(${MediaStore.Files.FileColumns.BUCKET_ID} IS NOT NULL) AND $MEDIA_SELECTION"
 
-    getCursor(
+    val cursor = getCursor(
       MediaStore.VOLUME_EXTERNAL,
       selection,
       MEDIA_SELECTION_ARGS,
       projection,
       "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC"
-    )?.use { cursor ->
+    ) ?: error("MediaStore album query failed")
+    cursor.use {
       val bucketIdColumn =
         cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_ID)
       val bucketNameColumn =
@@ -395,7 +406,9 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
       selectionArgs.addAll(listOf(updatedTimeCond.toString(), updatedTimeCond.toString()))
     }
 
-    return getAssets(getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray()))
+    val cursor = getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray())
+      ?: error("MediaStore asset query failed")
+    return getAssets(cursor)
       .mapNotNull { result -> (result as? AssetResult.ValidAsset)?.asset }
       .toList()
   }
