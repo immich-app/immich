@@ -24,6 +24,8 @@ import { getConfig } from 'src/utils/config';
 
 export interface MoveRequest {
   entityId: string;
+  /** a person is owned, so the owner is needed to save the new path */
+  ownerId?: string;
   pathType: PathType;
   oldPath: string | null;
   newPath: string;
@@ -34,6 +36,8 @@ export interface MoveRequest {
 }
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
+
+export type PersonThumbnailPathEntity = { personGroupId: string; ownerId: string };
 
 export type HlsSessionFolder = { ownerId: string; sessionId: string };
 
@@ -113,8 +117,8 @@ export class StorageCore {
     return join(StorageCore.getMediaLocation(), folder);
   }
 
-  static getPersonThumbnailPath(person: ThumbnailPathEntity) {
-    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.id}.jpeg`);
+  static getPersonThumbnailPath(person: PersonThumbnailPathEntity) {
+    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.personGroupId}.jpeg`);
   }
 
   static getImagePath(asset: ThumbnailPathEntity, { fileType, format, isEdited }: ImagePathOptions) {
@@ -176,12 +180,13 @@ export class StorageCore {
     });
   }
 
-  async movePersonFile(person: { id: string; ownerId: string; thumbnailPath: string }, pathType: PersonPathType) {
-    const { id: entityId, thumbnailPath } = person;
+  async movePersonFile(person: PersonThumbnailPathEntity & { thumbnailPath: string }, pathType: PersonPathType) {
+    const { ownerId, personGroupId, thumbnailPath } = person;
     switch (pathType) {
       case PersonPathType.Face: {
         await this.moveFile({
-          entityId,
+          entityId: personGroupId,
+          ownerId,
           pathType,
           oldPath: thumbnailPath,
           newPath: StorageCore.getPersonThumbnailPath(person),
@@ -191,7 +196,7 @@ export class StorageCore {
   }
 
   async moveFile(request: MoveRequest) {
-    const { entityId, pathType, oldPath, newPath, assetInfo } = request;
+    const { entityId, ownerId, pathType, oldPath, newPath, assetInfo } = request;
     if (!oldPath || oldPath === newPath) {
       return;
     }
@@ -264,7 +269,7 @@ export class StorageCore {
       }
     }
 
-    await this.savePath(pathType, entityId, newPath);
+    await this.savePath(pathType, entityId, newPath, ownerId);
     await this.moveRepository.delete(move.id);
   }
 
@@ -317,7 +322,7 @@ export class StorageCore {
     return { dri, mali };
   }
 
-  private savePath(pathType: PathType, id: string, newPath: string) {
+  private savePath(pathType: PathType, id: string, newPath: string, ownerId?: string) {
     switch (pathType) {
       case AssetPathType.Original: {
         return this.assetRepository.update({ id, originalPath: newPath });
@@ -333,7 +338,12 @@ export class StorageCore {
       }
 
       case PersonPathType.Face: {
-        return this.personRepository.update({ id, thumbnailPath: newPath });
+        if (!ownerId) {
+          this.logger.warn('Unable to save person path without an owner');
+          return;
+        }
+
+        return this.personRepository.update({ ownerId, personGroupId: id, thumbnailPath: newPath });
       }
 
       case UserPathType.Profile: {

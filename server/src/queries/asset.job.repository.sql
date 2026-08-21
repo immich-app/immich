@@ -354,9 +354,11 @@ select
           "asset_file"."assetId" = "asset"."id"
           and "asset_file"."type" = $2
       ) as agg
-  ) as "files"
+  ) as "files",
+  "user"."clusterGroupId"
 from
   "asset"
+  inner join "user" on "user"."id" = "asset"."ownerId"
 where
   "asset"."id" = $3
 

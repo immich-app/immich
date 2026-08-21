@@ -31,6 +31,7 @@ export interface WatchEvents {
 export interface ImmichReadStream {
   stream: Readable;
   type?: string;
+  disposition?: string | string[];
   length?: number;
 }
 
