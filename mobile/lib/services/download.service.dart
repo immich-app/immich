@@ -81,12 +81,7 @@ class DownloadService {
     final title = task.filename;
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
     try {
-      final resultAsset = await _fileMediaRepository.saveImageWithFile(
-        filePath,
-        title: title,
-        relativePath: relativePath,
-      );
-      return resultAsset != null;
+      return await _fileMediaRepository.saveImageWithFile(filePath, title: title, relativePath: relativePath);
     } catch (error, stack) {
       _log.severe("Error saving image", error, stack);
       return false;
@@ -144,8 +139,7 @@ class DownloadService {
     } on PlatformException catch (error, stack) {
       // Handle saving MotionPhotos on iOS
       if (error.code.startsWith('PHPhotosErrorDomain')) {
-        final result = await _fileMediaRepository.saveImageWithFile(imageFilePath, title: title);
-        return result != null;
+        return await _fileMediaRepository.saveImageWithFile(imageFilePath, title: title);
       }
       _log.severe("Error saving live photo", error, stack);
       return false;
