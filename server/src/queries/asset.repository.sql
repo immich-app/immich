@@ -183,7 +183,7 @@ where
       "asset_face"
     where
       "asset_face"."assetId" = "asset"."id"
-      and "asset_face"."personId" = $3
+      and "asset_face"."personGroupId" = $3
       and "asset_face"."deletedAt" is null
       and "asset_face"."isVisible" is true
   )
@@ -223,7 +223,7 @@ where
       "asset_face"
     where
       "asset_face"."assetId" = "asset"."id"
-      and "asset_face"."personId" = $3
+      and "asset_face"."personGroupId" = $3
       and "asset_face"."deletedAt" is null
       and "asset_face"."isVisible" is true
   )

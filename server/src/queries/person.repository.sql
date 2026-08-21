@@ -48,7 +48,7 @@ where
 
 -- PersonRepository.getPeopleWithBirthday
 select
-  "person"."id",
+  "person"."personGroupId",
   "person"."name",
   date_part('year', person."birthDate")::int as "birthYear",
   date_part('month', person."birthDate")::int as "birthMonth",
@@ -68,7 +68,7 @@ where
 
 -- PersonRepository.getPeopleWithBirthday (leap day fallback)
 select
-  "person"."id",
+  "person"."personGroupId",
   "person"."name",
   date_part('year', person."birthDate")::int as "birthYear",
   date_part('month', person."birthDate")::int as "birthMonth",

@@ -240,7 +240,9 @@ describe(PersonRepository.name, () => {
 
       const people = await sut.getPeopleWithBirthday(user.id, target);
 
-      expect(people).toEqual([{ id: person.id, name: 'Alice', birthDate: { year: 1990, month: 6, day: 13 } }]);
+      expect(people).toEqual([
+        { personGroupId: person.personGroupId, name: 'Alice', birthDate: { year: 1990, month: 6, day: 13 } },
+      ]);
     });
 
     it('should not return hidden people, unnamed people, or people without a birth date', async () => {
@@ -283,7 +285,7 @@ describe(PersonRepository.name, () => {
 
       const people = await sut.getPeopleWithBirthday(user.id, { year: 2025, month: 2, day: 28 });
 
-      expect(people.map(({ id }) => id)).toEqual([person.id]);
+      expect(people.map(({ personGroupId }) => personGroupId)).toEqual([person.personGroupId]);
     });
 
     it('should include people born on february 28th on february 28th of non-leap years', async () => {
@@ -293,7 +295,7 @@ describe(PersonRepository.name, () => {
 
       const people = await sut.getPeopleWithBirthday(user.id, { year: 2025, month: 2, day: 28 });
 
-      expect(people.map(({ id }) => id)).toEqual([person.id]);
+      expect(people.map(({ personGroupId }) => personGroupId)).toEqual([person.personGroupId]);
     });
 
     it('should not include leap-day birthdays on february 28th of leap years', async () => {
@@ -313,7 +315,7 @@ describe(PersonRepository.name, () => {
 
       const people = await sut.getPeopleWithBirthday(user.id, { year: 2024, month: 2, day: 29 });
 
-      expect(people.map(({ id }) => id)).toEqual([person.id]);
+      expect(people.map(({ personGroupId }) => personGroupId)).toEqual([person.personGroupId]);
     });
   });
 });

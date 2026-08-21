@@ -47,14 +47,14 @@ const create = async (ctx: ReturnType<typeof setup>['ctx']) => {
 
 const newPersonAsset = async (
   ctx: ReturnType<typeof setup>['ctx'],
-  { ownerId, personId, localDateTime }: { ownerId: string; personId: string; localDateTime?: string },
+  { ownerId, personGroupId, localDateTime }: { ownerId: string; personGroupId: string; localDateTime?: string },
 ) => {
   const assetRepo = ctx.get(AssetRepository);
   const { asset } = await ctx.newAsset({ ownerId, localDateTime: localDateTime ?? '2024-06-13T12:00:00.000Z' });
   await Promise.all([
     ctx.newExif({ assetId: asset.id, make: 'Canon' }),
     ctx.newJobStatus({ assetId: asset.id }),
-    ctx.newAssetFace({ assetId: asset.id, personId }),
+    ctx.newAssetFace({ assetId: asset.id, personGroupId }),
     assetRepo.upsertFiles([
       { assetId: asset.id, type: AssetFileType.Preview, path: '/path/to/preview.jpg' },
       { assetId: asset.id, type: AssetFileType.Thumbnail, path: '/path/to/thumbnail.jpg' },
@@ -259,7 +259,7 @@ describe(MemoryService.name, () => {
       const auth = factory.auth({ user });
       const dto = {
         type: MemoryType.Birthday as const,
-        data: { personId: person.id, personName: 'Alice', year: 1990 },
+        data: { personGroupId: person.personGroupId, personName: 'Alice', year: 1990 },
         memoryAt: new Date(2025, 5, 13),
       };
 
@@ -433,7 +433,7 @@ describe(MemoryService.name, () => {
       const birthday = DateTime.fromObject({ year: 2025, month: 6, day: 13 }, { zone: 'utc' }) as DateTime<true>;
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-13' });
-      const asset = await newPersonAsset(ctx, { ownerId: user.id, personId: person.id });
+      const asset = await newPersonAsset(ctx, { ownerId: user.id, personGroupId: person.personGroupId });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
@@ -445,7 +445,7 @@ describe(MemoryService.name, () => {
           id: expect.any(String),
           ownerId: user.id,
           type: 'birthday',
-          data: { personId: person.id, personName: 'Alice', year: 1990 },
+          data: { personGroupId: person.personGroupId, personName: 'Alice', year: 1990 },
           memoryAt: birthday.startOf('day').toJSDate(),
           showAt: birthday.minus({ days: 3 }).startOf('day').toJSDate(),
           hideAt: birthday.endOf('day').toJSDate(),
@@ -460,7 +460,7 @@ describe(MemoryService.name, () => {
       const now = DateTime.fromObject({ year: 2025, month: 6, day: 13 }, { zone: 'utc' }) as DateTime<true>;
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-13' });
-      await newPersonAsset(ctx, { ownerId: user.id, personId: person.id });
+      await newPersonAsset(ctx, { ownerId: user.id, personGroupId: person.personGroupId });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
@@ -481,7 +481,7 @@ describe(MemoryService.name, () => {
       const now = DateTime.fromObject({ year: 2025, month: 6, day: 10 }, { zone: 'utc' }) as DateTime<true>;
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-13' });
-      await newPersonAsset(ctx, { ownerId: user.id, personId: person.id });
+      await newPersonAsset(ctx, { ownerId: user.id, personGroupId: person.personGroupId });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
@@ -502,7 +502,7 @@ describe(MemoryService.name, () => {
         birthDate: '1990-06-13',
         isHidden: true,
       });
-      await newPersonAsset(ctx, { ownerId: user.id, personId: person.id });
+      await newPersonAsset(ctx, { ownerId: user.id, personGroupId: person.personGroupId });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
@@ -517,7 +517,7 @@ describe(MemoryService.name, () => {
       const now = DateTime.fromObject({ year: 2025, month: 6, day: 10 }, { zone: 'utc' }) as DateTime<true>;
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id, name: '', birthDate: '1990-06-13' });
-      await newPersonAsset(ctx, { ownerId: user.id, personId: person.id });
+      await newPersonAsset(ctx, { ownerId: user.id, personGroupId: person.personGroupId });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
@@ -534,10 +534,14 @@ describe(MemoryService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-13' });
       const onBirthday = await newPersonAsset(ctx, {
         ownerId: user.id,
-        personId: person.id,
+        personGroupId: person.personGroupId,
         localDateTime: '2024-06-13T12:00:00.000Z',
       });
-      await newPersonAsset(ctx, { ownerId: user.id, personId: person.id, localDateTime: '2024-06-12T12:00:00.000Z' });
+      await newPersonAsset(ctx, {
+        ownerId: user.id,
+        personGroupId: person.personGroupId,
+        localDateTime: '2024-06-12T12:00:00.000Z',
+      });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
@@ -572,7 +576,7 @@ describe(MemoryService.name, () => {
       for (let hour = 1; hour <= 7; hour++) {
         const asset = await newPersonAsset(ctx, {
           ownerId: user.id,
-          personId: person.id,
+          personGroupId: person.personGroupId,
           localDateTime: `2024-06-13T${hour.toString().padStart(2, '0')}:00:00.000Z`,
         });
         assetIds.push(asset.id);
@@ -600,7 +604,7 @@ describe(MemoryService.name, () => {
         for (let hour = 1; hour <= 5; hour++) {
           const asset = await newPersonAsset(ctx, {
             ownerId: user.id,
-            personId: person.id,
+            personGroupId: person.personGroupId,
             localDateTime: `${year}-06-13T${hour.toString().padStart(2, '0')}:00:00.000Z`,
           });
           assetIdsByYear[year].push(asset.id);
@@ -634,12 +638,12 @@ describe(MemoryService.name, () => {
       for (let year = 1997; year <= 2024; year++) {
         await newPersonAsset(ctx, {
           ownerId: user.id,
-          personId: person.id,
+          personGroupId: person.personGroupId,
           localDateTime: `${year}-06-13T12:00:00.000Z`,
         });
         await newPersonAsset(ctx, {
           ownerId: user.id,
-          personId: person.id,
+          personGroupId: person.personGroupId,
           localDateTime: `${year}-06-13T08:00:00.000Z`,
         });
       }
@@ -661,7 +665,11 @@ describe(MemoryService.name, () => {
       const now = DateTime.fromObject({ year: 2025, month: 2, day: 25 }, { zone: 'utc' }) as DateTime<true>;
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1992-02-29' });
-      await newPersonAsset(ctx, { ownerId: user.id, personId: person.id, localDateTime: '2024-02-29T12:00:00.000Z' });
+      await newPersonAsset(ctx, {
+        ownerId: user.id,
+        personGroupId: person.personGroupId,
+        localDateTime: '2024-02-29T12:00:00.000Z',
+      });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
@@ -670,7 +678,7 @@ describe(MemoryService.name, () => {
       expect(memories.length).toBe(1);
       expect(memories[0]).toEqual(
         expect.objectContaining({
-          data: { personId: person.id, personName: 'Alice', year: 1992 },
+          data: { personGroupId: person.personGroupId, personName: 'Alice', year: 1992 },
           memoryAt: DateTime.fromObject({ year: 2025, month: 2, day: 28 }, { zone: 'utc' }).toJSDate(),
         }),
       );
@@ -682,7 +690,11 @@ describe(MemoryService.name, () => {
       const now = DateTime.fromObject({ year: 2025, month: 6, day: 10 }, { zone: 'utc' }) as DateTime<true>;
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-20' });
-      await newPersonAsset(ctx, { ownerId: user.id, personId: person.id, localDateTime: '2024-06-20T12:00:00.000Z' });
+      await newPersonAsset(ctx, {
+        ownerId: user.id,
+        personGroupId: person.personGroupId,
+        localDateTime: '2024-06-20T12:00:00.000Z',
+      });
 
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();

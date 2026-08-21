@@ -21,7 +21,7 @@ const MemorySearchSchema = z
 const MemoryDataSchema = z
   .object({
     year: z.int().min(1000).max(9999).describe('Year of the memory'),
-    personId: z.uuidv4().optional().describe('Person ID (birthday memories)'),
+    personGroupId: z.uuidv4().optional().describe('Person ID (birthday memories)'),
     personName: z.string().optional().describe('Name of the person when the memory was created (birthday memories)'),
   })
   .meta({ id: 'MemoryDataDto' });
@@ -53,7 +53,7 @@ const MemoryCreateBaseSchema = z.object({
 
 const MemoryCreateSchema = MemoryCreateBaseSchema.superRefine((dto, ctx) => {
   if (dto.type === MemoryType.Birthday) {
-    for (const key of ['personId', 'personName'] as const) {
+    for (const key of ['personGroupId', 'personName'] as const) {
       if (dto.data[key] === undefined) {
         ctx.addIssue({
           code: 'custom',

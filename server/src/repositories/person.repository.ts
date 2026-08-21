@@ -215,7 +215,7 @@ export class PersonRepository {
 
     const people = await this.db
       .selectFrom('person')
-      .select(['person.id', 'person.name'])
+      .select(['person.personGroupId', 'person.name'])
       .select(sql<number>`date_part('year', person."birthDate")::int`.as('birthYear'))
       .select(sql<number>`date_part('month', person."birthDate")::int`.as('birthMonth'))
       .select(sql<number>`date_part('day', person."birthDate")::int`.as('birthDay'))
@@ -235,8 +235,8 @@ export class PersonRepository {
       .where(sql`date_part('year', person."birthDate")::int`, '<', year)
       .execute();
 
-    return people.map(({ id, name, birthYear, birthMonth, birthDay }) => ({
-      id,
+    return people.map(({ personGroupId, name, birthYear, birthMonth, birthDay }) => ({
+      personGroupId,
       name,
       birthDate: { year: birthYear, month: birthMonth, day: birthDay },
     }));

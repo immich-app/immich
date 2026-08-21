@@ -510,7 +510,7 @@ export class AssetRepository {
       .execute();
   }
 
-  private personAssets(ownerId: string, personId: string) {
+  private personAssets(ownerId: string, personGroupId: string) {
     return this.db
       .selectFrom('asset')
       .where('asset.ownerId', '=', ownerId)
@@ -521,7 +521,7 @@ export class AssetRepository {
           qb
             .selectFrom('asset_face')
             .whereRef('asset_face.assetId', '=', 'asset.id')
-            .where('asset_face.personId', '=', personId)
+            .where('asset_face.personGroupId', '=', personGroupId)
             .where('asset_face.deletedAt', 'is', null)
             .where('asset_face.isVisible', 'is', true),
         ),
@@ -541,11 +541,11 @@ export class AssetRepository {
   })
   async getPersonBirthdayYears(
     ownerId: string,
-    personId: string,
+    personGroupId: string,
     birthDate: YearMonthDay,
     until: YearMonthDay,
   ): Promise<number[]> {
-    const rows = await this.personAssets(ownerId, personId)
+    const rows = await this.personAssets(ownerId, personGroupId)
       .where(sql`date_part('month', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.month)
       .where(sql`date_part('day', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.day)
       .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '>=', asMakeDateFn(eb, birthDate)))
@@ -559,8 +559,8 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, 5] })
-  getPersonAssetsByDate(ownerId: string, personId: string, date: YearMonthDay, limit: number) {
-    return this.personAssets(ownerId, personId)
+  getPersonAssetsByDate(ownerId: string, personGroupId: string, date: YearMonthDay, limit: number) {
+    return this.personAssets(ownerId, personGroupId)
       .select(['asset.id'])
       .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', asMakeDateFn(eb, date)))
       .orderBy('asset.localDateTime', 'desc')

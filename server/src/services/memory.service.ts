@@ -87,8 +87,8 @@ export class MemoryService extends BaseService {
     const hideAt = target.endOf('day').toISO();
 
     await Promise.all(
-      people.map(async ({ id: personId, name: personName, birthDate }) => {
-        const assets = await this.getBirthdayAssets(ownerId, personId, birthDate, target);
+      people.map(async ({ personGroupId, name: personName, birthDate }) => {
+        const assets = await this.getBirthdayAssets(ownerId, personGroupId, birthDate, target);
         if (assets.length === 0) {
           return;
         }
@@ -97,7 +97,7 @@ export class MemoryService extends BaseService {
           {
             ownerId,
             type: MemoryType.Birthday,
-            data: { personId, personName, year: birthDate.year },
+            data: { personGroupId, personName, year: birthDate.year },
             memoryAt: target.startOf('day').toISO()!,
             showAt,
             hideAt,
@@ -108,8 +108,13 @@ export class MemoryService extends BaseService {
     );
   }
 
-  private async getBirthdayAssets(ownerId: string, personId: string, birthDate: YearMonthDay, until: YearMonthDay) {
-    const years = await this.assetRepository.getPersonBirthdayYears(ownerId, personId, birthDate, until);
+  private async getBirthdayAssets(
+    ownerId: string,
+    personGroupId: string,
+    birthDate: YearMonthDay,
+    until: YearMonthDay,
+  ) {
+    const years = await this.assetRepository.getPersonBirthdayYears(ownerId, personGroupId, birthDate, until);
     if (years.length === 0) {
       return [];
     }
@@ -127,7 +132,7 @@ export class MemoryService extends BaseService {
 
     const assets = await Promise.all(
       birthdayYears.map((year) =>
-        this.assetRepository.getPersonAssetsByDate(ownerId, personId, { ...birthDate, year }, assetsPerYear),
+        this.assetRepository.getPersonAssetsByDate(ownerId, personGroupId, { ...birthDate, year }, assetsPerYear),
       ),
     );
 
@@ -165,7 +170,7 @@ export class MemoryService extends BaseService {
     });
     const data =
       dto.type === MemoryType.Birthday
-        ? { year: dto.data.year, personId: dto.data.personId, personName: dto.data.personName }
+        ? { year: dto.data.year, personGroupId: dto.data.personGroupId, personName: dto.data.personName }
         : { year: dto.data.year };
     const memory = await this.memoryRepository.create(
       {

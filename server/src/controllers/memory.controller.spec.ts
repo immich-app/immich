@@ -56,7 +56,7 @@ describe(MemoryController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(
         errorDto.validationError([
-          { path: ['data', 'personId'], message: 'Required for birthday memories' },
+          { path: ['data', 'personGroupId'], message: 'Required for birthday memories' },
           { path: ['data', 'personName'], message: 'Required for birthday memories' },
         ]),
       );
@@ -67,7 +67,7 @@ describe(MemoryController.name, () => {
         .post('/memories')
         .send({
           type: 'birthday',
-          data: { personId: factory.uuid(), personName: 'Alice', year: 1990 },
+          data: { personGroupId: factory.uuid(), personName: 'Alice', year: 1990 },
           memoryAt: new Date(2021).toISOString(),
         });
 
