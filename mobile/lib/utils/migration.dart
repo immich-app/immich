@@ -86,7 +86,16 @@ Future<void> _migrateTo25() async {
 }
 
 Future<void> _migrateTo26(Drift drift) async {
-  final migrator = _StoreMigrator.settings(drift);
+  final migrator = _StoreMigrator<SettingsKey>._(
+    drift,
+    encode: (key, value) => key.encode(value),
+    readDefault: (key) => defaultConfig.read(key),
+    insertRow: (batch, name, value) => batch.insert(
+      drift.settingsEntity,
+      SettingsEntityCompanion(key: Value(name), value: Value(value)),
+      mode: InsertMode.insertOrReplace,
+    ),
+  );
   await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, SettingsKey.logLevel, LogLevel.values);
   // Theme
   await migrator.migrateEnumName(StoreKey.legacyThemeMode, SettingsKey.themeMode, ThemeMode.values);
@@ -152,7 +161,16 @@ Future<void> _migrateTo26(Drift drift) async {
 }
 
 Future<void> _migrateTo27(Drift drift) async {
-  final migrator = _StoreMigrator.session(drift);
+  final migrator = _StoreMigrator<SessionKey>._(
+    drift,
+    encode: (key, value) => key.encode(value),
+    readDefault: (key) => defaultSession.read(key),
+    insertRow: (batch, name, value) => batch.insert(
+      drift.sessionEntity,
+      SessionEntityCompanion(key: Value(name), value: Value(value)),
+      mode: InsertMode.insertOrReplace,
+    ),
+  );
   await migrator.migrateString(StoreKey.legacyServerUrl, SessionKey.serverUrl);
   await migrator.migrateString(StoreKey.legacyAccessToken, SessionKey.accessToken);
   await migrator.migrateString(StoreKey.legacyServerEndpoint, SessionKey.serverEndpoint);
@@ -220,28 +238,6 @@ Future<void> _migrateCustomHeaders(_StoreMigrator<SettingsKey> migrator) async {
 
 class _StoreMigrator<K extends Enum> {
   _StoreMigrator._(this._db, {required this.encode, required this.readDefault, required this.insertRow});
-
-  static _StoreMigrator<SettingsKey> settings(Drift db) => _StoreMigrator<SettingsKey>._(
-    db,
-    encode: (key, value) => key.encode(value),
-    readDefault: (key) => defaultConfig.read(key),
-    insertRow: (batch, name, value) => batch.insert(
-      db.settingsEntity,
-      SettingsEntityCompanion(key: Value(name), value: Value(value)),
-      mode: InsertMode.insertOrReplace,
-    ),
-  );
-
-  static _StoreMigrator<SessionKey> session(Drift db) => _StoreMigrator<SessionKey>._(
-    db,
-    encode: (key, value) => key.encode(value),
-    readDefault: (key) => defaultSession.read(key),
-    insertRow: (batch, name, value) => batch.insert(
-      db.sessionEntity,
-      SessionEntityCompanion(key: Value(name), value: Value(value)),
-      mode: InsertMode.insertOrReplace,
-    ),
-  );
 
   final Drift _db;
   final String Function(K key, Object value) encode;
