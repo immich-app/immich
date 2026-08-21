@@ -316,6 +316,12 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     };
   }
 
+  async newTag(dto: Insertable<TagTable>) {
+    const tag = mediumFactory.tagInsert(dto);
+    const result = await this.get(TagRepository).create(tag);
+    return { tag, result };
+  }
+
   async newTagAsset(tagBulkAssets: { tagIds: string[]; assetIds: string[] }) {
     const tagsAssets: Insertable<TagAssetTable>[] = [];
     for (const tagId of tagBulkAssets.tagIds) {

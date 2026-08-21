@@ -2876,6 +2876,8 @@ export type TagBulkAssetsResponseDto = {
 export type TagUpdateDto = {
     /** Tag color (hex) */
     color?: string | null;
+    /** Tag name */
+    name?: string;
 };
 export type TimeBucketAssetResponseDto = {
     /** Array of city names extracted from EXIF GPS data */
