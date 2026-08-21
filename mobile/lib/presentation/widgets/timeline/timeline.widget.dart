@@ -83,6 +83,9 @@ class Timeline extends ConsumerWidget {
               ),
             ),
             if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+            // Scoped per Timeline instance so isScrubbing/isScrolling/bottomSheetHeight from one
+            // timeline (e.g. the main grid) never leak into another (e.g. an album's timeline).
+            timelineStateProvider.overrideWith(TimelineStateNotifier.new),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
