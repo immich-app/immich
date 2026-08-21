@@ -8,8 +8,6 @@ import 'package:http/http.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
-import 'package:logging/logging.dart';
-import 'package:http/http.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 

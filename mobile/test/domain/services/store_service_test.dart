@@ -129,7 +129,7 @@ void main() {
 
     test('Removes the value from the DB', () async {
       await sut.delete(StoreKey.legacyAccessToken);
-      verify(() => mockDriftStoreRepo.delete<String>(StoreKey.legacyAccessToken)).called(1);
+      verify(() => mockDriftStoreRepo.deleteValue<String>(StoreKey.legacyAccessToken)).called(1);
     });
 
     test('Removes the value from the cache', () async {
