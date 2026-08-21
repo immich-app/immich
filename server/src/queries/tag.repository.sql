@@ -71,12 +71,7 @@ returning
 -- TagRepository.update
 begin
 select
-  "tag"."id",
-  "tag"."value",
-  "tag"."createdAt",
-  "tag"."updatedAt",
-  "tag"."color",
-  "tag"."parentId"
+  "value"
 from
   "tag"
 where
