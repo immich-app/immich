@@ -12,7 +12,6 @@ import 'package:immich_mobile/presentation/pages/search/paginated_search.provide
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
@@ -132,7 +131,6 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   // Library page
   if (index == kLibraryTabIndex) {
     ref.invalidate(localAlbumProvider);
-    ref.invalidate(driftGetAllPeopleProvider);
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();

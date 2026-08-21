@@ -5,7 +5,7 @@ import 'package:logging/logging.dart';
 class DriftMemoryService {
   final log = Logger("DriftMemoryService");
 
-  final DriftMemoryRepository _repository;
+  final MemoryRepository _repository;
 
   DriftMemoryService(this._repository);
 

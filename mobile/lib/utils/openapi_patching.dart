@@ -35,12 +35,13 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   },
   'UserResponseDto': {'profileChangedAt': _now},
   'AssetResponseDto': {'visibility': 'timeline', 'createdAt': _now, 'isEdited': false},
-  'UserAdminResponseDto': {'profileChangedAt': _now},
+  'UserAdminResponseDto': {'profileChangedAt': _now, 'clusterGroupId': ''},
   'LoginResponseDto': {'isOnboarded': false},
   'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
   'SyncAssetV1': {'isEdited': false},
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
   'MemoriesResponse': {'duration': 5},
+  'WorkflowResponseDto': {'logging': false},
 };
 
 void upgradeDto(dynamic value, String targetType) {

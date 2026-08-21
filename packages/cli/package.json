@@ -33,7 +33,7 @@
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-unicorn": "^72.0.0",
+    "eslint-plugin-unicorn": "^73.0.0",
     "globals": "^17.0.0",
     "mock-fs": "^5.2.0",
     "prettier": "^3.7.4",
@@ -59,13 +59,14 @@
     "check": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
     "chokidar": "^4.0.3",
     "fast-glob": "^3.3.2",
     "fastq": "^1.17.1",
     "lodash-es": "^4.17.21",
-    "micromatch": "^4.0.8"
+    "micromatch": "^4.0.8",
+    "semver": "^7.8.1"
   }
 }

@@ -34,7 +34,70 @@ const setup = (db?: Kysely<DB>) => {
   });
 };
 
+/** A memory owned by one user, plus another user's auth to attempt access with */
+const newMemoryOfAnotherUser = async (ctx: ReturnType<typeof setup>['ctx']) => {
+  const { user } = await ctx.newUser();
+  const { user: otherUser } = await ctx.newUser();
+  const { memory } = await ctx.newMemory({ ownerId: user.id });
+  const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+  return { memory, asset, auth: factory.auth({ user }), otherAuth: factory.auth({ user: otherUser }) };
+};
+
 describe(MemoryService.name, () => {
+  describe('get', () => {
+    it('should not return a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, otherAuth } = await newMemoryOfAnotherUser(ctx);
+
+      await expect(sut.get(otherAuth, memory.id)).rejects.toThrow('Not found or no memory.read access');
+    });
+  });
+
+  describe('update', () => {
+    it('should not update a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, otherAuth } = await newMemoryOfAnotherUser(ctx);
+
+      await expect(sut.update(otherAuth, memory.id, { isSaved: true })).rejects.toThrow(
+        'Not found or no memory.update access',
+      );
+    });
+  });
+
+  describe('remove', () => {
+    it('should not remove a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, auth, otherAuth } = await newMemoryOfAnotherUser(ctx);
+
+      await expect(sut.remove(otherAuth, memory.id)).rejects.toThrow('Not found or no memory.delete access');
+      await expect(sut.get(auth, memory.id)).resolves.toEqual(expect.objectContaining({ id: memory.id }));
+    });
+  });
+
+  describe('addAssets', () => {
+    it('should not add assets to a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, asset, otherAuth } = await newMemoryOfAnotherUser(ctx);
+
+      await expect(sut.addAssets(otherAuth, memory.id, { ids: [asset.id] })).rejects.toThrow(
+        'Not found or no memory.read access',
+      );
+    });
+  });
+
+  describe('removeAssets', () => {
+    it('should not remove assets from a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, asset, otherAuth } = await newMemoryOfAnotherUser(ctx);
+      await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
+
+      await expect(sut.removeAssets(otherAuth, memory.id, { ids: [asset.id] })).rejects.toThrow(
+        'Not found or no memory.update access',
+      );
+    });
+  });
+
   beforeEach(async () => {
     defaultDatabase = await getKyselyDB();
   });

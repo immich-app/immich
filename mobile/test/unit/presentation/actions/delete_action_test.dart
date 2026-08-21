@@ -105,6 +105,17 @@ void main() {
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
         verify(() => assetService.trash([asset.id])).called(1);
       });
+
+      testWidgets('offers an undo that restores the trashed assets', (tester) async {
+        final asset = owned();
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Undo'));
+        await tester.pump();
+
+        verify(() => assetService.restoreTrash([asset.id])).called(1);
+      });
     });
 
     group('permanent', () {
@@ -116,6 +127,15 @@ void main() {
 
         verify(() => assetService.delete([asset.id])).called(1);
         verifyNever(() => assetService.trash(any()));
+      });
+
+      testWidgets('offers no undo for a permanent delete', (tester) async {
+        await pumpDelete(tester, {owned()}, trashEnabled: false);
+        await respondToDialog(tester, confirm: true);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SnackBar), findsOneWidget);
+        expect(find.text('Undo'), findsNothing);
       });
 
       testWidgets('permanently deletes a merged asset and removes its device copy', (tester) async {
@@ -169,6 +189,17 @@ void main() {
         verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
         verifyNever(() => assetService.trash(any()));
         verifyNever(() => assetService.delete(any()));
+      });
+
+      testWidgets('is labelled trash', (tester) async {
+        await tester.pumpTestWidget(
+          context,
+          const ActionButton(action: DeleteAction(source: .timeline)),
+          overrides: context.selected({LocalAssetFactory.create()}),
+        );
+
+        expect(find.text(StaticTranslations.instance.trash), findsOneWidget);
+        expect(find.text(StaticTranslations.instance.delete), findsNothing);
       });
     });
 

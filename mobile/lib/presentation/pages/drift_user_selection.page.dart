@@ -52,6 +52,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<UserDto>> suggestedShareUsers = ref.watch(driftUsersProvider);
+    final sharedUsers = ref.watch(remoteAlbumSharedUsersProvider(album.id));
     final sharedUsersList = useState<Set<UserDto>>({});
 
     void addNewUsersHandler() {
@@ -136,9 +137,6 @@ class DriftUserSelectionPage extends HookConsumerWidget {
       ),
       body: suggestedShareUsers.widgetWhen(
         onData: (users) {
-          // Get shared users for this album from the database
-          final sharedUsers = ref.read(remoteAlbumSharedUsersProvider(album.id));
-
           return sharedUsers.when(
             data: (albumSharedUsers) {
               // Filter out users that are already shared with this album and the owner

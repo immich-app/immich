@@ -316,12 +316,11 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final backupAlbums = ref.watch(backupAlbumProvider);
+
     Widget buildSelectedAlbumName() {
       String text = context.t.backup_controller_page_backup_selected;
-      final albums = ref
-          .read(backupAlbumProvider)
-          .where((album) => album.backupSelection == BackupSelection.selected)
-          .toList();
+      final albums = backupAlbums.where((album) => album.backupSelection == BackupSelection.selected).toList();
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
@@ -352,10 +351,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
 
     Widget buildExcludedAlbumName() {
       String text = context.t.backup_controller_page_excluded;
-      final albums = ref
-          .read(backupAlbumProvider)
-          .where((album) => album.backupSelection == BackupSelection.excluded)
-          .toList();
+      final albums = backupAlbums.where((album) => album.backupSelection == BackupSelection.excluded).toList();
 
       if (albums.isNotEmpty) {
         for (var album in albums) {

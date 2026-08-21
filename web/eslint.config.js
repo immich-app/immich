@@ -10,10 +10,7 @@ import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import './lint-env.js';
 
 export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
@@ -29,7 +26,7 @@ export default typescriptEslint.config(
         'error',
         {
           browserslist: fs
-            .readFileSync(path.join(__dirname, '.browserslistrc'), 'utf8')
+            .readFileSync(path.join(import.meta.dirname, '.browserslistrc'), 'utf8')
             .split('\n')
             .map((line) => line.trim())
             .filter((line) => line && !line.startsWith('#')),
@@ -40,7 +37,7 @@ export default typescriptEslint.config(
       parser,
       parserOptions: {
         project: ['./tsconfig.json'],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     // ignores: ['**/service-worker/**'],
@@ -72,6 +69,7 @@ export default typescriptEslint.config(
       '**/yarn.lock',
       '**/svelte.config.js',
       'eslint.config.js',
+      'lint-env.js',
       'tailwind.config.js',
       'coverage',
       'vite.config.ts',
@@ -96,7 +94,7 @@ export default typescriptEslint.config(
 
       parserOptions: {
         extraFileExtensions: ['.svelte'],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
         project: ['./tsconfig.json'],
       },
     },
@@ -148,6 +146,7 @@ export default typescriptEslint.config(
       'unicorn/prefer-minimal-ternary': 'off',
       'unicorn/no-empty-file': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',
       '@typescript-eslint/require-array-sort-compare': 'error',

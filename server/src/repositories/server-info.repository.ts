@@ -4,19 +4,9 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { ReleaseChannel } from 'src/dtos/system-config.dto';
+import { ReleaseChannel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-
-export interface GitHubRelease {
-  id: number;
-  url: string;
-  tag_name: string;
-  name: string;
-  created_at: string;
-  published_at: string;
-  body: string;
-}
 
 export interface VersionResponse {
   version: string;

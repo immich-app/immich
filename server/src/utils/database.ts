@@ -81,8 +81,6 @@ export const asUuid = (id: string | Expression<string>) => sql<string>`${id}::uu
 
 export const anyUuid = (ids: string[]) => sql<string>`any(${`{${ids}}`}::uuid[])`;
 
-export const asVector = (embedding: number[]) => sql<string>`${`[${embedding}]`}::vector`;
-
 export const unnest = (array: string[]) => sql<Record<string, string>>`unnest(array[${sql.join(array)}]::text[])`;
 
 export const removeUndefinedKeys = <T extends object>(update: T, template: unknown) => {
@@ -237,40 +235,65 @@ export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFile
     .where('asset_file.isEdited', '=', sql.lit(isEdited));
 }
 
-export function withFacesAndPeople(
-  eb: ExpressionBuilder<DB, 'asset'>,
-  withHidden?: boolean,
-  withDeletedFace?: boolean,
-) {
-  return jsonArrayFrom(
-    eb
-      .selectFrom('asset_face')
-      .leftJoinLateral(
-        (eb) =>
-          eb.selectFrom('person').selectAll('person').whereRef('asset_face.personId', '=', 'person.id').as('person'),
-        (join) => join.onTrue(),
-      )
-      .selectAll('asset_face')
-      .select((eb) => eb.table('person').$castTo<ShallowDehydrateObject<Person>>().as('person'))
-      .whereRef('asset_face.assetId', '=', 'asset.id')
-      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
-      .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', 'is', true)),
-  ).as('faces');
+export type WithFacesAndPeopleOptions = {
+  /** whose version of the person to select */
+  viewingUserId?: string;
+  withHidden?: boolean;
+  withDeletedFace?: boolean;
+};
+
+export function withFacesAndPeople({ viewingUserId, withHidden, withDeletedFace }: WithFacesAndPeopleOptions) {
+  return (eb: ExpressionBuilder<DB, 'asset'>) =>
+    jsonArrayFrom(
+      eb
+        .selectFrom('asset_face')
+        .leftJoinLateral(
+          (eb) =>
+            eb
+              .selectFrom('person')
+              .selectAll('person')
+              .whereRef('person.personGroupId', '=', 'asset_face.personGroupId')
+              .$if(!viewingUserId, (qb) => qb.whereRef('person.ownerId', '=', 'asset.ownerId'))
+              .$if(!!viewingUserId, (qb) => qb.where('person.ownerId', '=', viewingUserId!))
+              .as('person'),
+          (join) => join.onTrue(),
+        )
+        .selectAll('asset_face')
+        .select((eb) => eb.table('person').$castTo<ShallowDehydrateObject<Person>>().as('person'))
+        .whereRef('asset_face.assetId', '=', 'asset.id')
+        .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
+        .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', 'is', true)),
+    ).as('faces');
 }
 
-export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: string[]) {
+export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personGroupIds: string[]) {
   return qb.innerJoin(
     (eb) =>
       eb
         .selectFrom('asset_face')
         .select('assetId')
-        .where('personId', '=', anyUuid(personIds!))
+        .where('personGroupId', '=', anyUuid(personGroupIds!))
         .where('deletedAt', 'is', null)
         .where('isVisible', 'is', true)
         .groupBy('assetId')
-        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+        .having((eb) => eb.fn.count('personGroupId').distinct(), '=', personGroupIds.length)
         .as('has_people'),
     (join) => join.onRef('has_people.assetId', '=', 'asset.id'),
+  );
+}
+
+export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string) {
+  return eb.exists(
+    eb
+      .selectFrom('album_asset')
+      .select(sql.lit(1).as('exists'))
+      .innerJoin('album', (join) =>
+        join.onRef('album.id', '=', 'album_asset.albumId').on('album.deletedAt', 'is', null),
+      )
+      .innerJoin('album_user', (join) =>
+        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', asUuid(userId)),
+      )
+      .whereRef('album_asset.assetId', '=', 'asset.id'),
   );
 }
 
@@ -511,7 +534,9 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     )
     .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
     .$if(!!options.withExif, withExifInner)
-    .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
+    .$if(!!(options.withFaces || options.withPeople), (qb) =>
+      qb.select(withFacesAndPeople({ viewingUserId: options.viewingUserId! })),
+    )
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 
@@ -569,7 +594,7 @@ function albumIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
 }
 
 function personIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
-  const matching = (ids: string[]) => visibleFaces(eb).where('asset_face.personId', '=', anyUuid(ids));
+  const matching = (ids: string[]) => visibleFaces(eb).where('asset_face.personGroupId', '=', anyUuid(ids));
   return idsPredicates(eb, filter, {
     matchesAny: (ids) => eb.exists(matching(ids)),
     matchesAll: (ids) =>
@@ -577,7 +602,7 @@ function personIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
         matching(ids)
           .select('asset_face.assetId')
           .groupBy('asset_face.assetId')
-          .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
+          .having((eb) => eb.fn.count('asset_face.personGroupId').distinct(), '=', ids.length),
       ),
   });
 }
@@ -775,7 +800,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       .$if(!!options.userIds && options.userIds.length > 0, (qb) =>
         qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
       )
-      .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
+      .$if(!!(options.withFaces || options.withPeople), (qb) =>
+        qb.select(withFacesAndPeople({ viewingUserId: options.viewingUserId! })),
+      )
       .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
       .where((eb) => {
         const predicates = branchPredicates(eb, filter);

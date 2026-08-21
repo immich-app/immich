@@ -73,7 +73,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 onPressed: () => showDialog(context: context, builder: (context) => const CastDialog()),
                 icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
               ),
-            if (actions != null) ...actions!,
+            ...?actions,
             if (showUploadButton && !isReadonlyModeEnabled) const _BackupIndicator(),
             const _ProfileIndicator(),
             const SizedBox(width: 8),
@@ -177,7 +177,15 @@ class _BackupIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final indicatorIcon = _getBackupBadgeIcon(context, ref);
+    final backupEnabled = ref.watch(appConfigProvider.select((c) => c.backup.enabled));
+    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
+    final isUploading = ref.watch(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
+    final indicatorIcon = _getBackupBadgeIcon(
+      context,
+      backupEnabled: backupEnabled,
+      hasError: hasError,
+      isUploading: isUploading,
+    );
 
     return IconButton(
       onPressed: () => context.pushRoute(const DriftBackupRoute()),
@@ -192,12 +200,14 @@ class _BackupIndicator extends ConsumerWidget {
     );
   }
 
-  Widget? _getBackupBadgeIcon(BuildContext context, WidgetRef ref) {
-    final backupEnabled = ref.read(appConfigProvider.select((c) => c.backup.enabled));
-    final hasError = ref.read(driftBackupProvider.select((state) => state.error != BackupError.none));
+  Widget? _getBackupBadgeIcon(
+    BuildContext context, {
+    required bool backupEnabled,
+    required bool hasError,
+    required bool isUploading,
+  }) {
     final isDarkTheme = context.isDarkTheme;
     final iconColor = isDarkTheme ? Colors.white : Colors.black;
-    final isUploading = ref.read(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
 
     if (!backupEnabled) {
       return _BadgeLabel(

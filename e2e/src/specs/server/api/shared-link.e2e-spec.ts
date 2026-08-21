@@ -212,21 +212,21 @@ describe('/shared-links', () => {
         .query({ key: linkWithAlbum.key + 'foo' });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorDto.invalidShareKey);
+      expect(body).toEqual({ message: 'Invalid share key' });
     });
 
     it('should return unauthorized if target has been soft deleted', async () => {
       const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithDeletedAlbum.key });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorDto.invalidShareKey);
+      expect(body).toEqual({ message: 'Invalid share key' });
     });
 
     it('should return unauthorized for password protected link', async () => {
       const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithPassword.key });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorDto.passwordRequired);
+      expect(body).toEqual({ message: 'Password required' });
     });
 
     it('should get data for correct password protected link', async () => {
@@ -306,24 +306,14 @@ describe('/shared-links', () => {
   });
 
   describe('POST /shared-links', () => {
-    it('should require an asset/album id', async () => {
-      const { status, body } = await request(app)
-        .post('/shared-links')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: SharedLinkType.Album });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid albumId' }));
-    });
-
     it('should require a valid asset id', async () => {
       const { status, body } = await request(app)
         .post('/shared-links')
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: SharedLinkType.Individual, assetId: uuidDto.notFound });
+        .send({ type: SharedLinkType.Individual, assetIds: [uuidDto.notFound] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid assetIds' }));
+      expect(body).toEqual(expect.objectContaining({ message: 'Not found or no asset.share access' }));
     });
 
     it('should create a shared link', async () => {
@@ -401,16 +391,6 @@ describe('/shared-links', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Invalid shared link type'));
-    });
-
-    it('should reject guests removing assets from an individual shared link', async () => {
-      const { status, body } = await request(app)
-        .delete(`/shared-links/${linkWithAssets.id}/assets`)
-        .query({ key: linkWithAssets.key })
-        .send({ assetIds: [asset1.id] });
-
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
     });
 
     it('should remove assets from a shared link (individual)', async () => {
