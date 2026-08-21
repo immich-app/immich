@@ -75,6 +75,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
     accel: TranscodeHardwareAcceleration.Disabled,
     accelDecode: true,
     tonemap: ToneMapping.Hable,
+    gif: {
+      fps: 10,
+      maxWidth: 640,
+      maxDuration: 15,
+      loop: 0,
+    },
     realtime: {
       enabled: false,
       videoCodecs: [VideoCodec.H264, VideoCodec.Hevc],

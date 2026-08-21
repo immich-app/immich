@@ -1,4 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AuthSharedLink } from 'src/database';
@@ -28,6 +30,7 @@ import {
   StorageFolder,
 } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
+import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
@@ -313,6 +316,63 @@ export class AssetMediaService extends BaseService {
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PrivateWithCache,
     });
+  }
+
+  async exportGif(auth: AuthDto, id: string): Promise<ImmichReadStream> {
+    await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
+
+    const sourceAsset = await this.assetRepository.getById(id, { exifInfo: false });
+    const videoId = sourceAsset?.livePhotoVideoId ?? id;
+    const asset = await this.assetRepository.getForVideo(videoId);
+    if (!asset) {
+      throw new NotFoundException('Asset not found or asset is not a video');
+    }
+
+    const {
+      ffmpeg: { gif },
+    } = await this.getConfig({ withCache: true });
+
+    const inputPath = asset.encodedVideoPath || asset.originalPath;
+    const outputPath = join(tmpdir(), `immich-export-${id}-${Date.now()}.gif`);
+    const videoFilter = `fps=${gif.fps},scale=${gif.maxWidth}:-1:flags=lanczos`;
+
+    try {
+      await this.mediaRepository.transcode(inputPath, outputPath, {
+        inputOptions: [],
+        outputOptions: [
+          '-map',
+          '0:v:0',
+          '-an',
+          '-t',
+          String(gif.maxDuration),
+          '-vf',
+          videoFilter,
+          '-loop',
+          String(gif.loop),
+          '-f',
+          'gif',
+        ],
+        twoPass: false,
+        progress: {
+          frameCount: 0,
+          percentInterval: 10,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Unable to export GIF for asset ${id}: ${error}`, (error as Error | undefined)?.stack);
+      throw new InternalServerErrorException('Failed to export GIF');
+    }
+
+    const readStream = await this.storageRepository.createReadStream(outputPath, 'image/gif');
+
+    const cleanup = () => {
+      void this.storageRepository.unlink(outputPath);
+    };
+
+    readStream.stream.once('close', cleanup);
+    readStream.stream.once('error', cleanup);
+
+    return readStream;
   }
 
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {

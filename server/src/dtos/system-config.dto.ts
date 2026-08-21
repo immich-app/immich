@@ -118,6 +118,14 @@ const SystemConfigFFmpegSchema = z
     accel: TranscodeHardwareAccelerationSchema,
     accelDecode: configBool.describe('Accelerated decode'),
     tonemap: ToneMappingSchema,
+    gif: z
+      .object({
+        fps: z.coerce.number().int().min(1).max(30).describe('Frames per second for GIF export'),
+        maxWidth: z.coerce.number().int().min(16).max(4096).describe('Maximum width for GIF export'),
+        maxDuration: z.coerce.number().int().min(1).max(300).describe('Maximum duration in seconds for GIF export'),
+        loop: z.coerce.number().int().min(0).max(65535).describe('GIF loop count (0 = infinite)'),
+      })
+      .meta({ id: 'SystemConfigFFmpegGifDto' }),
     realtime: z
       .object({
         enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),

@@ -393,6 +393,50 @@
         </SettingAccordion>
 
         <SettingAccordion
+          key="gif-export"
+          title={$t('admin.transcoding_gif_export')}
+          subtitle={$t('admin.transcoding_gif_export_description')}
+        >
+          <div class="ms-4 mt-4 flex flex-col gap-4">
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('admin.transcoding_gif_fps')}
+              description={$t('admin.transcoding_gif_fps_description')}
+              bind:value={configToEdit.ffmpeg.gif.fps}
+              isEdited={configToEdit.ffmpeg.gif.fps !== config.ffmpeg.gif.fps}
+              {disabled}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('admin.transcoding_gif_max_width')}
+              description={$t('admin.transcoding_gif_max_width_description')}
+              bind:value={configToEdit.ffmpeg.gif.maxWidth}
+              isEdited={configToEdit.ffmpeg.gif.maxWidth !== config.ffmpeg.gif.maxWidth}
+              {disabled}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('admin.transcoding_gif_max_duration')}
+              description={$t('admin.transcoding_gif_max_duration_description')}
+              bind:value={configToEdit.ffmpeg.gif.maxDuration}
+              isEdited={configToEdit.ffmpeg.gif.maxDuration !== config.ffmpeg.gif.maxDuration}
+              {disabled}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('admin.transcoding_gif_loop')}
+              description={$t('admin.transcoding_gif_loop_description')}
+              bind:value={configToEdit.ffmpeg.gif.loop}
+              isEdited={configToEdit.ffmpeg.gif.loop !== config.ffmpeg.gif.loop}
+              {disabled}
+            />
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion
           key="realtime-transcoding"
           title={$t('admin.transcoding_realtime')}
           subtitle={$t('admin.transcoding_realtime_description')}

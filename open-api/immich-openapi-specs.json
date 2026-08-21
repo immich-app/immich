@@ -4142,6 +4142,75 @@
         "x-immich-state": "Beta"
       }
     },
+    "/assets/{id}/export/gif": {
+      "get": {
+        "description": "Converts the specified video asset into an animated GIF and streams the result.",
+        "operationId": "exportAssetGif",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Export asset as GIF",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.download"
+      }
+    },
     "/assets/{id}/metadata": {
       "get": {
         "description": "Retrieve all metadata key-value pairs associated with the specified asset.",
@@ -25834,6 +25903,9 @@
             "minimum": 0,
             "type": "integer"
           },
+          "gif": {
+            "$ref": "#/components/schemas/SystemConfigFFmpegGifDto"
+          },
           "gopSize": {
             "description": "GOP size",
             "maximum": 9007199254740991,
@@ -25901,6 +25973,7 @@
           "bframes",
           "cqMode",
           "crf",
+          "gif",
           "gopSize",
           "maxBitrate",
           "preferredHwDevice",
@@ -25915,6 +25988,41 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigFFmpegGifDto": {
+        "properties": {
+          "fps": {
+            "description": "Frames per second for GIF export",
+            "maximum": 30,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "loop": {
+            "description": "GIF loop count (0 = infinite)",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxDuration": {
+            "description": "Maximum duration in seconds for GIF export",
+            "maximum": 300,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxWidth": {
+            "description": "Maximum width for GIF export",
+            "maximum": 4096,
+            "minimum": 16,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "fps",
+          "loop",
+          "maxDuration",
+          "maxWidth"
         ],
         "type": "object"
       },

@@ -19,6 +19,7 @@ import {
   mdiDatabaseRefreshOutline,
   mdiDownload,
   mdiDownloadBox,
+  mdiFileGifBox,
   mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
@@ -110,6 +111,19 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     icon: mdiShareVariantOutline,
     $if: () => !!(authUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
+  };
+
+  const ExportGif: ActionItem = {
+    title: $t('export_as_gif'),
+    icon: mdiFileGifBox,
+    $if: () => !!authUser && !!getGifSourceAssetId(asset) && (!sharedLink || isOwner || !!sharedLink.allowDownload),
+    onAction: () => {
+      try {
+        handleExportGif(asset);
+      } catch (error) {
+        handleError(error, $t('errors.error_downloading', { values: { filename: asset.originalFileName } }));
+      }
+    },
   };
 
   const Download: ActionItem = {
@@ -301,6 +315,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     Share,
     Download,
     DownloadOriginal,
+    ExportGif,
     SharedLinkDownload,
     Offline,
     Info,
@@ -420,4 +435,29 @@ const handleRunAssetJob = async (dto: AssetJobsDto) => {
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
   }
+};
+
+const getGifSourceAssetId = (asset: AssetResponseDto): string | undefined => {
+  if (asset.type === AssetTypeEnum.Video) {
+    return asset.id;
+  }
+
+  if (asset.livePhotoVideoId) {
+    return asset.livePhotoVideoId;
+  }
+
+  return undefined;
+};
+
+const handleExportGif = (asset: AssetResponseDto) => {
+  const videoAssetId = asset.type === AssetTypeEnum.Video ? asset.id : asset.livePhotoVideoId;
+
+  if (!videoAssetId) {
+    throw new Error('No video source found for GIF export');
+  }
+
+  const basename = asset.originalFileName.replace(/\.[^.]+$/, '');
+  const filename = `${basename}.gif`;
+
+  downloadUrl(`/api/assets/${videoAssetId}/export/gif`, filename);
 };

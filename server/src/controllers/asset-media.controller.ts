@@ -11,6 +11,7 @@ import {
   Query,
   Req,
   Res,
+  StreamableFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -37,7 +38,7 @@ import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.inte
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadFiles } from 'src/types';
-import { ImmichFileResponse, sendFile } from 'src/utils/file';
+import { asStreamableFile, ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
@@ -175,6 +176,18 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
+  }
+
+  @Get(':id/export/gif')
+  @FileResponse()
+  @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
+  @Endpoint({
+    summary: 'Export asset as GIF',
+    description: 'Converts the specified video asset into an animated GIF and streams the result.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  exportAssetGif(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<StreamableFile> {
+    return this.service.exportGif(auth, id).then(asStreamableFile);
   }
 
   @Post('bulk-upload-check')

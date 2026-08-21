@@ -574,6 +574,68 @@ describe(AssetMediaService.name, () => {
     });
   });
 
+  describe('exportGif', () => {
+    it('should require the asset.download permission', async () => {
+      await expect(sut.exportGif(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1']),
+        undefined,
+      );
+      expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+      expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+    });
+
+    it('should reject non-video assets', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.asset.getForVideo.mockResolvedValue(null);
+
+      await expect(sut.exportGif(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(NotFoundException);
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should transcode encoded video path to gif stream', async () => {
+      const id = 'asset-1';
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([id]));
+      mocks.asset.getForVideo.mockResolvedValue({
+        originalPath: '/original/video.mov',
+        encodedVideoPath: '/encoded/video.mp4',
+      });
+      mocks.media.transcode.mockResolvedValue();
+      const stream = { once: vitest.fn() } as never;
+      mocks.storage.createReadStream.mockResolvedValue({ stream, type: 'image/gif', length: 10 });
+
+      const result = await sut.exportGif(authStub.admin, id);
+
+      expect(result.type).toBe('image/gif');
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/encoded/video.mp4',
+        expect.stringContaining(`immich-export-${id}-`),
+        expect.objectContaining({
+          inputOptions: [],
+          twoPass: false,
+          outputOptions: expect.arrayContaining([
+            '-map',
+            '0:v:0',
+            '-vf',
+            'fps=10,scale=640:-1:flags=lanczos',
+            '-t',
+            '15',
+            '-loop',
+            '0',
+            '-f',
+            'gif',
+          ]),
+        }),
+      );
+      expect(mocks.storage.createReadStream).toHaveBeenCalledWith(
+        expect.stringContaining(`immich-export-${id}-`),
+        'image/gif',
+      );
+    });
+  });
+
   describe('viewThumbnail', () => {
     it('should require asset.view permissions', async () => {
       await expect(sut.viewThumbnail(authStub.admin, 'id', {})).rejects.toBeInstanceOf(BadRequestException);

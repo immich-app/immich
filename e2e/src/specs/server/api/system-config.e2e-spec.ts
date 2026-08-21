@@ -47,5 +47,50 @@ describe('/system-config', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(expect.stringContaining('Invalid storage template')));
     });
+
+    it('should update ffmpeg gif max duration', async () => {
+      const config = await getSystemConfig(admin.accessToken);
+
+      const { status, body } = await request(app)
+        .put('/system-config')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          ...config,
+          ffmpeg: {
+            ...config.ffmpeg,
+            gif: {
+              ...config.ffmpeg.gif,
+              maxDuration: 7,
+            },
+          },
+        });
+
+      expect(status).toBe(200);
+      expect(body.ffmpeg.gif.maxDuration).toBe(7);
+
+      const refreshed = await getSystemConfig(admin.accessToken);
+      expect(refreshed.ffmpeg.gif.maxDuration).toBe(7);
+    });
+
+    it('should reject invalid ffmpeg gif max duration', async () => {
+      const config = await getSystemConfig(admin.accessToken);
+
+      const { status, body } = await request(app)
+        .put('/system-config')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          ...config,
+          ffmpeg: {
+            ...config.ffmpeg,
+            gif: {
+              ...config.ffmpeg.gif,
+              maxDuration: 0,
+            },
+          },
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(expect.stringContaining('ffmpeg.gif.maxDuration')));
+    });
   });
 });

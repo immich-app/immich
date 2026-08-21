@@ -23,6 +23,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
+const motionPhotoAssetFilepath = `${testAssetDir}/formats/motionphoto/pixel-8a.jpg`;
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -87,15 +88,26 @@ describe('/asset', () => {
 
     await utils.waitForWebsocketEvent({ event: 'assetUpload', id: ratingAsset.id });
 
+    const motionPhotoAsset = await utils.createAsset(user1.accessToken, {
+      isFavorite: true,
+      fileCreatedAt: yesterday.toUTC().toISO(),
+      fileModifiedAt: yesterday.toUTC().toISO(),
+      assetData: {
+        filename: 'pixel-8a.jpg',
+        bytes: await readFile(motionPhotoAssetFilepath),
+      },
+    });
+
+    await utils.poll(
+      async () => utils.getAssetInfo(user1.accessToken, motionPhotoAsset.id),
+      (asset) => !!asset.livePhotoVideoId,
+      (asset) => asset,
+    );
+
     user1Assets = await Promise.all([
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
-      utils.createAsset(user1.accessToken, {
-        isFavorite: true,
-        fileCreatedAt: yesterday.toUTC().toISO(),
-        fileModifiedAt: yesterday.toUTC().toISO(),
-        assetData: { filename: 'example.mp4' },
-      }),
+      Promise.resolve(motionPhotoAsset),
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
     ]);
@@ -147,6 +159,78 @@ describe('/asset', () => {
 
       expect(response.status).toBe(200);
       expect(response.headers['content-type']).toEqual('image/png');
+    });
+  });
+
+  describe('GET /assets/:id/export/gif', () => {
+    it('should require access', async () => {
+      const { status, body } = await request(app)
+        .get(`/assets/${user2Assets[0].id}/export/gif`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should work with a shared link', async () => {
+      const sharedLink = await utils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Individual,
+        assetIds: [user1Assets[2].id],
+      });
+
+      const response = await request(app).get(`/assets/${user1Assets[2].id}/export/gif?key=${sharedLink.key}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('image/gif');
+      expect(Buffer.isBuffer(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+    });
+
+    it('should reject non-video assets', async () => {
+      const { status, body } = await request(app)
+        .get(`/assets/${user1Assets[0].id}/export/gif`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(404);
+      expect(body).toMatchObject({ message: expect.stringContaining('not a video') });
+    });
+
+    it('should export a gif from a motion photo asset', async () => {
+      const response = await request(app)
+        .get(`/assets/${user1Assets[2].id}/export/gif`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('image/gif');
+      expect(Buffer.isBuffer(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+    });
+
+    it('should respect the configured max duration', async () => {
+      const config = await utils.getSystemConfig(admin.accessToken);
+      const updated = await request(app)
+        .put('/system-config')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          ...config,
+          ffmpeg: {
+            ...config.ffmpeg,
+            gif: {
+              ...config.ffmpeg.gif,
+              maxDuration: 1,
+            },
+          },
+        });
+
+      expect(updated.status).toBe(200);
+
+      const response = await request(app)
+        .get(`/assets/${user1Assets[2].id}/export/gif`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('image/gif');
+      expect(response.body.length).toBeGreaterThan(0);
     });
   });
 

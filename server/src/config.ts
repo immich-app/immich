@@ -47,6 +47,12 @@ export type SystemConfig = {
     accel: TranscodeHardwareAcceleration;
     accelDecode: boolean;
     tonemap: ToneMapping;
+    gif: {
+      fps: number;
+      maxWidth: number;
+      maxDuration: number;
+      loop: number;
+    };
     realtime: {
       enabled: boolean;
       videoCodecs: VideoCodec[];
@@ -248,6 +254,12 @@ export const defaults = Object.freeze<SystemConfig>({
     tonemap: ToneMapping.Hable,
     accel: TranscodeHardwareAcceleration.Disabled,
     accelDecode: true,
+    gif: {
+      fps: 10,
+      maxWidth: 640,
+      maxDuration: 15,
+      loop: 0,
+    },
     realtime: {
       enabled: false,
       videoCodecs: [VideoCodec.H264, VideoCodec.Hevc],
