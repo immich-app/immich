@@ -11300,6 +11300,19 @@
             }
           },
           {
+            "name": "orientation",
+            "required": false,
+            "in": "query",
+            "description": "Filter by image orientation (landscape or portrait)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "landscape",
+                "portrait"
+              ]
+            }
+          },
+          {
             "name": "personIds",
             "required": false,
             "in": "query",
@@ -22550,6 +22563,14 @@
             "default": "desc",
             "description": "Sort order"
           },
+          "orientation": {
+            "description": "Filter by image orientation (landscape or portrait)",
+            "enum": [
+              "landscape",
+              "portrait"
+            ],
+            "type": "string"
+          },
           "originalFileName": {
             "description": "Filter by original file name",
             "type": "string"
@@ -24315,6 +24336,14 @@
             "description": "Filter by OCR text content",
             "type": "string"
           },
+          "orientation": {
+            "description": "Filter by image orientation (landscape or portrait)",
+            "enum": [
+              "landscape",
+              "portrait"
+            ],
+            "type": "string"
+          },
           "personIds": {
             "description": "Filter by person IDs",
             "items": {
@@ -25804,6 +25833,14 @@
             "description": "Filter by OCR text content",
             "type": "string"
           },
+          "orientation": {
+            "description": "Filter by image orientation (landscape or portrait)",
+            "enum": [
+              "landscape",
+              "portrait"
+            ],
+            "type": "string"
+          },
           "page": {
             "description": "Page number",
             "maximum": 9007199254740991,
@@ -26087,6 +26124,14 @@
           },
           "ocr": {
             "description": "Filter by OCR text content",
+            "type": "string"
+          },
+          "orientation": {
+            "description": "Filter by image orientation (landscape or portrait)",
+            "enum": [
+              "landscape",
+              "portrait"
+            ],
             "type": "string"
           },
           "personIds": {

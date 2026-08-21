@@ -115,6 +115,18 @@ describe(SearchController.name, () => {
       );
     });
 
+    it('should reject orientation as not an enum value', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ orientation: 'square' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['orientation'], message: expect.stringContaining('Invalid option: expected one of') },
+        ]),
+      );
+    });
+
     describe('POST /search/random', () => {
       it('should reject if withStacked is not a boolean', async () => {
         const { status, body } = await request(ctx.getHttpServer())
