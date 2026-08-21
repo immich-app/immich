@@ -995,10 +995,7 @@ describe(AuthService.name, () => {
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.crypto.randomUUID.mockReturnValue(fileId);
-      mocks.oauth.getProfilePicture.mockResolvedValue({
-        contentType: 'image/jpeg',
-        data: pictureBytes.buffer,
-      });
+      mocks.oauth.getProfilePicture.mockResolvedValue(pictureBytes.buffer);
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
@@ -1027,10 +1024,7 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByOAuthId.mockResolvedValue(user);
-      mocks.oauth.getProfilePicture.mockResolvedValue({
-        contentType: 'text/html',
-        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
-      });
+      mocks.oauth.getProfilePicture.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]).buffer);
       mocks.media.generateThumbnail.mockRejectedValue(new Error('not an image'));
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
