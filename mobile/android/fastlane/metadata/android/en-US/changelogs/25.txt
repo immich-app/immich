@@ -1,1 +1,0 @@
-* Add information for uploading asset and error indication with error message for each failed upload.

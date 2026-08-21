@@ -1,1 +1,0 @@
-* User can now upload profile picture from the home page control drawer.
