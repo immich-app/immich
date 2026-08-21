@@ -16,6 +16,7 @@ services:
       context: ../
       dockerfile: server/Dockerfile
       cache_from:
+        # hash is the sha256 of the build-args in docker.yml
         - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-amd64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
         - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-arm64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
       args:

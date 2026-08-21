@@ -51,6 +51,7 @@ export default typescriptEslint.config([
       'unicorn/max-nested-calls': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
       'unicorn/no-unreadable-object-destructuring': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
       // maybe we do want to enable this later. TBD
       'unicorn/prefer-await': 'off',
       'unicorn/consistent-class-member-order': 'off',

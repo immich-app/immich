@@ -22,6 +22,7 @@ export type OAuthConfig = {
   clientId: string;
   clientSecret?: string;
   issuerUrl: string;
+  accountManagementUrl: string;
   endSessionEndpoint: string;
   mobileOverrideEnabled: boolean;
   mobileRedirectUri: string;

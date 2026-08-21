@@ -5,11 +5,11 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftMemoryRepository sut;
+  late MemoryRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = DriftMemoryRepository(ctx.db);
+    sut = MemoryRepository(ctx.db);
   });
 
   tearDown(() async {
