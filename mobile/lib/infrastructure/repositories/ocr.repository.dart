@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/database.dart';
+import 'package:immich_mobile/data/db/table/asset_ocr.drift.dart';
 import 'package:immich_mobile/domain/models/ocr.model.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/ocr.repository.drift.dart';
 
 @DriftAccessor()

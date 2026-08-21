@@ -1,6 +1,6 @@
+import 'package:immich_mobile/data/db/table/partner.drift.dart';
+import 'package:immich_mobile/data/db/table/user.drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 
 User mapToUser(UserEntityData data) => User(
   id: data.id,

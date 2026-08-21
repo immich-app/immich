@@ -3,15 +3,15 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/database.dart';
+import 'package:immich_mobile/data/db/table/remote_album.drift.dart';
+import 'package:immich_mobile/data/db/table/remote_album_asset.drift.dart';
+import 'package:immich_mobile/data/db/table/remote_album_user.drift.dart';
+import 'package:immich_mobile/data/db/table/remote_asset.dart';
+import 'package:immich_mobile/data/db/table/remote_asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.drift.dart';
 
 enum SortRemoteAlbumsBy { id, updatedAt }
