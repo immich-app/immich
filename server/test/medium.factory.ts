@@ -253,6 +253,17 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { albumUser: { albumId, userId, role }, result };
   }
 
+  /** An album owned by one user, containing one asset, shared with a second user */
+  async newSharedAlbum(dto: { role?: AlbumUserRole } = {}) {
+    const { user: owner } = await this.newUser();
+    const { user: sharedWith } = await this.newUser();
+    const { asset } = await this.newAsset({ ownerId: owner.id });
+    const { album } = await this.newAlbum({ ownerId: owner.id }, [asset.id]);
+    await this.newAlbumUser({ albumId: album.id, userId: sharedWith.id, role: dto.role ?? AlbumUserRole.Editor });
+
+    return { album, asset, owner, sharedWith };
+  }
+
   async softDeleteAsset(assetId: string) {
     await this.database.updateTable('asset').set({ deletedAt: new Date() }).where('id', '=', assetId).execute();
   }
