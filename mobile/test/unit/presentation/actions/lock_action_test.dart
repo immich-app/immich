@@ -32,11 +32,9 @@ void main() {
       tester.pumpTestAction(context, const LockAction(source: .timeline), overrides: context.selected(selection));
 
   Future<void> respondToDialog(WidgetTester tester, {required bool confirm}) async {
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.byType(ConfirmDialog), findsOneWidget);
+    await tester.pumpUntilFound(find.byType(ConfirmDialog));
     expect(find.text(StaticTranslations.instance.move_to_locked_folder), findsOneWidget);
-    expect(find.text(StaticTranslations.instance.confirm), findsOneWidget);
-    await tester.tap(find.byType(TextButton).at(confirm ? 1 : 0)); // [cancel, ok]
+    await tester.tap(find.text(confirm ? StaticTranslations.instance.confirm : StaticTranslations.instance.cancel));
     await tester.pumpAndSettle();
   }
 

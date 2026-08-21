@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:logging/logging.dart';
 
 typedef _State = ({bool shouldLock, List<String> assetIds, List<String> localIds});
 
@@ -30,6 +31,8 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
 
 class LockAction extends AssetActionBuilder {
   const LockAction({required super.source});
+
+  static final Logger _log = Logger('LockAction');
 
   @override
   ActionItem? create(BuildContext context, WidgetRef ref) {
@@ -78,13 +81,16 @@ class LockAction extends AssetActionBuilder {
       if (localIds.isNotEmpty) {
         // A locked asset still sits in the device gallery, so offer to remove the local copy.
         keptCount = localIds.length - await assetService.deleteLocal(localIds, trash: false);
+        if (keptCount != 0) {
+          _log.warning('Only deleted ${localIds.length - keptCount} of ${localIds.length} local copies');
+        }
       }
       if (!context.mounted) {
         return;
       }
       final message = shouldLock
           ? keptCount > 0
-                ? context.t.move_to_lock_folder_partial_prompt(count: assetIds.length, kept: keptCount)
+                ? context.t.move_to_lock_folder_partial_prompt(count: assetIds.length)
                 : context.t.move_to_lock_folder_action_prompt(count: assetIds.length)
           : context.t.remove_from_lock_folder_action_prompt(count: assetIds.length);
       // Unlocking is a sensitive action and requires an elevated session
