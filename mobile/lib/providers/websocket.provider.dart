@@ -52,7 +52,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
     if (authenticationState.isAuthenticated) {
       try {
-        final endpoint = Uri.parse(_ref.read(sessionProvider).serverEndpoint!);
+        final endpoint = Uri.parse(_ref.read(authSessionProvider).serverEndpoint);
         dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
         final Socket socket = io(

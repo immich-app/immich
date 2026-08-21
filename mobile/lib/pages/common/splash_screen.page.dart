@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
@@ -304,8 +303,8 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   }
 
   Future<void> resumeSession() async {
-    final Session(:serverUrl, serverEndpoint: endpoint, :accessToken) = ref.read(sessionProvider);
-    if (accessToken != null && serverUrl != null && endpoint != null) {
+    final session = ref.read(sessionProvider).authSession;
+    if (session != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
       final backgroundManager = ref.read(backgroundSyncProvider);
@@ -315,7 +314,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       unawaited(
         ref
             .read(authProvider.notifier)
-            .saveAuthInfo(accessToken: accessToken)
+            .saveAuthInfo(accessToken: session.accessToken)
             .then(
               (_) async {
                 try {
@@ -351,7 +350,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                 }
               },
               onError: (exception) {
-                log.severe('Failed to update auth info with access token: $accessToken');
+                log.severe('Failed to update auth info with access token: ${session.accessToken}');
                 if (!mounted) {
                   return;
                 }

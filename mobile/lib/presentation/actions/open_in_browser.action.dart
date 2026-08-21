@@ -17,7 +17,7 @@ class OpenInBrowserAction extends ActionBuilder {
       .new(icon: Icons.open_in_browser, label: context.t.open_in_browser, onAction: () => _open(ref));
 
   Future<void> _open(WidgetRef ref) async {
-    final serverEndpoint = ref.read(sessionProvider).serverEndpoint!.replaceFirst('/api', '');
+    final serverEndpoint = ref.read(authSessionProvider).serverEndpoint.replaceFirst('/api', '');
     final url = Uri.parse('$serverEndpoint${webPathFor(origin)}/photos/$remoteId');
 
     if (await canLaunchUrl(url)) {

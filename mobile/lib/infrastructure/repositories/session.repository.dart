@@ -45,6 +45,14 @@ class SessionRepository extends CachedKeyValueRepository<SessionKey, Session> {
 
   Session get session => snapshot;
 
+  AuthSession get authSession {
+    final authSession = snapshot.authSession;
+    if (authSession == null) {
+      throw StateError('SessionRepository.authSession read outside an authenticated session');
+    }
+    return authSession;
+  }
+
   Future<void> clear(Iterable<SessionKey> keys) async {
     if (keys.isEmpty) {
       return;

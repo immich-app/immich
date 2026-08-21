@@ -10,3 +10,11 @@ final sessionProvider = Provider.autoDispose<Session>((ref) {
   ref.onDispose(subscription.cancel);
   return repo.session;
 });
+
+final authSessionProvider = Provider.autoDispose<AuthSession>((ref) {
+  final authSession = ref.watch(sessionProvider.select((session) => session.authSession));
+  if (authSession == null) {
+    throw StateError('authSessionProvider read outside an authenticated session');
+  }
+  return authSession;
+});

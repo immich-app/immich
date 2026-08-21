@@ -12,7 +12,7 @@ class PartnerUserAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final url = "${ref.watch(sessionProvider.select((s) => s.serverEndpoint))!}/users/$userId/profile-image";
+    final url = "${ref.watch(authSessionProvider.select((s) => s.serverEndpoint))}/users/$userId/profile-image";
     final nameFirstLetter = name.isNotEmpty ? name[0] : "";
     return CircleAvatar(
       radius: 16,

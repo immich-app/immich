@@ -16,7 +16,7 @@ class UserCircleAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAvatarColor = user.avatarColor.toColor().withValues(alpha: opacity);
     final profileImageUrl =
-        '${ref.watch(sessionProvider.select((s) => s.serverEndpoint))!}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
+        '${ref.watch(authSessionProvider.select((s) => s.serverEndpoint))}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
 
     final textColor = (user.avatarColor.toColor().computeLuminance() > 0.5 ? Colors.black : Colors.white).withValues(
       alpha: opacity,

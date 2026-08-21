@@ -15,6 +15,8 @@ enum SessionKey<T> {
   T decode(String raw) => _codec.decode(raw);
 }
 
+typedef AuthSession = ({String serverUrl, String accessToken, String serverEndpoint});
+
 const defaultSession = Session();
 
 @freezed
@@ -41,4 +43,13 @@ abstract class Session with _$Session {
       .serverEndpoint => copyWith(serverEndpoint: value as String?),
     };
   }
+
+  AuthSession? get authSession => switch (this) {
+    Session(:final serverUrl?, :final accessToken?, :final serverEndpoint?) => (
+      serverUrl: serverUrl,
+      accessToken: accessToken,
+      serverEndpoint: serverEndpoint,
+    ),
+    _ => null,
+  };
 }

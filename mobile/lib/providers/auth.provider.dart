@@ -130,7 +130,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _ref.read(sessionRepository).write(SessionKey.accessToken, accessToken);
     await _apiService.updateHeaders();
 
-    final serverEndpoint = _ref.read(sessionProvider).serverEndpoint!;
+    final serverEndpoint = _ref.read(authSessionProvider).serverEndpoint;
     final headerMap = _ref.read(appConfigProvider).network.customHeaders;
     final customHeaders = headerMap.isEmpty ? null : jsonEncode(headerMap);
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
