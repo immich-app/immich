@@ -1,9 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
-import 'package:immich_mobile/repositories/person_api.repository.dart';
 
 final driftPeopleServiceProvider = Provider<DriftPeopleService>(
   (ref) => DriftPeopleService(ref.watch(driftProvider).peopleRepository, ref.watch(personApiRepositoryProvider)),
