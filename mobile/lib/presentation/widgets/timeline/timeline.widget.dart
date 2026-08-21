@@ -165,6 +165,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   TimelineAssetIndex? _dragAnchorIndex;
   final List<BaseAsset> _draggedAssets = [];
   int? _dragRangeStart;
+  // bumped by every tick and by lift, so a slow range load can only land while it is still the newest
   int _dragGeneration = 0;
   ScrollPhysics? _scrollPhysics;
 

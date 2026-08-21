@@ -64,10 +64,6 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void updateSelection({required List<BaseAsset> added, required List<BaseAsset> removed}) {
-    if (added.isEmpty && removed.isEmpty) {
-      return;
-    }
-
     final selectedAssets = state.selectedAssets.toSet()
       ..removeAll(removed)
       ..addAll(added);
