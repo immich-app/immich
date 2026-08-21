@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -19,6 +20,8 @@ import '../infrastructure/repository.mock.dart';
 
 class MockTimelineFactory extends Mock implements TimelineFactory {}
 
+class MockTimelineRepository extends Mock implements TimelineRepository {}
+
 class MockAssetService extends Mock implements AssetService {}
 
 class MockNativeSyncApi extends Mock implements NativeSyncApi {}
@@ -28,6 +31,7 @@ void main() {
   late MockAssetService assetService;
   late MockNativeSyncApi nativeSyncApi;
   late MockTimelineFactory timelineFactory;
+  late MockTimelineRepository timelineRepository;
   late List<TimelineService> createdTimelineServices;
   late ProviderContainer container;
 
@@ -41,6 +45,7 @@ void main() {
     assetService = MockAssetService();
     nativeSyncApi = MockNativeSyncApi();
     timelineFactory = MockTimelineFactory();
+    timelineRepository = MockTimelineRepository();
     createdTimelineServices = [];
 
     when(() => mockLocalAssetRepository.get(any())).thenAnswer((_) async => null);
@@ -53,6 +58,10 @@ void main() {
 
     final drift = MockDrift();
     when(() => drift.localAssetRepository).thenReturn(mockLocalAssetRepository);
+    when(() => drift.timelineRepository).thenReturn(timelineRepository);
+    when(
+      () => timelineRepository.getViewableRemoteAssetsByChecksum(any(), any()),
+    ).thenAnswer((_) async => const []);
 
     container = ProviderContainer(
       overrides: [
@@ -60,6 +69,7 @@ void main() {
         assetServiceProvider.overrideWithValue(assetService),
         nativeSyncApiProvider.overrideWithValue(nativeSyncApi),
         timelineFactoryProvider.overrideWith((ref) => timelineFactory),
+        timelineUsersProvider.overrideWith((ref) => Stream.value(['user-1'])),
       ],
     );
 
@@ -151,6 +161,9 @@ void main() {
       () => nativeSyncApi.hashAssets(['local-1']),
     ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
     when(() => assetService.getAllRemoteAssetDebugByChecksum('checksum-1')).thenAnswer((_) async => [remoteAsset]);
+    when(
+      () => timelineRepository.getViewableRemoteAssetsByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => [remoteAsset]);
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
@@ -158,7 +171,8 @@ void main() {
     expect((result.asset as RemoteAsset).id, 'remote-1');
     expect((result.asset as RemoteAsset).localId, 'local-1');
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
-    verify(() => assetService.getAllRemoteAssetDebugByChecksum('checksum-1')).called(1);
+    verify(() => timelineRepository.getViewableRemoteAssetsByChecksum(['user-1'], 'checksum-1')).called(1);
+    verifyNever(() => assetService.getAllRemoteAssetDebugByChecksum(any()));
   });
 
   test('returns transient asset for path-only attachment', () async {

@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
@@ -26,6 +27,8 @@ final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
     assetService: ref.read(assetServiceProvider),
     nativeSyncApi: ref.read(nativeSyncApiProvider),
     timelineFactory: ref.read(timelineFactoryProvider),
+    timelineRepository: ref.read(driftProvider).timelineRepository,
+    timelineUsers: () => ref.read(timelineUsersProvider.future),
   ),
 );
 
@@ -34,6 +37,8 @@ class ViewIntentAssetResolver {
   final AssetService _assetService;
   final NativeSyncApi _nativeSyncApi;
   final TimelineFactory _timelineFactory;
+  final TimelineRepository timelineRepository;
+  final Future<List<String>> Function() timelineUsers;
   static final Logger _logger = Logger('ViewIntentAssetResolver');
 
   const ViewIntentAssetResolver({
@@ -41,6 +46,8 @@ class ViewIntentAssetResolver {
     required this._assetService,
     required this._nativeSyncApi,
     required this._timelineFactory,
+    required this.timelineRepository,
+    required this.timelineUsers,
   });
 
   Future<ViewIntentResolution> resolve(ViewIntentPayload attachment) async {
@@ -126,9 +133,12 @@ class ViewIntentAssetResolver {
     }
 
     if (remoteAsset == null && checksum != null) {
-      final candidates = await _assetService.getAllRemoteAssetDebugByChecksum(checksum);
+      final candidates = await timelineRepository.getViewableRemoteAssetsByChecksum(
+        await timelineUsers(),
+        checksum,
+      );
       if (candidates.isNotEmpty) {
-        remoteAsset = ([...candidates]..sort(_compareRemoteAssetCandidates)).first;
+        remoteAsset = candidates.first;
         _logger.fine('resolve matched remote asset by checksum: $checksum, asset=$remoteAsset');
       }
     }
@@ -138,17 +148,6 @@ class ViewIntentAssetResolver {
     }
     final asset = remoteAsset.copyWith(localId: localAssetId);
     return asset;
-  }
-
-  static int _compareRemoteAssetCandidates(RemoteAsset first, RemoteAsset second) {
-    if (first.isTrashed != second.isTrashed) {
-      return first.isTrashed ? 1 : -1;
-    }
-
-    final firstDate = first.uploadedAt ?? first.createdAt;
-    final secondDate = second.uploadedAt ?? second.createdAt;
-    final date = secondDate.compareTo(firstDate);
-    return date != 0 ? date : first.id.compareTo(second.id);
   }
 
   LocalAsset _toTransientAsset(ViewIntentPayload attachment, String? checksum) {
