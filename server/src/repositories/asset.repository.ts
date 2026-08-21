@@ -194,10 +194,10 @@ export class AssetRepository {
           .values(audio)
           .onConflict((oc) =>
             oc.column('assetId').doUpdateSet(({ ref }) => ({
-              bitrate: ref('asset_audio.bitrate'),
-              index: ref('asset_audio.index'),
-              profile: ref('asset_audio.profile'),
-              codecName: ref('asset_audio.codecName'),
+              bitrate: ref('excluded.bitrate'),
+              index: ref('excluded.index'),
+              profile: ref('excluded.profile'),
+              codecName: ref('excluded.codecName'),
             })),
           ),
       );
@@ -210,21 +210,22 @@ export class AssetRepository {
           .values(video)
           .onConflict((oc) =>
             oc.column('assetId').doUpdateSet(({ ref }) => ({
-              bitrate: ref('asset_video.bitrate'),
-              timeBase: ref('asset_video.timeBase'),
-              index: ref('asset_video.index'),
-              profile: ref('asset_video.profile'),
-              level: ref('asset_video.level'),
-              colorPrimaries: ref('asset_video.colorPrimaries'),
-              colorTransfer: ref('asset_video.colorTransfer'),
-              colorMatrix: ref('asset_video.colorMatrix'),
-              dvProfile: ref('asset_video.dvProfile'),
-              dvLevel: ref('asset_video.dvLevel'),
-              dvBlSignalCompatibilityId: ref('asset_video.dvBlSignalCompatibilityId'),
-              codecName: ref('asset_video.codecName'),
-              formatName: ref('asset_video.formatName'),
-              formatLongName: ref('asset_video.formatLongName'),
-              pixelFormat: ref('asset_video.pixelFormat'),
+              bitrate: ref('excluded.bitrate'),
+              frameCount: ref('excluded.frameCount'),
+              timeBase: ref('excluded.timeBase'),
+              index: ref('excluded.index'),
+              profile: ref('excluded.profile'),
+              level: ref('excluded.level'),
+              colorPrimaries: ref('excluded.colorPrimaries'),
+              colorTransfer: ref('excluded.colorTransfer'),
+              colorMatrix: ref('excluded.colorMatrix'),
+              dvProfile: ref('excluded.dvProfile'),
+              dvLevel: ref('excluded.dvLevel'),
+              dvBlSignalCompatibilityId: ref('excluded.dvBlSignalCompatibilityId'),
+              codecName: ref('excluded.codecName'),
+              formatName: ref('excluded.formatName'),
+              formatLongName: ref('excluded.formatLongName'),
+              pixelFormat: ref('excluded.pixelFormat'),
             })),
           ),
       );
@@ -237,12 +238,12 @@ export class AssetRepository {
           .values(keyframes)
           .onConflict((oc) =>
             oc.column('assetId').doUpdateSet(({ ref }) => ({
-              pts: ref('asset_keyframe.pts'),
-              accDuration: ref('asset_keyframe.accDuration'),
-              ownDuration: ref('asset_keyframe.ownDuration'),
-              totalDuration: ref('asset_keyframe.totalDuration'),
-              packetCount: ref('asset_keyframe.packetCount'),
-              outputFrames: ref('asset_keyframe.outputFrames'),
+              pts: ref('excluded.pts'),
+              accDuration: ref('excluded.accDuration'),
+              ownDuration: ref('excluded.ownDuration'),
+              totalDuration: ref('excluded.totalDuration'),
+              packetCount: ref('excluded.packetCount'),
+              outputFrames: ref('excluded.outputFrames'),
             })),
           ),
       );
