@@ -45,8 +45,16 @@ export class OAuthRepository {
 
   async authorize(config: OAuthConfig, redirectUrl: string, state?: string, codeChallenge?: string, nonce?: string) {
     const client = await this.getClient(config);
+
+    // Clients that generate their own `state` (e.g. mobile) are also responsible for generating and
+    // round-tripping their own `nonce`. Only auto-generate a nonce for the server-managed, cookie-based
+    // flow (web), so that older mobile clients that never send a nonce continue to work with IdPs that
+    // echo one back on the ID token (see https://github.com/immich-app/immich/issues/29055).
+    const isServerManagedFlow = !state;
     state ??= randomState();
-    nonce ??= randomNonce();
+    if (isServerManagedFlow) {
+      nonce ??= randomNonce();
+    }
 
     let codeVerifier: string | null;
     if (codeChallenge) {
@@ -60,8 +68,11 @@ export class OAuthRepository {
       redirect_uri: redirectUrl,
       scope: config.scope,
       state,
-      nonce,
     };
+
+    if (nonce) {
+      params.nonce = nonce;
+    }
 
     if (config.prompt) {
       params.prompt = config.prompt;

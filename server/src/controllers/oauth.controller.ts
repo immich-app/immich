@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
+  CookieResponse,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
   OAuthBackchannelLogoutDto,
@@ -50,18 +51,14 @@ export class OAuthController {
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<OAuthAuthorizeResponseDto> {
     const { url, state, nonce, codeVerifier } = await this.service.authorize(dto);
-    return respondWithCookie(
-      res,
-      { url },
-      {
-        isSecure: loginDetails.isSecure,
-        values: [
-          { key: ImmichCookie.OAuthState, value: state },
-          { key: ImmichCookie.OAuthNonce, value: nonce },
-          { key: ImmichCookie.OAuthCodeVerifier, value: codeVerifier },
-        ],
-      },
-    );
+    const values: CookieResponse['values'] = [
+      { key: ImmichCookie.OAuthState, value: state },
+      { key: ImmichCookie.OAuthCodeVerifier, value: codeVerifier },
+    ];
+    if (nonce) {
+      values.push({ key: ImmichCookie.OAuthNonce, value: nonce });
+    }
+    return respondWithCookie(res, { url }, { isSecure: loginDetails.isSecure, values });
   }
 
   @Post('callback')
