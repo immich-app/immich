@@ -149,6 +149,17 @@ where
     "albumAssets"."livePhotoVideoId"
   ] && array[$2]::uuid[]
 
+-- AccessRepository.assetFile.checkOwnerAccess
+select
+  "asset_file"."id"
+from
+  "asset_file"
+  inner join "asset" on "asset"."id" = "asset_file"."assetId"
+where
+  "asset"."visibility" != $1
+  and "asset"."ownerId" = $2
+  and "asset_file"."id" in ($3)
+
 -- AccessRepository.authDevice.checkOwnerAccess
 select
   "session"."id"
