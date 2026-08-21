@@ -81,6 +81,8 @@ class PresentationContext {
       final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
       await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
       await SessionRepository.ensureInitialized(db);
+      await SessionRepository.instance.write(.serverUrl, serverEndpoint);
+      await SessionRepository.instance.write(.accessToken, 'access-token');
       await SessionRepository.instance.write(.serverEndpoint, serverEndpoint);
       _db = db;
     }
