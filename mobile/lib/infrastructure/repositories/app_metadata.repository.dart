@@ -1,12 +1,14 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/infrastructure/entities/app_metadata.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/app_metadata.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-class AppMetadataRepository {
-  final Drift _db;
+@DriftAccessor()
+class AppMetadataRepository extends DatabaseAccessor<Drift> with $AppMetadataRepositoryMixin {
+  AppMetadataRepository(super.attachedDatabase);
 
-  const AppMetadataRepository(this._db);
+  Drift get _db => attachedDatabase;
 
   Future<T> get<T>(AppMetadataKey<T> key) async {
     final row = await (_db.select(_db.appMetadataEntity)..where((row) => row.key.equals(key.name))).getSingleOrNull();

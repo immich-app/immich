@@ -31,7 +31,7 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
       .count(where: (row) => row.key.equals(AppMetadataKey.version.name))
       .map((count) => count == 0)
       .getSingle();
-  final metadata = AppMetadataRepository(drift);
+  final metadata = drift.appMetadataRepository;
   final version = await metadata.get(.version);
 
   if (version < 25) {

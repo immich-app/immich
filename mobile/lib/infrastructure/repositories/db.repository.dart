@@ -34,6 +34,7 @@ import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/app_metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
@@ -93,6 +94,7 @@ import 'package:sqlite_async/sqlite_async.dart';
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
   daos: [
+    AppMetadataRepository,
     AuthUserRepository,
     BackupRepository,
     LocalAlbumRepository,

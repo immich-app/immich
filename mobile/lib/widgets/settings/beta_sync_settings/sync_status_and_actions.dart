@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
@@ -11,7 +12,6 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
@@ -223,7 +223,6 @@ class _SyncStatsCounts extends ConsumerWidget {
     final localAlbumService = LocalAlbumService(db.localAlbumRepository);
     final remoteAlbumService = ref.watch(remoteAlbumServiceProvider);
     final memoryService = DriftMemoryService(db.memoryRepository);
-    final appSettingsService = ref.watch(appSettingsServiceProvider);
 
     Future<List<dynamic>> loadCounts() async {
       final assetCounts = assetService.getAssetCounts();
@@ -231,7 +230,7 @@ class _SyncStatsCounts extends ConsumerWidget {
       final remoteAlbumCounts = remoteAlbumService.getCount();
       final memoryCount = memoryService.getCount();
       final getLocalHashedCount = assetService.getLocalHashedCount();
-      final manageLocalMediaAndroid = appMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid);
+      final manageLocalMediaAndroid = db.appMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid);
 
       return await Future.wait([
         assetCounts,
@@ -343,8 +342,7 @@ class _SyncStatsCounts extends ConsumerWidget {
               ),
             ),
             // To be removed once the experimental feature is stable
-            if (CurrentPlatform.isAndroid &&
-                appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) ...[
+            if (CurrentPlatform.isAndroid && manageLocalMediaAndroid) ...[
               SettingGroupTitle(title: context.t.trash),
               Consumer(
                 builder: (context, ref, _) {

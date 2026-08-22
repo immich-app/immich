@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
@@ -69,7 +70,8 @@ class AdvancedSettings extends HookConsumerWidget {
 
         if (isManageMediaSupported.value) {
           manageLocalMediaAndroid.value = await ref
-              .read(appMetadataRepositoryProvider)
+              .read(driftProvider)
+              .appMetadataRepository
               .get(AppMetadataKey.manageLocalMediaAndroid);
           if (!context.mounted) {
             return;
@@ -103,9 +105,9 @@ class AdvancedSettings extends HookConsumerWidget {
                   if (!context.mounted) {
                     return;
                   }
-                  await ref.read(appMetadataRepositoryProvider).set(.manageLocalMediaAndroid, result);
+                  await ref.read(driftProvider).appMetadataRepository.set(.manageLocalMediaAndroid, result);
                 } else {
-                  await ref.read(appMetadataRepositoryProvider).set(.manageLocalMediaAndroid, false);
+                  await ref.read(driftProvider).appMetadataRepository.set(.manageLocalMediaAndroid, false);
                 }
               },
             ),
