@@ -12,7 +12,7 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 
   Drift get _db => attachedDatabase;
 
-  Future<List<DriftMemory>> getAll(String ownerId, {bool onlyToday = true}) async {
+  Future<List<DriftMemory>> getAll(String ownerId, {bool onlyToday = true, bool onlyFavorites = false}) async {
     final query =
         _db.select(_db.memoryEntity).join([
             innerJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
@@ -25,6 +25,10 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
           ])
           ..where(_db.memoryEntity.ownerId.equals(ownerId))
           ..where(_db.memoryEntity.deletedAt.isNull());
+
+    if (onlyFavorites) {
+      query.where(_db.memoryEntity.isSaved.equals(true));
+    }
 
     if (onlyToday) {
       final now = DateTime.now();

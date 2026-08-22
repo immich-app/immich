@@ -21,12 +21,12 @@ final driftMemoryLaneProvider = FutureProvider.autoDispose<List<DriftMemory>>((r
   return service.getMemoryLane(userId);
 });
 
-final driftAllMemoriesProvider = FutureProvider.autoDispose<List<DriftMemory>>((ref) {
+final driftAllMemoriesProvider = FutureProvider.autoDispose.family<List<DriftMemory>, bool>((ref, onlyFavorites) {
   final (userId, enabled) = ref.watch(currentUserProvider.select((user) => (user?.id, user?.memoryEnabled ?? true)));
   if (userId == null || !enabled) {
     return const [];
   }
 
   final service = DriftMemoryService(ref.watch(driftProvider).memoryRepository);
-  return service.getAllMemories(userId);
+  return service.getAllMemories(userId, onlyFavorites: onlyFavorites);
 });

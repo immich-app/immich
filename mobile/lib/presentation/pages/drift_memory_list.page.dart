@@ -23,7 +23,7 @@ class _DriftMemoryListPageState extends ConsumerState<DriftMemoryListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final memories = ref.watch(driftAllMemoriesProvider);
+    final memories = ref.watch(driftAllMemoriesProvider(_onlyFavorites));
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -42,10 +42,6 @@ class _DriftMemoryListPageState extends ConsumerState<DriftMemoryListPage> {
           body: SafeArea(
             child: memories.when(
               data: (memories) {
-                if (_onlyFavorites) {
-                  memories = memories.where((memory) => memory.isSaved).toList();
-                }
-
                 return GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: constraints.maxWidth > 600 ? 4 : 2,
