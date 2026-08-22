@@ -891,6 +891,10 @@ describe(PersonService.name, () => {
   });
 
   describe('handleDetectFaces', () => {
+    beforeEach(() => {
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+    });
+
     it('should skip if machine learning is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
