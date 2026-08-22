@@ -291,47 +291,41 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<bool> _handleBackup() async {
-    var didComplete = true;
-    await runZonedGuarded(
-      () async {
-        if (_isCleanedUp) {
-          return;
-        }
+    final didComplete = await runZonedGuarded(() async {
+      if (_isCleanedUp) {
+        return true;
+      }
 
-        if (!_isBackupEnabled) {
-          _logger.info("Backup is disabled. Skipping backup routine");
-          return;
-        }
+      if (!_isBackupEnabled) {
+        _logger.info("Backup is disabled. Skipping backup routine");
+        return true;
+      }
 
-        final currentUser = _ref?.read(currentUserProvider);
-        if (currentUser == null) {
-          _logger.warning("No current user found. Skipping backup from background");
-          return;
-        }
+      final currentUser = _ref?.read(currentUserProvider);
+      if (currentUser == null) {
+        _logger.warning("No current user found. Skipping backup from background");
+        return true;
+      }
 
-        if (Platform.isIOS) {
-          return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
-        }
+      if (Platform.isIOS) {
+        await _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
+        return true;
+      }
 
-        final uploadService = _ref?.read(foregroundUploadServiceProvider);
-        final candidates = await uploadService?.getBackupCandidates(currentUser.id) ?? const [];
-        var uploaded = 0;
-        var skipped = 0;
-        await uploadService?.uploadCandidates(
-          currentUser.id,
-          _cancellationToken,
-          callbacks: UploadCallbacks(onSuccess: (_, _) => uploaded++, onSkipped: (_) => skipped++),
-          useSequentialUpload: true,
-        );
-        // Retry only when nothing moved; skipped candidates wait for the periodic worker instead
-        didComplete = uploaded > 0 || uploaded + skipped >= candidates.length;
-      },
-      (error, stack) {
-        didComplete = false;
-        dPrint(() => "Error in backup zone $error, $stack");
-      },
-    );
-    return didComplete;
+      final uploadService = _ref?.read(foregroundUploadServiceProvider);
+      final candidates = await uploadService?.getBackupCandidates(currentUser.id) ?? const [];
+      var uploaded = 0;
+      var skipped = 0;
+      await uploadService?.uploadCandidates(
+        currentUser.id,
+        _cancellationToken,
+        callbacks: UploadCallbacks(onSuccess: (_, _) => uploaded++, onSkipped: (_) => skipped++),
+        useSequentialUpload: true,
+      );
+      // Retry only when nothing moved; skipped candidates wait for the periodic worker instead
+      return uploaded > 0 || skipped >= candidates.length;
+    }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
+    return didComplete ?? false;
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {
