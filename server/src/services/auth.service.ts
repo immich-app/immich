@@ -40,7 +40,6 @@ export interface LoginDetails {
 
 interface ClaimOptions<T> {
   key: string;
-  default: T;
   isValid: (value: unknown) => value is T;
   parse?: (raw: unknown) => unknown;
 }
@@ -634,55 +633,42 @@ export class AuthService extends BaseService {
     return mapLoginResponse(user, token);
   }
 
-  private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>, useDefault: boolean): T | undefined {
+  private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T | undefined {
     const raw = profile[options.key as keyof OAuthProfile];
     const value = options.parse ? options.parse(raw) : raw;
-    if (options.isValid(value)) {
-      return value;
-    }
-    return useDefault ? options.default : undefined;
+    return options.isValid(value) ? value : undefined;
   }
 
   private parseOAuthClaims(profile: OAuthProfile, oauth: OAuthClaimsConfig, useDefaults: boolean): ParsedOAuthClaims {
     const { defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
     const claims: ParsedOAuthClaims = {};
 
-    // Sync label only when a non-default claim is configured.
-    const syncStorageLabel = storageLabelClaim !== defaults.oauth.storageLabelClaim;
+    const storageLabel = this.getClaim(profile, {
+      key: storageLabelClaim,
+      isValid: (value: unknown): value is string => typeof value === 'string',
+    });
 
-    if (useDefaults || (syncStorageLabel && storageLabelClaim in profile)) {
-      const storageLabel = this.getClaim(
-        profile,
-        {
-          key: storageLabelClaim,
-          default: '',
-          isValid: (value: unknown): value is string => typeof value === 'string',
-        },
-        useDefaults,
-      );
-
-      if (storageLabel !== undefined) {
-        claims.storageLabel = useDefaults ? storageLabel || null : this.formatStorageLabel(storageLabel);
-      }
+    if (useDefaults) {
+      claims.storageLabel = storageLabel || null;
+    } else if (storageLabelClaim !== defaults.oauth.storageLabelClaim && storageLabel !== undefined) {
+      // Default claim (preferred_username) is registration-only; login sync is opt-in.
+      claims.storageLabel = this.formatStorageLabel(storageLabel);
     }
 
-    if (useDefaults || storageQuotaClaim in profile) {
-      const storageQuota = this.getClaim(
-        profile,
-        {
-          key: storageQuotaClaim,
-          default: defaultStorageQuota,
-          parse: Number,
-          isValid: (value: unknown): value is number =>
-            typeof value === 'number' && Number.isFinite(value) && (value === -1 || value >= 0),
-        },
-        useDefaults,
-      );
+    const storageQuota = this.getClaim(profile, {
+      key: storageQuotaClaim,
+      parse: Number,
+      isValid: (value: unknown): value is number =>
+        typeof value === 'number' && Number.isFinite(value) && (value === -1 || value >= 0),
+    });
 
-      if (storageQuota !== undefined) {
-        claims.quotaSizeInBytes =
-          storageQuota === null || storageQuota === -1 ? null : storageQuota * HumanReadableSize.GiB;
-      }
+    if (storageQuota !== undefined) {
+      claims.quotaSizeInBytes = storageQuota === -1 ? null : storageQuota * HumanReadableSize.GiB;
+    } else if (useDefaults) {
+      claims.quotaSizeInBytes =
+        defaultStorageQuota === null || defaultStorageQuota === -1
+          ? null
+          : defaultStorageQuota * HumanReadableSize.GiB;
     }
 
     return claims;
