@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OpenInBrowserAction extends ActionBuilder {
@@ -17,7 +17,7 @@ class OpenInBrowserAction extends ActionBuilder {
       .new(icon: Icons.open_in_browser, label: context.t.open_in_browser, onAction: () => _open(ref));
 
   Future<void> _open(WidgetRef ref) async {
-    final serverEndpoint = ref.read(storeServiceProvider).get(.serverEndpoint).replaceFirst('/api', '');
+    final serverEndpoint = ref.read(authSessionProvider).serverEndpoint.replaceFirst('/api', '');
     final url = Uri.parse('$serverEndpoint${webPathFor(origin)}/photos/$remoteId');
 
     if (await canLaunchUrl(url)) {

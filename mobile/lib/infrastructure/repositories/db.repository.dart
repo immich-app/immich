@@ -25,6 +25,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/session.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
@@ -86,6 +87,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     AssetEditEntity,
     SettingsEntity,
     AssetOcrEntity,
+    SessionEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
   daos: [
@@ -161,7 +163,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -358,6 +360,9 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
+              },
+              from31To32: (m, v32) async {
+                await m.createTable(v32.session);
               },
             ),
           ),

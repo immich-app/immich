@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
 Widget userAvatar(BuildContext context, UserDto u, {double? radius}) {
-  final url = "${Store.get(StoreKey.serverEndpoint)}/users/${u.id}/profile-image";
+  final url = "${SessionRepository.instance.session.serverEndpoint!}/users/${u.id}/profile-image";
   final nameFirstLetter = u.name.isNotEmpty ? u.name[0] : "";
   return CircleAvatar(
     radius: radius,

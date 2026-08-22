@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -54,6 +55,7 @@ abstract final class Bootstrap {
     final StoreRepository storeRepo = StoreRepository(drift);
 
     await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
+    await SessionRepository.ensureInitialized(drift);
 
     final settingsRepo = await SettingsRepository.ensureInitialized(drift);
     final logDb = await _initLogger(settingsRepository: settingsRepo, shouldBufferLogs: shouldBufferLogs);

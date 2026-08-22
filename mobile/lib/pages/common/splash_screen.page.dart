@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -302,11 +303,8 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   }
 
   Future<void> resumeSession() async {
-    final serverUrl = Store.tryGet(StoreKey.serverUrl);
-    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
-    final accessToken = Store.tryGet(StoreKey.accessToken);
-
-    if (accessToken != null && serverUrl != null && endpoint != null) {
+    final session = ref.read(sessionProvider).authSession;
+    if (session != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
       final backgroundManager = ref.read(backgroundSyncProvider);
@@ -316,7 +314,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       unawaited(
         ref
             .read(authProvider.notifier)
-            .saveAuthInfo(accessToken: accessToken)
+            .saveAuthInfo(accessToken: session.accessToken)
             .then(
               (_) async {
                 try {
@@ -352,7 +350,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                 }
               },
               onError: (exception) {
-                log.severe('Failed to update auth info with access token: $accessToken');
+                log.severe('Failed to update auth info with access token: ${session.accessToken}');
                 if (!mounted) {
                   return;
                 }

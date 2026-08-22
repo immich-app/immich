@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
@@ -23,10 +21,8 @@ class AuthGuard extends AutoRouteGuard {
     // guards, so we keep this function fully sync and validate the token in
     // the background — otherwise a slow validateAccessToken() request would
     // block the route transition for as long as the OS-level HTTP timeout.
-    try {
-      Store.get(StoreKey.accessToken);
-    } on StoreKeyNotFoundException catch (_) {
-      _log.warning('No access token in the store.');
+    if (SessionRepository.instance.session.accessToken == null) {
+      _log.warning('No access token in the session.');
       resolver.next(false);
       unawaited(router.replaceAll([const LoginRoute()]));
       return;
@@ -40,7 +36,7 @@ class AuthGuard extends AutoRouteGuard {
     if (_validateInFlight) {
       return;
     }
-    final token = Store.tryGet(StoreKey.accessToken);
+    final token = SessionRepository.instance.session.accessToken;
     if (token == null) {
       return;
     }
@@ -50,7 +46,7 @@ class AuthGuard extends AutoRouteGuard {
       if (res == null || res.authStatus != true) {
         // Token may have changed during validation (user logged out + logged in
         // again); only act if it still applies to the current session.
-        if (Store.tryGet(StoreKey.accessToken) != token) {
+        if (SessionRepository.instance.session.accessToken != token) {
           return;
         }
         _log.fine('User token is invalid. Redirecting to login');
@@ -61,7 +57,7 @@ class AuthGuard extends AutoRouteGuard {
       if (e.code != HttpStatus.unauthorized) {
         return;
       }
-      if (Store.tryGet(StoreKey.accessToken) != token) {
+      if (SessionRepository.instance.session.accessToken != token) {
         return;
       }
       _log.warning("Unauthorized access token.");
