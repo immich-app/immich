@@ -18,7 +18,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
@@ -248,7 +248,8 @@ class LoginForm extends HookConsumerWidget {
     }
 
     Future<bool> isSyncRemoteDeletionsMode() async =>
-        Platform.isAndroid && await ref.read(appMetadataRepositoryProvider).get(AppMetadataKey.manageLocalMediaAndroid);
+        Platform.isAndroid &&
+        await ref.read(driftProvider).appMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid);
 
     Future<void> login() async {
       TextInput.finishAutofillContext();

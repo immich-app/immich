@@ -18,7 +18,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/app_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/session.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/app_metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
@@ -205,7 +204,16 @@ Future<void> _migrateTo28(Drift drift) async {
 }
 
 Future<void> _migrateTo29(Drift drift) async {
-  final migrator = _StoreMigrator.appMetadata(drift);
+  final migrator = _StoreMigrator<AppMetadataKey>._(
+    drift,
+    encode: (key, value) => key.encode(value),
+    readDefault: (_) => null,
+    insertRow: (batch, name, value) => batch.insert(
+      drift.appMetadataEntity,
+      AppMetadataEntityCompanion(key: Value(name), value: Value(value)),
+      mode: InsertMode.insertOrReplace,
+    ),
+  );
 
   final rawStatus = await migrator.readLegacyStoreString(.legacySyncMigrationStatus);
   if (rawStatus != null) {
