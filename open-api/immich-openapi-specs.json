@@ -8067,6 +8067,17 @@
             }
           },
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Memory ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "isSaved",
             "required": false,
             "in": "query",
@@ -8085,11 +8096,31 @@
             }
           },
           {
+            "name": "isUpcoming",
+            "required": false,
+            "in": "query",
+            "description": "Filter by memories that have not been shown yet",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "order",
             "required": false,
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
             }
           },
           {
@@ -8236,6 +8267,17 @@
             }
           },
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Memory ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "isSaved",
             "required": false,
             "in": "query",
@@ -8254,11 +8296,31 @@
             }
           },
           {
+            "name": "isUpcoming",
+            "required": false,
+            "in": "query",
+            "description": "Filter by memories that have not been shown yet",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "order",
             "required": false,
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
             }
           },
           {
@@ -22181,11 +22243,16 @@
           "enabled": {
             "description": "Whether memories are enabled",
             "type": "boolean"
+          },
+          "sidebarWeb": {
+            "description": "Whether memories appear in web sidebar",
+            "type": "boolean"
           }
         },
         "required": [
           "duration",
-          "enabled"
+          "enabled",
+          "sidebarWeb"
         ],
         "type": "object"
       },
@@ -22199,6 +22266,10 @@
           },
           "enabled": {
             "description": "Whether memories are enabled",
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "description": "Whether memories appear in web sidebar",
             "type": "boolean"
           }
         },
