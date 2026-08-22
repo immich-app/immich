@@ -3,7 +3,6 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 
 @DriftAccessor()
 class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin {

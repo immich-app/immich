@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 
 part 'store.model.freezed.dart';
 
