@@ -82,7 +82,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       trashedLocalAssetRepository: db.trashedLocalAssetRepository,
       assetMediaRepository: ref.read(assetMediaRepositoryProvider),
       permissionRepository: ref.read(permissionRepositoryProvider),
-      appMetadataRepository: ref.read(appMetadataRepositoryProvider),
+      appMetadataRepository: db.appMetadataRepository,
       cancellation: _cancellationToken,
     );
     _remoteSyncService = SyncStreamService(
@@ -94,7 +94,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       permissionRepository: ref.read(permissionRepositoryProvider),
       syncMigrationRepository: db.syncMigrationRepository,
       api: ref.read(apiServiceProvider),
-      appMetadataRepository: ref.read(appMetadataRepositoryProvider),
+      appMetadataRepository: db.appMetadataRepository,
       cancellation: _cancellationToken,
     );
     _hashService = HashService(
