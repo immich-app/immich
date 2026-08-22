@@ -56,7 +56,13 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
   TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) {
     return switch (filter) {
-      AssetOriginFilter.remoteOnly => remote(userIds, groupBy, origin: TimelineOrigin.main, joinLocal: true),
+      AssetOriginFilter.remoteOnly => remote(
+        userIds,
+        groupBy,
+        origin: TimelineOrigin.main,
+        joinLocal: true,
+        collapseStacks: true,
+      ),
       AssetOriginFilter.localOnly => _localOnly(groupBy),
       AssetOriginFilter.all => _all(userIds, groupBy),
     };
@@ -397,14 +403,27 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     );
   }
 
+  Expression<bool> _isStackCover($RemoteAssetEntityTable rae) {
+    return rae.stackId.isNull() |
+        existsQuery(
+          _db.stackEntity.selectOnly()
+            ..addColumns([_db.stackEntity.id])
+            ..where(_db.stackEntity.id.equalsExp(rae.stackId) & _db.stackEntity.primaryAssetId.equalsExp(rae.id)),
+        );
+  }
+
   TimelineQuery remote(
     List<String> ownerIds,
     GroupAssetsBy groupBy, {
     TimelineOrigin origin = TimelineOrigin.remoteAssets,
     bool joinLocal = false,
+    bool collapseStacks = false,
   }) => _remoteQueryBuilder(
-    filter: (row) =>
-        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(ownerIds),
+    filter: (row) {
+      final base =
+          row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(ownerIds);
+      return collapseStacks ? base & _isStackCover(row) : base;
+    },
     groupBy: groupBy,
     origin: origin,
     joinLocal: joinLocal,
