@@ -29,10 +29,11 @@ import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 class UploadCallbacks {
   final void Function(String id, String filename, int bytes, int totalBytes)? onProgress;
   final void Function(String localId, String remoteId)? onSuccess;
+  final void Function(String localId)? onSkipped;
   final void Function(String id, String errorMessage)? onError;
   final void Function(String id, double progress)? onICloudProgress;
 
-  const UploadCallbacks({this.onProgress, this.onSuccess, this.onError, this.onICloudProgress});
+  const UploadCallbacks({this.onProgress, this.onSuccess, this.onSkipped, this.onError, this.onICloudProgress});
 }
 
 final foregroundUploadServiceProvider = Provider((ref) {
@@ -126,6 +127,7 @@ class ForegroundUploadService {
       final requireWifi = _shouldRequireWiFi(asset);
       if (requireWifi && !hasWifi) {
         _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
+        callbacks.onSkipped?.call(asset.id);
         continue;
       }
 
