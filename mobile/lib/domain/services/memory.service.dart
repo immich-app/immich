@@ -13,7 +13,7 @@ class DriftMemoryService {
     return _repository.getAll(ownerId);
   }
 
-  Future<List<DriftMemory>> getAllMemories(String ownerId, {bool onlyFavorites = false}) {
+  Future<List<DriftMemory>> getAll(String ownerId, {bool onlyFavorites = false}) {
     return _repository.getAll(ownerId, onlyToday: false, onlyFavorites: onlyFavorites);
   }
 

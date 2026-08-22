@@ -28,5 +28,5 @@ final driftAllMemoriesProvider = FutureProvider.autoDispose.family<List<DriftMem
   }
 
   final service = DriftMemoryService(ref.watch(driftProvider).memoryRepository);
-  return service.getAllMemories(userId, onlyFavorites: onlyFavorites);
+  return service.getAll(userId, onlyFavorites: onlyFavorites);
 });
