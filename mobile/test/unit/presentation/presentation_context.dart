@@ -52,7 +52,8 @@ class PresentationContext {
 
   List<Override> get overrides => [
     driftProvider.overrideWithValue(_mockDrift()),
-    currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
+    userServiceProvider.overrideWithValue(service.user.service),
+    currentUserProvider.overrideWith(() => CurrentUserProvider()),
     authUserProvider.overrideWithValue(currentUser),
     assetServiceProvider.overrideWithValue(service.asset.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
@@ -93,6 +94,7 @@ class PresentationContext {
 
   void setup() {
     when(service.user.tryGetMyUser).thenAnswer((_) async => currentUser);
+    when(service.user.service.watchMyUser).thenAnswer((_) => Stream.value(currentUser));
   }
 
   Future<void> dispose() async {

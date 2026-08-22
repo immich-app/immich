@@ -4,11 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
@@ -19,15 +16,15 @@ final syncLinkedAlbumServiceProvider = Provider((ref) {
     db.localAlbumRepository,
     db.remoteAlbumRepository,
     ref.watch(driftAlbumApiRepositoryProvider),
-    ref.watch(authUserRepositoryProvider),
-  ),
-);
+    db.authUserRepository,
+  );
+});
 
 class SyncLinkedAlbumService {
   final LocalAlbumRepository _localAlbumRepository;
   final RemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
-  final DriftAuthUserRepository _authUserRepository;
+  final AuthUserRepository _authUserRepository;
 
   SyncLinkedAlbumService(
     this._localAlbumRepository,

@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -16,8 +15,8 @@ import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -311,7 +310,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final backgroundManager = ref.read(backgroundSyncProvider);
       final backupProvider = ref.read(driftBackupProvider.notifier);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
-      final authUserRepository = ref.read(authUserRepositoryProvider);
+      final authUserRepository = ref.read(driftProvider).authUserRepository;
 
       unawaited(
         ref
@@ -376,7 +375,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
   }
 
-  Future<void> _resumeBackup(DriftBackupNotifier notifier, DriftAuthUserRepository authUserRepository) async {
+  Future<void> _resumeBackup(DriftBackupNotifier notifier, AuthUserRepository authUserRepository) async {
     final isEnableBackup = SettingsRepository.instance.appConfig.backup.enabled;
 
     if (isEnableBackup) {

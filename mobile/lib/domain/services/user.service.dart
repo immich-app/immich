@@ -9,7 +9,7 @@ import 'package:logging/logging.dart';
 class UserService {
   final Logger _log = Logger("UserService");
   final UserApiRepository _userApiRepository;
-  final DriftAuthUserRepository _authUserRepository;
+  final AuthUserRepository _authUserRepository;
 
   UserService({required this._userApiRepository, required this._authUserRepository});
 

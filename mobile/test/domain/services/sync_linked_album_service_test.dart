@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -16,11 +15,11 @@ void main() {
     final drift = MockDrift();
     when(() => drift.localAlbumRepository).thenReturn(MockLocalAlbumRepository());
     when(() => drift.remoteAlbumRepository).thenReturn(MockRemoteAlbumRepository());
+    when(() => drift.authUserRepository).thenReturn(MockAuthUserRepository());
     final container = ProviderContainer(
       overrides: [
         driftProvider.overrideWithValue(drift),
         driftAlbumApiRepositoryProvider.overrideWithValue(MockDriftAlbumApiRepository()),
-        authUserRepositoryProvider.overrideWithValue(MockDriftAuthUserRepository()),
       ],
     );
     addTearDown(container.dispose);

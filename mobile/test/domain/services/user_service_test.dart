@@ -12,11 +12,11 @@ import '../../infrastructure/repository.mock.dart';
 void main() {
   late UserService sut;
   late UserApiRepository mockUserApiRepo;
-  late DriftAuthUserRepository mockAuthUserRepo;
+  late AuthUserRepository mockAuthUserRepo;
 
   setUp(() {
     mockUserApiRepo = MockUserApiRepository();
-    mockAuthUserRepo = MockDriftAuthUserRepository();
+    mockAuthUserRepo = MockAuthUserRepository();
     sut = UserService(userApiRepository: mockUserApiRepo, authUserRepository: mockAuthUserRepo);
 
     registerFallbackValue(UserStub.admin);
@@ -76,6 +76,7 @@ void main() {
       when(
         () => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)),
       ).thenAnswer((_) async => profileImagePath);
+      when(() => mockUserApiRepo.getMyUser()).thenAnswer((_) async => UserStub.admin);
 
       final result = await sut.createProfileImage(profileImagePath, Uint8List(0));
 
