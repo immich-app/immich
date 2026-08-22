@@ -694,15 +694,14 @@ export class AuthService extends BaseService {
     } = {};
 
     if (claims.storageLabel !== undefined && claims.storageLabel !== user.storageLabel) {
-      if (claims.storageLabel) {
-        const duplicate = await this.userRepository.getByStorageLabel(claims.storageLabel);
-        if (duplicate && duplicate.id !== user.id) {
-          this.logger.warn(`Unable to sync OAuth storage label for user ${user.id}: label already in use`);
-        } else {
-          updates.storageLabel = claims.storageLabel;
-        }
+      const duplicate = claims.storageLabel
+        ? await this.userRepository.getByStorageLabel(claims.storageLabel)
+        : undefined;
+
+      if (duplicate && duplicate.id !== user.id) {
+        this.logger.warn(`Unable to sync OAuth storage label for user ${user.id}: label already in use`);
       } else {
-        updates.storageLabel = null;
+        updates.storageLabel = claims.storageLabel;
       }
     }
 
