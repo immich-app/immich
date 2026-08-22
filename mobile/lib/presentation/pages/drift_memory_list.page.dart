@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
@@ -40,8 +41,8 @@ class _DriftMemoryListPageState extends ConsumerState<DriftMemoryListPage> {
             ],
           ),
           body: SafeArea(
-            child: memories.when(
-              data: (memories) {
+            child: memories.widgetWhen(
+              onData: (memories) {
                 return GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: constraints.maxWidth > 600 ? 4 : 2,
@@ -92,8 +93,6 @@ class _DriftMemoryListPageState extends ConsumerState<DriftMemoryListPage> {
                   ),
                 );
               },
-              error: (error, stack) => const Text("Error loading memories"),
-              loading: () => const Center(child: CircularProgressIndicator()),
             ),
           ),
         );
