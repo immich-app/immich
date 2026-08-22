@@ -142,6 +142,7 @@ export class MetadataRepository {
       await this.exiftool.write(path, tagsToWrite);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
+      throw error;
     }
   }
 }
