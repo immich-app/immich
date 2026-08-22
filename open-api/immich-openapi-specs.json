@@ -21723,6 +21723,7 @@
           "PersonCleanup",
           "PersonFileMigration",
           "PersonGenerateThumbnail",
+          "PersonGenerateThumbnailsQueueAll",
           "SessionCleanup",
           "SendMail",
           "SidecarQueueAll",
@@ -22084,6 +22085,7 @@
         "description": "Manual job name",
         "enum": [
           "person-cleanup",
+          "person-thumbnail-regenerate",
           "tag-cleanup",
           "user-cleanup",
           "memory-cleanup",
