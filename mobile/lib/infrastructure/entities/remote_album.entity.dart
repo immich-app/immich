@@ -21,6 +21,8 @@ class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
 
   BoolColumn get isActivityEnabled => boolean().withDefault(const Constant(true))();
 
+  BoolColumn get isPinned => boolean().withDefault(const Constant(false))();
+
   IntColumn get order => intEnum<AlbumAssetOrder>()();
 
   @override

@@ -204,6 +204,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
         description: Value(album.description),
         thumbnailAssetId: Value(album.thumbnailAssetId),
         isActivityEnabled: Value(album.isActivityEnabled),
+        isPinned: Value(album.isPinned),
         order: Value(album.order),
       ),
     );
@@ -581,6 +582,7 @@ extension on RemoteAlbumEntityData {
       description: description,
       thumbnailAssetId: thumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
+      isPinned: isPinned,
       order: order,
       assetCount: assetCount,
       ownerName: ownerName,

@@ -106,6 +106,15 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     ref.invalidate(timelineServiceProvider);
   }
 
+  Future<void> togglePinned() async {
+    final updated = await ref.read(remoteAlbumProvider.notifier).togglePinned(_album.id);
+    if (updated != null) {
+      setState(() {
+        _album = updated;
+      });
+    }
+  }
+
   Future<void> deleteAlbum(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -209,6 +218,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             onToggleAlbumOrder: () => toggleAlbumOrder(),
             onEditAlbum: () => showEditTitleAndDescription(context),
             onCreateSharedLink: () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id))),
+            onTogglePinned: () => togglePinned(),
             onShowOptions: () => context.pushRoute(DriftAlbumOptionsRoute(album: _album)),
           ),
           onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
@@ -378,6 +388,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
   final VoidCallback? onCreateSharedLink;
+  final VoidCallback? onTogglePinned;
   final VoidCallback? onShowOptions;
 
   const _AlbumKebabMenu({
@@ -388,6 +399,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
     this.onToggleAlbumOrder,
     this.onEditAlbum,
     this.onCreateSharedLink,
+    this.onTogglePinned,
     this.onShowOptions,
   });
 
@@ -437,6 +449,8 @@ class _AlbumKebabMenu extends ConsumerWidget {
           onToggleAlbumOrder: isOwner ? onToggleAlbumOrder : null,
           onEditAlbum: isOwner ? onEditAlbum : null,
           onCreateSharedLink: isOwner ? onCreateSharedLink : null,
+          onTogglePinned: isOwner ? onTogglePinned : null,
+          isPinned: album.isPinned,
           onShowOptions: onShowOptions,
         );
       },

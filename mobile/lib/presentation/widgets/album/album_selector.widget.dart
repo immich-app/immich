@@ -684,27 +684,47 @@ class _GridAlbumCard extends ConsumerWidget {
           children: [
             Expanded(
               flex: 2,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FutureBuilder(
-                    future: albumThumbnailAsset,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data != null) {
-                        return Thumbnail.remote(
-                          remoteId: album.thumbnailAssetId!,
-                          thumbhash: snapshot.data!.thumbHash ?? "",
-                        );
-                      }
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FutureBuilder(
+                        future: albumThumbnailAsset,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data != null) {
+                            return Thumbnail.remote(
+                              remoteId: album.thumbnailAssetId!,
+                              thumbhash: snapshot.data!.thumbHash ?? "",
+                            );
+                          }
 
-                      return ColoredBox(
-                        color: context.colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
-                      );
-                    },
+                          return ColoredBox(
+                            color: context.colorScheme.surfaceContainerHighest,
+                            child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                ),
+                  if (album.isPinned)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surface,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 1)),
+                          ],
+                        ),
+                        child: Icon(Icons.push_pin, size: 14, color: context.primaryColor),
+                      ),
+                    ),
+                ],
               ),
             ),
             Expanded(

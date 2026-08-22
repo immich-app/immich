@@ -254,6 +254,21 @@ export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbum
   }
 };
 
+export const handleToggleAlbumPin = async (album: AlbumResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAlbumInfo({
+      id: album.id,
+      updateAlbumDto: { isPinned: !album.isPinned },
+    });
+    eventManager.emit('AlbumUpdate', response);
+    return response;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_album_info'));
+  }
+};
+
 export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { prompt?: boolean; notify?: boolean }) => {
   const $t = await getFormatter();
   const { prompt = true, notify = true } = options ?? {};

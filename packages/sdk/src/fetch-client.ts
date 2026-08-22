@@ -872,6 +872,8 @@ export type AlbumResponseDto = {
     id: string;
     /** Activity feed enabled */
     isActivityEnabled: boolean;
+    /** Is album pinned */
+    isPinned: boolean;
     /** Last modified asset timestamp */
     lastModifiedAssetTimestamp?: string;
     order?: AssetOrder;
@@ -925,6 +927,8 @@ export type UpdateAlbumDto = {
     description?: string | null;
     /** Enable activity feed */
     isActivityEnabled?: boolean;
+    /** Is album pinned */
+    isPinned?: boolean;
     order?: AssetOrder;
 };
 export type BulkIdsDto = {
@@ -3106,6 +3110,8 @@ export type SyncAlbumV1 = {
     id: string;
     /** Is activity enabled */
     isActivityEnabled: boolean;
+    /** Is album pinned */
+    isPinned: boolean;
     /** Album name */
     name: string;
     order: AssetOrder;
@@ -3125,6 +3131,8 @@ export type SyncAlbumV2 = {
     id: string;
     /** Is activity enabled */
     isActivityEnabled: boolean;
+    /** Is album pinned */
+    isPinned: boolean;
     /** Album name */
     name: string;
     order: AssetOrder;
