@@ -1,5 +1,4 @@
 import {
-  getAboutInfo,
   getMyPreferences,
   getMyUser,
   logout,
@@ -14,7 +13,6 @@ import { Route } from '$lib/route';
 import { isSharedLinkRoute } from '$lib/utils/navigation';
 
 class AuthManager {
-  isPurchased = $state(false);
   isSharedLink = $derived(isSharedLinkRoute(page.route?.id));
   params = $derived(this.isSharedLink ? { key: page.params.key, slug: page.params.slug } : {});
 
@@ -65,16 +63,6 @@ class AuthManager {
       this.#preferences = preferences;
       this.#user = user;
 
-      if (user.license?.activatedAt) {
-        this.isPurchased = true;
-      } else {
-        // check server status
-        const serverInfo = await getAboutInfo().catch(() => {});
-        if (serverInfo?.licensed) {
-          this.isPurchased = true;
-        }
-      }
-
       eventManager.emit('AuthUserLoaded', user);
     } catch {
       // noop
@@ -102,8 +90,6 @@ class AuthManager {
     }
 
     if (redirectUri.startsWith('/')) {
-      this.isPurchased = false;
-
       this.reset();
       eventManager.emit('AuthLogout');
 
