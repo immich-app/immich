@@ -15,6 +15,7 @@ import 'package:immich_mobile/data/db/main/table/remote/album_asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/album_user.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/cloud_id.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/stack.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
@@ -392,4 +393,29 @@ class MediumRepositoryContext {
   Future<void> newMemoryAsset({required String memoryId, required String assetId}) => db
       .into(db.memoryAssetEntity)
       .insert(MemoryAssetEntityCompanion(memoryId: .new(memoryId), assetId: .new(assetId)));
+
+  Future<StackEntityData> newStack({
+  String? id,
+  required String ownerId,
+  required String primaryAssetId,
+  List<String> memberAssetIds = const [],
+}) async {
+    id ??= TestUtils.uuid();
+    final stack = await db
+        .into(db.stackEntity)
+        .insertReturning(StackEntityCompanion(id: .new(id), ownerId: .new(ownerId), primaryAssetId: .new(primaryAssetId)));
+
+    final allIds = {primaryAssetId, ...memberAssetIds};
+    await db.batch((batch) {
+      for (final assetId in allIds) {
+        batch.update(
+          db.remoteAssetEntity,
+          RemoteAssetEntityCompanion(stackId: .new(id)),
+          where: (e) => e.id.equals(assetId),
+        );
+      }
+    });
+
+    return stack;
+  }
 }
