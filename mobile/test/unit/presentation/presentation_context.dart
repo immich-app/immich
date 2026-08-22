@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -68,6 +69,7 @@ class PresentationContext {
   Drift _mockDrift() {
     final drift = MockDrift();
     when(() => drift.remoteAssetRepository).thenReturn(repository.remoteAsset.repo);
+    when(() => drift.appMetadataRepository).thenReturn(repository.metadata);
     return drift;
   }
 
@@ -95,6 +97,7 @@ class PresentationContext {
   void setup() {
     when(service.user.tryGetMyUser).thenAnswer((_) async => currentUser);
     when(service.user.service.watchMyUser).thenAnswer((_) => Stream.value(currentUser));
+    when(() => repository.metadata.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => false);
   }
 
   Future<void> dispose() async {

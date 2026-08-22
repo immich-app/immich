@@ -21,6 +21,7 @@ final syncStreamServiceProvider = Provider((ref) {
     permissionRepository: ref.watch(permissionRepositoryProvider),
     syncMigrationRepository: db.syncMigrationRepository,
     api: ref.watch(apiServiceProvider),
+    appMetadataRepository: db.appMetadataRepository,
     cancellation: ref.watch(cancellationProvider),
   );
 });
@@ -36,6 +37,7 @@ final localSyncServiceProvider = Provider((ref) {
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
+    appMetadataRepository: db.appMetadataRepository,
     cancellation: ref.watch(cancellationProvider),
   );
 });
