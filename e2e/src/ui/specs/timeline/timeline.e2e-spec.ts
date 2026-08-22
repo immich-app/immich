@@ -149,6 +149,30 @@ test.describe('Timeline', () => {
     });
   });
   test.describe('keyboard', () => {
+    test('PageDown still scrolls after closing the asset viewer with the back button', async ({ page }) => {
+      await pageUtils.openPhotosPage(page);
+      await thumbnailUtils.clickAssetId(page, assets[0].id);
+      await assetViewerUtils.waitForViewerLoad(page, assets[0]);
+      await page.getByLabel('Go back').click();
+      await page.waitForURL('**/photos?at=*');
+      await expect(assetViewerUtils.locator(page)).toHaveCount(0);
+
+      await expect
+        .poll(() =>
+          page.evaluate(() => {
+            const grid = document.querySelector('#asset-grid');
+            return grid === document.activeElement || !!grid?.contains(document.activeElement);
+          }),
+        )
+        .toBe(true);
+
+      const scrollTopBefore = await page.evaluate(() => document.querySelector('#asset-grid')?.scrollTop ?? 0);
+      await page.keyboard.press('PageDown');
+      await expect
+        .poll(() => page.evaluate(() => document.querySelector('#asset-grid')?.scrollTop ?? 0))
+        .toBeGreaterThan(scrollTopBefore);
+    });
+
     /**
      * This text tests keyboard nativation, and also ensures that the scroll-to-asset behavior
      * scrolls the minimum amount. That is, if you are navigating using right arrow (auto scrolling

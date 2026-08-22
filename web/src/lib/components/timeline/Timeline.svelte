@@ -21,6 +21,7 @@
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
+  import { restoreFocusTo } from '$lib/utils/focus-util';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
@@ -213,11 +214,19 @@
     if (!scrolled) {
       // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
-    } else if (scrollTarget) {
+    }
+
+    // Unhide before focusing. Hidden elements cannot receive focus.
+    invisible = false;
+
+    if (scrolled && scrollTarget) {
       await tick();
       focusAsset(scrollTarget);
     }
-    invisible = false;
+
+    if (!isAssetViewerRoute(page)) {
+      restoreFocusTo(scrollableElement);
+    }
   };
 
   // note: only modified once in afterNavigate()

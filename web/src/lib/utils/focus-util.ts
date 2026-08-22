@@ -12,6 +12,19 @@ export const setDefaultTabbleOptions = (options: TabbableOpts) => {
 export const getTabbable = (container: Element, includeContainer: boolean = false) =>
   tabbable(container, { ...defaultOpts, includeContainer });
 
+export const restoreFocusTo = (element: HTMLElement | undefined | null) => {
+  if (!element) {
+    return;
+  }
+
+  const active = document.activeElement;
+  if (active === element || (active && element.contains(active))) {
+    return;
+  }
+
+  element.focus({ preventScroll: true });
+};
+
 export const moveFocus = (
   selector: (element: HTMLElement | SVGElement) => boolean,
   direction: 'previous' | 'next',

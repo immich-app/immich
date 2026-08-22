@@ -99,11 +99,15 @@
   const handleClose = async (assetId: string) => {
     invisible = true;
     assetViewerManager.gridScrollTarget = { at: assetId };
-    await navigate({
-      targetRoute: 'current',
-      assetId: null,
-      assetGridRouteSearchParams: assetViewerManager.gridScrollTarget,
-    });
+    // keepFocus: SvelteKit would otherwise reset focus to body after this navigation.
+    await navigate(
+      {
+        targetRoute: 'current',
+        assetId: null,
+        assetGridRouteSearchParams: assetViewerManager.gridScrollTarget,
+      },
+      { keepFocus: true },
+    );
   };
 
   const handleRemoveFromAlbum = async (assetIds: string[]) => {
