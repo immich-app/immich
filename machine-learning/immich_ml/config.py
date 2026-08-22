@@ -5,13 +5,21 @@ import sys
 from pathlib import Path
 from socket import socket
 
-from gunicorn.arbiter import Arbiter
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
 from uvicorn import Server
-from uvicorn.workers import UvicornWorker
+
+try:
+    # gunicorn (and its Arbiter/UvicornWorker integration) depends on fcntl, which is
+    # Unix-only. It is only needed when launched via `python -m immich_ml`; running
+    # uvicorn directly (e.g. natively on Windows) never touches these.
+    from gunicorn.arbiter import Arbiter
+    from uvicorn.workers import UvicornWorker
+except ImportError:
+    Arbiter = None  # type: ignore[assignment,misc]
+    UvicornWorker = None  # type: ignore[assignment,misc]
 
 from .schemas import ModelPrecision
 
@@ -150,11 +158,13 @@ class CustomUvicornServer(Server):
         await super().shutdown()
 
 
-class CustomUvicornWorker(UvicornWorker):
-    async def _serve(self) -> None:
-        self.config.app = self.wsgi
-        server = CustomUvicornServer(config=self.config)
-        self._install_sigquit_handler()
-        await server.serve(sockets=self.sockets)
-        if not server.started:
-            sys.exit(Arbiter.WORKER_BOOT_ERROR)
+if UvicornWorker is not None:
+
+    class CustomUvicornWorker(UvicornWorker):  # type: ignore[misc]
+        async def _serve(self) -> None:
+            self.config.app = self.wsgi
+            server = CustomUvicornServer(config=self.config)
+            self._install_sigquit_handler()
+            await server.serve(sockets=self.sockets)
+            if not server.started:
+                sys.exit(Arbiter.WORKER_BOOT_ERROR)

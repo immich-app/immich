@@ -93,6 +93,7 @@ SUPPORTED_PROVIDERS = [
     "MIGraphXExecutionProvider",
     "OpenVINOExecutionProvider",
     "CoreMLExecutionProvider",
+    "DmlExecutionProvider",
     "CPUExecutionProvider",
 ]
 

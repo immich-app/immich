@@ -53,6 +53,7 @@ openvino = ["onnxruntime-openvino>=1.24.1,<2"]
 armnn = ["onnxruntime>=1.23.2,<2"]
 rknn = ["onnxruntime>=1.23.2,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
 rocm = ["onnxruntime-migraphx>=1.23.2,<2"]
+directml = ["onnxruntime-directml>=1.23.2,<2"]
 
 [tool.uv]
 compile-bytecode = true
