@@ -8,12 +8,10 @@ import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -83,7 +81,6 @@ class PresentationContext {
     TestUtils.init();
     if (_db == null) {
       final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-      await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
       await SessionRepository.ensureInitialized(db);
       await SessionRepository.instance.write(.serverUrl, serverEndpoint);
       await SessionRepository.instance.write(.accessToken, 'access-token');

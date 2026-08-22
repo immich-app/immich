@@ -8,10 +8,8 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/session.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -34,7 +32,6 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     FileDownloader(persistentStorage: _NoStorage());
     final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: StoreRepository(db));
     await SessionRepository.ensureInitialized(db);
     await SessionRepository.instance.write(SessionKey.serverEndpoint, 'http://demo.immich.app/api');
     registerFallbackValue(_FakeBaseRequest());
