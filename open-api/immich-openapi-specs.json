@@ -28126,6 +28126,7 @@
           },
           "name": {
             "description": "Tag name",
+            "pattern": "^[^/]*$",
             "type": "string"
           },
           "parentId": {
