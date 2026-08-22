@@ -20,6 +20,10 @@ import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
+class MockDrift extends Mock implements Drift {}
+
+class MockMemoryRepository extends Mock implements MemoryRepository {}
+
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
 class MockAppMetadataRepository extends Mock implements AppMetadataRepository {}
