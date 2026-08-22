@@ -93,7 +93,12 @@ class OrtSession:
 
             outputs = self.session.run(output_names, input_feed, run_options)
             return outputs
-
+        if "CUDAExecutionProvider" in self.providers:
+            if run_options is None:
+                run_options = ort.RunOptions()
+            # This is one part of 2 which "fix" whats effectively a memory leak
+            # see https://github.com/microsoft/onnxruntime/blob/47faa11b035d53c49f3f93e815d004e616d360ca/include/onnxruntime/core/session/onnxruntime_run_options_config_keys.h#L27
+            run_options.add_run_config_entry("memory.enable_memory_arena_shrinkage", f"gpu:{settings.device_id}")
         outputs = self.session.run(output_names, input_feed, run_options)
         return outputs
 
@@ -182,6 +187,8 @@ class OrtSession:
     def _sess_options_default(self) -> ort.SessionOptions:
         sess_options = ort.SessionOptions()
         sess_options.enable_cpu_mem_arena = settings.model_arena
+        # having this enabled will consume memory for each input shape (image dimensions, for example): https://github.com/k2-fsa/sherpa-onnx/issues/1939#issuecomment-3678334527
+        sess_options.enable_mem_pattern = False
 
         # avoid thread contention between models
         # Set inter_op threads
