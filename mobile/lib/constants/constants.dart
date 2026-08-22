@@ -55,3 +55,6 @@ const int kLibraryTabIndex = 3;
 
 // Workaround for SQLite's variable limit (SQLITE_MAX_VARIABLE_NUMBER = 32766)
 const int kDriftMaxChunk = 32000;
+
+// Memory lane
+const double kMemoryLaneHeight = 246.0;
