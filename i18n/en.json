@@ -1959,6 +1959,8 @@
   "setting_image_viewer_preview_title": "Load preview image",
   "setting_languages_apply": "Apply",
   "setting_languages_subtitle": "Change the app's language",
+  "setting_memories_autoplay_subtitle": "Move to the next item on its own instead of swiping manually",
+  "setting_memories_autoplay_title": "Advance memories automatically",
   "setting_notifications_notify_minutes": "{count} minutes",
   "setting_notifications_notify_seconds": "{count} seconds",
   "setting_notifications_subtitle": "Adjust your notification preferences",
