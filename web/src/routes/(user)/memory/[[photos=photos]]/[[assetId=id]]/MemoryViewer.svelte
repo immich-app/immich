@@ -185,9 +185,15 @@
     if (!current) {
       return;
     }
+    const nextTarget = current.next?.asset ?? current.previous?.asset;
 
     await memoryManager.deleteAssetFromMemory(current.asset.id);
-    init(page);
+
+    if (nextTarget) {
+      await handleNavigate(nextTarget);
+    } else {
+      init(page);
+    }
   };
 
   const handleDeleteMemory = async () => {
