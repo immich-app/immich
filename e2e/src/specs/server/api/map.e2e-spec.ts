@@ -65,7 +65,7 @@ describe('/map', () => {
       expect(body).toEqual([
         {
           city: 'Palisade',
-          country: 'United States of America',
+          country: 'United States',
           id: expect.any(String),
           lat: expect.closeTo(39.115),
           lon: expect.closeTo(-108.400968),
@@ -73,7 +73,7 @@ describe('/map', () => {
         },
         {
           city: 'Ralston',
-          country: 'United States of America',
+          country: 'United States',
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
           lon: expect.closeTo(-96.071625),
@@ -113,7 +113,7 @@ describe('/map', () => {
       expect(body).toEqual([
         {
           city: 'Palisade',
-          country: 'United States of America',
+          country: 'United States',
           id: expect.any(String),
           lat: expect.closeTo(39.115),
           lon: expect.closeTo(-108.400968),
@@ -121,7 +121,7 @@ describe('/map', () => {
         },
         {
           city: 'Ralston',
-          country: 'United States of America',
+          country: 'United States',
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
           lon: expect.closeTo(-96.071625),
