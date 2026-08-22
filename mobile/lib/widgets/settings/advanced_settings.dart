@@ -31,7 +31,7 @@ class AdvancedSettings extends HookConsumerWidget {
     final advancedTroubleshooting = useState(ref.watch(appConfigProvider).advanced.troubleshooting);
     useValueChanged(
       advancedTroubleshooting.value,
-      (_, __) => unawaited(ref.read(settingsProvider).write(.advancedTroubleshooting, advancedTroubleshooting.value)),
+      (_, _) => unawaited(ref.read(settingsProvider).write(.advancedTroubleshooting, advancedTroubleshooting.value)),
     );
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
@@ -16,7 +16,7 @@ class HapticSetting extends HookConsumerWidget {
     final isHapticFeedbackEnabled = useState(ref.watch(appConfigProvider).advanced.enableHapticFeedback);
     useValueChanged(
       isHapticFeedbackEnabled.value,
-      (_, __) =>
+      (_, _) =>
           unawaited(ref.read(settingsProvider).write(.advancedEnableHapticFeedback, isHapticFeedbackEnabled.value)),
     );
 

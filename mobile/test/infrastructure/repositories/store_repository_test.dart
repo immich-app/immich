@@ -88,7 +88,7 @@ void main() {
     test('delete()', () async {
       bool? advancedTroubleshooting = await sut.tryGet(StoreKey.legacyAdvancedTroubleshooting);
       expect(advancedTroubleshooting, isFalse);
-      await sut.delete(StoreKey.legacyAdvancedTroubleshooting);
+      await sut.deleteValue(StoreKey.legacyAdvancedTroubleshooting);
       advancedTroubleshooting = await sut.tryGet(StoreKey.legacyAdvancedTroubleshooting);
       expect(advancedTroubleshooting, isNull);
     });

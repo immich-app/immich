@@ -184,7 +184,16 @@ Future<void> _migrateTo27(Drift drift) async {
 }
 
 Future<void> _migrateTo28(Drift drift) async {
-  final migrator = _StoreMigrator.settings(drift);
+  final migrator = _StoreMigrator<SettingsKey>._(
+    drift,
+    encode: (key, value) => key.encode(value),
+    readDefault: (key) => defaultConfig.read(key),
+    insertRow: (batch, name, value) => batch.insert(
+      drift.settingsEntity,
+      SettingsEntityCompanion(key: Value(name), value: Value(value)),
+      mode: InsertMode.insertOrReplace,
+    ),
+  );
   await migrator.migrateBool(StoreKey.legacyAdvancedTroubleshooting, SettingsKey.advancedTroubleshooting);
   await migrator.migrateBool(StoreKey.legacyEnableHapticFeedback, SettingsKey.advancedEnableHapticFeedback);
   await migrator.migrateBool(StoreKey.legacyReadonlyModeEnabled, SettingsKey.advancedReadonlyModeEnabled);
