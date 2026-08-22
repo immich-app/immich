@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Memories widget for the Samsung Flex Window cover screen, smallest tile of its 4x2 grid. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:initialLayout="@layout/glance_default_loading_layout"
+  android:minWidth="150dp"
+  android:minHeight="133dp"
+  android:targetCellWidth="2"
+  android:targetCellHeight="2"
+  android:resizeMode="none"
+  android:widgetCategory="keyguard"
+  android:updatePeriodMillis="1200000"
+  app:targetHost="4"
+  app:widgetSize="8"
+  tools:targetApi="31"
+  android:description="@string/memory_widget_description"
+  android:previewImage="@drawable/memory_preview"
+  />
