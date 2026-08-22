@@ -57,8 +57,8 @@ export class UserTable {
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;
 
-  @Column({ default: '' })
-  oauthId!: Generated<string>;
+  @Column({ nullable: true, default: null })
+  oauthId!: string | null;
 
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
