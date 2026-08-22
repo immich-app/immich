@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
@@ -120,7 +118,6 @@ class AuthService {
     await _backgroundSyncManager.cancel();
     await Future.wait([
       _authRepository.clearLocalData(),
-      Store.delete(StoreKey.currentUser),
       SessionRepository.instance.clear([SessionKey.accessToken]),
       SettingsRepository.instance.clear(const [
         .networkAutoEndpointSwitching,
