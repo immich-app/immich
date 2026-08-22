@@ -584,7 +584,7 @@ function createSqlOwnerTransformStream(databaseUsername: string) {
   const DATA_MARKER_START = new TextEncoder().encode('FROM stdin');
   const LINE_END = new TextEncoder().encode(';');
 
-  const owner = new TextEncoder().encode(databaseUsername);
+  const owner = new TextEncoder().encode(`"${databaseUsername}"`);
 
   let ownerSequenceIndex = 0;
 
