@@ -264,5 +264,35 @@ void main() {
 
       expect(assets, isEmpty);
     });
+    test('cloud filter shows only the stack primary asset', () async {
+      final user = await ctx.newUser();
+      final primary = await ctx.newRemoteAsset(ownerId: user.id);
+      final secondary = await ctx.newRemoteAsset(ownerId: user.id);
+      await ctx.newStack(ownerId: user.id, primaryAssetId: primary.id, memberAssetIds: [secondary.id]);
+
+      final assets = await sut.main([user.id], .day, .remoteOnly).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      expect((assets.single as RemoteAsset).id, primary.id);
+    });
+    test('local filter shows only the stack primary asset', () async {
+      final user = await ctx.newUser();
+      const checksum1 = 'stack-primary-checksum';
+      const checksum2 = 'stack-secondary-checksum';
+      final primaryRemote = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum1);
+      final secondaryRemote = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum2);
+      await ctx.newStack(ownerId: user.id, primaryAssetId: primaryRemote.id, memberAssetIds: [secondaryRemote.id]);
+
+      final primaryLocal = await ctx.newLocalAsset(checksum: checksum1);
+      final secondaryLocal = await ctx.newLocalAsset(checksum: checksum2);
+      final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: primaryLocal.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: secondaryLocal.id);
+
+      final assets = await sut.main([user.id], .day, .localOnly).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      expect((assets.single as LocalAsset).id, primaryLocal.id);
+    });
   });
 }
