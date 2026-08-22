@@ -54,9 +54,7 @@ class _DriftMemoryListPageState extends ConsumerState<DriftMemoryListPage> {
                   itemCount: memories.length,
                   itemBuilder: (context, index) => GestureDetector(
                     onTap: () {
-                      if (memories[index].assets.isNotEmpty) {
-                        DriftMemoryPage.setMemory(ref, memories[index]);
-                      }
+                      DriftMemoryPage.setMemory(ref, memories[index]);
                       unawaited(context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index)));
                     },
                     child: Stack(
