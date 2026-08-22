@@ -42,19 +42,25 @@ class TagAction extends AssetActionBuilder {
 
   Future<void> _tag(BuildContext context, WidgetRef ref, List<String> assetIds) async {
     final clearSelection = ref.read(clearSelectionProvider(source));
-
-    try {
-      final results = await showTagPickerModal(context: context);
-      if (results == null || !context.mounted) {
-        return;
-      }
-
-      final (selected, created) = results;
-      await tagAssets(context, ref, assetIds, selected: selected, created: created);
+    if (await pickAndTagAssets(context, ref, assetIds)) {
       clearSelection();
-    } catch (error, stack) {
-      handleError(error, stack: stack, description: "Failed to tag the assets");
     }
+  }
+}
+
+Future<bool> pickAndTagAssets(BuildContext context, WidgetRef ref, List<String> assetIds) async {
+  try {
+    final results = await showTagPickerModal(context: context);
+    if (results == null || !context.mounted) {
+      return false;
+    }
+
+    final (selected, created) = results;
+    await tagAssets(context, ref, assetIds, selected: selected, created: created);
+    return true;
+  } catch (error, stack) {
+    handleError(error, stack: stack, description: "Failed to tag the assets");
+    return false;
   }
 }
 
@@ -80,7 +86,17 @@ Future<void> tagAssets(
 
   final count = await tagService.bulkTagAssets(assetIds, tagIds.toList());
   ref.invalidate(tagProvider);
+  ref.invalidate(assetTagsProvider);
   if (context.mounted) {
     toastService.success(context.t.tagged_assets(count: count));
+  }
+}
+
+Future<void> untagAsset(WidgetRef ref, String assetId, String tagId) async {
+  try {
+    await ref.read(tagServiceProvider).untagAssets(tagId, [assetId]);
+    ref.invalidate(assetTagsProvider);
+  } catch (error, stack) {
+    handleError(error, stack: stack, description: "Failed to remove the tag");
   }
 }
