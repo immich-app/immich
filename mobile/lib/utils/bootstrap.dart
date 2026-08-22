@@ -1,7 +1,7 @@
 import 'package:background_downloader/background_downloader.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';

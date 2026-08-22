@@ -16,7 +16,6 @@ import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/infrastructure/entities/app_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/session.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/app_metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
@@ -65,7 +64,17 @@ Future<Map<int, Object?>> _readLegacyStore(Drift drift) async {
 }
 
 Future<void> _migrateTo25(Drift drift, Map<int, Object?> legacyStore) async {
-  final migrator = _StoreMigrator.settings(drift, legacyStore);
+  final migrator = _StoreMigrator<SettingsKey>._(
+    drift,
+    legacyStore,
+    encode: (key, value) => key.encode(value),
+    readDefault: (key) => defaultConfig.read(key),
+    insertRow: (batch, name, value) => batch.insert(
+      drift.settingsEntity,
+      SettingsEntityCompanion(key: Value(name), value: Value(value)),
+      mode: InsertMode.insertOrReplace,
+    ),
+  );
 
   final accessToken = migrator.readLegacyStoreString(.legacyAccessToken);
   if (accessToken == null || accessToken.isEmpty) {
@@ -103,9 +112,10 @@ Future<void> _migrateTo25(Drift drift, Map<int, Object?> legacyStore) async {
   await NetworkRepository.setHeaders(headers, urls, token: accessToken);
 }
 
-Future<void> _migrateTo26(Drift drift) async {
+Future<void> _migrateTo26(Drift drift, Map<int, Object?> legacyStore) async {
   final migrator = _StoreMigrator<SettingsKey>._(
     drift,
+    legacyStore,
     encode: (key, value) => key.encode(value),
     readDefault: (key) => defaultConfig.read(key),
     insertRow: (batch, name, value) => batch.insert(
@@ -114,7 +124,7 @@ Future<void> _migrateTo26(Drift drift) async {
       mode: InsertMode.insertOrReplace,
     ),
   );
-  await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, SettingsKey.logLevel, LogLevel.values);
+  await migrator.migrateEnumIndex(.legacyLogLevel, .logLevel, LogLevel.values);
   // Theme
   await migrator.migrateEnumName(.legacyThemeMode, .themeMode, ThemeMode.values);
   await migrator.migrateEnumName(.legacyPrimaryColor, .themePrimaryColor, ImmichColorPreset.values);
@@ -170,9 +180,10 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.complete();
 }
 
-Future<void> _migrateTo27(Drift drift) async {
+Future<void> _migrateTo27(Drift drift, Map<int, Object?> legacyStore) async {
   final migrator = _StoreMigrator<SessionKey>._(
     drift,
+    legacyStore,
     encode: (key, value) => key.encode(value),
     readDefault: (key) => defaultSession.read(key),
     insertRow: (batch, name, value) => batch.insert(
@@ -181,17 +192,18 @@ Future<void> _migrateTo27(Drift drift) async {
       mode: InsertMode.insertOrReplace,
     ),
   );
-  await migrator.migrateString(StoreKey.legacyServerUrl, SessionKey.serverUrl);
-  await migrator.migrateString(StoreKey.legacyAccessToken, SessionKey.accessToken);
-  await migrator.migrateString(StoreKey.legacyServerEndpoint, SessionKey.serverEndpoint);
+  await migrator.migrateString(.legacyServerUrl, .serverUrl);
+  await migrator.migrateString(.legacyAccessToken, .accessToken);
+  await migrator.migrateString(.legacyServerEndpoint, .serverEndpoint);
   await migrator.complete();
 
   await SessionRepository.instance.refresh();
 }
 
-Future<void> _migrateTo28(Drift drift) async {
+Future<void> _migrateTo28(Drift drift, Map<int, Object?> legacyStore) async {
   final migrator = _StoreMigrator<SettingsKey>._(
     drift,
+    legacyStore,
     encode: (key, value) => key.encode(value),
     readDefault: (key) => defaultConfig.read(key),
     insertRow: (batch, name, value) => batch.insert(
@@ -200,17 +212,18 @@ Future<void> _migrateTo28(Drift drift) async {
       mode: InsertMode.insertOrReplace,
     ),
   );
-  await migrator.migrateBool(StoreKey.legacyAdvancedTroubleshooting, SettingsKey.advancedTroubleshooting);
-  await migrator.migrateBool(StoreKey.legacyEnableHapticFeedback, SettingsKey.advancedEnableHapticFeedback);
-  await migrator.migrateBool(StoreKey.legacyReadonlyModeEnabled, SettingsKey.advancedReadonlyModeEnabled);
+  await migrator.migrateBool(.legacyAdvancedTroubleshooting, .advancedTroubleshooting);
+  await migrator.migrateBool(.legacyEnableHapticFeedback, .advancedEnableHapticFeedback);
+  await migrator.migrateBool(.legacyReadonlyModeEnabled, .advancedReadonlyModeEnabled);
   await migrator.complete();
 
   await SettingsRepository.instance.refresh();
 }
 
-Future<void> _migrateTo29(Drift drift) async {
+Future<void> _migrateTo29(Drift drift, Map<int, Object?> legacyStore) async {
   final migrator = _StoreMigrator<AppMetadataKey>._(
     drift,
+    legacyStore,
     encode: (key, value) => key.encode(value),
     readDefault: (_) => null,
     insertRow: (batch, name, value) => batch.insert(
