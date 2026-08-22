@@ -16,7 +16,7 @@ export const UserUpdateMeSchema = z
       .optional()
       .describe('User password (deprecated, use change password endpoint)')
       .meta({ deprecated: true }),
-    name: z.string().optional().describe('User name'),
+    name: z.string().nullish().transform(v => v === '' ? null : v),
     avatarColor: UserAvatarColorSchema.nullish(),
   })
   .meta({ id: 'UserUpdateMeDto' });
@@ -26,7 +26,7 @@ export class UserUpdateMeDto extends createZodDto(UserUpdateMeSchema) {}
 export const UserResponseSchema = z
   .object({
     id: z.uuidv4().describe('User ID'),
-    name: z.string().describe('User name'),
+    name: z.string().nullable().describe('User name'),
     email: toEmail.describe('User email'),
     profileImagePath: z.string().describe('Profile image path'),
     avatarColor: UserAvatarColorSchema,
@@ -79,7 +79,7 @@ export const UserAdminCreateSchema = z
   .object({
     email: toEmail.describe('User email'),
     password: z.string().describe('User password'),
-    name: z.string().describe('User name'),
+    name: z.string().transform(v => v === '' ? null : v).describe('User name'),
     avatarColor: UserAvatarColorSchema.nullish(),
     pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
     storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
@@ -97,7 +97,7 @@ const UserAdminUpdateSchema = z
     email: toEmail.optional().describe('User email'),
     password: z.string().optional().describe('User password'),
     pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
-    name: z.string().optional().describe('User name'),
+    name: z.string().nullish().transform(v => v === '' ? null : v),
     avatarColor: UserAvatarColorSchema.nullish(),
     storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
     shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),

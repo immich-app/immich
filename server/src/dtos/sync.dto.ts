@@ -20,7 +20,7 @@ import z from 'zod';
 const SyncUserV1Schema = z
   .object({
     id: z.uuidv4().describe('User ID'),
-    name: z.string().describe('User name'),
+    name: z.string().nullable().describe('User name'),
     email: z.string().describe('User email'),
     avatarColor: UserAvatarColorSchema.nullish(),
     deletedAt: isoDatetimeToDate.nullable().describe('User deleted at'),
