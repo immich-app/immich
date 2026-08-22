@@ -216,7 +216,7 @@
       timelineManager.scrollTo(0);
     }
 
-    // Unhide before focusing. Hidden elements cannot receive focus.
+    // have to unhide first, otherwise focus() does nothing
     invisible = false;
 
     if (scrolled && scrollTarget) {

@@ -99,7 +99,7 @@
   const handleClose = async (assetId: string) => {
     invisible = true;
     assetViewerManager.gridScrollTarget = { at: assetId };
-    // keepFocus: SvelteKit would otherwise reset focus to body after this navigation.
+    // without this, sveltekit dumps focus on body when the viewer closes
     await navigate(
       {
         targetRoute: 'current',
