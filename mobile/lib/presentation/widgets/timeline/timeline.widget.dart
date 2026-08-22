@@ -40,7 +40,7 @@ class Timeline extends ConsumerWidget {
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.23),
+    this.bottomSheet = const GeneralBottomSheet(),
     this.groupBy,
     this.withScrubber = true,
     this.snapToMonth = true,
@@ -83,6 +83,9 @@ class Timeline extends ConsumerWidget {
               ),
             ),
             if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+            // Scoped per Timeline instance so isScrubbing/isScrolling/bottomSheetHeight from one
+            // timeline (e.g. the main grid) never leak into another (e.g. an album's timeline).
+            timelineStateProvider.overrideWith(TimelineStateNotifier.new),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
@@ -401,6 +404,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final bottomSheetHeight = ref.watch(timelineStateProvider.select((s) => s.bottomSheetHeight));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
     final isBottomWidgetVisible =
@@ -430,7 +434,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                   : 0;
               final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
-              const bottomSheetOpenModifier = 120.0;
+              // Pad with the bottom sheet's measured resting height plus a small clearance
+              // to keep the last row above the sheet's edge
+              final bottomSheetOpenModifier = bottomSheetHeight > 0
+                  ? bottomSheetHeight + kSelectionBottomSheetClearance
+                  : 0.0;
               final contentBottomPadding =
                   context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
               final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;

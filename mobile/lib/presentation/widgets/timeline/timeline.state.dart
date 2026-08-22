@@ -29,7 +29,14 @@ abstract class TimelineArgs with _$TimelineArgs {
 abstract class TimelineState with _$TimelineState {
   const TimelineState._();
 
-  const factory TimelineState({@Default(false) bool isScrubbing, @Default(false) bool isScrolling}) = _TimelineState;
+  const factory TimelineState({
+    @Default(false) bool isScrubbing,
+    @Default(false) bool isScrolling,
+
+    /// Measured resting height of the currently visible bottom
+    /// sheet, or 0 when no bottom sheet is showing
+    @Default(0) double bottomSheetHeight,
+  }) = _TimelineState;
 
   bool get isInteracting => isScrubbing || isScrolling;
 }
@@ -41,6 +48,10 @@ class TimelineStateNotifier extends Notifier<TimelineState> {
 
   void setScrolling(bool isScrolling) {
     state = state.copyWith(isScrolling: isScrolling);
+  }
+
+  void setBottomSheetHeight(double height) {
+    state = state.copyWith(bottomSheetHeight: height);
   }
 
   @override

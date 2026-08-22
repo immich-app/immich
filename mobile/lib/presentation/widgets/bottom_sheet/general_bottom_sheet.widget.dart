@@ -23,8 +23,7 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GeneralBottomSheet extends ConsumerStatefulWidget {
-  final double? minChildSize;
-  const GeneralBottomSheet({super.key, this.minChildSize});
+  const GeneralBottomSheet({super.key});
 
   @override
   ConsumerState<GeneralBottomSheet> createState() => _GeneralBottomSheetState();
@@ -71,8 +70,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
 
     return BaseBottomSheet(
       controller: sheetController,
-      initialChildSize: widget.minChildSize ?? 0.15,
-      minChildSize: widget.minChildSize,
+      initialChildSize: 0.15,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: const <ActionColumnButton>[

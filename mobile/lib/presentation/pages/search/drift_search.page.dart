@@ -801,7 +801,7 @@ class _SearchResultGrid extends ConsumerWidget {
           child: Timeline(
             groupBy: GroupAssetsBy.none,
             appBar: null,
-            bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
+            bottomSheet: const GeneralBottomSheet(),
             snapToMonth: false,
             loadingWidget: const SizedBox.shrink(),
             bottomSliverWidget: _bottomWidget(context, isLoading: isLoading, hasMore: hasMore),

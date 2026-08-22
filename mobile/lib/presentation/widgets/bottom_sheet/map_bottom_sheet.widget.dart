@@ -21,6 +21,7 @@ class MapBottomSheet extends StatelessWidget {
       maxChildSize: 0.75,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
+      sizeToContent: false,
       actions: const [],
       backgroundColor: context.themeData.colorScheme.surface,
       slivers: const [
@@ -55,7 +56,7 @@ class _ScopedMapTimeline extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: const Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
+      child: const Timeline(appBar: null, bottomSheet: GeneralBottomSheet(), withScrubber: false),
     );
   }
 }
