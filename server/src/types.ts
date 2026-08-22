@@ -119,6 +119,8 @@ export interface VideoPacketInfo {
   keyframeAccDuration: number[];
   /** Each keyframe's own packet duration (needed for VFR). */
   keyframeOwnDuration: number[];
+  /** Rescaled timeBase denominator (adjusted when source time_base would overflow int32). */
+  timeBase?: number;
 }
 
 export interface VideoFormat {
