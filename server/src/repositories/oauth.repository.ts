@@ -10,6 +10,7 @@ import {
   discovery,
   fetchUserInfo,
   None,
+  randomNonce,
   randomPKCECodeVerifier,
   randomState,
   skipSubjectCheck,
@@ -42,9 +43,18 @@ export class OAuthRepository {
     this.logger.setContext(OAuthRepository.name);
   }
 
-  async authorize(config: OAuthConfig, redirectUrl: string, state?: string, codeChallenge?: string) {
+  async authorize(config: OAuthConfig, redirectUrl: string, state?: string, codeChallenge?: string, nonce?: string) {
     const client = await this.getClient(config);
+
+    // Clients that generate their own `state` (e.g. mobile) are also responsible for generating and
+    // round-tripping their own `nonce`. Only auto-generate a nonce for the server-managed, cookie-based
+    // flow (web), so that older mobile clients that never send a nonce continue to work with IdPs that
+    // echo one back on the ID token (see https://github.com/immich-app/immich/issues/29055).
+    const isServerManagedFlow = !state;
     state ??= randomState();
+    if (isServerManagedFlow) {
+      nonce ??= randomNonce();
+    }
 
     let codeVerifier: string | null;
     if (codeChallenge) {
@@ -60,6 +70,10 @@ export class OAuthRepository {
       state,
     };
 
+    if (nonce) {
+      params.nonce = nonce;
+    }
+
     if (config.prompt) {
       params.prompt = config.prompt;
     }
@@ -71,7 +85,7 @@ export class OAuthRepository {
 
     const url = buildAuthorizationUrl(client, params).href;
 
-    return { url, state, codeVerifier };
+    return { url, state, nonce, codeVerifier };
   }
 
   async getLogoutEndpoint(config: OAuthConfig) {
@@ -84,12 +98,17 @@ export class OAuthRepository {
     url: string,
     expectedState: string,
     codeVerifier: string,
+    expectedNonce?: string,
   ): Promise<{ profile: OAuthProfile; sid?: string; idToken?: string }> {
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
     try {
-      const tokens = await authorizationCodeGrant(client, new URL(url), { expectedState, pkceCodeVerifier });
+      const tokens = await authorizationCodeGrant(client, new URL(url), {
+        expectedState,
+        pkceCodeVerifier,
+        expectedNonce,
+      });
 
       let profile: OAuthProfile;
       const tokenClaims = tokens.claims();
