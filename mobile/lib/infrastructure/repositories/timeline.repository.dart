@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -132,31 +133,32 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.main,
   );
 
-  Expression<bool> _inAlbumWithBackupSelection(BackupSelection selection) {
-    return existsQuery(
-      _db.localAlbumAssetEntity.selectOnly()
-        ..addColumns([_db.localAlbumAssetEntity.assetId])
-        ..join([
-          innerJoin(
-            _db.localAlbumEntity,
-            _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
-            useColumns: false,
-          ),
-        ])
-        ..where(
-          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-              _db.localAlbumEntity.backupSelection.equalsValue(selection),
-        ),
-    );
+  Expression<bool> _localLibraryFilter($LocalAssetEntityTable lae) {
+    final selection = _db.localAlbumEntity.backupSelection;
+    return lae.id.isInQuery(
+          _db.localAlbumAssetEntity.selectOnly()
+            ..addColumns([_db.localAlbumAssetEntity.assetId])
+            ..join([
+              innerJoin(
+                _db.localAlbumEntity,
+                _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+                useColumns: false,
+              ),
+            ])
+            ..groupBy(
+              [_db.localAlbumAssetEntity.assetId],
+              having:
+                  _db.localAlbumEntity.id
+                      .count(filter: selection.equalsValue(BackupSelection.selected))
+                      .isBiggerThanValue(0) &
+                  _db.localAlbumEntity.id.count(filter: selection.equalsValue(BackupSelection.excluded)).equals(0),
+            ),
+        );
   }
-
-  Expression<bool> _localOnlyFilter() =>
-      _inAlbumWithBackupSelection(BackupSelection.selected) &
-      _inAlbumWithBackupSelection(BackupSelection.excluded).not();
 
   Stream<List<Bucket>> _watchLocalOnlyBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
-      return _db.localAssetEntity.count(where: (_) => _localOnlyFilter()).map(_generateBuckets).watchSingle();
+      return _db.localAssetEntity.count(where: _localLibraryFilter).map(_generateBuckets).watchSingle();
     }
 
     final assetCountExp = _db.localAssetEntity.id.count();
@@ -164,7 +166,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
     final query = _db.localAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..where(_localOnlyFilter())
+      ..where(_localLibraryFilter(_db.localAssetEntity))
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
@@ -184,7 +186,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
               useColumns: false,
             ),
           ])
-          ..where(_localOnlyFilter())
+          ..where(_localLibraryFilter(_db.localAssetEntity))
           ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
           ..limit(count, offset: offset);
 
