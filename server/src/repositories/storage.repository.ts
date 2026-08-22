@@ -282,7 +282,11 @@ export class StorageRepository {
   watchDir = watch; // Native fs.watch without chokidar overhead
 
   private asGlob(pathToCrawl: string): string {
-    const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
+    // fast-glob only understands forward-slash paths (backslash is its escape
+    // character), so a Windows path like `Z:\All Back ups` must be normalized
+    // before escaping or it silently matches zero files.
+    const posixPath = pathToCrawl.replaceAll('\\', '/');
+    const escapedPath = escapePath(posixPath).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
     return `${escapedPath}/**/${extensions}`;
   }
