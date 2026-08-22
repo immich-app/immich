@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -240,7 +239,6 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                         DateRangeFormatting.formatDateRange(
                           dateRange.value!.$1.toLocal(),
                           dateRange.value!.$2.toLocal(),
-                          context.locale,
                         ),
                         style: const TextStyle(
                           color: Colors.white,
