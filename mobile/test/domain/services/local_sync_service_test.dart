@@ -16,16 +16,16 @@ import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../domain/service.mock.dart';
 import '../../fixtures/asset.stub.dart';
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
+import '../../service.mocks.dart';
 
 void main() {
   late LocalSyncService sut;
-  late DriftLocalAlbumRepository mockLocalAlbumRepository;
-  late DriftLocalAssetRepository mockLocalAssetRepository;
-  late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
+  late LocalAlbumRepository mockLocalAlbumRepository;
+  late LocalAssetRepository mockLocalAssetRepository;
+  late TrashedLocalAssetRepository mockTrashedLocalAssetRepository;
   late AssetMediaRepository mockAssetMediaRepository;
   late MockPermissionRepository mockPermissionRepository;
   late MockNativeSyncApi mockNativeSyncApi;
@@ -36,7 +36,7 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
   });
 
   tearDownAll(() async {

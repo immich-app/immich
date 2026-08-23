@@ -1,4 +1,4 @@
-import { SystemConfig } from 'src/config';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { getCLIPModelInfo } from 'src/utils/misc';

@@ -36,13 +36,12 @@ class _AbortCallbackWrapper {
 
 class _MockAbortCallbackWrapper extends Mock implements _AbortCallbackWrapper {}
 
-
 void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
   late SyncApiRepository mockSyncApiRepo;
-  late DriftLocalAssetRepository mockLocalAssetRepo;
-  late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
+  late LocalAssetRepository mockLocalAssetRepo;
+  late TrashedLocalAssetRepository mockTrashedLocalAssetRepo;
   late AssetMediaRepository mockAssetMediaRepo;
   late MockPermissionRepository mockPermissionRepo;
   late MockApiService mockApi;
@@ -61,7 +60,7 @@ void main() {
     registerFallbackValue(const SemVer(major: 2, minor: 5, patch: 0));
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
   });
 
   tearDownAll(() async {
@@ -70,7 +69,7 @@ void main() {
     await db.close();
   });
 
-  successHandler(Invocation _) async => true;
+  Future<bool> successHandler(Invocation _) async => true;
 
   setUp(() async {
     mockSyncStreamRepo = MockSyncStreamRepository();

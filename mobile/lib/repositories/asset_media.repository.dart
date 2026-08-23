@@ -37,23 +37,19 @@ class AssetMediaRepository {
 
   Future<bool> _androidSupportsTrash() async {
     if (Platform.isAndroid) {
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      int sdkVersion = androidInfo.version.sdkInt;
+      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      final int sdkVersion = androidInfo.version.sdkInt;
       return sdkVersion >= 31;
     }
     return false;
   }
 
-  Future<List<String>> deleteAll(List<String> ids) async {
-    if (CurrentPlatform.isAndroid) {
-      if (await _androidSupportsTrash()) {
-        return PhotoManager.editor.android.moveToTrash(
-          ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
-        );
-      } else {
-        return PhotoManager.editor.deleteWithIds(ids);
-      }
+  Future<List<String>> deleteAll(List<String> ids, {bool trash = true}) async {
+    if (trash && CurrentPlatform.isAndroid && await _androidSupportsTrash()) {
+      return PhotoManager.editor.android.moveToTrash(
+        ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
+      );
     }
     return PhotoManager.editor.deleteWithIds(ids);
   }
@@ -324,7 +320,7 @@ class AssetMediaRepository {
       return 0;
     }
 
-    if (_isCancelled(cancelCompleter)) {
+    if (_isCancelled(cancelCompleter) || !context.mounted) {
       await _cleanupTempFiles(tempFiles);
       return 0;
     }

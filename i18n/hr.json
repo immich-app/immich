@@ -814,7 +814,6 @@
   "custom_date": "Specifičan datum",
   "custom_locale": "Prilagođena lokalizacija",
   "custom_locale_description": "Formatiranje datuma, vremena i brojeva na temelju selektiranog jezika i regije",
-  "custom_url": "Prilagođena URL adresa",
   "cutoff_date_description": "Zadrži slike od zadnjih…",
   "cutoff_day": "{count, plural, one {dan} other {dana}}",
   "cutoff_year": "{count, plural, one {godina} other {godine}}",

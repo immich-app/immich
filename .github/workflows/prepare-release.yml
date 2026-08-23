@@ -17,10 +17,6 @@ on:
           - prepatch
           - prerelease
           - release
-      mobileBump:
-        description: 'Bump mobile build number'
-        required: false
-        type: boolean
       skipTranslations:
         description: 'Skip translations'
         required: false
@@ -61,26 +57,25 @@ jobs:
           permission-contents: write
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.token.outputs.token }}
           persist-credentials: true
           ref: main
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
           github_token: ${{ steps.token.outputs.token }}
 
       # TODO move to mise
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
 
       - name: Bump version
         env:
           RELEASE_TYPE: ${{ inputs.releaseType }}
-          MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}"
 
       - id: output
         run: |
@@ -93,7 +88,7 @@ jobs:
 
       - name: Commit and tag
         id: push-tag
-        uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
+        uses: EndBug/add-and-commit@645ecc0dd0a57f4d86d26c0aa5fc42c0a856fbca # v11.0.0
         with:
           default_author: github_actions
           message: 'chore: version ${{ steps.output.outputs.version }}'
@@ -107,6 +102,8 @@ jobs:
       contents: read
       pull-requests: write
     secrets:
+      PUSH_O_MATIC_APP_CLIENT_ID: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -140,7 +137,7 @@ jobs:
           permission-actions: read
 
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
@@ -152,19 +149,23 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
-        with:
-          draft: true
-          prerelease: ${{ needs.bump_version.outputs.rc }}
-          tag_name: ${{ needs.bump_version.outputs.version }}
-          token: ${{ steps.generate-token.outputs.token }}
-          generate_release_notes: true
-          body_path: misc/release/notes.tmpl
-          files: |
-            docker/docker-compose.yml
-            docker/docker-compose.rootless.yml
-            docker/example.env
-            docker/hwaccel.ml.yml
-            docker/hwaccel.transcoding.yml
-            docker/prometheus.yml
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.bump_version.outputs.version }}
+          PRERELEASE: ${{ needs.bump_version.outputs.rc }}
+        run: |
+          gh release create "${TAG}" \
+            --repo "${REPO}" \
+            --draft \
+            --verify-tag \
+            --prerelease="${PRERELEASE}" \
+            --notes-file misc/release/notes.tmpl \
+            --generate-notes \
+            docker/docker-compose.yml \
+            docker/docker-compose.rootless.yml \
+            docker/example.env \
+            docker/hwaccel.ml.yml \
+            docker/hwaccel.transcoding.yml \
+            docker/prometheus.yml \
             *.apk

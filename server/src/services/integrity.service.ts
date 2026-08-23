@@ -35,7 +35,7 @@ import {
   IIntegrityUntrackedFilesJob,
 } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
-import { handlePromiseError } from 'src/utils/misc';
+import { batched, handlePromiseError } from 'src/utils/misc';
 
 /**
  * Untracked Files:
@@ -201,7 +201,7 @@ export class IntegrityService extends BaseService {
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.UntrackedFile);
 
     let total = 0;
-    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchReports of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityUntrackedFilesRefresh,
         data: {
@@ -338,7 +338,7 @@ export class IntegrityService extends BaseService {
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.MissingFile);
 
     let total = 0;
-    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchReports of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityMissingFilesRefresh,
         data: {
@@ -365,7 +365,7 @@ export class IntegrityService extends BaseService {
     const assetPaths = this.integrityRepository.streamAssetPathsForMissingFiles();
 
     let total = 0;
-    for await (const batchPaths of chunk(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchPaths of batched(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityMissingFiles,
         data: {
@@ -450,7 +450,7 @@ export class IntegrityService extends BaseService {
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.ChecksumFail);
 
     let total = 0;
-    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchReports of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityChecksumFilesRefresh,
         data: {
@@ -656,7 +656,7 @@ export class IntegrityService extends BaseService {
 
     for (const property of properties) {
       const reports = this.integrityRepository.streamIntegrityReportsByProperty(property, type);
-      for await (const batch of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+      for await (const batch of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
         await this.jobRepository.queue({
           name: JobName.IntegrityDeleteReports,
           data: {
@@ -703,21 +703,5 @@ export class IntegrityService extends BaseService {
 
     this.logger.log(`Deleted ${reports.length} reports.`);
     return JobStatus.Success;
-  }
-}
-
-async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
-  let chunk: T[] = [];
-  for await (const item of generator) {
-    chunk.push(item);
-
-    if (chunk.length === n) {
-      yield chunk;
-      chunk = [];
-    }
-  }
-
-  if (chunk.length > 0) {
-    yield chunk;
   }
 }

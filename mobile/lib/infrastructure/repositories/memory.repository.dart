@@ -4,10 +4,13 @@ import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/memory.repository.drift.dart';
 
-class DriftMemoryRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftMemoryRepository(this._db) : super(_db);
+@DriftAccessor()
+class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMixin {
+  MemoryRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<List<DriftMemory>> getAll(String ownerId) async {
     final now = DateTime.now();

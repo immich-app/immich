@@ -218,15 +218,21 @@ with
   "cte" as (
     select
       "asset_face"."id",
-      "asset_face"."personId",
+      "asset_face"."personGroupId",
       face_search.embedding <=> $1 as "distance"
     from
       "asset_face"
       inner join "asset" on "asset"."id" = "asset_face"."assetId"
       inner join "face_search" on "face_search"."faceId" = "asset_face"."id"
-      left join "person" on "person"."id" = "asset_face"."personId"
     where
-      "asset"."ownerId" = any ($2::uuid[])
+      "asset"."ownerId" in (
+        select
+          "user"."id"
+        from
+          "user"
+        where
+          "user"."clusterGroupId" = $2
+      )
       and "asset"."deletedAt" is null
     order by
       "distance"
@@ -239,7 +245,7 @@ from
   "cte"
 where
   "cte"."distance" <= $4
-commit
+rollback
 
 -- SearchRepository.searchPlaces
 select
@@ -907,11 +913,11 @@ where
       "asset_face"."assetId" = "asset"."id"
       and "asset_face"."deletedAt" is null
       and "asset_face"."isVisible" = $4
-      and "asset_face"."personId" = any ($5::uuid[])
+      and "asset_face"."personGroupId" = any ($5::uuid[])
     group by
       "asset_face"."assetId"
     having
-      count(distinct "asset_face"."personId") = $6
+      count(distinct "asset_face"."personGroupId") = $6
   )
 order by
   "asset"."fileCreatedAt" desc,
@@ -1498,7 +1504,7 @@ where
         "asset_face"."assetId" = "asset"."id"
         and "asset_face"."deletedAt" is null
         and "asset_face"."isVisible" = $5
-        and "asset_face"."personId" = any ($6::uuid[])
+        and "asset_face"."personGroupId" = any ($6::uuid[])
     )
   )
 order by

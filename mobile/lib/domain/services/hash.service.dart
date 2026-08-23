@@ -15,9 +15,9 @@ const String _kHashCancelledCode = "HASH_CANCELLED";
 
 class HashService {
   final int _batchSize;
-  final DriftLocalAlbumRepository _localAlbumRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final LocalAlbumRepository _localAlbumRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final TrashedLocalAssetRepository _trashedLocalAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final Completer<void>? _cancellation;
   final _log = Logger('HashService');
@@ -32,7 +32,7 @@ class HashService {
   }) : _batchSize = batchSize ?? kBatchHashFileLimit {
     // Stop the in-flight native hash call promptly on cancellation; the loops
     // below also observe [isCancelled] to bail between batches.
-    _cancellation?.future.then((_) => _nativeSyncApi.cancelHashing().onError(_log.warning));
+    unawaited(_cancellation?.future.then((_) => _nativeSyncApi.cancelHashing().onError(_log.warning)));
   }
 
   bool get isCancelled => _cancellation?.isCompleted ?? false;
@@ -66,11 +66,12 @@ class HashService {
           await _hashAssets(pseudoAlbum, trashedToHash, isTrashed: true);
         }
       }
-    } on PlatformException catch (e) {
+    } on PlatformException catch (e, s) {
       if (e.code == _kHashCancelledCode) {
         _log.warning("Hashing cancelled by platform");
         return;
       }
+      _log.severe("Native hashing failed: ${e.code}", e, s);
     } catch (e, s) {
       _log.severe("Error during hashing", e, s);
     }

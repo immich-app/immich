@@ -41,7 +41,7 @@ class SettingsButtonListTile extends StatelessWidget {
               subtileText!,
               style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             ),
-          if (subtitle != null) subtitle!,
+          ?subtitle,
           const SizedBox(height: 6),
           child ?? ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
         ],

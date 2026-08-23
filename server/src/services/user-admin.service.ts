@@ -17,6 +17,7 @@ import { JobName, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { BaseService } from 'src/services/base.service';
 import { getCalendarHeatmap } from 'src/services/shared/user-methods';
+import { findOrFail } from 'src/utils/misc';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -158,11 +159,7 @@ export class UserAdminService extends BaseService {
     return mapPreferences(newPreferences);
   }
 
-  private async findOrFail(id: string, options: UserFindOptions) {
-    const user = await this.userRepository.get(id, options);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-    return user;
+  private findOrFail(id: string, options: UserFindOptions) {
+    return findOrFail(() => this.userRepository.get(id, options), 'User');
   }
 }

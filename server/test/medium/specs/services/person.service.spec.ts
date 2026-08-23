@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely';
+import { DateTime } from 'luxon';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetFaceCreateDto } from 'src/dtos/person.dto';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -47,9 +48,11 @@ describe(PersonService.name, () => {
       const auth = factory.auth({ user });
       storageMock.unlink.mockResolvedValue();
 
-      await expect(personRepo.getById(person.id)).resolves.toEqual(expect.objectContaining({ id: person.id }));
-      await expect(sut.delete(auth, person.id)).resolves.toBeUndefined();
-      await expect(personRepo.getById(person.id)).resolves.toBeUndefined();
+      await expect(personRepo.getByGroupId(person)).resolves.toEqual(
+        expect.objectContaining({ personGroupId: person.personGroupId }),
+      );
+      await expect(sut.delete(auth, person.personGroupId)).resolves.toBeUndefined();
+      await expect(personRepo.getByGroupId(person)).resolves.toBeUndefined();
 
       expect(storageMock.unlink).toHaveBeenCalledWith(person.thumbnailPath);
     });
@@ -73,13 +76,109 @@ describe(PersonService.name, () => {
       const auth = factory.auth({ user });
       storageMock.unlink.mockResolvedValue();
 
-      await expect(sut.deleteAll(auth, { ids: [person1.id, person2.id] })).resolves.toBeUndefined();
-      await expect(personRepo.getById(person1.id)).resolves.toBeUndefined();
-      await expect(personRepo.getById(person2.id)).resolves.toBeUndefined();
+      await expect(
+        sut.deleteAll(auth, { ids: [person1.personGroupId, person2.personGroupId] }),
+      ).resolves.toBeUndefined();
+      await expect(personRepo.getByGroupId(person1)).resolves.toBeUndefined();
+      await expect(personRepo.getByGroupId(person2)).resolves.toBeUndefined();
 
       expect(storageMock.unlink).toHaveBeenCalledTimes(2);
       expect(storageMock.unlink).toHaveBeenCalledWith(person1.thumbnailPath);
       expect(storageMock.unlink).toHaveBeenCalledWith(person2.thumbnailPath);
+    });
+  });
+
+  describe('mergePerson', () => {
+    it('should merge people of multiple users', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person1.personGroupId,
+      });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person2.personGroupId,
+      });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user: user1 });
+
+      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
+      const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
+      expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      expect(user2People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+    });
+
+    it('should skip people with a different name', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person1.personGroupId,
+        name: 'Person 1',
+      });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person2.personGroupId,
+        name: 'Person 2',
+      });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user: user1 });
+
+      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
+      const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
+      expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      expect(user2People).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ personGroupId: person1.personGroupId }),
+          expect.objectContaining({ personGroupId: person2.personGroupId }),
+        ]),
+      );
+    });
+
+    it('should skip people with a different birthdate', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person1.personGroupId,
+        birthDate: DateTime.now().minus({ years: 1 }).toJSDate(),
+      });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person2.personGroupId,
+        birthDate: DateTime.now().minus({ years: 2 }).toJSDate(),
+      });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user: user1 });
+
+      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
+      const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
+      expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      expect(user2People).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ personGroupId: person1.personGroupId }),
+          expect.objectContaining({ personGroupId: person2.personGroupId }),
+        ]),
+      );
     });
   });
 
@@ -101,7 +200,7 @@ describe(PersonService.name, () => {
         y: 50,
         width: 150,
         height: 150,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -114,7 +213,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 50,
             boundingBoxY1: 50,
             boundingBoxX2: 200,
@@ -155,7 +254,7 @@ describe(PersonService.name, () => {
         y: 0,
         width: 100,
         height: 100,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -168,7 +267,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 0,
             boundingBoxY1: 0,
             boundingBoxX2: 100,
@@ -186,7 +285,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 50,
             boundingBoxY1: 50,
             boundingBoxX2: 150,
@@ -224,7 +323,7 @@ describe(PersonService.name, () => {
         y: 50,
         width: 10,
         height: 10,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -235,7 +334,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: expect.closeTo(25, 1),
             boundingBoxY1: expect.closeTo(50, 1),
             boundingBoxX2: expect.closeTo(35, 1),
@@ -251,7 +350,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 50,
             boundingBoxY1: 65,
             boundingBoxX2: 60,
@@ -289,7 +388,7 @@ describe(PersonService.name, () => {
         y: 25,
         width: 100,
         height: 50,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -300,7 +399,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 50,
             boundingBoxY1: 25,
             boundingBoxX2: 150,
@@ -316,7 +415,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 50,
             boundingBoxY1: 25,
             boundingBoxX2: 150,
@@ -363,7 +462,7 @@ describe(PersonService.name, () => {
         y: 25,
         width: 10,
         height: 20,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -374,7 +473,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: expect.closeTo(50, 1),
             boundingBoxY1: expect.closeTo(25, 1),
             boundingBoxX2: expect.closeTo(60, 1),
@@ -390,7 +489,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 75,
             boundingBoxY1: 140,
             boundingBoxX2: 95,
@@ -437,7 +536,7 @@ describe(PersonService.name, () => {
         y: 25,
         width: 75,
         height: 50,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -448,7 +547,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 25,
             boundingBoxY1: 25,
             boundingBoxX2: 100,
@@ -464,7 +563,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 100,
             boundingBoxY1: 25,
             boundingBoxX2: 175,
@@ -508,7 +607,7 @@ describe(PersonService.name, () => {
         y: 25,
         width: 15,
         height: 20,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -519,7 +618,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: expect.closeTo(50, 1),
             boundingBoxY1: expect.closeTo(25, 1),
             boundingBoxX2: expect.closeTo(65, 1),
@@ -535,7 +634,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 25,
             boundingBoxY1: 50,
             boundingBoxX2: 45,
@@ -588,7 +687,7 @@ describe(PersonService.name, () => {
         y: 50,
         width: 75,
         height: 50,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -599,7 +698,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 25,
             boundingBoxY1: 49,
             boundingBoxX2: 99,
@@ -615,7 +714,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 50,
             boundingBoxY1: 75,
             boundingBoxX2: 100,
@@ -659,7 +758,7 @@ describe(PersonService.name, () => {
         y: 10,
         width: 80,
         height: 80,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -670,7 +769,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 10,
             boundingBoxY1: 10,
             boundingBoxX2: 90,
@@ -686,7 +785,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 10,
             boundingBoxY1: 10,
             boundingBoxX2: 90,
@@ -730,7 +829,7 @@ describe(PersonService.name, () => {
         y: 10,
         width: 80,
         height: 80,
-        personId: person.id,
+        personId: person.personGroupId,
         assetId: asset.id,
       };
 
@@ -741,7 +840,7 @@ describe(PersonService.name, () => {
       await expect(faces).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 110,
             boundingBoxY1: 10,
             boundingBoxX2: 190,
@@ -757,7 +856,7 @@ describe(PersonService.name, () => {
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
+            person: expect.objectContaining({ id: person.personGroupId }),
             boundingBoxX1: 10,
             boundingBoxY1: 10,
             boundingBoxX2: 90,

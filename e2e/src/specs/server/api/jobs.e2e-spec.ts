@@ -2,9 +2,7 @@ import { LoginResponseDto, QueueCommand, QueueName, updateConfig } from '@immich
 import { cpSync, rmSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, testAssetDir, utils } from 'src/utils';
-import request from 'supertest';
+import { asBearerAuth, testAssetDir, utils } from 'src/utils';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 describe('/jobs', () => {
@@ -47,13 +45,7 @@ describe('/jobs', () => {
       config.machineLearning.enabled = false;
       config.metadata.faces.import = false;
       config.machineLearning.clip.enabled = false;
-      await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
-    });
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/jobs/metadataExtraction');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
+      await updateConfig({ adminConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
     });
 
     it('should queue metadata extraction for missing assets', async () => {

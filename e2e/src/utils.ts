@@ -184,6 +184,8 @@ export const utils = {
       'library',
       'shared_link',
       'person',
+      'person_group',
+      'cluster_group',
       'album',
       'asset',
       'asset_face',
@@ -434,12 +436,12 @@ export const utils = {
     return person;
   },
 
-  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
+  createFace: async ({ assetId, personGroupId }: { assetId: string; personGroupId: string }) => {
     if (!client) {
       return;
     }
 
-    await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
+    await client.query('INSERT INTO asset_face ("assetId", "personGroupId") VALUES ($1, $2)', [assetId, personGroupId]);
   },
 
   setPersonThumbnail: async (personId: string) => {
@@ -447,7 +449,9 @@ export const utils = {
       return;
     }
 
-    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
+    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "personGroupId" = $1`, [
+      personId,
+    ]);
   },
 
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
@@ -647,7 +651,7 @@ export const utils = {
 
   resetAdminConfig: async (accessToken: string) => {
     const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
-    await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
+    await updateConfig({ adminConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
   },
 
   isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseLegacyDto) => {
@@ -675,9 +679,9 @@ export const utils = {
   },
 
   cliLogin: async (accessToken: string) => {
-    const key = await utils.createApiKey(accessToken, [Permission.All]);
-    await immichCli(['login', app, key.secret]);
-    return key.secret;
+    const { secret } = await utils.createApiKey(accessToken, [Permission.All]);
+    await immichCli(['login', app, secret]);
+    return secret;
   },
 
   scan: async (accessToken: string, id: string) => {

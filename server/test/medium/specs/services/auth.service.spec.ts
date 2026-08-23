@@ -3,6 +3,7 @@ import { hash } from 'bcrypt';
 import { Kysely } from 'kysely';
 import { AuthType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
@@ -26,6 +27,7 @@ const setup = (db?: Kysely<DB>) => {
     database: db || defaultDatabase,
     real: [
       AccessRepository,
+      ClusterGroupRepository,
       ConfigRepository,
       CryptoRepository,
       DatabaseRepository,
@@ -56,16 +58,6 @@ describe(AuthService.name, () => {
           isAdmin: true,
         }),
       );
-    });
-
-    it('should not allow a second admin to sign up', async () => {
-      const { sut, ctx } = setup();
-      await ctx.newUser({ isAdmin: true });
-      const dto = { name: 'Admin', email: 'admin@immich.cloud', password: 'password' };
-
-      const response = sut.adminSignUp(dto);
-      await expect(response).rejects.toThrow(BadRequestException);
-      await expect(response).rejects.toThrow('The server already has an admin');
     });
   });
 

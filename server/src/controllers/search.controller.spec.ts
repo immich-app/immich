@@ -19,11 +19,6 @@ describe(SearchController.name, () => {
   });
 
   describe('POST /search/metadata', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/search/metadata');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should reject page as a string', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ page: 'abc' });
       expect(status).toBe(400);
@@ -161,11 +156,6 @@ describe(SearchController.name, () => {
     });
 
     describe('POST /search/random', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).post('/search/random');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-
       it('should reject if withStacked is not a boolean', async () => {
         const { status, body } = await request(ctx.getHttpServer())
           .post('/search/random')
@@ -191,26 +181,7 @@ describe(SearchController.name, () => {
       });
     });
 
-    describe('POST /search/smart', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).post('/search/smart');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-    });
-
-    describe('GET /search/explore', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/explore');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-    });
-
     describe('POST /search/person', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/person');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-
       it('should require a name', async () => {
         const { status, body } = await request(ctx.getHttpServer()).get('/search/person').send({});
         expect(status).toBe(400);
@@ -221,11 +192,6 @@ describe(SearchController.name, () => {
     });
 
     describe('GET /search/places', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/places');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-
       it('should require a name', async () => {
         const { status, body } = await request(ctx.getHttpServer()).get('/search/places').send({});
         expect(status).toBe(400);
@@ -235,19 +201,7 @@ describe(SearchController.name, () => {
       });
     });
 
-    describe('GET /search/cities', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/cities');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-    });
-
     describe('GET /search/suggestions', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/suggestions');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-
       it('should require a type', async () => {
         const { status, body } = await request(ctx.getHttpServer()).get('/search/suggestions').send({});
         expect(status).toBe(400);

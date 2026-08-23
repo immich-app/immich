@@ -111,9 +111,8 @@ export class ServerService extends BaseService {
   }
 
   async getSystemConfig(): Promise<ServerConfigDto> {
-    const { setup } = this.configRepository.getEnv();
     const config = await this.getConfig({ withCache: false });
-    const isInitialized = !setup.allow || (await this.userRepository.hasAdmin());
+    const isInitialized = !(await this.isSetupAvailable());
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
 
     return {
@@ -121,6 +120,7 @@ export class ServerService extends BaseService {
       trashDays: config.trash.days,
       userDeleteDelay: config.user.deleteDelay,
       oauthButtonText: config.oauth.buttonText,
+      oauthAccountManagementUrl: config.oauth.accountManagementUrl,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,

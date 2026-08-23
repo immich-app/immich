@@ -60,6 +60,8 @@
     "**/dist/**": true,
     "**/node_modules/**": true
   },
+  // TODO remove once the ts7 extension is stable
+  "js/ts.experimental.useTsgo": true,
   "js/ts.preferences.importModuleSpecifier": "non-relative",
   "search.exclude": {
     "**/.svelte-kit": true,

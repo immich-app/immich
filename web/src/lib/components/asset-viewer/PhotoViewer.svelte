@@ -273,7 +273,9 @@
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
-              style="top: {boundingbox.height + 4}px; right: 0;"
+              style="top: {boundingbox.height + 4}px; right: {assetViewerManager.imgRef
+                ? Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)
+                : 0}px;"
             >
               {boundingbox.name}
             </div>
