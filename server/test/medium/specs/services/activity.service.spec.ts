@@ -338,6 +338,71 @@ describe(ActivityService.name, () => {
         sut.getAll(factory.auth({ user: owner }), { albumId: album1.id, withAdditions: true }),
       ).resolves.toEqual([]);
     });
+
+    it('should not include asset additions by default', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: owner.id });
+      const { asset } = await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdById: owner.id });
+
+      await expect(sut.getAll(factory.auth({ user: owner }), { albumId: album.id })).resolves.toEqual([]);
+    });
+
+    it('should not include additions when filtering by another type', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: owner.id });
+      const { asset } = await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdById: owner.id });
+      const auth = factory.auth({ user: owner });
+      const { value: comment } = await sut.create(auth, {
+        albumId: album.id,
+        type: ReactionType.COMMENT,
+        comment: 'comment',
+      });
+
+      const result = await sut.getAll(auth, { albumId: album.id, type: ReactionType.COMMENT, withAdditions: true });
+
+      expect(result).toEqual([expect.objectContaining({ id: comment.id, type: ReactionType.COMMENT })]);
+    });
+
+    it('should not include additions for asset-level queries', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: owner.id });
+      const { asset } = await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdById: owner.id });
+      const auth = factory.auth({ user: owner });
+      const { value: comment } = await sut.create(auth, {
+        albumId: album.id,
+        assetId: asset.id,
+        type: ReactionType.COMMENT,
+        comment: 'comment',
+      });
+
+      const result = await sut.getAll(auth, { albumId: album.id, assetId: asset.id, withAdditions: true });
+
+      expect(result).toEqual([expect.objectContaining({ id: comment.id, type: ReactionType.COMMENT })]);
+    });
+
+    it('should remove the addition when the asset is removed from the album', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: owner.id });
+      const { asset } = await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdById: owner.id });
+      const auth = factory.auth({ user: owner });
+      await expect(sut.getAll(auth, { albumId: album.id, withAdditions: true })).resolves.toHaveLength(1);
+
+      await ctx.database
+        .deleteFrom('album_asset')
+        .where('albumId', '=', album.id)
+        .where('assetId', '=', asset.id)
+        .execute();
+
+      await expect(sut.getAll(auth, { albumId: album.id, withAdditions: true })).resolves.toEqual([]);
+    });
   });
 
   describe('create', () => {
