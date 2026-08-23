@@ -214,10 +214,12 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
       // documents a property as required even though it is optional during body validation
       for (const [key, value] of Object.entries(schema.properties ?? {})) {
-        if (ApiCustomExtension.Required in value) {
-          delete (value as Record<string, unknown>)[ApiCustomExtension.Required];
-          (schema.required ??= []).push(key);
+        if (!(ApiCustomExtension.Required in value)) {
+        	continue;
         }
+
+        delete (value as Record<string, unknown>)[ApiCustomExtension.Required];
+        (schema.required ??= []).push(key);
       }
     }
 
