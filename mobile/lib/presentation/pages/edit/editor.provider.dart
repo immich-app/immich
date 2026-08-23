@@ -65,8 +65,28 @@ class EditorProvider extends Notifier<EditorState> {
     state = state.copyWith(crop: crop, hasUnsavedEdits: true);
   }
 
+  /// Returns the required shift that has to be done to fit a segment in a given
+  /// constraint
+  double _shiftIntoBounds(double start, double end, {double min = 0.0, double max = 1.0}) {
+    if (start < min) {
+      return min - start;
+    }
+    if (end > max) {
+      return max - end;
+    }
+    return 0.0;
+  }
+
   void setAspectRatio(CropAspectRatio preset) {
-    state = state.copyWith(aspectRatio: preset, hasUnsavedEdits: true);
+    Rect startingSquare = Rect.fromCenter(
+      center: state.crop.center,
+      width: state.crop.longestSide,
+      height: state.crop.longestSide,
+    );
+    final dx = _shiftIntoBounds(startingSquare.left, startingSquare.right);
+    final dy = _shiftIntoBounds(startingSquare.top, startingSquare.bottom);
+    startingSquare = startingSquare.shift(Offset(dx, dy));
+    state = state.copyWith(aspectRatio: preset, hasUnsavedEdits: true, crop: startingSquare);
   }
 
   void resetEdits() {
