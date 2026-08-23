@@ -142,24 +142,24 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   Expression<bool> _localLibraryFilter($LocalAssetEntityTable lae) {
     final selection = _db.localAlbumEntity.backupSelection;
     return lae.id.isInQuery(
-          _db.localAlbumAssetEntity.selectOnly()
-            ..addColumns([_db.localAlbumAssetEntity.assetId])
-            ..join([
-              innerJoin(
-                _db.localAlbumEntity,
-                _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
-                useColumns: false,
-              ),
-            ])
-            ..groupBy(
-              [_db.localAlbumAssetEntity.assetId],
-              having:
-                  _db.localAlbumEntity.id
-                      .count(filter: selection.equalsValue(BackupSelection.selected))
-                      .isBiggerThanValue(0) &
-                  _db.localAlbumEntity.id.count(filter: selection.equalsValue(BackupSelection.excluded)).equals(0),
-            ),
-        );
+      _db.localAlbumAssetEntity.selectOnly()
+        ..addColumns([_db.localAlbumAssetEntity.assetId])
+        ..join([
+          innerJoin(
+            _db.localAlbumEntity,
+            _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+            useColumns: false,
+          ),
+        ])
+        ..groupBy(
+          [_db.localAlbumAssetEntity.assetId],
+          having:
+              _db.localAlbumEntity.id
+                  .count(filter: selection.equalsValue(BackupSelection.selected))
+                  .isBiggerThanValue(0) &
+              _db.localAlbumEntity.id.count(filter: selection.equalsValue(BackupSelection.excluded)).equals(0),
+        ),
+    );
   }
 
   Stream<List<Bucket>> _watchLocalOnlyBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
