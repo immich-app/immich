@@ -184,21 +184,19 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   }
 
   Future<List<BaseAsset>> _getLocalOnlyAssets({required int offset, required int count}) {
-    final query =
-        _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
-            leftOuterJoin(
-              _db.remoteAssetEntity,
-              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-              useColumns: false,
-            ),
-          ])
-          ..where(_localLibraryFilter(_db.localAssetEntity))
-          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
-          ..limit(count, offset: offset);
+    final remoteId = subqueryExpression<String>(
+      _db.remoteAssetEntity.selectOnly()
+        ..addColumns([_db.remoteAssetEntity.id])
+        ..where(_db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum))
+        ..limit(1),
+    );
 
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto(remoteId: row.read(_db.remoteAssetEntity.id)))
-        .get();
+    final query = _db.localAssetEntity.select().addColumns([remoteId]).join([])
+      ..where(_localLibraryFilter(_db.localAssetEntity))
+      ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto(remoteId: row.read(remoteId))).get();
   }
 
   TimelineQuery localAlbum(String albumId, GroupAssetsBy groupBy) => (
