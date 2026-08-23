@@ -26,3 +26,41 @@ class ActivityStats {
 
   const ActivityStats({required this.comments});
 }
+
+// keep in sync with getGroupMediaType in web/src/lib/utils/activity.ts
+String getGroupMediaType(List<Activity> activities) {
+  if (activities.every((activity) => activity.assetType == AssetTypeEnum.IMAGE)) {
+    return 'photo';
+  }
+  if (activities.every((activity) => activity.assetType == AssetTypeEnum.VIDEO)) {
+    return 'video';
+  }
+  return 'other';
+}
+
+// groups consecutive asset-added activities that share the same groupId;
+// keep in sync with groupActivities in web/src/lib/utils/activity.ts
+List<List<Activity>> groupActivities(List<Activity> activities) {
+  final List<List<Activity>> items = [];
+  List<Activity>? currentGroup;
+  String? currentGroupId;
+
+  for (final activity in activities) {
+    if (activity.type == ActivityType.assetAdded) {
+      final groupId = activity.groupId ?? activity.id;
+      if (currentGroup != null && currentGroupId == groupId) {
+        currentGroup.add(activity);
+      } else {
+        currentGroup = [activity];
+        currentGroupId = groupId;
+        items.add(currentGroup);
+      }
+    } else {
+      currentGroup = null;
+      currentGroupId = null;
+      items.add([activity]);
+    }
+  }
+
+  return items;
+}

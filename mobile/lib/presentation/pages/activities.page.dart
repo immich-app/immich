@@ -42,25 +42,6 @@ class ActivitiesPage extends HookConsumerWidget {
       unawaited(scrollToBottom());
     }
 
-    // group consecutive asset-added activities that share the same groupId
-    final activityData = activities.valueOrNull;
-    final displayItems = useMemoized(() {
-      final List<List<Activity>> items = [];
-      for (final activity in activityData ?? const <Activity>[]) {
-        final last = items.isEmpty ? null : items.last;
-        if (activity.type == ActivityType.assetAdded &&
-            last != null &&
-            last.first.type == ActivityType.assetAdded &&
-            activity.groupId != null &&
-            last.first.groupId == activity.groupId) {
-          last.add(activity);
-        } else {
-          items.add([activity]);
-        }
-      }
-      return items;
-    }, [activityData]);
-
     return ProviderScope(
       overrides: [currentRemoteAlbumScopedProvider.overrideWithValue(album)],
       child: Scaffold(
@@ -77,8 +58,9 @@ class ActivitiesPage extends HookConsumerWidget {
         ),
         body: activities.widgetWhen(
           onData: (data) {
+            final groups = groupActivities(data);
             final List<Widget> activityWidgets = [];
-            for (final group in displayItems.reversed) {
+            for (final group in groups.reversed) {
               activityWidgets.add(
                 Padding(
                   key: ValueKey(group.first.id),

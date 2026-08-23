@@ -1,19 +1,39 @@
 import { AssetTypeEnum, ReactionType } from '@immich/sdk';
-import { getGroupMediaType, groupActivities, type AssetAddedGroup } from '$lib/utils/activity';
+import { getGroupMediaType, groupActivities } from '$lib/utils/activity';
 import { activityFactory } from '@test-data/factories/activity-factory';
 
 const assetAdded = (overrides: Partial<Parameters<typeof activityFactory.build>[0]> = {}) =>
   activityFactory.build({ type: ReactionType.AssetAdded, assetType: AssetTypeEnum.Image, ...overrides });
 
 describe('getGroupMediaType', () => {
-  it('returns other when an asset type is missing or not an image/video', () => {
-    expect(
-      getGroupMediaType([
-        activityFactory.build({ assetType: AssetTypeEnum.Image }),
-        activityFactory.build({ assetType: null }),
-      ]),
-    ).toBe('other');
-    expect(getGroupMediaType(activityFactory.buildList(2, { assetType: AssetTypeEnum.Audio }))).toBe('other');
+  it('returns photo when every asset is an image', () => {
+    const activities = [assetAdded({ assetType: AssetTypeEnum.Image }), assetAdded({ assetType: AssetTypeEnum.Image })];
+
+    expect(getGroupMediaType(activities)).toBe('photo');
+  });
+
+  it('returns video when every asset is a video', () => {
+    const activities = [assetAdded({ assetType: AssetTypeEnum.Video }), assetAdded({ assetType: AssetTypeEnum.Video })];
+
+    expect(getGroupMediaType(activities)).toBe('video');
+  });
+
+  it('returns other for mixed images and videos', () => {
+    const activities = [assetAdded({ assetType: AssetTypeEnum.Image }), assetAdded({ assetType: AssetTypeEnum.Video })];
+
+    expect(getGroupMediaType(activities)).toBe('other');
+  });
+
+  it('returns other when an asset type is missing', () => {
+    const activities = [assetAdded({ assetType: AssetTypeEnum.Image }), assetAdded({ assetType: null })];
+
+    expect(getGroupMediaType(activities)).toBe('other');
+  });
+
+  it('returns other for asset types that are not image or video', () => {
+    const activities = [assetAdded({ assetType: AssetTypeEnum.Audio }), assetAdded({ assetType: AssetTypeEnum.Audio })];
+
+    expect(getGroupMediaType(activities)).toBe('other');
   });
 });
 
@@ -22,74 +42,61 @@ describe('groupActivities', () => {
     expect(groupActivities([])).toEqual([]);
   });
 
-  it('passes comments and likes through unchanged and in order', () => {
+  it('passes comments and likes through in order', () => {
     const comment = activityFactory.build({ type: ReactionType.Comment, comment: 'hello' });
     const like = activityFactory.build({ type: ReactionType.Like });
 
-    expect(groupActivities([comment, like])).toEqual([comment, like]);
+    expect(groupActivities([comment, like])).toEqual([[comment], [like]]);
   });
 
-  it('merges consecutive asset additions with the same groupId into one group', () => {
-    const activities = [
-      assetAdded({ groupId: 'group-1' }),
-      assetAdded({ groupId: 'group-1' }),
-      assetAdded({ groupId: 'group-1' }),
-    ];
+  it('merges consecutive additions with the same groupId', () => {
+    const group1Asset1 = assetAdded({ groupId: 'group-1' });
+    const group1Asset2 = assetAdded({ groupId: 'group-1' });
+    const group1Asset3 = assetAdded({ groupId: 'group-1' });
 
-    const items = groupActivities(activities);
-
-    expect(items).toHaveLength(1);
-    expect(items[0]).toEqual({ type: 'group', id: `group|${activities[0].id}`, assets: activities });
+    expect(groupActivities([group1Asset1, group1Asset2, group1Asset3])).toEqual([
+      [group1Asset1, group1Asset2, group1Asset3],
+    ]);
   });
 
-  it('splits consecutive asset additions with different groupIds into separate groups', () => {
-    const activities = [
-      assetAdded({ groupId: 'group-1' }),
-      assetAdded({ groupId: 'group-1' }),
-      assetAdded({ groupId: 'group-2' }),
-    ];
+  it('splits additions with different groupIds', () => {
+    const group1Asset1 = assetAdded({ groupId: 'group-1' });
+    const group1Asset2 = assetAdded({ groupId: 'group-1' });
+    const group2Asset = assetAdded({ groupId: 'group-2' });
 
-    const items = groupActivities(activities) as AssetAddedGroup[];
-
-    expect(items).toHaveLength(2);
-    expect(items[0].assets).toEqual(activities.slice(0, 2));
-    expect(items[1].assets).toEqual(activities.slice(2));
+    expect(groupActivities([group1Asset1, group1Asset2, group2Asset])).toEqual([
+      [group1Asset1, group1Asset2],
+      [group2Asset],
+    ]);
   });
 
-  it('falls back to the activity id when groupId is null', () => {
-    const activities = [assetAdded({ groupId: null }), assetAdded({ groupId: null })];
+  it('never merges additions without a groupId', () => {
+    const asset1 = assetAdded({ groupId: null });
+    const asset2 = assetAdded({ groupId: null });
 
-    const items = groupActivities(activities) as AssetAddedGroup[];
-
-    expect(items).toHaveLength(2);
-    expect(items[0].assets).toEqual([activities[0]]);
-    expect(items[1].assets).toEqual([activities[1]]);
+    expect(groupActivities([asset1, asset2])).toEqual([[asset1], [asset2]]);
   });
 
-  it('wraps a single asset addition in a group', () => {
-    const activity = assetAdded({ groupId: null });
+  it('wraps a single asset addition in a group of one', () => {
+    const activity = assetAdded({ groupId: 'group-1' });
 
-    expect(groupActivities([activity])).toEqual([{ type: 'group', id: `group|${activity.id}`, assets: [activity] }]);
+    expect(groupActivities([activity])).toEqual([[activity]]);
   });
 
-  it('handles a mixed sequence of activities', () => {
+  it('lets comments and likes split a group', () => {
     const comment = activityFactory.build({ type: ReactionType.Comment, comment: 'first' });
     const like = activityFactory.build({ type: ReactionType.Like });
-    const added = [
-      assetAdded({ groupId: 'group-1' }),
-      assetAdded({ groupId: 'group-1' }),
-      assetAdded({ groupId: 'group-2' }),
-      assetAdded({ groupId: 'group-3' }),
-    ];
+    const group1Asset1 = assetAdded({ groupId: 'group-1' });
+    const group1Asset2 = assetAdded({ groupId: 'group-1' });
+    const group1Asset3 = assetAdded({ groupId: 'group-1' });
+    const group2Asset = assetAdded({ groupId: 'group-2' });
 
-    const items = groupActivities([comment, added[0], added[1], like, added[2], added[3]]);
-
-    expect(items).toEqual([
-      comment,
-      { type: 'group', id: `group|${added[0].id}`, assets: [added[0], added[1]] },
-      like,
-      { type: 'group', id: `group|${added[2].id}`, assets: [added[2]] },
-      { type: 'group', id: `group|${added[3].id}`, assets: [added[3]] },
+    expect(groupActivities([comment, group1Asset1, group1Asset2, like, group2Asset, group1Asset3])).toEqual([
+      [comment],
+      [group1Asset1, group1Asset2],
+      [like],
+      [group2Asset],
+      [group1Asset3],
     ]);
   });
 });
