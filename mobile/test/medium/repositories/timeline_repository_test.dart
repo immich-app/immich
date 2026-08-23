@@ -264,6 +264,23 @@ void main() {
 
       expect(assets, isEmpty);
     });
+
+    test('local asset matching two remote assets returns only one asset from local filter', () async {
+      final owner = await ctx.newUser();
+      final partner = await ctx.newUser();
+      const checksum = 'shared-checksum';
+      await ctx.newRemoteAsset(ownerId: owner.id, checksum: checksum);
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final assets = await sut.main([owner.id, partner.id], .day, .localOnly).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      expect((assets.single as LocalAsset).id, local.id);
+    });
+
     test('cloud filter shows only the stack primary asset', () async {
       final user = await ctx.newUser();
       final primary = await ctx.newRemoteAsset(ownerId: user.id);
