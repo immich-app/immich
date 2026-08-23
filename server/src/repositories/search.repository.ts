@@ -140,12 +140,12 @@ export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection
 export interface AssetSearchScope {
   userIds?: string[];
   lockedOwnerId: string;
+  /** whose version of the people to select, required when selecting faces or people */
+  viewingUserId?: string;
 }
 
 export interface AssetSearchBuilderV3Options {
   filter?: SearchFilter;
-  /** whose version of the people to select, required when selecting faces or people */
-  viewingUserId?: string;
   withExif?: boolean;
   withFaces?: boolean;
   withPeople?: boolean;

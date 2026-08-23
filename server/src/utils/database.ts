@@ -806,7 +806,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),
       )
       .$if(!!(options.withFaces || options.withPeople), (qb) =>
-        qb.select(withFacesAndPeople({ viewingUserId: options.viewingUserId! })),
+        qb.select(withFacesAndPeople({ viewingUserId: scope.viewingUserId! })),
       )
       .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
       .where((eb) => {

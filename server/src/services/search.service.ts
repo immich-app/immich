@@ -254,7 +254,6 @@ export class SearchService extends BaseService {
         withPeople: dto.withPeople,
         withStacked: dto.withStacked,
         order: dto.orderBy,
-        viewingUserId: auth.user.id,
       },
       scope,
     );
@@ -276,7 +275,6 @@ export class SearchService extends BaseService {
         withExif: dto.withExif,
         withPeople: dto.withPeople,
         withStacked: dto.withStacked,
-        viewingUserId: auth.user.id,
       },
       scope,
     );
@@ -324,7 +322,7 @@ export class SearchService extends BaseService {
       albumIds.length > 0 ? this.requireAccess({ auth, ids: albumIds, permission: Permission.AlbumRead }) : undefined,
     ]);
 
-    return { filter: effectiveFilter, scope: { userIds, lockedOwnerId: auth.user.id } };
+    return { filter: effectiveFilter, scope: { userIds, lockedOwnerId: auth.user.id, viewingUserId: auth.user.id } };
   }
 
   private async resolveEmbedding(
