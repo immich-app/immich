@@ -225,7 +225,7 @@ void main() {
     });
   });
   group('asset origin filter', () {
-    test('remoteOnly filter includes exactly one asset', () async {
+    test('remote filter includes exactly one asset', () async {
       final user = await ctx.newUser();
       const checksum = 'remote-checksum';
       final remote = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
@@ -233,13 +233,13 @@ void main() {
       final album = await ctx.newLocalAlbum(backupSelection: .selected);
       await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
 
-      final assets = await sut.main([user.id], .day, .remoteOnly).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, .remote).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       expect((assets.single as RemoteAsset).id, remote.id);
     });
 
-    test('localOnly filter includes exactly one asset', () async {
+    test('local filter includes exactly one asset', () async {
       final user = await ctx.newUser();
       const checksum = 'local-checksum';
       await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
@@ -247,20 +247,20 @@ void main() {
       final album = await ctx.newLocalAlbum(backupSelection: .selected);
       await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
 
-      final assets = await sut.main([user.id], .day, .localOnly).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, .local).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       expect((assets.single as LocalAsset).id, local.id);
     });
 
-    test('local asset in selected and excluded album is excluded from localOnly filter', () async {
+    test('local asset in selected and excluded album is excluded from local filter', () async {
       final asset = await ctx.newLocalAsset();
       final selected = await ctx.newLocalAlbum(backupSelection: .selected);
       final excluded = await ctx.newLocalAlbum(backupSelection: .excluded);
       await ctx.newLocalAlbumAsset(albumId: selected.id, assetId: asset.id);
       await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: asset.id);
 
-      final assets = await sut.main([], .day, .localOnly).assetSource(0, 10);
+      final assets = await sut.main([], .day, .local).assetSource(0, 10);
 
       expect(assets, isEmpty);
     });
@@ -275,19 +275,19 @@ void main() {
       final album = await ctx.newLocalAlbum(backupSelection: .selected);
       await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
 
-      final assets = await sut.main([owner.id, partner.id], .day, .localOnly).assetSource(0, 10);
+      final assets = await sut.main([owner.id, partner.id], .day, .local).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       expect((assets.single as LocalAsset).id, local.id);
     });
 
-    test('cloud filter shows only the stack primary asset', () async {
+    test('remote filter shows only the stack primary asset', () async {
       final user = await ctx.newUser();
       final primary = await ctx.newRemoteAsset(ownerId: user.id);
       final secondary = await ctx.newRemoteAsset(ownerId: user.id);
       await ctx.newStack(ownerId: user.id, primaryAssetId: primary.id, memberAssetIds: [secondary.id]);
 
-      final assets = await sut.main([user.id], .day, .remoteOnly).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, .remote).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       expect((assets.single as RemoteAsset).id, primary.id);
@@ -306,7 +306,7 @@ void main() {
       await ctx.newLocalAlbumAsset(albumId: album.id, assetId: primaryLocal.id);
       await ctx.newLocalAlbumAsset(albumId: album.id, assetId: secondaryLocal.id);
 
-      final assets = await sut.main([user.id], .day, .localOnly).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, .local).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       expect((assets.single as LocalAsset).id, primaryLocal.id);

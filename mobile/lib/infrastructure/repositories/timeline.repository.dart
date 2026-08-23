@@ -56,14 +56,14 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
   TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) {
     return switch (filter) {
-      AssetOriginFilter.remoteOnly => remote(
+      AssetOriginFilter.remote => remote(
         userIds,
         groupBy,
         origin: TimelineOrigin.main,
         joinLocal: true,
         collapseStacks: true,
       ),
-      AssetOriginFilter.localOnly => _localOnly(groupBy),
+      AssetOriginFilter.local => _local(groupBy),
       AssetOriginFilter.all => _all(userIds, groupBy),
     };
   }
@@ -133,9 +133,9 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.main,
   );
 
-  TimelineQuery _localOnly(GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchLocalOnlyBucket(groupBy: groupBy),
-    assetSource: (offset, count) => _getLocalOnlyAssets(offset: offset, count: count),
+  TimelineQuery _local(GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchLocalBucket(groupBy: groupBy),
+    assetSource: (offset, count) => _getLocalAssets(offset: offset, count: count),
     origin: TimelineOrigin.main,
   );
 
@@ -162,7 +162,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     );
   }
 
-  Stream<List<Bucket>> _watchLocalOnlyBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+  Stream<List<Bucket>> _watchLocalBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       return _db.localAssetEntity.count(where: _localLibraryFilter).map(_generateBuckets).watchSingle();
     }
@@ -183,7 +183,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     }).watch();
   }
 
-  Future<List<BaseAsset>> _getLocalOnlyAssets({required int offset, required int count}) {
+  Future<List<BaseAsset>> _getLocalAssets({required int offset, required int count}) {
     final remoteId = subqueryExpression<String>(
       _db.remoteAssetEntity.selectOnly()
         ..addColumns([_db.remoteAssetEntity.id])

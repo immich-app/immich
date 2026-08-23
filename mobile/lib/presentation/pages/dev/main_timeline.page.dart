@@ -94,8 +94,8 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         _buildItem(
           context,
           ref,
-          AssetOriginFilter.remoteOnly,
-          'timeline_filter_remote_only'.tr(),
+          AssetOriginFilter.remote,
+          'timeline_filter_remote'.tr(),
           Icons.cloud_outlined,
           Icons.cloud,
           currentSelection,
@@ -103,8 +103,8 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         _buildItem(
           context,
           ref,
-          AssetOriginFilter.localOnly,
-          'timeline_filter_local_only'.tr(),
+          AssetOriginFilter.local,
+          'timeline_filter_local'.tr(),
           Icons.cloud_off_outlined,
           Icons.cloud_off,
           currentSelection,
