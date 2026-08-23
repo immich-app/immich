@@ -212,20 +212,12 @@ const patchOpenAPI = (document: OpenAPIObject) => {
     for (const schema of Object.values(schemas)) {
       delete (schema as Record<string, unknown>).id;
 
-      // `x-immich-required` documents a property as required even though it is optional during body validation,
-      // i.e. multipart file fields, which are validated in the controller instead of the request body schema.
+      // documents a property as required even though it is optional during body validation
       for (const [key, value] of Object.entries(schema.properties ?? {})) {
-        if (typeof value === 'string' || !isSchema(value) || !(ApiCustomExtension.Required in value)) {
-          continue;
+        if (ApiCustomExtension.Required in value) {
+          delete (value as Record<string, unknown>)[ApiCustomExtension.Required];
+          (schema.required ??= []).push(key);
         }
-
-        if (
-          (value as Record<string, unknown>)[ApiCustomExtension.Required] === true &&
-          !schema.required?.includes(key)
-        ) {
-          schema.required = [...(schema.required ?? []), key];
-        }
-        delete (value as Record<string, unknown>)[ApiCustomExtension.Required];
       }
     }
 
