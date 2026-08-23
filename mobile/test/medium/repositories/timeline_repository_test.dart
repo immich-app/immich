@@ -225,32 +225,37 @@ void main() {
     });
   });
   group('asset origin filter', () {
-    test('remote filter includes exactly one asset', () async {
+    test('remote filter includes remote-only and synced assets', () async {
       final user = await ctx.newUser();
       const checksum = 'remote-checksum';
-      final remote = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
+      final synced = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
       final local = await ctx.newLocalAsset(checksum: checksum);
       final album = await ctx.newLocalAlbum(backupSelection: .selected);
       await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final remoteOnly = await ctx.newRemoteAsset(ownerId: user.id, checksum: 'remote-only-checksum');
 
       final assets = await sut.main([user.id], .day, .remote).assetSource(0, 10);
 
-      expect(assets, hasLength(1));
-      expect((assets.single as RemoteAsset).id, remote.id);
+      expect(assets, hasLength(2));
+      expect(assets.map((a) => (a as RemoteAsset).id), containsAll([synced.id, remoteOnly.id]));
     });
 
-    test('local filter includes exactly one asset', () async {
+    test('local filter includes local-only and synced assets', () async {
       final user = await ctx.newUser();
       const checksum = 'local-checksum';
       await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
-      final local = await ctx.newLocalAsset(checksum: checksum);
+      final synced = await ctx.newLocalAsset(checksum: checksum);
       final album = await ctx.newLocalAlbum(backupSelection: .selected);
-      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: synced.id);
+
+      final localOnly = await ctx.newLocalAsset(checksum: 'local-only-checksum');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: localOnly.id);
 
       final assets = await sut.main([user.id], .day, .local).assetSource(0, 10);
 
-      expect(assets, hasLength(1));
-      expect((assets.single as LocalAsset).id, local.id);
+      expect(assets, hasLength(2));
+      expect(assets.map((a) => (a as LocalAsset).id), containsAll([synced.id, localOnly.id]));
     });
 
     test('local asset in selected and excluded album is excluded from local filter', () async {
