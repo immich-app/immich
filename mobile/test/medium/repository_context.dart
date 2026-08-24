@@ -395,15 +395,17 @@ class MediumRepositoryContext {
       .insert(MemoryAssetEntityCompanion(memoryId: .new(memoryId), assetId: .new(assetId)));
 
   Future<StackEntityData> newStack({
-  String? id,
-  required String ownerId,
-  required String primaryAssetId,
-  List<String> memberAssetIds = const [],
-}) async {
+    String? id,
+    required String ownerId,
+    required String primaryAssetId,
+    List<String> memberAssetIds = const [],
+  }) async {
     id ??= TestUtils.uuid();
     final stack = await db
         .into(db.stackEntity)
-        .insertReturning(StackEntityCompanion(id: .new(id), ownerId: .new(ownerId), primaryAssetId: .new(primaryAssetId)));
+        .insertReturning(
+          StackEntityCompanion(id: .new(id), ownerId: .new(ownerId), primaryAssetId: .new(primaryAssetId)),
+        );
 
     final allIds = {primaryAssetId, ...memberAssetIds};
     await db.batch((batch) {
