@@ -78,11 +78,16 @@ class EditorProvider extends Notifier<EditorState> {
   }
 
   void setAspectRatio(CropAspectRatio preset) {
+    // Expand the initial selection into a square. We have to keep the longest
+    // side the same as before when the user changes the aspect ratio. Otherwise
+    // the selection might shrink
     Rect startingSquare = Rect.fromCenter(
       center: state.crop.center,
       width: state.crop.longestSide,
       height: state.crop.longestSide,
     );
+    // If one side of the square is outside of the image border after the
+    // expansion, move it towards the center of the required amount
     final dx = _shiftIntoBounds(startingSquare.left, startingSquare.right);
     final dy = _shiftIntoBounds(startingSquare.top, startingSquare.bottom);
     startingSquare = startingSquare.shift(Offset(dx, dy));
