@@ -14,6 +14,7 @@ final assetServiceProvider = Provider((ref) {
     apiRepository: ref.watch(assetApiRepositoryProvider),
     mediaRepository: ref.watch(assetMediaRepositoryProvider),
     trashedLocalRepository: db.trashedLocalAssetRepository,
+    appMetadataRepository: db.appMetadataRepository,
   );
 });
 

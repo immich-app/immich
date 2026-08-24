@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/main.dart' as app;
@@ -34,13 +32,11 @@ void main() {
     server = await FakeImmichServer.start();
     await ApiService().resolveAndSetEndpoint(server.endpoint);
     await drift.delete(drift.userEntity).go();
-    await Store.delete(StoreKey.syncMigrationStatus);
   });
 
   tearDown(() async {
     await workerManagerPatch.dispose();
     await server.close();
-    await Store.delete(StoreKey.syncMigrationStatus);
   });
 
   void sendUser(SyncStream stream, String id, String name) {

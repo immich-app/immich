@@ -1,13 +1,7 @@
-import 'package:drift/drift.dart' as drift;
-import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
@@ -20,19 +14,14 @@ void main() {
   late MockAssetApiRepository apiRepository;
   late MockRemoteAssetRepository remoteRepository;
   late MockRemoteExifRepository exifRepository;
-  late Drift db;
 
-  setUpAll(() async {
+  setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: StoreRepository(db));
   });
 
-  tearDownAll(() async {
+  tearDownAll(() {
     debugDefaultTargetPlatformOverride = null;
-    await Store.clear();
-    await db.close();
   });
 
   setUp(() {
@@ -41,6 +30,8 @@ void main() {
     remoteRepository = mocks.remoteAsset.repo;
     exifRepository = mocks.remoteExif.repo;
 
+    when(() => mocks.metadata.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => false);
+
     sut = AssetService(
       remoteRepository: remoteRepository,
       exifRepository: exifRepository,
@@ -48,11 +39,8 @@ void main() {
       apiRepository: apiRepository,
       mediaRepository: mocks.assetMedia.api,
       trashedLocalRepository: mocks.trashedAsset,
+      appMetadataRepository: mocks.metadata,
     );
-  });
-
-  tearDown(() async {
-    await Store.delete(StoreKey.manageLocalMediaAndroid);
   });
 
   group('AssetService.updateDateTime', () {
@@ -109,7 +97,7 @@ void main() {
     const ids = ['l1', 'l2'];
 
     test('permanently deletes local copies without trashing, even when Android trash handling is on', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      when(() => mocks.metadata.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => true);
 
       final result = await sut.deleteLocal(ids, trash: false);
 
