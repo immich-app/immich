@@ -18,7 +18,7 @@ class AddToAlbumAction extends AssetActionBuilder {
 
   @override
   ActionItem? create(BuildContext context, WidgetRef ref) {
-    if (ref.watch(assetsActionProvider(source)).isEmpty) {
+    if (ref.watch(assetsActionProvider(source).select((assets) => assets.isEmpty))) {
       return null;
     }
 
@@ -97,9 +97,30 @@ Future<void> addAssetsToAlbum(BuildContext context, WidgetRef ref, ActionSource 
 
   if (context.mounted) {
     if (added > 0) {
-      ref.invalidate(albumsContainingAssetProvider);
+      for (final assetId in candidates.remoteAssetIds) {
+        ref.invalidate(albumsContainingAssetProvider(assetId));
+      }
     }
     await _showResultToast(context, ref, album, added, linkFailed, failureReasons);
+  }
+}
+
+class AddToAlbumSlivers extends ConsumerWidget {
+  final Function? onKeyboardExpanded;
+
+  const AddToAlbumSlivers({super.key, this.onKeyboardExpanded});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SliverMainAxisGroup(
+      slivers: [
+        const AddToAlbumHeader(),
+        AlbumSelector(
+          onAlbumSelected: (album) => addAssetsToAlbum(context, ref, .timeline, album),
+          onKeyboardExpanded: onKeyboardExpanded,
+        ),
+      ],
+    );
   }
 }
 

@@ -6,7 +6,6 @@ import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 
 class LocalAlbumBottomSheet extends ConsumerStatefulWidget {
@@ -49,13 +48,7 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
         .new(action: CleanupLocalAction(source: .timeline)),
         .new(action: UploadAction(source: .timeline)),
       ],
-      slivers: [
-        const AddToAlbumHeader(),
-        AlbumSelector(
-          onAlbumSelected: (album) => addAssetsToAlbum(context, ref, .timeline, album),
-          onKeyboardExpanded: onKeyboardExpand,
-        ),
-      ],
+      slivers: [AddToAlbumSlivers(onKeyboardExpanded: onKeyboardExpand)],
     );
   }
 }

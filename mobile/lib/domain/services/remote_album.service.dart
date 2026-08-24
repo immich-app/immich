@@ -187,7 +187,8 @@ class RemoteAlbumService {
   /// !TODO The name here is not clear as we have addAssets method above,
   /// which is only add remote assets to album, for the next PR, we will allow
   /// adding local assets from album from the timeline as well with this flow.
-  /// So saving that for the next refactor
+  /// So saving that for the next refactor. The timeline flow currently lives in
+  /// add_to_album.action.dart with its own upload+link pass; fold both into this method then.
   Future<int> addAssetsToAlbum({
     required String albumId,
     required UserDto uploader,

@@ -19,12 +19,11 @@ class ActionResult {
   final int count;
   final bool success;
   final String? error;
-  final List<String> remoteAssetIds;
 
-  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
+  const ActionResult({required this.count, required this.success, this.error});
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
+  String toString() => 'ActionResult(count: $count, success: $success, error: $error)';
 }
 
 class ActionNotifier extends Notifier<void> {

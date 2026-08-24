@@ -5,7 +5,6 @@ import 'package:immich_mobile/presentation/actions/add_to_album.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 
 class PartnerDetailBottomSheet extends ConsumerStatefulWidget {
@@ -46,13 +45,7 @@ class _PartnerDetailBottomSheetState extends ConsumerState<PartnerDetailBottomSh
         .new(action: ShareAction(source: .timeline)),
         .new(action: DownloadAction(source: .timeline)),
       ],
-      slivers: [
-        const AddToAlbumHeader(),
-        AlbumSelector(
-          onAlbumSelected: (album) => addAssetsToAlbum(context, ref, .timeline, album),
-          onKeyboardExpanded: onKeyboardExpand,
-        ),
-      ],
+      slivers: [AddToAlbumSlivers(onKeyboardExpanded: onKeyboardExpand)],
     );
   }
 }

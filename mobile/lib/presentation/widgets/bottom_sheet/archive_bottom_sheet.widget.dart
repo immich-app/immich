@@ -13,7 +13,6 @@ import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 
 class ArchiveBottomSheet extends ConsumerStatefulWidget {
@@ -63,13 +62,7 @@ class _ArchiveBottomSheetState extends ConsumerState<ArchiveBottomSheet> {
         .new(action: StackAction(source: .timeline)),
         .new(action: CleanupLocalAction(source: .timeline)),
       ],
-      slivers: [
-        const AddToAlbumHeader(),
-        AlbumSelector(
-          onAlbumSelected: (album) => addAssetsToAlbum(context, ref, .timeline, album),
-          onKeyboardExpanded: onKeyboardExpand,
-        ),
-      ],
+      slivers: [AddToAlbumSlivers(onKeyboardExpanded: onKeyboardExpand)],
     );
   }
 }

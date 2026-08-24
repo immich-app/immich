@@ -16,7 +16,6 @@ import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
@@ -84,15 +83,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           ),
         ],
       ],
-      slivers: ownsAlbum
-          ? [
-              const AddToAlbumHeader(),
-              AlbumSelector(
-                onAlbumSelected: (album) => addAssetsToAlbum(context, ref, .timeline, album),
-                onKeyboardExpanded: onKeyboardExpand,
-              ),
-            ]
-          : null,
+      slivers: ownsAlbum ? [AddToAlbumSlivers(onKeyboardExpanded: onKeyboardExpand)] : null,
     );
   }
 }

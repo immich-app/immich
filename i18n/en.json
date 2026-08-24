@@ -30,7 +30,7 @@
   "add_to_album": "Add to album",
   "add_to_album_bottom_sheet_added": "Added to {album}",
   "add_to_album_bottom_sheet_already_exists": "Already in {album}",
-  "add_to_album_bottom_sheet_conflicts": "Added {added} assets to album {album}. {failed} assets are already in the album.",
+  "add_to_album_bottom_sheet_conflicts": "Added {added, plural, one {# asset} other {# assets}} to album {album}. {failed, plural, one {# asset is} other {# assets are}} already in the album.",
   "add_to_album_bottom_sheet_uploaded_not_added": "{count, plural, one {# asset was} other {# assets were}} uploaded but not added to {album}. Try adding {count, plural, one {it} other {them}} again.",
   "add_to_album_item_count": "Add {count, plural, one {# item} other {# items}} to album",
   "add_to_albums": "Add to albums",

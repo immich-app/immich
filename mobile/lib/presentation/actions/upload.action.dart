@@ -84,7 +84,9 @@ Future<({int uploaded, int callbackFailed})> uploadAssets(
   final cancelToken = Completer<void>();
   cancelTokenNotifier.state = cancelToken;
 
-  final assetById = {for (final asset in assets) asset.id: asset};
+  final assetById = onAssetUploaded == null
+      ? const <String, LocalAsset>{}
+      : {for (final asset in assets) asset.id: asset};
   final postUploadTasks = <Future<void>>[];
   final uploaded = <String>{};
   final failed = <String>{};

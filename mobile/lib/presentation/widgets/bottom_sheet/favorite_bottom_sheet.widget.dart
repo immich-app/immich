@@ -13,7 +13,6 @@ import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -42,12 +41,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
         .new(action: StackAction(source: .timeline)),
         .new(action: CleanupLocalAction(source: .timeline)),
       ],
-      slivers: multiselect.hasRemote
-          ? [
-              const AddToAlbumHeader(),
-              AlbumSelector(onAlbumSelected: (album) => addAssetsToAlbum(context, ref, .timeline, album)),
-            ]
-          : [],
+      slivers: multiselect.hasRemote ? [const AddToAlbumSlivers()] : [],
     );
   }
 }
