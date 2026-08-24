@@ -2,7 +2,7 @@
 java = "21.0.2"
 
 [tools."aqua:flutter/flutter"]
-version = "3.44.9"
+version = "3.47.1"
 postinstall = "bash {{config_root}}/ios/scripts/xcode_flutter_patch.sh"
 
 [tools."github:CQLabs/homebrew-dcm"]
