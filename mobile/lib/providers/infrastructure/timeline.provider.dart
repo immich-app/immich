@@ -11,7 +11,16 @@ final timelineArgsProvider = Provider.autoDispose<TimelineArgs>(
   (ref) => throw UnimplementedError('Will be overridden through a ProviderScope.'),
 );
 
-final assetOriginFilterProvider = StateProvider<AssetOriginFilter>((ref) => AssetOriginFilter.all);
+class AssetOriginFilterNotifier extends Notifier<AssetOriginFilter> {
+  @override
+  AssetOriginFilter build() => AssetOriginFilter.all;
+
+  void setFilter(AssetOriginFilter filter) => state = filter;
+}
+
+final assetOriginFilterProvider = NotifierProvider<AssetOriginFilterNotifier, AssetOriginFilter>(
+  AssetOriginFilterNotifier.new,
+);
 
 final timelineServiceProvider = Provider<TimelineService>(
   (ref) {

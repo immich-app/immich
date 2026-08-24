@@ -65,6 +65,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentSelection = ref.watch(assetOriginFilterProvider);
+    final setFilter = ref.read(assetOriginFilterProvider.notifier).setFilter;
 
     return MenuAnchor(
       style: MenuStyle(
@@ -82,51 +83,52 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         );
       },
       menuChildren: [
-        _buildItem(
-          context,
-          ref,
+        _FilterMenuItem(
           AssetOriginFilter.all,
           'timeline_filter_all'.tr(),
           Icons.photo_library_outlined,
           Icons.photo_library,
           currentSelection,
+          setFilter,
         ),
-        _buildItem(
-          context,
-          ref,
+        _FilterMenuItem(
           AssetOriginFilter.remote,
           'timeline_filter_remote'.tr(),
           Icons.cloud_outlined,
           Icons.cloud,
           currentSelection,
+          setFilter,
         ),
-        _buildItem(
-          context,
-          ref,
+        _FilterMenuItem(
           AssetOriginFilter.local,
           'timeline_filter_local'.tr(),
           Icons.cloud_off_outlined,
           Icons.cloud_off,
           currentSelection,
+          setFilter,
         ),
       ],
     );
   }
+}
 
-  Widget _buildItem(
-    BuildContext context,
-    WidgetRef ref,
-    AssetOriginFilter staticFilter,
-    String label,
-    IconData icon,
-    IconData iconActive,
-    AssetOriginFilter currentFilter,
-  ) {
+class _FilterMenuItem extends StatelessWidget {
+  final AssetOriginFilter staticFilter;
+  final String label;
+  final IconData icon;
+  final IconData iconActive;
+  final AssetOriginFilter currentFilter;
+  final ValueChanged<AssetOriginFilter> onSelected;
+
+  const _FilterMenuItem(this.staticFilter, this.label, this.icon, this.iconActive, this.currentFilter, this.onSelected);
+
+  @override
+  Widget build(BuildContext context) {
     final isSelected = staticFilter == currentFilter;
     final primaryColor = context.colorScheme.primary;
 
     return MenuItemButton(
-      onPressed: () => ref.read(assetOriginFilterProvider.notifier).state = staticFilter,
+      onPressed: () => onSelected(staticFilter),
       child: ListTile(
         leading: Icon(isSelected ? iconActive : icon, color: isSelected ? primaryColor : null),
         title: Text(
