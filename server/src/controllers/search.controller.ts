@@ -73,7 +73,7 @@ export class SearchController {
       .added('v1')
       .beta('v1')
       .stable('v2')
-      .deprecated('v3.1.0', { replacementId: 'searchAssets' }),
+      .deprecated('v3.2.0', { replacementId: 'searchAssets' }),
   })
   searchLargeAssets(@Auth() auth: AuthDto, @Query() dto: LargeAssetSearchDto): Promise<AssetResponseDto[]> {
     return this.service.searchLargeAssets(auth, dto);

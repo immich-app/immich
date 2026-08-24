@@ -14,11 +14,11 @@ import {
 import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation';
 import z from 'zod';
 
-const ADDED_V3_1 = new HistoryBuilder().added('v3.1.0').getExtensions();
+const ADDED_V3_1 = new HistoryBuilder().added('v3.2.0').getExtensions();
 
 // fields deprecated in favor of the structured filter tree
 const DEPRECATED_FLAT_FIELD = {
-  ...new HistoryBuilder().added('v1').stable('v2').deprecated('v3.1.0').getExtensions(),
+  ...new HistoryBuilder().added('v1').stable('v2').deprecated('v3.2.0').getExtensions(),
   deprecated: true,
 };
 
@@ -60,7 +60,7 @@ const BaseSearchSchema = z.object({
         .stable('v2')
         .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.')
         .updated('v3', 'Using -1 as a rating is no longer valid.')
-        .deprecated('v3.1.0')
+        .deprecated('v3.2.0')
         .getExtensions(),
       deprecated: true,
     }),
