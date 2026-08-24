@@ -28,7 +28,11 @@ class AdvancedSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
+    final advancedTroubleshooting = useState(ref.watch(appConfigProvider).advanced.troubleshooting);
+    useValueChanged(
+      advancedTroubleshooting.value,
+      (_, _) => unawaited(ref.read(settingsProvider).write(.advancedTroubleshooting, advancedTroubleshooting.value)),
+    );
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
@@ -38,7 +42,7 @@ class AdvancedSettings extends HookConsumerWidget {
       preferRemote.value,
       (_, _) => unawaited(ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value)),
     );
-    final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
+    final readonlyModeEnabled = useState(ref.watch(appConfigProvider).advanced.readonlyModeEnabled);
 
     final logLevel = Level.LEVELS[levelId.value].name;
 

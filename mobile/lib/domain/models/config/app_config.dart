@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/config/advanced_config.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
@@ -43,6 +44,7 @@ abstract class AppConfig with _$AppConfig {
     @Default(NetworkConfig()) NetworkConfig network,
     @Default(ShareConfig()) ShareConfig share,
     @Default(FeatureMessageConfig()) FeatureMessageConfig featureMessage,
+    @Default(AdvancedConfig()) AdvancedConfig advanced,
   }) = _AppConfig;
 
   T read<T>(SettingsKey<T> key) =>
@@ -93,6 +95,9 @@ abstract class AppConfig with _$AppConfig {
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
             .featureMessageSeenRelease => featureMessage.seenRelease,
+            .advancedTroubleshooting => advanced.troubleshooting,
+            .advancedEnableHapticFeedback => advanced.enableHapticFeedback,
+            .advancedReadonlyModeEnabled => advanced.readonlyModeEnabled,
           })
           as T;
 
@@ -149,6 +154,9 @@ abstract class AppConfig with _$AppConfig {
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
       .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
+      .advancedTroubleshooting => copyWith(advanced: advanced.copyWith(troubleshooting: value as bool)),
+      .advancedEnableHapticFeedback => copyWith(advanced: advanced.copyWith(enableHapticFeedback: value as bool)),
+      .advancedReadonlyModeEnabled => copyWith(advanced: advanced.copyWith(readonlyModeEnabled: value as bool)),
     };
   }
 }
