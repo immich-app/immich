@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
@@ -32,7 +33,7 @@ void main() {
     final result = await repo.addAssets('album1', ['a1']);
 
     expect(result.added, isEmpty);
-    expect(result.failureReasons, {BulkIdErrorReason.noPermission: 1});
+    expect(result.failureReasons, {AlbumAddFailureReason.noPermission: 1});
   });
 
   test('duplicate is tracked as a duplicate failure reason', () async {
@@ -43,7 +44,7 @@ void main() {
     final result = await repo.addAssets('album1', ['a1']);
 
     expect(result.added, isEmpty);
-    expect(result.failureReasons, {BulkIdErrorReason.duplicate: 1});
+    expect(result.failureReasons, {AlbumAddFailureReason.duplicate: 1});
   });
 
   test('success is added', () async {
@@ -64,7 +65,7 @@ void main() {
     final result = await repo.addAssets('album1', ['a1', 'a2']);
 
     expect(result.added, isEmpty);
-    expect(result.failureReasons, {BulkIdErrorReason.notFound: 1, BulkIdErrorReason.unknown: 1});
+    expect(result.failureReasons, {AlbumAddFailureReason.notFound: 1, AlbumAddFailureReason.unknown: 1});
   });
 
   test('mixed: added kept, no_permission and duplicate counted separately', () async {
@@ -77,6 +78,6 @@ void main() {
     final result = await repo.addAssets('album1', ['ok', 'perm', 'dup']);
 
     expect(result.added, ['ok']);
-    expect(result.failureReasons, {BulkIdErrorReason.noPermission: 1, BulkIdErrorReason.duplicate: 1});
+    expect(result.failureReasons, {AlbumAddFailureReason.noPermission: 1, AlbumAddFailureReason.duplicate: 1});
   });
 }

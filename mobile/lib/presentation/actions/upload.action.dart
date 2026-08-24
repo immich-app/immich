@@ -11,6 +11,9 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_ui/immich_ui.dart';
+import 'package:logging/logging.dart';
+
+final _logger = Logger('UploadAction');
 
 final _stateProvider = Provider.family.autoDispose<List<LocalAsset>?, ActionSource>((ref, source) {
   final assets = ref.watch(assetsActionProvider(source));
@@ -62,8 +65,15 @@ class UploadAction extends AssetActionBuilder {
   }
 }
 
-@visibleForTesting
-Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> assets) async {
+/// Uploads [assets]. [onAssetUploaded] runs per uploaded asset; assets whose
+/// callback failed are counted separately from upload failures so the caller
+/// can report them accurately instead of the generic upload error.
+Future<({int uploaded, int callbackFailed})> uploadAssets(
+  BuildContext context,
+  WidgetRef ref,
+  List<LocalAsset> assets, {
+  FutureOr<void> Function(LocalAsset asset, String remoteId)? onAssetUploaded,
+}) async {
   final progress = ref.read(assetUploadProgressProvider.notifier);
   final uploads = ref.read(foregroundUploadServiceProvider);
   final toastService = ref.read(toastServiceProvider);
@@ -72,8 +82,11 @@ Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> 
   final cancelToken = Completer<void>();
   ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
 
+  final assetById = {for (final asset in assets) asset.id: asset};
+  final postUploadTasks = <Future<void>>[];
   final uploaded = <String>{};
   final failed = <String>{};
+  final callbackFailed = <String>{};
   for (final asset in assets) {
     progress.setProgress(asset.id, 0.0);
   }
@@ -84,9 +97,19 @@ Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> 
       cancelToken: cancelToken,
       callbacks: UploadCallbacks(
         onProgress: (id, _, bytes, total) => progress.setProgress(id, total > 0 ? bytes / total : 0.0),
-        onSuccess: (id, _) {
+        onSuccess: (id, remoteId) {
           uploaded.add(id);
           progress.remove(id);
+          final asset = assetById[id];
+          if (asset != null && onAssetUploaded != null) {
+            postUploadTasks.add(
+              Future.sync(() => onAssetUploaded(asset, remoteId)).catchError((Object error, StackTrace stack) {
+                callbackFailed.add(id);
+                progress.setError(id);
+                _logger.warning('Post-upload callback failed for $id', error, stack);
+              }),
+            );
+          }
         },
         onError: (id, _) {
           failed.add(id);
@@ -94,16 +117,17 @@ Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> 
         },
       ),
     );
+    await Future.wait(postUploadTasks);
   } finally {
     ref.read(manualUploadCancelTokenProvider.notifier).state = null;
   }
 
-  final uploadedCount = uploaded.difference(failed).length;
-  if (!cancelToken.isCompleted && (uploadedCount != assets.length || failed.isNotEmpty)) {
+  if (!cancelToken.isCompleted && (uploaded.length != assets.length || failed.isNotEmpty)) {
     toastService.error(errorMessage);
   }
 
   unawaited(Future.delayed(const Duration(seconds: 2), progress.clear));
+  return (uploaded: uploaded.difference(callbackFailed).length, callbackFailed: callbackFailed.length);
 }
 
 class _UploadProgressDialog extends ConsumerWidget {

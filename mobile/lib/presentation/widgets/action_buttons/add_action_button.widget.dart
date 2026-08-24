@@ -1,27 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/add_to_album.action.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/utils/album_toast.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
-
-enum AddToMenuItem { album }
 
 class AddActionButton extends ConsumerStatefulWidget {
   const AddActionButton({super.key, this.originalTheme});
@@ -33,13 +22,6 @@ class AddActionButton extends ConsumerStatefulWidget {
 }
 
 class _AddActionButtonState extends ConsumerState<AddActionButton> {
-  void _handleMenuSelection(AddToMenuItem selected) {
-    switch (selected) {
-      case AddToMenuItem.album:
-        _openAlbumSelector();
-    }
-  }
-
   List<Widget> _buildMenuChildren() {
     final asset = ref.read(assetViewerProvider).currentAsset;
     if (asset == null) {
@@ -54,12 +36,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Text(context.t.add_to_bottom_bar, style: context.textTheme.labelMedium),
       ),
-      BaseActionButton(
-        iconData: Icons.photo_album_outlined,
-        label: context.t.album,
-        menuItem: true,
-        onPressed: () => _handleMenuSelection(AddToMenuItem.album),
-      ),
+      const ActionMenuItem(action: AddToAlbumAction(source: .viewer)),
 
       if (isOwner) ...[
         const Divider(),
@@ -71,71 +48,6 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         const ActionMenuItem(action: LockAction(source: .viewer)),
       ],
     ];
-  }
-
-  void _openAlbumSelector() {
-    final currentAsset = ref.read(assetViewerProvider).currentAsset;
-    if (currentAsset == null) {
-      ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
-      return;
-    }
-
-    final List<Widget> slivers = [
-      const CreateAlbumButton(),
-      AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album)),
-    ];
-
-    unawaited(
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) {
-          return BaseBottomSheet(
-            actions: const [],
-            slivers: slivers,
-            initialChildSize: 0.6,
-            minChildSize: 0.3,
-            maxChildSize: 0.95,
-            expand: false,
-            backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _addCurrentAssetToAlbum(RemoteAlbum album) async {
-    final latest = ref.read(assetViewerProvider).currentAsset;
-
-    if (latest == null) {
-      ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
-      return;
-    }
-
-    final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.viewer, album);
-
-    if (!mounted) {
-      return;
-    }
-
-    if (!result.success) {
-      ImmichToast.show(context: context, msg: context.t.scaffold_body_error_occurred, toastType: ToastType.error);
-      return;
-    }
-
-    final (msg, toastType) = resolveAlbumAddToast(result, album.name, context);
-    ImmichToast.show(context: context, msg: msg, toastType: toastType);
-
-    if (result.count > 0) {
-      // Refresh the "Appears in" list on the asset's info panel.
-      ref.invalidate(albumsContainingAssetProvider(latest.remoteId!));
-    }
-
-    if (!mounted) {
-      return;
-    }
-    await Navigator.of(context).maybePop();
   }
 
   @override

@@ -50,7 +50,7 @@ class DriftAlbumApiRepository extends ApiRepository {
     return (removed: removed, failed: failed);
   }
 
-  Future<({List<String> added, Map<BulkIdErrorReason, int> failureReasons})> addAssets(
+  Future<({List<String> added, Map<AlbumAddFailureReason, int> failureReasons})> addAssets(
     String albumId,
     Iterable<String> assetIds, {
     Future<void>? abortTrigger,
@@ -59,12 +59,17 @@ class DriftAlbumApiRepository extends ApiRepository {
       _api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList()), abortTrigger: abortTrigger),
     );
     final List<String> added = [];
-    final Map<BulkIdErrorReason, int> failureReasons = {};
+    final Map<AlbumAddFailureReason, int> failureReasons = {};
     for (final dto in response) {
       if (dto.success) {
         added.add(dto.id);
       } else {
-        final reason = dto.error.orElse(null) ?? BulkIdErrorReason.unknown;
+        final reason = switch (dto.error.orElse(null)) {
+          BulkIdErrorReason.duplicate => AlbumAddFailureReason.duplicate,
+          BulkIdErrorReason.noPermission => AlbumAddFailureReason.noPermission,
+          BulkIdErrorReason.notFound => AlbumAddFailureReason.notFound,
+          _ => AlbumAddFailureReason.unknown,
+        };
         failureReasons[reason] = (failureReasons[reason] ?? 0) + 1;
       }
     }
