@@ -110,9 +110,8 @@ void main() {
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
       when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => mockFile);
-      when(
-        () => mockAssetMediaRepository.getOriginalFilename(asset.id),
-      ).thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id))
+          .thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
 
       final task = await sut.getUploadTask(asset);
       expect(task, isNotNull);
@@ -192,9 +191,8 @@ void main() {
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
       when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(
-        () => mockAssetMediaRepository.getOriginalFilename(asset.id),
-      ).thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id))
+          .thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
 
       final task = await sut.getLivePhotoUploadTask(asset, 'video-id-123');
 
@@ -344,9 +342,8 @@ void main() {
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.getAssetEntityForAsset(assetWithoutCloudId)).thenAnswer((_) async => mockEntity);
       when(() => mockStorageRepository.getFileForAsset(assetWithoutCloudId.id)).thenAnswer((_) async => mockFile);
-      when(
-        () => mockAssetMediaRepository.getOriginalFilename(assetWithoutCloudId.id),
-      ).thenAnswer((_) async => 'test.jpg');
+      when(() => mockAssetMediaRepository.getOriginalFilename(assetWithoutCloudId.id))
+          .thenAnswer((_) async => 'test.jpg');
 
       final task = await sutWithV24.getUploadTask(assetWithoutCloudId);
 
@@ -386,9 +383,8 @@ void main() {
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
       when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
-      when(
-        () => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id),
-      ).thenAnswer((_) async => 'livephoto.heic');
+      when(() => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id))
+          .thenAnswer((_) async => 'livephoto.heic');
 
       final task = await sutWithV24.getLivePhotoUploadTask(assetWithCloudId, 'video-123');
 

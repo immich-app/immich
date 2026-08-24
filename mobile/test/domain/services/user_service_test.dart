@@ -90,9 +90,8 @@ void main() {
       const profileImagePath = 'profile.jpg';
       final updatedUser = UserStub.admin;
 
-      when(
-        () => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)),
-      ).thenAnswer((_) async => profileImagePath);
+      when(() => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)))
+          .thenAnswer((_) async => profileImagePath);
       when(() => mockStoreService.put(StoreKey.currentUser, updatedUser)).thenAnswer((_) async => true);
 
       final result = await sut.createProfileImage(profileImagePath, Uint8List(0));
@@ -105,9 +104,8 @@ void main() {
       const profileImagePath = 'profile.jpg';
       final updatedUser = UserStub.admin;
 
-      when(
-        () => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)),
-      ).thenThrow(Exception('Failed to create profile image'));
+      when(() => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)))
+          .thenThrow(Exception('Failed to create profile image'));
 
       final result = await sut.createProfileImage(profileImagePath, Uint8List(0));
       verifyNever(() => mockStoreService.put(StoreKey.currentUser, updatedUser));

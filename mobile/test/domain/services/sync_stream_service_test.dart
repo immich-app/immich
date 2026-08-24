@@ -111,36 +111,30 @@ void main() {
     when(() => mockSyncApiRepo.deleteSyncAck(any())).thenAnswer((_) async => {});
 
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
-    when(
-      () => mockServerApi.getServerVersion(),
-    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null));
+    when(() => mockServerApi.getServerVersion())
+        .thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null));
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updatePartnerV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deletePartnerV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsV1(any())).thenAnswer(successHandler);
-    when(
-      () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel')),
-    ).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel')))
+        .thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetsV1(any())).thenAnswer(successHandler);
-    when(
-      () => mockSyncStreamRepo.deleteAssetsV1(any(), debugLabel: any(named: 'debugLabel')),
-    ).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteAssetsV1(any(), debugLabel: any(named: 'debugLabel')))
+        .thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsExifV1(any())).thenAnswer(successHandler);
-    when(
-      () => mockSyncStreamRepo.updateAssetsExifV1(any(), debugLabel: any(named: 'debugLabel')),
-    ).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateAssetsExifV1(any(), debugLabel: any(named: 'debugLabel')))
+        .thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoriesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateMemoryAssetsV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any())).thenAnswer(successHandler);
-    when(
-      () => mockSyncStreamRepo.updateStacksV1(any(), debugLabel: any(named: 'debugLabel')),
-    ).thenAnswer(successHandler);
-    when(
-      () => mockSyncStreamRepo.deleteStacksV1(any(), debugLabel: any(named: 'debugLabel')),
-    ).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateStacksV1(any(), debugLabel: any(named: 'debugLabel')))
+        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteStacksV1(any(), debugLabel: any(named: 'debugLabel')))
+        .thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateUserMetadatasV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUserMetadatasV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updatePeopleV1(any())).thenAnswer(successHandler);
@@ -552,9 +546,8 @@ void main() {
   group('SyncStreamService - Sync Migration', () {
     test('ensure that <2.5.0 migrations run', () async {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
+      when(() => mockServerApi.getServerVersion())
+          .thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
 
       await sut.sync();
 
@@ -580,9 +573,8 @@ void main() {
     });
     test('ensure that >=2.5.0 migrations run', () async {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null));
+      when(() => mockServerApi.getServerVersion())
+          .thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null));
       await sut.sync();
 
       verifyInOrder([
@@ -610,9 +602,8 @@ void main() {
         '["${SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name}"]',
       );
 
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
+      when(() => mockServerApi.getServerVersion())
+          .thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
 
       await sut.sync();
 

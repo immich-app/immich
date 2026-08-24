@@ -11,9 +11,10 @@ import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 
 final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
-  (ref) => LocalAlbumService(ref.watch(driftProvider).localAlbumRepository)
-      .getAll(sortBy: {SortLocalAlbumsBy.newestAsset})
-      .then((albums) => albums.where((album) => album.assetCount > 0).toList()),
+  (ref) =>
+      LocalAlbumService(ref.watch(driftProvider).localAlbumRepository)
+          .getAll(sortBy: {SortLocalAlbumsBy.newestAsset})
+          .then((albums) => albums.where((album) => album.assetCount > 0).toList()),
 );
 
 final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(

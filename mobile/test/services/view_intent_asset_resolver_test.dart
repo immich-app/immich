@@ -89,10 +89,7 @@ void main() {
   });
 
   test('throws when neither localAssetId nor path is provided', () async {
-    await expectLater(
-      _resolve(container, _payload(localAssetId: null, path: null)),
-      throwsA(isA<StateError>()),
-    );
+    await expectLater(_resolve(container, _payload(localAssetId: null, path: null)), throwsA(isA<StateError>()));
   });
 }
 

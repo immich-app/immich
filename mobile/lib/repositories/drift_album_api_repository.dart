@@ -127,7 +127,7 @@ class DriftAlbumApiRepository extends ApiRepository {
 }
 
 extension on AlbumResponseDto {
-  RemoteAlbum toRemoteAlbum(final UserDto user) {
+  RemoteAlbum toRemoteAlbum(UserDto user) {
     return RemoteAlbum(
       id: id,
       name: albumName,

@@ -39,10 +39,8 @@ void main() {
         final remoteAsset = RemoteAssetFactory.create();
         final localAsset = LocalAssetFactory.create();
 
-        final AssetFilter<RemoteAsset> remoteOnly = AssetFilter(<BaseAsset>[
-          remoteAsset,
-          localAsset,
-        ]).owned(remoteAsset.ownerId);
+        final AssetFilter<RemoteAsset> remoteOnly = AssetFilter(<BaseAsset>[remoteAsset, localAsset])
+            .owned(remoteAsset.ownerId);
 
         expect(remoteOnly.toList(), [remoteAsset]);
       });
@@ -52,11 +50,8 @@ void main() {
         final offlinePhoto = LocalAssetFactory.create();
         final remotePhoto = RemoteAssetFactory.create();
 
-        final AssetFilter<BaseAsset> syncedPhotos = AssetFilter(<BaseAsset>[
-          syncedPhoto,
-          offlinePhoto,
-          remotePhoto,
-        ]).backedUp();
+        final AssetFilter<BaseAsset> syncedPhotos = AssetFilter(<BaseAsset>[syncedPhoto, offlinePhoto, remotePhoto])
+            .backedUp();
 
         expect(syncedPhotos.toList(), [syncedPhoto]);
       });
@@ -176,13 +171,10 @@ void main() {
         final stacked = RemoteAssetFactory.create(ownerId: asset.ownerId, stackId: 'stack-1');
         final localPhoto = LocalAssetFactory.create();
 
-        final result = AssetFilter(<BaseAsset>[
-          asset,
-          wrongOwner,
-          archived,
-          stacked,
-          localPhoto,
-        ]).owned(asset.ownerId).archived(isArchived: false).stacked(isStacked: false);
+        final result = AssetFilter(<BaseAsset>[asset, wrongOwner, archived, stacked, localPhoto])
+            .owned(asset.ownerId)
+            .archived(isArchived: false)
+            .stacked(isStacked: false);
 
         expect(result.toList(), [asset]);
       });

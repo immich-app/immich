@@ -29,9 +29,8 @@ void main() {
         const removed = ['asset-1', 'asset-3'];
 
         // The server rejected 'asset-2'
-        when(
-          () => mocks.albumApi.removeAssets(albumId, requested),
-        ).thenAnswer((_) async => (removed: removed, failed: ['asset-2']));
+        when(() => mocks.albumApi.removeAssets(albumId, requested))
+            .thenAnswer((_) async => (removed: removed, failed: ['asset-2']));
         when(() => mocks.remoteAlbum.removeAssets(albumId, any())).thenAnswer((_) async {});
 
         final count = await sut.removeAssets(albumId: albumId, assetIds: requested);

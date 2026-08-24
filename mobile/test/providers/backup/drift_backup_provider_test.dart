@@ -33,19 +33,17 @@ void main() {
   });
 
   void mockCounts({required int total, required int remainder, int processing = 0}) {
-    when(
-      () => foregroundUploadService.getBackupCounts('user-1'),
-    ).thenAnswer((_) async => (total: total, remainder: remainder, processing: processing));
+    when(() => foregroundUploadService.getBackupCounts('user-1'))
+        .thenAnswer((_) async => (total: total, remainder: remainder, processing: processing));
   }
 
   // Drives a backup run so we can grab the onSuccess callback the notifier wires up.
   Future<void Function(String, String)> startAndCaptureOnSuccess() async {
     void Function(String, String)? onSuccess;
-    when(() => foregroundUploadService.uploadCandidates(any(), any(), callbacks: any(named: 'callbacks'))).thenAnswer((
-      invocation,
-    ) async {
-      onSuccess = (invocation.namedArguments[#callbacks] as UploadCallbacks).onSuccess;
-    });
+    when(() => foregroundUploadService.uploadCandidates(any(), any(), callbacks: any(named: 'callbacks')))
+        .thenAnswer((invocation) async {
+          onSuccess = (invocation.namedArguments[#callbacks] as UploadCallbacks).onSuccess;
+        });
     await notifier.startForegroundBackup('user-1');
     return onSuccess!;
   }

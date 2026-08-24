@@ -19,9 +19,8 @@ void main() {
   });
 
   void stubResponse(List<BulkIdResponseDto> response) {
-    when(
-      () => api.addAssetsToAlbum(any(), any(), abortTrigger: any(named: 'abortTrigger')),
-    ).thenAnswer((_) async => response);
+    when(() => api.addAssetsToAlbum(any(), any(), abortTrigger: any(named: 'abortTrigger')))
+        .thenAnswer((_) async => response);
   }
 
   test('no_permission failure surfaces as failed, not added (the #22342 bug)', () async {
