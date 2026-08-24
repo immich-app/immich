@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,10 +12,8 @@ part 'upload_profile_image.provider.freezed.dart';
 enum UploadProfileStatus { idle, loading, success, failure }
 
 @freezed
-abstract class UploadProfileImageState with _$UploadProfileImageState {
-  const factory UploadProfileImageState({required UploadProfileStatus status, required String profileImagePath}) =
-      _UploadProfileImageState;
-}
+class const UploadProfileImageState({required final UploadProfileStatus status, required final String profileImagePath})
+    with _$UploadProfileImageState;
 
 class UploadProfileImageNotifier extends StateNotifier<UploadProfileImageState> {
   UploadProfileImageNotifier(this._userService)

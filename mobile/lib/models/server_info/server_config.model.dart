@@ -1,18 +1,18 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:openapi/api.dart';
 
 part 'server_config.model.freezed.dart';
 
 @freezed
-abstract class ServerConfig with _$ServerConfig {
-  const factory ServerConfig({
-    required int trashDays,
-    required String oauthButtonText,
-    required String externalDomain,
-    required String mapDarkStyleUrl,
-    required String mapLightStyleUrl,
-  }) = _ServerConfig;
-
+class const ServerConfig({
+  required final int trashDays,
+  required final String oauthButtonText,
+  required final String externalDomain,
+  required final String mapDarkStyleUrl,
+  required final String mapLightStyleUrl,
+}) with _$ServerConfig {
   factory ServerConfig.fromDto(ServerConfigDto dto) => ServerConfig(
     trashDays: dto.trashDays,
     oauthButtonText: dto.oauthButtonText,

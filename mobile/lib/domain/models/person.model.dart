@@ -1,9 +1,13 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'person.model.freezed.dart';
 
 @freezed
-abstract class Person with _$Person {
-  const factory Person({required String id, required String name, DateTime? updatedAt, DateTime? birthDate}) = _Person;
-}
+class const Person({
+  required final String id,
+  required final String name,
+  final DateTime? updatedAt,
+  final DateTime? birthDate,
+}) with _$Person;

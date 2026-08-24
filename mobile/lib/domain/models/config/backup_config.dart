@@ -1,16 +1,15 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'backup_config.freezed.dart';
 
 @freezed
-abstract class BackupConfig with _$BackupConfig {
-  const factory BackupConfig({
-    @Default(false) bool enabled,
-    @Default(false) bool useCellularForVideos,
-    @Default(false) bool useCellularForPhotos,
-    @Default(false) bool requireCharging,
-    @Default(30) int triggerDelay,
-    @Default(false) bool syncAlbums,
-  }) = _BackupConfig;
-}
+class const BackupConfig({
+  final bool enabled = false,
+  final bool useCellularForVideos = false,
+  final bool useCellularForPhotos = false,
+  final bool requireCharging = false,
+  final int triggerDelay = 30,
+  final bool syncAlbums = false,
+}) with _$BackupConfig;

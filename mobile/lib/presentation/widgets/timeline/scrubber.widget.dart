@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 
 import 'package:collection/collection.dart';
@@ -600,11 +602,9 @@ class _SlideFadeTransition extends StatelessWidget {
 }
 
 @freezed
-abstract class _Segment with _$Segment {
-  const factory _Segment({
-    required DateTime date,
-    required double startOffset,
-    required String scrollLabel,
-    @Default(false) bool showSegment,
-  }) = __Segment;
-}
+class const _Segment({
+  required final DateTime date,
+  required final double startOffset,
+  required final String scrollLabel,
+  final bool showSegment = false,
+}) with _$Segment;

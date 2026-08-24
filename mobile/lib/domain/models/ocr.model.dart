@@ -1,24 +1,23 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'ocr.model.freezed.dart';
 
 @freezed
-abstract class Ocr with _$Ocr {
-  const factory Ocr({
-    required String id,
-    required String assetId,
-    required double x1,
-    required double y1,
-    required double x2,
-    required double y2,
-    required double x3,
-    required double y3,
-    required double x4,
-    required double y4,
-    required double boxScore,
-    required double textScore,
-    required String text,
-    required bool isVisible,
-  }) = _Ocr;
-}
+class const Ocr({
+  required final String id,
+  required final String assetId,
+  required final double x1,
+  required final double y1,
+  required final double x2,
+  required final double y2,
+  required final double x3,
+  required final double y3,
+  required final double x4,
+  required final double y4,
+  required final double boxScore,
+  required final double textScore,
+  required final String text,
+  required final bool isVisible,
+}) with _$Ocr;

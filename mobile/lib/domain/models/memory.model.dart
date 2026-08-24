@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -12,11 +14,7 @@ enum MemoryTypeEnum {
 }
 
 @Freezed(fromJson: false, toJson: false)
-abstract class MemoryData with _$MemoryData {
-  const MemoryData._();
-
-  const factory MemoryData({required int year}) = _MemoryData;
-
+class const MemoryData({required final int year}) with _$MemoryData {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'year': year};
   }
@@ -33,20 +31,18 @@ abstract class MemoryData with _$MemoryData {
 // Model for a memory stored in the server
 // TODO(agg23): DriftMemoryRepository currently mutates `assets`
 @Freezed(makeCollectionsUnmodifiable: false)
-abstract class DriftMemory with _$DriftMemory {
-  const factory DriftMemory({
-    required String id,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    DateTime? deletedAt,
-    required String ownerId,
-    required MemoryTypeEnum type,
-    required MemoryData data,
-    required bool isSaved,
-    required DateTime memoryAt,
-    DateTime? seenAt,
-    DateTime? showAt,
-    DateTime? hideAt,
-    required List<RemoteAsset> assets,
-  }) = _DriftMemory;
-}
+class const DriftMemory({
+  required final String id,
+  required final DateTime createdAt,
+  required final DateTime updatedAt,
+  final DateTime? deletedAt,
+  required final String ownerId,
+  required final MemoryTypeEnum type,
+  required final MemoryData data,
+  required final bool isSaved,
+  required final DateTime memoryAt,
+  final DateTime? seenAt,
+  final DateTime? showAt,
+  final DateTime? hideAt,
+  required final List<RemoteAsset> assets,
+}) with _$DriftMemory;

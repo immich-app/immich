@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/constants/colors.dart';
@@ -26,25 +27,21 @@ part 'app_config.freezed.dart';
 const defaultConfig = AppConfig();
 
 @freezed
-abstract class AppConfig with _$AppConfig {
-  const AppConfig._();
-
-  const factory AppConfig({
-    @Default(LogLevel.info) LogLevel logLevel,
-    @Default(ThemeConfig()) ThemeConfig theme,
-    @Default(CleanupConfig()) CleanupConfig cleanup,
-    @Default(MapConfig()) MapConfig map,
-    @Default(TimelineConfig()) TimelineConfig timeline,
-    @Default(ImageConfig()) ImageConfig image,
-    @Default(ViewerConfig()) ViewerConfig viewer,
-    @Default(SlideshowConfig()) SlideshowConfig slideshow,
-    @Default(AlbumConfig()) AlbumConfig album,
-    @Default(BackupConfig()) BackupConfig backup,
-    @Default(NetworkConfig()) NetworkConfig network,
-    @Default(ShareConfig()) ShareConfig share,
-    @Default(FeatureMessageConfig()) FeatureMessageConfig featureMessage,
-  }) = _AppConfig;
-
+class const AppConfig({
+  final LogLevel logLevel = .info,
+  final ThemeConfig theme = const .new(),
+  final CleanupConfig cleanup = const .new(),
+  final MapConfig map = const .new(),
+  final TimelineConfig timeline = const .new(),
+  final ImageConfig image = const .new(),
+  final ViewerConfig viewer = const .new(),
+  final SlideshowConfig slideshow = const .new(),
+  final AlbumConfig album = const .new(),
+  final BackupConfig backup = const .new(),
+  final NetworkConfig network = const .new(),
+  final ShareConfig share = const .new(),
+  final FeatureMessageConfig featureMessage = const .new(),
+}) with _$AppConfig {
   T read<T>(SettingsKey<T> key) => (switch (key) {
     .logLevel => logLevel,
     .themePrimaryColor => theme.primaryColor,

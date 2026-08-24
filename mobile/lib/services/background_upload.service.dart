@@ -1,9 +1,10 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -44,15 +45,11 @@ final backgroundUploadServiceProvider = Provider((ref) {
 
 /// Metadata for upload tasks to track live photo handling
 @Freezed(fromJson: false, toJson: false)
-abstract class UploadTaskMetadata with _$UploadTaskMetadata {
-  const UploadTaskMetadata._();
-
-  const factory UploadTaskMetadata({
-    required String localAssetId,
-    required bool isLivePhotos,
-    required String livePhotoVideoId,
-  }) = _UploadTaskMetadata;
-
+class const UploadTaskMetadata({
+  required final String localAssetId,
+  required final bool isLivePhotos,
+  required final String livePhotoVideoId,
+}) with _$UploadTaskMetadata {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'localAssetId': localAssetId,

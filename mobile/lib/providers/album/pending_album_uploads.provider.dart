@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -5,13 +7,11 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 part 'pending_album_uploads.provider.freezed.dart';
 
 @freezed
-abstract class PendingAlbumUpload with _$PendingAlbumUpload {
-  const factory PendingAlbumUpload({
-    required LocalAsset asset,
-    @Default(0.0) double progress,
-    @Default(false) bool failed,
-  }) = _PendingAlbumUpload;
-}
+class const PendingAlbumUpload({
+  required final LocalAsset asset,
+  final double progress = 0.0,
+  final bool failed = false,
+}) with _$PendingAlbumUpload;
 
 class AlbumPendingUploadsNotifier extends AutoDisposeFamilyNotifier<List<PendingAlbumUpload>, String> {
   KeepAliveLink? _keepAliveLink;

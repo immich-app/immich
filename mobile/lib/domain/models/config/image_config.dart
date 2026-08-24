@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'image_config.freezed.dart';
 
 @freezed
-abstract class ImageConfig with _$ImageConfig {
-  const factory ImageConfig({@Default(false) bool preferRemote, @Default(false) bool loadOriginal}) = _ImageConfig;
-}
+class const ImageConfig({final bool preferRemote = false, final bool loadOriginal = false}) with _$ImageConfig;

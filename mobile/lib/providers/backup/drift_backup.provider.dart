@@ -1,6 +1,7 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -16,22 +17,18 @@ import 'package:logging/logging.dart';
 part 'drift_backup.provider.freezed.dart';
 
 @freezed
-abstract class EnqueueStatus with _$EnqueueStatus {
-  const factory EnqueueStatus({required int enqueueCount, required int totalCount}) = _EnqueueStatus;
-}
+class const EnqueueStatus({required final int enqueueCount, required final int totalCount}) with _$EnqueueStatus;
 
 @freezed
-abstract class DriftUploadStatus with _$DriftUploadStatus {
-  const factory DriftUploadStatus({
-    required String taskId,
-    required String filename,
-    required double progress,
-    required int fileSize,
-    required String networkSpeedAsString,
-    bool? isFailed,
-    String? error,
-  }) = _DriftUploadStatus;
-}
+class const DriftUploadStatus({
+  required final String taskId,
+  required final String filename,
+  required final double progress,
+  required final int fileSize,
+  required final String networkSpeedAsString,
+  final bool? isFailed,
+  final String? error,
+}) with _$DriftUploadStatus;
 
 enum BackupError { none, syncFailed }
 

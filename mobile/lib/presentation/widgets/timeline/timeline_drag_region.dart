@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 
 import 'package:collection/collection.dart';
@@ -210,6 +212,5 @@ class _TimelineAssetIndexProxy extends RenderProxyBox {
 }
 
 @freezed
-abstract class TimelineAssetIndex with _$TimelineAssetIndex {
-  const factory TimelineAssetIndex({required int assetIndex, required int segmentIndex}) = _TimelineAssetIndex;
-}
+class const TimelineAssetIndex({required final int assetIndex, required final int segmentIndex})
+    with _$TimelineAssetIndex;

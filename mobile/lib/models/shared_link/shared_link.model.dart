@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:openapi/api.dart';
 
@@ -7,22 +8,20 @@ part 'shared_link.model.freezed.dart';
 enum SharedLinkSource { album, individual }
 
 @freezed
-abstract class SharedLink with _$SharedLink {
-  const factory SharedLink({
-    required String id,
-    required String title,
-    required bool allowDownload,
-    required bool allowUpload,
-    required String? thumbAssetId,
-    required String? description,
-    required String? password,
-    required DateTime? expiresAt,
-    required String key,
-    required bool showMetadata,
-    required SharedLinkSource type,
-    required String? slug,
-  }) = _SharedLink;
-
+class const SharedLink({
+  required final String id,
+  required final String title,
+  required final bool allowDownload,
+  required final bool allowUpload,
+  required final String? thumbAssetId,
+  required final String? description,
+  required final String? password,
+  required final DateTime? expiresAt,
+  required final String key,
+  required final bool showMetadata,
+  required final SharedLinkSource type,
+  required final String? slug,
+}) with _$SharedLink {
   factory SharedLink.fromDto(SharedLinkResponseDto dto) {
     final isAlbum = dto.type == SharedLinkType.ALBUM;
     return SharedLink(

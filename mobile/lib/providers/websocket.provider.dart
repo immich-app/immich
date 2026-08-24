@@ -1,6 +1,7 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -20,9 +21,7 @@ import 'package:socket_io_client/socket_io_client.dart';
 part 'websocket.provider.freezed.dart';
 
 @freezed
-abstract class WebsocketState with _$WebsocketState {
-  const factory WebsocketState({Socket? socket, required bool isConnected}) = _WebsocketState;
-}
+class const WebsocketState({final Socket? socket, required final bool isConnected}) with _$WebsocketState;
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
   WebsocketNotifier(this._ref) : super(const WebsocketState(socket: null, isConnected: false));
