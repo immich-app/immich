@@ -418,9 +418,9 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     bool collapseStacks = false,
   }) => _remoteQueryBuilder(
     filter: (row) {
-      final base =
+      final baseFilter =
           row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(ownerIds);
-      return collapseStacks ? base & _isStackCover(row) : base;
+      return collapseStacks ? baseFilter & _isStackCover(row) : baseFilter;
     },
     groupBy: groupBy,
     origin: origin,
