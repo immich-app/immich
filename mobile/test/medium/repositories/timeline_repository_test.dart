@@ -273,9 +273,13 @@ void main() {
     test('local asset matching two remote assets returns only one asset from local filter', () async {
       final owner = await ctx.newUser();
       final partner = await ctx.newUser();
+      await ctx.setAuthUser(owner.id);
+      
       const checksum = 'shared-checksum';
-      await ctx.newRemoteAsset(ownerId: owner.id, checksum: checksum);
-      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+
+      // deliberately forcing partner id to be before owner id to test local filter correctly
+      await ctx.newRemoteAsset(id: 'a-partner-remote', ownerId: partner.id, checksum: checksum);
+      final ownerRemote = await ctx.newRemoteAsset(id: 'z-owner-remote', ownerId: owner.id, checksum: checksum);
       final local = await ctx.newLocalAsset(checksum: checksum);
       final album = await ctx.newLocalAlbum(backupSelection: .selected);
       await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
@@ -283,7 +287,9 @@ void main() {
       final assets = await sut.main([owner.id, partner.id], .day, .local).assetSource(0, 10);
 
       expect(assets, hasLength(1));
-      expect((assets.single as LocalAsset).id, local.id);
+      final result = assets.single as LocalAsset;
+      expect(result.id, local.id);
+      expect(result.remoteId, ownerRemote.id);
     });
 
     test('remote filter shows only the stack primary asset', () async {
