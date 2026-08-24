@@ -226,7 +226,7 @@ class _AspectRatioSelector extends ConsumerWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: aspectRatioPresets.map((entry) {
+        children: CropAspectRatio.values.map((entry) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
