@@ -21,7 +21,32 @@ if [ -f "$lib_path" ]; then
 else
   echo "skipping libmimalloc - path not found $lib_path"
 fi
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/jellyfin-ffmpeg/lib"
+# jellyfin-ffmpeg bundles its own libxml2, fontconfig, freetype and harfbuzz. Its
+# binaries locate those through the RUNPATH baked into them, so the directory does
+# not need to be on the loader path, and having it there is actively harmful: the
+# bundled libfontconfig pulls in libxml2.so.16 (2.16), which then wins symbol
+# lookups for librsvg. librsvg is built against the system libxml2.so.2 (2.9.14),
+# so it ends up building a SAX parser context in one libxml2 and initialising it
+# in the other, and libvips segfaults whenever it renders an SVG. See #26605.
+remove_from_ld_library_path() {
+  local removed=""
+  local entry
+  local entries
+  IFS=':' read -ra entries <<<"${LD_LIBRARY_PATH:-}"
+  for entry in "${entries[@]}"; do
+    if [ -z "$entry" ] || [ "$entry" = "$1" ]; then
+      continue
+    fi
+    removed="${removed:+$removed:}$entry"
+  done
+
+  if [ -n "$removed" ]; then
+    export LD_LIBRARY_PATH="$removed"
+  else
+    unset LD_LIBRARY_PATH
+  fi
+}
+remove_from_ld_library_path "/usr/lib/jellyfin-ffmpeg/lib"
 SERVER_HOME="$(readlink -f "$(dirname "$0")/..")"
 
 read_file_and_export() {
