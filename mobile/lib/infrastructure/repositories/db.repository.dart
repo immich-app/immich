@@ -49,7 +49,6 @@ import 'package:immich_mobile/infrastructure/repositories/remote_album.repositor
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
@@ -108,7 +107,6 @@ import 'package:sqlite_async/sqlite_async.dart';
     RemoteAssetRepository,
     RemoteExifRepository,
     StackRepository,
-    StoreRepository,
     SyncMigrationRepository,
     SyncStreamRepository,
     TimelineRepository,
