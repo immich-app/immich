@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 
 part 'store.model.freezed.dart';
 
@@ -7,7 +6,6 @@ part 'store.model.freezed.dart';
 /// Defines the data type for each value
 enum StoreKey<T> {
   version<int>._(0),
-  currentUser<UserDto>._(2),
   deviceId<String>._(4),
   advancedTroubleshooting<bool>._(114),
   enableHapticFeedback<bool>._(126),

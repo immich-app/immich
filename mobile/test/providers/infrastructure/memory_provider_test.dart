@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/memory.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -36,7 +37,8 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         driftProvider.overrideWithValue(mockDrift(memoryRepository)),
-        currentUserProvider.overrideWith((ref) => CurrentUserProvider(userService)),
+        userServiceProvider.overrideWithValue(userService),
+        currentUserProvider.overrideWith(() => CurrentUserProvider()),
       ],
     );
     addTearDown(container.dispose);
@@ -47,9 +49,7 @@ void main() {
     memoryRepository = MockMemoryRepository();
     userService = MockUserService();
 
-    when(() => memoryRepository.getAll('user-1')).thenAnswer((_) async => []);
-    when(() => userService.tryGetMyUser()).thenReturn(user());
-    when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
+    when(() => userService.watchMyUser()).thenAnswer((_) => Stream.value(user()));
   });
 
   group('driftMemoryFutureProvider', () {
@@ -57,7 +57,7 @@ void main() {
       fakeAsync((async) {
         final container = makeContainer();
         container.listen(driftMemoryFutureProvider, (_, _) {});
-        async.flushMicrotasks();
+        async.elapse(Duration.zero);
 
         verify(() => memoryRepository.getAll('user-1')).called(1);
 
@@ -75,7 +75,7 @@ void main() {
       fakeAsync((async) {
         final container = makeContainer();
         final subscription = container.listen(driftMemoryFutureProvider, (_, _) {});
-        async.flushMicrotasks();
+        async.elapse(Duration.zero);
         verify(() => memoryRepository.getAll('user-1')).called(1);
 
         subscription.close();
@@ -87,12 +87,12 @@ void main() {
     });
 
     test('does not query or arm the timer when memories are disabled', () {
-      when(() => userService.tryGetMyUser()).thenReturn(user(memoryEnabled: false));
+      when(() => userService.watchMyUser()).thenAnswer((_) => Stream.value(user(memoryEnabled: false)));
 
       fakeAsync((async) {
         final container = makeContainer();
         container.listen(driftMemoryFutureProvider, (_, _) {});
-        async.flushMicrotasks();
+        async.elapse(Duration.zero);
 
         async.elapse(const Duration(hours: 25));
         async.flushMicrotasks();

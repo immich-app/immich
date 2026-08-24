@@ -22,18 +22,25 @@ class AuthUserRepository extends DatabaseAccessor<Drift> with $AuthUserRepositor
 
   Drift get _db => attachedDatabase;
 
-  Future<UserDto?> get(String id) async {
-    final user = await _db.managers.authUserEntity.filter((user) => user.id.equals(id)).getSingleOrNull();
+  Selectable<UserDto?> get _authUserQuery {
+    final query = _db.select(_db.authUserEntity).join([
+      leftOuterJoin(
+        _db.userMetadataEntity,
+        _db.userMetadataEntity.userId.equalsExp(_db.authUserEntity.id) &
+            _db.userMetadataEntity.key.equalsValue(.preferences),
+      ),
+    ])..limit(1);
 
-    if (user == null) {
-      return null;
-    }
-
-    final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(id));
-    final metadata = await query.map((row) => row.toDto()).get();
-
-    return user.toDto(metadata);
+    return query.map((row) {
+      final user = row.readTable(_db.authUserEntity);
+      final preferences = row.readTableOrNull(_db.userMetadataEntity);
+      return user.toDto(preferences != null ? [preferences.toDto()] : null);
+    });
   }
+
+  Future<UserDto?> get() => _authUserQuery.getSingleOrNull();
+
+  Stream<UserDto?> watch() => _authUserQuery.watchSingleOrNull();
 
   Future<UserDto> upsert(UserDto user) async {
     await _db.authUserEntity.insertOnConflictUpdate(

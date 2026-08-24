@@ -2,34 +2,22 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 
-class CurrentUserProvider extends StateNotifier<UserDto?> {
-  CurrentUserProvider(this._userService) : super(null) {
-    state = _userService.tryGetMyUser();
-    streamSub = _userService.watchMyUser().listen((user) => state = user ?? state);
-  }
+final _userStreamProvider = StreamProvider<UserDto?>((ref) => ref.watch(userServiceProvider).watchMyUser());
 
-  final UserService _userService;
-  late final StreamSubscription<UserDto?> streamSub;
+class CurrentUserProvider extends Notifier<UserDto?> {
+  @override
+  UserDto? build() => ref.watch(_userStreamProvider).valueOrNull;
 
   Future<void> refresh() async {
     try {
-      await _userService.refreshMyUser();
+      await ref.read(userServiceProvider).refreshMyUser();
     } catch (_) {}
-  }
-
-  @override
-  void dispose() {
-    unawaited(streamSub.cancel());
-    super.dispose();
   }
 }
 
-final currentUserProvider = StateNotifierProvider<CurrentUserProvider, UserDto?>((ref) {
-  return CurrentUserProvider(ref.watch(userServiceProvider));
-});
+final currentUserProvider = NotifierProvider<CurrentUserProvider, UserDto?>(CurrentUserProvider.new);
 
 final authUserProvider = Provider<UserDto>((ref) {
   final user = ref.watch(currentUserProvider);
