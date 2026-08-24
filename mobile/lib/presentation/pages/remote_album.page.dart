@@ -273,9 +273,8 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
         return;
       }
 
-      Navigator.of(
-        context,
-      ).pop(_EditAlbumData(name: newTitle, description: newDescription.isEmpty ? null : newDescription));
+      Navigator.of(context)
+          .pop(_EditAlbumData(name: newTitle, description: newDescription.isEmpty ? null : newDescription));
     } catch (e) {
       if (!mounted) {
         return;

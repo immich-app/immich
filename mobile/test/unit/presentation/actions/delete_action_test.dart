@@ -45,9 +45,8 @@ void main() {
 
   Future<void> pumpDelete(WidgetTester tester, Set<BaseAsset> selection, {bool trashEnabled = true}) async {
     if (!trashEnabled) {
-      when(
-        () => context.service.serverInfo.getServerFeatures(),
-      ).thenAnswer((_) async => const .new(trash: false, map: true, oauthEnabled: false, passwordLogin: true));
+      when(() => context.service.serverInfo.getServerFeatures())
+          .thenAnswer((_) async => const .new(trash: false, map: true, oauthEnabled: false, passwordLogin: true));
     }
 
     await tester.pumpTestWidget(

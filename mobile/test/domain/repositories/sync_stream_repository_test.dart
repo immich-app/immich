@@ -243,8 +243,7 @@ void main() {
       expect(
         after.linkedRemoteAlbumId,
         isNull,
-        reason:
-            'reset() runs with PRAGMA foreign_keys = OFF so the ON DELETE SET NULL cascade does not fire — the link must be nulled manually',
+        reason: 'reset() runs with PRAGMA foreign_keys = OFF so the ON DELETE SET NULL cascade does not fire — the link must be nulled manually',
       );
       expect(after.name, equals('Movies'), reason: 'local album row itself must be preserved');
       expect(after.backupSelection, equals(BackupSelection.selected));

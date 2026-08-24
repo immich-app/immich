@@ -33,7 +33,6 @@ void main() {
   });
 
   group('CacheAwareListenerTrackerMixin with Real ImageCache', () {
-
     testWidgets('cancels fetch when UI detaches before completion', (WidgetTester tester) async {
       final completer = TestImageCompleter(hadInitialImage: false);
       final key = Object();
@@ -143,7 +142,9 @@ void main() {
       expect(completer.wasCancelled, isTrue);
     });
 
-    testWidgets('Listener misidentification: new listener after cache eviction is not treated as cache', (WidgetTester tester) async {
+    testWidgets('Listener misidentification: new listener after cache eviction is not treated as cache', (
+      WidgetTester tester,
+    ) async {
       final completer = TestImageCompleter(hadInitialImage: false);
       final key = Object();
 
@@ -169,7 +170,9 @@ void main() {
       expect(completer.wasCancelled, isTrue);
     });
 
-    testWidgets('No UI listener ever attaches (cache-only) — cache detaches should cancel', (WidgetTester tester) async {
+    testWidgets('No UI listener ever attaches (cache-only) — cache detaches should cancel', (
+      WidgetTester tester,
+    ) async {
       final completer = TestImageCompleter(hadInitialImage: false);
       final key = Object();
 

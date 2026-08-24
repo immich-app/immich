@@ -4,9 +4,8 @@ import 'package:immich_mobile/theme/theme_data.dart';
 
 final Map<ImmichColorPreset, ImmichTheme> _themePresets = {
   ImmichColorPreset.indigo: ImmichTheme(
-    light: ColorScheme.fromSeed(
-      seedColor: immichBrandColorLight,
-    ).copyWith(primary: immichBrandColorLight, onSurface: const Color.fromARGB(255, 34, 31, 32)),
+    light: ColorScheme.fromSeed(seedColor: immichBrandColorLight)
+        .copyWith(primary: immichBrandColorLight, onSurface: const Color.fromARGB(255, 34, 31, 32)),
     dark: ColorScheme.fromSeed(
       seedColor: immichBrandColorDark,
       brightness: Brightness.dark,

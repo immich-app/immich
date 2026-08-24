@@ -80,9 +80,8 @@ void main() {
   group('SetAlbumCoverAction', () {
     testWidgets('sets the single selected asset as the cover', (tester) async {
       final asset = RemoteAssetFactory.create();
-      when(
-        () => albumService.updateAlbum(any(), thumbnailAssetId: any(named: 'thumbnailAssetId')),
-      ).thenAnswer((_) async => RemoteAlbumFactory.create(id: albumId));
+      when(() => albumService.updateAlbum(any(), thumbnailAssetId: any(named: 'thumbnailAssetId')))
+          .thenAnswer((_) async => RemoteAlbumFactory.create(id: albumId));
 
       await tester.pumpTestAction(
         context,

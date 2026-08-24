@@ -52,9 +52,8 @@ void main() {
 
         when(mocks.localAlbum.getBackupAlbums).thenAnswer((_) async => [album]);
         when(() => mocks.localAlbum.repo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
-        when(
-          () => mocks.nativeApi.api.hashAssets([asset.id], allowNetworkAccess: false),
-        ).thenAnswer((_) async => [result]);
+        when(() => mocks.nativeApi.api.hashAssets([asset.id], allowNetworkAccess: false))
+            .thenAnswer((_) async => [result]);
 
         await sut.hashAssets();
 
@@ -71,9 +70,8 @@ void main() {
 
         when(mocks.localAlbum.getBackupAlbums).thenAnswer((_) async => [album]);
         when(() => mocks.localAlbum.repo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
-        when(
-          () => mocks.nativeApi.api.hashAssets([asset.id], allowNetworkAccess: false),
-        ).thenAnswer((_) async => [HashResult(assetId: asset.id, error: 'Failed to hash')]);
+        when(() => mocks.nativeApi.api.hashAssets([asset.id], allowNetworkAccess: false))
+            .thenAnswer((_) async => [HashResult(assetId: asset.id, error: 'Failed to hash')]);
 
         await sut.hashAssets();
 
@@ -88,9 +86,8 @@ void main() {
 
         when(mocks.localAlbum.getBackupAlbums).thenAnswer((_) async => [album]);
         when(() => mocks.localAlbum.repo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
-        when(
-          () => mocks.nativeApi.api.hashAssets([asset.id], allowNetworkAccess: false),
-        ).thenAnswer((_) async => [HashResult(assetId: asset.id, hash: null)]);
+        when(() => mocks.nativeApi.api.hashAssets([asset.id], allowNetworkAccess: false))
+            .thenAnswer((_) async => [HashResult(assetId: asset.id, hash: null)]);
 
         await sut.hashAssets();
 
