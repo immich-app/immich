@@ -10,23 +10,28 @@ class RemoteAssetFactory {
     String? name,
     String? ownerId,
     bool isFavorite = false,
-    AssetVisibility visibility = AssetVisibility.timeline,
+    AssetVisibility visibility = .timeline,
+    AssetType type = .image,
     String? stackId,
+    DateTime? deletedAt,
+    String? localId,
   }) {
-    id = TestUtils.uuid(id);
+    final assetId = TestUtils.uuid(id);
 
     return RemoteAsset(
-      id: id,
-      name: name ?? 'remote_$id.jpg',
+      id: assetId,
+      name: name ?? 'remote_$assetId.jpg',
       ownerId: TestUtils.uuid(ownerId),
-      checksum: 'checksum-$id',
-      type: .image,
+      checksum: 'checksum-$assetId',
+      type: type,
       createdAt: TestUtils.yesterday(),
       updatedAt: TestUtils.now(),
       isFavorite: isFavorite,
       visibility: visibility,
       stackId: stackId,
       isEdited: false,
+      deletedAt: deletedAt,
+      localId: localId,
     );
   }
 }

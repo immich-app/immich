@@ -9,13 +9,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/aspect_ratios.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/editor.utils.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
-import 'package:openapi/api.dart' show RotateParameters, MirrorParameters, MirrorAxis;
+import 'package:openapi/api.dart' show MirrorAxis, MirrorParameters, RotateParameters;
 
 @RoutePage()
 class DriftEditImagePage extends ConsumerStatefulWidget {
@@ -59,10 +60,18 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
 
     try {
       await widget.applyEdits(edits);
-      ImmichToast.show(context: context, msg: 'success'.tr(), toastType: ToastType.success);
+      if (!mounted) {
+        return;
+      }
+
+      ImmichToast.show(context: context, msg: context.t.success, toastType: ToastType.success);
       Navigator.of(context).pop();
     } catch (e) {
-      ImmichToast.show(context: context, msg: 'error_title'.tr(), toastType: ToastType.error);
+      if (!mounted) {
+        return;
+      }
+
+      ImmichToast.show(context: context, msg: context.t.error_title, toastType: ToastType.error);
     } finally {
       ref.read(editorStateProvider.notifier).setIsEditing(false);
     }
@@ -72,17 +81,17 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('editor_discard_edits_title'.tr()),
-        content: Text('editor_discard_edits_prompt'.tr()),
+        title: Text(context.t.editor_discard_edits_title),
+        content: Text(context.t.editor_discard_edits_prompt),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             style: ButtonStyle(
               foregroundColor: WidgetStateProperty.all(context.themeData.colorScheme.onSurfaceVariant),
             ),
-            child: Text('cancel'.tr()),
+            child: Text(context.t.cancel),
           ),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('confirm'.tr())),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(context.t.confirm)),
         ],
       ),
     );
@@ -99,7 +108,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
           return;
         }
         final shouldDiscard = await _showDiscardChangesDialog() ?? false;
-        if (shouldDiscard && mounted) {
+        if (shouldDiscard && context.mounted) {
           Navigator.of(context).pop();
         }
       },
@@ -108,7 +117,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.black,
-            title: Text("edit".tr()),
+            title: Text(context.t.edit),
             leading: ImmichCloseButton(onPressed: () => Navigator.of(context).maybePop()),
             actions: [_SaveEditsButton(onSave: _saveEditedImage)],
           ),
@@ -212,7 +221,7 @@ class _AspectRatioSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -237,7 +246,7 @@ class _TransformControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -325,10 +334,10 @@ class _ResetEditsButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return ImmichTextButton(
-      labelText: 'reset'.tr(),
+      labelText: context.t.reset,
       onPressed: editorNotifier.resetEdits,
       variant: ImmichVariant.ghost,
       expanded: false,
@@ -376,7 +385,7 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
   @override
   Widget build(BuildContext context) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     ref.listen(editorStateProvider, (previous, current) {
       // Only re-apply the aspect ratio when it changes, otherwise the crop rect will shrink on every rotation

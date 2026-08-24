@@ -23,6 +23,46 @@ beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
 
+// Metadata extraction is repeatable: probing improves, files get repaired,
+// and a re-run has to be able to correct what an earlier run stored.
+const audioRow = (assetId: string, n: number) => ({
+  assetId,
+  bitrate: 100_000 + n,
+  index: n,
+  profile: n,
+  codecName: `codec-${n}`,
+});
+
+const videoRow = (assetId: string, n: number) => ({
+  assetId,
+  bitrate: 200_000 + n,
+  frameCount: 300 + n,
+  timeBase: 600 + n,
+  index: n,
+  profile: n,
+  level: n,
+  colorPrimaries: n,
+  colorTransfer: n,
+  colorMatrix: n,
+  dvProfile: n,
+  dvLevel: n,
+  dvBlSignalCompatibilityId: n,
+  codecName: `vcodec-${n}`,
+  formatName: `format-${n}`,
+  formatLongName: `format long ${n}`,
+  pixelFormat: `pixfmt-${n}`,
+});
+
+const keyframeRow = (assetId: string, n: number) => ({
+  assetId,
+  pts: [n],
+  accDuration: [n],
+  ownDuration: [n],
+  totalDuration: 1000 + n,
+  packetCount: 10 + n,
+  outputFrames: 20 + n,
+});
+
 describe(AssetRepository.name, () => {
   describe('getTimeBucket', () => {
     it('should order assets by local day first and fileCreatedAt within each day', async () => {
@@ -80,6 +120,90 @@ describe(AssetRepository.name, () => {
   });
 
   describe('upsertExif', () => {
+    it('should replace stored audio metadata on a second extraction', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'first' },
+        audio: audioRow(asset.id, 2),
+        lockedPropertiesBehavior: 'skip',
+      });
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'second' },
+        audio: audioRow(asset.id, 1),
+        lockedPropertiesBehavior: 'skip',
+      });
+
+      await expect(
+        ctx.database.selectFrom('asset_audio').selectAll().where('assetId', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual(audioRow(asset.id, 1));
+    });
+
+    it('should replace stored video metadata on a second extraction', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'first' },
+        video: videoRow(asset.id, 2),
+        lockedPropertiesBehavior: 'skip',
+      });
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'second' },
+        video: videoRow(asset.id, 1),
+        lockedPropertiesBehavior: 'skip',
+      });
+
+      await expect(
+        ctx.database.selectFrom('asset_video').selectAll().where('assetId', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual(videoRow(asset.id, 1));
+    });
+
+    it('should replace stored keyframe metadata on a second extraction', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'first' },
+        keyframes: keyframeRow(asset.id, 2),
+        lockedPropertiesBehavior: 'skip',
+      });
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'second' },
+        keyframes: keyframeRow(asset.id, 1),
+        lockedPropertiesBehavior: 'skip',
+      });
+
+      await expect(
+        ctx.database.selectFrom('asset_keyframe').selectAll().where('assetId', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual(keyframeRow(asset.id, 1));
+    });
+
+    // A probe that could not read a stream sends no object at all, and that must
+    // not be read as "delete what is already known".
+    it('should leave stored media metadata alone when an extraction omits it', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'first' },
+        audio: audioRow(asset.id, 2),
+        lockedPropertiesBehavior: 'skip',
+      });
+      await sut.upsertExif({
+        exif: { assetId: asset.id, description: 'second' },
+        lockedPropertiesBehavior: 'skip',
+      });
+
+      await expect(
+        ctx.database.selectFrom('asset_audio').selectAll().where('assetId', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual(audioRow(asset.id, 2));
+    });
     it('should append to locked columns', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
@@ -202,6 +326,13 @@ describe(AssetRepository.name, () => {
           .where('assetId', '=', asset.id)
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ lockedProperties: null });
+    });
+  });
+
+  describe('createAll', () => {
+    it('should return an empty array when given an empty input', async () => {
+      const { sut } = setup();
+      await expect(sut.createAll([])).resolves.toStrictEqual([]);
     });
   });
 });

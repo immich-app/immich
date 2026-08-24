@@ -81,6 +81,7 @@ export class MediaRepository {
     ]) {
       try {
         const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        this.logger.debug(`Successfully extracted ${tag} buffer from image`);
         return { buffer, format };
       } catch (error: any) {
         this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
@@ -186,6 +187,7 @@ export class MediaRepository {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
+      limitInputChannels: false,
       limitInputPixels: false,
       raw: options.raw,
       unlimited: true,

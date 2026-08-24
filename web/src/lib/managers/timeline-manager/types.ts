@@ -47,11 +47,6 @@ export interface Viewport {
   height: number;
 }
 
-export type ViewportXY = Viewport & {
-  x: number;
-  y: number;
-};
-
 export interface AddAsset {
   type: 'add';
   values: TimelineAsset[];
@@ -80,12 +75,6 @@ export type ScrubberMonth = {
   year: number;
   month: number;
   title: string;
-};
-
-export type TimelineManagerLayoutOptions = {
-  rowHeight?: number;
-  headerHeight?: number;
-  gap?: number;
 };
 
 export interface UpdateGeometryOptions {

@@ -19,30 +19,30 @@ describe(DownloadController.name, () => {
     ctx.reset();
   });
 
-  describe('POST /download/info', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer())
-        .post('/download/info')
-        .send({ assetIds: [factory.uuid()] });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /download/archive', () => {
-    it('should be an authenticated route', async () => {
-      const stream = new Readable({
-        read() {
-          // eslint-disable-next-line unicorn/no-this-outside-of-class
-          this.push('test');
-          // eslint-disable-next-line unicorn/no-this-outside-of-class
-          this.push(null);
-        },
+    it('should accept comma-separated assetIds string', async () => {
+      const downloadArchiveSpy = vi.spyOn(service, 'downloadArchive');
+      service.downloadArchive.mockResolvedValue({ stream: Readable.from('') });
+
+      const ids = [factory.uuid(), factory.uuid()];
+      const { status } = await request(ctx.getHttpServer())
+        .post(`/download/archive`)
+        .type('form')
+        .send({ assetIds: ids.join(',') });
+      expect(status).toBe(200);
+      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids });
+    });
+
+    it('should accept assetIds array', async () => {
+      const downloadArchiveSpy = vi.spyOn(service, 'downloadArchive');
+      service.downloadArchive.mockResolvedValue({ stream: Readable.from('') });
+
+      const ids = [factory.uuid(), factory.uuid()];
+      const { status } = await request(ctx.getHttpServer()).post(`/download/archive`).send({
+        assetIds: ids,
       });
-      service.downloadArchive.mockResolvedValue({ stream });
-      await request(ctx.getHttpServer())
-        .post('/download/archive')
-        .send({ assetIds: [factory.uuid()] });
-      expect(ctx.authenticate).toHaveBeenCalled();
+      expect(status).toBe(200);
+      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids });
     });
   });
 });

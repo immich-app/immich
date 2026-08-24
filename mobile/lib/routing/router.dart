@@ -38,7 +38,6 @@ import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/presentation/pages/cleanup_preview.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
-import 'package:immich_mobile/presentation/pages/feature_message/whats_new.page.dart';
 import 'package:immich_mobile/presentation/pages/download_info.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_activities.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
@@ -66,12 +65,12 @@ import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
 import 'package:immich_mobile/presentation/pages/edit/drift_edit.page.dart';
+import 'package:immich_mobile/presentation/pages/feature_message/whats_new.page.dart';
 import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/profile/profile_picture_crop.page.dart';
 import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/locked_guard.dart';
@@ -84,10 +83,10 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 part 'router.gr.dart';
 
 final appRouterProvider = Provider(
+  // ignore: dispose-provided-instances
   (ref) => AppRouter(
     ref.watch(apiServiceProvider),
     ref.watch(authServiceProvider),
-    ref.watch(galleryPermissionNotifier.notifier),
     ref.watch(secureStorageServiceProvider),
     ref.watch(localAuthServiceProvider),
   ),
@@ -102,7 +101,6 @@ class AppRouter extends RootStackRouter {
   AppRouter(
     ApiService apiService,
     AuthService authService,
-    GalleryPermissionNotifier galleryPermissionNotifier,
     SecureStorageService secureStorageService,
     LocalAuthService localAuthService,
   ) {
@@ -156,7 +154,7 @@ class AppRouter extends RootStackRouter {
         customRouteBuilder: <T>(context, child, page) => PageRouteBuilder<T>(
           fullscreenDialog: page.fullscreenDialog,
           settings: page,
-          pageBuilder: (_, __, ___) => child,
+          pageBuilder: (_, _, _) => child,
           opaque: false,
           transitionsBuilder: TransitionsBuilders.fadeIn,
         ),

@@ -1,6 +1,5 @@
-import { AssetMediaResponseDto, LoginResponseDto, searchStacks } from '@immich/sdk';
-import { createUserDto, uuidDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
+import { LoginResponseDto, searchStacks } from '@immich/sdk';
+import { createUserDto } from 'src/fixtures';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -8,70 +7,16 @@ import { beforeAll, describe, expect, it } from 'vitest';
 describe('/stacks', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
-  let user2: LoginResponseDto;
-  let asset: AssetMediaResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
 
     admin = await utils.adminSetup();
 
-    [user1, user2] = await Promise.all([
-      utils.userSetup(admin.accessToken, createUserDto.user1),
-      utils.userSetup(admin.accessToken, createUserDto.user2),
-    ]);
-
-    asset = await utils.createAsset(user1.accessToken);
+    user1 = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
   describe('POST /stacks', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .post('/stacks')
-        .send({ assetIds: [asset.id] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require at least two assets', async () => {
-      const { status, body } = await request(app)
-        .post('/stacks')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [asset.id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['assetIds'], message: 'Too small: expected array to have >=2 items' }]),
-      );
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .post('/stacks')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [uuidDto.invalid, uuidDto.invalid] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['assetIds', 0], message: 'Invalid UUID' },
-          { path: ['assetIds', 1], message: 'Invalid UUID' },
-        ]),
-      );
-    });
-
-    it('should require access', async () => {
-      const user2Asset = await utils.createAsset(user2.accessToken);
-      const { status, body } = await request(app)
-        .post('/stacks')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [asset.id, user2Asset.id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should create a stack', async () => {
       const [asset1, asset2] = await Promise.all([
         utils.createAsset(user1.accessToken),

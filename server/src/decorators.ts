@@ -108,9 +108,11 @@ export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
+const UUID_1 = '00000000-0000-4000-a000-000000000001';
 
 export const DummyValue = {
   UUID,
+  UUID_1,
   UUID_SET: new Set([UUID]),
   PAGINATION: { take: 10, skip: 0 },
   EMAIL: 'user@immich.app',
@@ -139,7 +141,7 @@ export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GEN
 
 export type EventConfig = {
   name: EmitEvent;
-  /** handle socket.io server events as well  */
+  /** handle socket.io server events as well */
   server?: boolean;
   /** lower value has higher priority, defaults to 0 */
   priority?: number;

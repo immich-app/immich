@@ -8,8 +8,8 @@ final mapMarkersProvider = FutureProvider.autoDispose<List<MapMarker>>((ref) asy
   final mapState = ref.read(mapStateNotifierProvider);
   DateTime? fileCreatedAfter;
   bool? isFavorite;
-  bool isIncludeArchived = mapState.includeArchived;
-  bool isWithPartners = mapState.withPartners;
+  final bool isIncludeArchived = mapState.includeArchived;
+  final bool isWithPartners = mapState.withPartners;
 
   if (mapState.relativeTime != 0) {
     fileCreatedAfter = DateTime.now().subtract(Duration(days: mapState.relativeTime));

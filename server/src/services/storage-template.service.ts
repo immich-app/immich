@@ -5,7 +5,7 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto';
 import {
   AssetFileType,
   AssetPathType,
@@ -129,7 +129,7 @@ export class StorageTemplateService extends BaseService {
     }
   }
 
-  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+  getStorageTemplateOptions(): ConfigTemplateStorageOptionDto {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 
@@ -402,8 +402,8 @@ export class StorageTemplateService extends BaseService {
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
-      filetype: asset.type == AssetType.Image ? 'IMG' : 'VID',
-      filetypefull: asset.type == AssetType.Image ? 'IMAGE' : 'VIDEO',
+      filetype: asset.type === AssetType.Image ? 'IMG' : 'VID',
+      filetypefull: asset.type === AssetType.Image ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album

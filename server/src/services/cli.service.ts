@@ -58,17 +58,23 @@ export class CliService extends BaseService {
     return users.map((user) => mapUserAdmin(user));
   }
 
-  async resetAdminPassword(ask: (admin: UserAdminResponseDto) => Promise<string | undefined>) {
+  async resetAdminPassword(
+    ask: (admin: UserAdminResponseDto) => Promise<{ newPassword: string | undefined; invalidateSessions: boolean }>,
+  ) {
     const admin = await this.userRepository.getAdmin();
     if (!admin) {
       throw new Error('Admin account does not exist');
     }
 
-    const providedPassword = await ask(mapUserAdmin(admin));
+    const { newPassword: providedPassword, invalidateSessions } = await ask(mapUserAdmin(admin));
     const password = providedPassword || this.cryptoRepository.randomBytesAsText(24);
     const hashedPassword = await this.cryptoRepository.hashBcrypt(password, SALT_ROUNDS);
 
     await this.userRepository.update(admin.id, { password: hashedPassword });
+
+    if (invalidateSessions) {
+      await this.sessionRepository.invalidateAll({ userId: admin.id });
+    }
 
     return { admin, password, provided: !!providedPassword };
   }

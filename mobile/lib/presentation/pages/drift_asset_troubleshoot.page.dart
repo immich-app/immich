@@ -1,22 +1,24 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
 @RoutePage()
-class AssetTroubleshootPage extends ConsumerWidget {
+class AssetTroubleshootPage extends StatelessWidget {
   final BaseAsset asset;
 
   const AssetTroubleshootPage({super.key, required this.asset});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('asset_troubleshoot'.tr())),
+      appBar: AppBar(title: Text(context.t.asset_troubleshoot)),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -27,20 +29,20 @@ class AssetTroubleshootPage extends ConsumerWidget {
   }
 }
 
-class _AssetDetailsView extends ConsumerWidget {
+class _AssetDetailsView extends StatelessWidget {
   final BaseAsset asset;
 
   const _AssetDetailsView({required this.asset});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _AssetPropertiesSection(asset: asset),
         const SizedBox(height: 16),
         Text(
-          'matching_assets'.tr(),
+          context.t.matching_assets,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         if (asset.checksum != null) ...[
@@ -50,12 +52,12 @@ class _AssetDetailsView extends ConsumerWidget {
         ] else ...[
           _PropertySectionCard(
             title: 'Local Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'no_checksum_local'.tr())],
+            properties: [_PropertyItem(label: 'Status', value: context.t.no_checksum_local)],
           ),
           const SizedBox(height: 16),
           _PropertySectionCard(
             title: 'Remote Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'no_checksum_remote'.tr())],
+            properties: [_PropertyItem(label: 'Status', value: context.t.no_checksum_remote)],
           ),
         ],
       ],
@@ -78,11 +80,13 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
   @override
   void initState() {
     super.initState();
-    _buildAssetProperties(widget.asset).whenComplete(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    unawaited(
+      _buildAssetProperties(widget.asset).whenComplete(() {
+        if (mounted) {
+          setState(() {});
+        }
+      }),
+    );
   }
 
   @override
@@ -239,7 +243,7 @@ class _LocalAssetsSection extends ConsumerWidget {
         if (localAssets.isEmpty) {
           return _PropertySectionCard(
             title: 'Local Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'no_local_assets_found'.tr())],
+            properties: [_PropertyItem(label: 'Status', value: context.t.no_local_assets_found)],
           );
         }
 
@@ -276,8 +280,8 @@ class _RemoteAssetSection extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return FutureBuilder<RemoteAsset?>(
-      future: assetService.getRemoteAssetByChecksum(asset.checksum!),
+    return FutureBuilder<List<RemoteAsset>>(
+      future: assetService.getAllRemoteAssetDebugByChecksum(asset.checksum!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const _PropertySectionCard(
@@ -293,12 +297,12 @@ class _RemoteAssetSection extends ConsumerWidget {
           );
         }
 
-        final remoteAsset = snapshot.data;
+        final remoteAsset = snapshot.data?.firstOrNull;
 
         if (remoteAsset == null) {
           return _PropertySectionCard(
             title: 'Remote Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'no_remote_assets_found'.tr())],
+            properties: [_PropertyItem(label: 'Status', value: context.t.no_remote_assets_found)],
           );
         }
 
@@ -352,7 +356,7 @@ class _PropertyItem extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              value ?? 'not_available'.tr(),
+              value ?? context.t.not_available,
               style: TextStyle(color: Theme.of(context).colorScheme.secondary),
             ),
           ),

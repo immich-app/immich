@@ -1,3 +1,5 @@
+// ignore_for_file: close_sinks
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -25,6 +27,8 @@ class _FrozenBucketService implements TimelineService {
 }
 
 class _EmptyBucketService implements TimelineService {
+  const _EmptyBucketService();
+
   @override
   Stream<List<Bucket>> Function() get watchBuckets =>
       () => Stream.value(const []);
@@ -50,6 +54,27 @@ class _CountingBucketService implements TimelineService {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+// The timeline embeds a [BackButtonListener], which resolves its dispatcher via
+// `Router.of(context)` and throws without a [Router] ancestor. The running app always has one
+// (via `MaterialApp.router`); these tests use a plain [MaterialApp], so supply a minimal Router.
+class _StubRouterDelegate extends RouterDelegate<void> with ChangeNotifier {
+  _StubRouterDelegate(this.child);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child;
+
+  @override
+  Future<bool> popRoute() => Future.value(false);
+
+  @override
+  Future<void> setNewRoutePath(void configuration) => Future.value();
+}
+
+Widget _withRouter(Widget child) =>
+    Router<void>(routerDelegate: _StubRouterDelegate(child), backButtonDispatcher: RootBackButtonDispatcher());
+
 void main() {
   testWidgets('timeline args follow constraints after a zero-sized first frame while buckets are still loading', (
     tester,
@@ -60,7 +85,7 @@ void main() {
 
     TimelineArgs? probed;
     final probe = Consumer(
-      builder: (_, ref, __) {
+      builder: (_, ref, _) {
         probed = ref.watch(timelineArgsProvider);
         return const SizedBox.shrink();
       },
@@ -72,7 +97,7 @@ void main() {
           timelineServiceProvider.overrideWithValue(_FrozenBucketService()),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
-        child: MaterialApp(home: Timeline(withScrubber: false, readOnly: true, loadingWidget: probe)),
+        child: MaterialApp(home: _withRouter(Timeline(withScrubber: false, readOnly: true, loadingWidget: probe))),
       ),
     );
     await tester.pump();
@@ -99,7 +124,7 @@ void main() {
     TimelineArgs? probed;
     final probe = SliverToBoxAdapter(
       child: Consumer(
-        builder: (_, ref, __) {
+        builder: (_, ref, _) {
           probed = ref.watch(timelineArgsProvider);
           return const SizedBox.shrink();
         },
@@ -109,15 +134,17 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          timelineServiceProvider.overrideWithValue(_EmptyBucketService()),
+          timelineServiceProvider.overrideWithValue(const _EmptyBucketService()),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
         child: MaterialApp(
-          home: Timeline(
-            withScrubber: false,
-            readOnly: true,
-            appBar: const SliverToBoxAdapter(child: SizedBox.shrink()),
-            topSliverWidget: probe,
+          home: _withRouter(
+            Timeline(
+              withScrubber: false,
+              readOnly: true,
+              appBar: const SliverToBoxAdapter(child: SizedBox.shrink()),
+              topSliverWidget: probe,
+            ),
           ),
         ),
       ),
@@ -144,7 +171,7 @@ void main() {
 
     TimelineArgs? probed;
     final probe = Consumer(
-      builder: (_, ref, __) {
+      builder: (_, ref, _) {
         probed = ref.watch(timelineArgsProvider);
         return const SizedBox.shrink();
       },
@@ -156,7 +183,7 @@ void main() {
           timelineServiceProvider.overrideWithValue(service),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
-        child: MaterialApp(home: Timeline(withScrubber: false, readOnly: true, loadingWidget: probe)),
+        child: MaterialApp(home: _withRouter(Timeline(withScrubber: false, readOnly: true, loadingWidget: probe))),
       ),
     );
     await tester.pump();

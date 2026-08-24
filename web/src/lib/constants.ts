@@ -67,6 +67,7 @@ export enum OpenQueryParam {
   STORAGE_TEMPLATE = 'storage-template',
   NOTIFICATIONS = 'notifications',
   PURCHASE_SETTINGS = 'user-purchase-settings',
+  SHARING = 'sharing',
 }
 
 export const maximumLengthSearchPeople = 100;
@@ -256,6 +257,7 @@ export enum SettingInputFieldType {
   NUMBER = 'number',
   PASSWORD = 'password',
   COLOR = 'color',
+  NAME = 'name',
 }
 
 export const AlbumPageViewMode = {

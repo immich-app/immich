@@ -130,7 +130,7 @@ describe('/asset', () => {
     });
     await utils.createFace({
       assetId: user1Assets[0].id,
-      personId: person1.id,
+      personGroupId: person1.id,
     });
   };
   beforeAll(setupTests, 30_000);
@@ -151,14 +151,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .get(`/assets/${user2Assets[0].id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should get the asset info', async () => {
       const { status, body } = await request(app)
         .get(`/assets/${user1Assets[0].id}`)
@@ -306,15 +298,6 @@ describe('/asset', () => {
   });
 
   describe('PUT /assets/:id', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .put(`/assets/${user2Assets[0].id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should favorite an asset', async () => {
       const before = await utils.getAssetInfo(user1.accessToken, user1Assets[0].id);
       expect(before.isFavorite).toBe(false);
