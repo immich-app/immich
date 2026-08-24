@@ -142,13 +142,13 @@ void main() {
 
   group('watch', () {
     test('watchAppConfig emits the new value after a write', () async {
-      final expectation = expectLater(sut.watchConfig().map((c) => c.theme.mode), emitsThrough(ThemeMode.dark));
+      final expectation = expectLater(sut.watch().map((c) => c.theme.mode), emitsThrough(ThemeMode.dark));
       await sut.write(SettingsKey.themeMode, ThemeMode.dark);
       await expectation;
     });
 
     test('watchConfig emits the new value after a write', () async {
-      final expectation = expectLater(sut.watchConfig().map((c) => c.logLevel), emitsThrough(LogLevel.warning));
+      final expectation = expectLater(sut.watch().map((c) => c.logLevel), emitsThrough(LogLevel.warning));
       await sut.write(SettingsKey.logLevel, LogLevel.warning);
       await expectation;
     });
