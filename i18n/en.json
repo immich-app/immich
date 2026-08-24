@@ -2165,7 +2165,7 @@
   "timeline_filter_all": "Whole library",
   "timeline_filter_local": "Local library",
   "timeline_filter_remote": "Cloud library",
-  "timeline_filter_title": "Filter your timeline",
+  "timeline_filter_tooltip": "Filter your timeline",
   "timezone": "Timezone",
   "to_archive": "Archive",
   "to_change_password": "Change password",

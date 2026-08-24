@@ -78,7 +78,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         return IconButton(
           onPressed: () => controller.isOpen ? controller.close() : controller.open(),
           icon: const Icon(Icons.filter_list_rounded),
-          tooltip: 'timeline_filter_title'.tr(),
+          tooltip: 'timeline_filter_tooltip'.tr(),
         );
       },
       menuChildren: [
