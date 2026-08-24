@@ -184,10 +184,17 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   }
 
   Future<List<BaseAsset>> _getLocalAssets({required int offset, required int count}) {
+    final currentUserId = subqueryExpression<String>(
+      _db.authUserEntity.selectOnly()..addColumns([_db.authUserEntity.id]),
+    );
+
     final remoteId = subqueryExpression<String>(
       _db.remoteAssetEntity.selectOnly()
         ..addColumns([_db.remoteAssetEntity.id])
-        ..where(_db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum))
+        ..where(
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+              _db.remoteAssetEntity.ownerId.equalsExp(currentUserId),
+        )
         ..limit(1),
     );
 
