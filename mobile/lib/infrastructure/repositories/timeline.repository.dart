@@ -191,7 +191,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
         ..limit(1),
     );
 
-    final query = _db.localAssetEntity.select().addColumns([remoteId]).join([])
+    final query = _db.localAssetEntity.select().addColumns([remoteId])
       ..where(_localLibraryFilter(_db.localAssetEntity))
       ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
       ..limit(count, offset: offset);
