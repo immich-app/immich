@@ -29,9 +29,9 @@ describe('decodeSearchCursor', () => {
     ['JSON without an offset', encode({})],
     ['JSON with a non-object payload', encode(42)],
     ['null payload', encode(null)],
-    ['negative offset', encode({ o: -1 })],
-    ['fractional offset', encode({ o: 1.5 })],
-    ['string offset', encode({ o: '5' })],
+    ['negative offset', encode({ offset: -1 })],
+    ['fractional offset', encode({ offset: 1.5 })],
+    ['string offset', encode({ offset: '5' })],
   ])('should reject %s', (_, cursor) => {
     expect(() => decodeSearchCursor(cursor)).toThrowError(new BadRequestException('Invalid cursor'));
   });
