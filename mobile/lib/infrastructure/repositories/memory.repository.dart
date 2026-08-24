@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/memory.repository.drift.dart';
 
 @DriftAccessor()

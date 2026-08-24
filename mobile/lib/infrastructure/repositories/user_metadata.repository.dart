@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
-import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 @DriftAccessor()
 class UserMetadataRepository extends DatabaseAccessor<Drift> {

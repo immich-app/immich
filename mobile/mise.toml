@@ -35,7 +35,7 @@ sources = [
   "pubspec.yaml",
   "build.yaml",
   "lib/**/*.dart",
-  "infrastructure/**/*.drift",
+  "lib/**/*.drift",
 ]
 outputs = { auto = true }
 run = [
@@ -52,11 +52,9 @@ sources = [
   "build.yaml",
   "pubspec.yaml",
   "drift_schemas/main/*.json",
-  "lib/infrastructure/entities/*.entity.dart",
-  "lib/infrastructure/entities/*.drift",
-  "lib/infrastructure/repositories/*.repository.dart",
+  "lib/data/db/**/*.dart",
 ]
-outputs = ["lib/infrastructure/repositories/db.repository.steps.dart"]
+outputs = ["lib/data/db/main/database.steps.dart"]
 run = "dart run drift_dev make-migrations"
 depends = ["//:open-api-dart"]
 
