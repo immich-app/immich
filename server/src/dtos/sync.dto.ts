@@ -227,6 +227,7 @@ const SyncAlbumV1Schema = z
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
     isActivityEnabled: z.boolean().describe('Is activity enabled'),
+    isPinned: z.boolean().describe('Is album pinned'),
     order: AssetOrderSchema,
   })
   .meta({ id: 'SyncAlbumV1' });
@@ -240,6 +241,7 @@ const SyncAlbumV2Schema = z
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
     isActivityEnabled: z.boolean().describe('Is activity enabled'),
+    isPinned: z.boolean().describe('Is album pinned'),
     order: AssetOrderSchema,
   })
   .meta({ id: 'SyncAlbumV2' });

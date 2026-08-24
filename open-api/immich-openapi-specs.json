@@ -18948,6 +18948,10 @@
             "description": "Activity feed enabled",
             "type": "boolean"
           },
+          "isPinned": {
+            "description": "Is album pinned",
+            "type": "boolean"
+          },
           "lastModifiedAssetTimestamp": {
             "description": "Last modified asset timestamp",
             "format": "date-time",
@@ -18981,6 +18985,7 @@
           "hasSharedLink",
           "id",
           "isActivityEnabled",
+          "isPinned",
           "shared",
           "updatedAt"
         ],
@@ -26374,6 +26379,10 @@
             "description": "Is activity enabled",
             "type": "boolean"
           },
+          "isPinned": {
+            "description": "Is album pinned",
+            "type": "boolean"
+          },
           "name": {
             "description": "Album name",
             "type": "string"
@@ -26405,6 +26414,7 @@
           "description",
           "id",
           "isActivityEnabled",
+          "isPinned",
           "name",
           "order",
           "ownerId",
@@ -26436,6 +26446,10 @@
             "description": "Is activity enabled",
             "type": "boolean"
           },
+          "isPinned": {
+            "description": "Is album pinned",
+            "type": "boolean"
+          },
           "name": {
             "description": "Album name",
             "type": "string"
@@ -26461,6 +26475,7 @@
           "description",
           "id",
           "isActivityEnabled",
+          "isPinned",
           "name",
           "order",
           "thumbnailAssetId",
@@ -28551,6 +28566,10 @@
           },
           "isActivityEnabled": {
             "description": "Enable activity feed",
+            "type": "boolean"
+          },
+          "isPinned": {
+            "description": "Is album pinned",
             "type": "boolean"
           },
           "order": {

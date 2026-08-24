@@ -184,6 +184,7 @@ class AlbumSync extends BaseSync {
         'album.updatedAt',
         'album.albumThumbnailAssetId as thumbnailAssetId',
         'album.isActivityEnabled',
+        'album.isPinned',
         'album.order',
         'album.updateId',
       ])

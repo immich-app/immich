@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
+import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../service.mocks.dart';
+import '../factories/remote_album_factory.dart';
 import '../mocks.dart';
 
 void main() {
@@ -42,6 +44,31 @@ void main() {
         expect(persisted, isNot(contains('asset-2')));
 
         expect(count, removed.length);
+      });
+    });
+
+    group('sortAlbums', () {
+      test('pinned albums float to the top regardless of sort mode', () async {
+        final pinnedOld = RemoteAlbumFactory.create(name: 'Pinned Old', isPinned: true, createdAt: DateTime(2020));
+        final pinnedNew = RemoteAlbumFactory.create(name: 'Pinned New', isPinned: true, createdAt: DateTime(2024));
+        final regular = RemoteAlbumFactory.create(name: 'Regular', isPinned: false, createdAt: DateTime(2022));
+
+        final sorted = await sut.sortAlbums([regular, pinnedOld, pinnedNew], AlbumSortMode.created);
+
+        // created sorts newest-first, so pinned albums come first in that order
+        expect(sorted.take(2).map((a) => a.name), ['Pinned New', 'Pinned Old']);
+        expect(sorted.last.name, 'Regular');
+      });
+
+      test('non-pinned albums keep their normal sorted order below pinned ones', () async {
+        final pinned = RemoteAlbumFactory.create(name: 'Pinned', isPinned: true, createdAt: DateTime(2021));
+        final older = RemoteAlbumFactory.create(name: 'Older', isPinned: false, createdAt: DateTime(2020));
+        final newer = RemoteAlbumFactory.create(name: 'Newer', isPinned: false, createdAt: DateTime(2023));
+
+        final sorted = await sut.sortAlbums([older, pinned, newer], AlbumSortMode.created);
+
+        expect(sorted.first.name, 'Pinned');
+        expect(sorted.skip(1).map((a) => a.name), ['Newer', 'Older']);
       });
     });
   });
