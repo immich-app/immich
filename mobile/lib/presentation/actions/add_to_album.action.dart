@@ -81,21 +81,24 @@ Future<void> addAssetsToAlbum(BuildContext context, WidgetRef ref, ActionSource 
 
   int linkFailed = 0;
   if (candidates.localAssetsToUpload.isNotEmpty && context.mounted) {
-    final uploadResult = await uploadAssets(
-      context,
-      ref,
-      candidates.localAssetsToUpload,
-      onAssetUploaded: (asset, remoteId) => albumNotifier.linkUploadedAssetToAlbum(album.id, asset, remoteId),
-    );
-    added += uploadResult.uploaded;
-    linkFailed = uploadResult.callbackFailed;
-  }
-
-  if (added > 0) {
-    ref.invalidate(albumsContainingAssetProvider);
+    try {
+      final uploadResult = await uploadAssets(
+        context,
+        ref,
+        candidates.localAssetsToUpload,
+        onAssetUploaded: (asset, remoteId) => albumNotifier.linkUploadedAssetToAlbum(album.id, asset, remoteId),
+      );
+      added += uploadResult.uploaded;
+      linkFailed = uploadResult.callbackFailed;
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: 'Failed to upload assets for album ${album.id}');
+    }
   }
 
   if (context.mounted) {
+    if (added > 0) {
+      ref.invalidate(albumsContainingAssetProvider);
+    }
     await _showResultToast(context, ref, album, added, linkFailed, failureReasons);
   }
 }

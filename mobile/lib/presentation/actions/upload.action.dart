@@ -79,8 +79,10 @@ Future<({int uploaded, int callbackFailed})> uploadAssets(
   final toastService = ref.read(toastServiceProvider);
   final errorMessage = context.t.scaffold_body_error_occurred;
 
+  final cancelTokenNotifier = ref.read(manualUploadCancelTokenProvider.notifier);
+
   final cancelToken = Completer<void>();
-  ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+  cancelTokenNotifier.state = cancelToken;
 
   final assetById = {for (final asset in assets) asset.id: asset};
   final postUploadTasks = <Future<void>>[];
@@ -119,7 +121,7 @@ Future<({int uploaded, int callbackFailed})> uploadAssets(
     );
     await Future.wait(postUploadTasks);
   } finally {
-    ref.read(manualUploadCancelTokenProvider.notifier).state = null;
+    cancelTokenNotifier.state = null;
   }
 
   if (!cancelToken.isCompleted && (uploaded.length != assets.length || failed.isNotEmpty)) {
