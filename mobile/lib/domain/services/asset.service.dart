@@ -180,17 +180,17 @@ class AssetService {
     }
   }
 
-  Future<int> deleteLocal(List<String> localIds) async {
+  Future<int> deleteLocal(List<String> localIds, {bool trash = true}) async {
     if (localIds.isEmpty) {
       return 0;
     }
 
-    final deletedIds = await _mediaRepository.deleteAll(localIds);
+    final deletedIds = await _mediaRepository.deleteAll(localIds, trash: trash);
     if (deletedIds.isEmpty) {
       return 0;
     }
 
-    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+    if (trash && CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
       await _trashedLocalRepository.applyTrashedAssets(deletedIds);
     } else {
       await _localRepository.deleteAssets(deletedIds);

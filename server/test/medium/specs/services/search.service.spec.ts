@@ -69,11 +69,11 @@ describe(SearchService.name, () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
       const { person } = await ctx.newPerson({ ownerId: user.id });
-      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      const result = await sut.searchStatistics(auth, { personIds: [person.id] });
+      const result = await sut.searchStatistics(auth, { personIds: [person.personGroupId] });
 
       expect(result).toEqual({ total: 1 });
     });
@@ -85,7 +85,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      const result = await sut.searchStatistics(auth, { personIds: [person.id] });
+      const result = await sut.searchStatistics(auth, { personIds: [person.personGroupId] });
 
       expect(result).toEqual({ total: 0 });
     });

@@ -413,127 +413,136 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
           ref.read(multiSelectProvider.notifier).reset();
         }
       },
-      child: PrimaryScrollController(
-        controller: _scrollController,
-        child: Scaffold(
-          // This removes the built in Scaffold `handleStatusBarTap` implementation, preventing duplicate
-          // events when we provide our own
-          primary: false,
-          resizeToAvoidBottomInset: false,
-          floatingActionButton: const DownloadStatusFloatingButton(),
-          body: asyncSegments.widgetWhen(
-            onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
-            onData: (segments) {
-              final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
-              final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
-                  ? 200
-                  : 0;
-              final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
+      child: BackButtonListener(
+        onBackButtonPressed: () async {
+          if (!isMultiSelectEnabled) {
+            return false;
+          }
+          ref.read(multiSelectProvider.notifier).reset();
+          return true;
+        },
+        child: PrimaryScrollController(
+          controller: _scrollController,
+          child: Scaffold(
+            // This removes the built in Scaffold `handleStatusBarTap` implementation, preventing duplicate
+            // events when we provide our own
+            primary: false,
+            resizeToAvoidBottomInset: false,
+            floatingActionButton: const DownloadStatusFloatingButton(),
+            body: asyncSegments.widgetWhen(
+              onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
+              onData: (segments) {
+                final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
+                final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
+                    ? 200
+                    : 0;
+                final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
-              const bottomSheetOpenModifier = 120.0;
-              final contentBottomPadding =
-                  context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
-              final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
+                const bottomSheetOpenModifier = 120.0;
+                final contentBottomPadding =
+                    context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
+                final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
 
-              final grid = CustomScrollView(
-                primary: true,
-                physics: _scrollPhysics,
-                scrollCacheExtent: .pixels(maxHeight * 2),
-                slivers: [
-                  if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
-                  if (widget.topSliverWidget != null) widget.topSliverWidget!,
-                  _SliverSegmentedList(
-                    segments: segments,
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, index) {
-                        if (index >= childCount) {
-                          return null;
-                        }
-                        final segment = segments.findByIndex(index);
-                        return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+                final grid = CustomScrollView(
+                  primary: true,
+                  physics: _scrollPhysics,
+                  scrollCacheExtent: .pixels(maxHeight * 2),
+                  slivers: [
+                    if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
+                    if (widget.topSliverWidget != null) widget.topSliverWidget!,
+                    _SliverSegmentedList(
+                      segments: segments,
+                      delegate: SliverChildBuilderDelegate(
+                        (ctx, index) {
+                          if (index >= childCount) {
+                            return null;
+                          }
+                          final segment = segments.findByIndex(index);
+                          return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+                        },
+                        childCount: childCount,
+                        addAutomaticKeepAlives: false,
+                        // We add repaint boundary around tiles, so skip the auto boundaries
+                        addRepaintBoundaries: false,
+                      ),
+                    ),
+                    if (widget.bottomSliverWidget != null) widget.bottomSliverWidget!,
+                    SliverPadding(padding: EdgeInsets.only(bottom: contentBottomPadding)),
+                  ],
+                );
+
+                final Widget timeline;
+                if (widget.withScrubber) {
+                  timeline = Scrubber(
+                    snapToMonth: widget.snapToMonth,
+                    layoutSegments: segments,
+                    timelineHeight: maxHeight,
+                    topPadding: topPadding,
+                    bottomPadding: scrubberBottomPadding,
+                    monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+                    hasAppBar: widget.appBar != null,
+                    child: grid,
+                  );
+                } else {
+                  timeline = grid;
+                }
+
+                return RawGestureDetector(
+                  gestures: {
+                    CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
+                      () => CustomScaleGestureRecognizer(),
+                      (CustomScaleGestureRecognizer scale) {
+                        scale.onStart = (details) {
+                          _baseScaleFactor = _scaleFactor;
+                        };
+
+                        scale.onUpdate = (details) {
+                          final newScaleFactor = math.max(math.min(5.0, _baseScaleFactor * details.scale), 1.0);
+                          final newPerRow = 7 - newScaleFactor.toInt();
+
+                          if (newPerRow != _perRow) {
+                            final targetAssetIndex = _getCurrentAssetIndex(segments);
+                            setState(() {
+                              _scaleFactor = newScaleFactor;
+                              _perRow = newPerRow;
+                              _restoreAssetIndex = targetAssetIndex;
+                            });
+
+                            unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow));
+                          }
+                        };
                       },
-                      childCount: childCount,
-                      addAutomaticKeepAlives: false,
-                      // We add repaint boundary around tiles, so skip the auto boundaries
-                      addRepaintBoundaries: false,
+                    ),
+                  },
+                  child: TimelineDragRegion(
+                    onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
+                    onAssetEnter: _handleDragAssetEnter,
+                    onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
+                    onScroll: (direction) => unawaited(_dragScroll(direction)),
+                    onScrollStart: () {
+                      // Minimize the bottom sheet when drag selection starts
+                      ref.read(timelineStateProvider.notifier).setScrolling(true);
+                    },
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        timeline,
+                        if (isBottomWidgetVisible)
+                          Positioned(
+                            top: MediaQuery.paddingOf(context).top,
+                            left: 25,
+                            child: const SizedBox(
+                              height: kToolbarHeight,
+                              child: Center(child: _MultiSelectStatusButton()),
+                            ),
+                          ),
+                        if (isBottomWidgetVisible) widget.bottomSheet!,
+                      ],
                     ),
                   ),
-                  if (widget.bottomSliverWidget != null) widget.bottomSliverWidget!,
-                  SliverPadding(padding: EdgeInsets.only(bottom: contentBottomPadding)),
-                ],
-              );
-
-              final Widget timeline;
-              if (widget.withScrubber) {
-                timeline = Scrubber(
-                  snapToMonth: widget.snapToMonth,
-                  layoutSegments: segments,
-                  timelineHeight: maxHeight,
-                  topPadding: topPadding,
-                  bottomPadding: scrubberBottomPadding,
-                  monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
-                  hasAppBar: widget.appBar != null,
-                  child: grid,
                 );
-              } else {
-                timeline = grid;
-              }
-
-              return RawGestureDetector(
-                gestures: {
-                  CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
-                    () => CustomScaleGestureRecognizer(),
-                    (CustomScaleGestureRecognizer scale) {
-                      scale.onStart = (details) {
-                        _baseScaleFactor = _scaleFactor;
-                      };
-
-                      scale.onUpdate = (details) {
-                        final newScaleFactor = math.max(math.min(5.0, _baseScaleFactor * details.scale), 1.0);
-                        final newPerRow = 7 - newScaleFactor.toInt();
-
-                        if (newPerRow != _perRow) {
-                          final targetAssetIndex = _getCurrentAssetIndex(segments);
-                          setState(() {
-                            _scaleFactor = newScaleFactor;
-                            _perRow = newPerRow;
-                            _restoreAssetIndex = targetAssetIndex;
-                          });
-
-                          unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow));
-                        }
-                      };
-                    },
-                  ),
-                },
-                child: TimelineDragRegion(
-                  onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
-                  onAssetEnter: _handleDragAssetEnter,
-                  onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
-                  onScroll: (direction) => unawaited(_dragScroll(direction)),
-                  onScrollStart: () {
-                    // Minimize the bottom sheet when drag selection starts
-                    ref.read(timelineStateProvider.notifier).setScrolling(true);
-                  },
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      timeline,
-                      if (isBottomWidgetVisible)
-                        Positioned(
-                          top: MediaQuery.paddingOf(context).top,
-                          left: 25,
-                          child: const SizedBox(
-                            height: kToolbarHeight,
-                            child: Center(child: _MultiSelectStatusButton()),
-                          ),
-                        ),
-                      if (isBottomWidgetVisible) widget.bottomSheet!,
-                    ],
-                  ),
-                ),
-              );
-            },
+              },
+            ),
           ),
         ),
       ),

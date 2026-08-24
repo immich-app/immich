@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -13,6 +14,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+
+part 'scrubber.widget.freezed.dart';
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
 /// for quick navigation of the BoxScrollView.
@@ -596,25 +599,12 @@ class _SlideFadeTransition extends StatelessWidget {
   }
 }
 
-class _Segment {
-  final DateTime date;
-  final double startOffset;
-  final String scrollLabel;
-  final bool showSegment;
-
-  const _Segment({required this.date, required this.startOffset, required this.scrollLabel, this.showSegment = false});
-
-  _Segment copyWith({DateTime? date, double? startOffset, String? scrollLabel, bool? showSegment}) {
-    return _Segment(
-      date: date ?? this.date,
-      startOffset: startOffset ?? this.startOffset,
-      scrollLabel: scrollLabel ?? this.scrollLabel,
-      showSegment: showSegment ?? this.showSegment,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'Segment(scrollLabel: $scrollLabel, date: $date)';
-  }
+@freezed
+abstract class _Segment with _$Segment {
+  const factory _Segment({
+    required DateTime date,
+    required double startOffset,
+    required String scrollLabel,
+    @Default(false) bool showSegment,
+  }) = __Segment;
 }

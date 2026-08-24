@@ -120,6 +120,7 @@ export class ServerService extends BaseService {
       trashDays: config.trash.days,
       userDeleteDelay: config.user.deleteDelay,
       oauthButtonText: config.oauth.buttonText,
+      oauthAccountManagementUrl: config.oauth.accountManagementUrl,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,

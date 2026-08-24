@@ -3,18 +3,53 @@
 -- PersonRepository.reassignFaces
 update "asset_face"
 set
-  "personId" = $1
+  "personGroupId" = $1
 where
-  "asset_face"."personId" = $2
+  "asset_face"."personGroupId" = $2
 
 -- PersonRepository.delete
 delete from "person"
 where
-  "person"."id" in ($1)
+  "ownerId" = $1
+  and "person"."personGroupId" in ($2)
+returning
+  "personGroupId",
+  "ownerId",
+  "thumbnailPath"
+
+-- PersonRepository.deleteGroups
+delete from "person_group"
+where
+  "person_group"."id" in ($1)
+
+-- PersonRepository.deleteEmptyGroups
+delete from "person_group"
+where
+  not exists (
+    select
+      "person"."personGroupId"
+    from
+      "person"
+    where
+      "person"."personGroupId" = "person_group"."id"
+  )
+
+-- PersonRepository.deleteOrphanedClusterGroups
+delete from "cluster_group"
+where
+  not exists (
+    select
+      "user"."id"
+    from
+      "user"
+    where
+      "user"."clusterGroupId" = "cluster_group"."id"
+  )
 
 -- PersonRepository.getFileSamples
 select
-  "id",
+  "ownerId",
+  "personGroupId",
   "thumbnailPath"
 from
   "person"
@@ -28,8 +63,9 @@ select
   "person".*
 from
   "person"
-  inner join "asset_face" on "asset_face"."personId" = "person"."id"
+  inner join "asset_face" on "asset_face"."personGroupId" = "person"."personGroupId"
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
+  and "asset"."ownerId" = "person"."ownerId"
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
 where
@@ -38,7 +74,8 @@ where
   and "asset_face"."isVisible" is true
   and "person"."isHidden" = $2
 group by
-  "person"."id"
+  "person"."ownerId",
+  "person"."personGroupId"
 having
   (
     "person"."name" != $3
@@ -72,12 +109,13 @@ select
   "person".*
 from
   "person"
-  left join "asset_face" on "asset_face"."personId" = "person"."id"
+  left join "asset_face" on "asset_face"."personGroupId" = "person"."personGroupId"
 where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 group by
-  "person"."id"
+  "person"."ownerId",
+  "person"."personGroupId"
 having
   count("asset_face"."assetId") = $1
 
@@ -94,15 +132,16 @@ select
         from
           "person"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."assetId" = $1
+  "asset_face"."assetId" = $2
   and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" = $2
+  and "asset_face"."isVisible" = $3
 order by
   "asset_face"."boundingBoxX1" asc
 
@@ -119,19 +158,20 @@ select
         from
           "person"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."id" = $1
+  "asset_face"."id" = $2
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getFaceForFacialRecognitionJob
 select
   "asset_face"."id",
-  "asset_face"."personId",
+  "asset_face"."personGroupId",
   "asset_face"."sourceType",
   (
     select
@@ -141,9 +181,11 @@ select
         select
           "asset"."ownerId",
           "asset"."visibility",
-          "asset"."fileCreatedAt"
+          "asset"."fileCreatedAt",
+          "user"."clusterGroupId"
         from
           "asset"
+          inner join "user" on "user"."id" = "asset"."ownerId"
         where
           "asset"."id" = "asset_face"."assetId"
       ) as obj
@@ -195,15 +237,25 @@ from
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
-  "person"."id" = $1
+  "person"."ownerId" = $1
+  and "person"."personGroupId" = $2
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.reassignFace
 update "asset_face"
 set
-  "personId" = $1
+  "personGroupId" = $1
 where
   "asset_face"."id" = $2
+
+-- PersonRepository.getByGroupId
+select
+  "person".*
+from
+  "person"
+where
+  "person"."personGroupId" = $1
+  and "person"."ownerId" = $2
 
 -- PersonRepository.getByName
 with
@@ -226,7 +278,7 @@ limit
 
 -- PersonRepository.getDistinctNames
 select distinct
-  on (lower("person"."name")) "person"."id",
+  on (lower("person"."name")) "person"."personGroupId",
   "person"."name"
 from
   "person"
@@ -244,10 +296,25 @@ from
   left join "asset" on "asset"."id" = "asset_face"."assetId"
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
+  and (
+    "asset"."ownerId" = $1::uuid
+    or exists (
+      select
+        1 as "exists"
+      from
+        "album_asset"
+        inner join "album" on "album"."id" = "album_asset"."albumId"
+        and "album"."deletedAt" is null
+        inner join "album_user" on "album_user"."albumId" = "album"."id"
+        and "album_user"."userId" = $2::uuid
+      where
+        "album_asset"."assetId" = "asset"."id"
+    )
+  )
 where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
-  and "asset_face"."personId" = $1
+  and "asset_face"."personGroupId" = $3
 
 -- PersonRepository.getNumberOfPeople
 select
@@ -267,7 +334,7 @@ where
     from
       "asset_face"
     where
-      "asset_face"."personId" = "person"."id"
+      "asset_face"."personGroupId" = "person"."personGroupId"
       and "asset_face"."deletedAt" is null
       and "asset_face"."isVisible" = $2
       and exists (
@@ -281,6 +348,164 @@ where
       )
   )
   and "person"."ownerId" = $3
+
+-- PersonRepository.createGroup
+insert into
+  "person_group" ("clusterGroupId")
+select
+  "user"."clusterGroupId"
+from
+  "user"
+where
+  "user"."id" = $1
+returning
+  *
+
+-- PersonRepository.reassignCluster
+begin
+update "person_group"
+set
+  "clusterGroupId" = $1
+where
+  "person_group"."id" in (
+    select
+      "person"."personGroupId"
+    from
+      "person"
+    where
+      "person"."ownerId" = $2
+  )
+  and not exists (
+    select
+      "person"."personGroupId"
+    from
+      "person"
+    where
+      "person"."personGroupId" = "person_group"."id"
+      and "person"."ownerId" != $3
+  )
+with
+  "shared" as (
+    select distinct
+      "person"."personGroupId" as "oldId"
+    from
+      "person"
+    where
+      "person"."ownerId" = $1
+      and exists (
+        select
+          "other"."personGroupId"
+        from
+          "person" as "other"
+        where
+          "other"."personGroupId" = "person"."personGroupId"
+          and "other"."ownerId" != $2
+      )
+  ),
+  "mapping" as materialized (
+    select
+      "shared"."oldId",
+      uuid_generate_v4 () as "newId"
+    from
+      "shared"
+  ),
+  "created" as (
+    insert into
+      "person_group" ("id", "clusterGroupId")
+    select
+      "mapping"."newId",
+      $3 as "clusterGroupId"
+    from
+      "mapping"
+  )
+select
+  "mapping"."oldId",
+  "mapping"."newId"
+from
+  "mapping"
+commit
+
+-- PersonRepository.createGroups
+insert into
+  "person_group" (
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35"
+  )
+values
+  (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13,
+    $14,
+    $15,
+    $16,
+    $17,
+    $18,
+    $19,
+    $20,
+    $21,
+    $22,
+    $23,
+    $24,
+    $25,
+    $26,
+    $27,
+    $28,
+    $29,
+    $30,
+    $31,
+    $32,
+    $33,
+    $34,
+    $35,
+    $36
+  )
+returning
+  *
 
 -- PersonRepository.refreshFaces
 with
@@ -310,14 +535,15 @@ select
         from
           "person"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."assetId" in ($1)
-  and "asset_face"."personId" in ($2)
+  "asset_face"."assetId" in ($2)
+  and "asset_face"."personGroupId" in ($3)
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getRandomFace
@@ -326,7 +552,7 @@ select
 from
   "asset_face"
 where
-  "asset_face"."personId" = $1
+  "asset_face"."personGroupId" = $1
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 
@@ -348,15 +574,6 @@ set
 where
   "asset_face"."id" = $2
 
--- PersonRepository.getForPeopleDelete
-select
-  "id",
-  "thumbnailPath"
-from
-  "person"
-where
-  "id" in ($1)
-
 -- PersonRepository.getForFeatureFaceUpdate
 select
   "asset_face"."id"
@@ -366,4 +583,14 @@ from
   and "asset"."isOffline" = $1
 where
   "asset_face"."assetId" = $2
-  and "asset_face"."personId" = $3
+  and "asset_face"."personGroupId" = $3
+
+-- PersonRepository.getForMergePerson
+select
+  "person".*
+from
+  "person"
+where
+  "person"."personGroupId" in ($1)
+order by
+  "person"."ownerId"

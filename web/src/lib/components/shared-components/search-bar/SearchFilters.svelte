@@ -62,6 +62,7 @@
   let searchHistory = $state<SearchHistorySection>();
 
   let activeFilter = $state('type');
+  let showAdvanced = $state(false);
   let peoplePromise = $state<Promise<PersonResponseDto[]>>();
   let people = $state<PersonResponseDto[]>();
   let tagsPromise = $state<Promise<TagResponseDto[]>>();
@@ -187,7 +188,7 @@
 <div role="listbox" {id}>
   {#if isOpen}
     <div
-      transition:fly={{ y: 25, duration: 150 }}
+      transition:fly={{ y: 25, duration: 250 }}
       class="absolute z-1 w-full rounded-b-3xl bg-white shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-all dark:bg-immich-dark-gray dark:text-gray-300"
     >
       <SearchHistorySection
@@ -212,16 +213,7 @@
           {/each}
         </div>
       </div>
-      {#if activeFilter === 'advanced'}
-        <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
-        <div class="px-5">
-          <SearchCameraSection />
-          {#if authManager.authenticated && authManager.preferences.ratings.enabled}
-            <SearchRatingsSection />
-          {/if}
-          <SearchDisplaySection />
-        </div>
-      {:else if activeFilter}
+      {#if activeFilter}
         <div class="px-5 pt-5">
           {#if activeFilter === 'type'}
             <SearchTextSection />
@@ -238,15 +230,31 @@
           {/if}
         </div>
       {/if}
+      <div
+        class="grid transition-[grid-template-rows] duration-200 ease-in-out {showAdvanced
+          ? 'grid-rows-[1fr]'
+          : 'grid-rows-[0fr]'}"
+        inert={!showAdvanced}
+      >
+        <div class="overflow-hidden">
+          <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
+          <div class="px-5">
+            <SearchCameraSection />
+            {#if authManager.authenticated && authManager.preferences.ratings.enabled}
+              <SearchRatingsSection />
+            {/if}
+            <SearchDisplaySection />
+          </div>
+        </div>
+      </div>
       <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
       <div class="flex gap-2 px-5 pb-5">
         <Button
           size="small"
           variant={advancedFiltersSet ? 'outline' : 'ghost'}
           leadingIcon={mdiTune}
-          trailingIcon={activeFilter === 'advanced' ? mdiChevronUp : mdiChevronDown}
-          onclick={() => (activeFilter = activeFilter === 'advanced' ? '' : 'advanced')}
-          >{$t('advanced_filters')}</Button
+          trailingIcon={showAdvanced ? mdiChevronUp : mdiChevronDown}
+          onclick={() => (showAdvanced = !showAdvanced)}>{$t('advanced_filters')}</Button
         >
         <div class="flex-1"></div>
         <Button

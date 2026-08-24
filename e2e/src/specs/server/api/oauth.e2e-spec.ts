@@ -1,7 +1,7 @@
 import { OAuthClient, OAuthUser, generateLogoutToken } from '@immich/e2e-auth-server';
 import {
+  AdminConfigOAuthDto,
   LoginResponseDto,
-  SystemConfigOAuthDto,
   getConfigDefaults,
   getMyUser,
   getSessions,
@@ -70,17 +70,18 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   return { url: redirectUrl, state, codeVerifier };
 };
 
-const setupOAuth = async (token: string, dto: Partial<SystemConfigOAuthDto>) => {
+const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
   const options = { headers: asBearerAuth(token) };
   const defaults = await getConfigDefaults(options);
   const merged = {
     ...defaults.oauth,
     buttonText: 'Login with Immich',
     issuerUrl: `${authServer.internal}/.well-known/openid-configuration`,
+    accountManagementUrl: authServer.internal,
     allowInsecureRequests: true,
     ...dto,
   };
-  await updateConfig({ systemConfigDto: { ...defaults, oauth: merged } }, options);
+  await updateConfig({ adminConfigDto: { ...defaults, oauth: merged } }, options);
 };
 
 describe(`/oauth`, () => {

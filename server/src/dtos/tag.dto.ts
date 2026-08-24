@@ -13,8 +13,13 @@ const TagCreateSchema = z
   })
   .meta({ id: 'TagCreateDto' });
 
-const TagUpdateSchema = z
+export const TagUpdateSchema = z
   .object({
+    name: z
+      .string()
+      .regex(/^[^/]*$/, `Tag name cannot contain slash characters ("/")`)
+      .optional()
+      .describe('Tag name'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagUpdateDto' });
