@@ -98,11 +98,11 @@ class DeleteAction extends AssetActionBuilder {
 
   Future<String?> _removeLocalAssets(BuildContext context, WidgetRef ref, List<String> localIds) async {
     final count = await _cleanupLocalAssets(context, ref, localIds);
-    if (count <= 0) {
+    if (count <= 0 || !context.mounted) {
       return null;
     }
 
-    return StaticTranslations.instance.cleanup_deleted_assets(count: count);
+    return context.t.cleanup_deleted_assets(count: count);
   }
 
   Future<String?> _moveToTrash(
@@ -112,11 +112,14 @@ class DeleteAction extends AssetActionBuilder {
     List<String> localIds,
   ) async {
     final assetService = ref.read(assetServiceProvider);
-    final message = context.t.trash_action_prompt(count: remoteIds.length);
     if (localIds.isNotEmpty) {
       await _cleanupLocalAssets(context, ref, localIds);
+      if (!context.mounted) {
+        return null;
+      }
     }
 
+    final message = context.t.trash_action_prompt(count: remoteIds.length);
     await assetService.trash(remoteIds);
     return message;
   }

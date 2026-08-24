@@ -3,21 +3,20 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/providers/asset_upload_coordinator.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_upload.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../service.mocks.dart';
-import '../unit/factories/local_asset_factory.dart';
-import '../unit/factories/remote_asset_factory.dart';
+import '../../service.mocks.dart';
+import '../../unit/factories/local_asset_factory.dart';
+import '../../unit/factories/remote_asset_factory.dart';
 
 class MockViewIntentService extends Mock implements ViewIntentService {}
 
@@ -46,8 +45,11 @@ void main() {
         viewIntentServiceProvider.overrideWithValue(viewIntentService),
       ],
     );
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(ViewIntentPayload(mimeType: 'image/jpeg'));
     addTearDown(container.dispose);
   });
+
+  ViewIntentPayload activeViewIntent() => container.read(activeViewIntentPayloadProvider)!;
 
   test('replaces a device-backed viewer asset after upload when the local database cannot link it', () async {
     final localAsset = LocalAssetFactory.create(id: 'local-outside-backup');
@@ -67,10 +69,10 @@ void main() {
     });
 
     await container
-        .read(assetUploadCoordinatorProvider)
+        .read(viewIntentUploadProvider)
         .upload(
-          source: ActionSource.viewer,
-          assets: [localAsset],
+          activeViewIntent: activeViewIntent(),
+          asset: localAsset,
           cancelToken: Completer<void>(),
           callbacks: const UploadCallbacks(),
         );
@@ -105,10 +107,10 @@ void main() {
     });
 
     final upload = container
-        .read(assetUploadCoordinatorProvider)
+        .read(viewIntentUploadProvider)
         .upload(
-          source: ActionSource.viewer,
-          assets: [localAsset],
+          activeViewIntent: activeViewIntent(),
+          asset: localAsset,
           cancelToken: Completer<void>(),
           callbacks: const UploadCallbacks(),
         );
@@ -151,10 +153,10 @@ void main() {
     });
 
     await container
-        .read(assetUploadCoordinatorProvider)
+        .read(viewIntentUploadProvider)
         .upload(
-          source: ActionSource.viewer,
-          assets: [localAsset],
+          activeViewIntent: activeViewIntent(),
+          asset: localAsset,
           cancelToken: Completer<void>(),
           callbacks: UploadCallbacks(
             onProgress: (id, _, bytes, total) => progress.add((id, bytes, total)),
@@ -214,10 +216,10 @@ void main() {
     });
 
     await container
-        .read(assetUploadCoordinatorProvider)
+        .read(viewIntentUploadProvider)
         .upload(
-          source: ActionSource.viewer,
-          assets: [localAsset],
+          activeViewIntent: activeViewIntent(),
+          asset: localAsset,
           cancelToken: cancelToken,
           callbacks: const UploadCallbacks(),
         );
@@ -252,10 +254,10 @@ void main() {
     });
 
     await container
-        .read(assetUploadCoordinatorProvider)
+        .read(viewIntentUploadProvider)
         .upload(
-          source: ActionSource.viewer,
-          assets: [localAsset],
+          activeViewIntent: activeViewIntent(),
+          asset: localAsset,
           cancelToken: Completer<void>(),
           callbacks: UploadCallbacks(onError: (id, error) => errors.add((id, error))),
         );
@@ -295,10 +297,10 @@ void main() {
     });
 
     final upload = container
-        .read(assetUploadCoordinatorProvider)
+        .read(viewIntentUploadProvider)
         .upload(
-          source: ActionSource.viewer,
-          assets: [oldAsset],
+          activeViewIntent: activeViewIntent(),
+          asset: oldAsset,
           cancelToken: Completer<void>(),
           callbacks: const UploadCallbacks(),
         );
@@ -345,10 +347,10 @@ void main() {
     });
 
     final upload = container
-        .read(assetUploadCoordinatorProvider)
+        .read(viewIntentUploadProvider)
         .upload(
-          source: ActionSource.viewer,
-          assets: [localAsset],
+          activeViewIntent: activeViewIntent(),
+          asset: localAsset,
           cancelToken: Completer<void>(),
           callbacks: const UploadCallbacks(),
         );

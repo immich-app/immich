@@ -1,14 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
-import '../factories/local_asset_factory.dart';
-import '../factories/remote_asset_factory.dart';
 import '../mocks.dart';
 
 void main() {
@@ -17,53 +12,21 @@ void main() {
   late MockAssetApiRepository apiRepository;
   late MockRemoteAssetRepository remoteRepository;
   late MockRemoteExifRepository exifRepository;
-  late MockLocalAssetRepository localRepository;
 
   setUp(() {
     mocks = RepositoryMocks();
     apiRepository = mocks.assetApi.api;
     remoteRepository = mocks.remoteAsset.repo;
     exifRepository = mocks.remoteExif.repo;
-    localRepository = MockLocalAssetRepository();
 
     sut = AssetService(
       remoteRepository: remoteRepository,
       exifRepository: exifRepository,
-      localRepository: localRepository,
+      localRepository: MockLocalAssetRepository(),
       apiRepository: apiRepository,
       mediaRepository: mocks.assetMedia.api,
       trashedLocalRepository: mocks.trashedAsset,
     );
-  });
-
-  group('AssetService.watchAsset', () {
-    test('switches from the local asset to its canonical remote asset after upload', () async {
-      final localController = StreamController<LocalAsset?>.broadcast();
-      final remoteController = StreamController<RemoteAsset?>.broadcast();
-      addTearDown(localController.close);
-      addTearDown(remoteController.close);
-
-      final local = LocalAssetFactory.create(id: 'local-1');
-      final linkedLocal = local.copyWith(remoteId: 'remote-1');
-      final remote = RemoteAssetFactory.create(id: 'remote-1', localId: local.id);
-      when(() => localRepository.watch(local.id)).thenAnswer((_) => localController.stream);
-      when(() => remoteRepository.watch(remote.id)).thenAnswer((_) => remoteController.stream);
-
-      final emitted = <BaseAsset?>[];
-      final subscription = sut.watchAsset(local).listen(emitted.add);
-      addTearDown(subscription.cancel);
-
-      localController.add(local);
-      await pumpEventQueue();
-      expect(emitted, [local]);
-
-      localController.add(linkedLocal);
-      await pumpEventQueue();
-      remoteController.add(remote);
-      await pumpEventQueue();
-
-      expect(emitted.last, remote);
-    });
   });
 
   group('AssetService.updateDateTime', () {

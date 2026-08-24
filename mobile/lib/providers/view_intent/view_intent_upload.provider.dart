@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -13,37 +12,32 @@ import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:logging/logging.dart';
 
-final assetUploadCoordinatorProvider = Provider(AssetUploadCoordinator.new);
+final viewIntentUploadProvider = Provider(ViewIntentUpload.new);
 
-class AssetUploadCoordinator {
-  const AssetUploadCoordinator(this._ref);
+class ViewIntentUpload {
+  const ViewIntentUpload(this._ref);
 
   final Ref _ref;
-  static final Logger _logger = Logger('AssetUploadCoordinator');
+  static final Logger _logger = Logger('ViewIntentUpload');
 
   Future<void> upload({
-    required ActionSource source,
-    required List<LocalAsset> assets,
+    required ViewIntentPayload activeViewIntent,
+    required LocalAsset asset,
     required Completer<void> cancelToken,
     required UploadCallbacks callbacks,
   }) async {
-    final activeViewIntent = source == ActionSource.viewer ? _ref.read(activeViewIntentPayloadProvider) : null;
-    final viewIntentFilePath = source == ActionSource.viewer ? _ref.read(viewIntentFilePathProvider) : null;
+    final viewIntentFilePath = _ref.read(viewIntentFilePathProvider);
     if (viewIntentFilePath == null) {
-      final viewerAsset = source == ActionSource.viewer && assets.length == 1 ? assets.single : null;
       String? uploadedRemoteAssetId;
-      final viewerNotifier = _ref.read(assetViewerProvider.notifier);
       await _ref
           .read(foregroundUploadServiceProvider)
           .uploadManual(
-            assets,
+            [asset],
             cancelToken: cancelToken,
             callbacks: UploadCallbacks(
               onProgress: callbacks.onProgress,
               onSuccess: (localId, remoteId) {
-                if (localId == viewerAsset?.localId) {
-                  uploadedRemoteAssetId = remoteId;
-                }
+                uploadedRemoteAssetId = remoteId;
                 callbacks.onSuccess?.call(localId, remoteId);
               },
               onError: callbacks.onError,
@@ -52,32 +46,22 @@ class AssetUploadCoordinator {
           );
 
       final remoteAssetId = uploadedRemoteAssetId;
-      if (viewerAsset == null || remoteAssetId == null || cancelToken.isCompleted) {
+      if (remoteAssetId == null || cancelToken.isCompleted) {
         return;
       }
 
       final remoteAsset = await _waitForRemoteAsset(remoteAssetId);
-      final latestAsset = _ref.read(assetViewerProvider).currentAsset;
-      final isCurrentViewIntent =
-          activeViewIntent == null || identical(_ref.read(activeViewIntentPayloadProvider), activeViewIntent);
-      if (remoteAsset == null ||
-          latestAsset == null ||
-          !latestAsset.refersToSameAsset(viewerAsset) ||
-          !isCurrentViewIntent) {
+      if (remoteAsset == null || !_isCurrentUpload(asset, activeViewIntent)) {
         return;
       }
 
-      viewerNotifier.setAsset(remoteAsset.copyWith(localId: viewerAsset.id));
+      _ref.read(assetViewerProvider.notifier).setAsset(remoteAsset.copyWith(localId: asset.id));
       return;
-    }
-
-    if (assets.length != 1) {
-      throw StateError('A file-backed viewer upload requires exactly one asset.');
     }
 
     _logger.fine('Using file-backed upload for view intent');
     await _uploadViewIntentFile(
-      asset: assets.single,
+      asset: asset,
       path: viewIntentFilePath,
       activeViewIntent: activeViewIntent,
       cancelToken: cancelToken,
@@ -88,7 +72,7 @@ class AssetUploadCoordinator {
   Future<void> _uploadViewIntentFile({
     required LocalAsset asset,
     required String path,
-    required ViewIntentPayload? activeViewIntent,
+    required ViewIntentPayload activeViewIntent,
     required Completer<void> cancelToken,
     required UploadCallbacks callbacks,
   }) async {
@@ -116,7 +100,7 @@ class AssetUploadCoordinator {
       }
 
       final remoteAsset = await _waitForRemoteAsset(uploadedRemoteAssetId);
-      if (remoteAsset == null || !_isCurrentUpload(asset, path, activeViewIntent)) {
+      if (remoteAsset == null || !_isCurrentUpload(asset, activeViewIntent, path: path)) {
         return;
       }
 
@@ -146,12 +130,12 @@ class AssetUploadCoordinator {
     }
   }
 
-  bool _isCurrentUpload(LocalAsset asset, String path, ViewIntentPayload? activeViewIntent) {
-    if (activeViewIntent != null && !identical(_ref.read(activeViewIntentPayloadProvider), activeViewIntent)) {
+  bool _isCurrentUpload(LocalAsset asset, ViewIntentPayload activeViewIntent, {String? path}) {
+    if (!identical(_ref.read(activeViewIntentPayloadProvider), activeViewIntent)) {
       return false;
     }
 
-    if (_ref.read(viewIntentFilePathProvider) != path) {
+    if (path != null && _ref.read(viewIntentFilePathProvider) != path) {
       return false;
     }
 
