@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/app/store.drift.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 
 import '../../fixtures/user.stub.dart';
@@ -47,11 +47,11 @@ Future<void> _populateStore(Drift db) async {
 
 void main() {
   late Drift db;
-  late DriftStoreRepository sut;
+  late StoreRepository sut;
 
   setUp(() async {
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    sut = DriftStoreRepository(db);
+    sut = StoreRepository(db);
   });
 
   tearDown(() async {
@@ -100,7 +100,7 @@ void main() {
     test('delete()', () async {
       bool? advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
       expect(advancedTroubleshooting, isFalse);
-      await sut.delete(StoreKey.advancedTroubleshooting);
+      await sut.deleteValue(StoreKey.advancedTroubleshooting);
       advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
       expect(advancedTroubleshooting, isNull);
     });

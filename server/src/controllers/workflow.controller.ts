@@ -4,6 +4,8 @@ import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   WorkflowCreateDto,
+  WorkflowGetLogsDto,
+  WorkflowLogEntryDto,
   WorkflowResponseDto,
   WorkflowSearchDto,
   WorkflowShareResponseDto,
@@ -112,5 +114,20 @@ export class WorkflowController {
   })
   deleteWorkflow(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
+  }
+
+  @Get(':id/logs')
+  @Authenticated({ permission: Permission.WorkflowLogs })
+  @Endpoint({
+    summary: 'Retrieve workflow logs',
+    description: 'Retrieve logs of a workflows runs by ID',
+    history: HistoryBuilder.v3(),
+  })
+  getWorkflowLogs(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: WorkflowGetLogsDto,
+  ): Promise<WorkflowLogEntryDto[]> {
+    return this.service.getLogs(auth, id, dto);
   }
 }

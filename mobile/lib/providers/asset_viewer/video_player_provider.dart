@@ -1,26 +1,22 @@
 import 'dart:async';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+part 'video_player_provider.freezed.dart';
+
 enum VideoPlaybackStatus { paused, playing, buffering, completed }
 
-class VideoPlayerState {
-  final Duration position;
-  final Duration duration;
-  final VideoPlaybackStatus status;
-
-  const VideoPlayerState({required this.position, required this.duration, required this.status});
-
-  VideoPlayerState copyWith({Duration? position, Duration? duration, VideoPlaybackStatus? status}) {
-    return VideoPlayerState(
-      position: position ?? this.position,
-      duration: duration ?? this.duration,
-      status: status ?? this.status,
-    );
-  }
+@freezed
+abstract class VideoPlayerState with _$VideoPlayerState {
+  const factory VideoPlayerState({
+    required Duration position,
+    required Duration duration,
+    required VideoPlaybackStatus status,
+  }) = _VideoPlayerState;
 }
 
 const _defaultState = VideoPlayerState(
@@ -50,7 +46,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   void dispose() {
     _bufferingTimer?.cancel();
     _seekTimer?.cancel();
-    WakelockPlus.disable();
+    unawaited(WakelockPlus.disable());
     _controller = null;
 
     super.dispose();
@@ -121,7 +117,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     }
 
     _seekTimer = Timer(const Duration(milliseconds: 150), () {
-      _controller?.seekTo(state.position.inMilliseconds);
+      unawaited(_controller?.seekTo(state.position.inMilliseconds));
     });
   }
 
@@ -130,11 +126,11 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
     switch (state.status) {
       case VideoPlaybackStatus.paused:
-        play();
+        unawaited(play());
       case VideoPlaybackStatus.playing || VideoPlaybackStatus.buffering:
-        pause();
+        unawaited(pause());
       case VideoPlaybackStatus.completed:
-        restart();
+        unawaited(restart());
     }
   }
 
@@ -145,7 +141,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     }
 
     _holdStatus = state.status;
-    pause();
+    unawaited(pause());
   }
 
   /// Restores playback to the status before [hold] was called.
@@ -155,7 +151,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
     switch (status) {
       case VideoPlaybackStatus.playing || VideoPlaybackStatus.buffering:
-        play();
+        unawaited(play());
       default:
     }
   }
@@ -221,7 +217,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
     state = state.copyWith(
       position: position,
-      status: state.status == VideoPlaybackStatus.buffering ? VideoPlaybackStatus.playing : null,
+      status: state.status == VideoPlaybackStatus.buffering ? VideoPlaybackStatus.playing : state.status,
     );
   }
 
@@ -238,7 +234,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     final newStatus = _mapStatus(playbackInfo.status);
     switch (newStatus) {
       case VideoPlaybackStatus.playing:
-        WakelockPlus.enable();
+        unawaited(WakelockPlus.enable());
         _startBufferingTimer();
       default:
         onNativePlaybackEnded();
@@ -250,7 +246,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   }
 
   void onNativePlaybackEnded() {
-    WakelockPlus.disable();
+    unawaited(WakelockPlus.disable());
     _bufferingTimer?.cancel();
   }
 

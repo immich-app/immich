@@ -6,41 +6,38 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
-final syncLinkedAlbumServiceProvider = Provider(
-  (ref) => SyncLinkedAlbumService(
-    ref.watch(localAlbumRepository),
-    ref.watch(remoteAlbumRepository),
+final syncLinkedAlbumServiceProvider = Provider((ref) {
+  final db = ref.watch(driftProvider);
+  return SyncLinkedAlbumService(
+    db.localAlbumRepository,
+    db.remoteAlbumRepository,
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(storeServiceProvider),
-    cancellation: ref.watch(cancellationProvider),
-  ),
-);
+  );
+});
 
 class SyncLinkedAlbumService {
-  final DriftLocalAlbumRepository _localAlbumRepository;
-  final DriftRemoteAlbumRepository _remoteAlbumRepository;
+  final LocalAlbumRepository _localAlbumRepository;
+  final RemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
   final StoreService _storeService;
-  final Completer<void>? _cancellation;
 
   SyncLinkedAlbumService(
     this._localAlbumRepository,
     this._remoteAlbumRepository,
     this._albumApiRepository,
-    this._storeService, {
-    this._cancellation,
-  });
+    this._storeService,
+  );
 
   final _log = Logger("SyncLinkedAlbumService");
 
-  Future<void> syncLinkedAlbums(String userId) async {
+  Future<void> syncLinkedAlbums(String userId, {Completer<void>? cancellation}) async {
     final selectedAlbums = await _localAlbumRepository.getBackupAlbums();
 
     await Future.wait(
@@ -64,7 +61,7 @@ class SyncLinkedAlbumService {
           final album = await _albumApiRepository.addAssets(
             remoteAlbum.id,
             assetIds,
-            abortTrigger: _cancellation?.future,
+            abortTrigger: cancellation?.future,
           );
           await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
         }

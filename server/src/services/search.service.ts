@@ -44,12 +44,14 @@ export class SearchService extends BaseService {
     const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
     const cityAssets = await this.assetRepository.getByIdsWithAllRelationsButStacks(
       cities.items.map(({ data }) => data),
+      auth.user.id,
     );
     const cityItems = cityAssets.map((asset) => ({ value: asset.exifInfo!.city!, data: mapAsset(asset, { auth }) }));
 
     const recents = await this.assetRepository.getRecentlyCreatedAssetIds(auth.user.id, options.maxFields);
     const recentAssets = await this.assetRepository.getByIdsWithAllRelationsButStacks(
       recents.items.map((item) => item.data),
+      auth.user.id,
     );
     const recentItems = recentAssets.map((asset) => ({
       value: asset.createdAt.toISOString(),
@@ -73,15 +75,26 @@ export class SearchService extends BaseService {
       checksum = Buffer.from(dto.checksum, encoding);
     }
 
+    let userIds: string[] | undefined;
+
+    if (dto.albumIds && dto.albumIds.length > 0) {
+      await this.requireAccess({ auth, ids: dto.albumIds, permission: Permission.AlbumRead });
+    } else if (auth.sharedLink) {
+      throw new BadRequestException('Shared link access is only allowed in combination with an albumIds filter');
+    } else {
+      userIds = await this.getUserIdsToSearch(auth, dto.visibility);
+    }
+
     const page = dto.page ?? 1;
     const size = dto.size || 250;
-    const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
     const { hasNextPage, items } = await this.searchRepository.searchMetadata(
       { page, size },
       {
         ...dto,
         checksum,
+        visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
         userIds,
+        viewingUserId: auth.user.id,
         orderDirection: dto.order ?? AssetOrder.Desc,
       },
     );
@@ -90,11 +103,16 @@ export class SearchService extends BaseService {
   }
 
   async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
-    const userIds = await this.getUserIdsToSearch(auth);
+    const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
+    if (dto.visibility === AssetVisibility.Locked) {
+      requireElevatedPermission(auth);
+    }
 
     return await this.searchRepository.searchStatistics({
       ...dto,
+      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
+      viewingUserId: auth.user.id,
     });
   }
 
@@ -104,7 +122,12 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
-    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    const items = await this.searchRepository.searchRandom(dto.size || 250, {
+      ...dto,
+      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      userIds,
+      viewingUserId: auth.user.id,
+    });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
@@ -114,7 +137,12 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
-    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, { ...dto, userIds });
+    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, {
+      ...dto,
+      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      userIds,
+      viewingUserId: auth.user.id,
+    });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
@@ -155,7 +183,13 @@ export class SearchService extends BaseService {
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds: await userIds, embedding },
+      {
+        ...dto,
+        userIds: await userIds,
+        viewingUserId: auth.user.id,
+        embedding,
+        visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });

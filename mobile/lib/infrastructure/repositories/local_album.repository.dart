@@ -1,22 +1,24 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.drift.dart';
 
 enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount, newestAsset }
 
-class DriftLocalAlbumRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepositoryMixin {
+  LocalAlbumRepository(super.attachedDatabase);
 
-  const DriftLocalAlbumRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
   Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
@@ -57,7 +59,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<void> delete(String albumId) => transaction(() async {
+  Future<void> deleteAlbum(String albumId) => transaction(() async {
     // Remove all assets that are only in this particular album
     // We cannot remove all assets in the album because they might be in other albums in iOS
     // That is not the case on Android since asset <-> album has one:one mapping
@@ -210,17 +212,19 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       await _deleteAssets(deletes);
 
       await _upsertAssets(updates);
+      // Drop every existing album link for each changed asset before re-adding the
+      // ones the native side reports. A moved asset only reports its new album here,
+      // so leaving the old link around makes the per-album delete sweep wipe the
+      // asset entirely (it is still linked to a bucket it no longer lives in).
+      await _db.batch((batch) async {
+        for (final assetId in assetAlbums.keys) {
+          batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.assetId.equals(assetId));
+        }
+      });
       // The ugly casting below is required for now because the generated code
       // casts the returned values from the platform during decoding them
       // and iterating over them causes the type to be List<Object?> instead of
       // List<String>
-      await _db.batch((batch) async {
-        assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
-          for (final albumId in albumIds.cast<String?>().nonNulls) {
-            batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.albumId.equals(albumId) & f.assetId.equals(assetId));
-          }
-        });
-      });
       await _db.batch((batch) async {
         assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
           batch.insertAll(
@@ -354,7 +358,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return _deleteAssets(assetIds);
     }
 
-    List<String> assetsToDelete = [];
+    final List<String> assetsToDelete = [];
     List<String> assetsToUnLink = [];
 
     final uniqueAssets = await _getUniqueAssetsInAlbum(albumId);

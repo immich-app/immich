@@ -39,6 +39,7 @@ export const s = (count: number) => (count === 1 ? '' : 's');
 let _apiKey: ApiKeyResponseDto;
 export const requirePermissions = async (permissions: Permission[]) => {
   if (!_apiKey) {
+    // eslint-disable-next-line unicorn/no-top-level-assignment-in-function
     _apiKey = await getMyApiKey();
   }
 
@@ -67,8 +68,9 @@ Please make sure your API key has the correct permissions.`,
 export const connect = async (url: string, key: string) => {
   const wellKnownUrl = new URL('.well-known/immich', url);
   try {
-    const wellKnown = await fetch(wellKnownUrl).then((response) => response.json());
-    const endpoint = new URL(wellKnown.api.endpoint, url).toString();
+    // eslint-disable-next-line unicorn/prefer-await
+    const wellKnown = (await fetch(wellKnownUrl).then((response) => response.json())) as { api: { endpoint: string } };
+    const endpoint = new URL(wellKnown.api.endpoint, url).href;
     if (endpoint !== url) {
       console.debug(`Discovered API at ${endpoint}`);
     }
@@ -178,7 +180,7 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   const searchPatterns = patterns.map((pattern) => {
     let escapedPattern = pattern.replaceAll("'", "[']").replaceAll('"', '["]').replaceAll('`', '[`]');
     if (recursive) {
-      escapedPattern = escapedPattern + '/**';
+      escapedPattern += '/**';
     }
     return `${escapedPattern}/*.{${extensions.join(',')}}`;
   });
@@ -238,10 +240,12 @@ export class Batcher<T = unknown> {
   }
 
   private clearDebounceTimer() {
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-      this.debounceTimer = undefined;
+    if (!this.debounceTimer) {
+      return;
     }
+
+    clearTimeout(this.debounceTimer);
+    this.debounceTimer = undefined;
   }
 
   add(item: T) {

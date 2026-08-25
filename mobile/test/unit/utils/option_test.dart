@@ -100,17 +100,23 @@ void main() {
     });
   });
 
-  group('ObjectOptionExtension', () {
-    test('non-null value.toOption() returns Some', () {
-      final option = 'hello'.toOption();
-      expect(option, isA<Some<String>>());
-      expect((option as Some).value, 'hello');
+  group('NullableOptionExtension', () {
+    test('patch returns the current value when the option is null', () {
+      const Option<String>? omitted = null;
+      expect(omitted.patch('existing'), 'existing');
     });
 
-    test('null value.toOption() returns None', () {
-      const String? value = null;
-      final option = value.toOption();
-      expect(option, isA<None<String>>());
+    test('patch preserves a null current when the option is null', () {
+      const Option<String>? omitted = null;
+      expect(omitted.patch(null), isNull);
+    });
+
+    test('patch returns the wrapped value for Some, overriding current', () {
+      expect(const Option.some('new').patch('existing'), 'new');
+    });
+
+    test('patch returns null for None, clearing current', () {
+      expect(const Option<String>.none().patch('existing'), isNull);
     });
   });
 }

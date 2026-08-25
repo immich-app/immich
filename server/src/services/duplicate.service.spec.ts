@@ -369,6 +369,26 @@ describe(DuplicateService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: asset1.id } }]);
     });
 
+    it('should not merge metadata when multiple assets are kept', async () => {
+      const asset1 = AssetFactory.create({ isFavorite: true });
+      const asset2 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id, asset2.id], trashAssetIds: [] }],
+      });
+
+      expect(result[0].success).toBe(true);
+      expect(mocks.album.addAssetIdsToAlbums).not.toHaveBeenCalled();
+      expect(mocks.tag.replaceAssetTags).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAllExif).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset1.id, asset2.id], { duplicateId: null });
+    });
+
     // NOTE: The following integration-style tests are covered by E2E tests instead
     // to avoid complex mock setup. The validation and error-handling logic above
     // is thoroughly unit tested.

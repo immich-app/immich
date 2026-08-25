@@ -22,6 +22,7 @@ const MemoriesUpdateSchema = z
   .object({
     enabled: z.boolean().optional().describe('Whether memories are enabled'),
     duration: z.int().min(1).optional().describe('Memory duration in seconds'),
+    sidebarWeb: z.boolean().optional().describe('Whether memories appear in web sidebar'),
   })
   .optional()
   .meta({ id: 'MemoriesUpdate' });
@@ -98,6 +99,13 @@ const CastUpdateSchema = z
   .optional()
   .meta({ id: 'CastUpdate' });
 
+const RecentlyAddedUpdateSchema = z
+  .object({
+    sidebarWeb: z.boolean().optional().describe('Whether the recently added page appears in the web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'RecentlyAddedUpdate' });
+
 const UserPreferencesUpdateSchema = z
   .object({
     albums: AlbumsUpdateSchema,
@@ -112,6 +120,7 @@ const UserPreferencesUpdateSchema = z
     ratings: RatingsUpdateSchema,
     sharedLinks: SharedLinksUpdateSchema,
     tags: TagsUpdateSchema,
+    recentlyAdded: RecentlyAddedUpdateSchema,
   })
   .meta({ id: 'UserPreferencesUpdateDto' });
 
@@ -132,6 +141,7 @@ const MemoriesResponseSchema = z
   .object({
     enabled: z.boolean().describe('Whether memories are enabled'),
     duration: z.int().describe('Memory duration in seconds'),
+    sidebarWeb: z.boolean().describe('Whether memories appear in web sidebar'),
   })
   .meta({ id: 'MemoriesResponse' });
 
@@ -191,6 +201,12 @@ const CastResponseSchema = z
   })
   .meta({ id: 'CastResponse' });
 
+const RecentlyAddedResponseSchema = z
+  .object({
+    sidebarWeb: z.boolean().describe('Whether the recently added page appears in the web sidebar'),
+  })
+  .meta({ id: 'RecentlyAddedResponse' });
+
 const UserPreferencesResponseSchema = z
   .object({
     albums: AlbumsResponseSchema,
@@ -204,6 +220,7 @@ const UserPreferencesResponseSchema = z
     download: DownloadResponseSchema,
     purchase: PurchaseResponseSchema,
     cast: CastResponseSchema,
+    recentlyAdded: RecentlyAddedResponseSchema,
   })
   .meta({ id: 'UserPreferencesResponseDto' });
 

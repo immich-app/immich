@@ -3,7 +3,6 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
-import 'package:immich_mobile/utils/option.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart' hide AlbumUserRole;
 
@@ -26,7 +25,9 @@ class DriftAlbumApiRepository extends ApiRepository {
       _api.createAlbum(
         CreateAlbumDto(
           albumName: name,
-          description: description == null ? const Optional.absent() : Optional.present(description),
+          description: description == null
+              ? const Optional.absent()
+              : Optional.present(description.isEmpty ? null : description),
           assetIds: Optional.present(assetIds.toList()),
         ),
       ),
@@ -37,7 +38,8 @@ class DriftAlbumApiRepository extends ApiRepository {
 
   Future<({List<String> removed, List<String> failed})> removeAssets(String albumId, Iterable<String> assetIds) async {
     final response = await checkNull(_api.removeAssetFromAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
-    final List<String> removed = [], failed = [];
+    final List<String> removed = [];
+    final List<String> failed = [];
     for (final dto in response) {
       if (dto.success) {
         removed.add(dto.id);
@@ -56,11 +58,12 @@ class DriftAlbumApiRepository extends ApiRepository {
     final response = await checkNull(
       _api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList()), abortTrigger: abortTrigger),
     );
-    final List<String> added = [], failed = [];
+    final List<String> added = [];
+    final List<String> failed = [];
     for (final dto in response) {
       if (dto.success) {
         added.add(dto.id);
-      } else {
+      } else if (dto.error.orElse(null) != BulkIdErrorReason.duplicate) {
         failed.add(dto.id);
       }
     }
@@ -72,7 +75,7 @@ class DriftAlbumApiRepository extends ApiRepository {
     String albumId,
     UserDto owner, {
     String? name,
-    Option<String?> description = const Option.none(),
+    String? description,
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
@@ -87,7 +90,9 @@ class DriftAlbumApiRepository extends ApiRepository {
         albumId,
         UpdateAlbumDto(
           albumName: name == null ? const Optional.absent() : Optional.present(name),
-          description: description.toOptional(),
+          description: description == null
+              ? const Optional.absent()
+              : Optional.present(description.isEmpty ? null : description),
           albumThumbnailAssetId: thumbnailAssetId == null
               ? const Optional.absent()
               : Optional.present(thumbnailAssetId),

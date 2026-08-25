@@ -41,8 +41,6 @@ export function layoutTimelineMonth(timelineManager: TimelineManager, month: Tim
       timelineDay.col = timelineDayCol++;
       timelineDay.start = cumulativeWidth;
       timelineDay.top = cumulativeHeight;
-
-      cumulativeWidth += timelineDay.width + timelineManager.gap;
     } else {
       // Move to next row
       cumulativeHeight += currentRowHeight;
@@ -57,8 +55,8 @@ export function layoutTimelineMonth(timelineManager: TimelineManager, month: Tim
       timelineDay.top = cumulativeHeight;
 
       timelineDayCol++;
-      cumulativeWidth += timelineDay.width + timelineManager.gap;
     }
+    cumulativeWidth += timelineDay.width + timelineManager.gap;
     currentRowHeight = timelineDay.height + timelineManager.headerHeight;
   }
 

@@ -9,6 +9,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."logging",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -25,6 +26,8 @@ select
           inner join "plugin" on "plugin"."id" = "plugin_method"."pluginId"
         where
           "workflow"."id" = "workflow_step"."workflowId"
+        order by
+          "workflow_step"."order" asc
       ) as agg
   ) as "steps"
 from
@@ -41,6 +44,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."logging",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -57,6 +61,8 @@ select
           inner join "plugin" on "plugin"."id" = "plugin_method"."pluginId"
         where
           "workflow"."id" = "workflow_step"."workflowId"
+        order by
+          "workflow_step"."order" asc
       ) as agg
   ) as "steps"
 from
@@ -69,6 +75,7 @@ select
   "workflow"."id",
   "workflow"."name",
   "workflow"."trigger",
+  "workflow"."logging",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -80,7 +87,8 @@ select
           "plugin_method"."pluginId" as "pluginId",
           "plugin_method"."name" as "methodName",
           "plugin_method"."types" as "types",
-          "plugin_method"."hostFunctions"
+          "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts"
         from
           "workflow_step"
           inner join "plugin_method" on "plugin_method"."id" = "workflow_step"."pluginMethodId"
@@ -94,6 +102,39 @@ from
 where
   "id" = $2
   and "enabled" = $3
+
+-- WorkflowRepository.getLogs
+select
+  "workflow_log"."id",
+  "workflow_log"."createdAt",
+  "workflow_log"."result",
+  "workflow_log"."workflowId",
+  "workflow_log"."workflowStepId",
+  "workflow_log"."triggerDataId",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "plugin_method"."pluginId",
+          "plugin_method"."name" as "methodName",
+          "workflow_step"."order"
+        from
+          "workflow_step"
+          inner join "plugin_method" on "plugin_method"."id" = "workflow_step"."pluginMethodId"
+        where
+          "workflow_step"."id" = "workflow_log"."workflowStepId"
+      ) as obj
+  ) as "step"
+from
+  "workflow_log"
+where
+  "workflow_log"."workflowId" = $1
+order by
+  "workflow_log"."createdAt" desc
+limit
+  $2
 
 -- WorkflowRepository.delete
 delete from "workflow"

@@ -24,7 +24,7 @@ const TemplateSchema = z
 
 const NotificationSchema = z
   .object({
-    id: z.string().describe('Notification ID'),
+    id: z.uuidv4().describe('Notification ID'),
     createdAt: isoDatetimeToDate.describe('Creation date'),
     level: NotificationLevelSchema,
     type: NotificationTypeSchema,

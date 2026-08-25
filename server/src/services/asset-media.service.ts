@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
-import { AuthSharedLink } from 'src/database';
+import { Asset, AuthSharedLink } from 'src/database';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -92,8 +91,7 @@ export class AssetMediaService extends BaseService {
   getUploadFilename({ auth, fieldName, file, body }: UploadRequest): string {
     requireUploadAccess(auth);
 
-    const extension = extname(body.filename || file.originalName);
-
+    const extension = getFilenameExtension(body.filename || file.originalName);
     const lookup = {
       [UploadFieldName.ASSET_DATA]: extension,
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
@@ -130,6 +128,7 @@ export class AssetMediaService extends BaseService {
     file: UploadFile,
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
+    let asset: Asset | undefined;
     try {
       await this.requireAccess({
         auth,
@@ -147,7 +146,7 @@ export class AssetMediaService extends BaseService {
         );
       }
 
-      const asset = await this.assetRepository.create({
+      asset = await this.assetRepository.create({
         ownerId: auth.user.id,
         libraryId: null,
 
@@ -215,6 +214,11 @@ export class AssetMediaService extends BaseService {
 
         this.logger.debug(`Duplicate asset upload rejected: existing asset ${duplicateId}`);
         return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
+      }
+
+      // clean up the asset row if one was created
+      if (asset) {
+        await this.assetRepository.remove({ id: asset.id });
       }
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
@@ -342,9 +346,23 @@ export class AssetMediaService extends BaseService {
   }
 
   private async addToSharedLink(sharedLink: AuthSharedLink, assetId: string) {
-    await (sharedLink.albumId
-      ? this.albumRepository.addAssetIds(sharedLink.albumId, [assetId])
-      : this.sharedLinkRepository.addAssets(sharedLink.id, [assetId]));
+    if (!sharedLink.albumId) {
+      await this.sharedLinkRepository.addAssets(sharedLink.id, [assetId]);
+      return;
+    }
+
+    const album = await this.albumRepository.getById(sharedLink.albumId, { withAssets: false });
+    if (!album) {
+      return;
+    }
+
+    await this.albumRepository.addAssetIds(album.id, [assetId]);
+    const userIds = album.albumUsers.map(({ user }) => user.id);
+    await this.eventRepository.emit('AlbumUpdate', {
+      id: album.id,
+      userIds,
+      recipientIds: userIds,
+    });
   }
 
   private requireQuota(auth: AuthDto, size: number) {

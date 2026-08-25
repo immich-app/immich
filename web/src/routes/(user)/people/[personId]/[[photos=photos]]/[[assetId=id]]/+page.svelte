@@ -35,7 +35,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { isExternalUrl } from '$lib/utils/navigation';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -91,11 +91,11 @@
 
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
-    const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
-    if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
-      previousRoute = getPreviousRoute;
-    }
-    if (action == 'merge') {
+
+    const fallbackRoute = $page.params.assetId ? Route.viewPerson(data.person) : Route.explore();
+    previousRoute = Route.continue($page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
+
+    if (action === 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     }
 
@@ -177,7 +177,7 @@
 
     const [, personToBeMergedInto] = result;
 
-    if (personToBeMergedInto.name != personName && person.id === personToBeMergedInto.id) {
+    if (personToBeMergedInto.name !== personName && person.id === personToBeMergedInto.id) {
       await updateAssetCount();
       return { merged: true };
     }
@@ -236,8 +236,10 @@
 
     const result = await searchPerson({ name: personName, withHidden: true });
 
+    const normalizedPersonName = normalizeSearchString(personName);
     const existingPerson = result.find(
-      ({ name, id }: PersonResponseDto) => name.toLowerCase() === personName.toLowerCase() && id !== person.id && name,
+      ({ name, id }: PersonResponseDto) =>
+        normalizeSearchString(name) === normalizedPersonName && id !== person.id && name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
@@ -245,8 +247,8 @@
       potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
-            personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
-            person.id !== personMerge2.id &&
+            normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
+            person.id !== personMerge2?.id &&
             person.id !== personMerge1?.id &&
             !person.isHidden,
         )
@@ -326,6 +328,7 @@
   onPersonAssetDelete={handlePersonAssetDelete}
   onAssetsDelete={updateAssetCount}
   onAssetsArchive={updateAssetCount}
+  onAssetsUnarchive={updateAssetCount}
 />
 
 <main
@@ -466,7 +469,7 @@
         onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
       />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-        <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
+        <DownloadAction menuItem filename={person.name || 'immich'} />
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}
           text={$t('fix_incorrect_match')}

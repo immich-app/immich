@@ -62,8 +62,8 @@ const ValidateLibraryResponseSchema = z
 
 const LibraryResponseSchema = z
   .object({
-    id: z.string().describe('Library ID'),
-    ownerId: z.string().describe('Owner user ID'),
+    id: z.uuidv4().describe('Library ID'),
+    ownerId: z.uuidv4().describe('Owner user ID'),
     name: z.string().describe('Library name'),
     assetCount: z.int().describe('Number of assets'),
     importPaths: z.array(z.string()).describe('Import paths'),
@@ -92,10 +92,7 @@ export class LibraryResponseDto extends createZodDto(LibraryResponseSchema) {}
 export class LibraryStatsResponseDto extends createZodDto(LibraryStatsResponseSchema) {}
 
 export function mapLibrary(entity: Library): LibraryResponseDto {
-  let assetCount = 0;
-  if (entity.assets) {
-    assetCount = entity.assets.length;
-  }
+  const assetCount = entity.assets ? entity.assets.length : 0;
   return {
     id: entity.id,
     ownerId: entity.ownerId,

@@ -13,9 +13,9 @@
 
   let { asset, isOwner }: Props = $props();
 
-  let rating = $derived(asset.exifInfo?.rating || null) as Rating;
+  let rating = $derived(asset.exifInfo?.rating ?? null) as Rating;
 
-  const handleChangeRating = async (rating: number | null) => {
+  const handleChangeRating = async (rating: Rating) => {
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { rating } });
     } catch (error) {

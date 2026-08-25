@@ -1,22 +1,17 @@
-import { AuthApiKey, AuthSharedLink, AuthUser, Exif, Library, UserAdmin } from 'src/database';
+import { AuthApiKey, AuthSharedLink, AuthUser, Library, UserAdmin } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetFileType, Permission, UserStatus } from 'src/enum';
+import { Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
 import { expect } from 'vitest';
 
 export const newUuid = () => v4();
-export const newUuids = () =>
-  Array.from({ length: 100 })
-    .fill(0)
-    .map(() => newUuid());
+export const newUuids = () => Array.from({ length: 100 }, () => 0).map(() => newUuid());
 export const newDate = () => new Date();
 export const newUuidV7 = () => v7();
 export const newSha1 = () => Buffer.from('this is a fake hash');
 export const newEmbedding = () => {
-  const embedding = Array.from({ length: 512 })
-    .fill(0)
-    .map(() => Math.random());
+  const embedding = Array.from({ length: 512 }, () => 0).map(() => Math.random());
   return '[' + embedding + ']';
 };
 
@@ -27,7 +22,7 @@ const authFactory = ({
   user,
 }: {
   apiKey?: Partial<AuthApiKey>;
-  session?: { id: string };
+  session?: { id?: string; hasElevatedPermission?: boolean; oauthBearerToken?: string | null };
   user?: Omit<
     Partial<UserAdmin>,
     'createdAt' | 'updatedAt' | 'deletedAt' | 'fileCreatedAt' | 'fileModifiedAt' | 'localDateTime' | 'profileChangedAt'
@@ -46,8 +41,8 @@ const authFactory = ({
 
   if (session) {
     auth.session = {
-      id: session.id,
-      hasElevatedPermission: false,
+      id: session.id ?? newUuid(),
+      hasElevatedPermission: session.hasElevatedPermission ?? false,
     };
   }
 
@@ -173,31 +168,6 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = () => {
-  const id = newUuid();
-  return {
-    id,
-    originalPath: '/path/to/original-path.jpg.xmp',
-    tags: [],
-    files: [
-      {
-        id: newUuid(),
-        path: '/path/to/original-path.jpg.xmp',
-        type: AssetFileType.Sidecar,
-        isEdited: false,
-      },
-    ],
-    exifInfo: {
-      assetId: id,
-      description: 'this is a description',
-      latitude: 12,
-      longitude: 12,
-      dateTimeOriginal: '2023-11-22T04:56:12.196Z',
-      timeZone: 'UTC-6',
-    } as unknown as Exif,
-  };
-};
-
 const assetOcrFactory = (
   ocr: {
     id?: string;
@@ -215,10 +185,12 @@ const assetOcrFactory = (
     textScore?: number;
     text?: string;
     isVisible?: boolean;
+    updatedAt?: Date;
   } = {},
 ) => ({
   id: newUuid(),
   updateId: newUuidV7(),
+  updatedAt: newDate(),
   assetId: newUuid(),
   x1: 0.1,
   y1: 0.2,
@@ -241,9 +213,6 @@ export const factory = {
   library: libraryFactory,
   queueStatistics: queueStatisticsFactory,
   versionHistory: versionHistoryFactory,
-  jobAssets: {
-    sidecarWrite: assetSidecarWriteFactory,
-  },
   uuid: newUuid,
   buffer: () => Buffer.from('this is a fake buffer'),
   date: newDate,
