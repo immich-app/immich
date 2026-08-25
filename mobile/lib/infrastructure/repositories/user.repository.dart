@@ -14,6 +14,9 @@ class UserRepository extends DatabaseAccessor<Drift> with $UserRepositoryMixin {
   Drift get _db => attachedDatabase;
 
   Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
+
+  Stream<User?> watch(String id) =>
+      (_db.select(_db.userEntity)..where((u) => u.id.equals(id))).map(mapToUser).watchSingleOrNull();
 }
 
 @DriftAccessor()

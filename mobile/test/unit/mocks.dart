@@ -165,6 +165,7 @@ class ServiceMocks {
     when(user.watchMyUser).thenAnswer((_) => const Stream.empty());
     when(user.refreshMyUser).thenAnswer((_) async => null);
     when(user.createProfileImage).thenAnswer((_) async => null);
+    when(user.watch).thenAnswer((_) => const Stream.empty());
   }
 
   void _stubPartnerService() {
@@ -336,6 +337,9 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 
   Future<String?> Function() get createProfileImage =>
       () => service.createProfileImage(any(), any());
+
+  Stream<User?> Function() get watch =>
+      () => service.watch(any());
 }
 
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
