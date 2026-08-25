@@ -694,10 +694,8 @@ export class AuthService extends BaseService {
       quotaSizeInBytes?: number | null;
     } = {};
 
-    if (claims.storageLabel !== undefined && claims.storageLabel !== user.storageLabel) {
-      const duplicate = claims.storageLabel
-        ? await this.userRepository.getByStorageLabel(claims.storageLabel)
-        : undefined;
+    if (claims.storageLabel && claims.storageLabel !== user.storageLabel) {
+      const duplicate = await this.userRepository.getByStorageLabel(claims.storageLabel);
 
       if (duplicate && duplicate.id !== user.id) {
         this.logger.warn(`Unable to sync OAuth storage label for user ${user.id}: label already in use`);
