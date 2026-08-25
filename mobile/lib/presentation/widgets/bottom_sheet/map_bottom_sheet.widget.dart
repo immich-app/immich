@@ -82,8 +82,8 @@ class _MapTimelineContentState extends ConsumerState<_MapTimelineContent> {
   }
 
   @override
-  void dispose() {
-    _reloadSubscription?.cancel();
+  Future<void> dispose() async {
+    await _reloadSubscription?.cancel();
     super.dispose();
   }
 
