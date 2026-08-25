@@ -111,6 +111,29 @@ const itBehavesLikeADriver = (name: string, getDriver: () => RemoteStorageDriver
     );
 
     it(
+      'should handle concurrent uploads into the same directory',
+      async () => {
+        const driver = getDriver();
+        const keys = Array.from({ length: 5 }, (_, index) => `concurrent/burst/IMG_${index}.jpg`);
+
+        // Every export worker writes under the same owner folder, so they all
+        // race to create it. WebDAV servers answer the losers with 405 (it now
+        // exists) or 423 (the collection is briefly locked), neither of which
+        // should fail the upload.
+        await Promise.all(
+          keys.map((key) => driver.upload(key, Readable.from([Buffer.from(key)]), { size: key.length })),
+        );
+
+        for (const key of keys) {
+          await expect(driver.head(key)).resolves.toMatchObject({ key });
+        }
+
+        await Promise.all(keys.map((key) => driver.delete(key)));
+      },
+      TIMEOUT,
+    );
+
+    it(
       'should refuse keys that try to escape the prefix',
       async () => {
         await expect(getDriver().head('../../etc/passwd')).rejects.toThrow(/Unsafe object key/);

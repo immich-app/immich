@@ -28,5 +28,5 @@ vite.config.js.timestamp-*
 *.tsbuildinfo
 *.tsbuildInfo
 
-# Local dev stack data (UPLOAD_LOCATION / DB_DATA_LOCATION in docker/.env)
-docker/.immich-dev-*
+# Local stack data (UPLOAD_LOCATION / DB_DATA_LOCATION in docker/.env)
+docker/.immich-*

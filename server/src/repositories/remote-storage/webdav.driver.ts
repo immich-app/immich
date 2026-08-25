@@ -10,6 +10,9 @@ import {
 } from 'src/repositories/remote-storage/driver';
 import { AuthType, createClient, FileStat, WebDAVClient } from 'webdav';
 
+const LOCK_RETRIES = 5;
+const LOCK_RETRY_DELAY_MS = 250;
+
 export class WebDavDriver implements RemoteStorageDriver {
   private client: WebDAVClient;
   private prefix: string;
@@ -37,16 +40,44 @@ export class WebDavDriver implements RemoteStorageDriver {
   /**
    * WebDAV has no implicit directory creation, so every intermediate collection
    * has to exist before a PUT. `recursive` does this in one call.
+   *
+   * Deliberately no exists() pre-check: concurrent exports all write under the
+   * same owner folder, so a check-then-create would still race, and it costs an
+   * extra round-trip per object. Creating unconditionally and accepting "it is
+   * already there" is both correct and cheaper.
    */
   private async ensureDirectory(path: string) {
     const directory = path.slice(0, path.lastIndexOf('/'));
     if (!directory || directory === '/') {
       return;
     }
-    if (await this.client.exists(directory)) {
-      return;
+
+    try {
+      await this.client.createDirectory(directory, { recursive: true });
+    } catch (error: any) {
+      // 405 is the collection already existing, which is the whole point.
+      if (error?.status !== 405) {
+        throw error;
+      }
     }
-    await this.client.createDirectory(directory, { recursive: true });
+  }
+
+  /**
+   * Nextcloud briefly locks a collection while another request is writing into
+   * it, answering everyone else with 423. It clears on its own, so a locked
+   * response is worth waiting out rather than failing the asset.
+   */
+  private async withLockRetry<T>(operation: () => Promise<T>): Promise<T> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        if (error?.status !== 423 || attempt >= LOCK_RETRIES) {
+          throw error;
+        }
+        await new Promise((resolve) => setTimeout(resolve, LOCK_RETRY_DELAY_MS * (attempt + 1)));
+      }
+    }
   }
 
   async test(): Promise<void> {
@@ -110,7 +141,8 @@ export class WebDavDriver implements RemoteStorageDriver {
 
   async upload(key: string, stream: Readable, options?: RemoteUploadOptions): Promise<RemoteObject> {
     const path = this.fullPath(key);
-    await this.ensureDirectory(path);
+
+    await this.withLockRetry(() => this.ensureDirectory(path));
 
     await new Promise<void>((resolve, reject) => {
       // The write stream is a PassThrough feeding a PUT; it never emits 'finish'
