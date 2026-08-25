@@ -11,7 +11,8 @@ from rapidocr.utils.typings import ModelType as RapidModelType
 
 from immich_ml.config import log
 from immich_ml.models.base import InferenceModel
-from immich_ml.schemas import ModelFormat, ModelTask, ModelType
+from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
+from immich_ml.sessions.ort import OrtSession
 
 from .postprocess import DBPostProcess
 from .schemas import TextDetectionOutput
@@ -47,6 +48,10 @@ class TextDetector(InferenceModel):
             logger=log,
         )
         DownloadFile.run(download_params)
+
+    def _load(self) -> ModelSession:
+        # TODO: support other runtime sessions
+        return OrtSession(self.model_path)
 
     def _predict(
         self, inputs: Image.Image, maxResolution: int = 736, minScore: float = 0.5, scoreMode: str = "fast"

@@ -15,6 +15,7 @@ from rapidocr.utils.typings import ModelType as RapidModelType
 from immich_ml.config import log, settings
 from immich_ml.models.base import InferenceModel
 from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
+from immich_ml.sessions.ort import OrtSession
 
 from .ctc import CtcDecoder, greedy
 from .schemas import TextDetectionOutput, TextRecognitionOutput
@@ -59,7 +60,8 @@ class TextRecognizer(InferenceModel):
         DownloadFile.run(download_params)
 
     def _load(self) -> ModelSession:
-        session = self._make_session(self.model_path)
+        # TODO: support other runtimes
+        session = OrtSession(self.model_path)
         self.decoder = (
             CtcDecoder(character.splitlines())
             if (character := session.get_metadata().get("character")) is not None
