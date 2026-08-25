@@ -32,6 +32,18 @@ export interface AlbumInfoOptions {
   withAssets: boolean;
 }
 
+export interface AlbumPersonRow {
+  id: string;
+  name: string;
+  birthDate: Date | null;
+  thumbnailPath: string;
+  isHidden: boolean;
+  isFavorite: boolean;
+  color: string | null;
+  updatedAt: Date;
+  assetCount: number;
+}
+
 const withAlbumUsers = (authUserId?: string) => (eb: ExpressionBuilder<DB, 'album'>) =>
   jsonArrayFrom(
     eb
@@ -284,6 +296,58 @@ export class AlbumRepository {
       .where('album_asset.assetId', 'in', assetIds)
       .execute()
       .then((results) => new Set(results.map(({ assetId }) => assetId)));
+  }
+
+  /**
+   * Return the distinct people (with asset counts) appearing in an album,
+   * regardless of who uploaded or owns the assets.
+   */
+  async getAlbumPeople(albumId: string): Promise<AlbumPersonRow[]> {
+    return this.db
+      .selectFrom('person')
+      .innerJoin('asset_face', 'asset_face.personId', 'person.id')
+      .innerJoin('album_asset', 'album_asset.assetId', 'asset_face.assetId')
+      .where('album_asset.albumId', '=', asUuid(albumId))
+      .where('person.isHidden', '=', false)
+      .where('asset_face.deletedAt', 'is', null)
+      .select((eb) => [
+        'person.id',
+        'person.name',
+        'person.birthDate',
+        'person.thumbnailPath',
+        'person.isHidden',
+        'person.isFavorite',
+        'person.color',
+        'person.updatedAt',
+        sql<number>`count(distinct asset_face."assetId")`.as('assetCount'),
+      ])
+      .groupBy('person.id')
+      .orderBy('assetCount', 'desc')
+      .orderBy('person.name', 'asc')
+      .execute();
+  }
+
+  /**
+   * Asset IDs in the album that have no recognised faces yet.
+   */
+  async getAlbumAssetIdsWithoutFaces(albumId: string): Promise<string[]> {
+    const rows = await this.db
+      .selectFrom('album_asset')
+      .where('album_asset.albumId', '=', asUuid(albumId))
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom('asset_face')
+              .select('asset_face.id')
+              .whereRef('asset_face.assetId', '=', 'album_asset.assetId'),
+          ),
+        ),
+      )
+      .select('album_asset.assetId')
+      .execute();
+
+    return rows.map(({ assetId }) => assetId);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })

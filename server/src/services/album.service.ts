@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  AlbumPeopleResponseDto,
   AddUsersDto,
   AlbumResponseDto,
+  AlbumScanResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
@@ -14,11 +16,11 @@ import {
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto';
-import { AlbumUserRole, Permission } from 'src/enum';
+import { AlbumUserRole, JobName, Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { asDateTimeString } from 'src/utils/date';
+import { asDateString, asDateTimeString } from 'src/utils/date';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -95,6 +97,44 @@ export class AlbumService extends BaseService {
     }
 
     return this.mapRepository.getAlbumMapMarkers(id);
+  }
+
+  async getPeople(auth: AuthDto, id: string): Promise<AlbumPeopleResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+
+    const people = await this.albumRepository.getAlbumPeople(id);
+
+    return people.map((person) => ({
+      id: person.id,
+      name: person.name,
+      birthDate: asDateString(person.birthDate),
+      thumbnailPath: person.thumbnailPath,
+      isHidden: person.isHidden,
+      isFavorite: person.isFavorite,
+      color: person.color ?? undefined,
+      updatedAt: asDateTimeString(person.updatedAt),
+      assetCount: person.assetCount,
+    }));
+  }
+
+  /**
+   * Queue face detection for every album asset that does not already have
+   * recognised faces, then trigger clustering. Works across all uploaders/owners.
+   */
+  async scanFaces(auth: AuthDto, id: string): Promise<AlbumScanResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
+
+    const [{ assetCount = 0 } = {}] = await this.albumRepository.getMetadataForIds([id]);
+    const assetIds = await this.albumRepository.getAlbumAssetIdsWithoutFaces(id);
+
+    if (assetIds.length > 0) {
+      await this.jobRepository.queueAll(
+        assetIds.map((assetId) => ({ name: JobName.AssetDetectFaces, data: { id: assetId } })),
+      );
+      await this.jobRepository.queue({ name: JobName.FacialRecognitionQueueAll, data: { force: false } });
+    }
+
+    return { queued: assetIds.length, skipped: assetCount - assetIds.length };
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {

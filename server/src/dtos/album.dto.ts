@@ -166,6 +166,31 @@ export class UpdateAlbumUserDto extends createZodDto(UpdateAlbumUserSchema) {}
 export class AlbumResponseDto extends createZodDto(AlbumResponseSchema) {}
 class AlbumUserResponseDto extends createZodDto(AlbumUserResponseSchema) {}
 
+const AlbumPeopleResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Person ID'),
+    name: z.string().describe('Person name'),
+    birthDate: z.string().describe('Person date of birth').nullable(),
+    thumbnailPath: z.string().describe('Thumbnail path'),
+    isHidden: z.boolean().describe('Is hidden'),
+    isFavorite: z.boolean().optional().describe('Is favorite'),
+    color: z.string().optional().describe('Person color (hex)'),
+    updatedAt: z.string().describe('Last update date').optional(),
+    assetCount: z.int().describe('Number of assets in the album containing this person'),
+  })
+  .meta({ id: 'AlbumPeopleResponseDto' });
+
+export class AlbumPeopleResponseDto extends createZodDto(AlbumPeopleResponseSchema) {}
+
+const AlbumScanResponseSchema = z
+  .object({
+    queued: z.int().describe('Number of album assets queued for face detection'),
+    skipped: z.int().describe('Number of album assets that already had recognised faces'),
+  })
+  .meta({ id: 'AlbumScanResponseDto' });
+
+export class AlbumScanResponseDto extends createZodDto(AlbumScanResponseSchema) {}
+
 export type MapAlbumDto = {
   albumUsers?: AlbumUser[];
   assets?: ShallowDehydrateObject<MapAsset>[];

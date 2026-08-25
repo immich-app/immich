@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
+  import AlbumPeopleBar from '$lib/components/album-page/AlbumPeopleBar.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
@@ -228,8 +230,21 @@
         timelineAlbumId: albumId,
       };
     }
-    return { albumId, order: album.order };
+    return { albumId, order: album.order, personId: personFilter ?? undefined };
   });
+
+  let personFilter = $state<string | null>($page.url.searchParams.get('personId'));
+
+  const setPersonFilter = async (personId: string | null) => {
+    personFilter = personId;
+    const url = new URL($page.url);
+    if (personId) {
+      url.searchParams.set('personId', personId);
+    } else {
+      url.searchParams.delete('personId');
+    }
+    await goto(url, { invalidateAll: false, replaceState: true });
+  };
 
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 1);
 
@@ -420,6 +435,15 @@
                 bind:description={() => album.description, (description) => (album = { ...album, description })}
               />
             </section>
+          {/if}
+
+          {#if album.assetCount > 0 && viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
+            <AlbumPeopleBar
+              {albumId}
+              filter={personFilter}
+              canScan={isOwned}
+              onFilter={setPersonFilter}
+            />
           {/if}
 
           {#if album.assetCount === 0}

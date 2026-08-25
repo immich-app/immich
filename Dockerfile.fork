@@ -1,0 +1,48 @@
+# Fork build for Immich v3.1.0 + album face filter/scan feature.
+# Rebuilds ONLY the server + web bundles; final image = official v3.1.0 image with
+# our bundles overlaid (CLI, plugins and ML image remain untouched).
+FROM ghcr.io/immich-app/base-server-dev:202607211135@sha256:83c9ff3f7390111596a2dcd24a746c3f8618d58259dbc7aae36618d153462f18 AS builder
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp \
+  PNPM_HOME=/buildcache/pnpm-store \
+  PATH="/buildcache/pnpm-store:$PATH"
+RUN npm install --global corepack@latest && corepack enable pnpm && pnpm config set store-dir "$PNPM_HOME"
+
+FROM builder AS server
+WORKDIR /usr/src/app
+COPY ./server ./server/
+COPY ./packages/sdk ./packages/sdk/
+COPY ./packages/plugin-sdk ./packages/plugin-sdk/
+RUN --mount=type=cache,id=pnpm-server-fork,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter immich build && \
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --prod --no-optional deploy /output/server-pruned
+
+FROM builder AS web
+ARG BUILD_ID
+ENV IMMICH_BUILD=${BUILD_ID}
+WORKDIR /usr/src/app
+COPY ./web ./web/
+COPY ./i18n ./i18n/
+COPY ./packages ./packages/
+RUN --mount=type=cache,id=pnpm-web-fork,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web install --frozen-lockfile --force && \
+  pnpm --filter @immich/sdk --filter immich-web build
+
+FROM ghcr.io/immich-app/immich-server:v3.1.0
+WORKDIR /usr/src/app
+COPY --from=server /output/server-pruned ./server
+COPY --from=web /usr/src/app/web/build /build/www
+ARG BUILD_ID
+ENV IMMICH_BUILD=${BUILD_ID}
+VOLUME /data
+EXPOSE 2283
+HEALTHCHECK CMD immich-healthcheck

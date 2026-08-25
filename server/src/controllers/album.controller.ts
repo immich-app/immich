@@ -2,8 +2,10 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
+  AlbumPeopleResponseDto,
   AddUsersDto,
   AlbumResponseDto,
+  AlbumScanResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
@@ -68,6 +70,29 @@ export class AlbumController {
   })
   getAlbumInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumResponseDto> {
     return this.service.get(auth, id);
+  }
+
+  @Get(':id/people')
+  @Authenticated({ permission: Permission.AlbumRead })
+  @Endpoint({
+    summary: 'Retrieve people in an album',
+    description: 'Returns the distinct people appearing in an album, with the number of assets per person.',
+    history: new HistoryBuilder().added('v4'),
+  })
+  getAlbumPeople(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumPeopleResponseDto[]> {
+    return this.service.getPeople(auth, id);
+  }
+
+  @Post(':id/scan-faces')
+  @Authenticated({ permission: Permission.AlbumUpdate })
+  @Endpoint({
+    summary: 'Run face recognition on an album',
+    description:
+      'Queues face detection for album assets that do not yet have recognised faces, then triggers face clustering.',
+    history: new HistoryBuilder().added('v4'),
+  })
+  scanAlbumFaces(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumScanResponseDto> {
+    return this.service.scanFaces(auth, id);
   }
 
   @Patch(':id')

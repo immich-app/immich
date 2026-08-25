@@ -527,6 +527,32 @@ export type AlbumResponseDto = {
     /** Last update date */
     updatedAt: string;
 };
+export type AlbumPeopleResponseDto = {
+    /** Person ID */
+    id: string;
+    /** Person name */
+    name: string;
+    /** Person date of birth */
+    birthDate: string | null;
+    /** Thumbnail path */
+    thumbnailPath: string;
+    /** Is hidden */
+    isHidden: boolean;
+    /** Is favorite */
+    isFavorite?: boolean;
+    /** Person color (hex) */
+    color?: string;
+    /** Last update date */
+    updatedAt?: string;
+    /** Number of assets in the album containing this person */
+    assetCount: number;
+};
+export type AlbumScanResponseDto = {
+    /** Number of album assets queued for face detection */
+    queued: number;
+    /** Number of album assets that already had recognised faces */
+    skipped: number;
+};
 export type AlbumUserCreateDto = {
     role: AlbumUserRole;
     /** User ID */
@@ -3903,6 +3929,33 @@ export function getAlbumInfo({ id, key, slug }: {
         slug
     }))}`, {
         ...opts
+    }));
+}
+/**
+ * Retrieve people in an album
+ */
+export function getAlbumPeople({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumPeopleResponseDto[];
+    }>(`/albums/${encodeURIComponent(id)}/people`, {
+        ...opts
+    }));
+}
+/**
+ * Run face recognition on an album
+ */
+export function scanAlbumFaces({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AlbumScanResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/scan-faces`, {
+        ...opts,
+        method: "POST"
     }));
 }
 /**
