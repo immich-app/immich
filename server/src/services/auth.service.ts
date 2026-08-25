@@ -41,7 +41,7 @@ export interface LoginDetails {
 interface ClaimOptions<T> {
   key: string;
   isValid: (value: unknown) => value is T;
-  parse?: (raw: unknown) => unknown;
+  parse?: (raw: unknown) => T;
 }
 
 type OAuthClaimsConfig = Pick<
@@ -645,7 +645,7 @@ export class AuthService extends BaseService {
 
     const storageLabel = this.getClaim(profile, {
       key: storageLabelClaim,
-      isValid: (value: unknown): value is string => typeof value === 'string',
+      isValid: (value): value is string => typeof value === 'string',
     });
 
     if (useDefaults) {
@@ -658,7 +658,7 @@ export class AuthService extends BaseService {
     const storageQuota = this.getClaim(profile, {
       key: storageQuotaClaim,
       parse: Number,
-      isValid: (value: unknown): value is number =>
+      isValid: (value): value is number =>
         typeof value === 'number' && Number.isFinite(value) && (value === -1 || value >= 0),
     });
 
