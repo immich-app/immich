@@ -59,8 +59,19 @@ export class TagService extends BaseService {
   async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
     await this.requireAccess({ auth, permission: Permission.TagUpdate, ids: [id] });
 
-    const { color } = dto;
-    const tag = await this.tagRepository.update(id, { color });
+    const { name, color } = dto;
+    const existing = await this.findOrFail(id);
+
+    let value;
+    if (name) {
+      const parts = existing.value.split('/');
+      parts[parts.length - 1] = name;
+      value = parts.join('/');
+    } else {
+      value = existing.value;
+    }
+
+    const tag = await this.tagRepository.update(id, { value, color });
     return mapTag(tag);
   }
 
@@ -105,7 +116,7 @@ export class TagService extends BaseService {
     const results = await addAssets(
       auth,
       { access: this.accessRepository, bulk: this.tagRepository },
-      { parentId: id, assetIds: dto.ids },
+      { parentId: id, assetIds: dto.ids, permission: Permission.AssetUpdate },
     );
 
     for (const { id: assetId, success } of results) {

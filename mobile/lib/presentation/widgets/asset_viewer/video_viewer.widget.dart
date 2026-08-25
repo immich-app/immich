@@ -121,7 +121,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
           throw Exception('No file found for the video');
         }
 
-        return VideoSource.init(
+        return await VideoSource.init(
           path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
           type: VideoSourceType.file,
         );
@@ -145,7 +145,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
         // Pass a file:// URI so Android's Uri.parse doesn't
         // interpret characters like '#' as fragment identifiers.
-        return VideoSource.init(
+        return await VideoSource.init(
           path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
           type: VideoSourceType.file,
         );
@@ -163,7 +163,11 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;
       final String videoUrl = '$serverEndpoint/assets/$assetId/$postfixUrl';
 
-      return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
+      return await VideoSource.init(
+        path: videoUrl,
+        type: VideoSourceType.network,
+        headers: ApiService.getRequestHeaders(),
+      );
     } catch (error) {
       _log.severe('Error creating video source for asset ${videoAsset.name}: $error');
       return null;

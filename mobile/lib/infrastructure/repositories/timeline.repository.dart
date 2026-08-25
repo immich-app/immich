@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.drift.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -185,7 +185,8 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
   TimelineQuery remoteAlbum(String albumId, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchRemoteAlbumBucket(albumId, groupBy: groupBy),
-    assetSource: (offset, count) => _getRemoteAlbumBucketAssets(albumId, offset: offset, count: count),
+    assetSource: (offset, count) =>
+        _getRemoteAlbumBucketAssets(albumId, groupBy: groupBy, offset: offset, count: count),
     origin: TimelineOrigin.remoteAlbum,
   );
 
@@ -239,7 +240,12 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
         .handleError((error) => const <Bucket>[]);
   }
 
-  Future<List<BaseAsset>> _getRemoteAlbumBucketAssets(String albumId, {required int offset, required int count}) async {
+  Future<List<BaseAsset>> _getRemoteAlbumBucketAssets(
+    String albumId, {
+    required int offset,
+    required int count,
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) async {
     final albumData = await (_db.remoteAlbumEntity.select()..where((row) => row.id.equals(albumId))).getSingleOrNull();
 
     // If album doesn't exist (was deleted), return empty list
@@ -266,11 +272,9 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
       ),
     ])..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId));
 
-    if (isAscending) {
-      query.orderBy([OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
-    } else {
-      query.orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)]);
-    }
+    query.orderBy(
+      _assetDateOrder(groupBy, ascending: isAscending).map((order) => order(_db.remoteAssetEntity)).toList(),
+    );
 
     query.limit(count, offset: offset);
 
@@ -377,13 +381,14 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
   TimelineQuery place(String place, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchPlaceBucket(place, groupBy: groupBy),
-    assetSource: (offset, count) => _getPlaceBucketAssets(place, offset: offset, count: count),
+    assetSource: (offset, count) => _getPlaceBucketAssets(place, groupBy: groupBy, offset: offset, count: count),
     origin: TimelineOrigin.place,
   );
 
   TimelineQuery person(String userId, String personId, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchPersonBucket(userId, personId, groupBy: groupBy),
-    assetSource: (offset, count) => _getPersonBucketAssets(userId, personId, offset: offset, count: count),
+    assetSource: (offset, count) =>
+        _getPersonBucketAssets(userId, personId, groupBy: groupBy, offset: offset, count: count),
     origin: TimelineOrigin.person,
   );
 
@@ -420,7 +425,12 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     }).watch();
   }
 
-  Future<List<BaseAsset>> _getPlaceBucketAssets(String place, {required int offset, required int count}) {
+  Future<List<BaseAsset>> _getPlaceBucketAssets(
+    String place, {
+    required int offset,
+    required int count,
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
     final query =
         _db.remoteAssetEntity.select().join([
             innerJoin(
@@ -434,7 +444,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
                 _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
                 _db.remoteExifEntity.city.equals(place),
           )
-          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+          ..orderBy(_assetDateOrder(groupBy).map((order) => order(_db.remoteAssetEntity)).toList())
           ..limit(count, offset: offset);
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
@@ -490,6 +500,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     String personId, {
     required int offset,
     required int count,
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
   }) {
     final idQuery = _db.assetFaceEntity.selectOnly()
       ..addColumns([_db.assetFaceEntity.assetId])
@@ -507,7 +518,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
             row.ownerId.equals(userId) &
             row.visibility.equalsValue(AssetVisibility.timeline),
       )
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..orderBy(_assetDateOrder(groupBy))
       ..limit(count, offset: offset);
 
     return query.map((row) => row.toDto()).get();
@@ -716,6 +727,14 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 }
 
 List<Bucket> _generateBuckets(int count) => count == 0 ? const [] : [Bucket(assetCount: count)];
+
+List<OrderingTerm Function($RemoteAssetEntityTable)> _assetDateOrder(GroupAssetsBy groupBy, {bool ascending = false}) {
+  OrderingTerm order(Expression<Object> exp) => ascending ? OrderingTerm.asc(exp) : OrderingTerm.desc(exp);
+  return [
+    if (groupBy != GroupAssetsBy.none) (row) => order(row.effectiveCreatedAt(groupBy)),
+    (row) => order(row.createdAt),
+  ];
+}
 
 extension on Expression<DateTime> {
   Expression<String> dateFmt(GroupAssetsBy groupBy, {bool toLocal = false}) {

@@ -120,13 +120,21 @@ const FilenameParamSchema = z.object({
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
 /**
+ * The HTML5 email regex, but with unicode support, so that international email addresses
+ * (unicode local parts and internationalized domain names) are accepted.
+ * @see {@link z.regexes.html5Email}
+ */
+const unicodeEmail =
+  /^[\p{L}\p{M}\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]{0,61}[\p{L}\p{M}\p{N}])?(?:\.[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]{0,61}[\p{L}\p{M}\p{N}])?)*$/u;
+
+/**
  * Unified email validation
- * Converts email strings to lowercase and validates against HTML5 email regex
+ * Converts email strings to lowercase and validates against a unicode aware email regex
  * @docs https://zod.dev/api?id=email
  */
 export const toEmail = z
   .email({
-    pattern: z.regexes.html5Email,
+    pattern: unicodeEmail,
     error: (iss) => `Invalid input: expected email, received ${typeof iss.input}`,
   })
   .transform((val) => val.toLowerCase());

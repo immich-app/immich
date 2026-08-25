@@ -151,6 +151,8 @@ export class AssetJobRepository {
       .select(columns.asset)
       .select(withFaces)
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .innerJoin('user', 'user.id', 'asset.ownerId')
+      .select(['user.clusterGroupId'])
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

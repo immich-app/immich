@@ -128,7 +128,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           syncSuccess = await backgroundManager.syncRemote();
         }, "syncRemote"),
       ]);
-      _ref.invalidate(driftMemoryFutureProvider);
+      _ref.invalidate(driftAllMemoriesProvider);
       if (syncSuccess) {
         await Future.wait([
           _safeRun(backgroundManager.hashAssets, "hashAssets").then((_) {
