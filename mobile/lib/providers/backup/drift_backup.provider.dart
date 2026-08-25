@@ -15,18 +15,9 @@ import 'package:logging/logging.dart';
 
 part 'drift_backup.provider.freezed.dart';
 
-class EnqueueStatus {
-  final int enqueueCount;
-  final int totalCount;
-
-  const EnqueueStatus({required this.enqueueCount, required this.totalCount});
-
-  EnqueueStatus copyWith({int? enqueueCount, int? totalCount}) {
-    return EnqueueStatus(enqueueCount: enqueueCount ?? this.enqueueCount, totalCount: totalCount ?? this.totalCount);
-  }
-
-  @override
-  String toString() => 'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
+@freezed
+abstract class EnqueueStatus with _$EnqueueStatus {
+  const factory EnqueueStatus({required int enqueueCount, required int totalCount}) = _EnqueueStatus;
 }
 
 @freezed
