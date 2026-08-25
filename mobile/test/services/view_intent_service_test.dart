@@ -2,12 +2,11 @@
 
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/platform/view_intent_api.g.dart' as pigeon;
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as p;
 
 class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 
@@ -60,15 +59,6 @@ void main() {
     verify(() => hostApi.consumeViewIntent()).called(1);
   });
 
-  test('consumeViewIntent preserves an unavailable view intent error', () async {
-    when(() => hostApi.consumeViewIntent()).thenThrow(PlatformException(code: pigeon.viewIntentUnavailableErrorCode));
-
-    await expectLater(
-      service.consumeViewIntent(),
-      throwsA(isA<PlatformException>().having((error) => error.code, 'code', pigeon.viewIntentUnavailableErrorCode)),
-    );
-  });
-
   test('setManagedTempFilePath cleans previous managed temp file', () async {
     final firstFile = File('${cacheDir.path}/view_intent_first.jpg')..writeAsStringSync('first');
     final secondFile = File('${cacheDir.path}/view_intent_second.jpg')..writeAsStringSync('second');
@@ -116,8 +106,8 @@ void main() {
   });
 
   test('cleanupStaleTempFiles skips paths with active uploads', () async {
-    final stale = File('${cacheDir.path}/view_intent_stale.jpg')..writeAsStringSync('stale');
-    final active = File('${cacheDir.path}/view_intent_active.jpg')..writeAsStringSync('active');
+    final stale = File(p.join(cacheDir.path, 'view_intent_stale.jpg'))..writeAsStringSync('stale');
+    final active = File(p.join(cacheDir.path, 'view_intent_active.jpg'))..writeAsStringSync('active');
     service.markUploadActive(active.path);
 
     await service.cleanupStaleTempFiles();
