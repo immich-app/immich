@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/services/partner.service.dart';
-import 'package:mocktail/mocktail.dart';
 
 import '../service_context.dart';
 
@@ -74,7 +73,7 @@ void main() {
 
       await sut.create(sharedById: me.id, sharedWithId: partner.id);
 
-      verify(() => ctx.partnerApi.create(partner.id)).called(1);
+      ctx.partnerApi.create.calledWith(partner.id);
       final shared = await sut.search(me.id, .sharedBy).first;
       expect(shared.map((p) => p.id), unorderedEquals([partner.id]));
     });
@@ -88,7 +87,7 @@ void main() {
 
       await sut.delete(sharedById: me.id, sharedWithId: recipient.id);
 
-      verify(() => ctx.partnerApi.delete(recipient.id)).called(1);
+      ctx.partnerApi.delete.calledWith(recipient.id);
       final shared = await sut.search(me.id, .sharedBy).first;
       expect(shared, isEmpty);
     });
@@ -102,7 +101,7 @@ void main() {
 
       await sut.update(sharedById: sharer.id, sharedWithId: me.id, inTimeline: true);
 
-      verify(() => ctx.partnerApi.update(sharer.id, inTimeline: true)).called(1);
+      ctx.partnerApi.update.calledWith(sharer.id, inTimeline: true);
       final partner = await ctx.partnerRepository.get(sharedById: sharer.id, sharedWithId: me.id);
       expect(partner.inTimeline, isTrue);
     });

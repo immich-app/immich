@@ -37,6 +37,9 @@ lib/**/*.freezed.dart
 lib/routing/router.gr.dart
 test/drift/main/generated/
 
+**/*.handles.dart
+test/mockito_targets.mocks.dart
+
 # Pigeon related
 /lib/platform/*.g.dart
 /ios/**/*.g.swift
