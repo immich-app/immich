@@ -106,6 +106,6 @@ class _MapAssetCount extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final count = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
-    return Text(context.t.photos_count(count: count), style: context.themeData.textTheme.headlineSmall);
+    return Text(context.t.map_assets_in_bounds(count: count), style: context.themeData.textTheme.headlineSmall);
   }
 }
