@@ -224,7 +224,7 @@
       focusAsset(scrollTarget);
     }
 
-    if (!isAssetViewerRoute(page)) {
+    if (hasNavigatedToOrFromAssetViewer && !isAssetViewerRoute(page)) {
       restoreFocusTo(scrollableElement);
     }
   };
