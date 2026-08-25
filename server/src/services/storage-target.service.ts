@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import {
   mapStorageTarget,
   mapStorageTransfer,
+  StorageTargetConfigDto,
   StorageTargetCreateDto,
   StorageTargetResponseDto,
   StorageTargetSecretDto,
@@ -9,10 +10,17 @@ import {
   StorageTargetUpdateDto,
   StorageTransferCreateDto,
   StorageTransferResponseDto,
+  StorageTransferScopeDto,
 } from 'src/dtos/storage-target.dto';
-import { JobName, StorageTargetKind, StorageTransferDirection, StorageTransferStatus } from 'src/enum';
+import {
+  JobName,
+  StorageTargetKind,
+  StorageTransferDirection,
+  StorageTransferScopeType,
+  StorageTransferStatus,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { StorageTargetConfig, StorageTargetSecret } from 'src/types';
+import { StorageTargetConfig, StorageTargetSecret, StorageTransferScope } from 'src/types';
 
 @Injectable()
 export class StorageTargetService extends BaseService {
@@ -27,7 +35,8 @@ export class StorageTargetService extends BaseService {
   }
 
   async create(dto: StorageTargetCreateDto): Promise<StorageTargetResponseDto> {
-    const secret = asSecret(dto.config.kind, dto.secret);
+    const config = asConfig(dto.kind, dto.config);
+    const secret = asSecret(dto.kind, dto.secret);
 
     const duplicate = await this.storageTargetRepository.getByName(dto.name);
     if (duplicate) {
@@ -36,8 +45,8 @@ export class StorageTargetService extends BaseService {
 
     const target = await this.storageTargetRepository.create({
       name: dto.name,
-      kind: dto.config.kind,
-      config: dto.config as StorageTargetConfig,
+      kind: dto.kind,
+      config,
       secret,
       isEnabled: dto.isEnabled,
     });
@@ -48,19 +57,12 @@ export class StorageTargetService extends BaseService {
   async update(id: string, dto: StorageTargetUpdateDto): Promise<StorageTargetResponseDto> {
     const existing = await this.findOrFailTarget(id);
 
-    const config = (dto.config ?? existing.config) as StorageTargetConfig;
+    // The kind is immutable, so an update always narrows against the stored one.
+    const config = dto.config ? asConfig(existing.kind, dto.config) : (existing.config as StorageTargetConfig);
 
     // An omitted secret means "keep what is stored", so the UI never has to hold
-    // credentials it cannot read back. Changing the kind, however, invalidates
-    // the stored credentials, so new ones have to come with it.
-    let secret = existing.secret as StorageTargetSecret;
-    if (dto.secret) {
-      secret = asSecret(config.kind, dto.secret);
-    } else if (config.kind !== existing.kind) {
-      throw new BadRequestException(
-        'Changing the kind of an existing storage target requires supplying matching credentials',
-      );
-    }
+    // credentials it cannot read back.
+    const secret = dto.secret ? asSecret(existing.kind, dto.secret) : (existing.secret as StorageTargetSecret);
 
     if (dto.name && dto.name !== existing.name) {
       const duplicate = await this.storageTargetRepository.getByName(dto.name);
@@ -71,7 +73,6 @@ export class StorageTargetService extends BaseService {
 
     const target = await this.storageTargetRepository.update(id, {
       name: dto.name ?? existing.name,
-      kind: config.kind,
       config,
       secret,
       isEnabled: dto.isEnabled ?? existing.isEnabled,
@@ -138,7 +139,7 @@ export class StorageTargetService extends BaseService {
       ownerId: dto.ownerId,
       direction,
       status: StorageTransferStatus.Pending,
-      scope: dto.scope,
+      scope: asScope(dto.scope),
     });
 
     await this.jobRepository.queue({
@@ -185,6 +186,67 @@ function asSecret(kind: StorageTargetKind, secret: StorageTargetSecretDto): Stor
     }
     default: {
       throw new BadRequestException(`Unsupported storage target kind: ${kind}`);
+    }
+  }
+}
+
+/**
+ * Connection details arrive as a flat bag so that clients get a usable `kind`
+ * enum. This narrows that bag to the declared kind and rejects one that is
+ * missing what the kind needs.
+ */
+function asConfig(kind: StorageTargetKind, config: StorageTargetConfigDto): StorageTargetConfig {
+  const { prefix } = config;
+
+  switch (kind) {
+    case StorageTargetKind.S3: {
+      if (!config.bucket) {
+        throw new BadRequestException('An S3 target requires a bucket');
+      }
+      return {
+        kind,
+        endpoint: config.endpoint,
+        bucket: config.bucket,
+        region: config.region,
+        forcePathStyle: config.forcePathStyle,
+        prefix,
+      };
+    }
+    case StorageTargetKind.WebDav: {
+      if (!config.baseUrl) {
+        throw new BadRequestException('A WebDAV target requires a base URL');
+      }
+      return { kind, baseUrl: config.baseUrl, prefix };
+    }
+    case StorageTargetKind.Local: {
+      if (!config.basePath) {
+        throw new BadRequestException('A filesystem target requires a path');
+      }
+      return { kind, basePath: config.basePath, prefix };
+    }
+    default: {
+      throw new BadRequestException(`Unsupported storage target kind: ${kind}`);
+    }
+  }
+}
+
+/** Narrows the flat scope payload to the variant its `type` declares. */
+function asScope(scope: StorageTransferScopeDto): StorageTransferScope {
+  switch (scope.type) {
+    case StorageTransferScopeType.Albums: {
+      if (!scope.albumIds?.length) {
+        throw new BadRequestException('A transfer scoped to albums requires at least one album');
+      }
+      return { type: scope.type, albumIds: scope.albumIds };
+    }
+    case StorageTransferScopeType.Assets: {
+      if (!scope.assetIds?.length) {
+        throw new BadRequestException('A transfer scoped to assets requires at least one asset');
+      }
+      return { type: scope.type, assetIds: scope.assetIds };
+    }
+    default: {
+      return { type: StorageTransferScopeType.All };
     }
   }
 }

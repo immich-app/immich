@@ -146,6 +146,9 @@ export const Route = {
   workflows: () => '/workflows',
   viewWorkflow: ({ id }: { id: string }) => `/workflows/${id}`,
 
+  // storage targets
+  storageTargets: () => '/admin/storage-targets',
+
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,

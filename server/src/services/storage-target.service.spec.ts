@@ -1,8 +1,20 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { StorageTargetKind, StorageTransferDirection, StorageTransferStatus } from 'src/enum';
+import { StorageTargetKind, StorageTransferDirection, StorageTransferScopeType, StorageTransferStatus } from 'src/enum';
 import { StorageTargetService } from 'src/services/storage-target.service';
 import { newTestService, ServiceMocks } from 'test/utils';
 
+/** What a client sends: one flat shape regardless of kind. */
+const s3ConfigDto = {
+  endpoint: 'http://minio:9000',
+  bucket: 'immich',
+  region: 'us-east-1',
+  forcePathStyle: true,
+  baseUrl: '',
+  basePath: '',
+  prefix: 'photos',
+};
+
+/** What gets stored: narrowed to the declared kind. */
 const s3Config = {
   kind: StorageTargetKind.S3 as const,
   endpoint: 'http://minio:9000',
@@ -42,7 +54,7 @@ const transferStub = {
   ownerId: 'user-1',
   direction: StorageTransferDirection.Export,
   status: StorageTransferStatus.Pending,
-  scope: { type: 'all' as const },
+  scope: { type: StorageTransferScopeType.All } as const,
   totalCount: 0,
   completedCount: 0,
   failedCount: 0,
@@ -76,7 +88,8 @@ describe(StorageTargetService.name, () => {
 
       expect(target).not.toHaveProperty('secret');
       expect(target.hasCredentials).toBe(true);
-      expect(target.config).toEqual(s3Config);
+      // The response widens the stored, kind-specific config back to the flat shape.
+      expect(target.config).toEqual(s3ConfigDto);
     });
   });
 
@@ -92,7 +105,8 @@ describe(StorageTargetService.name, () => {
       await expect(
         sut.create({
           name: 'Mismatched',
-          config: s3Config,
+          kind: StorageTargetKind.S3,
+          config: s3ConfigDto,
           secret: { username: 'alice', password: 'hunter2' },
           isEnabled: true,
         }),
@@ -102,11 +116,17 @@ describe(StorageTargetService.name, () => {
     });
 
     it('should not require credentials for a local target', async () => {
-      const localConfig = { kind: StorageTargetKind.Local as const, basePath: '/mnt/backup', prefix: '' };
+      const localConfig = { ...s3ConfigDto, basePath: '/mnt/backup', prefix: '' };
       mocks.storageTarget.getByName.mockResolvedValue(void 0);
       mocks.storageTarget.create.mockResolvedValue({ ...targetStub, kind: StorageTargetKind.Local });
 
-      await sut.create({ name: 'NAS', config: localConfig, secret: {}, isEnabled: true });
+      await sut.create({
+        name: 'NAS',
+        kind: StorageTargetKind.Local,
+        config: localConfig,
+        secret: {},
+        isEnabled: true,
+      });
 
       expect(mocks.storageTarget.create).toHaveBeenCalledWith(
         expect.objectContaining({ kind: StorageTargetKind.Local, secret: { kind: StorageTargetKind.Local } }),
@@ -117,7 +137,13 @@ describe(StorageTargetService.name, () => {
       mocks.storageTarget.getByName.mockResolvedValue(targetStub);
 
       await expect(
-        sut.create({ name: 'MinIO', config: s3Config, secret: s3SecretDto, isEnabled: true }),
+        sut.create({
+          name: 'MinIO',
+          kind: StorageTargetKind.S3,
+          config: s3ConfigDto,
+          secret: s3SecretDto,
+          isEnabled: true,
+        }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.storageTarget.create).not.toHaveBeenCalled();
@@ -127,7 +153,13 @@ describe(StorageTargetService.name, () => {
       mocks.storageTarget.getByName.mockResolvedValue(void 0);
       mocks.storageTarget.create.mockResolvedValue(targetStub);
 
-      await sut.create({ name: 'MinIO', config: s3Config, secret: s3SecretDto, isEnabled: true });
+      await sut.create({
+        name: 'MinIO',
+        kind: StorageTargetKind.S3,
+        config: s3ConfigDto,
+        secret: s3SecretDto,
+        isEnabled: true,
+      });
 
       expect(mocks.storageTarget.create).toHaveBeenCalledWith({
         name: 'MinIO',
@@ -152,14 +184,12 @@ describe(StorageTargetService.name, () => {
       );
     });
 
-    it('should reject changing kind without matching credentials', async () => {
+    it('should reject a config that is missing what the kind needs', async () => {
       mocks.storageTarget.get.mockResolvedValue(targetStub);
 
-      await expect(
-        sut.update('target-1', {
-          config: { kind: StorageTargetKind.Local, basePath: '/mnt/backup', prefix: '' },
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update('target-1', { config: { ...s3ConfigDto, bucket: '' } })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.storageTarget.update).not.toHaveBeenCalled();
     });
@@ -194,9 +224,9 @@ describe(StorageTargetService.name, () => {
     it('should refuse to use a disabled target', async () => {
       mocks.storageTarget.get.mockResolvedValue({ ...targetStub, isEnabled: false });
 
-      await expect(sut.startExport('target-1', { ownerId: 'user-1', scope: { type: 'all' } })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        sut.startExport('target-1', { ownerId: 'user-1', scope: { type: StorageTransferScopeType.All } }),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });
@@ -206,7 +236,10 @@ describe(StorageTargetService.name, () => {
       mocks.user.get.mockResolvedValue({ id: 'user-1' } as never);
       mocks.storageTarget.createTransfer.mockResolvedValue(transferStub);
 
-      const transfer = await sut.startExport('target-1', { ownerId: 'user-1', scope: { type: 'all' } });
+      const transfer = await sut.startExport('target-1', {
+        ownerId: 'user-1',
+        scope: { type: StorageTransferScopeType.All },
+      });
 
       expect(transfer.id).toBe('transfer-1');
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -225,7 +258,7 @@ describe(StorageTargetService.name, () => {
         direction: StorageTransferDirection.Import,
       });
 
-      await sut.startImport('target-1', { ownerId: 'user-1', scope: { type: 'all' } });
+      await sut.startImport('target-1', { ownerId: 'user-1', scope: { type: StorageTransferScopeType.All } });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: 'StorageTargetImportScan',

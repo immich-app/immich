@@ -344,6 +344,17 @@ export const StorageTargetKindSchema = z
   .describe('Storage target kind')
   .meta({ id: 'StorageTargetKind' });
 
+export enum StorageTransferScopeType {
+  All = 'all',
+  Albums = 'albums',
+  Assets = 'assets',
+}
+
+export const StorageTransferScopeTypeSchema = z
+  .enum(StorageTransferScopeType)
+  .describe('Storage transfer scope type')
+  .meta({ id: 'StorageTransferScopeType' });
+
 export enum StorageTransferDirection {
   Export = 'export',
   Import = 'import',

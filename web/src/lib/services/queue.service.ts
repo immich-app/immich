@@ -10,6 +10,7 @@ import {
 import { modalManager, toastManager, type ActionItem, type IconLike } from '@immich/ui';
 import {
   mdiClose,
+  mdiCloudUploadOutline,
   mdiCog,
   mdiContentDuplicate,
   mdiDatabaseOutline,
@@ -245,6 +246,11 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     [QueueName.IntegrityCheck]: {
       icon: mdiFileCheckOutline,
       title: $t('integrity_checks'),
+    },
+    [QueueName.StorageTarget]: {
+      icon: mdiCloudUploadOutline,
+      title: $t('admin.storage_targets'),
+      subtitle: $t('admin.storage_targets_description'),
     },
     [QueueName.Editor]: {
       icon: mdiPencil,

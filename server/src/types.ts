@@ -26,6 +26,7 @@ import {
   QueueName,
   StorageFolder,
   StorageTargetKind,
+  StorageTransferScopeType,
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
@@ -322,7 +323,9 @@ export type StorageTargetSecret =
 
 /** Which assets (export) or remote objects (import) a transfer covers. */
 export type StorageTransferScope =
-  { type: 'all' } | { type: 'albums'; albumIds: string[] } | { type: 'assets'; assetIds: string[] };
+  | { type: StorageTransferScopeType.All }
+  | { type: StorageTransferScopeType.Albums; albumIds: string[] }
+  | { type: StorageTransferScopeType.Assets; assetIds: string[] };
 
 export interface IStorageTransferJob {
   transferId: string;

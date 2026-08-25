@@ -26826,26 +26826,59 @@
         ],
         "type": "string"
       },
+      "StorageTargetConfigDto": {
+        "description": "Connection details. Which fields apply depends on the target kind.",
+        "properties": {
+          "basePath": {
+            "default": "",
+            "description": "Absolute path to a local or network-mounted directory",
+            "type": "string"
+          },
+          "baseUrl": {
+            "default": "",
+            "description": "WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice",
+            "type": "string"
+          },
+          "bucket": {
+            "default": "",
+            "description": "S3 bucket name",
+            "type": "string"
+          },
+          "endpoint": {
+            "default": "",
+            "description": "S3 endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS.",
+            "type": "string"
+          },
+          "forcePathStyle": {
+            "default": true,
+            "description": "Use S3 path-style addressing, required by MinIO and most self-hosted implementations",
+            "type": "boolean"
+          },
+          "prefix": {
+            "default": "",
+            "description": "Key prefix applied to every object read from or written to this target",
+            "type": "string"
+          },
+          "region": {
+            "default": "us-east-1",
+            "description": "S3 region",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "StorageTargetCreateDto": {
         "properties": {
           "config": {
-            "description": "Connection details, shape depends on the target kind",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/StorageTargetS3ConfigDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetWebDavConfigDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetLocalConfigDto"
-              }
-            ]
+            "$ref": "#/components/schemas/StorageTargetConfigDto"
           },
           "isEnabled": {
             "default": true,
             "description": "Whether this target can be used for transfers",
             "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StorageTargetKind"
           },
           "name": {
             "description": "Human-readable name, unique across targets",
@@ -26858,6 +26891,7 @@
         },
         "required": [
           "config",
+          "kind",
           "name",
           "secret"
         ],
@@ -26872,46 +26906,10 @@
         ],
         "type": "string"
       },
-      "StorageTargetLocalConfigDto": {
-        "properties": {
-          "basePath": {
-            "description": "Absolute path to a local or network-mounted directory",
-            "minLength": 1,
-            "type": "string"
-          },
-          "kind": {
-            "enum": [
-              "local"
-            ],
-            "type": "string"
-          },
-          "prefix": {
-            "default": "",
-            "description": "Key prefix applied to every object read from or written to this target",
-            "type": "string"
-          }
-        },
-        "required": [
-          "basePath",
-          "kind"
-        ],
-        "type": "object"
-      },
       "StorageTargetResponseDto": {
         "properties": {
           "config": {
-            "description": "Connection details, shape depends on the target kind",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/StorageTargetS3ConfigDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetWebDavConfigDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetLocalConfigDto"
-              }
-            ]
+            "$ref": "#/components/schemas/StorageTargetConfigDto"
           },
           "createdAt": {
             "description": "Creation date",
@@ -26957,47 +26955,6 @@
         ],
         "type": "object"
       },
-      "StorageTargetS3ConfigDto": {
-        "properties": {
-          "bucket": {
-            "description": "Bucket name",
-            "minLength": 1,
-            "type": "string"
-          },
-          "endpoint": {
-            "default": "",
-            "description": "Custom endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS.",
-            "type": "string"
-          },
-          "forcePathStyle": {
-            "default": true,
-            "description": "Use path-style addressing, required by MinIO and most self-hosted S3 implementations",
-            "type": "boolean"
-          },
-          "kind": {
-            "enum": [
-              "s3"
-            ],
-            "type": "string"
-          },
-          "prefix": {
-            "default": "",
-            "description": "Key prefix applied to every object read from or written to this target",
-            "type": "string"
-          },
-          "region": {
-            "default": "us-east-1",
-            "description": "Region",
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "bucket",
-          "kind"
-        ],
-        "type": "object"
-      },
       "StorageTargetSecretDto": {
         "description": "Credentials for the target. Write-only: never returned by the API.",
         "properties": {
@@ -27039,18 +26996,7 @@
       "StorageTargetUpdateDto": {
         "properties": {
           "config": {
-            "description": "Connection details, shape depends on the target kind",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/StorageTargetS3ConfigDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetWebDavConfigDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetLocalConfigDto"
-              }
-            ]
+            "$ref": "#/components/schemas/StorageTargetConfigDto"
           },
           "isEnabled": {
             "description": "Whether this target can be used for transfers",
@@ -27067,31 +27013,6 @@
         },
         "type": "object"
       },
-      "StorageTargetWebDavConfigDto": {
-        "properties": {
-          "baseUrl": {
-            "description": "WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice",
-            "format": "uri",
-            "type": "string"
-          },
-          "kind": {
-            "enum": [
-              "webdav"
-            ],
-            "type": "string"
-          },
-          "prefix": {
-            "default": "",
-            "description": "Key prefix applied to every object read from or written to this target",
-            "type": "string"
-          }
-        },
-        "required": [
-          "baseUrl",
-          "kind"
-        ],
-        "type": "object"
-      },
       "StorageTransferCreateDto": {
         "properties": {
           "ownerId": {
@@ -27101,21 +27022,10 @@
             "type": "string"
           },
           "scope": {
+            "$ref": "#/components/schemas/StorageTransferScopeDto",
             "default": {
               "type": "all"
-            },
-            "description": "Which assets the transfer covers",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/StorageTransferScopeAllDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTransferScopeAlbumsDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTransferScopeAssetsDto"
-              }
-            ]
+            }
           }
         },
         "required": [
@@ -27214,67 +27124,44 @@
         ],
         "type": "object"
       },
-      "StorageTransferScopeAlbumsDto": {
+      "StorageTransferScopeDto": {
+        "description": "Which assets the transfer covers",
         "properties": {
           "albumIds": {
+            "description": "Albums to transfer, when type is \"albums\"",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "minItems": 1,
             "type": "array"
           },
-          "type": {
-            "enum": [
-              "albums"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "albumIds",
-          "type"
-        ],
-        "type": "object"
-      },
-      "StorageTransferScopeAllDto": {
-        "properties": {
-          "type": {
-            "enum": [
-              "all"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "type"
-        ],
-        "type": "object"
-      },
-      "StorageTransferScopeAssetsDto": {
-        "properties": {
           "assetIds": {
+            "description": "Assets to transfer, when type is \"assets\"",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "minItems": 1,
             "type": "array"
           },
           "type": {
-            "enum": [
-              "assets"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/StorageTransferScopeType"
           }
         },
         "required": [
-          "assetIds",
           "type"
         ],
         "type": "object"
+      },
+      "StorageTransferScopeType": {
+        "description": "Storage transfer scope type",
+        "enum": [
+          "all",
+          "albums",
+          "assets"
+        ],
+        "type": "string"
       },
       "StorageTransferStatus": {
         "description": "Storage transfer status",

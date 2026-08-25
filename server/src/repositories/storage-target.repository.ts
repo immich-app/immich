@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetVisibility, StorageTransferStatus } from 'src/enum';
+import { AssetVisibility, StorageTransferScopeType, StorageTransferStatus } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   StorageTargetObjectTable,
@@ -123,13 +123,13 @@ export class StorageTargetRepository {
       .where('asset.visibility', '!=', AssetVisibility.Hidden);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { type: 'all' }], stream: true })
+  @GenerateSql({ params: [DummyValue.UUID, { type: StorageTransferScopeType.All }], stream: true })
   streamAssetsForExport(ownerId: string, scope: StorageTransferScope) {
     let query = this.exportableAssetQuery(ownerId);
 
-    if (scope.type === 'assets') {
+    if (scope.type === StorageTransferScopeType.Assets) {
       query = query.where('asset.id', 'in', scope.assetIds);
-    } else if (scope.type === 'albums') {
+    } else if (scope.type === StorageTransferScopeType.Albums) {
       query = query.where('asset.id', 'in', (eb) =>
         eb.selectFrom('album_asset').select('album_asset.assetId').where('album_asset.albumId', 'in', scope.albumIds),
       );

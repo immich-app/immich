@@ -4,58 +4,41 @@ import {
   StorageTargetKind,
   StorageTargetKindSchema,
   StorageTransferDirectionSchema,
+  StorageTransferScopeType,
+  StorageTransferScopeTypeSchema,
   StorageTransferStatusSchema,
 } from 'src/enum';
 import { StorageTargetTable, StorageTargetTransferTable } from 'src/schema/tables/storage-target.table';
-import { StorageTargetSecret } from 'src/types';
+import { StorageTargetConfig, StorageTargetSecret } from 'src/types';
 import { asDateTimeString } from 'src/utils/date';
 import z from 'zod';
 
-const prefix = z
-  .string()
-  .default('')
-  .describe('Key prefix applied to every object read from or written to this target');
-
-const S3ConfigSchema = z
+// Connection details are a flat bag rather than a discriminated union: the union
+// generates one anonymous single-value enum per branch in every client SDK, which
+// makes the kind unusable from client code. The kind lives once, at the top level,
+// and the server narrows the bag against it.
+const StorageTargetConfigSchema = z
   .object({
-    kind: z.literal(StorageTargetKind.S3),
     endpoint: z
       .string()
       .default('')
-      .describe('Custom endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS.'),
-    bucket: z.string().min(1).describe('Bucket name'),
-    region: z.string().min(1).default('us-east-1').describe('Region'),
+      .describe('S3 endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS.'),
+    bucket: z.string().default('').describe('S3 bucket name'),
+    region: z.string().default('us-east-1').describe('S3 region'),
     forcePathStyle: z
       .boolean()
       .default(true)
-      .describe('Use path-style addressing, required by MinIO and most self-hosted S3 implementations'),
-    prefix,
+      .describe('Use S3 path-style addressing, required by MinIO and most self-hosted implementations'),
+    baseUrl: z
+      .string()
+      .default('')
+      .describe('WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice'),
+    basePath: z.string().default('').describe('Absolute path to a local or network-mounted directory'),
+    prefix: z.string().default('').describe('Key prefix applied to every object read from or written to this target'),
   })
-  .meta({ id: 'StorageTargetS3ConfigDto' });
+  .describe('Connection details. Which fields apply depends on the target kind.')
+  .meta({ id: 'StorageTargetConfigDto' });
 
-const WebDavConfigSchema = z
-  .object({
-    kind: z.literal(StorageTargetKind.WebDav),
-    baseUrl: z.url().describe('WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice'),
-    prefix,
-  })
-  .meta({ id: 'StorageTargetWebDavConfigDto' });
-
-const LocalConfigSchema = z
-  .object({
-    kind: z.literal(StorageTargetKind.Local),
-    basePath: z.string().min(1).describe('Absolute path to a local or network-mounted directory'),
-    prefix,
-  })
-  .meta({ id: 'StorageTargetLocalConfigDto' });
-
-const StorageTargetConfigSchema = z
-  .discriminatedUnion('kind', [S3ConfigSchema, WebDavConfigSchema, LocalConfigSchema])
-  .describe('Connection details, shape depends on the target kind');
-
-// Credentials deliberately do not repeat the target kind: it is already carried by
-// `config`, and having it in two places only creates a way for a client to
-// contradict itself. The service derives the kind from the config.
 const StorageTargetSecretSchema = z
   .object({
     accessKeyId: z.string().optional().describe('S3 access key ID'),
@@ -69,6 +52,7 @@ const StorageTargetSecretSchema = z
 const StorageTargetCreateSchema = z
   .object({
     name: z.string().min(1).describe('Human-readable name, unique across targets'),
+    kind: StorageTargetKindSchema,
     config: StorageTargetConfigSchema,
     secret: StorageTargetSecretSchema,
     isEnabled: z.boolean().default(true).describe('Whether this target can be used for transfers'),
@@ -78,6 +62,8 @@ const StorageTargetCreateSchema = z
 const StorageTargetUpdateSchema = z
   .object({
     name: z.string().min(1).optional().describe('Human-readable name, unique across targets'),
+    // The kind is fixed once a target exists: changing it would invalidate both
+    // the stored credentials and every object already recorded against it.
     config: StorageTargetConfigSchema.optional(),
     // Omitting `secret` keeps the stored credentials, so the UI never has to
     // round-trip them and they never need to leave the server.
@@ -106,28 +92,21 @@ const StorageTargetTestResponseSchema = z
   })
   .meta({ id: 'StorageTargetTestResponseDto' });
 
+// Flat for the same reason as the config above: a discriminated union here turns
+// into three anonymous single-value enums in the generated clients.
 const StorageTransferScopeSchema = z
-  .discriminatedUnion('type', [
-    z.object({ type: z.literal('all') }).meta({ id: 'StorageTransferScopeAllDto' }),
-    z
-      .object({
-        type: z.literal('albums'),
-        albumIds: z.array(z.uuidv4()).min(1),
-      })
-      .meta({ id: 'StorageTransferScopeAlbumsDto' }),
-    z
-      .object({
-        type: z.literal('assets'),
-        assetIds: z.array(z.uuidv4()).min(1),
-      })
-      .meta({ id: 'StorageTransferScopeAssetsDto' }),
-  ])
-  .describe('Which assets the transfer covers');
+  .object({
+    type: StorageTransferScopeTypeSchema,
+    albumIds: z.array(z.uuidv4()).optional().describe('Albums to transfer, when type is "albums"'),
+    assetIds: z.array(z.uuidv4()).optional().describe('Assets to transfer, when type is "assets"'),
+  })
+  .describe('Which assets the transfer covers')
+  .meta({ id: 'StorageTransferScopeDto' });
 
 const StorageTransferCreateSchema = z
   .object({
     ownerId: z.uuidv4().describe('User whose assets are exported, or who will own the imported assets'),
-    scope: StorageTransferScopeSchema.default({ type: 'all' }),
+    scope: StorageTransferScopeSchema.default({ type: StorageTransferScopeType.All }),
   })
   .meta({ id: 'StorageTransferCreateDto' });
 
@@ -148,13 +127,31 @@ const StorageTransferResponseSchema = z
   })
   .meta({ id: 'StorageTransferResponseDto' });
 
+export class StorageTargetConfigDto extends createZodDto(StorageTargetConfigSchema) {}
 export class StorageTargetSecretDto extends createZodDto(StorageTargetSecretSchema) {}
+export class StorageTransferScopeDto extends createZodDto(StorageTransferScopeSchema) {}
 export class StorageTargetCreateDto extends createZodDto(StorageTargetCreateSchema) {}
 export class StorageTargetUpdateDto extends createZodDto(StorageTargetUpdateSchema) {}
 export class StorageTargetResponseDto extends createZodDto(StorageTargetResponseSchema) {}
 export class StorageTargetTestResponseDto extends createZodDto(StorageTargetTestResponseSchema) {}
 export class StorageTransferCreateDto extends createZodDto(StorageTransferCreateSchema) {}
 export class StorageTransferResponseDto extends createZodDto(StorageTransferResponseSchema) {}
+
+/**
+ * Widen the narrowed, kind-specific config back into the flat shape the API
+ * exposes, so a client sees the same field set regardless of the target kind.
+ */
+function asConfigDto(config: StorageTargetConfig): StorageTargetConfigDto {
+  return {
+    endpoint: 'endpoint' in config ? config.endpoint : '',
+    bucket: 'bucket' in config ? config.bucket : '',
+    region: 'region' in config ? config.region : '',
+    forcePathStyle: 'forcePathStyle' in config ? config.forcePathStyle : true,
+    baseUrl: 'baseUrl' in config ? config.baseUrl : '',
+    basePath: 'basePath' in config ? config.basePath : '',
+    prefix: config.prefix,
+  };
+}
 
 /** A local target needs no credentials; the others are only usable once they have them. */
 function hasCredentials(kind: StorageTargetKind, secret: StorageTargetSecret | null): boolean {
@@ -183,7 +180,7 @@ export function mapStorageTarget(entity: Selectable<StorageTargetTable>): Storag
     id: entity.id,
     name: entity.name,
     kind: entity.kind,
-    config: entity.config,
+    config: asConfigDto(entity.config),
     hasCredentials: hasCredentials(entity.kind, entity.secret),
     isEnabled: entity.isEnabled,
     createdAt: asDateTimeString(entity.createdAt),

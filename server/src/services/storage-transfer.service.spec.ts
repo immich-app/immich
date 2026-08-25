@@ -1,6 +1,12 @@
 import { Readable, Writable } from 'node:stream';
 import { StorageCore } from 'src/cores/storage.core';
-import { JobStatus, StorageTargetKind, StorageTransferDirection, StorageTransferStatus } from 'src/enum';
+import {
+  JobStatus,
+  StorageTargetKind,
+  StorageTransferDirection,
+  StorageTransferScopeType,
+  StorageTransferStatus,
+} from 'src/enum';
 import { StorageTransferService } from 'src/services/storage-transfer.service';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -29,7 +35,7 @@ const transferStub = {
   ownerId: 'user-1',
   direction: StorageTransferDirection.Export,
   status: StorageTransferStatus.Running,
-  scope: { type: 'all' as const },
+  scope: { type: StorageTransferScopeType.All } as const,
   totalCount: 1,
   completedCount: 0,
   failedCount: 0,

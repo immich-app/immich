@@ -546,36 +546,24 @@ export type TestEmailResponseDto = {
     /** Email message ID */
     messageId: string;
 };
-export type StorageTargetS3ConfigDto = {
-    /** Bucket name */
-    bucket: string;
-    /** Custom endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS. */
+export type StorageTargetConfigDto = {
+    /** Absolute path to a local or network-mounted directory */
+    basePath?: string;
+    /** WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice */
+    baseUrl?: string;
+    /** S3 bucket name */
+    bucket?: string;
+    /** S3 endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS. */
     endpoint?: string;
-    /** Use path-style addressing, required by MinIO and most self-hosted S3 implementations */
+    /** Use S3 path-style addressing, required by MinIO and most self-hosted implementations */
     forcePathStyle?: boolean;
-    kind: Kind;
     /** Key prefix applied to every object read from or written to this target */
     prefix?: string;
-    /** Region */
+    /** S3 region */
     region?: string;
 };
-export type StorageTargetWebDavConfigDto = {
-    /** WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice */
-    baseUrl: string;
-    kind: Kind2;
-    /** Key prefix applied to every object read from or written to this target */
-    prefix?: string;
-};
-export type StorageTargetLocalConfigDto = {
-    /** Absolute path to a local or network-mounted directory */
-    basePath: string;
-    kind: Kind3;
-    /** Key prefix applied to every object read from or written to this target */
-    prefix?: string;
-};
 export type StorageTargetResponseDto = {
-    /** Connection details, shape depends on the target kind */
-    config: StorageTargetS3ConfigDto | StorageTargetWebDavConfigDto | StorageTargetLocalConfigDto;
+    config: StorageTargetConfigDto;
     /** Creation date */
     createdAt: string;
     /** Whether credentials are stored for this target */
@@ -601,39 +589,33 @@ export type StorageTargetSecretDto = {
     username?: string;
 };
 export type StorageTargetCreateDto = {
-    /** Connection details, shape depends on the target kind */
-    config: StorageTargetS3ConfigDto | StorageTargetWebDavConfigDto | StorageTargetLocalConfigDto;
+    config: StorageTargetConfigDto;
     /** Whether this target can be used for transfers */
     isEnabled?: boolean;
+    kind: StorageTargetKind;
     /** Human-readable name, unique across targets */
     name: string;
     secret: StorageTargetSecretDto;
 };
 export type StorageTargetUpdateDto = {
-    /** Connection details, shape depends on the target kind */
-    config?: StorageTargetS3ConfigDto | StorageTargetWebDavConfigDto | StorageTargetLocalConfigDto;
+    config?: StorageTargetConfigDto;
     /** Whether this target can be used for transfers */
     isEnabled?: boolean;
     /** Human-readable name, unique across targets */
     name?: string;
     secret?: StorageTargetSecretDto;
 };
-export type StorageTransferScopeAllDto = {
-    "type": Type;
-};
-export type StorageTransferScopeAlbumsDto = {
-    albumIds: string[];
-    "type": Type2;
-};
-export type StorageTransferScopeAssetsDto = {
-    assetIds: string[];
-    "type": Type3;
+export type StorageTransferScopeDto = {
+    /** Albums to transfer, when type is "albums" */
+    albumIds?: string[];
+    /** Assets to transfer, when type is "assets" */
+    assetIds?: string[];
+    "type": StorageTransferScopeType;
 };
 export type StorageTransferCreateDto = {
     /** User whose assets are exported, or who will own the imported assets */
     ownerId: string;
-    /** Which assets the transfer covers */
-    scope?: StorageTransferScopeAllDto | StorageTransferScopeAlbumsDto | StorageTransferScopeAssetsDto;
+    scope?: StorageTransferScopeDto;
 };
 export type StorageTransferResponseDto = {
     /** Number of items completed */
@@ -7937,27 +7919,14 @@ export enum NotificationType {
     ClusterGroupRequest = "ClusterGroupRequest",
     Custom = "Custom"
 }
-export enum Kind {
-    S3 = "s3"
-}
-export enum Kind2 {
-    Webdav = "webdav"
-}
-export enum Kind3 {
-    Local = "local"
-}
 export enum StorageTargetKind {
     S3 = "s3",
     Webdav = "webdav",
     Local = "local"
 }
-export enum Type {
-    All = "all"
-}
-export enum Type2 {
-    Albums = "albums"
-}
-export enum Type3 {
+export enum StorageTransferScopeType {
+    All = "all",
+    Albums = "albums",
     Assets = "assets"
 }
 export enum StorageTransferDirection {
