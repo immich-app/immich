@@ -209,7 +209,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     try {
       if (!await _syncAssets(hashTimeout: hashTimeout)) {
         _logger.warning("Remote sync did not complete successfully, skipping backup");
-        return false;
+        return true;
       }
 
       final backupFuture = _handleBackup();
@@ -229,7 +229,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       }
     } catch (error, stack) {
       _logger.severe("Failed to complete $debugLabel", error, stack);
-      return false;
+      return true;
     } finally {
       sw.stop();
       _logger.info("$debugLabel completed in ${sw.elapsed.inSeconds}s");
@@ -291,25 +291,25 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<bool> _handleBackup() async {
-    final didComplete = await runZonedGuarded(() async {
+    final needsRetry = await runZonedGuarded(() async {
       if (_isCleanedUp) {
-        return true;
+        return false;
       }
 
       if (!_isBackupEnabled) {
         _logger.info("Backup is disabled. Skipping backup routine");
-        return true;
+        return false;
       }
 
       final currentUser = _ref?.read(currentUserProvider);
       if (currentUser == null) {
         _logger.warning("No current user found. Skipping backup from background");
-        return true;
+        return false;
       }
 
       if (Platform.isIOS) {
         await _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
-        return true;
+        return false;
       }
 
       final uploadService = _ref?.read(foregroundUploadServiceProvider);
@@ -323,9 +323,9 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         useSequentialUpload: true,
       );
       // Retry only when nothing moved; skipped candidates wait for the periodic worker instead
-      return uploaded > 0 || skipped >= candidates.length;
+      return uploaded == 0 && skipped < candidates.length;
     }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
-    return didComplete ?? false;
+    return needsRetry ?? true;
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {

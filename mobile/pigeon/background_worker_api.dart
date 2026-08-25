@@ -46,7 +46,7 @@ abstract class BackgroundWorkerFlutterApi {
   void onIosUpload(bool isRefresh, int? maxSeconds);
 
   // Android Only: Called when the Android background upload is triggered
-  // Returns whether the run completed its work; false makes the native side schedule a retry
+  // Returns whether the native side needs to retry the run
   @async
   bool onAndroidUpload(int? maxMinutes);
 

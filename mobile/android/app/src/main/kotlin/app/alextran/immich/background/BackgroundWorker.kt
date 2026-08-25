@@ -190,8 +190,8 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     }
 
     result.fold(
-      onSuccess = { didComplete ->
-        complete(if (didComplete) Result.success() else Result.retry())
+      onSuccess = { needsRetry ->
+        complete(if (needsRetry) Result.retry() else Result.success())
       },
       onFailure = { _ -> onStopped() }
     )
