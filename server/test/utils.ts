@@ -53,12 +53,14 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
+import { RemoteStorageRepository } from 'src/repositories/remote-storage.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
+import { StorageTargetRepository } from 'src/repositories/storage-target.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
@@ -275,6 +277,8 @@ export type ServiceOverrides = {
   sharedLinkAsset: SharedLinkAssetRepository;
   stack: StackRepository;
   storage: StorageRepository;
+  storageTarget: StorageTargetRepository;
+  remoteStorage: RemoteStorageRepository;
   sync: SyncRepository;
   syncCheckpoint: SyncCheckpointRepository;
   systemMetadata: SystemMetadataRepository;
@@ -361,6 +365,8 @@ export const getMocks = () => {
     sharedLinkAsset: automock(SharedLinkAssetRepository),
     stack: automock(StackRepository),
     storage: newStorageRepositoryMock(),
+    storageTarget: automock(StorageTargetRepository, { strict: false }),
+    remoteStorage: automock(RemoteStorageRepository, { args: [{ setContext: () => {} }] }),
     sync: automock(SyncRepository),
     syncCheckpoint: automock(SyncCheckpointRepository),
     systemMetadata: newSystemMetadataRepositoryMock(),
@@ -434,6 +440,8 @@ export const newTestService = <T extends BaseService>(
     overrides.sharedLinkAsset || (mocks.sharedLinkAsset as As<SharedLinkAssetRepository>),
     overrides.stack || (mocks.stack as As<StackRepository>),
     overrides.storage || (mocks.storage as As<StorageRepository>),
+    overrides.storageTarget || (mocks.storageTarget as As<StorageTargetRepository>),
+    overrides.remoteStorage || (mocks.remoteStorage as As<RemoteStorageRepository>),
     overrides.sync || (mocks.sync as As<SyncRepository>),
     overrides.syncCheckpoint || (mocks.syncCheckpoint as As<SyncCheckpointRepository>),
     overrides.systemMetadata || (mocks.systemMetadata as As<SystemMetadataRepository>),

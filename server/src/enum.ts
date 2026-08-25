@@ -326,7 +326,46 @@ export enum Permission {
   AdminSessionRead = 'adminSession.read',
 
   AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
+
+  AdminStorageTargetCreate = 'adminStorageTarget.create',
+  AdminStorageTargetRead = 'adminStorageTarget.read',
+  AdminStorageTargetUpdate = 'adminStorageTarget.update',
+  AdminStorageTargetDelete = 'adminStorageTarget.delete',
 }
+
+export enum StorageTargetKind {
+  S3 = 's3',
+  WebDav = 'webdav',
+  Local = 'local',
+}
+
+export const StorageTargetKindSchema = z
+  .enum(StorageTargetKind)
+  .describe('Storage target kind')
+  .meta({ id: 'StorageTargetKind' });
+
+export enum StorageTransferDirection {
+  Export = 'export',
+  Import = 'import',
+}
+
+export const StorageTransferDirectionSchema = z
+  .enum(StorageTransferDirection)
+  .describe('Storage transfer direction')
+  .meta({ id: 'StorageTransferDirection' });
+
+export enum StorageTransferStatus {
+  Pending = 'pending',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+  Cancelled = 'cancelled',
+}
+
+export const StorageTransferStatusSchema = z
+  .enum(StorageTransferStatus)
+  .describe('Storage transfer status')
+  .meta({ id: 'StorageTransferStatus' });
 
 export enum SharedLinkType {
   Album = 'ALBUM',
@@ -829,6 +868,7 @@ export enum QueueName {
   Workflow = 'workflow',
   IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
+  StorageTarget = 'storageTarget',
 }
 
 export const QueueNameSchema = z.enum(QueueName).describe('Queue name').meta({ id: 'QueueName' });
@@ -935,6 +975,12 @@ export enum JobName {
   IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
   IntegrityDeleteReportType = 'IntegrityDeleteReportType',
   IntegrityDeleteReports = 'IntegrityDeleteReports',
+
+  // External storage targets
+  StorageTargetExportQueue = 'StorageTargetExportQueue',
+  StorageTargetExportAsset = 'StorageTargetExportAsset',
+  StorageTargetImportScan = 'StorageTargetImportScan',
+  StorageTargetImportObject = 'StorageTargetImportObject',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -1239,6 +1285,7 @@ export enum ApiTag {
   Stacks = 'Stacks',
   Sync = 'Sync',
   SystemConfig = 'System config',
+  StorageTargets = 'Storage targets (admin)',
   SystemMetadata = 'System metadata',
   Tags = 'Tags',
   Timeline = 'Timeline',

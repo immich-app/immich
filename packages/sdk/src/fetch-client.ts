@@ -176,6 +176,7 @@ export type AdminConfigJobDto = {
     search: AdminConfigJobSettingsDto;
     sidecar: AdminConfigJobSettingsDto;
     smartSearch: AdminConfigJobSettingsDto;
+    storageTarget: AdminConfigJobSettingsDto;
     thumbnailGeneration: AdminConfigJobSettingsDto;
     videoConversion: AdminConfigJobSettingsDto;
     workflow: AdminConfigJobSettingsDto;
@@ -544,6 +545,134 @@ export type TemplateResponseDto = {
 export type TestEmailResponseDto = {
     /** Email message ID */
     messageId: string;
+};
+export type StorageTargetS3ConfigDto = {
+    /** Bucket name */
+    bucket: string;
+    /** Custom endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS. */
+    endpoint?: string;
+    /** Use path-style addressing, required by MinIO and most self-hosted S3 implementations */
+    forcePathStyle?: boolean;
+    kind: Kind;
+    /** Key prefix applied to every object read from or written to this target */
+    prefix?: string;
+    /** Region */
+    region?: string;
+};
+export type StorageTargetWebDavConfigDto = {
+    /** WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice */
+    baseUrl: string;
+    kind: Kind2;
+    /** Key prefix applied to every object read from or written to this target */
+    prefix?: string;
+};
+export type StorageTargetLocalConfigDto = {
+    /** Absolute path to a local or network-mounted directory */
+    basePath: string;
+    kind: Kind3;
+    /** Key prefix applied to every object read from or written to this target */
+    prefix?: string;
+};
+export type StorageTargetResponseDto = {
+    /** Connection details, shape depends on the target kind */
+    config: StorageTargetS3ConfigDto | StorageTargetWebDavConfigDto | StorageTargetLocalConfigDto;
+    /** Creation date */
+    createdAt: string;
+    /** Whether credentials are stored for this target */
+    hasCredentials: boolean;
+    /** Storage target ID */
+    id: string;
+    /** Whether this target can be used for transfers */
+    isEnabled: boolean;
+    kind: StorageTargetKind;
+    /** Human-readable name */
+    name: string;
+    /** Last update date */
+    updatedAt: string;
+};
+export type StorageTargetS3SecretDto = {
+    /** Access key ID */
+    accessKeyId: string;
+    kind: Kind4;
+    /** Secret access key */
+    secretAccessKey: string;
+};
+export type StorageTargetWebDavSecretDto = {
+    kind: Kind5;
+    /** Password or app password */
+    password: string;
+    /** Username */
+    username: string;
+};
+export type StorageTargetLocalSecretDto = {
+    kind: Kind6;
+};
+export type StorageTargetCreateDto = {
+    /** Connection details, shape depends on the target kind */
+    config: StorageTargetS3ConfigDto | StorageTargetWebDavConfigDto | StorageTargetLocalConfigDto;
+    /** Whether this target can be used for transfers */
+    isEnabled?: boolean;
+    /** Human-readable name, unique across targets */
+    name: string;
+    /** Credentials. Write-only: never returned by the API. */
+    secret: StorageTargetS3SecretDto | StorageTargetWebDavSecretDto | StorageTargetLocalSecretDto;
+};
+export type StorageTargetUpdateDto = {
+    /** Connection details, shape depends on the target kind */
+    config?: StorageTargetS3ConfigDto | StorageTargetWebDavConfigDto | StorageTargetLocalConfigDto;
+    /** Whether this target can be used for transfers */
+    isEnabled?: boolean;
+    /** Human-readable name, unique across targets */
+    name?: string;
+    /** Credentials. Write-only: never returned by the API. */
+    secret?: StorageTargetS3SecretDto | StorageTargetWebDavSecretDto | StorageTargetLocalSecretDto;
+};
+export type StorageTransferScopeAllDto = {
+    "type": Type;
+};
+export type StorageTransferScopeAlbumsDto = {
+    albumIds: string[];
+    "type": Type2;
+};
+export type StorageTransferScopeAssetsDto = {
+    assetIds: string[];
+    "type": Type3;
+};
+export type StorageTransferCreateDto = {
+    /** User whose assets are exported, or who will own the imported assets */
+    ownerId: string;
+    /** Which assets the transfer covers */
+    scope?: StorageTransferScopeAllDto | StorageTransferScopeAlbumsDto | StorageTransferScopeAssetsDto;
+};
+export type StorageTransferResponseDto = {
+    /** Number of items completed */
+    completedCount: number;
+    /** Creation date */
+    createdAt: string;
+    direction: StorageTransferDirection;
+    /** Failure reason, if the transfer failed as a whole */
+    error: string | null;
+    /** Number of items that failed */
+    failedCount: number;
+    /** Completion date */
+    finishedAt: string | null;
+    /** Transfer ID */
+    id: string;
+    /** Owning user ID */
+    ownerId: string;
+    /** Start date */
+    startedAt: string | null;
+    status: StorageTransferStatus;
+    /** Storage target ID */
+    targetId: string;
+    /** Number of items queued */
+    totalCount: number;
+};
+export type StorageTargetTestResponseDto = {
+    /** Failure reason when `ok` is false */
+    error?: string;
+    /** Whether the target could be reached and written to */
+    ok: boolean;
 };
 export type UserLicense = {
     /** Activation date */
@@ -1755,6 +1884,7 @@ export type QueuesResponseLegacyDto = {
     search: QueueResponseLegacyDto;
     sidecar: QueueResponseLegacyDto;
     smartSearch: QueueResponseLegacyDto;
+    storageTarget: QueueResponseLegacyDto;
     storageTemplateMigration: QueueResponseLegacyDto;
     thumbnailGeneration: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
@@ -3887,6 +4017,131 @@ export function sendTestEmailAdmin({ adminConfigSmtpDto }: {
         method: "POST",
         body: adminConfigSmtpDto
     })));
+}
+/**
+ * Retrieve storage targets
+ */
+export function getStorageTargets(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTargetResponseDto[];
+    }>("/admin/storage-targets", {
+        ...opts
+    }));
+}
+/**
+ * Create a storage target
+ */
+export function createStorageTarget({ storageTargetCreateDto }: {
+    storageTargetCreateDto: StorageTargetCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: StorageTargetResponseDto;
+    }>("/admin/storage-targets", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: storageTargetCreateDto
+    })));
+}
+/**
+ * Delete a storage target
+ */
+export function deleteStorageTarget({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/storage-targets/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve a storage target
+ */
+export function getStorageTarget({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTargetResponseDto;
+    }>(`/admin/storage-targets/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a storage target
+ */
+export function updateStorageTarget({ id, storageTargetUpdateDto }: {
+    id: string;
+    storageTargetUpdateDto: StorageTargetUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTargetResponseDto;
+    }>(`/admin/storage-targets/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: storageTargetUpdateDto
+    })));
+}
+/**
+ * Export assets to a storage target
+ */
+export function exportToStorageTarget({ id, storageTransferCreateDto }: {
+    id: string;
+    storageTransferCreateDto: StorageTransferCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: StorageTransferResponseDto;
+    }>(`/admin/storage-targets/${encodeURIComponent(id)}/export`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: storageTransferCreateDto
+    })));
+}
+/**
+ * Import assets from a storage target
+ */
+export function importFromStorageTarget({ id, storageTransferCreateDto }: {
+    id: string;
+    storageTransferCreateDto: StorageTransferCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: StorageTransferResponseDto;
+    }>(`/admin/storage-targets/${encodeURIComponent(id)}/import`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: storageTransferCreateDto
+    })));
+}
+/**
+ * Test a storage target
+ */
+export function testStorageTarget({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTargetTestResponseDto;
+    }>(`/admin/storage-targets/${encodeURIComponent(id)}/test`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Retrieve transfer history
+ */
+export function getStorageTargetTransfers({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTransferResponseDto[];
+    }>(`/admin/storage-targets/${encodeURIComponent(id)}/transfers`, {
+        ...opts
+    }));
 }
 /**
  * Search users
@@ -7691,6 +7946,49 @@ export enum NotificationType {
     ClusterGroupRequest = "ClusterGroupRequest",
     Custom = "Custom"
 }
+export enum Kind {
+    S3 = "s3"
+}
+export enum Kind2 {
+    Webdav = "webdav"
+}
+export enum Kind3 {
+    Local = "local"
+}
+export enum StorageTargetKind {
+    S3 = "s3",
+    Webdav = "webdav",
+    Local = "local"
+}
+export enum Kind4 {
+    S3 = "s3"
+}
+export enum Kind5 {
+    Webdav = "webdav"
+}
+export enum Kind6 {
+    Local = "local"
+}
+export enum Type {
+    All = "all"
+}
+export enum Type2 {
+    Albums = "albums"
+}
+export enum Type3 {
+    Assets = "assets"
+}
+export enum StorageTransferDirection {
+    Export = "export",
+    Import = "import"
+}
+export enum StorageTransferStatus {
+    Pending = "pending",
+    Running = "running",
+    Completed = "completed",
+    Failed = "failed",
+    Cancelled = "cancelled"
+}
 export enum UserStatus {
     Active = "active",
     Removing = "removing",
@@ -7890,7 +8188,11 @@ export enum Permission {
     AdminUserUpdate = "adminUser.update",
     AdminUserDelete = "adminUser.delete",
     AdminSessionRead = "adminSession.read",
-    AdminAuthUnlinkAll = "adminAuth.unlinkAll"
+    AdminAuthUnlinkAll = "adminAuth.unlinkAll",
+    AdminStorageTargetCreate = "adminStorageTarget.create",
+    AdminStorageTargetRead = "adminStorageTarget.read",
+    AdminStorageTargetUpdate = "adminStorageTarget.update",
+    AdminStorageTargetDelete = "adminStorageTarget.delete"
 }
 export enum AssetFileType {
     Fullsize = "fullsize",
@@ -7979,7 +8281,8 @@ export enum QueueName {
     Ocr = "ocr",
     Workflow = "workflow",
     IntegrityCheck = "integrityCheck",
-    Editor = "editor"
+    Editor = "editor",
+    StorageTarget = "storageTarget"
 }
 export enum QueueCommand {
     Start = "start",
@@ -8082,7 +8385,11 @@ export enum JobName {
     IntegrityChecksumFiles = "IntegrityChecksumFiles",
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
-    IntegrityDeleteReports = "IntegrityDeleteReports"
+    IntegrityDeleteReports = "IntegrityDeleteReports",
+    StorageTargetExportQueue = "StorageTargetExportQueue",
+    StorageTargetExportAsset = "StorageTargetExportAsset",
+    StorageTargetImportScan = "StorageTargetImportScan",
+    StorageTargetImportObject = "StorageTargetImportObject"
 }
 export enum SearchSuggestionType {
     Country = "country",

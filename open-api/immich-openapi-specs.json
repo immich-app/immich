@@ -1369,6 +1369,539 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/storage-targets": {
+      "get": {
+        "description": "Retrieve all configured external storage targets. Credentials are never included.",
+        "operationId": "getStorageTargets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StorageTargetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve storage targets",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.read",
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Create an external storage target for importing and exporting assets.",
+        "operationId": "createStorageTarget",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageTargetCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTargetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a storage target",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/storage-targets/{id}": {
+      "delete": {
+        "description": "Delete a storage target. Objects already written to the remote system are left in place.",
+        "operationId": "deleteStorageTarget",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a storage target",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.delete",
+        "x-immich-state": "Beta"
+      },
+      "get": {
+        "description": "Retrieve a specific storage target by its ID. Credentials are never included.",
+        "operationId": "getStorageTarget",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTargetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a storage target",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.read",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Update a storage target. Omitting credentials keeps the stored ones.",
+        "operationId": "updateStorageTarget",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageTargetUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTargetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a storage target",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/storage-targets/{id}/export": {
+      "post": {
+        "description": "Queue a transfer that uploads a user's original files, and their sidecars, to the target.",
+        "operationId": "exportToStorageTarget",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageTransferCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTransferResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Export assets to a storage target",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/storage-targets/{id}/import": {
+      "post": {
+        "description": "Queue a transfer that scans the target and imports supported files as new assets.",
+        "operationId": "importFromStorageTarget",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageTransferCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTransferResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Import assets from a storage target",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/storage-targets/{id}/test": {
+      "post": {
+        "description": "Verify connectivity and write access by round-tripping a small marker object.",
+        "operationId": "testStorageTarget",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTargetTestResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Test a storage target",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/storage-targets/{id}/transfers": {
+      "get": {
+        "description": "Retrieve recent import and export transfers for a storage target, including progress.",
+        "operationId": "getStorageTargetTransfers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StorageTransferResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve transfer history",
+        "tags": [
+          "Storage targets (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminStorageTarget.read",
+        "x-immich-state": "Beta"
+      }
+    },
     "/admin/users": {
       "get": {
         "description": "Search for users.",
@@ -17550,6 +18083,10 @@
       "description": "Endpoints to view, modify, and validate the system configuration settings."
     },
     {
+      "name": "Storage targets (admin)",
+      "description": "A storage target is an external S3, WebDAV, or mounted filesystem destination that assets can be exported to or imported from."
+    },
+    {
       "name": "System metadata",
       "description": "Endpoints to view, modify, and validate the system metadata, which includes information about things like admin onboarding status."
     },
@@ -18286,6 +18823,9 @@
           "smartSearch": {
             "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
           },
+          "storageTarget": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
           "thumbnailGeneration": {
             "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
           },
@@ -18309,6 +18849,7 @@
           "search",
           "sidecar",
           "smartSearch",
+          "storageTarget",
           "thumbnailGeneration",
           "videoConversion",
           "workflow"
@@ -21806,7 +22347,11 @@
           "IntegrityChecksumFiles",
           "IntegrityChecksumFilesRefresh",
           "IntegrityDeleteReportType",
-          "IntegrityDeleteReports"
+          "IntegrityDeleteReports",
+          "StorageTargetExportQueue",
+          "StorageTargetExportAsset",
+          "StorageTargetImportScan",
+          "StorageTargetImportObject"
         ],
         "type": "string"
       },
@@ -23465,7 +24010,11 @@
           "adminUser.update",
           "adminUser.delete",
           "adminSession.read",
-          "adminAuth.unlinkAll"
+          "adminAuth.unlinkAll",
+          "adminStorageTarget.create",
+          "adminStorageTarget.read",
+          "adminStorageTarget.update",
+          "adminStorageTarget.delete"
         ],
         "type": "string"
       },
@@ -24106,7 +24655,8 @@
           "ocr",
           "workflow",
           "integrityCheck",
-          "editor"
+          "editor",
+          "storageTarget"
         ],
         "type": "string"
       },
@@ -24267,6 +24817,9 @@
           "smartSearch": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "storageTarget": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -24296,6 +24849,7 @@
           "search",
           "sidecar",
           "smartSearch",
+          "storageTarget",
           "storageTemplateMigration",
           "thumbnailGeneration",
           "videoConversion",
@@ -26269,6 +26823,533 @@
           "profile",
           "thumbs",
           "backups"
+        ],
+        "type": "string"
+      },
+      "StorageTargetCreateDto": {
+        "properties": {
+          "config": {
+            "description": "Connection details, shape depends on the target kind",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StorageTargetS3ConfigDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetWebDavConfigDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetLocalConfigDto"
+              }
+            ]
+          },
+          "isEnabled": {
+            "default": true,
+            "description": "Whether this target can be used for transfers",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Human-readable name, unique across targets",
+            "minLength": 1,
+            "type": "string"
+          },
+          "secret": {
+            "description": "Credentials. Write-only: never returned by the API.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StorageTargetS3SecretDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetWebDavSecretDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetLocalSecretDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "config",
+          "name",
+          "secret"
+        ],
+        "type": "object"
+      },
+      "StorageTargetKind": {
+        "description": "Storage target kind",
+        "enum": [
+          "s3",
+          "webdav",
+          "local"
+        ],
+        "type": "string"
+      },
+      "StorageTargetLocalConfigDto": {
+        "properties": {
+          "basePath": {
+            "description": "Absolute path to a local or network-mounted directory",
+            "minLength": 1,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "local"
+            ],
+            "type": "string"
+          },
+          "prefix": {
+            "default": "",
+            "description": "Key prefix applied to every object read from or written to this target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basePath",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "StorageTargetLocalSecretDto": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "local"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      "StorageTargetResponseDto": {
+        "properties": {
+          "config": {
+            "description": "Connection details, shape depends on the target kind",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StorageTargetS3ConfigDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetWebDavConfigDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetLocalConfigDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "description": "Creation date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "hasCredentials": {
+            "description": "Whether credentials are stored for this target",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Storage target ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "isEnabled": {
+            "description": "Whether this target can be used for transfers",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StorageTargetKind"
+          },
+          "name": {
+            "description": "Human-readable name",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "createdAt",
+          "hasCredentials",
+          "id",
+          "isEnabled",
+          "kind",
+          "name",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "StorageTargetS3ConfigDto": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name",
+            "minLength": 1,
+            "type": "string"
+          },
+          "endpoint": {
+            "default": "",
+            "description": "Custom endpoint for S3-compatible services (MinIO, R2, Wasabi). Leave blank for AWS.",
+            "type": "string"
+          },
+          "forcePathStyle": {
+            "default": true,
+            "description": "Use path-style addressing, required by MinIO and most self-hosted S3 implementations",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "s3"
+            ],
+            "type": "string"
+          },
+          "prefix": {
+            "default": "",
+            "description": "Key prefix applied to every object read from or written to this target",
+            "type": "string"
+          },
+          "region": {
+            "default": "us-east-1",
+            "description": "Region",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "StorageTargetS3SecretDto": {
+        "properties": {
+          "accessKeyId": {
+            "description": "Access key ID",
+            "minLength": 1,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "s3"
+            ],
+            "type": "string"
+          },
+          "secretAccessKey": {
+            "description": "Secret access key",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessKeyId",
+          "kind",
+          "secretAccessKey"
+        ],
+        "type": "object"
+      },
+      "StorageTargetTestResponseDto": {
+        "properties": {
+          "error": {
+            "description": "Failure reason when `ok` is false",
+            "type": "string"
+          },
+          "ok": {
+            "description": "Whether the target could be reached and written to",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "type": "object"
+      },
+      "StorageTargetUpdateDto": {
+        "properties": {
+          "config": {
+            "description": "Connection details, shape depends on the target kind",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StorageTargetS3ConfigDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetWebDavConfigDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetLocalConfigDto"
+              }
+            ]
+          },
+          "isEnabled": {
+            "description": "Whether this target can be used for transfers",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Human-readable name, unique across targets",
+            "minLength": 1,
+            "type": "string"
+          },
+          "secret": {
+            "description": "Credentials. Write-only: never returned by the API.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StorageTargetS3SecretDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetWebDavSecretDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTargetLocalSecretDto"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StorageTargetWebDavConfigDto": {
+        "properties": {
+          "baseUrl": {
+            "description": "WebDAV base URL, e.g. https://nextcloud.example.com/remote.php/dav/files/alice",
+            "format": "uri",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "webdav"
+            ],
+            "type": "string"
+          },
+          "prefix": {
+            "default": "",
+            "description": "Key prefix applied to every object read from or written to this target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "baseUrl",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "StorageTargetWebDavSecretDto": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "webdav"
+            ],
+            "type": "string"
+          },
+          "password": {
+            "description": "Password or app password",
+            "minLength": 1,
+            "type": "string"
+          },
+          "username": {
+            "description": "Username",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "password",
+          "username"
+        ],
+        "type": "object"
+      },
+      "StorageTransferCreateDto": {
+        "properties": {
+          "ownerId": {
+            "description": "User whose assets are exported, or who will own the imported assets",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "scope": {
+            "default": {
+              "type": "all"
+            },
+            "description": "Which assets the transfer covers",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StorageTransferScopeAllDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTransferScopeAlbumsDto"
+              },
+              {
+                "$ref": "#/components/schemas/StorageTransferScopeAssetsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ownerId"
+        ],
+        "type": "object"
+      },
+      "StorageTransferDirection": {
+        "description": "Storage transfer direction",
+        "enum": [
+          "export",
+          "import"
+        ],
+        "type": "string"
+      },
+      "StorageTransferResponseDto": {
+        "properties": {
+          "completedCount": {
+            "description": "Number of items completed",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "Creation date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/StorageTransferDirection"
+          },
+          "error": {
+            "description": "Failure reason, if the transfer failed as a whole",
+            "nullable": true,
+            "type": "string"
+          },
+          "failedCount": {
+            "description": "Number of items that failed",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "finishedAt": {
+            "description": "Completion date",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Transfer ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "ownerId": {
+            "description": "Owning user ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "startedAt": {
+            "description": "Start date",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StorageTransferStatus"
+          },
+          "targetId": {
+            "description": "Storage target ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "totalCount": {
+            "description": "Number of items queued",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "completedCount",
+          "createdAt",
+          "direction",
+          "error",
+          "failedCount",
+          "finishedAt",
+          "id",
+          "ownerId",
+          "startedAt",
+          "status",
+          "targetId",
+          "totalCount"
+        ],
+        "type": "object"
+      },
+      "StorageTransferScopeAlbumsDto": {
+        "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "type": {
+            "enum": [
+              "albums"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumIds",
+          "type"
+        ],
+        "type": "object"
+      },
+      "StorageTransferScopeAllDto": {
+        "properties": {
+          "type": {
+            "enum": [
+              "all"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "StorageTransferScopeAssetsDto": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "type": {
+            "enum": [
+              "assets"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetIds",
+          "type"
+        ],
+        "type": "object"
+      },
+      "StorageTransferStatus": {
+        "description": "Storage transfer status",
+        "enum": [
+          "pending",
+          "running",
+          "completed",
+          "failed",
+          "cancelled"
         ],
         "type": "string"
       },
