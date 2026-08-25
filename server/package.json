@@ -31,6 +31,8 @@
     "migrations:create": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations create",
     "migrations:run": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations run",
     "migrations:revert": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations revert",
+    "migrations:sync-order": "sql-tools migrations sync-order",
+    "migrations:verify-order": "sql-tools migrations verify-order",
     "schema:drop": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} query 'DROP schema public cascade; CREATE schema public;'",
     "schema:reset": "pnpm run schema:drop && pnpm run migrations:run",
     "email:dev": "email dev -p 3050 --dir src/emails"

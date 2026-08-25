@@ -78,4 +78,5 @@ run = [
 run = [
   { task = ":ci-unit" },
   { task = ":ci-medium" },
+  { task = ":migrations", args = ["verify-order"] },
 ]
