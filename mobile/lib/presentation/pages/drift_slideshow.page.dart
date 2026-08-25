@@ -101,6 +101,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
       _slideshow.recalculateNextIndex();
     });
 
+    _slideshow.goToNextSlide();
+
     unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
     unawaited(WakelockPlus.enable());
   }
@@ -202,9 +204,10 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
         return;
       }
 
-      // didCompleteShowSlide is called by onPageChanged
+      _pageController.jumpToPage(index);
+
+      // didCompleteShowSlide will be called by onPageChanged, so we don't need to call it in any of these branches
       if (_disableAnimations) {
-        _pageController.jumpToPage(index);
         return;
       }
 
@@ -237,7 +240,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
     if (_disableAnimations) {
       return const AlwaysStoppedAnimation(0.0);
     }
-    return _slideshow.animationController.drive(
+
+    return _slideshow.progress.drive(
       _slideshow.shouldZoomOut ? Tween(begin: 1.0, end: 0.0) : Tween(begin: 0.0, end: 1.0),
     );
   }
@@ -278,7 +282,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
       builder: (context, _) {
         final currentAsset = _assetAt(_slideshow.currentIndex);
         final progressBar = currentAsset != null
-            ? SlideshowProgressBar(asset: currentAsset, progress: _slideshow.animationController)
+            ? SlideshowProgressBar(asset: currentAsset, progress: _slideshow.progress)
             : const SizedBox.shrink();
 
         return Scaffold(

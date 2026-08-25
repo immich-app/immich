@@ -23,6 +23,8 @@ abstract interface class SlideshowDelegate {
 }
 
 /// Manages Flutter slideshow rendering
+///
+/// After constructing, call [goToNextSlide] to begin the slideshow
 class SlideshowController extends ChangeNotifier {
   final SlideshowDelegate delegate;
 
@@ -35,7 +37,7 @@ class SlideshowController extends ChangeNotifier {
   int? _nextIndex;
 
   bool _paused = false;
-  bool _shouldZoomOut = false;
+  bool _shouldZoomOut = true;
 
   /// The last recorded video playback position
   Duration _lastVideoPosition = Duration.zero;
@@ -58,9 +60,8 @@ class SlideshowController extends ChangeNotifier {
           }
         });
 
-    _nextIndex = delegate.nextIndexAfter(initialIndex);
-
-    _startSlideTimer();
+    // We want to go to the first slide
+    _nextIndex = initialIndex;
   }
 
   /// The slide currently on screen
@@ -77,8 +78,8 @@ class SlideshowController extends ChangeNotifier {
   /// Each slide transitions from zooming in/out to out/in
   bool get shouldZoomOut => _shouldZoomOut;
 
-  /// The slideshow clock. Its value, [0.0, 1.0] represents the progress through the duration of the current slide
-  Animation<double> get animationController => _animationController;
+  /// The slideshow clock/progress indicator. Its value, [0.0, 1.0] represents the progress through the duration of the current slide
+  Animation<double> get progress => _animationController;
 
   /// The display duration of a single slide. Setting a new duration mid-animation will continue from the current percentage completion at the new pace
   set slideDuration(Duration duration) {
@@ -111,7 +112,7 @@ class SlideshowController extends ChangeNotifier {
     notifyListeners();
 
     if (delegate.videoProgressOf(_currentIndex) != null && delegate.isVideoCompleted(_currentIndex)) {
-      unawaited(goToNextSlide());
+      goToNextSlide();
       return;
     }
 
@@ -128,7 +129,7 @@ class SlideshowController extends ChangeNotifier {
   /// Immediately transitions to the previously determined next slide
   ///
   /// If there is no [_nextIndex], pauses the slideshow
-  Future<void> goToNextSlide() async {
+  void goToNextSlide() {
     _animationController.stop();
 
     final targetIndex = _nextIndex;
@@ -164,7 +165,7 @@ class SlideshowController extends ChangeNotifier {
   /// Indicates the currently displayed video slide finished playback
   void didCompleteVideo() {
     if (!_paused) {
-      unawaited(goToNextSlide());
+      goToNextSlide();
     }
   }
 
@@ -199,6 +200,6 @@ class SlideshowController extends ChangeNotifier {
       return;
     }
 
-    unawaited(goToNextSlide());
+    goToNextSlide();
   }
 }

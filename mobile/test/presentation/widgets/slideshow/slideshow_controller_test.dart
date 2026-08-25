@@ -56,6 +56,9 @@ void slideshowTest(
   testWidgets(description, (tester) async {
     final show = FakeSlideshow(nextIndex: nextIndex ?? FakeSlideshow._nextInOrder);
 
+    // Go to first slide
+    show.controller.goToNextSlide();
+
     // The slideshow's ticker takes its baseline on this frame, so a test can jump the clock straight away
     await tester.pump();
 
@@ -72,33 +75,33 @@ void slideshowTest(
 void main() {
   slideshowTest('should advance once the slide duration passes', (tester, show) async {
     await tester.pump(slideDuration - tick);
-    expect(show.events, isEmpty);
+    expect(show.events, ['show 0']);
 
     await tester.pump(tick * 2);
-    expect(show.events, ['show 1']);
+    expect(show.events, ['show 0', 'show 1']);
   });
 
   slideshowTest('should show the slide the delegate provides next', (tester, show) async {
     await tester.pump(slideDuration + tick);
 
-    expect(show.events, ['show 7']);
+    expect(show.events, ['show 0', 'show 7']);
   }, nextIndex: (_) => 7);
 
   slideshowTest('should pause when there is no next slide', (tester, show) async {
     await tester.pump(slideDuration + tick);
 
-    expect(show.events, isEmpty);
+    expect(show.events, ['show 0']);
     expect(show.controller.paused, isTrue);
   }, nextIndex: (_) => null);
 
   slideshowTest('should stop the clock when paused', (tester, show) async {
     show.controller.pause();
 
-    expect(show.events, ['pause']);
+    expect(show.events, ['show 0', 'pause']);
 
     await tester.pump(slideDuration * 2);
 
-    expect(show.events, ['pause']);
+    expect(show.events, ['show 0', 'pause']);
   });
 
   slideshowTest('should continue the current slide when resumed', (tester, show) async {
@@ -112,10 +115,10 @@ void main() {
 
     // A quarter of the slide is left
     await tester.pump(slideDuration * 0.25 - tick);
-    expect(show.events, ['pause', 'play']);
+    expect(show.events, ['show 0', 'pause', 'play']);
 
     await tester.pump(tick * 2);
-    expect(show.events, ['pause', 'play', 'show 1']);
+    expect(show.events, ['show 0', 'pause', 'play', 'show 1']);
   });
 
   slideshowTest('should not watchdog modify a video that is successfully playing back', (tester, show) async {
@@ -128,17 +131,17 @@ void main() {
       await tester.pump(slideDuration + tick);
     }
 
-    expect(show.events, isEmpty);
+    expect(show.events, ['show 0']);
   });
 
   slideshowTest('should advance past a stalled video once the slide duration passes', (tester, show) async {
     show.videos[0] = Duration.zero;
 
     await tester.pump(slideDuration - tick);
-    expect(show.events, isEmpty);
+    expect(show.events, ['show 0']);
 
     await tester.pump(tick * 2);
-    expect(show.events, ['show 1']);
+    expect(show.events, ['show 0', 'show 1']);
   });
 
   slideshowTest('should advance immediately when a video ends', (tester, show) async {
@@ -146,7 +149,7 @@ void main() {
 
     show.controller.didCompleteVideo();
 
-    expect(show.events, ['show 1']);
+    expect(show.events, ['show 0', 'show 1']);
   });
 
   slideshowTest('should not move when a video ends while paused', (tester, show) async {
@@ -155,7 +158,7 @@ void main() {
 
     show.controller.didCompleteVideo();
 
-    expect(show.events, ['pause']);
+    expect(show.events, ['show 0', 'pause']);
   });
 
   slideshowTest('should move to next slide when a finished video is resumed', (tester, show) async {
@@ -163,11 +166,11 @@ void main() {
     show.controller.pause();
     show.completedVideos.add(0);
 
-    expect(show.events, ['pause']);
+    expect(show.events, ['show 0', 'pause']);
 
     show.controller.resume();
 
-    expect(show.events, ['pause', 'show 1']);
+    expect(show.events, ['show 0', 'pause', 'show 1']);
   });
 
   slideshowTest('should restart the timer on manual navigation to another slide', (tester, show) async {
@@ -181,13 +184,14 @@ void main() {
 
     // The new slide gets a full slide duration
     await tester.pump(slideDuration - tick);
-    expect(show.events, isEmpty);
+    expect(show.events, ['show 0']);
 
     await tester.pump(tick * 2);
-    expect(show.events, ['show 3']);
+    expect(show.events, ['show 0', 'show 3']);
   });
 
   slideshowTest('should pick up a new next slide when recalculating', (tester, show) async {
+    expect(show.controller.currentIndex, 0);
     expect(show.controller.nextIndex, 1);
 
     show.nextIndex = (_) => 7;
