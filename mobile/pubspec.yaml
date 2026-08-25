@@ -109,6 +109,9 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   mocktail: ^1.0.5
+  mockito: ^5.6.4
+  mockito_handles:
+    path: packages/mockito_handles
   # Type safe platform code
   pigeon: ^26.3.4
 

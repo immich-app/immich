@@ -1,0 +1,6 @@
+.dart_tool/
+build/
+
+# A library package resolves against its consumer's constraints, so pinning here
+# would only hide an incompatibility.
+pubspec.lock
