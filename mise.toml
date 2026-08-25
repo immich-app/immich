@@ -23,7 +23,7 @@ opentofu = "1.12.5"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
-"github:extism/js-pdk" = "1.6.0"
+"github:extism/js-pdk" = "v1.7.0"
 java = "21.0.2"
 
 [tools."github:jellyfin/jellyfin-ffmpeg"]
