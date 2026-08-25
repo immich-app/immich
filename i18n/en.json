@@ -1659,6 +1659,7 @@
   "photo_shared_all_users": "Looks like you shared your photos with all users or you don't have any user to share with.",
   "photos": "Photos",
   "photos_and_videos": "Photos & Videos",
+  "photos_count": "{count, plural, one {# photo} other {# photos}}",
   "photos_from_previous_years": "Photos from previous years",
   "pick_a_location": "Pick a location",
   "pick_custom_range": "Custom range",
