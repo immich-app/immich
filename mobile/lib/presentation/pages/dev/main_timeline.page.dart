@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_dialog.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
@@ -79,13 +79,13 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         return IconButton(
           onPressed: () => controller.isOpen ? controller.close() : controller.open(),
           icon: const Icon(Icons.filter_list_rounded),
-          tooltip: 'timeline_filter_tooltip'.tr(),
+          tooltip: context.t.timeline_filter_tooltip,
         );
       },
       menuChildren: [
         _FilterMenuItem(
           AssetOriginFilter.all,
-          'timeline_filter_all'.tr(),
+          context.t.timeline_filter_all,
           Icons.photo_library_outlined,
           Icons.photo_library,
           currentSelection,
@@ -93,7 +93,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         ),
         _FilterMenuItem(
           AssetOriginFilter.remote,
-          'timeline_filter_remote'.tr(),
+          context.t.timeline_filter_remote,
           Icons.cloud_outlined,
           Icons.cloud,
           currentSelection,
@@ -101,7 +101,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         ),
         _FilterMenuItem(
           AssetOriginFilter.local,
-          'timeline_filter_local'.tr(),
+          context.t.timeline_filter_local,
           Icons.cloud_off_outlined,
           Icons.cloud_off,
           currentSelection,
