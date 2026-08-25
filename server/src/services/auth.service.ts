@@ -650,8 +650,9 @@ export class AuthService extends BaseService {
 
     if (useDefaults) {
       claims.storageLabel = storageLabel || null;
-    } else if (storageLabelClaim !== defaults.oauth.storageLabelClaim && storageLabel !== undefined) {
-      // Default claim (preferred_username) is registration-only; login sync is opt-in.
+    }
+    // Default claim (preferred_username) is registration-only; login sync is opt-in.
+    else if (storageLabelClaim !== defaults.oauth.storageLabelClaim && storageLabel !== undefined) {
       claims.storageLabel = this.formatStorageLabel(storageLabel);
     }
 
