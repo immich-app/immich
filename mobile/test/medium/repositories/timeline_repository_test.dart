@@ -273,7 +273,7 @@ void main() {
     test('local asset matching two remote assets returns only one asset from local filter', () async {
       final owner = await ctx.newUser();
       final partner = await ctx.newUser();
-      await ctx.setAuthUser(owner.id);
+      await ctx.newAuthUser(id: owner.id);
       
       const checksum = 'shared-checksum';
 

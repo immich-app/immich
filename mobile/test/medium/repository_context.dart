@@ -420,15 +420,4 @@ class MediumRepositoryContext {
 
     return stack;
   }
-
-  Future<void> setAuthUser(String userId) => db
-      .into(db.authUserEntity)
-      .insertOnConflictUpdate(
-        AuthUserEntityCompanion.insert(
-          id: userId,
-          name: 'user_$userId',
-          email: '$userId@test.com',
-          avatarColor: TestUtils.randElement(AvatarColor.values),
-        ),
-      );
 }
