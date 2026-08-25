@@ -45,13 +45,13 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
       ..clear()
       ..setFilter(
         .new(
-          tagIds: [tag.id],
+          tags: {tag},
           people: {},
-          location: .new(),
-          camera: .new(),
-          date: .new(),
+          location: const .new(),
+          camera: const .new(),
+          date: const .new(),
           display: const .new(isNotInAlbum: false, isArchive: false, isFavorite: false),
-          rating: .new(),
+          rating: const .new(),
           mediaType: .other,
         ),
       );

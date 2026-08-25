@@ -18,7 +18,6 @@ import 'package:immich_mobile/presentation/pages/search/paginated_search.provide
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
@@ -61,7 +60,7 @@ class DriftSearchPage extends HookConsumerWidget {
         rating: const SearchRatingFilter(),
         mediaType: AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
-        tagIds: [],
+        tags: {},
       ),
     );
 
@@ -96,7 +95,7 @@ class DriftSearchPage extends HookConsumerWidget {
       unawaited(ref.read(paginatedSearchProvider.notifier).search(filter.value));
     }
 
-    Future<void> applyPreFilter(SearchFilter preFilter) async {
+    void applyPreFilter(SearchFilter preFilter) {
       if (!context.mounted) {
         return;
       }
@@ -105,23 +104,15 @@ class DriftSearchPage extends HookConsumerWidget {
       peopleCurrentFilterWidget.value = null;
       dateRangeCurrentFilterWidget.value = null;
       cameraCurrentFilterWidget.value = null;
-      tagCurrentFilterWidget.value = null;
       mediaTypeCurrentFilterWidget.value = null;
       ratingCurrentFilterWidget.value = null;
       displayOptionCurrentFilterWidget.value = null;
       locationCurrentFilterWidget.value = preFilter.location.city != null
           ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
           : null;
+      final tagLabel = (preFilter.tags ?? const <Tag>{}).map((tag) => tag.value).join(', ');
+      tagCurrentFilterWidget.value = tagLabel.isNotEmpty ? Text(tagLabel, style: context.textTheme.labelLarge) : null;
       search(preFilter);
-
-      final tagIds = preFilter.tagIds ?? const <String>[];
-      if (tagIds.isNotEmpty) {
-        final tags = await ref.read(tagProvider.future).catchError((_) => const <Tag>{});
-        final label = tags.where((tag) => tagIds.contains(tag.id)).map((tag) => tag.value).join(', ');
-        if (context.mounted) {
-          tagCurrentFilterWidget.value = Text(label, style: context.textTheme.labelLarge);
-        }
-      }
     }
 
     // TODO: Use ref.listen with `fireImmediately` in the new riverpod version.
@@ -173,22 +164,21 @@ class DriftSearchPage extends HookConsumerWidget {
     }
 
     void showTagPicker() {
-      var tagIds = filter.value.tagIds ?? [];
-      String tagLabel = '';
+      var tags = filter.value.tags ?? const <Tag>{};
 
-      void handleOnSelect(Iterable<Tag> tags) {
-        tagIds = tags.map((t) => t.id).toList();
-        tagLabel = tags.map((t) => t.value).join(', ');
+      void handleOnSelect(Iterable<Tag> value) {
+        tags = value.toSet();
       }
 
       void handleClear() {
         tagCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(tagIds: []));
+        search(filter.value.copyWith(tags: const {}));
       }
 
       void handleApply() {
-        tagCurrentFilterWidget.value = tagLabel.isNotEmpty ? Text(tagLabel, style: context.textTheme.labelLarge) : null;
-        search(filter.value.copyWith(tagIds: tagIds));
+        final label = tags.map((tag) => tag.value).join(', ');
+        tagCurrentFilterWidget.value = label.isNotEmpty ? Text(label, style: context.textTheme.labelLarge) : null;
+        search(filter.value.copyWith(tags: tags));
       }
 
       unawaited(
@@ -202,7 +192,7 @@ class DriftSearchPage extends HookConsumerWidget {
               expanded: true,
               onSearch: handleApply,
               onClear: handleClear,
-              child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+              child: TagPicker(onSelectExistingTag: handleOnSelect, filter: tags.map((tag) => tag.id).toSet()),
             ),
           ),
         ),
