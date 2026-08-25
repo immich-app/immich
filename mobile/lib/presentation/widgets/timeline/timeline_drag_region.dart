@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 
 part 'timeline_drag_region.freezed.dart';
 
@@ -162,17 +163,50 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
   }
 
   TimelineAssetIndex? _assetAtHeight(Offset position) {
-    var asset = _getValueKeyAtPosition(position);
-    // a short row (the last of a day) leaves the pointer beside its tiles: walk towards the row start
-    if (asset == null) {
-      final step = (context.size?.width ?? 0) / maxProbeSteps;
-      final towardsRowStart = Directionality.maybeOf(context) == TextDirection.rtl ? step : -step;
-      for (var i = 1; i <= maxProbeSteps && asset == null; i++) {
-        asset = _getValueKeyAtPosition(position.translate(towardsRowStart * i, 0));
+    return _getValueKeyAtPosition(position) ?? _nearestAssetInRow(position);
+  }
+
+  TimelineAssetIndex? _nearestAssetInRow(Offset position) {
+    final row = _rowAt(context.findRenderObject()!, position);
+    if (row == null) {
+      return null;
+    }
+
+    final dx = row.globalToLocal(position).dx;
+    var nearest = row.firstChild!;
+    var nearestDistance = double.infinity;
+    RenderBox? child = nearest;
+    while (child != null) {
+      final start = (child.parentData! as BoxParentData).offset.dx;
+      final end = start + child.size.width;
+      if (dx >= start && dx <= end) {
+        nearest = child;
+        break;
+      }
+      final distance = dx < start ? start - dx : dx - end;
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearest = child;
+      }
+      child = row.childAfter(child);
+    }
+    return (nearest as _TimelineAssetIndexProxy).index;
+  }
+
+  RenderFixedRow? _rowAt(RenderObject node, Offset position) {
+    if (node is RenderBox) {
+      final dy = node.globalToLocal(position).dy;
+      if (dy < 0 || dy >= node.size.height) {
+        return null;
+      }
+      if (node is RenderFixedRow) {
+        return node;
       }
     }
 
-    return asset;
+    RenderFixedRow? row;
+    node.visitChildren((child) => row ??= _rowAt(child, position));
+    return row;
   }
 
   void _enterAssetUnderPointer(ScrollDirection? autoScroll) {
@@ -187,8 +221,11 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
     if (currentlyTouchingAsset == null && autoScroll != null) {
       final step = topScrollOffset! / 2;
       final towardsGrid = autoScroll == ScrollDirection.forward ? -step : step;
-      for (var i = 1; i <= maxProbeSteps && currentlyTouchingAsset == null; i++) {
+      for (var i = 1; i <= maxProbeSteps; i++) {
         currentlyTouchingAsset = _assetAtHeight(position.translate(0, towardsGrid * i));
+        if (currentlyTouchingAsset != null) {
+          break;
+        }
       }
     }
 

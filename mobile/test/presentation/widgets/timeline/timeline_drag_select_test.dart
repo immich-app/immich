@@ -8,12 +8,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
@@ -22,6 +22,24 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 import '../../../fixtures/asset.stub.dart';
+
+class _StubRouterDelegate extends RouterDelegate<void> with ChangeNotifier {
+  _StubRouterDelegate(this.child);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child;
+
+  @override
+  Future<bool> popRoute() => Future.value(false);
+
+  @override
+  Future<void> setNewRoutePath(void configuration) => Future.value();
+}
+
+Widget _withRouter(Widget child) =>
+    Router<void>(routerDelegate: _StubRouterDelegate(child), backButtonDispatcher: RootBackButtonDispatcher());
 
 void main() {
   const assetCount = 1500;
@@ -41,7 +59,12 @@ void main() {
   Finder tile(int assetIndex) =>
       find.byWidgetPredicate((widget) => widget is TimelineAssetIndexWrapper && widget.assetIndex == assetIndex);
 
-  Future<ProviderContainer> pumpTimeline(WidgetTester tester, {Widget? bottomSheet, List<Bucket>? buckets}) async {
+  Future<ProviderContainer> pumpTimeline(
+    WidgetTester tester, {
+    Widget? bottomSheet,
+    List<Bucket>? buckets,
+    TextDirection textDirection = TextDirection.ltr,
+  }) async {
     tester.view.devicePixelRatio = 3.0;
     tester.view.physicalSize = const Size(1206, 2622);
     addTearDown(tester.view.reset);
@@ -68,7 +91,12 @@ void main() {
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
         child: MaterialApp(
-          home: Timeline(withScrubber: false, groupBy: GroupAssetsBy.none, appBar: null, bottomSheet: bottomSheet),
+          home: Directionality(
+            textDirection: textDirection,
+            child: _withRouter(
+              Timeline(withScrubber: false, groupBy: GroupAssetsBy.none, appBar: null, bottomSheet: bottomSheet),
+            ),
+          ),
         ),
       ),
     );
@@ -193,6 +221,31 @@ void main() {
 
     // straight up the last column, to the height of the lone photo where that row has nothing
     await gesture.moveTo(Offset(tester.getCenter(tile(16)).dx, tester.getCenter(tile(8)).dy));
+    await tester.pump();
+    expectSelectedRange(container, 8, 16);
+
+    await gesture.up();
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('drag selection enters a short row from the gap side under rtl', (tester) async {
+    final container = await pumpTimeline(
+      tester,
+      textDirection: TextDirection.rtl,
+      buckets: [
+        TimeBucket(date: DateTime(2025, 3), assetCount: 8),
+        TimeBucket(date: DateTime(2025, 2), assetCount: 1),
+        TimeBucket(date: DateTime(2025), assetCount: assetCount - 9),
+      ],
+    );
+    final gesture = await startDragOn(tester, 16);
+
+    // rtl mirrors the grid: the lone photo hugs the right edge and its row's gap is on the left
+    final grid = tester.getRect(find.byType(Timeline));
+    final onGap = Offset(tester.getCenter(tile(16)).dx, tester.getCenter(tile(8)).dy);
+    expect(onGap.dx, lessThan(grid.center.dx), reason: 'the finger comes up the mirrored last column');
+
+    await gesture.moveTo(onGap);
     await tester.pump();
     expectSelectedRange(container, 8, 16);
 
