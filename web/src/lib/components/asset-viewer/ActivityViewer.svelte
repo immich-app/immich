@@ -117,7 +117,7 @@
   const MAX_GROUP_THUMBNAILS = 10;
   const expandedGroups = new SvelteSet<string>();
   const groups = $derived(groupActivities(activityManager.activities));
-  const isLastOrApart = (index: number, apart: (current: string, next: string) => boolean): boolean =>
+  const showTimestamp = (index: number, apart: (current: string, next: string) => boolean): boolean =>
     index === groups.length - 1 || apart(groups[index][0].createdAt, groups[index + 1][0].createdAt);
 </script>
 
@@ -206,7 +206,7 @@
 
             {@render timestampFooter(
               item.createdAt,
-              isLastOrApart(index, (current, next) => !shouldGroup(current, next)),
+              showTimestamp(index, (current, next) => !shouldGroup(current, next)),
             )}
           {:else if item.type === ReactionType.Like}
             <div class="relative">
@@ -249,7 +249,7 @@
                   </div>
                 {/if}
               </div>
-              {@render timestampFooter(item.createdAt, isLastOrApart(index, isTenMinutesApart))}
+              {@render timestampFooter(item.createdAt, showTimestamp(index, isTenMinutesApart))}
             </div>
           {:else if item.type === ReactionType.AssetAdded}
             {@const addedBy = item.user}
@@ -298,7 +298,7 @@
                   {/each}
                 </div>
               {/if}
-              {@render timestampFooter(item.createdAt, isLastOrApart(index, isTenMinutesApart))}
+              {@render timestampFooter(item.createdAt, showTimestamp(index, isTenMinutesApart))}
             </div>
           {/if}
         {/each}

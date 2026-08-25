@@ -5,7 +5,7 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { mockActivities, sdkMock } from '$lib/__mocks__/sdk.mock';
 import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
 import { activityManager } from '$lib/managers/activity-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -26,10 +26,6 @@ describe('ActivityViewer component', () => {
       user: adder,
       ...overrides,
     });
-
-  const mockActivities = (activities: ActivityResponseDto[]) => {
-    sdkMock.getActivities.mockImplementation((params) => Promise.resolve(params.withAdditions ? activities : []));
-  };
 
   const renderViewer = async () => {
     await activityManager.init(albumId);

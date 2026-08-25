@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { ReactionType, type ActivityResponseDto } from '@immich/sdk';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { ReactionType } from '@immich/sdk';
+import { mockActivities, sdkMock } from '$lib/__mocks__/sdk.mock';
 import { activityManager } from '$lib/managers/activity-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -9,10 +9,6 @@ import { userAdminFactory } from '@test-data/factories/user-factory';
 
 describe('ActivityManager', () => {
   let albumId: string;
-
-  const mockActivities = (activities: ActivityResponseDto[]) => {
-    sdkMock.getActivities.mockImplementation((params) => Promise.resolve(params.withAdditions ? activities : []));
-  };
 
   beforeEach(() => {
     vi.clearAllMocks();
