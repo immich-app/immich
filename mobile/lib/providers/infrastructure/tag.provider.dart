@@ -3,7 +3,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
-import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
 class TagNotifier extends AsyncNotifier<Set<Tag>> {
   @override
@@ -26,5 +26,5 @@ class TagNotifier extends AsyncNotifier<Set<Tag>> {
 final tagProvider = AsyncNotifierProvider<TagNotifier, Set<Tag>>(TagNotifier.new);
 
 final assetTagsProvider = FutureProvider.autoDispose.family<List<Tag>, String>(
-  (ref, assetId) => ref.watch(assetApiRepositoryProvider).getAssetTags(assetId),
+  (ref, assetId) => ref.watch(assetServiceProvider).getTags(assetId),
 );

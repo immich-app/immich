@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -196,5 +197,9 @@ class AssetService {
 
   Future<LocalAsset?> getLocalAsset(String id) {
     return _localRepository.get(id);
+  }
+
+  Future<List<Tag>> getTags(String assetId) {
+    return _apiRepository.getAssetTags(assetId);
   }
 }
