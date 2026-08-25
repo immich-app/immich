@@ -65,7 +65,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentSelection = ref.watch(assetOriginFilterProvider);
-    final setFilter = ref.read(assetOriginFilterProvider.notifier).setFilter;
+    final setFilter = ref.watch(assetOriginFilterProvider.notifier).setFilter;
 
     return MenuAnchor(
       style: MenuStyle(
