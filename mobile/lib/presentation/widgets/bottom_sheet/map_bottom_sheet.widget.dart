@@ -87,14 +87,23 @@ class _MapTimelineContentState extends ConsumerState<_MapTimelineContent> {
 
   @override
   Widget build(BuildContext context) {
-    final count = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
-    return Column(
+    return const Column(
       children: [
-        Text(context.t.map_assets_in_bounds(count: count), style: context.themeData.textTheme.headlineSmall),
-        const Expanded(
+        _MapAssetCount(),
+        Expanded(
           child: Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
         ),
       ],
     );
+  }
+}
+
+class _MapAssetCount extends ConsumerWidget {
+  const _MapAssetCount();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
+    return Text(context.t.map_assets_in_bounds(count: count), style: context.themeData.textTheme.headlineSmall);
   }
 }
