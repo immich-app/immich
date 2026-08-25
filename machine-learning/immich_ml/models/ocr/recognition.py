@@ -1,4 +1,5 @@
 import math
+from functools import cached_property
 from typing import Any
 
 import cv2
@@ -42,6 +43,10 @@ class TextRecognizer(InferenceModel):
         )
         return session
 
+    @cached_property
+    def raw_input(self) -> bool:
+        return self.session.get_inputs()[0].shape[-1] == 3  # NHWC models handle normalization and transpose internally
+
     def _predict(self, img: Image.Image, texts: TextDetectionOutput, minScore: float = 0.9) -> TextRecognitionOutput:
         boxes, box_scores = texts["boxes"], texts["scores"]
         if boxes.shape[0] == 0:
@@ -57,10 +62,17 @@ class TextRecognizer(InferenceModel):
         for start in range(0, len(order), self.batch_size):
             chunk = order[start : start + self.batch_size]
             width = int(REC_HEIGHT * max(REC_BASE_RATIO, ratios[chunk[-1]]))
-            images = np.zeros((len(chunk), 3, REC_HEIGHT, width), dtype=np.float32)
+            images: NDArray[Any] = (
+                np.full((len(chunk), REC_HEIGHT, width, 3), 127, dtype=np.uint8)
+                if self.raw_input
+                else np.zeros((len(chunk), 3, REC_HEIGHT, width), dtype=np.float32)
+            )
             for i, index in enumerate(chunk):
                 resized_w = max(1, min(width, math.ceil(REC_HEIGHT * ratios[index])))
                 resized = cv2.resize(crops[index], (resized_w, REC_HEIGHT))
+                if self.raw_input:
+                    images[i, :, :resized_w] = resized
+                    continue
                 view = images[i, :, :, :resized_w]
                 np.multiply(resized.transpose(2, 0, 1)[::-1], SCALE, out=view)  # [::-1] is the RGB -> BGR swap
                 view -= 1.0

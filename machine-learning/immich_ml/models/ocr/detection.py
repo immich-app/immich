@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Any
 
 import numpy as np
@@ -33,14 +34,20 @@ class TextDetector(InferenceModel):
 
         image, content = self._transform(inputs, maxResolution)
         input_name = self.session.get_inputs()[0].name
-        probs = self.session.run(None, {input_name: image})[0][0, 0]
+        probs = self.session.run(None, {input_name: image})[0][0]
+        if probs.ndim == 3:
+            probs = probs[0]
         boxes, scores = self.postprocess(probs[: content[0], : content[1]], (height, width), minScore, scoreMode)
         if len(boxes) == 0:
             return self._empty
         order = self.reading_order(boxes)
         return {"boxes": boxes[order], "scores": scores[order]}
 
-    def _transform(self, img: Image.Image, max_resolution: int) -> tuple[NDArray[np.float32], tuple[int, int]]:
+    @cached_property
+    def raw_input(self) -> bool:
+        return self.session.get_inputs()[0].shape[-1] == 3  # NHWC models handle normalization and transpose internally
+
+    def _transform(self, img: Image.Image, max_resolution: int) -> tuple[NDArray[Any], tuple[int, int]]:
         ratio = min(max_resolution / min(img.height, img.width), 1.0)
         resize_h = max(self._round32(img.height * ratio), 32)
         resize_w = max(self._round32(img.width * ratio), 32)
@@ -48,6 +55,8 @@ class TextDetector(InferenceModel):
         if resized.mode != "RGB":
             resized = resized.convert("RGB")
         array = np.asarray(resized)
+        if self.raw_input:
+            return array[None], (resize_h, resize_w)
         # reverse plane order gets the BGR swap and the CHW transpose for free
         out = np.empty((1, 3, resize_h, resize_w), dtype=np.float32)
         for channel in range(3):

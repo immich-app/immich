@@ -1084,7 +1084,7 @@ class TestOcr:
         probs = np.zeros((1, 1, 64, 64), dtype=np.float32)
         probs[..., 16:32, 8:56] = 0.6
         text_detector.session = mock.Mock()
-        text_detector.session.get_inputs.return_value = [mock.Mock()]
+        text_detector.session.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 64, 64))]
         text_detector.session.run.return_value = [probs]
         image = Image.new("RGB", (64, 64))
 
@@ -1097,7 +1097,7 @@ class TestOcr:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
         text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
         text_recognizer.session = mock.Mock()
-        text_recognizer.session.get_inputs.return_value = [mock.Mock()]
+        text_recognizer.session.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 48, 96))]
         text_recognizer.session.run.return_value = [np.zeros((1, 4, 8), dtype=np.float32)]
         text_recognizer.decoder = mock.Mock()
         text_recognizer.decoder.decode.return_value = (["hello"], np.array([0.8], dtype=np.float32))
