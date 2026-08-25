@@ -123,8 +123,7 @@ export class OAuthRepository {
         );
       }
 
-      this.logger.error(`OAuth login failed: ${error.message}`);
-      this.logger.error(error);
+      this.logger.error('OAuth login failed', error);
 
       throw new Error('OAuth login failed', { cause: error });
     }
@@ -223,7 +222,7 @@ export class OAuthRepository {
         },
       );
     } catch (error: any | AggregateError) {
-      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
+      this.logger.error('Error in OAuth discovery', error);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
     }
   }
