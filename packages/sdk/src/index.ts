@@ -71,17 +71,6 @@ export const jsonOnly =
       );
     }
 
-    try {
-      await response.clone().json();
-    } catch {
-      throw new MalformedResponseError(
-        'Could not parse the response as JSON',
-        response.url,
-        response.status,
-        contentType,
-      );
-    }
-
     return response;
   };
 
