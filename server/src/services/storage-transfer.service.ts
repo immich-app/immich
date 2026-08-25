@@ -157,6 +157,12 @@ export class StorageTransferService extends BaseService {
     try {
       for await (const batch of this.remoteStorageRepository.list(target)) {
         const candidates = batch.filter(({ key }) => mimeTypes.isAsset(key));
+
+        // The ledger holds every object this instance has put on the target as
+        // well as every one it has taken off, so exports are skipped here too.
+        // That is deliberate: without it, importing from a backup target would
+        // feed a user's own library back in as duplicates on every run.
+
         const newKeys = await this.storageTargetRepository.filterNewRemoteKeys(
           target.id,
           candidates.map(({ key }) => key),

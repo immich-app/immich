@@ -1,4 +1,5 @@
 import { LoginResponseDto, Permission, StorageTargetKind, StorageTransferScopeType } from '@immich/sdk';
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
@@ -21,6 +22,11 @@ const s3Config = {
 
 const s3Secret = { accessKeyId: 'immich', secretAccessKey: 'immich-secret' };
 
+// The bucket outlives the database, so objects written by an earlier run would
+// otherwise look like files Immich has never seen. Namespacing every target by
+// run keeps each one looking at only what it just wrote.
+const runId = randomBytes(6).toString('hex');
+
 describe('/admin/storage-targets', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
@@ -32,13 +38,29 @@ describe('/admin/storage-targets', () => {
       .send({
         name,
         kind: StorageTargetKind.S3,
-        config: { ...s3Config, prefix: name },
+        config: { ...s3Config, prefix: `${runId}/${name}` },
         secret: s3Secret,
         ...overrides,
       });
 
     expect(status).toBe(201);
     return body;
+  };
+
+  const startTransfer = async (targetId: string, direction: 'export' | 'import', ownerId: string) => {
+    const { status, body } = await request(app)
+      .post(`/admin/storage-targets/${targetId}/${direction}`)
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({ ownerId, scope: { type: StorageTransferScopeType.All } });
+
+    expect(status).toBe(201);
+    await utils.waitForQueueFinish(admin.accessToken, 'storageTarget', 60_000);
+
+    const { body: transfers } = await request(app)
+      .get(`/admin/storage-targets/${targetId}/transfers`)
+      .set('Authorization', `Bearer ${admin.accessToken}`);
+
+    return transfers.find((item: { id: string }) => item.id === body.id);
   };
 
   beforeAll(async () => {
@@ -157,85 +179,89 @@ describe('/admin/storage-targets', () => {
   });
 
   describe('export and import', () => {
-    it('should export an asset and import it back for another user', async () => {
-      const target = await createTarget('round-trip');
+    it("should export a user's originals to the target", async () => {
+      const target = await createTarget('export-originals');
 
-      const asset = await utils.createAsset(user.accessToken, {
+      await utils.createAsset(user.accessToken, {
         assetData: {
-          filename: 'round-trip.jpg',
+          filename: 'exported.jpg',
           bytes: readFileSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`),
         },
       });
 
-      const { status: exportStatus, body: exportBody } = await request(app)
-        .post(`/admin/storage-targets/${target.id}/export`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: user.userId, scope: { type: StorageTransferScopeType.All } });
+      const transfer = await startTransfer(target.id, 'export', user.userId);
 
-      expect(exportStatus).toBe(201);
-      expect(exportBody.direction).toBe('export');
+      expect(transfer.status).toBe('completed');
+      expect(transfer.completedCount).toBeGreaterThanOrEqual(1);
+      expect(transfer.failedCount).toBe(0);
+    }, 120_000);
 
-      await utils.waitForQueueFinish(admin.accessToken, 'storageTarget', 60_000);
+    it('should not re-import what it exported to the same target', async () => {
+      const target = await createTarget('no-round-trip');
 
-      const { body: afterExport } = await request(app)
-        .get(`/admin/storage-targets/${target.id}/transfers`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      await utils.createAsset(user.accessToken, {
+        assetData: {
+          filename: 'no-round-trip.jpg',
+          bytes: readFileSync(`${testAssetDir}/albums/nature/silver_fir.jpg`),
+        },
+      });
 
-      const exported = afterExport.find((item: { id: string }) => item.id === exportBody.id);
-      expect(exported.status).toBe('completed');
-      expect(exported.completedCount).toBe(1);
-      expect(exported.failedCount).toBe(0);
+      const exported = await startTransfer(target.id, 'export', user.userId);
+      expect(exported.completedCount).toBeGreaterThanOrEqual(1);
 
-      // Import the same objects as the admin: a different owner, so the content
-      // hash does not match anything they already have.
-      const { status: importStatus, body: importBody } = await request(app)
-        .post(`/admin/storage-targets/${target.id}/import`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, scope: { type: StorageTransferScopeType.All } });
+      // The ledger records every object this instance has put on the target, so
+      // importing from a target you export to is a deliberate no-op. Without it,
+      // a backup target would feed a user's own library back in as duplicates
+      // every time an import ran.
+      const imported = await startTransfer(target.id, 'import', admin.userId);
 
-      expect(importStatus).toBe(201);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'storageTarget', 60_000);
-
-      const { body: afterImport } = await request(app)
-        .get(`/admin/storage-targets/${target.id}/transfers`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      const imported = afterImport.find((item: { id: string }) => item.id === importBody.id);
       expect(imported.status).toBe('completed');
-      expect(imported.completedCount).toBe(1);
+      expect(imported.totalCount).toBe(0);
+    }, 120_000);
 
-      // The imported asset belongs to the admin, and is a different row from the
-      // one the other user uploaded.
-      const { assets } = await utils.searchAssets(admin.accessToken, { originalFileName: 'round-trip.jpg' });
-      const importedAsset = assets.items.find((item: { ownerId: string }) => item.ownerId === admin.userId);
-      expect(importedAsset).toBeDefined();
-      expect(importedAsset!.id).not.toBe(asset.id);
+    it('should import objects it has never seen before', async () => {
+      const source = await createTarget('shared-bucket-source');
+
+      await utils.createAsset(user.accessToken, {
+        assetData: {
+          filename: 'shared-bucket.jpg',
+          bytes: readFileSync(`${testAssetDir}/albums/nature/el_torcal_rocks.jpg`),
+        },
+      });
+
+      await startTransfer(source.id, 'export', user.userId);
+
+      // A second target over the same objects has its own empty ledger, which is
+      // the same position Immich is in when handed a bucket it did not fill.
+      const destination = await createTarget('shared-bucket-destination', {
+        config: { ...s3Config, prefix: `${runId}/shared-bucket-source` },
+      });
+
+      const imported = await startTransfer(destination.id, 'import', admin.userId);
+
+      expect(imported.status).toBe('completed');
+      expect(imported.completedCount).toBeGreaterThanOrEqual(1);
+      expect(imported.failedCount).toBe(0);
+
+      // The bytes really became an asset owned by the importing user.
+      const { assets } = await utils.searchAssets(admin.accessToken, {});
+      expect(assets.items.some((item: { ownerId: string }) => item.ownerId === admin.userId)).toBe(true);
     }, 120_000);
 
     it('should skip assets that are already on the target', async () => {
       const target = await createTarget('idempotent-export');
 
-      await request(app)
-        .post(`/admin/storage-targets/${target.id}/export`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: user.userId, scope: { type: StorageTransferScopeType.All } });
+      await utils.createAsset(user.accessToken, {
+        assetData: {
+          filename: 'idempotent.jpg',
+          bytes: readFileSync(`${testAssetDir}/albums/nature/notocactus_minimus.jpg`),
+        },
+      });
 
-      await utils.waitForQueueFinish(admin.accessToken, 'storageTarget', 60_000);
-
-      const { body: second } = await request(app)
-        .post(`/admin/storage-targets/${target.id}/export`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: user.userId, scope: { type: StorageTransferScopeType.All } });
-
-      await utils.waitForQueueFinish(admin.accessToken, 'storageTarget', 60_000);
-
-      const { body: transfers } = await request(app)
-        .get(`/admin/storage-targets/${target.id}/transfers`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      await startTransfer(target.id, 'export', user.userId);
+      const rerun = await startTransfer(target.id, 'export', user.userId);
 
       // The re-run still counts the assets as completed, it just does no uploads.
-      const rerun = transfers.find((item: { id: string }) => item.id === second.id);
       expect(rerun.status).toBe('completed');
       expect(rerun.failedCount).toBe(0);
     }, 120_000);
