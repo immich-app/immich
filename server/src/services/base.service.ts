@@ -41,12 +41,14 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
+import { RemoteStorageRepository } from 'src/repositories/remote-storage.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
+import { StorageTargetRepository } from 'src/repositories/storage-target.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
@@ -109,6 +111,8 @@ export const BASE_SERVICE_DEPENDENCIES = [
   SharedLinkAssetRepository,
   StackRepository,
   StorageRepository,
+  StorageTargetRepository,
+  RemoteStorageRepository,
   SyncRepository,
   SyncCheckpointRepository,
   SystemMetadataRepository,
@@ -171,6 +175,8 @@ export class BaseService {
     protected sharedLinkAssetRepository: SharedLinkAssetRepository,
     protected stackRepository: StackRepository,
     protected storageRepository: StorageRepository,
+    protected storageTargetRepository: StorageTargetRepository,
+    protected remoteStorageRepository: RemoteStorageRepository,
     protected syncRepository: SyncRepository,
     protected syncCheckpointRepository: SyncCheckpointRepository,
     protected systemMetadataRepository: SystemMetadataRepository,
@@ -242,6 +248,8 @@ export class BaseService {
       ctx.sharedLinkAssetRepository,
       ctx.stackRepository,
       ctx.storageRepository,
+      ctx.storageTargetRepository,
+      ctx.remoteStorageRepository,
       ctx.syncRepository,
       ctx.syncCheckpointRepository,
       ctx.systemMetadataRepository,

@@ -25,6 +25,8 @@ import {
   MemoryType,
   QueueName,
   StorageFolder,
+  StorageTargetKind,
+  StorageTransferScopeType,
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
@@ -289,6 +291,55 @@ export interface IIntegrityJob {
   refreshOnly?: boolean;
 }
 
+/** Non-secret connection details for a storage target, discriminated by `kind`. */
+export type StorageTargetConfig =
+  | {
+      kind: StorageTargetKind.S3;
+      /** Custom endpoint for S3-compatible services (MinIO, R2, Wasabi). Empty for AWS. */
+      endpoint: string;
+      bucket: string;
+      region: string;
+      /** Required by MinIO and most self-hosted S3 implementations. */
+      forcePathStyle: boolean;
+      prefix: string;
+    }
+  | {
+      kind: StorageTargetKind.WebDav;
+      /** e.g. https://nextcloud.example.com/remote.php/dav/files/alice */
+      baseUrl: string;
+      prefix: string;
+    }
+  | {
+      kind: StorageTargetKind.Local;
+      /** Absolute path to a local or network-mounted directory. */
+      basePath: string;
+      prefix: string;
+    };
+
+export type StorageTargetSecret =
+  | { kind: StorageTargetKind.S3; accessKeyId: string; secretAccessKey: string }
+  | { kind: StorageTargetKind.WebDav; username: string; password: string }
+  | { kind: StorageTargetKind.Local };
+
+/** Which assets (export) or remote objects (import) a transfer covers. */
+export type StorageTransferScope =
+  | { type: StorageTransferScopeType.All }
+  | { type: StorageTransferScopeType.Albums; albumIds: string[] }
+  | { type: StorageTransferScopeType.Assets; assetIds: string[] };
+
+export interface IStorageTransferJob {
+  transferId: string;
+}
+
+export interface IStorageTransferAssetJob extends IStorageTransferJob {
+  assetId: string;
+}
+
+export interface IStorageTransferObjectJob extends IStorageTransferJob {
+  remoteKey: string;
+  size: number;
+}
+
 export interface IIntegrityDeleteReportTypeJob {
   type?: IntegrityReport;
 }
@@ -443,6 +494,12 @@ export type JobItem =
   | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob }
   | { name: JobName.IntegrityDeleteReportType; data: IIntegrityDeleteReportTypeJob }
   | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
+
+  // External storage targets
+  | { name: JobName.StorageTargetExportQueue; data: IStorageTransferJob }
+  | { name: JobName.StorageTargetExportAsset; data: IStorageTransferAssetJob }
+  | { name: JobName.StorageTargetImportScan; data: IStorageTransferJob }
+  | { name: JobName.StorageTargetImportObject; data: IStorageTransferObjectJob }
 
   // Editor
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };

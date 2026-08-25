@@ -196,6 +196,8 @@ export const utils = {
       'system_metadata',
       'tag',
       'integrity_report',
+      // transfers and the object ledger cascade from the target
+      'storage_target',
     ];
 
     const truncateTables = tables.filter((table) => table !== 'system_metadata');
