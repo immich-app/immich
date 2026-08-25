@@ -88,7 +88,7 @@ class _ImmichFormState extends State<ImmichForm> {
             builder: (context, _) => ImmichTextButton(
               labelText: submitText,
               icon: widget.submitIcon,
-              variant: ImmichVariant.filled,
+              variant: .filled,
               loading: _controller.isLoading,
               onPressed: _controller.submit,
               disabled: _controller.onSubmit == null,

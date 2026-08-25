@@ -1,4 +1,3 @@
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const skipDockerSetup = process.env.VITEST_DISABLE_DOCKER_SETUP === 'true';
@@ -24,5 +23,7 @@ export default defineConfig({
     maxWorkers: 1,
     isolate: false,
   },
-  plugins: [tsconfigPaths()],
+  resolve: {
+    tsconfigPaths: true,
+  },
 });

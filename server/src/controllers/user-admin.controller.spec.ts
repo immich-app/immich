@@ -24,26 +24,7 @@ describe(UserAdminController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /admin/users', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/admin/users');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('PUT /admin/users/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/admin/users/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /admin/users', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/admin/users');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should allow a null pinCode', async () => {
       await request(ctx.getHttpServer()).post(`/admin/users`).send({
         name: 'Test user',
@@ -64,25 +45,22 @@ describe(UserAdminController.name, () => {
       expect(service.create).toHaveBeenCalledWith(expect.objectContaining({ avatarColor: null }));
     });
 
-    it(`should `, async () => {
-      const dto: UserAdminCreateDto = {
-        email: 'user@immich.app',
-        password: 'test',
-        name: 'Test User',
-        quotaSizeInBytes: 1.2,
-      };
-
-      const { status, body } = await request(ctx.getHttpServer())
-        .post(`/admin/users`)
-        .set('Authorization', `Bearer token`)
-        .send(dto);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['quotaSizeInBytes'], message: 'Invalid input: expected int, received number' },
-        ]),
-      );
-    });
+    for (const [key, message] of [
+      ['password', 'Invalid input: expected string, received null'],
+      ['email', 'Invalid input: expected email, received object'],
+      ['name', 'Invalid input: expected string, received null'],
+      ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
+      ['notify', 'Invalid input: expected boolean, received null'],
+    ] as const) {
+      it(`should not allow null ${key}`, async () => {
+        const { status, body } = await request(ctx.getHttpServer())
+          .post(`/admin/users`)
+          .set('Authorization', `Bearer token`)
+          .send({ email: 'user@immich.app', password: 'test', name: 'Test User', [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
+      });
+    }
 
     it(`should not allow decimal quota`, async () => {
       const dto: UserAdminCreateDto = {
@@ -105,19 +83,7 @@ describe(UserAdminController.name, () => {
     });
   });
 
-  describe('GET /admin/users/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/admin/users/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /admin/users/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/admin/users/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should not allow decimal quota`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/admin/users/${factory.uuid()}`)
@@ -142,5 +108,21 @@ describe(UserAdminController.name, () => {
       await request(ctx.getHttpServer()).put(`/admin/users/${id}`).send({ avatarColor: null });
       expect(service.update).toHaveBeenCalledWith(undefined, id, expect.objectContaining({ avatarColor: null }));
     });
+
+    for (const [key, message] of [
+      ['password', 'Invalid input: expected string, received null'],
+      ['email', 'Invalid input: expected email, received object'],
+      ['name', 'Invalid input: expected string, received null'],
+      ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
+    ] as const) {
+      it(`should not allow null ${key}`, async () => {
+        const { status, body } = await request(ctx.getHttpServer())
+          .put(`/admin/users/${factory.uuid()}`)
+          .set('Authorization', `Bearer token`)
+          .send({ [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
+      });
+    }
   });
 });

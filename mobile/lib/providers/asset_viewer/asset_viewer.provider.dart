@@ -1,102 +1,67 @@
+import 'dart:async';
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
-class AssetViewerState {
-  final double backgroundOpacity;
-  final bool showingDetails;
-  final bool showingControls;
-  final bool isZoomed;
-  final bool showingOcr;
-  final BaseAsset? currentAsset;
-  final int stackIndex;
+part 'asset_viewer.provider.freezed.dart';
 
-  const AssetViewerState({
-    this.backgroundOpacity = 1.0,
-    this.showingDetails = false,
-    this.showingControls = true,
-    this.isZoomed = false,
-    this.showingOcr = false,
-    this.currentAsset,
-    this.stackIndex = 0,
-  });
-
-  AssetViewerState copyWith({
-    double? backgroundOpacity,
-    bool? showingDetails,
-    bool? showingControls,
-    bool? isZoomed,
-    bool? showingOcr,
+@freezed
+abstract class AssetViewerState with _$AssetViewerState {
+  const factory AssetViewerState({
+    @Default(1.0) double backgroundOpacity,
+    @Default(false) bool showingDetails,
+    @Default(true) bool showingControls,
+    @Default(false) bool isZoomed,
+    @Default(false) bool showingOcr,
     BaseAsset? currentAsset,
-    int? stackIndex,
-  }) {
-    return AssetViewerState(
-      backgroundOpacity: backgroundOpacity ?? this.backgroundOpacity,
-      showingDetails: showingDetails ?? this.showingDetails,
-      showingControls: showingControls ?? this.showingControls,
-      isZoomed: isZoomed ?? this.isZoomed,
-      showingOcr: showingOcr ?? this.showingOcr,
-      currentAsset: currentAsset ?? this.currentAsset,
-      stackIndex: stackIndex ?? this.stackIndex,
-    );
-  }
 
-  @override
-  String toString() {
-    return 'AssetViewerState(opacity: $backgroundOpacity, showingDetails: $showingDetails, controls: $showingControls, isZoomed: $isZoomed, showingOcr: $showingOcr)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
-    return other is AssetViewerState &&
-        other.backgroundOpacity == backgroundOpacity &&
-        other.showingDetails == showingDetails &&
-        other.showingControls == showingControls &&
-        other.isZoomed == isZoomed &&
-        other.showingOcr == showingOcr &&
-        other.currentAsset == currentAsset &&
-        other.stackIndex == stackIndex;
-  }
-
-  @override
-  int get hashCode =>
-      backgroundOpacity.hashCode ^
-      showingDetails.hashCode ^
-      showingControls.hashCode ^
-      isZoomed.hashCode ^
-      showingOcr.hashCode ^
-      currentAsset.hashCode ^
-      stackIndex.hashCode;
+    /// Physical thumbnail size retained while paging through the viewer.
+    Size? thumbnailSize,
+    @Default(0) int stackIndex,
+  }) = _AssetViewerState;
 }
 
 class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
+  StreamSubscription<BaseAsset?>? _assetSubscription;
+
   @override
   AssetViewerState build() {
-    ref.listen(_watchedCurrentAssetProvider, (_, next) {
-      final updated = next.valueOrNull;
-      if (updated != null) {
-        state = state.copyWith(currentAsset: updated);
-      }
-    });
+    ref.onDispose(() => _assetSubscription?.cancel());
     return const AssetViewerState();
   }
 
   void reset() {
+    unawaited(_assetSubscription?.cancel());
+    _assetSubscription = null;
     state = const AssetViewerState();
   }
 
-  void setAsset(BaseAsset asset) {
+  void setAsset(BaseAsset asset, {Size? thumbnailSize}) {
     if (asset == state.currentAsset) {
       return;
     }
-    state = state.copyWith(currentAsset: asset, stackIndex: 0, showingOcr: false);
+    // Swiping to a neighbor passes no size; keep the tapped tile's so neighbors reuse it.
+    state = state.copyWith(
+      currentAsset: asset,
+      thumbnailSize: thumbnailSize ?? state.thumbnailSize,
+      stackIndex: 0,
+      showingOcr: false,
+    );
+    _watchCurrentAsset(asset);
+  }
+
+  void _watchCurrentAsset(BaseAsset asset) {
+    unawaited(_assetSubscription?.cancel());
+    _assetSubscription = ref.read(assetServiceProvider).watchAsset(asset).listen((updated) {
+      if (updated != null) {
+        state = state.copyWith(currentAsset: updated);
+      }
+    });
   }
 
   void setOpacity(double opacity) {
@@ -112,9 +77,9 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     }
     state = state.copyWith(showingDetails: showing, showingControls: showing ? true : state.showingControls);
 
-    final heroTag = state.currentAsset?.heroTag;
-    if (heroTag != null) {
-      final notifier = ref.read(videoPlayerProvider(heroTag).notifier);
+    final id = state.currentAsset?.id;
+    if (id != null) {
+      final notifier = ref.read(videoPlayerProvider(id).notifier);
       showing ? notifier.hold() : notifier.release();
     }
   }
@@ -150,12 +115,3 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
 }
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
-
-final _watchedCurrentAssetProvider = StreamProvider<BaseAsset?>((ref) {
-  ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
-  final asset = ref.read(assetViewerProvider).currentAsset;
-  if (asset == null) {
-    return const Stream.empty();
-  }
-  return ref.read(assetServiceProvider).watchAsset(asset);
-});

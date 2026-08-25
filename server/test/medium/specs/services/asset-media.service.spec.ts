@@ -213,6 +213,12 @@ describe(AssetService.name, () => {
       const assets = [...result];
       expect(assets).toHaveLength(1);
       expect(assets[0]).toEqual(response.id);
+
+      expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('AlbumUpdate', {
+        id: album.id,
+        userIds: [user.id],
+        recipientIds: [user.id],
+      });
     });
 
     it('should handle adding a duplicate asset to an album shared link', async () => {

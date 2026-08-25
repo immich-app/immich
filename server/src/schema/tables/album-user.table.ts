@@ -13,7 +13,7 @@ import {
 import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AlbumUserRole } from 'src/enum';
 import { album_user_role_enum } from 'src/schema/enums';
-import { album_user_after_insert, album_user_delete_audit } from 'src/schema/functions';
+import { album_user_after_insert, album_user_delete, album_user_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { UserTable } from 'src/schema/tables/user.table';
 
@@ -38,6 +38,7 @@ import { UserTable } from 'src/schema/tables/user.table';
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() <= 1',
 })
+@AfterDeleteTrigger({ scope: 'row', function: album_user_delete, referencingOldTableAs: 'old' })
 export class AlbumUserTable {
   @ForeignKeyColumn(() => AlbumTable, {
     onDelete: 'CASCADE',

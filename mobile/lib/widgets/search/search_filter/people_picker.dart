@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class PeoplePicker extends HookConsumerWidget {
   const PeoplePicker({super.key, required this.onSelect, this.filter});
 
-  final Function(Set<PersonDto>) onSelect;
-  final Set<PersonDto>? filter;
+  final Function(Set<Person>) onSelect;
+  final Set<Person>? filter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
-    final imageSize = 60.0;
+    const imageSize = 60.0;
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
-    final selectedPeople = useState<Set<PersonDto>>(filter ?? {});
+    final selectedPeople = useState<Set<Person>>(filter ?? {});
 
     return Column(
       children: [
@@ -35,7 +35,7 @@ class PeoplePicker extends HookConsumerWidget {
             onChanged: (value) => searchQuery.value = value,
             onTapOutside: (_) => formFocus.unfocus(),
             filled: true,
-            hintText: 'filter_people'.tr(),
+            hintText: context.t.filter_people,
           ),
         ),
         Padding(
@@ -65,7 +65,7 @@ class PeoplePicker extends HookConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 2.0),
                     child: LargeLeadingTile(
                       title: Text(
-                        person.name,
+                        person.name.nullIfEmpty ?? context.t.no_name,
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
@@ -80,7 +80,9 @@ class PeoplePicker extends HookConsumerWidget {
                           child: CircleAvatar(
                             key: ValueKey(person.id),
                             maxRadius: imageSize / 2,
-                            backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                            backgroundImage: RemoteImageProvider(
+                              url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                            ),
                           ),
                         ),
                       ),

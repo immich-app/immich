@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -50,13 +52,14 @@ class DriftUserSelectionPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<UserDto>> suggestedShareUsers = ref.watch(driftUsersProvider);
+    final sharedUsers = ref.watch(remoteAlbumSharedUsersProvider(album.id));
     final sharedUsersList = useState<Set<UserDto>>({});
 
-    addNewUsersHandler() {
-      context.maybePop(sharedUsersList.value.map((e) => e.id).toList());
+    void addNewUsersHandler() {
+      unawaited(context.maybePop(sharedUsersList.value.map((e) => e.id).toList()));
     }
 
-    buildTileIcon(UserDto user) {
+    Widget buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(backgroundColor: context.primaryColor, child: const Icon(Icons.check_rounded, size: 25));
       } else {
@@ -64,8 +67,8 @@ class DriftUserSelectionPage extends HookConsumerWidget {
       }
     }
 
-    buildUserList(List<UserDto> users) {
-      List<Widget> usersChip = [];
+    ListView buildUserList(List<UserDto> users) {
+      final List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
         usersChip.add(
@@ -84,14 +87,14 @@ class DriftUserSelectionPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'suggestions'.tr(),
+              context.t.suggestions,
               style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
             ),
           ),
           ListView.builder(
             primary: false,
             shrinkWrap: true,
-            itemBuilder: ((context, index) {
+            itemBuilder: (context, index) {
               return ListTile(
                 leading: buildTileIcon(users[index]),
                 dense: true,
@@ -107,7 +110,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
                   }
                 },
               );
-            }),
+            },
             itemCount: users.length,
           ),
         ],
@@ -116,27 +119,24 @@ class DriftUserSelectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('invite_to_album').tr(),
+        title: Text(context.t.invite_to_album),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
-            context.maybePop(null);
+            unawaited(context.maybePop(null));
           },
         ),
         actions: [
           TextButton(
-            onPressed: sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
-            child: const Text("add", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
+            onPressed: sharedUsersList.value.isEmpty ? null : () => addNewUsersHandler(),
+            child: Text(context.t.add, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
       body: suggestedShareUsers.widgetWhen(
         onData: (users) {
-          // Get shared users for this album from the database
-          final sharedUsers = ref.watch(remoteAlbumSharedUsersProvider(album.id));
-
           return sharedUsers.when(
             data: (albumSharedUsers) {
               // Filter out users that are already shared with this album and the owner

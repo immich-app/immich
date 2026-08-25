@@ -1,19 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-enum AspectRatioPreset {
-  free(ratio: null, label: 'Free', icon: Icons.crop_free_rounded),
-  square(ratio: 1.0, label: '1:1', icon: Icons.crop_square_rounded),
-  ratio16x9(ratio: 16 / 9, label: '16:9', icon: Icons.crop_16_9_rounded),
-  ratio3x2(ratio: 3 / 2, label: '3:2', icon: Icons.crop_3_2_rounded),
-  ratio7x5(ratio: 7 / 5, label: '7:5', icon: Icons.crop_7_5_rounded),
-  ratio9x16(ratio: 9 / 16, label: '9:16', icon: Icons.crop_16_9_rounded, iconRotated: true),
-  ratio2x3(ratio: 2 / 3, label: '2:3', icon: Icons.crop_3_2_rounded, iconRotated: true),
-  ratio5x7(ratio: 5 / 7, label: '5:7', icon: Icons.crop_7_5_rounded, iconRotated: true);
+part 'aspect_ratios.freezed.dart';
 
-  final double? ratio;
-  final String label;
-  final IconData icon;
-  final bool iconRotated;
+@freezed
+abstract class CropAspectRatio with _$CropAspectRatio {
+  const CropAspectRatio._();
 
-  const AspectRatioPreset({required this.ratio, required this.label, required this.icon, this.iconRotated = false});
+  const factory CropAspectRatio({int? numerator, int? denominator, String? customLabel, IconData? icon}) =
+      _CropAspectRatio;
+
+  static const free = CropAspectRatio(customLabel: "Free", icon: Icons.crop_free);
+  static const original = CropAspectRatio(customLabel: "Original", icon: Icons.crop_original);
+
+  String get label {
+    return customLabel ?? (numerator != null && denominator != null ? '$numerator:$denominator' : 'Free');
+  }
+
+  bool get hasFlippedVariant => numerator != denominator;
+  double? get ratio => (numerator != null && denominator != null) ? numerator! / denominator! : null;
+
+  CropAspectRatio get flipped {
+    return CropAspectRatio(numerator: denominator, denominator: numerator, customLabel: customLabel, icon: icon);
+  }
 }
+
+const aspectRatioFree = CropAspectRatio.free;
+const aspectRatioOriginal = CropAspectRatio.original;
+
+final aspectRatioPresets = [
+  CropAspectRatio.free,
+  CropAspectRatio.original,
+
+  const CropAspectRatio(numerator: 1, denominator: 1),
+
+  // lanscape
+  const CropAspectRatio(numerator: 16, denominator: 9),
+  const CropAspectRatio(numerator: 3, denominator: 2),
+  const CropAspectRatio(numerator: 7, denominator: 5),
+  const CropAspectRatio(numerator: 4, denominator: 3),
+
+  // portrait
+  const CropAspectRatio(numerator: 16, denominator: 9).flipped,
+  const CropAspectRatio(numerator: 3, denominator: 2).flipped,
+  const CropAspectRatio(numerator: 7, denominator: 5).flipped,
+  const CropAspectRatio(numerator: 4, denominator: 3).flipped,
+];

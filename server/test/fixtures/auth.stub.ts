@@ -28,19 +28,6 @@ export const authStub = {
       id: 'token-id',
     } as AuthSession,
   }),
-  user2: Object.freeze<AuthDto>({
-    user: {
-      id: 'user-2',
-      name: 'User 2',
-      email: 'user2@immich.cloud',
-      isAdmin: false,
-      quotaSizeInBytes: null,
-      quotaUsageInBytes: 0,
-    },
-    session: {
-      id: 'token-id',
-    } as AuthSession,
-  }),
   adminWithElevatedPermission: Object.freeze<AuthDto>({
     user: authUser.admin,
     session: {

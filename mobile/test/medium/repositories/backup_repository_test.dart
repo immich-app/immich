@@ -7,11 +7,11 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftBackupRepository sut;
+  late BackupRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = DriftBackupRepository(ctx.db);
+    sut = BackupRepository(ctx.db);
   });
 
   tearDown(() async {

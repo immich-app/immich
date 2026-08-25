@@ -1,9 +1,7 @@
 export const uuidDto = {
-  invalid: 'invalid-uuid',
   // valid uuid v4
   notFound: '00000000-0000-4000-a000-000000000000',
   dummy: '00000000-0000-4000-a000-000000000001',
-  dummy2: '00000000-0000-4000-a000-000000000002',
 };
 
 const adminLoginDto = {
@@ -57,22 +55,6 @@ export const createUserDto = {
 };
 
 export const userDto = {
-  admin: {
-    name: signupDto.admin.name,
-    email: signupDto.admin.email,
-    password: signupDto.admin.password,
-    storageLabel: 'admin',
-    oauthId: '',
-    shouldChangePassword: false,
-    profileImagePath: '',
-    createdAt: new Date('2021-01-01'),
-    deletedAt: null,
-    updatedAt: new Date('2021-01-01'),
-    tags: [],
-    assets: [],
-    quotaSizeInBytes: null,
-    quotaUsageInBytes: 0,
-  },
   user1: {
     name: createUserDto.user1.name,
     email: createUserDto.user1.email,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,7 +14,7 @@ import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftPersonPage extends ConsumerStatefulWidget {
-  final DriftPerson person;
+  final Person person;
 
   const DriftPersonPage({super.key, required this.person});
 
@@ -21,10 +23,10 @@ class DriftPersonPage extends ConsumerStatefulWidget {
 }
 
 class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
-  late DriftPerson _person;
+  late Person _person;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     _person = widget.person;
   }
@@ -49,8 +51,8 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
     }
   }
 
-  void showOptionSheet(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> showOptionSheet(BuildContext context) {
+    return showModalBottomSheet(
       context: context,
       backgroundColor: context.colorScheme.surface,
       isScrollControlled: false,

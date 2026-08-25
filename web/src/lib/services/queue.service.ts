@@ -14,6 +14,7 @@ import {
   mdiContentDuplicate,
   mdiDatabaseOutline,
   mdiFaceRecognition,
+  mdiFileCheckOutline,
   mdiFileJpgBox,
   mdiFileXmlBox,
   mdiFolderMove,
@@ -240,6 +241,10 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     [QueueName.Workflow]: {
       icon: mdiStateMachine,
       title: $t('workflows'),
+    },
+    [QueueName.IntegrityCheck]: {
+      icon: mdiFileCheckOutline,
+      title: $t('integrity_checks'),
     },
     [QueueName.Editor]: {
       icon: mdiPencil,

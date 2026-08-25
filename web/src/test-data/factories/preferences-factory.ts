@@ -24,6 +24,7 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
   memories: {
     enabled: false,
     duration: 5,
+    sidebarWeb: false,
   },
   people: {
     enabled: false,
@@ -42,6 +43,9 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
   },
   tags: {
     enabled: false,
+    sidebarWeb: false,
+  },
+  recentlyAdded: {
     sidebarWeb: false,
   },
 });

@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { StorageAsset } from 'src/database';
 import {
@@ -9,6 +8,7 @@ import {
   PersonPathType,
   RawExtractedFormat,
   StorageFolder,
+  UserPathType,
 } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -24,6 +24,8 @@ import { getConfig } from 'src/utils/config';
 
 export interface MoveRequest {
   entityId: string;
+  /** a person is owned, so the owner is needed to save the new path */
+  ownerId?: string;
   pathType: PathType;
   oldPath: string | null;
   newPath: string;
@@ -34,6 +36,8 @@ export interface MoveRequest {
 }
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
+
+export type PersonThumbnailPathEntity = { personGroupId: string; ownerId: string };
 
 export type HlsSessionFolder = { ownerId: string; sessionId: string };
 
@@ -113,8 +117,8 @@ export class StorageCore {
     return join(StorageCore.getMediaLocation(), folder);
   }
 
-  static getPersonThumbnailPath(person: ThumbnailPathEntity) {
-    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.id}.jpeg`);
+  static getPersonThumbnailPath(person: PersonThumbnailPathEntity) {
+    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.personGroupId}.jpeg`);
   }
 
   static getImagePath(asset: ThumbnailPathEntity, { fileType, format, isEdited }: ImagePathOptions) {
@@ -176,12 +180,13 @@ export class StorageCore {
     });
   }
 
-  async movePersonFile(person: { id: string; ownerId: string; thumbnailPath: string }, pathType: PersonPathType) {
-    const { id: entityId, thumbnailPath } = person;
+  async movePersonFile(person: PersonThumbnailPathEntity & { thumbnailPath: string }, pathType: PersonPathType) {
+    const { ownerId, personGroupId, thumbnailPath } = person;
     switch (pathType) {
       case PersonPathType.Face: {
         await this.moveFile({
-          entityId,
+          entityId: personGroupId,
+          ownerId,
           pathType,
           oldPath: thumbnailPath,
           newPath: StorageCore.getPersonThumbnailPath(person),
@@ -191,7 +196,7 @@ export class StorageCore {
   }
 
   async moveFile(request: MoveRequest) {
-    const { entityId, pathType, oldPath, newPath, assetInfo } = request;
+    const { entityId, ownerId, pathType, oldPath, newPath, assetInfo } = request;
     if (!oldPath || oldPath === newPath) {
       return;
     }
@@ -201,20 +206,20 @@ export class StorageCore {
     let move = await this.moveRepository.getByEntity(entityId, pathType);
     if (move) {
       this.logger.log(`Attempting to finish incomplete move: ${move.oldPath} => ${move.newPath}`);
-      const oldPathExists = await this.storageRepository.checkFileExists(move.oldPath);
-      const newPathExists = await this.storageRepository.checkFileExists(move.newPath);
-      const newPathCheck = newPathExists ? move.newPath : null;
-      const actualPath = oldPathExists ? move.oldPath : newPathCheck;
+      const isOldPathExists = await this.storageRepository.checkFileExists(move.oldPath);
+      const isNewPathExists = await this.storageRepository.checkFileExists(move.newPath);
+      const newPathCheck = isNewPathExists ? move.newPath : null;
+      const actualPath = isOldPathExists ? move.oldPath : newPathCheck;
       if (!actualPath) {
         this.logger.warn('Unable to complete move. File does not exist at either location.');
         return;
       }
 
-      const fileAtNewLocation = actualPath === move.newPath;
-      this.logger.log(`Found file at ${fileAtNewLocation ? 'new' : 'old'} location`);
+      const isFileAtNewLocation = actualPath === move.newPath;
+      this.logger.log(`Found file at ${isFileAtNewLocation ? 'new' : 'old'} location`);
 
       if (
-        fileAtNewLocation &&
+        isFileAtNewLocation &&
         !(await this.verifyNewPathContentsMatchesExpected(move.oldPath, move.newPath, assetInfo))
       ) {
         this.logger.fatal(
@@ -264,7 +269,7 @@ export class StorageCore {
       }
     }
 
-    await this.savePath(pathType, entityId, newPath);
+    await this.savePath(pathType, entityId, newPath, ownerId);
     await this.moveRepository.delete(move.id);
   }
 
@@ -317,7 +322,7 @@ export class StorageCore {
     return { dri, mali };
   }
 
-  private savePath(pathType: PathType, id: string, newPath: string) {
+  private savePath(pathType: PathType, id: string, newPath: string, ownerId?: string) {
     switch (pathType) {
       case AssetPathType.Original: {
         return this.assetRepository.update({ id, originalPath: newPath });
@@ -327,12 +332,23 @@ export class StorageCore {
       case AssetFileType.EncodedVideo:
       case AssetFileType.Thumbnail:
       case AssetFileType.Preview:
-      case AssetFileType.Sidecar: {
+      case AssetFileType.Sidecar:
+      case AssetPathType.EncodedVideo: {
         return this.assetRepository.upsertFile({ assetId: id, type: pathType as AssetFileType, path: newPath });
       }
 
       case PersonPathType.Face: {
-        return this.personRepository.update({ id, thumbnailPath: newPath });
+        if (!ownerId) {
+          this.logger.warn('Unable to save person path without an owner');
+          return;
+        }
+
+        return this.personRepository.update({ ownerId, personGroupId: id, thumbnailPath: newPath });
+      }
+
+      case UserPathType.Profile: {
+        this.logger.warn('Unexpected path type:', pathType);
+        return;
       }
     }
   }
@@ -342,11 +358,7 @@ export class StorageCore {
   }
 
   static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
-    return join(this.getNestedFolder(folder, ownerId, filename), filename);
-  }
-
-  static getTempPathInDir(dir: string): string {
-    return join(dir, `${randomUUID()}.tmp`);
+    return join(StorageCore.getNestedFolder(folder, ownerId, filename), filename);
   }
 
   private async getDevices() {
