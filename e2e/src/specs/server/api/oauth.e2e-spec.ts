@@ -286,6 +286,21 @@ describe(`/oauth`, () => {
       });
     });
 
+    it('should set the profile picture from a picture claim with an embedded image', async () => {
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_EMBEDDED_PROFILE_PICTURE);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        userId: expect.any(String),
+        userEmail: 'oauth-with-embedded-profile-picture@immich.app',
+        profileImagePath: expect.any(String),
+      });
+
+      const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+      expect(user.profileImagePath.length).toBeGreaterThan(0);
+    });
+
     it('should work with RS256 signed user profiles', async () => {
       await setupOAuth(admin.accessToken, {
         enabled: true,

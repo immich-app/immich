@@ -7,7 +7,10 @@ import z from 'zod';
 
 const TagCreateSchema = z
   .object({
-    name: z.string().describe('Tag name'),
+    name: z
+      .string()
+      .regex(/^[^/]*$/, `Tag name cannot contain slash characters ("/")`)
+      .describe('Tag name'),
     parentId: z.uuidv4().nullish().describe('Parent tag ID'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
