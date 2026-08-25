@@ -36,6 +36,8 @@
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1116.0",
+    "@aws-sdk/lib-storage": "^3.1116.0",
     "@extism/extism": "2.0.0-rc13",
     "@immich/plugin-sdk": "workspace:*",
     "@immich/sql-tools": "^0.5.1",
@@ -116,6 +118,7 @@
     "ua-parser-js": "^2.0.0",
     "uuid": "^14.0.0",
     "validator": "^13.12.0",
+    "webdav": "^5.10.0",
     "zod": "4.4.3"
   },
   "devDependencies": {

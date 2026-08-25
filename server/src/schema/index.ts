@@ -77,6 +77,11 @@ import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 import { SmartSearchTable } from 'src/schema/tables/smart-search.table';
 import { StackAuditTable } from 'src/schema/tables/stack-audit.table';
 import { StackTable } from 'src/schema/tables/stack.table';
+import {
+  StorageTargetObjectTable,
+  StorageTargetTable,
+  StorageTargetTransferTable,
+} from 'src/schema/tables/storage-target.table';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
@@ -146,6 +151,9 @@ export class ImmichDatabase {
     SharedLinkTable,
     SmartSearchTable,
     StackTable,
+    StorageTargetTable,
+    StorageTargetTransferTable,
+    StorageTargetObjectTable,
     StackAuditTable,
     SessionSyncCheckpointTable,
     SystemMetadataTable,
@@ -272,6 +280,10 @@ export interface DB {
 
   stack: StackTable;
   stack_audit: StackAuditTable;
+
+  storage_target: StorageTargetTable;
+  storage_target_transfer: StorageTargetTransferTable;
+  storage_target_object: StorageTargetObjectTable;
 
   system_metadata: SystemMetadataTable;
 

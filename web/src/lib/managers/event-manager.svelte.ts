@@ -11,6 +11,7 @@ import type {
   QueueResponseDto,
   ReleaseEventV1,
   SharedLinkResponseDto,
+  StorageTargetResponseDto,
   AdminConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
@@ -87,6 +88,8 @@ export type Events = {
   IntegrityReportDeleted: [{ type?: IntegrityReport; id?: string }];
 
   JobCreate: [{ dto: JobCreateDto }];
+
+  StorageTargetUpdate: [StorageTargetResponseDto];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];

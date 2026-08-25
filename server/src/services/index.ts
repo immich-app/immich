@@ -35,7 +35,9 @@ import { SessionService } from 'src/services/session.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StackService } from 'src/services/stack.service';
+import { StorageTargetService } from 'src/services/storage-target.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
+import { StorageTransferService } from 'src/services/storage-transfer.service';
 import { StorageService } from 'src/services/storage.service';
 import { SyncService } from 'src/services/sync.service';
 import { SystemConfigService } from 'src/services/system-config.service';
@@ -91,7 +93,9 @@ export const services = [
   SmartInfoService,
   StackService,
   StorageService,
+  StorageTargetService,
   StorageTemplateService,
+  StorageTransferService,
   SyncService,
   SystemConfigService,
   SystemMetadataService,
