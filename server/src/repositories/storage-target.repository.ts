@@ -80,6 +80,12 @@ export class StorageTargetRepository {
   /**
    * Atomically bump the progress counters so concurrent workers do not clobber each other,
    * and close the transfer out once every queued item has reported back.
+   *
+   * `totalCount` is only known after the whole stream has been queued, so it stays
+   * at zero while jobs are still going out. Workers must not close the transfer
+   * during that window -- the first one to finish would otherwise see `1 >= 0` and
+   * mark a still-running transfer complete. The queueing job reconciles once the
+   * real total is written.
    */
   async incrementTransferProgress(id: string, { completed = 0, failed = 0 }: { completed?: number; failed?: number }) {
     const transfer = await this.db
@@ -94,6 +100,7 @@ export class StorageTargetRepository {
 
     if (
       transfer.status === StorageTransferStatus.Running &&
+      transfer.totalCount > 0 &&
       transfer.completedCount + transfer.failedCount >= transfer.totalCount
     ) {
       return this.updateTransfer(id, {

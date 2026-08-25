@@ -13,6 +13,7 @@ import {
   StorageFolder,
   StorageTransferStatus,
 } from 'src/enum';
+import { StorageTargetRef } from 'src/repositories/remote-storage.repository';
 import { BaseService } from 'src/services/base.service';
 import { IStorageTransferAssetJob, IStorageTransferJob, IStorageTransferObjectJob } from 'src/types';
 import { getFilenameExtension } from 'src/utils/file';
@@ -297,7 +298,7 @@ export class StorageTransferService extends BaseService {
   }
 
   private async importSidecar(
-    target: Parameters<typeof this.remoteStorageRepository.head>[0],
+    target: StorageTargetRef,
     remoteKey: string,
     assetId: string,
     ownerId: string,
