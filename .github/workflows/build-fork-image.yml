@@ -1,0 +1,100 @@
+# Builds the immich-server image from this fork and pushes it to this fork's
+# GitHub Container Registry.
+#
+# Upstream's docker.yml cannot run here: it authenticates through an Immich-org
+# GitHub App (PUSH_O_MATIC_*) and builds on Immich's self-hosted runners, none of
+# which exist in a fork. This is a self-contained equivalent using stock actions
+# and the automatic GITHUB_TOKEN.
+name: Build fork image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag to publish'
+        required: true
+        default: 'storage-targets'
+      platforms:
+        description: 'Target platforms. arm64 is emulated and much slower.'
+        required: true
+        default: 'linux/amd64'
+        type: choice
+        options:
+          - linux/amd64
+          - linux/arm64
+          - linux/amd64,linux/arm64
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build and push immich-server
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up QEMU
+        # Only needed when building for a platform the runner is not.
+        if: contains(inputs.platforms, 'arm64')
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase the registry namespace
+        id: ns
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: echo "namespace=${OWNER@L}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: server/Dockerfile
+          platforms: ${{ inputs.platforms }}
+          push: true
+          tags: |
+            ghcr.io/${{ steps.ns.outputs.namespace }}/immich-server:${{ inputs.tag }}
+            ghcr.io/${{ steps.ns.outputs.namespace }}/immich-server:${{ github.sha }}
+          build-args: |
+            BUILD_ID=${{ github.run_id }}
+            BUILD_IMAGE=${{ inputs.tag }}
+            BUILD_SOURCE_REF=${{ github.ref_name }}
+            BUILD_SOURCE_COMMIT=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        env:
+          IMAGE: ghcr.io/${{ steps.ns.outputs.namespace }}/immich-server
+          TAG: ${{ inputs.tag }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          SHA: ${{ github.sha }}
+        run: |
+          {
+            echo "## Image published"
+            echo
+            echo '```'
+            echo "$IMAGE:$TAG"
+            echo "$IMAGE@$DIGEST"
+            echo '```'
+            echo
+            echo "Commit \`$SHA\` on \`${{ github.ref_name }}\`."
+            echo
+            echo "Pin the digest in Cosmos rather than the tag if you want an immutable deploy."
+          } >> "$GITHUB_STEP_SUMMARY"
