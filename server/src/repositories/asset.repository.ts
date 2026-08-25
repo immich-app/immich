@@ -85,6 +85,7 @@ interface AssetBuilderOptions {
   albumId?: string;
   tagId?: string;
   personId?: string;
+  personIds?: string[];
   userIds?: string[];
   withStacked?: boolean;
   exifInfo?: boolean;
@@ -770,7 +771,8 @@ export class AssetRepository {
               .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
               .where('album_asset.albumId', '=', asUuid(options.albumId!)),
           )
-          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+          .$if(!!options.personIds?.length, (qb) => hasPeople(qb, options.personIds!))
+          .$if(!options.personIds?.length && !!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.withStacked, (qb) =>
             qb
               .leftJoin('stack', (join) =>
@@ -863,7 +865,8 @@ export class AssetRepository {
               ),
             ),
           )
-          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+          .$if(!!options.personIds?.length, (qb) => hasPeople(qb, options.personIds!))
+          .$if(!options.personIds?.length && !!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>

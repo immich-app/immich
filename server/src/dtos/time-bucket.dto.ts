@@ -9,6 +9,19 @@ const TimeBucketQueryBaseSchema = z
     userId: z.uuidv4().optional().describe('Filter assets by specific user ID'),
     albumId: z.uuidv4().optional().describe('Filter assets belonging to a specific album'),
     personId: z.uuidv4().optional().describe('Filter assets containing a specific person (face recognition)'),
+    personIds: z
+      .string()
+      .transform((value, ctx) => {
+        const ids = value.split(',').filter(Boolean);
+        const result = z.array(z.uuidv4()).safeParse(ids);
+        if (!result.success) {
+          ctx.issues.push({ code: 'custom', message: 'personIds must be comma-separated UUIDs', input: value });
+          return z.NEVER;
+        }
+        return result.data;
+      })
+      .optional()
+      .describe('Filter assets containing all specified people (comma-separated person IDs)'),
     tagId: z.uuidv4().optional().describe('Filter assets with a specific tag'),
     isFavorite: stringToBool
       .optional()

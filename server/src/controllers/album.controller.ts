@@ -73,7 +73,7 @@ export class AlbumController {
   }
 
   @Get(':id/people')
-  @Authenticated({ permission: Permission.AlbumRead })
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
   @Endpoint({
     summary: 'Retrieve people in an album',
     description: 'Returns the distinct people appearing in an album, with the number of assets per person.',

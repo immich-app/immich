@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { getAlbumPeople, scanAlbumFaces, type AlbumPeopleResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import {
+    getAlbumPeople,
+    scanAlbumFaces,
+    type AlbumPeopleResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import { IconButton, toastManager } from '@immich/ui';
   import { mdiFaceRecognition } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -9,25 +14,33 @@
 
   interface Props {
     albumId: string;
-    /** currently active person filter (person id or null) */
-    filter: string | null;
+    /** currently active person filters */
+    filter: string[];
     /** if true the owner (or editor) can trigger a face scan for this album */
     canScan: boolean;
-    onFilter: (personId: string | null) => void;
+    onFilter: (personId: string) => void;
+    key?: string;
+    slug?: string;
   }
 
-  let { albumId, filter, canScan, onFilter }: Props = $props();
+  let { albumId, filter, canScan, onFilter, key, slug }: Props = $props();
 
   let people: AlbumPeopleResponseDto[] = $state([]);
   let scanning = $state(false);
 
   const load = async () => {
     try {
-      people = await getAlbumPeople({ id: albumId });
+      people = await getAlbumPeople({ id: albumId, key, slug });
     } catch {
       people = [];
     }
   };
+
+  const getThumbnailUrl = (person: AlbumPeopleResponseDto) =>
+    getPeopleThumbnailUrl(person as PersonResponseDto).replace(
+      /([?&])updatedAt=/,
+      `$1${key ? `key=${encodeURIComponent(key)}&` : ''}${slug ? `slug=${encodeURIComponent(slug)}&` : ''}updatedAt=`,
+    );
 
   const scan = async () => {
     if (scanning) {
@@ -74,18 +87,18 @@
       <button
         type="button"
         class="flex shrink-0 flex-col items-center gap-1 focus:outline-none"
-        onclick={() => onFilter(filter === person.id ? null : person.id)}
+        onclick={() => onFilter(person.id)}
         title={person.name || $t('person')}
       >
         <div
-          class="rounded-full ring-3 {filter === person.id
+          class="rounded-full ring-3 {filter.includes(person.id)
             ? 'ring-immich-primary dark:ring-immich-dark-primary'
             : 'ring-transparent hover:ring-immich-primary/40'}"
         >
           <ImageThumbnail
             circle
             shadow
-            url={getPeopleThumbnailUrl(person as PersonResponseDto)}
+            url={getThumbnailUrl(person)}
             altText={person.name}
             title={person.name}
             widthStyle="72px"

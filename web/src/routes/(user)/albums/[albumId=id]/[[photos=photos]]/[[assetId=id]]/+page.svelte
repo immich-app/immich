@@ -230,18 +230,23 @@
         timelineAlbumId: albumId,
       };
     }
-    return { albumId, order: album.order, personId: personFilter ?? undefined };
+    return { albumId, order: album.order, personIds: personFilter.length ? personFilter.join(',') : undefined };
   });
 
-  let personFilter = $state<string | null>($page.url.searchParams.get('personId'));
+  let personFilter = $state<string[]>(
+    page.url.searchParams.get('personIds')?.split(',').filter(Boolean) ??
+      (page.url.searchParams.get('personId') ? [page.url.searchParams.get('personId')!] : []),
+  );
 
-  const setPersonFilter = async (personId: string | null) => {
-    personFilter = personId;
-    const url = new URL($page.url);
-    if (personId) {
-      url.searchParams.set('personId', personId);
+  const setPersonFilter = async (personId: string) => {
+    personFilter = personFilter.includes(personId)
+      ? personFilter.filter((id) => id !== personId)
+      : [...personFilter, personId];
+    const url = new URL(page.url);
+    if (personFilter.length) {
+      url.searchParams.set('personIds', personFilter.join(','));
     } else {
-      url.searchParams.delete('personId');
+      url.searchParams.delete('personIds');
     }
     await goto(url, { invalidateAll: false, replaceState: true });
   };

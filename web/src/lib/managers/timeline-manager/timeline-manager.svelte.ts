@@ -77,7 +77,7 @@ export class TimelineManager extends VirtualScrollManager {
   initTask = new CancellableTask(
     () => {
       this.isInitialized = true;
-      if (this.#options.albumId || this.#options.personId) {
+      if (this.#options.albumId || this.#options.personId || this.#options.personIds) {
         return;
       }
       this.connect();
@@ -116,7 +116,7 @@ export class TimelineManager extends VirtualScrollManager {
       eventManager.on({
         AssetUpdate: (asset: AssetResponseDto) => {
           const timelineAsset = toTimelineAsset(asset);
-          if (this.#options.albumId || this.#options.personId) {
+          if (this.#options.albumId || this.#options.personId || this.#options.personIds) {
             this.#updateAssets([timelineAsset]);
           } else {
             this.upsertAssets([timelineAsset]);

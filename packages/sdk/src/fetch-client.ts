@@ -3934,13 +3934,15 @@ export function getAlbumInfo({ id, key, slug }: {
 /**
  * Retrieve people in an album
  */
-export function getAlbumPeople({ id }: {
+export function getAlbumPeople({ id, key, slug }: {
     id: string;
+    key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumPeopleResponseDto[];
-    }>(`/albums/${encodeURIComponent(id)}/people`, {
+    }>(`/albums/${encodeURIComponent(id)}/people${QS.query(QS.explode({ key, slug }))}`, {
         ...opts
     }));
 }
@@ -6675,7 +6677,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, personIds, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6684,6 +6686,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
     personId?: string;
+    personIds?: string;
     slug?: string;
     tagId?: string;
     timeBucket: string;
@@ -6705,6 +6708,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         order,
         orderBy,
         personId,
+        personIds,
         slug,
         tagId,
         timeBucket,
@@ -6720,7 +6724,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, personIds, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6729,6 +6733,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
     personId?: string;
+    personIds?: string;
     slug?: string;
     tagId?: string;
     userId?: string;
@@ -6749,6 +6754,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         order,
         orderBy,
         personId,
+        personIds,
         slug,
         tagId,
         userId,

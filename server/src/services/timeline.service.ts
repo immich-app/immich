@@ -45,6 +45,14 @@ export class TimelineService extends BaseService {
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
+    if (auth.sharedLink && dto.personIds?.length) {
+      const people = await Promise.all(
+        dto.personIds.map((personId) => this.sharedLinkRepository.getPersonForSharedLink(auth.sharedLink!.id, personId)),
+      );
+      if (people.some((person) => !person)) {
+        throw new BadRequestException('One or more selected people are not available through this shared link');
+      }
+    }
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }

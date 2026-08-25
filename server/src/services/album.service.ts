@@ -102,7 +102,11 @@ export class AlbumService extends BaseService {
   async getPeople(auth: AuthDto, id: string): Promise<AlbumPeopleResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
 
-    const people = await this.albumRepository.getAlbumPeople(id);
+    const people = auth.sharedLink
+      ? auth.sharedLink.albumId === id
+        ? await this.sharedLinkRepository.getPeople(auth.sharedLink.id)
+        : []
+      : await this.albumRepository.getAlbumPeople(id);
 
     return people.map((person) => ({
       id: person.id,

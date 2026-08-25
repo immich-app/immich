@@ -23,6 +23,9 @@
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import ThemeButton from '../shared-components/ThemeButton.svelte';
   import AlbumSummary from './AlbumSummary.svelte';
+  import AlbumPeopleBar from './AlbumPeopleBar.svelte';
+  import { page } from '$app/state';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -34,7 +37,29 @@
 
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
-  const options = $derived({ albumId: album.id, order: album.order });
+  let personFilter = $state<string[]>(
+    page.url.searchParams.get('personIds')?.split(',').filter(Boolean) ??
+      (page.url.searchParams.get('personId') ? [page.url.searchParams.get('personId')!] : []),
+  );
+  const options = $derived({
+    albumId: album.id,
+    order: album.order,
+    personIds: personFilter.length ? personFilter.join(',') : undefined,
+    ...authManager.params,
+  });
+
+  const setPersonFilter = (personId: string) => {
+    personFilter = personFilter.includes(personId)
+      ? personFilter.filter((id) => id !== personId)
+      : [...personFilter, personId];
+    const url = new URL(page.url);
+    if (personFilter.length) {
+      url.searchParams.set('personIds', personFilter.join(','));
+    } else {
+      url.searchParams.delete('personIds');
+    }
+    history.replaceState(history.state, '', url);
+  };
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   dragAndDropFilesStore.subscribe((value) => {
@@ -82,6 +107,17 @@
 
       {#if album.assetCount > 0}
         <AlbumSummary {album} />
+      {/if}
+
+      {#if album.assetCount > 0}
+        <AlbumPeopleBar
+          albumId={album.id}
+          filter={personFilter}
+          canScan={false}
+          key={authManager.params.key}
+          slug={authManager.params.slug}
+          onFilter={setPersonFilter}
+        />
       {/if}
 
       <!-- ALBUM DESCRIPTION -->

@@ -11,6 +11,18 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 
+export interface SharedLinkPersonRow {
+  id: string;
+  name: string;
+  birthDate: Date | null;
+  thumbnailPath: string;
+  isHidden: boolean;
+  isFavorite: boolean;
+  color: string | null;
+  updatedAt: Date;
+  assetCount: number;
+}
+
 export type SharedLinkSearchOptions = {
   userId: string;
   id?: string;
@@ -150,6 +162,66 @@ export class SharedLinkRepository {
   @GenerateSql({ params: [DummyValue.BUFFER] })
   getBySlug(slug: string) {
     return this.authBuilder().where('shared_link.slug', '=', slug).executeTakeFirst();
+  }
+
+  async getPeople(id: string): Promise<SharedLinkPersonRow[]> {
+    return this.db
+      .selectFrom('person')
+      .innerJoin('asset_face', 'asset_face.personId', 'person.id')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .innerJoin('shared_link', (join) => join.onTrue())
+      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
+      .leftJoin('album', (join) => join.onRef('album.id', '=', 'shared_link.albumId'))
+      .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
+      .where('shared_link.id', '=', id)
+      .where('person.isHidden', '=', false)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          eb('shared_link_asset.assetId', '=', eb.ref('asset_face.assetId')),
+          eb('album_asset.assetId', '=', eb.ref('asset_face.assetId')),
+        ]),
+      )
+      .select((eb) => [
+        'person.id',
+        'person.name',
+        'person.birthDate',
+        'person.thumbnailPath',
+        'person.isHidden',
+        'person.isFavorite',
+        'person.color',
+        'person.updatedAt',
+        sql<number>`count(distinct asset_face."assetId")`.as('assetCount'),
+      ])
+      .groupBy('person.id')
+      .orderBy('assetCount', 'desc')
+      .orderBy('person.name', 'asc')
+      .execute();
+  }
+
+  async getPersonForSharedLink(sharedLinkId: string, personId: string) {
+    return this.db
+      .selectFrom('person')
+      .innerJoin('asset_face', 'asset_face.personId', 'person.id')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .innerJoin('shared_link', (join) => join.onTrue())
+      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
+      .leftJoin('album', (join) => join.onRef('album.id', '=', 'shared_link.albumId'))
+      .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
+      .where('shared_link.id', '=', sharedLinkId)
+      .where('person.id', '=', personId)
+      .where('person.isHidden', '=', false)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          eb('shared_link_asset.assetId', '=', eb.ref('asset_face.assetId')),
+          eb('album_asset.assetId', '=', eb.ref('asset_face.assetId')),
+        ]),
+      )
+      .select(['person.id', 'person.thumbnailPath'])
+      .executeTakeFirst();
   }
 
   private authBuilder() {

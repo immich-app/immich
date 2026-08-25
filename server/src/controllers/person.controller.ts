@@ -157,7 +157,7 @@ export class PersonController {
 
   @Get(':id/thumbnail')
   @FileResponse()
-  @Authenticated({ permission: Permission.PersonRead })
+  @Authenticated({ permission: Permission.PersonRead, sharedLink: true })
   @Endpoint({
     summary: 'Get person thumbnail',
     description: 'Retrieve the thumbnail file for a person.',

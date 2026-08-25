@@ -161,7 +161,14 @@ export class PersonService extends BaseService {
   }
 
   async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
+    if (auth.sharedLink) {
+      const sharedPerson = await this.sharedLinkRepository.getPersonForSharedLink(auth.sharedLink.id, id);
+      if (!sharedPerson) {
+        throw new NotFoundException();
+      }
+    } else {
+      await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
+    }
     const person = await this.personRepository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
