@@ -11,14 +11,13 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
 import 'package:logging/logging.dart';
 
-class AndroidViewIntentHandler implements ViewIntentHandler {
+class AndroidViewIntentHandler {
   final Ref _ref;
   final ViewIntentService _viewIntentService;
   final ViewIntentAssetResolver _viewIntentAssetResolver;
@@ -31,16 +30,13 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       _viewIntentAssetResolver = ref.read(viewIntentAssetResolverProvider),
       _router = ref.watch(appRouterProvider);
 
-  @override
   void init() {
     // Covers cold start from a view intent before the first lifecycle "resumed".
     unawaited(onAppResumed());
   }
 
-  @override
   Future<void> onAppResumed() => _checkForViewIntent();
 
-  @override
   Future<void> flushDeferredViewIntent() => _flushPending();
 
   Future<void> _checkForViewIntent() async {
@@ -75,7 +71,6 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     }
   }
 
-  @override
   Future<void> handle(ViewIntentPayload payload) async {
     _logger.info(
       'handle attachment, mimeType:${payload.mimeType}, localAssetId=${payload.localAssetId}, path=${payload.path}, isAuthenticated:${_ref.read(authProvider).isAuthenticated}',
