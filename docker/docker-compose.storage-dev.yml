@@ -1,0 +1,64 @@
+# Local S3 and WebDAV servers for developing and testing external storage targets.
+#
+#   docker compose -f docker/docker-compose.storage-dev.yml up -d
+#
+# Joins the immich-dev network so the server can reach these by service name.
+# Point a storage target at http://minio:9000 or http://nextcloud from inside
+# the stack, or at localhost from the host.
+name: immich-storage-dev
+
+services:
+  minio:
+    container_name: immich-storage-minio
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: immich
+      MINIO_ROOT_PASSWORD: immich-secret
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Creates the bucket the tests and the dev target expect.
+  minio-init:
+    container_name: immich-storage-minio-init
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 immich immich-secret &&
+      mc mb --ignore-existing local/immich &&
+      echo 'bucket ready'
+      "
+
+  nextcloud:
+    container_name: immich-storage-nextcloud
+    image: nextcloud:31-apache
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: immich
+      NEXTCLOUD_ADMIN_PASSWORD: immich-secret
+      # Without this Nextcloud rejects requests whose Host header it does not know.
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost nextcloud
+    ports:
+      - 8080:80
+    volumes:
+      - nextcloud-data:/var/www/html
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost/status.php']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  minio-data:
+  nextcloud-data:

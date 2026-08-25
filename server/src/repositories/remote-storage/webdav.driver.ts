@@ -113,11 +113,10 @@ export class WebDavDriver implements RemoteStorageDriver {
     await this.ensureDirectory(path);
 
     await new Promise<void>((resolve, reject) => {
-      const writeStream = this.client.createWriteStream(path);
+      // The write stream is a PassThrough feeding a PUT; it never emits 'finish'
+      // for the request itself, so completion is only observable via the callback.
+      const writeStream = this.client.createWriteStream(path, { overwrite: true }, () => resolve());
       writeStream.on('error', reject);
-      // `finished` fires once the server has acknowledged the PUT, which is later
-      // than the local stream's `close` and is what we actually need to wait on.
-      writeStream.on('finished', () => resolve());
       stream.on('error', reject);
       stream.pipe(writeStream);
     });
