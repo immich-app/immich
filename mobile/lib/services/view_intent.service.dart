@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:path/path.dart' as p;
@@ -20,12 +19,6 @@ class ViewIntentService {
   Future<ViewIntentPayload?> consumeViewIntent() async {
     try {
       return await _viewIntentHostApi.consumeViewIntent();
-    } on PlatformException catch (error) {
-      if (error.code == viewIntentUnavailableErrorCode) {
-        rethrow;
-      }
-      // Ignore errors - view intent might not be present
-      return null;
     } catch (_) {
       // Ignore errors - view intent might not be present
       return null;

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -9,15 +8,12 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/platform/view_intent_api.g.dart' as pigeon;
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
@@ -26,7 +22,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
@@ -58,7 +53,6 @@ class FakeTimelineService extends Fake implements TimelineService {}
 
 class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
-  PlatformException? consumeError;
   int cleanupStaleTempFilesCalls = 0;
   int cleanupManagedTempFileCalls = 0;
   final List<String> managedTempPaths = [];
@@ -67,12 +61,7 @@ class TestViewIntentService extends ViewIntentService {
   TestViewIntentService() : super(MockViewIntentHostApi());
 
   @override
-  Future<ViewIntentPayload?> consumeViewIntent() async {
-    if (consumeError case final PlatformException error) {
-      throw error;
-    }
-    return consumedAttachment;
-  }
+  Future<ViewIntentPayload?> consumeViewIntent() async => consumedAttachment;
 
   @override
   Future<void> cleanupStaleTempFiles() async {
@@ -92,15 +81,6 @@ class TestViewIntentService extends ViewIntentService {
   @override
   Future<void> cleanupManagedTempFileIfCurrent(String path) async {
     cleanedManagedTempPaths.add(path);
-  }
-}
-
-class TestToastService extends ToastService {
-  final List<String> errorMessages = [];
-
-  @override
-  void error(String message, {ToastOption? toast}) {
-    errorMessages.add(message);
   }
 }
 
@@ -133,7 +113,6 @@ void main() {
   late MockTimelineFactory timelineFactory;
   late MockAppRouter router;
   late TestAuthNotifier authNotifier;
-  late TestToastService toastService;
   late ProviderContainer container;
   late AndroidViewIntentHandler handler;
   late ViewIntentPayload payload;
@@ -153,7 +132,6 @@ void main() {
 
   setUp(() async {
     viewIntentService = TestViewIntentService();
-    toastService = TestToastService();
     resolver = MockViewIntentAssetResolver();
     assetService = MockAssetService();
     timelineFactory = MockTimelineFactory();
@@ -173,7 +151,6 @@ void main() {
         viewIntentAssetResolverProvider.overrideWithValue(resolver),
         assetServiceProvider.overrideWithValue(assetService),
         timelineFactoryProvider.overrideWithValue(timelineFactory),
-        toastServiceProvider.overrideWithValue(toastService),
         appRouterProvider.overrideWithValue(router),
         authProvider.overrideWith((ref) {
           authNotifier = TestAuthNotifier(ref, _authState(isAuthenticated: true));
@@ -240,16 +217,6 @@ void main() {
     await handler.onAppResumed();
 
     expect(viewIntentService.cleanupStaleTempFilesCalls, 0);
-    verifyNever(() => resolver.resolve(any()));
-  });
-
-  test('onAppResumed returns to the main screen when the incoming view intent is unavailable', () async {
-    viewIntentService.consumeError = PlatformException(code: pigeon.viewIntentUnavailableErrorCode);
-
-    await handler.onAppResumed();
-
-    expect(toastService.errorMessages, [StaticTranslations.instance.asset_not_found_on_device_android]);
-    verify(() => router.replaceAll([const TabShellRoute()])).called(1);
     verifyNever(() => resolver.resolve(any()));
   });
 
