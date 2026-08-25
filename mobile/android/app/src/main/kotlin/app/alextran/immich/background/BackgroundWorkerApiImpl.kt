@@ -38,6 +38,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     WorkManager.getInstance(ctx).apply {
       cancelUniqueWork(OBSERVER_WORKER_NAME)
       cancelUniqueWork(BACKGROUND_WORKER_NAME)
+      cancelUniqueWork(RETRY_WORKER_NAME)
       cancelUniqueWork(PERIODIC_WORKER_NAME)
     }
     Log.i(TAG, "Cancelled background upload tasks")
@@ -45,9 +46,11 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
 
   companion object {
     private const val BACKGROUND_WORKER_NAME = "immich/BackgroundWorkerV1"
+    private const val RETRY_WORKER_NAME = "immich/BackgroundWorkerRetryV1"
     private const val OBSERVER_WORKER_NAME = "immich/MediaObserverV1"
     private const val PERIODIC_WORKER_NAME = "immich/PeriodicBackgroundWorkerV1"
     const val ENGINE_CACHE_KEY = "immich::background_worker::engine"
+    const val RETRY_TAG = "immich/retryWhenConnected"
 
 
     fun enqueueMediaObserver(ctx: Context) {
@@ -96,10 +99,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun enqueueBackgroundWorker(ctx: Context) {
-      val constraints = Constraints.Builder().apply {
-        setRequiredNetworkType(NetworkType.CONNECTED)
-        setRequiresBatteryNotLow(true)
-      }.build()
+      val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
       val work = OneTimeWorkRequestBuilder<BackgroundWorker>()
         .setConstraints(constraints)
         .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
@@ -110,6 +110,22 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
       Log.i(TAG, "Enqueued background worker with name: $BACKGROUND_WORKER_NAME")
     }
 
+    fun enqueueBackgroundWorkerWhenConnected(ctx: Context) {
+      val constraints = Constraints.Builder().apply {
+        setRequiredNetworkType(NetworkType.CONNECTED)
+        setRequiresBatteryNotLow(true)
+      }.build()
+      val work = OneTimeWorkRequestBuilder<BackgroundWorker>()
+        .setConstraints(constraints)
+        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+        .addTag(RETRY_TAG)
+        .build()
+      WorkManager.getInstance(ctx)
+        .enqueueUniqueWork(RETRY_WORKER_NAME, ExistingWorkPolicy.KEEP, work)
+
+      Log.i(TAG, "Enqueued background worker to run once connected")
+    }
+
     fun isBackgroundWorkerRunning(): Boolean {
       // Easier to check if the engine is cached as we always cache the engine when starting the worker
       // and remove it when the worker is finished
@@ -118,6 +134,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
 
     fun cancelBackgroundWorker(ctx: Context) {
       WorkManager.getInstance(ctx).cancelUniqueWork(BACKGROUND_WORKER_NAME)
+      WorkManager.getInstance(ctx).cancelUniqueWork(RETRY_WORKER_NAME)
       FlutterEngineCache.getInstance().remove(ENGINE_CACHE_KEY)
 
       Log.i(TAG, "Cancelled background upload task")

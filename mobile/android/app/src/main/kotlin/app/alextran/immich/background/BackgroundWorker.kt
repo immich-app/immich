@@ -15,6 +15,7 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import app.alextran.immich.MainActivity
 import app.alextran.immich.R
+import app.alextran.immich.connectivity.ConnectivityApiImpl
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
@@ -191,7 +192,13 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     result.fold(
       onSuccess = { needsRetry ->
-        complete(if (needsRetry) Result.retry() else Result.success())
+        val offline = ConnectivityApiImpl(ctx).getCapabilities().isEmpty()
+        if (needsRetry && offline && !tags.contains(BackgroundWorkerApiImpl.RETRY_TAG)) {
+          BackgroundWorkerApiImpl.enqueueBackgroundWorkerWhenConnected(ctx)
+          complete(Result.success())
+        } else {
+          complete(if (needsRetry) Result.retry() else Result.success())
+        }
       },
       onFailure = { _ -> onStopped() }
     )
