@@ -12,10 +12,16 @@ const s3Config = {
   prefix: 'photos',
 };
 
-const s3Secret = {
-  kind: StorageTargetKind.S3 as const,
+/** What a client sends: no `kind`, the config already carries it. */
+const s3SecretDto = {
   accessKeyId: 'access-key',
   secretAccessKey: 'secret-key',
+};
+
+/** What gets stored: narrowed to the configured kind. */
+const s3Secret = {
+  kind: StorageTargetKind.S3 as const,
+  ...s3SecretDto,
 };
 
 const targetStub = {
@@ -82,12 +88,12 @@ describe(StorageTargetService.name, () => {
   });
 
   describe('create', () => {
-    it('should reject a config and secret of different kinds', async () => {
+    it('should reject credentials that do not fit the configured kind', async () => {
       await expect(
         sut.create({
           name: 'Mismatched',
           config: s3Config,
-          secret: { kind: StorageTargetKind.WebDav, username: 'alice', password: 'hunter2' },
+          secret: { username: 'alice', password: 'hunter2' },
           isEnabled: true,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -95,11 +101,23 @@ describe(StorageTargetService.name, () => {
       expect(mocks.storageTarget.create).not.toHaveBeenCalled();
     });
 
+    it('should not require credentials for a local target', async () => {
+      const localConfig = { kind: StorageTargetKind.Local as const, basePath: '/mnt/backup', prefix: '' };
+      mocks.storageTarget.getByName.mockResolvedValue(void 0);
+      mocks.storageTarget.create.mockResolvedValue({ ...targetStub, kind: StorageTargetKind.Local });
+
+      await sut.create({ name: 'NAS', config: localConfig, secret: {}, isEnabled: true });
+
+      expect(mocks.storageTarget.create).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: StorageTargetKind.Local, secret: { kind: StorageTargetKind.Local } }),
+      );
+    });
+
     it('should reject a duplicate name', async () => {
       mocks.storageTarget.getByName.mockResolvedValue(targetStub);
 
       await expect(
-        sut.create({ name: 'MinIO', config: s3Config, secret: s3Secret, isEnabled: true }),
+        sut.create({ name: 'MinIO', config: s3Config, secret: s3SecretDto, isEnabled: true }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.storageTarget.create).not.toHaveBeenCalled();
@@ -109,7 +127,7 @@ describe(StorageTargetService.name, () => {
       mocks.storageTarget.getByName.mockResolvedValue(void 0);
       mocks.storageTarget.create.mockResolvedValue(targetStub);
 
-      await sut.create({ name: 'MinIO', config: s3Config, secret: s3Secret, isEnabled: true });
+      await sut.create({ name: 'MinIO', config: s3Config, secret: s3SecretDto, isEnabled: true });
 
       expect(mocks.storageTarget.create).toHaveBeenCalledWith({
         name: 'MinIO',

@@ -26853,18 +26853,7 @@
             "type": "string"
           },
           "secret": {
-            "description": "Credentials. Write-only: never returned by the API.",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/StorageTargetS3SecretDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetWebDavSecretDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetLocalSecretDto"
-              }
-            ]
+            "$ref": "#/components/schemas/StorageTargetSecretDto"
           }
         },
         "required": [
@@ -26904,20 +26893,6 @@
         },
         "required": [
           "basePath",
-          "kind"
-        ],
-        "type": "object"
-      },
-      "StorageTargetLocalSecretDto": {
-        "properties": {
-          "kind": {
-            "enum": [
-              "local"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
           "kind"
         ],
         "type": "object"
@@ -27023,30 +26998,26 @@
         ],
         "type": "object"
       },
-      "StorageTargetS3SecretDto": {
+      "StorageTargetSecretDto": {
+        "description": "Credentials for the target. Write-only: never returned by the API.",
         "properties": {
           "accessKeyId": {
-            "description": "Access key ID",
-            "minLength": 1,
+            "description": "S3 access key ID",
             "type": "string"
           },
-          "kind": {
-            "enum": [
-              "s3"
-            ],
+          "password": {
+            "description": "WebDAV password or app password",
             "type": "string"
           },
           "secretAccessKey": {
-            "description": "Secret access key",
-            "minLength": 1,
+            "description": "S3 secret access key",
+            "type": "string"
+          },
+          "username": {
+            "description": "WebDAV username",
             "type": "string"
           }
         },
-        "required": [
-          "accessKeyId",
-          "kind",
-          "secretAccessKey"
-        ],
         "type": "object"
       },
       "StorageTargetTestResponseDto": {
@@ -27091,18 +27062,7 @@
             "type": "string"
           },
           "secret": {
-            "description": "Credentials. Write-only: never returned by the API.",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/StorageTargetS3SecretDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetWebDavSecretDto"
-              },
-              {
-                "$ref": "#/components/schemas/StorageTargetLocalSecretDto"
-              }
-            ]
+            "$ref": "#/components/schemas/StorageTargetSecretDto"
           }
         },
         "type": "object"
@@ -27129,32 +27089,6 @@
         "required": [
           "baseUrl",
           "kind"
-        ],
-        "type": "object"
-      },
-      "StorageTargetWebDavSecretDto": {
-        "properties": {
-          "kind": {
-            "enum": [
-              "webdav"
-            ],
-            "type": "string"
-          },
-          "password": {
-            "description": "Password or app password",
-            "minLength": 1,
-            "type": "string"
-          },
-          "username": {
-            "description": "Username",
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "password",
-          "username"
         ],
         "type": "object"
       },

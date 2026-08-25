@@ -4,12 +4,13 @@ import {
   mapStorageTransfer,
   StorageTargetCreateDto,
   StorageTargetResponseDto,
+  StorageTargetSecretDto,
   StorageTargetTestResponseDto,
   StorageTargetUpdateDto,
   StorageTransferCreateDto,
   StorageTransferResponseDto,
 } from 'src/dtos/storage-target.dto';
-import { JobName, StorageTransferDirection, StorageTransferStatus } from 'src/enum';
+import { JobName, StorageTargetKind, StorageTransferDirection, StorageTransferStatus } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { StorageTargetConfig, StorageTargetSecret } from 'src/types';
 
@@ -26,9 +27,7 @@ export class StorageTargetService extends BaseService {
   }
 
   async create(dto: StorageTargetCreateDto): Promise<StorageTargetResponseDto> {
-    if (dto.config.kind !== dto.secret.kind) {
-      throw new BadRequestException('Storage target config and credentials must be for the same kind');
-    }
+    const secret = asSecret(dto.config.kind, dto.secret);
 
     const duplicate = await this.storageTargetRepository.getByName(dto.name);
     if (duplicate) {
@@ -39,7 +38,7 @@ export class StorageTargetService extends BaseService {
       name: dto.name,
       kind: dto.config.kind,
       config: dto.config as StorageTargetConfig,
-      secret: dto.secret as StorageTargetSecret,
+      secret,
       isEnabled: dto.isEnabled,
     });
 
@@ -49,12 +48,15 @@ export class StorageTargetService extends BaseService {
   async update(id: string, dto: StorageTargetUpdateDto): Promise<StorageTargetResponseDto> {
     const existing = await this.findOrFailTarget(id);
 
-    // An omitted secret means "keep what is stored", so the UI never has to hold
-    // credentials it cannot read back.
     const config = (dto.config ?? existing.config) as StorageTargetConfig;
-    const secret = (dto.secret ?? existing.secret) as StorageTargetSecret;
 
-    if (config.kind !== secret.kind) {
+    // An omitted secret means "keep what is stored", so the UI never has to hold
+    // credentials it cannot read back. Changing the kind, however, invalidates
+    // the stored credentials, so new ones have to come with it.
+    let secret = existing.secret as StorageTargetSecret;
+    if (dto.secret) {
+      secret = asSecret(config.kind, dto.secret);
+    } else if (config.kind !== existing.kind) {
       throw new BadRequestException(
         'Changing the kind of an existing storage target requires supplying matching credentials',
       );
@@ -156,5 +158,33 @@ export class StorageTargetService extends BaseService {
       throw new NotFoundException('Storage target not found');
     }
     return target;
+  }
+}
+
+/**
+ * Credentials arrive as a flat bag because the API does not make the client repeat
+ * the target kind. This narrows that bag to the kind the config declares, and
+ * rejects a bag that is missing what the kind needs.
+ */
+function asSecret(kind: StorageTargetKind, secret: StorageTargetSecretDto): StorageTargetSecret {
+  switch (kind) {
+    case StorageTargetKind.S3: {
+      if (!secret.accessKeyId || !secret.secretAccessKey) {
+        throw new BadRequestException('An S3 target requires accessKeyId and secretAccessKey');
+      }
+      return { kind, accessKeyId: secret.accessKeyId, secretAccessKey: secret.secretAccessKey };
+    }
+    case StorageTargetKind.WebDav: {
+      if (!secret.username || !secret.password) {
+        throw new BadRequestException('A WebDAV target requires username and password');
+      }
+      return { kind, username: secret.username, password: secret.password };
+    }
+    case StorageTargetKind.Local: {
+      return { kind };
+    }
+    default: {
+      throw new BadRequestException(`Unsupported storage target kind: ${kind}`);
+    }
   }
 }

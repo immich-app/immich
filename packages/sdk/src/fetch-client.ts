@@ -590,22 +590,15 @@ export type StorageTargetResponseDto = {
     /** Last update date */
     updatedAt: string;
 };
-export type StorageTargetS3SecretDto = {
-    /** Access key ID */
-    accessKeyId: string;
-    kind: Kind4;
-    /** Secret access key */
-    secretAccessKey: string;
-};
-export type StorageTargetWebDavSecretDto = {
-    kind: Kind5;
-    /** Password or app password */
-    password: string;
-    /** Username */
-    username: string;
-};
-export type StorageTargetLocalSecretDto = {
-    kind: Kind6;
+export type StorageTargetSecretDto = {
+    /** S3 access key ID */
+    accessKeyId?: string;
+    /** WebDAV password or app password */
+    password?: string;
+    /** S3 secret access key */
+    secretAccessKey?: string;
+    /** WebDAV username */
+    username?: string;
 };
 export type StorageTargetCreateDto = {
     /** Connection details, shape depends on the target kind */
@@ -614,8 +607,7 @@ export type StorageTargetCreateDto = {
     isEnabled?: boolean;
     /** Human-readable name, unique across targets */
     name: string;
-    /** Credentials. Write-only: never returned by the API. */
-    secret: StorageTargetS3SecretDto | StorageTargetWebDavSecretDto | StorageTargetLocalSecretDto;
+    secret: StorageTargetSecretDto;
 };
 export type StorageTargetUpdateDto = {
     /** Connection details, shape depends on the target kind */
@@ -624,8 +616,7 @@ export type StorageTargetUpdateDto = {
     isEnabled?: boolean;
     /** Human-readable name, unique across targets */
     name?: string;
-    /** Credentials. Write-only: never returned by the API. */
-    secret?: StorageTargetS3SecretDto | StorageTargetWebDavSecretDto | StorageTargetLocalSecretDto;
+    secret?: StorageTargetSecretDto;
 };
 export type StorageTransferScopeAllDto = {
     "type": Type;
@@ -7958,15 +7949,6 @@ export enum Kind3 {
 export enum StorageTargetKind {
     S3 = "s3",
     Webdav = "webdav",
-    Local = "local"
-}
-export enum Kind4 {
-    S3 = "s3"
-}
-export enum Kind5 {
-    Webdav = "webdav"
-}
-export enum Kind6 {
     Local = "local"
 }
 export enum Type {

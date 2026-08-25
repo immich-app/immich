@@ -7,6 +7,7 @@ import {
   StorageTransferStatusSchema,
 } from 'src/enum';
 import { StorageTargetTable, StorageTargetTransferTable } from 'src/schema/tables/storage-target.table';
+import { StorageTargetSecret } from 'src/types';
 import { asDateTimeString } from 'src/utils/date';
 import z from 'zod';
 
@@ -52,29 +53,18 @@ const StorageTargetConfigSchema = z
   .discriminatedUnion('kind', [S3ConfigSchema, WebDavConfigSchema, LocalConfigSchema])
   .describe('Connection details, shape depends on the target kind');
 
-const S3SecretSchema = z
-  .object({
-    kind: z.literal(StorageTargetKind.S3),
-    accessKeyId: z.string().min(1).describe('Access key ID'),
-    secretAccessKey: z.string().min(1).describe('Secret access key'),
-  })
-  .meta({ id: 'StorageTargetS3SecretDto' });
-
-const WebDavSecretSchema = z
-  .object({
-    kind: z.literal(StorageTargetKind.WebDav),
-    username: z.string().min(1).describe('Username'),
-    password: z.string().min(1).describe('Password or app password'),
-  })
-  .meta({ id: 'StorageTargetWebDavSecretDto' });
-
-const LocalSecretSchema = z
-  .object({ kind: z.literal(StorageTargetKind.Local) })
-  .meta({ id: 'StorageTargetLocalSecretDto' });
-
+// Credentials deliberately do not repeat the target kind: it is already carried by
+// `config`, and having it in two places only creates a way for a client to
+// contradict itself. The service derives the kind from the config.
 const StorageTargetSecretSchema = z
-  .discriminatedUnion('kind', [S3SecretSchema, WebDavSecretSchema, LocalSecretSchema])
-  .describe('Credentials. Write-only: never returned by the API.');
+  .object({
+    accessKeyId: z.string().optional().describe('S3 access key ID'),
+    secretAccessKey: z.string().optional().describe('S3 secret access key'),
+    username: z.string().optional().describe('WebDAV username'),
+    password: z.string().optional().describe('WebDAV password or app password'),
+  })
+  .describe('Credentials for the target. Write-only: never returned by the API.')
+  .meta({ id: 'StorageTargetSecretDto' });
 
 const StorageTargetCreateSchema = z
   .object({
@@ -120,10 +110,16 @@ const StorageTransferScopeSchema = z
   .discriminatedUnion('type', [
     z.object({ type: z.literal('all') }).meta({ id: 'StorageTransferScopeAllDto' }),
     z
-      .object({ type: z.literal('albums'), albumIds: z.array(z.uuidv4()).min(1) })
+      .object({
+        type: z.literal('albums'),
+        albumIds: z.array(z.uuidv4()).min(1),
+      })
       .meta({ id: 'StorageTransferScopeAlbumsDto' }),
     z
-      .object({ type: z.literal('assets'), assetIds: z.array(z.uuidv4()).min(1) })
+      .object({
+        type: z.literal('assets'),
+        assetIds: z.array(z.uuidv4()).min(1),
+      })
       .meta({ id: 'StorageTransferScopeAssetsDto' }),
   ])
   .describe('Which assets the transfer covers');
@@ -152,12 +148,31 @@ const StorageTransferResponseSchema = z
   })
   .meta({ id: 'StorageTransferResponseDto' });
 
+export class StorageTargetSecretDto extends createZodDto(StorageTargetSecretSchema) {}
 export class StorageTargetCreateDto extends createZodDto(StorageTargetCreateSchema) {}
 export class StorageTargetUpdateDto extends createZodDto(StorageTargetUpdateSchema) {}
 export class StorageTargetResponseDto extends createZodDto(StorageTargetResponseSchema) {}
 export class StorageTargetTestResponseDto extends createZodDto(StorageTargetTestResponseSchema) {}
 export class StorageTransferCreateDto extends createZodDto(StorageTransferCreateSchema) {}
 export class StorageTransferResponseDto extends createZodDto(StorageTransferResponseSchema) {}
+
+/** A local target needs no credentials; the others are only usable once they have them. */
+function hasCredentials(kind: StorageTargetKind, secret: StorageTargetSecret | null): boolean {
+  switch (kind) {
+    case StorageTargetKind.Local: {
+      return true;
+    }
+    case StorageTargetKind.S3: {
+      return !!(secret && 'accessKeyId' in secret && secret.accessKeyId);
+    }
+    case StorageTargetKind.WebDav: {
+      return !!(secret && 'username' in secret && secret.username);
+    }
+    default: {
+      return false;
+    }
+  }
+}
 
 /**
  * Note the deliberate absence of `secret` -- credentials are write-only and must
@@ -169,7 +184,7 @@ export function mapStorageTarget(entity: Selectable<StorageTargetTable>): Storag
     name: entity.name,
     kind: entity.kind,
     config: entity.config,
-    hasCredentials: entity.kind === StorageTargetKind.Local || Object.keys(entity.secret ?? {}).length > 1,
+    hasCredentials: hasCredentials(entity.kind, entity.secret),
     isEnabled: entity.isEnabled,
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),
