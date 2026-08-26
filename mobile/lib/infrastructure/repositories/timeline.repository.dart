@@ -4,9 +4,11 @@ import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -52,11 +54,19 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
         .map((users) => users..add(userId));
   }
 
-  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
-    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
-    origin: TimelineOrigin.main,
-  );
+  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) {
+    return switch (filter) {
+      AssetOriginFilter.remote => remote(
+        userIds,
+        groupBy,
+        origin: TimelineOrigin.main,
+        joinLocal: true,
+        collapseStacks: true,
+      ),
+      AssetOriginFilter.local => _local(groupBy),
+      AssetOriginFilter.all => _all(userIds, groupBy),
+    };
+  }
 
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
@@ -115,6 +125,85 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
                 ),
         )
         .get();
+  }
+
+  TimelineQuery _all(List<String> userIds, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
+    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
+    origin: TimelineOrigin.main,
+  );
+
+  TimelineQuery _local(GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchLocalBucket(groupBy: groupBy),
+    assetSource: (offset, count) => _getLocalAssets(offset: offset, count: count),
+    origin: TimelineOrigin.main,
+  );
+
+  Expression<bool> _localLibraryFilter($LocalAssetEntityTable lae) {
+    final selection = _db.localAlbumEntity.backupSelection;
+    return lae.id.isInQuery(
+      _db.localAlbumAssetEntity.selectOnly()
+        ..addColumns([_db.localAlbumAssetEntity.assetId])
+        ..join([
+          innerJoin(
+            _db.localAlbumEntity,
+            _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+            useColumns: false,
+          ),
+        ])
+        ..groupBy(
+          [_db.localAlbumAssetEntity.assetId],
+          having:
+              _db.localAlbumEntity.id
+                  .count(filter: selection.equalsValue(BackupSelection.selected))
+                  .isBiggerThanValue(0) &
+              _db.localAlbumEntity.id.count(filter: selection.equalsValue(BackupSelection.excluded)).equals(0),
+        ),
+    );
+  }
+
+  Stream<List<Bucket>> _watchLocalBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.localAssetEntity.count(where: _localLibraryFilter).map(_generateBuckets).watchSingle();
+    }
+
+    final assetCountExp = _db.localAssetEntity.id.count();
+    final dateExp = _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true);
+
+    final query = _db.localAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(_localLibraryFilter(_db.localAssetEntity))
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> _getLocalAssets({required int offset, required int count}) {
+    final currentUserId = subqueryExpression<String>(
+      _db.authUserEntity.selectOnly()..addColumns([_db.authUserEntity.id]),
+    );
+
+    final remoteId = subqueryExpression<String>(
+      _db.remoteAssetEntity.selectOnly()
+        ..addColumns([_db.remoteAssetEntity.id])
+        ..where(
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+              _db.remoteAssetEntity.ownerId.equalsExp(currentUserId),
+        )
+        ..limit(1),
+    );
+
+    final query = _db.localAssetEntity.select().addColumns([remoteId])
+      ..where(_localLibraryFilter(_db.localAssetEntity))
+      ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto(remoteId: row.read(remoteId))).get();
   }
 
   TimelineQuery localAlbum(String albumId, GroupAssetsBy groupBy) => (
@@ -319,11 +408,30 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     );
   }
 
-  TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-    filter: (row) =>
-        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.equals(ownerId),
+  Expression<bool> _isStackCover($RemoteAssetEntityTable rae) {
+    return rae.stackId.isNull() |
+        existsQuery(
+          _db.stackEntity.selectOnly()
+            ..addColumns([_db.stackEntity.id])
+            ..where(_db.stackEntity.id.equalsExp(rae.stackId) & _db.stackEntity.primaryAssetId.equalsExp(rae.id)),
+        );
+  }
+
+  TimelineQuery remote(
+    List<String> ownerIds,
+    GroupAssetsBy groupBy, {
+    TimelineOrigin origin = TimelineOrigin.remoteAssets,
+    bool joinLocal = false,
+    bool collapseStacks = false,
+  }) => _remoteQueryBuilder(
+    filter: (row) {
+      final baseFilter =
+          row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(ownerIds);
+      return collapseStacks ? baseFilter & _isStackCover(row) : baseFilter;
+    },
     groupBy: groupBy,
-    origin: TimelineOrigin.remoteAssets,
+    origin: origin,
+    joinLocal: joinLocal,
   );
 
   TimelineQuery recentlyAdded(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(

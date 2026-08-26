@@ -155,7 +155,7 @@ void main() {
       final user = await ctx.newUser();
       final asset = await ctx.newRemoteAsset(ownerId: user.id, livePhotoVideoId: 'motion-photo-1');
 
-      final assets = await sut.main([user.id], .day).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, .all).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       final remote = assets.single as RemoteAsset;
@@ -171,7 +171,7 @@ void main() {
       final asset = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum, livePhotoVideoId: 'motion-photo-2');
       final local = await ctx.newLocalAsset(checksum: checksum);
 
-      final assets = await sut.main([user.id], .day).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, .all).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       final remote = assets.single as RemoteAsset;
@@ -181,7 +181,6 @@ void main() {
       expect(remote.localId, local.id);
     });
   });
-
   group('localAlbum assets', () {
     late String userId;
     late String otherUserId;
@@ -223,6 +222,86 @@ void main() {
 
       expect(buckets, hasLength(1));
       expect(buckets.single.assetCount, 1);
+    });
+  });
+  group('asset origin filter', () {
+    test('remote filter includes remote-only and synced assets', () async {
+      final user = await ctx.newUser();
+      const checksum = 'remote-checksum';
+      final synced = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final remoteOnly = await ctx.newRemoteAsset(ownerId: user.id, checksum: 'remote-only-checksum');
+
+      final assets = await sut.main([user.id], .day, .remote).assetSource(0, 10);
+
+      expect(assets, hasLength(2));
+      expect(assets.map((a) => (a as RemoteAsset).id), containsAll([synced.id, remoteOnly.id]));
+    });
+
+    test('local filter includes local-only and synced assets', () async {
+      final user = await ctx.newUser();
+      const checksum = 'local-checksum';
+      await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
+      final synced = await ctx.newLocalAsset(checksum: checksum);
+      final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: synced.id);
+
+      final localOnly = await ctx.newLocalAsset(checksum: 'local-only-checksum');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: localOnly.id);
+
+      final assets = await sut.main([user.id], .day, .local).assetSource(0, 10);
+
+      expect(assets, hasLength(2));
+      expect(assets.map((a) => (a as LocalAsset).id), containsAll([synced.id, localOnly.id]));
+    });
+
+    test('local asset in selected and excluded album is excluded from local filter', () async {
+      final asset = await ctx.newLocalAsset();
+      final selected = await ctx.newLocalAlbum(backupSelection: .selected);
+      final excluded = await ctx.newLocalAlbum(backupSelection: .excluded);
+      await ctx.newLocalAlbumAsset(albumId: selected.id, assetId: asset.id);
+      await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: asset.id);
+
+      final assets = await sut.main([], .day, .local).assetSource(0, 10);
+
+      expect(assets, isEmpty);
+    });
+
+    test('local asset matching two remote assets returns only one asset from local filter', () async {
+      final owner = await ctx.newUser();
+      final partner = await ctx.newUser();
+      await ctx.newAuthUser(id: owner.id);
+      
+      const checksum = 'shared-checksum';
+
+      // deliberately forcing partner id to be before owner id to test local filter correctly
+      await ctx.newRemoteAsset(id: 'a-partner-remote', ownerId: partner.id, checksum: checksum);
+      final ownerRemote = await ctx.newRemoteAsset(id: 'z-owner-remote', ownerId: owner.id, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final assets = await sut.main([owner.id, partner.id], .day, .local).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      final result = assets.single as LocalAsset;
+      expect(result.id, local.id);
+      expect(result.remoteId, ownerRemote.id);
+    });
+
+    test('remote filter shows only the stack primary asset', () async {
+      final user = await ctx.newUser();
+      final primary = await ctx.newRemoteAsset(ownerId: user.id);
+      final secondary = await ctx.newRemoteAsset(ownerId: user.id);
+      await ctx.newStack(ownerId: user.id, primaryAssetId: primary.id, memberAssetIds: [secondary.id]);
+
+      final assets = await sut.main([user.id], .day, .remote).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      expect((assets.single as RemoteAsset).id, primary.id);
     });
   });
 }
