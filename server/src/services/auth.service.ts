@@ -72,7 +72,29 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
+    if (!user.wrappedDek) {
+      await this.generateUserDek(user.id, dto.password);
+    }
+
     return this.createLoginResponse(user, details);
+  }
+
+  /**
+   * Generates a new DEK for the user, wraps it with a KEK derived from their password, and
+   * persists the wrapped DEK, KEK salt, and nonce. Only run once, the first time a user does
+   * not yet have a DEK (e.g. their first login after this feature was introduced).
+   */
+  private async generateUserDek(userId: string, password: string) {
+    const dek = this.cryptoRepository.generateDek();
+    const kekSalt = this.cryptoRepository.generateKekSalt();
+    const kek = this.cryptoRepository.deriveKek(password, kekSalt);
+    const { wrappedDek, nonce } = this.cryptoRepository.wrapDek(dek, kek);
+
+    await this.userRepository.update(userId, {
+      wrappedDek: wrappedDek.toString('base64'),
+      kekSalt: kekSalt.toString('base64'),
+      kekNonce: nonce.toString('base64'),
+    });
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {

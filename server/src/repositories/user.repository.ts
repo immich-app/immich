@@ -124,7 +124,7 @@ export class UserRepository {
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .$if(!!options?.withPassword, (eb) => eb.select('password'))
+      .$if(!!options?.withPassword, (eb) => eb.select(['password', 'wrappedDek', 'kekSalt', 'kekNonce']))
       .where('email', '=', email)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();

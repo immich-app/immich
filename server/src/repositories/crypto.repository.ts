@@ -1,8 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createPublicKey,
+  createVerify,
+  randomBytes,
+  randomUUID,
+  scryptSync,
+} from 'node:crypto';
 import { createReadStream } from 'node:fs';
+
+const DEK_LENGTH = 32;
+const KEK_LENGTH = 32;
+const KEK_SALT_LENGTH = 16;
+const GCM_NONCE_LENGTH = 12;
+const GCM_AUTH_TAG_LENGTH = 16;
 
 @Injectable()
 export class CryptoRepository {
@@ -65,5 +80,38 @@ export class CryptoRepository {
 
   verifyJwt<T = any>(token: string, secret: string): T {
     return jwt.verify(token, secret, { algorithms: ['HS256'] }) as T;
+  }
+
+  /** Generates a new random data encryption key (DEK). */
+  generateDek(): Buffer {
+    return randomBytes(DEK_LENGTH);
+  }
+
+  /** Generates a new random salt to use when deriving a key encryption key (KEK) from a password. */
+  generateKekSalt(): Buffer {
+    return randomBytes(KEK_SALT_LENGTH);
+  }
+
+  /** Derives a key encryption key (KEK) from a password and salt. The same password and salt always produce the same KEK. */
+  deriveKek(password: string, salt: Buffer): Buffer {
+    return scryptSync(password, salt, KEK_LENGTH);
+  }
+
+  /** Wraps (encrypts) a DEK with a KEK using AES-256-GCM. */
+  wrapDek(dek: Buffer, kek: Buffer): { wrappedDek: Buffer; nonce: Buffer } {
+    const nonce = randomBytes(GCM_NONCE_LENGTH);
+    const cipher = createCipheriv('aes-256-gcm', kek, nonce);
+    const ciphertext = Buffer.concat([cipher.update(dek), cipher.final()]);
+    const wrappedDek = Buffer.concat([ciphertext, cipher.getAuthTag()]);
+    return { wrappedDek, nonce };
+  }
+
+  /** Unwraps (decrypts) a DEK that was wrapped with `wrapDek`. Throws if the KEK or nonce is incorrect. */
+  unwrapDek(wrappedDek: Buffer, nonce: Buffer, kek: Buffer): Buffer {
+    const authTag = wrappedDek.subarray(wrappedDek.length - GCM_AUTH_TAG_LENGTH);
+    const ciphertext = wrappedDek.subarray(0, wrappedDek.length - GCM_AUTH_TAG_LENGTH);
+    const decipher = createDecipheriv('aes-256-gcm', kek, nonce);
+    decipher.setAuthTag(authTag);
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   }
 }

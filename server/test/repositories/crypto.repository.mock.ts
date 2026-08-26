@@ -15,5 +15,13 @@ export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepo
     randomBytesAsText: vitest.fn().mockReturnValue(Buffer.from('random-bytes').toString('base64')),
     signJwt: vitest.fn().mockReturnValue('mock-jwt-token'),
     verifyJwt: vitest.fn().mockImplementation((token) => ({ verified: true, token })),
+    generateDek: vitest.fn().mockReturnValue(Buffer.from('dek', 'utf8')),
+    generateKekSalt: vitest.fn().mockReturnValue(Buffer.from('kek-salt', 'utf8')),
+    deriveKek: vitest.fn().mockReturnValue(Buffer.from('kek', 'utf8')),
+    wrapDek: vitest.fn().mockReturnValue({
+      wrappedDek: Buffer.from('wrapped-dek', 'utf8'),
+      nonce: Buffer.from('nonce', 'utf8'),
+    }),
+    unwrapDek: vitest.fn().mockReturnValue(Buffer.from('dek', 'utf8')),
   };
 };
