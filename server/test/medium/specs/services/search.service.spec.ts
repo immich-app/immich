@@ -264,7 +264,7 @@ describe(SearchService.name, () => {
       expect(response.assets.items.map(({ id }) => id).toSorted()).toEqual([oslo.id, favorite.id].toSorted());
     });
 
-    it('should scope an album-constrained filter to the album, top-level or as a branch', async () => {
+    it('should scope a top-level album constraint to the album', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { user: otherUser } = await ctx.newUser();
@@ -273,15 +273,26 @@ describe(SearchService.name, () => {
       await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
 
       const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { size: 250, filter: { albumIds: { any: [album.id] } } });
 
-      const topLevel = await sut.searchMetadata(auth, { size: 250, filter: { albumIds: { any: [album.id] } } });
-      expect(topLevel.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+    });
 
-      const branchOnly = await sut.searchMetadata(auth, {
+    it('should scope an album-constrained branch to the album', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: otherUser.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, {
         size: 250,
         filter: { or: [{ albumIds: { any: [album.id] } }] },
       });
-      expect(branchOnly.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
     });
 
     it('should keep the ownership scope for branches without an album constraint', async () => {
