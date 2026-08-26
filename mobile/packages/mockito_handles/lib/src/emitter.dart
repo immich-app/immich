@@ -123,10 +123,13 @@ class Emitter {
   /// `MockSpec(as:)` exists to disambiguate on its side — would otherwise emit
   /// the same `$Name$member` twice and produce a file that does not compile.
   String _uniqueTypeName(String name) {
-    if (_typeNames.add(name)) return name;
-    for (var i = 2; ; i++) {
-      if (_typeNames.add('$name$i')) return '$name$i';
+    var candidate = name;
+    var i = 2;
+    while (!_typeNames.add(candidate)) {
+      candidate = '$name$i';
+      i += 1;
     }
+    return candidate;
   }
 
   /// Operators are the only members whose name is not an identifier, and there
@@ -142,11 +145,13 @@ class Emitter {
   String _accessorFor(SelectedMember m, Set<String> taken) {
     var base = m.kind == MemberKind.setter ? 'set${m.name[0].toUpperCase()}${m.name.substring(1)}' : m.name;
     if (_reserved.contains(base)) base = '${base}Member';
-    if (!taken.contains(base)) return base;
-    for (var i = 2; ; i++) {
-      final candidate = '$base$i';
-      if (!taken.contains(candidate)) return candidate;
+    var candidate = base;
+    var i = 2;
+    while (taken.contains(candidate)) {
+      candidate = '$base$i';
+      i += 1;
     }
+    return candidate;
   }
 
   void _emitHandle(String handle, String mockClass, SelectedMember m) {
