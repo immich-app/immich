@@ -211,8 +211,6 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
         return;
       }
 
-      _pageController.jumpToPage(index);
-
       setState(() => _fadingSlideIndex = prevIndex);
 
       unawaited(

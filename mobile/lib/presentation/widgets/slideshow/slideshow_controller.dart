@@ -111,7 +111,7 @@ class SlideshowController extends ChangeNotifier {
     _paused = false;
     notifyListeners();
 
-    if (delegate.videoProgressOf(_currentIndex) != null && delegate.isVideoCompleted(_currentIndex)) {
+    if (delegate.isVideoCompleted(_currentIndex)) {
       goToNextSlide();
       return;
     }

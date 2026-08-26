@@ -53,15 +53,15 @@ class SlideshowSlide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget content = asset.isImage || frozen
-        ? AnimatedBuilder(
-            animation: zoom,
-            builder: (context, _) => PhotoView(
+        ? ScaleTransition(
+            scale: zoom.drive(Tween(begin: 1.0, end: 1.0 + _kenBurnsZoomMultiplier)),
+            child: PhotoView(
               imageProvider: getFullImageProvider(asset, size: context.sizeData),
               index: index,
               disableScaleGestures: true,
               gaplessPlayback: true,
               filterQuality: FilterQuality.high,
-              initialScale: _scale * (1.0 + zoom.value * _kenBurnsZoomMultiplier),
+              initialScale: _scale,
               controller: PhotoViewController(),
               onTapUp: (_, _, _) => onTapUp(),
             ),
