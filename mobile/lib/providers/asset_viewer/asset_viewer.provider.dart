@@ -1,7 +1,8 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -11,20 +12,18 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 part 'asset_viewer.provider.freezed.dart';
 
 @freezed
-abstract class AssetViewerState with _$AssetViewerState {
-  const factory AssetViewerState({
-    @Default(1.0) double backgroundOpacity,
-    @Default(false) bool showingDetails,
-    @Default(true) bool showingControls,
-    @Default(false) bool isZoomed,
-    @Default(false) bool showingOcr,
-    BaseAsset? currentAsset,
+class const AssetViewerState({
+  final double backgroundOpacity = 1.0,
+  final bool showingDetails = false,
+  final bool showingControls = true,
+  final bool isZoomed = false,
+  final bool showingOcr = false,
+  final BaseAsset? currentAsset,
 
-    /// Physical thumbnail size retained while paging through the viewer.
-    Size? thumbnailSize,
-    @Default(0) int stackIndex,
-  }) = _AssetViewerState;
-}
+  /// Physical thumbnail size retained while paging through the viewer.
+  final Size? thumbnailSize,
+  final int stackIndex = 0,
+}) with _$AssetViewerState;
 
 class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
   StreamSubscription<BaseAsset?>? _assetSubscription;

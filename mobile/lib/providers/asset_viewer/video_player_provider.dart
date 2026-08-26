@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -11,13 +13,11 @@ part 'video_player_provider.freezed.dart';
 enum VideoPlaybackStatus { paused, playing, buffering, completed }
 
 @freezed
-abstract class VideoPlayerState with _$VideoPlayerState {
-  const factory VideoPlayerState({
-    required Duration position,
-    required Duration duration,
-    required VideoPlaybackStatus status,
-  }) = _VideoPlayerState;
-}
+class const VideoPlayerState({
+  required final Duration position,
+  required final Duration duration,
+  required final VideoPlaybackStatus status,
+}) with _$VideoPlayerState;
 
 const _defaultState = VideoPlayerState(
   position: Duration.zero,

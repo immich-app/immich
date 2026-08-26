@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:ui';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -102,15 +104,13 @@ abstract class UserDto with _$UserDto {
 }
 
 @freezed
-abstract class PartnerUserDto with _$PartnerUserDto {
-  const factory PartnerUserDto({
-    required String id,
-    required String email,
-    required String name,
-    required bool inTimeline,
-    String? profileImagePath,
-  }) = _PartnerUserDto;
-}
+class const PartnerUserDto({
+  required final String id,
+  required final String email,
+  required final String name,
+  required final bool inTimeline,
+  final String? profileImagePath,
+}) with _$PartnerUserDto;
 
 class User {
   final String id;

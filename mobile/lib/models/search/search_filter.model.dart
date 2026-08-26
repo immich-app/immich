@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -8,11 +10,8 @@ import 'package:immich_mobile/utils/option.dart';
 part 'search_filter.model.freezed.dart';
 
 @Freezed(fromJson: false, toJson: false)
-abstract class SearchLocationFilter with _$SearchLocationFilter {
-  const SearchLocationFilter._();
-
-  const factory SearchLocationFilter({String? country, String? state, String? city}) = _SearchLocationFilter;
-
+class const SearchLocationFilter({final String? country, final String? state, final String? city})
+    with _$SearchLocationFilter {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'country': country, 'state': state, 'city': city};
   }
@@ -32,11 +31,7 @@ abstract class SearchLocationFilter with _$SearchLocationFilter {
 }
 
 @Freezed(fromJson: false, toJson: false)
-abstract class SearchCameraFilter with _$SearchCameraFilter {
-  const SearchCameraFilter._();
-
-  const factory SearchCameraFilter({String? make, String? model}) = _SearchCameraFilter;
-
+class const SearchCameraFilter({final String? make, final String? model}) with _$SearchCameraFilter {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'make': make, 'model': model};
   }
@@ -55,11 +50,7 @@ abstract class SearchCameraFilter with _$SearchCameraFilter {
 }
 
 @Freezed(fromJson: false, toJson: false)
-abstract class SearchDateFilter with _$SearchDateFilter {
-  const SearchDateFilter._();
-
-  const factory SearchDateFilter({DateTime? takenBefore, DateTime? takenAfter}) = _SearchDateFilter;
-
+class const SearchDateFilter({final DateTime? takenBefore, final DateTime? takenAfter}) with _$SearchDateFilter {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'takenBefore': takenBefore?.millisecondsSinceEpoch,
@@ -81,12 +72,9 @@ abstract class SearchDateFilter with _$SearchDateFilter {
 }
 
 @Freezed(fromJson: false, toJson: false)
-abstract class SearchRatingFilter with _$SearchRatingFilter {
-  const SearchRatingFilter._();
-
+class const SearchRatingFilter({final Option<int?> rating = const .none()}) with _$SearchRatingFilter {
   /// [rating]: none = no filter; some(null) = filter for unrated; some(1-5) = filter for that rating
   // TODO(agg23): Switch to enum
-  const factory SearchRatingFilter({@Default(Option.none()) Option<int?> rating}) = _SearchRatingFilter;
 
   Map<String, dynamic> toMap() {
     if (rating.isNone) {
@@ -109,10 +97,11 @@ abstract class SearchRatingFilter with _$SearchRatingFilter {
 }
 
 @freezed
-abstract class SearchDisplayFilters with _$SearchDisplayFilters {
-  const factory SearchDisplayFilters({required bool isNotInAlbum, required bool isArchive, required bool isFavorite}) =
-      _SearchDisplayFilters;
-}
+class const SearchDisplayFilters({
+  required final bool isNotInAlbum,
+  required final bool isArchive,
+  required final bool isFavorite,
+}) with _$SearchDisplayFilters;
 
 @freezed
 abstract class SearchFilter with _$SearchFilter {

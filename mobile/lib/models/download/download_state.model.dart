@@ -1,19 +1,20 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:background_downloader/background_downloader.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'download_state.model.freezed.dart';
 
 @freezed
-abstract class DownloadInfo with _$DownloadInfo {
-  const factory DownloadInfo({required String fileName, required double progress, required TaskStatus status}) =
-      _DownloadInfo;
-}
+class const DownloadInfo({
+  required final String fileName,
+  required final double progress,
+  required final TaskStatus status,
+}) with _$DownloadInfo;
 
 @freezed
-abstract class DownloadState with _$DownloadState {
-  const factory DownloadState({
-    required TaskStatus downloadStatus,
-    required Map<String, DownloadInfo> taskProgress,
-    required bool showProgress,
-  }) = _DownloadState;
-}
+class const DownloadState({
+  required final TaskStatus downloadStatus,
+  required final Map<String, DownloadInfo> taskProgress,
+  required final bool showProgress,
+}) with _$DownloadState;

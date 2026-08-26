@@ -1,20 +1,19 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:openapi/api.dart';
 
 part 'server_features.model.freezed.dart';
 
 @freezed
-abstract class ServerFeatures with _$ServerFeatures {
-  const factory ServerFeatures({
-    required bool trash,
-    required bool map,
-    required bool oauthEnabled,
-    required bool passwordLogin,
-    @Default(false) bool ocr,
-    @Default(false) bool smartSearch,
-  }) = _ServerFeatures;
-
+class const ServerFeatures({
+  required final bool trash,
+  required final bool map,
+  required final bool oauthEnabled,
+  required final bool passwordLogin,
+  final bool ocr = false,
+  final bool smartSearch = false,
+}) with _$ServerFeatures {
   factory ServerFeatures.fromDto(ServerFeaturesDto dto) => ServerFeatures(
     trash: dto.trash,
     map: dto.map,

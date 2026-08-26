@@ -1,20 +1,18 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/utils/option.dart';
 
 part 'network_config.freezed.dart';
 
 @Freezed(copyWith: false)
-abstract class NetworkConfig with _$NetworkConfig {
-  const NetworkConfig._();
-
-  const factory NetworkConfig({
-    @Default(false) bool autoEndpointSwitching,
-    String? preferredWifiName,
-    String? localEndpoint,
-    @Default([]) List<String> externalEndpointList,
-    @Default({}) Map<String, String> customHeaders,
-  }) = _NetworkConfig;
-
+class const NetworkConfig({
+  final bool autoEndpointSwitching = false,
+  final String? preferredWifiName,
+  final String? localEndpoint,
+  final List<String> externalEndpointList = const [],
+  final Map<String, String> customHeaders = const {},
+}) with _$NetworkConfig {
   // We patch `preferredWifiName` and `localEndpoint`, which prevents us from using Freezed `copyWith`
   NetworkConfig copyWith({
     bool? autoEndpointSwitching,

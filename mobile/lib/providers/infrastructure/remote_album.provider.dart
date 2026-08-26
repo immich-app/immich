@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 // ignore_for_file: use-ref-and-state-synchronously
 
 import 'dart:async';
@@ -20,11 +22,7 @@ import 'package:logging/logging.dart';
 part 'remote_album.provider.freezed.dart';
 
 @Freezed(toStringOverride: false)
-abstract class RemoteAlbumState with _$RemoteAlbumState {
-  const RemoteAlbumState._();
-
-  const factory RemoteAlbumState({required List<RemoteAlbum> albums}) = _RemoteAlbumState;
-
+class const RemoteAlbumState({required final List<RemoteAlbum> albums}) with _$RemoteAlbumState {
   // Explicitly don't log albums
   @override
   String toString() => 'RemoteAlbumState(albums: ${albums.length})';

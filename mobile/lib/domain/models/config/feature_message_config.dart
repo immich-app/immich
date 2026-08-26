@@ -1,11 +1,10 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/utils/semver.dart';
 
 part 'feature_message_config.freezed.dart';
 
 @freezed
-abstract class FeatureMessageConfig with _$FeatureMessageConfig {
-  const factory FeatureMessageConfig({@Default(SemVer(major: 0, minor: 0, patch: 0)) SemVer seenRelease}) =
-      _FeatureMessageConfig;
-}
+class const FeatureMessageConfig({final SemVer seenRelease = const .new(major: 0, minor: 0, patch: 0)})
+    with _$FeatureMessageConfig;

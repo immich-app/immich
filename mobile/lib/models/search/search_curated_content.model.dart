@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'search_curated_content.model.freezed.dart';
@@ -6,15 +8,13 @@ part 'search_curated_content.model.freezed.dart';
 /// and [CuratedObjectsResponseDto] to be displayed in
 /// a view
 @freezed
-abstract class SearchCuratedContent with _$SearchCuratedContent {
-  const factory SearchCuratedContent({
-    /// The label to show associated with this curated object
-    required String label,
+class const SearchCuratedContent({
+  /// The label to show associated with this curated object
+  required final String label,
 
-    /// The id to lookup the asset from the server
-    required String id,
+  /// The id to lookup the asset from the server
+  required final String id,
 
-    /// The subtitle to show below the label
-    String? subtitle,
-  }) = _SearchCuratedContent;
-}
+  /// The subtitle to show below the label
+  final String? subtitle,
+}) with _$SearchCuratedContent;

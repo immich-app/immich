@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
@@ -23,13 +24,11 @@ enum VersionStatus {
 }
 
 @freezed
-abstract class ServerInfo with _$ServerInfo {
-  const factory ServerInfo({
-    required ServerVersion serverVersion,
-    ServerVersion? latestVersion,
-    required ServerFeatures serverFeatures,
-    required ServerConfig serverConfig,
-    required ServerDiskInfo serverDiskInfo,
-    required VersionStatus versionStatus,
-  }) = _ServerInfo;
-}
+class const ServerInfo({
+  required final ServerVersion serverVersion,
+  final ServerVersion? latestVersion,
+  required final ServerFeatures serverFeatures,
+  required final ServerConfig serverConfig,
+  required final ServerDiskInfo serverDiskInfo,
+  required final VersionStatus versionStatus,
+}) with _$ServerInfo;

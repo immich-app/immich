@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/utils/option.dart';
@@ -5,19 +7,15 @@ import 'package:immich_mobile/utils/option.dart';
 part 'map_config.freezed.dart';
 
 @Freezed(copyWith: false)
-abstract class MapConfig with _$MapConfig {
-  const MapConfig._();
-
-  const factory MapConfig({
-    @Default(0) int relativeDays,
-    @Default(false) bool favoritesOnly,
-    @Default(false) bool includeArchived,
-    @Default(ThemeMode.system) ThemeMode themeMode,
-    @Default(false) bool withPartners,
-    DateTime? customFrom,
-    DateTime? customTo,
-  }) = _MapConfig;
-
+class const MapConfig({
+  final int relativeDays = 0,
+  final bool favoritesOnly = false,
+  final bool includeArchived = false,
+  final ThemeMode themeMode = .system,
+  final bool withPartners = false,
+  final DateTime? customFrom,
+  final DateTime? customTo,
+}) with _$MapConfig {
   // We patch `customFrom` and `customTo`, which prevents us from using Freezed `copyWith`
   MapConfig copyWith({
     int? relativeDays,
