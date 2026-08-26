@@ -25,6 +25,7 @@ import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 private const val TAG = "BackgroundWorker"
 
@@ -60,11 +61,18 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   companion object {
     private const val NOTIFICATION_CHANNEL_ID = "immich::background_worker::notif"
     private const val NOTIFICATION_ID = 100
+    private val activeWorker = AtomicReference<BackgroundWorker?>(null)
   }
 
   override fun startWork(): ListenableFuture<Result> {
+    if (!activeWorker.compareAndSet(null, this)) {
+      Log.i(TAG, "Another background worker is running, skipping")
+      return Futures.immediateFuture(Result.success())
+    }
+
     if (BackgroundWorkerPreferences(ctx).isLocked() && BackgroundEngineLock.connectEngines > 0) {
       Log.i(TAG, "Foreground engine active, skipping background worker")
+      activeWorker.compareAndSet(this, null)
       return Futures.immediateFuture(Result.success())
     }
 
@@ -223,6 +231,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     flutterApi = null
     notificationManager.cancel(NOTIFICATION_ID)
     FlutterEngineCache.getInstance().remove(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY)
+    activeWorker.compareAndSet(this, null)
     waitForForegroundPromotion()
     completionHandler.set(success)
   }

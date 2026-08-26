@@ -313,16 +313,16 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       }
 
       final uploadService = _ref?.read(foregroundUploadServiceProvider);
-      var uploaded = 0;
       var failed = 0;
       await uploadService?.uploadCandidates(
         currentUser.id,
         _cancellationToken,
-        callbacks: UploadCallbacks(onSuccess: (_, _) => uploaded++, onError: (_, _) => failed++),
+        callbacks: UploadCallbacks(onError: (_, _) => failed++),
         useSequentialUpload: true,
       );
-      // Retry only when nothing uploaded and at least one upload failed
-      return uploaded == 0 && failed > 0;
+      _logger.info("Background backup finished, $failed uploads failed");
+      // Retry when at least one upload failed
+      return failed > 0;
     }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
     return needsRetry ?? true;
   }
