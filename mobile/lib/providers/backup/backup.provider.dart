@@ -289,10 +289,7 @@ final backupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>>((re
   return ref.read(foregroundUploadServiceProvider).getBackupCandidates(user.id, onlyHashed: false);
 });
 
-final candidateBackupAlbumInfoProvider = FutureProvider.autoDispose.family<List<LocalAlbum>, String>((
-  ref,
-  assetId,
-) {
+final candidateBackupAlbumInfoProvider = FutureProvider.autoDispose.family<List<LocalAlbum>, String>((ref, assetId) {
   return ref
       .read(driftProvider)
       .localAssetRepository
