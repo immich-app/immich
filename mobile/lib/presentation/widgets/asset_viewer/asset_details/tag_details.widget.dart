@@ -28,15 +28,8 @@ class TagDetails extends ConsumerStatefulWidget {
 }
 
 class _TagDetailsState extends ConsumerState<TagDetails> {
-  final ScrollController _tagsController = ScrollController();
   bool _isExpanded = false;
   bool _hasOverflow = false;
-
-  @override
-  void dispose() {
-    _tagsController.dispose();
-    super.dispose();
-  }
 
   void _openTag(Tag tag) {
     ref.invalidate(assetViewerProvider);
@@ -57,6 +50,14 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
       );
 
     unawaited(context.navigateTo(const DriftSearchRoute()));
+  }
+
+  bool _onTagsMetrics(ScrollMetricsNotification notification) {
+    final hasOverflow = notification.metrics.maxScrollExtent > 0;
+    if (hasOverflow != _hasOverflow) {
+      setState(() => _hasOverflow = hasOverflow);
+    }
+    return false;
   }
 
   @override
@@ -80,16 +81,6 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
       hoverColor: brandColor.withValues(alpha: 0.15),
     );
     final isCollapsed = !_isExpanded;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_tagsController.hasClients || _isExpanded) {
-        return;
-      }
-      final overflowing = _tagsController.position.maxScrollExtent > 0;
-      if (overflowing != _hasOverflow) {
-        setState(() => _hasOverflow = overflowing);
-      }
-    });
 
     final tagWrap = Theme(
       data: chipTheme,
@@ -118,12 +109,11 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
     );
 
     Widget tagArea = isCollapsed
-        ? ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: _collapsedTagsMaxHeight),
-            child: SingleChildScrollView(
-              controller: _tagsController,
-              physics: const NeverScrollableScrollPhysics(),
-              child: tagWrap,
+        ? NotificationListener<ScrollMetricsNotification>(
+            onNotification: _onTagsMetrics,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: _collapsedTagsMaxHeight),
+              child: SingleChildScrollView(physics: const NeverScrollableScrollPhysics(), child: tagWrap),
             ),
           )
         : tagWrap;
