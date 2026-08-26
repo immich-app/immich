@@ -60,19 +60,26 @@ class _ScopedMapTimeline extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: const _MapTimelineContent(),
+      child: const Column(
+        children: [
+          _MapAssetCount(),
+          Expanded(
+            child: Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _MapTimelineContent extends ConsumerStatefulWidget {
-  const _MapTimelineContent();
+class _MapAssetCount extends ConsumerStatefulWidget {
+  const _MapAssetCount();
 
   @override
-  ConsumerState<_MapTimelineContent> createState() => _MapTimelineContentState();
+  ConsumerState<_MapAssetCount> createState() => _MapAssetCountState();
 }
 
-class _MapTimelineContentState extends ConsumerState<_MapTimelineContent> {
+class _MapAssetCountState extends ConsumerState<_MapAssetCount> {
   StreamSubscription? _reloadSubscription;
 
   @override
@@ -82,29 +89,13 @@ class _MapTimelineContentState extends ConsumerState<_MapTimelineContent> {
   }
 
   @override
-  Future<void> dispose() async {
-    await _reloadSubscription?.cancel();
+  void dispose() {
+    unawaited(_reloadSubscription?.cancel());
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        _MapAssetCount(),
-        Expanded(
-          child: Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
-        ),
-      ],
-    );
-  }
-}
-
-class _MapAssetCount extends ConsumerWidget {
-  const _MapAssetCount();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
     final count = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
     return Text(context.t.map_assets_in_bounds(count: count), style: context.themeData.textTheme.headlineSmall);
   }
