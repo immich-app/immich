@@ -209,6 +209,13 @@
       }
     }
     const scrollTarget = assetViewerManager.gridScrollTarget?.at;
+
+    // Do not keep the grid hidden while the scroll target is loaded. Route-specific
+    // timelines can be reinitialized during navigation, so resolving the target may
+    // take longer than the navigation itself (or be canceled by another update).
+    // The grid must remain usable even if restoring its exact position is delayed.
+    invisible = false;
+
     const scrolled = scrollTarget ? await scrollAndLoadAsset(scrollTarget) : false;
     if (!scrolled) {
       // if the asset is not found, scroll to the top
@@ -217,7 +224,6 @@
       await tick();
       focusAsset(scrollTarget);
     }
-    invisible = false;
   };
 
   // note: only modified once in afterNavigate()
