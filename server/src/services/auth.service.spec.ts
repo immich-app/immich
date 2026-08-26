@@ -1046,7 +1046,7 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
         profile: OAuthProfileFactory.create({
-          sub: user.oauthId,
+          sub: 'oauth-id',
           email: user.email,
           picture: 'https://auth.immich.cloud/profiles/1.jpg',
         }),
@@ -1169,7 +1169,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: 'admin' }),
+        profile: OAuthProfileFactory.create({ sub: 'oauth-id', immich_role: 'admin' }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...user, isAdmin: true });
@@ -1189,7 +1189,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: ['user'] }),
+        profile: OAuthProfileFactory.create({ sub: 'oauth-id', immich_role: ['user'] }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...user, isAdmin: false });
@@ -1209,7 +1209,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId }),
+        profile: OAuthProfileFactory.create({ sub: 'oauth-id' }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
@@ -1318,7 +1318,7 @@ describe(AuthService.name, () => {
 
       await sut.unlink(auth);
 
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: null });
     });
 
     it('should unlink an account and remove the OAuth data from the session', async () => {
@@ -1333,7 +1333,7 @@ describe(AuthService.name, () => {
       await sut.unlink(auth);
 
       expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: null, oauthBearerToken: null });
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: null });
     });
   });
 
