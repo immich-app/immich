@@ -62,6 +62,12 @@ class _MainTimelinePageState extends ConsumerState<MainTimelinePage> {
 class _AssetOriginFilterButton extends ConsumerWidget {
   const _AssetOriginFilterButton();
 
+  IconData _tbIcon(AssetOriginFilter filter) => switch (filter) {
+    AssetOriginFilter.all => Icons.filter_alt,
+    AssetOriginFilter.remote => Icons.dns,
+    AssetOriginFilter.local => Icons.smartphone,
+  };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentSelection = ref.watch(assetOriginFilterProvider);
@@ -78,7 +84,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
       builder: (context, controller, child) {
         return IconButton(
           onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-          icon: const Icon(Icons.filter_list_rounded),
+          icon: Icon(_tbIcon(currentSelection)),
           tooltip: context.t.timeline_filter_tooltip,
         );
       },
@@ -86,24 +92,24 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         _FilterMenuItem(
           AssetOriginFilter.all,
           context.t.timeline_filter_all,
-          Icons.photo_library_outlined,
-          Icons.photo_library,
+          Icons.filter_alt_outlined,
+          Icons.filter_alt,
           currentSelection,
           setFilter,
         ),
         _FilterMenuItem(
           AssetOriginFilter.remote,
           context.t.timeline_filter_remote,
-          Icons.cloud_outlined,
-          Icons.cloud,
+          Icons.dns_outlined,
+          Icons.dns,
           currentSelection,
           setFilter,
         ),
         _FilterMenuItem(
           AssetOriginFilter.local,
           context.t.timeline_filter_local,
-          Icons.cloud_off_outlined,
-          Icons.cloud_off,
+          Icons.smartphone_outlined,
+          Icons.smartphone,
           currentSelection,
           setFilter,
         ),
