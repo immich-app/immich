@@ -42,25 +42,18 @@ class TagAction extends AssetActionBuilder {
 
   Future<void> _tag(BuildContext context, WidgetRef ref, List<String> assetIds) async {
     final clearSelection = ref.read(clearSelectionProvider(source));
-    if (await pickAndTagAssets(context, ref, assetIds)) {
+    try {
+      final results = await showTagPickerModal(context: context);
+      if (results == null || !context.mounted) {
+        return;
+      }
+
+      final (selected, created) = results;
+      await tagAssets(context, ref, assetIds, selected: selected, created: created);
       clearSelection();
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: "Failed to tag the assets");
     }
-  }
-}
-
-Future<bool> pickAndTagAssets(BuildContext context, WidgetRef ref, List<String> assetIds) async {
-  try {
-    final results = await showTagPickerModal(context: context);
-    if (results == null || !context.mounted) {
-      return false;
-    }
-
-    final (selected, created) = results;
-    await tagAssets(context, ref, assetIds, selected: selected, created: created);
-    return true;
-  } catch (error, stack) {
-    handleError(error, stack: stack, description: "Failed to tag the assets");
-    return false;
   }
 }
 

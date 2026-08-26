@@ -62,6 +62,7 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
   @override
   Widget build(BuildContext context) {
     final asset = widget.asset;
+    final tagAction = const TagAction(source: .viewer).create(context, ref);
     final isTagsEnabled = ref.watch(userMetadataPreferencesProvider).valueOrNull?.tagsEnabled ?? false;
     final user = ref.watch(currentUserProvider);
     if (asset is! RemoteAsset || !isTagsEnabled || asset.ownerId != user?.id) {
@@ -167,15 +168,16 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
                   backgroundColor: Colors.transparent,
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
                 ),
-              ActionChip(
-                avatar: Icon(Icons.new_label_outlined, size: 18, color: context.primaryColor),
-                label: Text(context.t.add_tag),
-                color: WidgetStateProperty.resolveWith(
-                  (states) =>
-                      states.contains(WidgetState.hovered) ? brandColor.withValues(alpha: 0.15) : Colors.transparent,
+              if (tagAction != null)
+                ActionChip(
+                  avatar: Icon(Icons.new_label_outlined, size: 18, color: context.primaryColor),
+                  label: Text(context.t.add_tag),
+                  color: WidgetStateProperty.resolveWith(
+                    (states) =>
+                        states.contains(WidgetState.hovered) ? brandColor.withValues(alpha: 0.15) : Colors.transparent,
+                  ),
+                  onPressed: tagAction.onAction,
                 ),
-                onPressed: () => unawaited(pickAndTagAssets(context, ref, [asset.id])),
-              ),
             ],
           ),
         ],
