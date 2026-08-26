@@ -230,8 +230,8 @@ export type Session = {
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date | null;
-  deviceOS: string | null;
-  deviceType: string | null;
+  deviceOS: string;
+  deviceType: string;
   appVersion: string | null;
   pinExpiresAt: Date | null;
   isPendingSyncReset: boolean;
