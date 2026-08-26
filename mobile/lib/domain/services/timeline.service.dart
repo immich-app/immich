@@ -166,6 +166,9 @@ class TimelineService {
 
     _buffer = await _assetSource(start, len);
     _bufferOffset = start;
+    if (index + count > _totalAssets) {
+      _totalAssets = index + count;
+    }
 
     return getAssets(index, count);
   }
