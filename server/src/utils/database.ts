@@ -795,9 +795,14 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
   const filter = options.filter ?? {};
   const branches = filter.or ?? [];
-  // search universe: own+partner assets unless it is album-confined which adds album assets
+  const ownershipPredicate = (eb: AssetExpressionBuilder) => eb('asset.ownerId', '=', anyUuid(scope.userIds));
+  // search universe: own+partner assets unless album-confined, which searches the albums instead.
+  // The ownership predicate lands in exactly one place: nowhere when the top level confines the
+  // whole query, inside each unconfined branch when only some branches are confined, else globally
   const topConfined = isAlbumConfined(filter);
-  const scopePerBranch = !topConfined && branches.some((branch) => isAlbumConfined(branch));
+  const anyBranchConfined = branches.some((branch) => isAlbumConfined(branch));
+  const scopePerBranch = !topConfined && anyBranchConfined;
+  const scopeGlobally = !topConfined && !anyBranchConfined;
 
   return (
     kysely
@@ -806,7 +811,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       // postgres eliminates the left join when no exif column is referenced, so unused joins are free
       .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .$if(!!options.withExif, (qb) => qb.select(selectExifInfo))
-      .$if(!topConfined && !scopePerBranch, (qb) => qb.where('asset.ownerId', '=', anyUuid(scope.userIds)))
+      .$if(scopeGlobally, (qb) => qb.where(ownershipPredicate))
       .where((eb) =>
         eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),
       )
@@ -822,9 +827,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
               branches.map((branch) =>
                 eb.and([
                   ...branchPredicates(eb, branch),
-                  ...(scopePerBranch && !isAlbumConfined(branch)
-                    ? [eb('asset.ownerId', '=', anyUuid(scope.userIds))]
-                    : []),
+                  ...(scopePerBranch && !isAlbumConfined(branch) ? [ownershipPredicate(eb)] : []),
                 ]),
               ),
             ),
