@@ -47,7 +47,7 @@ export interface DeleteFacesOptions {
 
 export interface GetAllPeopleOptions {
   ownerId?: string;
-  thumbnailPath?: string;
+  thumbnailPath?: string | null;
   faceAssetId?: string | null;
   isHidden?: boolean;
 }

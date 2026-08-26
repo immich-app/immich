@@ -93,7 +93,7 @@ export class MediaService extends BaseService {
 
     await queueAll();
 
-    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
+    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: null });
 
     for await (const person of people) {
       if (!person.faceAssetId) {
