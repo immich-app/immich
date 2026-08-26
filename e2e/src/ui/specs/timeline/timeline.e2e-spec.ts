@@ -148,6 +148,47 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectTopIsTimelineTop(page, assets.at(-1 - 15)!.id);
     });
   });
+  test.describe('/people/:id', () => {
+    const personId = faker.string.uuid();
+
+    test.beforeEach(async ({ context }) => {
+      await context.route(new RegExp(`/api/people/${personId}/statistics$`), (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          json: { assets: assets.length },
+        }),
+      );
+      await context.route(new RegExp(`/api/people/${personId}$`), (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          json: {
+            id: personId,
+            name: 'Test Person',
+            birthDate: null,
+            isHidden: false,
+            thumbnailPath: '',
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          },
+        }),
+      );
+    });
+
+    test('Open person asset, close viewer, restore visible timeline', async ({ page }) => {
+      const asset = assets[0];
+      await page.goto(`/people/${personId}`);
+      await timelineUtils.waitForTimelineLoad(page);
+      await thumbnailUtils.clickAssetId(page, asset.id);
+      await assetViewerUtils.waitForViewerLoad(page, asset);
+
+      await page.getByLabel('Go back').click();
+      await page.waitForURL(`**/people/${personId}?at=${asset.id}`);
+
+      await expect(page.locator('#virtual-timeline')).not.toHaveClass(/invisible/);
+      await thumbnailUtils.expectInViewport(page, asset.id);
+    });
+  });
   test.describe('keyboard', () => {
     /**
      * This text tests keyboard nativation, and also ensures that the scroll-to-asset behavior
