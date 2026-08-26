@@ -844,7 +844,7 @@ export type PersonResponseDto = {
     /** Person name */
     name: string;
     /** Thumbnail path */
-    thumbnailPath: string;
+    thumbnailPath: string | null;
     /** Last update date */
     updatedAt?: string;
 };

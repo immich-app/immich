@@ -21125,6 +21125,7 @@
           },
           "thumbnailPath": {
             "description": "Thumbnail path",
+            "nullable": true,
             "type": "string"
           },
           "updatedAt": {
