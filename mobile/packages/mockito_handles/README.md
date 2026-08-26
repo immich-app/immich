@@ -138,7 +138,7 @@ What a handle exposes depends on the member. For
 | `mockImplementation(fn)`                 | `fn` receives the **real typed arguments**, not an `Invocation` |
 | `calledWith(String albumId)`             | verifies **at least one** call with these values, matching plain `verify(...)` |
 | `calledWithMatching({Object? albumId})`  | same, but each argument may be a value **or** a `Matcher`. Every parameter is optional and named, including the positional ones; **omitting one — or passing `null` — constrains nothing** |
-| `calledOnce()` / `calledTimes(int n)`    | verifies the count, ignoring arguments                |
+| `called([int n = 1])`                    | verifies the count, ignoring arguments — `called()` for exactly once, `called(3)` for exactly three |
 | `captured`                               | every captured argument, flat across all calls        |
 | `calls` / `lastCall`                     | `captured` grouped per call, as a **record named after the real parameters** — `calls.single.albumId`, not `calls.single[0] as String` |
 | `handle(...)`                            | calls the member. Takes the same widened arguments the mock does, so `any` and `captureAny` fit — this is what `verifyInOrder` needs |
@@ -160,11 +160,13 @@ repo.getStatus.mockImplementation((permission) async => statuses[permission] ?? 
 | async `void` method     | `mockResolvedValue()` (no argument) · `mockRejectedValue` · `mockImplementation` | full set          |
 | sync method             | `mockReturnValue` · `mockImplementation` · `mockThrow`        | full set                             |
 | sync `void` method      | `mockReturnValue()` · `mockThrow`                            | full set                             |
-| getter                  | same as its return type implies                              | `calledOnce` · `calledTimes` · `not.called()` only — a getter is read, not called with arguments |
+| getter                  | same as its return type implies                              | `called([n])` · `not.called()` only — a getter is read, not called with arguments |
 | setter (`set x` → `setX`) | none — a setter has nothing to return                      | `calledWith(value)` · `captured` · `not.*` |
 
 `captured` is flat across every call, so for a member with more than one
-parameter `captured.single` throws. Use `calls.single.first` instead.
+parameter `captured.single` throws. Use `calls.single.<parameterName>`
+instead — `calls` groups by call and names each field after the real
+parameter.
 
 ### Verification is single-use
 
@@ -174,11 +176,11 @@ same call fails with "No matching calls":
 
 ```dart
 repo.getAssetsToHash.calledWith('album-1');
-repo.getAssetsToHash.calledOnce();          // fails — the call was consumed
+repo.getAssetsToHash.called();              // fails — the call was consumed
 
-final args = repo.markHashed.calls;         // read once
-final ids = args.single[0] as List<String>;
-final force = args.single[1] as bool;       // reading `.calls` twice would fail
+final call = repo.markHashed.calls.single;  // read once
+final ids = call.ids;
+final force = call.force;                   // reading `.calls` twice would fail
 ```
 
 `captured`, `calls` and `lastCall` are verifications too, so the same applies:

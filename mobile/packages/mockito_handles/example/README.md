@@ -129,7 +129,7 @@ void main() {
 
     expect(albums.mock.pendingCount, 7);
 
-    albums.pendingCount.calledOnce();
+    albums.pendingCount.called();
   });
 }
 ```

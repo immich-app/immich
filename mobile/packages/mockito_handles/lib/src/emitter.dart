@@ -168,7 +168,7 @@ class Emitter {
         // A getter is read, not called, so `anyInvoke` must not be used here —
         // it would emit `_m.name()` and try to invoke the returned value.
         _emitStubs(m, parts, '_m.${m.name}');
-        _emitCounts('_m.${m.name}');
+        _emitCalled('_m.${m.name}');
       case MemberKind.method:
         _usesMatchers = true;
         _emitStubs(m, parts, parts.anyInvoke(m));
@@ -187,7 +187,7 @@ class Emitter {
           '  void calledWithMatching(${parts.matcherParams}) => '
           '_k.verify(_m.${m.name}(${parts.matcherArgs}));',
         );
-        _emitCounts(parts.anyInvoke(m));
+        _emitCalled(parts.anyInvoke(m));
         _emitCapture(m, parts);
     }
     _body.writeln('  $not get not => $not(_m);');
@@ -298,9 +298,8 @@ class Emitter {
     );
   }
 
-  void _emitCounts(String invoke) {
-    _body.writeln('  void calledOnce() => _k.verify($invoke).called(1);');
-    _body.writeln('  void calledTimes(int n) => _k.verify($invoke).called(n);');
+  void _emitCalled(String invoke) {
+    _body.writeln('  void called([int n = 1]) => _k.verify($invoke).called(n);');
   }
 
   void _emitCapture(SelectedMember m, _Rendered parts) {

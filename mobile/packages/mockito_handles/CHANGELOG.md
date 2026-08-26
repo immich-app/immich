@@ -12,8 +12,8 @@ Initial release.
   real typed arguments rather than an `Invocation`.
 - Verification takes real values and is type-checked, because signatures are read
   from the interface element rather than from mockito's parameter-widened
-  override: `calledWith`, `calledWithMatching`, `calledOnce`, `calledTimes`,
-  `captured`, `calls`, `lastCall`, and their negations under `not`.
+  override: `calledWith`, `calledWithMatching`, `called([n])`, `captured`,
+  `calls`, `lastCall`, and their negations under `not`.
 - A facade per mocked type (`TypeMock()`, `TypeMock.of(existing)`) exposing every
   member handle plus `mock`, `reset` and `zeroInteractions`.
 - Members are selected by an origin rule: the package being built is always

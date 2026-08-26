@@ -524,7 +524,7 @@ class MockRepo extends Mock implements Repo {
 ''',
       );
 
-      expect(source, containsCode('_k.verify(_m.name).called(1)'));
+      expect(source, containsCode('void called([int n = 1]) => _k.verify(_m.name).called(n);'));
       expect(source, isNot(containsCode('_m.name()')));
     });
 
@@ -1203,7 +1203,7 @@ class MockRepo extends Mock implements Repo {
       expect(source, containsCode('extension type const RepoMock.of(MockRepo mock) implements MockRepo {'));
     });
 
-    test('calledWith is at-least-once, calledOnce is exactly once', () async {
+    test('calledWith is at-least-once, called() defaults to exactly once', () async {
       final source = await generate(
         interfaces: '''
 abstract class Repo {
@@ -1224,7 +1224,7 @@ class MockRepo extends Mock implements Repo {
       // `verify` without `called` fails only when there were no matching calls,
       // which is what plain `verify(mock.f(x))` means in mockito.
       expect(source, containsCode('void calledWith(String id) => _k.verify(_m.count(id));'));
-      expect(source, containsCode('void calledOnce() => _k.verify(_m.count(_k.any)).called(1);'));
+      expect(source, containsCode('void called([int n = 1]) => _k.verify(_m.count(_k.any)).called(n);'));
     });
 
     test('a handle is callable, with the widened signature verifyInOrder needs', () async {
