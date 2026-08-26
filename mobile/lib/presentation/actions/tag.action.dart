@@ -97,13 +97,16 @@ class UnTagAction extends AssetActionBuilder {
       return null;
     }
 
-    return .new(icon: Icons.close, label: context.t.remove_tag, onAction: () => _untag(ref, assetIds, tagId));
+    return .new(icon: Icons.close, label: context.t.remove_tag, onAction: () => _untag(context, ref, assetIds, tagId));
   }
 
-  Future<void> _untag(WidgetRef ref, List<String> assetIds, String tagId) async {
+  Future<void> _untag(BuildContext context, WidgetRef ref, List<String> assetIds, String tagId) async {
     try {
-      await ref.read(tagServiceProvider).untagAssets(tagId, assetIds);
+      final count = await ref.read(tagServiceProvider).untagAssets(tagId, assetIds);
       ref.invalidate(assetTagsProvider);
+      if (context.mounted) {
+        ref.read(toastServiceProvider).success(context.t.removed_tagged_assets(count: count));
+      }
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to remove the tag");
     }
