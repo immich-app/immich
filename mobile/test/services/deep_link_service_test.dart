@@ -22,9 +22,9 @@ class MockAssetService extends Mock implements AssetService {}
 
 class MockRemoteAlbumService extends Mock implements RemoteAlbumService {}
 
-class MockDriftMemoryService extends Mock implements MemoryService {}
+class MockMemoryService extends Mock implements MemoryService {}
 
-class MockDriftPeopleService extends Mock implements PeopleService {}
+class MockPeopleService extends Mock implements PeopleService {}
 
 class MockPlatformDeepLink extends Mock implements PlatformDeepLink {}
 
@@ -85,7 +85,7 @@ void main() {
   late MockTimelineFactory timelineFactory;
   late MockAssetService assetService;
   late MockRemoteAlbumService remoteAlbumService;
-  late MockDriftMemoryService memoryService;
+  late MockMemoryService memoryService;
   late MockWidgetRef ref;
   late List<TimelineService> createdTimelineServices;
   late DeepLinkService sut;
@@ -94,7 +94,7 @@ void main() {
     timelineFactory = MockTimelineFactory();
     assetService = MockAssetService();
     remoteAlbumService = MockRemoteAlbumService();
-    memoryService = MockDriftMemoryService();
+    memoryService = MockMemoryService();
     ref = MockWidgetRef();
     createdTimelineServices = [];
 
@@ -116,7 +116,7 @@ void main() {
       assetService,
       remoteAlbumService,
       memoryService,
-      MockDriftPeopleService(),
+      MockPeopleService(),
       _user,
     );
 

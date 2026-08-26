@@ -59,4 +59,4 @@ class MockUserApiRepository extends Mock implements UserApiRepository {}
 
 class MockSyncApiRepository extends Mock implements SyncApiRepository {}
 
-class MockDriftAlbumApiRepository extends Mock implements AlbumApiRepository {}
+class MockAlbumApiRepository extends Mock implements AlbumApiRepository {}

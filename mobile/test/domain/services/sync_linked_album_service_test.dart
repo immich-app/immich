@@ -20,7 +20,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         driftProvider.overrideWithValue(drift),
-        albumApiRepositoryProvider.overrideWithValue(MockDriftAlbumApiRepository()),
+        albumApiRepositoryProvider.overrideWithValue(MockAlbumApiRepository()),
         storeServiceProvider.overrideWithValue(MockStoreService()),
       ],
     );
