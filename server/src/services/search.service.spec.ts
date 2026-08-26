@@ -263,20 +263,35 @@ describe(SearchService.name, () => {
       );
     });
 
-    it('should reject a shared link without a top-level album constraint', async () => {
+    it('should reject a shared link whose filter is not confined to albums everywhere', async () => {
       const auth = AuthFactory.from().sharedLink().build();
+      const albumId = newUuid();
 
       await expect(sut.searchMetadata(auth, { size: 250, filter: {} })).rejects.toThrowError(
         new BadRequestException('Shared link access is only allowed in combination with an albumIds filter'),
       );
 
-      const albumId = newUuid();
-      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set([albumId]));
       await expect(
-        sut.searchMetadata(auth, { size: 250, filter: { or: [{ albumIds: { any: [albumId] } }] } }),
+        sut.searchMetadata(auth, {
+          size: 250,
+          filter: { or: [{ albumIds: { any: [albumId] } }, { city: { eq: 'Oslo' } }] },
+        }),
       ).rejects.toThrowError(
         new BadRequestException('Shared link access is only allowed in combination with an albumIds filter'),
       );
+    });
+
+    it('should allow a shared link when every branch is confined to a covered album', async () => {
+      const auth = AuthFactory.from().sharedLink().build();
+      const albumId = newUuid();
+
+      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set([albumId]));
+      mocks.search.searchMetadataV3.mockResolvedValue({ hasNextPage: false, items: [] });
+
+      await expect(
+        sut.searchMetadata(auth, { size: 250, filter: { or: [{ albumIds: { any: [albumId] } }] } }),
+      ).resolves.toBeDefined();
+      expect(mocks.search.searchMetadataV3).toHaveBeenCalled();
     });
   });
 

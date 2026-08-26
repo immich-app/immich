@@ -71,7 +71,3 @@ export const collectFilterIds = (filter: SearchFilter, field: IdsFilterField): s
 
   return [...ids];
 };
-
-/** Whether the top level constrains results to specific `field` ids (`any`/`all`; `none` only excludes). */
-export const hasTopLevelPositiveIdsConstraint = (filter: SearchFilter, field: IdsFilterField): boolean =>
-  filter[field]?.any !== undefined || filter[field]?.all !== undefined;

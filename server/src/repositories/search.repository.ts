@@ -138,7 +138,7 @@ export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
 export interface AssetSearchScope {
-  userIds?: string[];
+  userIds: string[];
   lockedOwnerId: string;
   /** whose version of the people to select, required when selecting faces or people */
   viewingUserId?: string;

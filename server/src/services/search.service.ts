@@ -5,6 +5,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { SystemConfig } from 'src/dtos/config.dto';
 import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
 import {
+  isFullyAlbumConfined,
   isNewShapeRequest,
   LargeAssetSearchDto,
   mapPlaces,
@@ -28,11 +29,7 @@ import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 import { decodeSearchCursor, encodeSearchCursor } from 'src/utils/search-cursor';
-import {
-  applyLockedVisibilityPolicy,
-  collectFilterIds,
-  hasTopLevelPositiveIdsConstraint,
-} from 'src/utils/search-filter';
+import { applyLockedVisibilityPolicy, collectFilterIds } from 'src/utils/search-filter';
 
 @Injectable()
 export class SearchService extends BaseService {
@@ -309,16 +306,14 @@ export class SearchService extends BaseService {
     const filter = dto.filter ?? {};
     const effectiveFilter = applyLockedVisibilityPolicy(auth, filter);
 
-    // only a top-level any/all constrains every result to accessible albums; anything else keeps
-    // the ownership scope so an OR branch cannot widen the search to other users' assets
-    const hasTopLevelAlbums = hasTopLevelPositiveIdsConstraint(filter, 'albumIds');
-    if (auth.sharedLink && !hasTopLevelAlbums) {
+    // a shared link visitor does not have a universe, so there every branch must be confined
+    if (auth.sharedLink && !isFullyAlbumConfined(filter)) {
       throw new BadRequestException('Shared link access is only allowed in combination with an albumIds filter');
     }
 
     const albumIds = collectFilterIds(filter, 'albumIds');
     const [userIds] = await Promise.all([
-      hasTopLevelAlbums ? undefined : this.getUserIdsToSearch(auth),
+      this.getUserIdsToSearch(auth),
       albumIds.length > 0 ? this.requireAccess({ auth, ids: albumIds, permission: Permission.AlbumRead }) : undefined,
     ]);
 

@@ -24,6 +24,7 @@ import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import {
   DEFAULT_SEARCH_ORDER,
   IdsFilter,
+  isAlbumConfined,
   SearchFilterBranch,
   SearchOrder,
   StringFilter,
@@ -793,6 +794,10 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
 // can compose the same filters without stripping an order by
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
   const filter = options.filter ?? {};
+  const branches = filter.or ?? [];
+  // search universe: own+partner assets unless it is album-confined which adds album assets
+  const topConfined = isAlbumConfined(filter);
+  const scopePerBranch = !topConfined && branches.some((branch) => isAlbumConfined(branch));
 
   return (
     kysely
@@ -801,7 +806,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       // postgres eliminates the left join when no exif column is referenced, so unused joins are free
       .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .$if(!!options.withExif, (qb) => qb.select(selectExifInfo))
-      .$if(!!scope.userIds && scope.userIds.length > 0, (qb) => qb.where('asset.ownerId', '=', anyUuid(scope.userIds!)))
+      .$if(!topConfined && !scopePerBranch, (qb) => qb.where('asset.ownerId', '=', anyUuid(scope.userIds)))
       .where((eb) =>
         eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),
       )
@@ -811,8 +816,19 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
       .where((eb) => {
         const predicates = branchPredicates(eb, filter);
-        if (filter.or && filter.or.length > 0) {
-          predicates.push(eb.or(filter.or.map((branch) => eb.and(branchPredicates(eb, branch)))));
+        if (branches.length > 0) {
+          predicates.push(
+            eb.or(
+              branches.map((branch) =>
+                eb.and([
+                  ...branchPredicates(eb, branch),
+                  ...(scopePerBranch && !isAlbumConfined(branch)
+                    ? [eb('asset.ownerId', '=', anyUuid(scope.userIds))]
+                    : []),
+                ]),
+              ),
+            ),
+          );
         }
         return predicates.length > 0 ? eb.and(predicates) : eb.lit(true);
       })
@@ -845,7 +861,16 @@ const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwner
 
 export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   { name: 'baseline', params: [{ take: 100 }, {}, scopeExample] },
-  { name: 'empty', params: [{ take: 100 }, {}, { lockedOwnerId: DummyValue.UUID }] },
+  {
+    name: 'or-mixed-scope',
+    params: [
+      { take: 100 },
+      {
+        filter: { or: [{ albumIds: { any: [DummyValue.UUID] } }, { city: { eq: DummyValue.STRING } }] },
+      },
+      scopeExample,
+    ],
+  },
   {
     name: 'or-exif-only',
     params: [

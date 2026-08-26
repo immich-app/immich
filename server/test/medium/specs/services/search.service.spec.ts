@@ -264,7 +264,7 @@ describe(SearchService.name, () => {
       expect(response.assets.items.map(({ id }) => id).toSorted()).toEqual([oslo.id, favorite.id].toSorted());
     });
 
-    it('should widen to album assets only for a top-level album constraint', async () => {
+    it('should scope an album-constrained filter to the album, top-level or as a branch', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { user: otherUser } = await ctx.newUser();
@@ -281,7 +281,29 @@ describe(SearchService.name, () => {
         size: 250,
         filter: { or: [{ albumIds: { any: [album.id] } }] },
       });
-      expect(branchOnly.assets.items).toEqual([]);
+      expect(branchOnly.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+    });
+
+    it('should keep the ownership scope for branches without an album constraint', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset: ownOslo } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: ownOslo.id, city: 'Oslo' });
+      const { asset: foreignOslo } = await ctx.newAsset({ ownerId: otherUser.id });
+      await ctx.newExif({ assetId: foreignOslo.id, city: 'Oslo' });
+      const { asset: albumAsset } = await ctx.newAsset({ ownerId: otherUser.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: albumAsset.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, {
+        size: 250,
+        filter: { or: [{ albumIds: { any: [album.id] } }, { city: { eq: 'Oslo' } }] },
+      });
+
+      // the album branch searches the album, the city branch stays confined to the caller's own assets
+      expect(response.assets.items.map(({ id }) => id).toSorted()).toEqual([ownOslo.id, albumAsset.id].toSorted());
     });
 
     it('should reject an inaccessible album anywhere in the filter', async () => {

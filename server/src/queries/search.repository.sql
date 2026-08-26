@@ -468,7 +468,7 @@ limit
 offset
   $5
 
--- SearchRepository.searchMetadataV3 (empty)
+-- SearchRepository.searchMetadataV3 (or-mixed-scope)
 select
   "asset"."id",
   "asset"."updateId",
@@ -506,14 +506,27 @@ where
     "asset"."visibility" != $1
     or "asset"."ownerId" = $2
   )
-  and true
+  and (
+    exists (
+      select
+      from
+        "album_asset"
+      where
+        "album_asset"."assetId" = "asset"."id"
+        and "album_asset"."albumId" = any ($3::uuid[])
+    )
+    or (
+      "asset_exif"."city" = $4
+      and "asset"."ownerId" = any ($5::uuid[])
+    )
+  )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $3
+  $6
 offset
-  $4
+  $7
 
 -- SearchRepository.searchMetadataV3 (or-exif-only)
 select
@@ -844,10 +857,9 @@ from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."ownerId" = any ($1::uuid[])
-  and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+  (
+    "asset"."visibility" != $1
+    or "asset"."ownerId" = $2
   )
   and exists (
     select
@@ -855,15 +867,15 @@ where
       "album_asset"
     where
       "album_asset"."assetId" = "asset"."id"
-      and "album_asset"."albumId" = any ($4::uuid[])
+      and "album_asset"."albumId" = any ($3::uuid[])
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $4
 offset
-  $6
+  $5
 
 -- SearchRepository.searchMetadataV3 (ids-all)
 select
@@ -961,10 +973,9 @@ from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."ownerId" = any ($1::uuid[])
-  and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+  (
+    "asset"."visibility" != $1
+    or "asset"."ownerId" = $2
   )
   and exists (
     select
@@ -972,15 +983,15 @@ where
       "album_asset"
     where
       "album_asset"."assetId" = "asset"."id"
-      and "album_asset"."albumId" = any ($4::uuid[])
+      and "album_asset"."albumId" = any ($3::uuid[])
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $4
 offset
-  $6
+  $5
 
 -- SearchRepository.searchMetadataV3 (ids-none)
 select
@@ -1549,16 +1560,18 @@ from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."ownerId" = any ($1::uuid[])
-  and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+  (
+    "asset"."visibility" != $1
+    or "asset"."ownerId" = $2
   )
   and (
-    "asset"."fileCreatedAt" < $4
-    and "asset"."fileCreatedAt" >= $5
+    "asset"."fileCreatedAt" < $3
+    and "asset"."fileCreatedAt" >= $4
     and (
-      "asset"."isFavorite" = $6
+      (
+        "asset"."isFavorite" = $5
+        and "asset"."ownerId" = any ($6::uuid[])
+      )
       or exists (
         select
         from

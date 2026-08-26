@@ -1,11 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { SearchFilter } from 'src/dtos/search.dto';
+import { isAlbumConfined, isFullyAlbumConfined, SearchFilter } from 'src/dtos/search.dto';
 import { AssetVisibility } from 'src/enum';
-import {
-  applyLockedVisibilityPolicy,
-  collectFilterIds,
-  hasTopLevelPositiveIdsConstraint,
-} from 'src/utils/search-filter';
+import { applyLockedVisibilityPolicy, collectFilterIds } from 'src/utils/search-filter';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { describe, expect, it } from 'vitest';
 
@@ -89,14 +85,32 @@ describe(collectFilterIds.name, () => {
   });
 });
 
-describe(hasTopLevelPositiveIdsConstraint.name, () => {
-  it('should detect only top-level any/all constraints', () => {
+describe(isAlbumConfined.name, () => {
+  it('should require a positive albumIds constraint', () => {
     const albumId = '00000000-0000-4000-8000-00000000000a';
-    expect(hasTopLevelPositiveIdsConstraint({ albumIds: { any: [albumId] } }, 'albumIds')).toBe(true);
-    expect(hasTopLevelPositiveIdsConstraint({ albumIds: { all: [albumId] } }, 'albumIds')).toBe(true);
-    expect(hasTopLevelPositiveIdsConstraint({ albumIds: { none: [albumId] } }, 'albumIds')).toBe(false);
-    expect(hasTopLevelPositiveIdsConstraint({ or: [{ albumIds: { any: [albumId] } }] }, 'albumIds')).toBe(false);
-    expect(hasTopLevelPositiveIdsConstraint({ albumIds: { any: [albumId] } }, 'tagIds')).toBe(false);
-    expect(hasTopLevelPositiveIdsConstraint({}, 'albumIds')).toBe(false);
+    expect(isAlbumConfined({ albumIds: { any: [albumId] } })).toBe(true);
+    expect(isAlbumConfined({ albumIds: { all: [albumId] } })).toBe(true);
+    expect(isAlbumConfined({ albumIds: { none: [albumId] } })).toBe(false);
+    expect(isAlbumConfined({ city: { eq: 'Oslo' } })).toBe(false);
+    expect(isAlbumConfined({})).toBe(false);
+  });
+});
+
+describe(isFullyAlbumConfined.name, () => {
+  const albumId = '00000000-0000-4000-8000-00000000000a';
+
+  it('should be confined by the top level or by every branch', () => {
+    expect(isFullyAlbumConfined({ albumIds: { any: [albumId] } })).toBe(true);
+    expect(isFullyAlbumConfined({ albumIds: { any: [albumId] }, or: [{ city: { eq: 'Oslo' } }] })).toBe(true);
+    expect(isFullyAlbumConfined({ or: [{ albumIds: { any: [albumId] } }, { albumIds: { all: [albumId] } }] })).toBe(
+      true,
+    );
+  });
+
+  it('should not be confined when any result can escape the albums', () => {
+    expect(isFullyAlbumConfined({})).toBe(false);
+    expect(isFullyAlbumConfined({ albumIds: { none: [albumId] } })).toBe(false);
+    expect(isFullyAlbumConfined({ or: [{ albumIds: { any: [albumId] } }, { city: { eq: 'Oslo' } }] })).toBe(false);
+    expect(isFullyAlbumConfined({ or: [] })).toBe(false);
   });
 });

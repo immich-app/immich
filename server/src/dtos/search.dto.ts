@@ -314,6 +314,14 @@ const NEW_SHAPE_FIELDS = ['filter', 'orderBy', 'cursor'] as const;
 export const isNewShapeRequest = (dto: Partial<Record<(typeof NEW_SHAPE_FIELDS)[number], unknown>>): boolean =>
   NEW_SHAPE_FIELDS.some((field) => dto[field] !== undefined);
 
+/** Whether every asset the branch can match is provably inside an (access-checked) album */
+export const isAlbumConfined = (branch: SearchFilterBranch): boolean =>
+  branch.albumIds?.any !== undefined || branch.albumIds?.all !== undefined;
+
+/** Whether every result of the whole filter is album-confined */
+export const isFullyAlbumConfined = (filter: SearchFilter): boolean =>
+  isAlbumConfined(filter) || (!!filter.or?.length && filter.or.every((branch) => isAlbumConfined(branch)));
+
 /**
  * The structured shape and the deprecated flat search fields are mutually exclusive
  * TODO(v4): remove together with the deprecated flat fields.
