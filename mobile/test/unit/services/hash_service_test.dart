@@ -124,7 +124,7 @@ void main() {
         expect(calls[0].assetIds, [asset1.id, asset2.id], reason: 'First call should batch the first two assets');
         expect(calls[1].assetIds, [asset3.id], reason: 'Second call should have the remaining asset');
 
-        localAsset.updateHashes.calledTimes(2);
+        localAsset.updateHashes.called(2);
       });
 
       test('handles mixed success and failure in batch', () async {
