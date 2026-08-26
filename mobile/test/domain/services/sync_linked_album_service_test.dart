@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
@@ -20,7 +20,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         driftProvider.overrideWithValue(drift),
-        driftAlbumApiRepositoryProvider.overrideWithValue(MockDriftAlbumApiRepository()),
+        albumApiRepositoryProvider.overrideWithValue(MockAlbumApiRepository()),
         storeServiceProvider.overrideWithValue(MockStoreService()),
       ],
     );
