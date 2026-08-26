@@ -125,34 +125,31 @@ class TagPicker extends HookConsumerWidget {
                     // Create new tag tile
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 2.0),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: isCreateSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
-                          borderRadius: borderRadius,
-                        ),
-                        child: ListTile(
-                          shape: const RoundedRectangleBorder(borderRadius: borderRadius),
-                          title: Text(
-                            trimmedQuery,
-                            style: context.textTheme.bodyLarge?.copyWith(
-                              color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
-                            ),
-                          ),
-                          trailing: Icon(
-                            Icons.add,
+                      child: ListTile(
+                        shape: const RoundedRectangleBorder(borderRadius: borderRadius),
+                        selected: isCreateSelected,
+                        selectedTileColor: context.primaryColor,
+                        tileColor: context.primaryColor.withAlpha(25),
+                        title: Text(
+                          trimmedQuery,
+                          style: context.textTheme.bodyLarge?.copyWith(
                             color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
                           ),
-                          onTap: () {
-                            final newSelectedNewTagValues = {...selectedNewTagValues.value};
-                            if (isCreateSelected) {
-                              newSelectedNewTagValues.remove(trimmedQuery);
-                            } else {
-                              newSelectedNewTagValues.add(trimmedQuery);
-                            }
-                            selectedNewTagValues.value = newSelectedNewTagValues;
-                            onSelectNewTag!.call(newSelectedNewTagValues);
-                          },
                         ),
+                        trailing: Icon(
+                          Icons.add,
+                          color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
+                        ),
+                        onTap: () {
+                          final newSelectedNewTagValues = {...selectedNewTagValues.value};
+                          if (isCreateSelected) {
+                            newSelectedNewTagValues.remove(trimmedQuery);
+                          } else {
+                            newSelectedNewTagValues.add(trimmedQuery);
+                          }
+                          selectedNewTagValues.value = newSelectedNewTagValues;
+                          onSelectNewTag!.call(newSelectedNewTagValues);
+                        },
                       ),
                     );
                   }
@@ -161,30 +158,27 @@ class TagPicker extends HookConsumerWidget {
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 7.0, right: 2.0, left: 2.0),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: isSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
-                        borderRadius: borderRadius,
-                      ),
-                      child: ListTile(
-                        shape: const RoundedRectangleBorder(borderRadius: borderRadius),
-                        title: Text(
-                          tag.value,
-                          style: context.textTheme.bodyLarge?.copyWith(
-                            color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
-                          ),
+                    child: ListTile(
+                      shape: const RoundedRectangleBorder(borderRadius: borderRadius),
+                      selected: isSelected,
+                      selectedTileColor: context.primaryColor,
+                      tileColor: context.primaryColor.withAlpha(25),
+                      title: Text(
+                        tag.value,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
                         ),
-                        onTap: () {
-                          final newSelected = {...selectedTagIds.value};
-                          if (isSelected) {
-                            newSelected.removeWhere((id) => id == tag.id);
-                          } else {
-                            newSelected.add(tag.id);
-                          }
-                          selectedTagIds.value = newSelected;
-                          onSelectExistingTag(tags.where((t) => newSelected.contains(t.id)));
-                        },
                       ),
+                      onTap: () {
+                        final newSelected = {...selectedTagIds.value};
+                        if (isSelected) {
+                          newSelected.removeWhere((id) => id == tag.id);
+                        } else {
+                          newSelected.add(tag.id);
+                        }
+                        selectedTagIds.value = newSelected;
+                        onSelectExistingTag(tags.where((t) => newSelected.contains(t.id)));
+                      },
                     ),
                   );
                 },
