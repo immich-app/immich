@@ -14,7 +14,7 @@ import {
 import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation';
 import z from 'zod';
 
-const ADDED_V3_1 = new HistoryBuilder().added('v3.2.0').getExtensions();
+const ADDED_V3_2 = new HistoryBuilder().added('v3.2.0').getExtensions();
 
 // fields deprecated in favor of the structured filter tree
 const DEPRECATED_FLAT_FIELD = {
@@ -352,8 +352,8 @@ const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) =
   });
 };
 
-const filterField = SearchFilterSchema.optional().meta(ADDED_V3_1);
-const cursorField = z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_1);
+const filterField = SearchFilterSchema.optional().meta(ADDED_V3_2);
+const cursorField = z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_2);
 
 const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
   withStacked: z.boolean().optional().describe('Include stacked assets'),
@@ -375,7 +375,7 @@ const MetadataSearchSchema = withShapeExclusivity(
     encodedVideoPath: z.string().optional().describe('Filter by encoded video file path').meta(DEPRECATED_FLAT_FIELD),
     order: AssetOrderSchema.optional().describe('Sort order').meta(DEPRECATED_FLAT_FIELD),
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
-    orderBy: SearchOrderSchema.optional().meta(ADDED_V3_1),
+    orderBy: SearchOrderSchema.optional().meta(ADDED_V3_2),
     cursor: cursorField,
   }),
 ).meta({ id: 'MetadataSearchDto' });
@@ -452,7 +452,7 @@ const SearchAssetResponseSchema = z
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),
     nextPage: z.string().nullable().describe('Next page token').meta(DEPRECATED_FLAT_FIELD),
-    nextCursor: z.string().nullable().describe('Cursor for the next page of results').meta(ADDED_V3_1),
+    nextCursor: z.string().nullable().describe('Cursor for the next page of results').meta(ADDED_V3_2),
   })
   .meta({ id: 'SearchAssetResponseDto' });
 
