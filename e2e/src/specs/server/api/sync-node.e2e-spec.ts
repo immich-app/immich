@@ -305,6 +305,31 @@ describe('/admin/sync-nodes', () => {
     expect(drained.stuckCount).toBe(0);
   }, 240_000);
 
+  it("should report a pairing's outstanding work item by item", async () => {
+    if (!available) {
+      return;
+    }
+
+    const [pairing] = await pairings(nodeId, adminA.accessToken);
+
+    const { status, body: detail } = await request(nodeA)
+      .get(`/admin/sync-nodes/pairings/${pairing.id}`)
+      .set(bearer(adminA.accessToken));
+
+    expect(status).toBe(200);
+    expect(detail).toMatchObject({ id: pairing.id, stuckCount: 0 });
+    // Assets have been exchanged by now, so the identity map is not empty.
+    expect(detail.syncedCount).toBeGreaterThan(0);
+
+    const { body: stuck } = await request(nodeA)
+      .get(`/admin/sync-nodes/pairings/${pairing.id}/items`)
+      .query({ filter: 'stuck' })
+      .set(bearer(adminA.accessToken));
+
+    // Nothing has run out of attempts, so there is nothing to show a human.
+    expect(stuck).toEqual({ items: [], total: 0, maxAttempts: expect.any(Number) });
+  });
+
   it("should propagate a local deletion to the other server's trash", async () => {
     if (!available) {
       return;

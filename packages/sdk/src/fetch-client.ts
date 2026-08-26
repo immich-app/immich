@@ -686,14 +686,6 @@ export type SyncNodeCreateDto = {
     /** Base URL of the peer, e.g. https://immich.example.com */
     url: string;
 };
-export type SyncPairingUpdateDto = {
-    /** Bring the paired user's assets here */
-    pullEnabled?: boolean;
-    /** Send this user's assets to the peer */
-    pushEnabled?: boolean;
-    /** Replacement API key for the paired user */
-    remoteApiKey?: string;
-};
 export type SyncPairingResponseDto = {
     /** Creation date */
     createdAt: string;
@@ -717,8 +709,48 @@ export type SyncPairingResponseDto = {
     remoteUserEmail: string;
     /** Paired user on the peer */
     remoteUserId: string;
+    /** Items that failed but are still being retried automatically */
+    retryingCount: number;
     /** Items that have failed too many times and need attention */
     stuckCount: number;
+    /** Assets that already have a counterpart on the peer */
+    syncedCount: number;
+};
+export type SyncPairingUpdateDto = {
+    /** Bring the paired user's assets here */
+    pullEnabled?: boolean;
+    /** Send this user's assets to the peer */
+    pushEnabled?: boolean;
+    /** Replacement API key for the paired user */
+    remoteApiKey?: string;
+};
+export type SyncPairingItemDto = {
+    /** Local asset ID when pushing, the ID on the peer when pulling */
+    assetId: string;
+    /** How many times this item has been tried */
+    attempts: number;
+    /** When the item was first queued */
+    createdAt: string;
+    direction: SyncDirection;
+    /** File name, for an asset this node holds */
+    fileName: string | null;
+    /** Ledger entry ID */
+    id: string;
+    /** Out of attempts, so it will not move again without a hand */
+    isStuck: boolean;
+    /** Why the last attempt failed */
+    lastError: string | null;
+    status: SyncItemStatus;
+    /** When the item was last tried */
+    updatedAt: string;
+};
+export type SyncPairingItemsResponseDto = {
+    /** Outstanding items on this page */
+    items: SyncPairingItemDto[];
+    /** How many times an item is tried before it is left for a human */
+    maxAttempts: number;
+    /** How many items match the filter, across every page */
+    total: number;
 };
 export type SyncNodeUpdateDto = {
     /** API key for the peer. Write-only: never returned. */
@@ -4267,6 +4299,19 @@ export function deleteSyncPairing({ id }: {
     }));
 }
 /**
+ * Retrieve a pairing
+ */
+export function getSyncPairing({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncPairingResponseDto;
+    }>(`/admin/sync-nodes/pairings/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
  * Update a pairing
  */
 export function updateSyncPairing({ id, syncPairingUpdateDto }: {
@@ -4281,6 +4326,26 @@ export function updateSyncPairing({ id, syncPairingUpdateDto }: {
         method: "PUT",
         body: syncPairingUpdateDto
     })));
+}
+/**
+ * Retrieve the outstanding items for a pairing
+ */
+export function getSyncPairingItems({ filter, id, page, size }: {
+    filter?: SyncItemFilter;
+    id: string;
+    page?: number;
+    size?: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncPairingItemsResponseDto;
+    }>(`/admin/sync-nodes/pairings/${encodeURIComponent(id)}/items${QS.query(QS.explode({
+        filter,
+        page,
+        size
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Sync a pairing now
@@ -8219,6 +8284,19 @@ export enum SyncNodeStatus {
     Unreachable = "unreachable",
     Unauthorized = "unauthorized",
     Incompatible = "incompatible"
+}
+export enum SyncItemFilter {
+    All = "all",
+    Active = "active",
+    Stuck = "stuck"
+}
+export enum SyncDirection {
+    Push = "push",
+    Pull = "pull"
+}
+export enum SyncItemStatus {
+    Pending = "pending",
+    Failed = "failed"
 }
 export enum UserStatus {
     Active = "active",

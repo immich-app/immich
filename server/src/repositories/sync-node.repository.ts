@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole, AssetVisibility, SyncDirection, SyncItemStatus } from 'src/enum';
+import { AlbumUserRole, AssetVisibility, SyncDirection, SyncItemFilter, SyncItemStatus } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   SyncNodeAlbumTable,
@@ -244,16 +244,80 @@ export class SyncNodeRepository {
   /** Counts for the admin UI, split by whether anything can still be done automatically. */
   @GenerateSql({ params: [DummyValue.UUID, 5] })
   async getItemCounts(nodeUserId: string, maxAttempts: number) {
-    const rows = await this.db
+    const [items, synced] = await Promise.all([
+      this.db
+        .selectFrom('sync_node_item')
+        .select((eb) => [
+          eb.fn.countAll<number>().as('total'),
+          eb.fn
+            .sum<number>(
+              eb
+                .case()
+                .when(eb.and([eb('status', '=', SyncItemStatus.Failed), eb('attempts', '<', maxAttempts)]))
+                .then(1)
+                .else(0)
+                .end(),
+            )
+            .as('retrying'),
+          eb.fn.sum<number>(eb.case().when('attempts', '>=', maxAttempts).then(1).else(0).end()).as('exhausted'),
+        ])
+        .where('nodeUserId', '=', nodeUserId)
+        .executeTakeFirst(),
+      this.db
+        .selectFrom('sync_node_asset')
+        .select((eb) => eb.fn.countAll<number>().as('total'))
+        .where('nodeUserId', '=', nodeUserId)
+        .executeTakeFirst(),
+    ]);
+
+    return {
+      total: Number(items?.total ?? 0),
+      retrying: Number(items?.retrying ?? 0),
+      exhausted: Number(items?.exhausted ?? 0),
+      synced: Number(synced?.total ?? 0),
+    };
+  }
+
+  /**
+   * One page of the work ledger for the admin UI, most-troubled first.
+   *
+   * The file name only exists for a push: a pull is identified by the peer's
+   * asset id, which is not an asset here until the transfer has succeeded -- at
+   * which point the item is gone from the ledger.
+   */
+  @GenerateSql({ params: [DummyValue.UUID, { maxAttempts: 5, filter: SyncItemFilter.All, take: 100, skip: 0 }] })
+  getItems(
+    nodeUserId: string,
+    { maxAttempts, filter, take, skip }: { maxAttempts: number; filter: SyncItemFilter; take: number; skip: number },
+  ) {
+    return this.db
       .selectFrom('sync_node_item')
-      .select((eb) => [
-        eb.fn.countAll<number>().as('total'),
-        eb.fn.sum<number>(eb.case().when('attempts', '>=', maxAttempts).then(1).else(0).end()).as('exhausted'),
-      ])
+      .leftJoin('asset', (join) =>
+        join.onRef('asset.id', '=', 'sync_node_item.assetId').on('sync_node_item.direction', '=', SyncDirection.Push),
+      )
+      .selectAll('sync_node_item')
+      .select('asset.originalFileName as fileName')
+      .where('sync_node_item.nodeUserId', '=', nodeUserId)
+      .$if(filter === SyncItemFilter.Active, (qb) => qb.where('sync_node_item.attempts', '<', maxAttempts))
+      .$if(filter === SyncItemFilter.Stuck, (qb) => qb.where('sync_node_item.attempts', '>=', maxAttempts))
+      .orderBy('sync_node_item.attempts desc')
+      .orderBy('sync_node_item.createdAt asc')
+      .limit(take)
+      .offset(skip)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, 5, SyncItemFilter.All] })
+  async getItemTotal(nodeUserId: string, maxAttempts: number, filter: SyncItemFilter): Promise<number> {
+    const row = await this.db
+      .selectFrom('sync_node_item')
+      .select((eb) => eb.fn.countAll<number>().as('total'))
       .where('nodeUserId', '=', nodeUserId)
+      .$if(filter === SyncItemFilter.Active, (qb) => qb.where('attempts', '<', maxAttempts))
+      .$if(filter === SyncItemFilter.Stuck, (qb) => qb.where('attempts', '>=', maxAttempts))
       .executeTakeFirst();
 
-    return { pending: Number(rows?.total ?? 0), exhausted: Number(rows?.exhausted ?? 0) };
+    return Number(row?.total ?? 0);
   }
 
   // -- local change enumeration --

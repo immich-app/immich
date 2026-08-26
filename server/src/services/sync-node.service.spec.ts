@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { serverVersion } from 'src/constants';
-import { SyncNodeStatus } from 'src/enum';
+import { NODE_SYNC_MAX_ATTEMPTS, serverVersion } from 'src/constants';
+import { SyncDirection, SyncItemFilter, SyncItemStatus, SyncNodeStatus } from 'src/enum';
 import { NodeClientError } from 'src/repositories/node-client.repository';
 import { SyncNodeService } from 'src/services/sync-node.service';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -55,7 +55,7 @@ describe(SyncNodeService.name, () => {
   beforeEach(() => {
     ({ sut, mocks } = newTestService(SyncNodeService));
 
-    mocks.syncNode.getItemCounts.mockResolvedValue({ pending: 0, exhausted: 0 });
+    mocks.syncNode.getItemCounts.mockResolvedValue({ total: 0, retrying: 0, exhausted: 0, synced: 0 });
   });
 
   it('should work', () => {
@@ -272,6 +272,100 @@ describe(SyncNodeService.name, () => {
       mocks.syncNode.getPairing.mockResolvedValue(void 0);
 
       await expect(sut.syncPairingNow('nope')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('getPairing', () => {
+    it('should report what is outstanding alongside the pairing', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(pairingStub);
+      mocks.syncNode.getItemCounts.mockResolvedValue({ total: 9, retrying: 2, exhausted: 3, synced: 120 });
+
+      await expect(sut.getPairing('pairing-1')).resolves.toEqual(
+        expect.objectContaining({
+          id: 'pairing-1',
+          pendingCount: 9,
+          retryingCount: 2,
+          stuckCount: 3,
+          syncedCount: 120,
+        }),
+      );
+    });
+
+    it('should throw for a pairing that does not exist', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(void 0);
+
+      await expect(sut.getPairing('nope')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('getPairingItems', () => {
+    const itemStub = {
+      id: 'item-1',
+      nodeUserId: 'pairing-1',
+      direction: SyncDirection.Push,
+      assetId: 'asset-1',
+      status: SyncItemStatus.Failed,
+      attempts: NODE_SYNC_MAX_ATTEMPTS,
+      lastError: 'Request failed with status code 413',
+      createdAt: new Date('2026-01-01'),
+      updatedAt: new Date('2026-01-02'),
+      fileName: 'IMG_0001.jpg',
+    };
+
+    it('should mark an item past the attempt ceiling as stuck, with the reason it failed', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(pairingStub);
+      mocks.syncNode.getItems.mockResolvedValue([itemStub]);
+      mocks.syncNode.getItemTotal.mockResolvedValue(1);
+
+      const { items, total, maxAttempts } = await sut.getPairingItems('pairing-1', {
+        filter: SyncItemFilter.Stuck,
+        page: 1,
+        size: 100,
+      });
+
+      expect(total).toBe(1);
+      expect(maxAttempts).toBe(NODE_SYNC_MAX_ATTEMPTS);
+      expect(items[0]).toEqual(
+        expect.objectContaining({
+          assetId: 'asset-1',
+          fileName: 'IMG_0001.jpg',
+          isStuck: true,
+          lastError: 'Request failed with status code 413',
+        }),
+      );
+    });
+
+    it('should not call an item stuck while it still has attempts left', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(pairingStub);
+      mocks.syncNode.getItems.mockResolvedValue([{ ...itemStub, attempts: 1, fileName: null }]);
+      mocks.syncNode.getItemTotal.mockResolvedValue(1);
+
+      const { items } = await sut.getPairingItems('pairing-1', { filter: SyncItemFilter.All, page: 1, size: 100 });
+
+      expect(items[0]).toEqual(expect.objectContaining({ isStuck: false, fileName: null }));
+    });
+
+    it('should turn the page into an offset', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(pairingStub);
+      mocks.syncNode.getItems.mockResolvedValue([]);
+      mocks.syncNode.getItemTotal.mockResolvedValue(0);
+
+      await sut.getPairingItems('pairing-1', { filter: SyncItemFilter.All, page: 3, size: 50 });
+
+      expect(mocks.syncNode.getItems).toHaveBeenCalledWith('pairing-1', {
+        maxAttempts: NODE_SYNC_MAX_ATTEMPTS,
+        filter: SyncItemFilter.All,
+        take: 50,
+        skip: 100,
+      });
+    });
+
+    it('should throw for a pairing that does not exist', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(void 0);
+
+      await expect(
+        sut.getPairingItems('nope', { filter: SyncItemFilter.All, page: 1, size: 100 }),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

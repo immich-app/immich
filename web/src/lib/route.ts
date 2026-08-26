@@ -151,6 +151,7 @@ export const Route = {
 
   // sync nodes
   syncNodes: () => '/admin/sync-nodes',
+  viewSyncPairing: ({ id }: { id: string }) => `/admin/sync-nodes/pairings/${id}`,
 
   // queues
   queues: () => '/admin/queues',

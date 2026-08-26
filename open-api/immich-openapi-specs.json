@@ -2057,6 +2057,62 @@
         "x-immich-permission": "adminSyncNode.delete",
         "x-immich-state": "Beta"
       },
+      "get": {
+        "description": "Retrieve one user pairing, including how much of its work is outstanding.",
+        "operationId": "getSyncPairing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncPairingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a pairing",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.read",
+        "x-immich-state": "Beta"
+      },
       "put": {
         "description": "Turn push or pull on or off for a pairing.",
         "operationId": "updateSyncPairing",
@@ -2121,6 +2177,97 @@
           }
         ],
         "x-immich-permission": "adminSyncNode.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/sync-nodes/pairings/{id}/items": {
+      "get": {
+        "description": "List the assets a pairing still has to transfer, with the attempt count and last failure for each, so a stalled sync can be looked at item by item.",
+        "operationId": "getSyncPairingItems",
+        "parameters": [
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "$ref": "#/components/schemas/SyncItemFilter"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncPairingItemsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve the outstanding items for a pairing",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.read",
         "x-immich-state": "Beta"
       }
     },
@@ -29135,6 +29282,14 @@
         "properties": {},
         "type": "object"
       },
+      "SyncDirection": {
+        "description": "Sync direction",
+        "enum": [
+          "push",
+          "pull"
+        ],
+        "type": "string"
+      },
       "SyncEntityType": {
         "description": "Sync entity type",
         "enum": [
@@ -29197,6 +29352,23 @@
           "SyncAckV1",
           "SyncResetV1",
           "SyncCompleteV1"
+        ],
+        "type": "string"
+      },
+      "SyncItemFilter": {
+        "description": "Which sync items to return",
+        "enum": [
+          "all",
+          "active",
+          "stuck"
+        ],
+        "type": "string"
+      },
+      "SyncItemStatus": {
+        "description": "Sync item status",
+        "enum": [
+          "pending",
+          "failed"
         ],
         "type": "string"
       },
@@ -29568,6 +29740,98 @@
         ],
         "type": "object"
       },
+      "SyncPairingItemDto": {
+        "properties": {
+          "assetId": {
+            "description": "Local asset ID when pushing, the ID on the peer when pulling",
+            "type": "string"
+          },
+          "attempts": {
+            "description": "How many times this item has been tried",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "When the item was first queued",
+            "format": "date-time",
+            "type": "string"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/SyncDirection"
+          },
+          "fileName": {
+            "description": "File name, for an asset this node holds",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Ledger entry ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "isStuck": {
+            "description": "Out of attempts, so it will not move again without a hand",
+            "type": "boolean"
+          },
+          "lastError": {
+            "description": "Why the last attempt failed",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SyncItemStatus"
+          },
+          "updatedAt": {
+            "description": "When the item was last tried",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "attempts",
+          "createdAt",
+          "direction",
+          "fileName",
+          "id",
+          "isStuck",
+          "lastError",
+          "status",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SyncPairingItemsResponseDto": {
+        "properties": {
+          "items": {
+            "description": "Outstanding items on this page",
+            "items": {
+              "$ref": "#/components/schemas/SyncPairingItemDto"
+            },
+            "type": "array"
+          },
+          "maxAttempts": {
+            "description": "How many times an item is tried before it is left for a human",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "description": "How many items match the filter, across every page",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "maxAttempts",
+          "total"
+        ],
+        "type": "object"
+      },
       "SyncPairingResponseDto": {
         "properties": {
           "createdAt": {
@@ -29628,8 +29892,20 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "retryingCount": {
+            "description": "Items that failed but are still being retried automatically",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
           "stuckCount": {
             "description": "Items that have failed too many times and need attention",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "syncedCount": {
+            "description": "Assets that already have a counterpart on the peer",
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
             "type": "integer"
@@ -29647,7 +29923,9 @@
           "pushEnabled",
           "remoteUserEmail",
           "remoteUserId",
-          "stuckCount"
+          "retryingCount",
+          "stuckCount",
+          "syncedCount"
         ],
         "type": "object"
       },

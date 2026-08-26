@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
+  import { Route } from '$lib/route';
   import { getSyncPairingActions } from '$lib/services/sync-node.service';
+  import { locale } from '$lib/stores/preferences.store';
   import { type SyncPairingResponseDto } from '@immich/sdk';
   import { Badge, ContextMenuButton, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
@@ -16,8 +17,8 @@
     value ? DateTime.fromISO(value).setLocale($locale).toRelative() : $t('admin.sync_pairing_never_synced');
 
   const getActions = (pairing: SyncPairingResponseDto) => {
-    const { SyncNow, Unpair } = getSyncPairingActions($t, pairing);
-    return [SyncNow, Unpair];
+    const { Details, SyncNow, Unpair } = getSyncPairingActions($t, pairing);
+    return [Details, SyncNow, Unpair];
   };
 </script>
 
@@ -28,7 +29,9 @@
     {#each pairings as pairing (pairing.id)}
       <div class="flex items-center justify-between gap-4 border-b border-subtle py-2 last:border-b-0">
         <div class="flex flex-col gap-0.5">
-          <Text size="small">{pairing.remoteUserEmail}</Text>
+          <a class="hover:underline" href={Route.viewSyncPairing({ id: pairing.id })}>
+            <Text size="small">{pairing.remoteUserEmail}</Text>
+          </a>
           <div class="flex gap-1">
             {#if pairing.pushEnabled}
               <Badge size="small" color="primary">{$t('admin.sync_pairing_push')}</Badge>
@@ -43,15 +46,21 @@
         </div>
 
         <div class="flex items-center gap-3">
+          <!-- Both counts lead to the details page, since a count on its own says
+               nothing about which assets it is or why they are stuck. -->
           {#if pairing.stuckCount > 0}
-            <Badge size="small" color="danger">
-              {$t('admin.sync_pairing_stuck', { values: { count: pairing.stuckCount } })}
-            </Badge>
+            <a href={Route.viewSyncPairing({ id: pairing.id })}>
+              <Badge size="small" color="danger">
+                {$t('admin.sync_pairing_stuck', { values: { count: pairing.stuckCount } })}
+              </Badge>
+            </a>
           {/if}
           {#if pairing.pendingCount > 0}
-            <Badge size="small" color="warning">
-              {$t('admin.sync_pairing_pending', { values: { count: pairing.pendingCount } })}
-            </Badge>
+            <a href={Route.viewSyncPairing({ id: pairing.id })}>
+              <Badge size="small" color="warning">
+                {$t('admin.sync_pairing_pending', { values: { count: pairing.pendingCount } })}
+              </Badge>
+            </a>
           {/if}
           {#if pairing.error}
             <Text size="tiny" color="danger">{pairing.error}</Text>

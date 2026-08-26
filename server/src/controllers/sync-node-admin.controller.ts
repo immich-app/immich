@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -8,6 +8,8 @@ import {
   SyncNodeTestResponseDto,
   SyncNodeUpdateDto,
   SyncPairingCreateDto,
+  SyncPairingItemSearchDto,
+  SyncPairingItemsResponseDto,
   SyncPairingResponseDto,
   SyncPairingUpdateDto,
 } from 'src/dtos/sync-node.dto';
@@ -120,6 +122,32 @@ export class SyncNodeAdminController {
   })
   createSyncPairing(@Param() { id }: UUIDParamDto, @Body() dto: SyncPairingCreateDto): Promise<SyncPairingResponseDto> {
     return this.service.createPairing(id, dto);
+  }
+
+  @Get('pairings/:id')
+  @Authenticated({ permission: Permission.AdminSyncNodeRead, admin: true })
+  @Endpoint({
+    summary: 'Retrieve a pairing',
+    description: 'Retrieve one user pairing, including how much of its work is outstanding.',
+    history: new HistoryBuilder().added('v3').beta('v3'),
+  })
+  getSyncPairing(@Param() { id }: UUIDParamDto): Promise<SyncPairingResponseDto> {
+    return this.service.getPairing(id);
+  }
+
+  @Get('pairings/:id/items')
+  @Authenticated({ permission: Permission.AdminSyncNodeRead, admin: true })
+  @Endpoint({
+    summary: 'Retrieve the outstanding items for a pairing',
+    description:
+      'List the assets a pairing still has to transfer, with the attempt count and last failure for each, so a stalled sync can be looked at item by item.',
+    history: new HistoryBuilder().added('v3').beta('v3'),
+  })
+  getSyncPairingItems(
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: SyncPairingItemSearchDto,
+  ): Promise<SyncPairingItemsResponseDto> {
+    return this.service.getPairingItems(id, dto);
   }
 
   @Put('pairings/:id')

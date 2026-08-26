@@ -363,6 +363,20 @@ export enum SyncItemStatus {
 
 export const SyncItemStatusSchema = z.enum(SyncItemStatus).describe('Sync item status').meta({ id: 'SyncItemStatus' });
 
+/** Which slice of a pairing's outstanding work to look at. */
+export enum SyncItemFilter {
+  All = 'all',
+  /** Still being retried automatically. */
+  Active = 'active',
+  /** Out of attempts, so nothing further happens without a hand. */
+  Stuck = 'stuck',
+}
+
+export const SyncItemFilterSchema = z
+  .enum(SyncItemFilter)
+  .describe('Which sync items to return')
+  .meta({ id: 'SyncItemFilter' });
+
 export enum StorageTargetKind {
   S3 = 's3',
   WebDav = 'webdav',

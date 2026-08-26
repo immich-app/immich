@@ -113,14 +113,55 @@ select
   count(*) as "total",
   sum(
     case
-      when "attempts" >= $1 then 1
+      when (
+        "status" = $1
+        and "attempts" < $2
+      ) then 1
+      else 0
+    end
+  ) as "retrying",
+  sum(
+    case
+      when "attempts" >= $3 then 1
       else 0
     end
   ) as "exhausted"
 from
   "sync_node_item"
 where
-  "nodeUserId" = $2
+  "nodeUserId" = $4
+select
+  count(*) as "total"
+from
+  "sync_node_asset"
+where
+  "nodeUserId" = $1
+
+-- SyncNodeRepository.getItems
+select
+  "sync_node_item".*,
+  "asset"."originalFileName" as "fileName"
+from
+  "sync_node_item"
+  left join "asset" on "asset"."id" = "sync_node_item"."assetId"
+  and "sync_node_item"."direction" = $1
+where
+  "sync_node_item"."nodeUserId" = $2
+order by
+  "sync_node_item"."attempts" desc,
+  "sync_node_item"."createdAt" asc
+limit
+  $3
+offset
+  $4
+
+-- SyncNodeRepository.getItemTotal
+select
+  count(*) as "total"
+from
+  "sync_node_item"
+where
+  "nodeUserId" = $1
 
 -- SyncNodeRepository.getChangedAssets
 select

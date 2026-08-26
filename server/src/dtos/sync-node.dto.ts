@@ -1,7 +1,13 @@
 import { Selectable } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
-import { SyncNodeStatusSchema } from 'src/enum';
-import { SyncNodeTable, SyncNodeUserTable } from 'src/schema/tables/sync-node.table';
+import {
+  SyncDirectionSchema,
+  SyncItemFilter,
+  SyncItemFilterSchema,
+  SyncItemStatusSchema,
+  SyncNodeStatusSchema,
+} from 'src/enum';
+import { SyncNodeItemTable, SyncNodeTable, SyncNodeUserTable } from 'src/schema/tables/sync-node.table';
 import { asDateTimeString } from 'src/utils/date';
 import z from 'zod';
 
@@ -91,11 +97,44 @@ const SyncPairingResponseSchema = z
     pullEnabled: z.boolean().describe('Whether remote assets are brought here'),
     lastSyncedAt: z.string().meta({ format: 'date-time' }).nullable().describe('Last successful sync'),
     pendingCount: z.int().describe('Items still to be transferred, including ones awaiting another attempt'),
+    retryingCount: z.int().describe('Items that failed but are still being retried automatically'),
     stuckCount: z.int().describe('Items that have failed too many times and need attention'),
+    syncedCount: z.int().describe('Assets that already have a counterpart on the peer'),
     error: z.string().nullable().describe('Reason the last sync failed'),
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
   })
   .meta({ id: 'SyncPairingResponseDto' });
+
+const SyncPairingItemSearchSchema = z
+  .object({
+    filter: SyncItemFilterSchema.default(SyncItemFilter.All).optional(),
+    page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
+    size: z.coerce.number().int().min(1).max(1000).default(100).describe('Number of items per page'),
+  })
+  .meta({ id: 'SyncPairingItemSearchDto' });
+
+const SyncPairingItemSchema = z
+  .object({
+    id: z.uuidv4().describe('Ledger entry ID'),
+    direction: SyncDirectionSchema,
+    assetId: z.string().describe('Local asset ID when pushing, the ID on the peer when pulling'),
+    fileName: z.string().nullable().describe('File name, for an asset this node holds'),
+    status: SyncItemStatusSchema,
+    attempts: z.int().describe('How many times this item has been tried'),
+    isStuck: z.boolean().describe('Out of attempts, so it will not move again without a hand'),
+    lastError: z.string().nullable().describe('Why the last attempt failed'),
+    createdAt: z.string().meta({ format: 'date-time' }).describe('When the item was first queued'),
+    updatedAt: z.string().meta({ format: 'date-time' }).describe('When the item was last tried'),
+  })
+  .meta({ id: 'SyncPairingItemDto' });
+
+const SyncPairingItemsResponseSchema = z
+  .object({
+    items: z.array(SyncPairingItemSchema).describe('Outstanding items on this page'),
+    total: z.int().describe('How many items match the filter, across every page'),
+    maxAttempts: z.int().describe('How many times an item is tried before it is left for a human'),
+  })
+  .meta({ id: 'SyncPairingItemsResponseDto' });
 
 export class SyncNodeCreateDto extends createZodDto(SyncNodeCreateSchema) {}
 export class SyncNodeUpdateDto extends createZodDto(SyncNodeUpdateSchema) {}
@@ -105,6 +144,9 @@ export class SyncNodeRemoteUserDto extends createZodDto(SyncNodeRemoteUserSchema
 export class SyncPairingCreateDto extends createZodDto(SyncPairingCreateSchema) {}
 export class SyncPairingUpdateDto extends createZodDto(SyncPairingUpdateSchema) {}
 export class SyncPairingResponseDto extends createZodDto(SyncPairingResponseSchema) {}
+export class SyncPairingItemSearchDto extends createZodDto(SyncPairingItemSearchSchema) {}
+export class SyncPairingItemDto extends createZodDto(SyncPairingItemSchema) {}
+export class SyncPairingItemsResponseDto extends createZodDto(SyncPairingItemsResponseSchema) {}
 
 /** Note the absence of `apiKey`: it is write-only and must never reach a client. */
 export function mapSyncNode(entity: Selectable<SyncNodeTable>): SyncNodeResponseDto {
@@ -122,9 +164,17 @@ export function mapSyncNode(entity: Selectable<SyncNodeTable>): SyncNodeResponse
   };
 }
 
+export type SyncPairingCounts = {
+  /** Everything still outstanding, whether waiting, failed, or out of attempts. */
+  total: number;
+  retrying: number;
+  exhausted: number;
+  synced: number;
+};
+
 export function mapSyncPairing(
   entity: Selectable<SyncNodeUserTable>,
-  counts?: { pending: number; exhausted: number },
+  counts?: SyncPairingCounts,
 ): SyncPairingResponseDto {
   return {
     id: entity.id,
@@ -134,10 +184,30 @@ export function mapSyncPairing(
     remoteUserEmail: entity.remoteUserEmail,
     pushEnabled: entity.pushEnabled,
     pullEnabled: entity.pullEnabled,
-    pendingCount: counts?.pending ?? 0,
+    pendingCount: counts?.total ?? 0,
+    retryingCount: counts?.retrying ?? 0,
     stuckCount: counts?.exhausted ?? 0,
+    syncedCount: counts?.synced ?? 0,
     lastSyncedAt: entity.lastSyncedAt ? asDateTimeString(entity.lastSyncedAt) : null,
     error: entity.error,
     createdAt: asDateTimeString(entity.createdAt),
+  };
+}
+
+export function mapSyncPairingItem(
+  entity: Selectable<SyncNodeItemTable> & { fileName?: string | null },
+  maxAttempts: number,
+): SyncPairingItemDto {
+  return {
+    id: entity.id,
+    direction: entity.direction,
+    assetId: entity.assetId,
+    fileName: entity.fileName ?? null,
+    status: entity.status,
+    attempts: entity.attempts,
+    isStuck: entity.attempts >= maxAttempts,
+    lastError: entity.lastError,
+    createdAt: asDateTimeString(entity.createdAt),
+    updatedAt: asDateTimeString(entity.updatedAt),
   };
 }

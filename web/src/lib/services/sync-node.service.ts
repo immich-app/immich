@@ -20,13 +20,16 @@ import {
   mdiConnection,
   mdiPencilOutline,
   mdiPlusBoxOutline,
+  mdiProgressClock,
   mdiSync,
   mdiTrashCanOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import SyncNodeEditModal from '$lib/modals/SyncNodeEditModal.svelte';
 import SyncPairingCreateModal from '$lib/modals/SyncPairingCreateModal.svelte';
+import { Route } from '$lib/route';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
@@ -71,6 +74,12 @@ export const getSyncNodeActions = ($t: MessageFormatter, node: SyncNodeResponseD
 };
 
 export const getSyncPairingActions = ($t: MessageFormatter, pairing: SyncPairingResponseDto) => {
+  const Details: ActionItem = {
+    icon: mdiProgressClock,
+    title: $t('admin.sync_pairing_view_details'),
+    onAction: () => goto(Route.viewSyncPairing({ id: pairing.id })),
+  };
+
   const SyncNow: ActionItem = {
     icon: mdiSync,
     title: $t('admin.sync_pairing_sync_now'),
@@ -84,7 +93,7 @@ export const getSyncPairingActions = ($t: MessageFormatter, pairing: SyncPairing
     onAction: () => handleDeletePairing(pairing),
   };
 
-  return { SyncNow, Unpair };
+  return { Details, SyncNow, Unpair };
 };
 
 export const handleCreateSyncNode = async (dto: SyncNodeCreateDto) => {

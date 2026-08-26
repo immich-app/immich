@@ -3,16 +3,19 @@ import { NODE_SYNC_MAX_ATTEMPTS, serverVersion } from 'src/constants';
 import {
   mapSyncNode,
   mapSyncPairing,
+  mapSyncPairingItem,
   SyncNodeCreateDto,
   SyncNodeRemoteUserDto,
   SyncNodeResponseDto,
   SyncNodeTestResponseDto,
   SyncNodeUpdateDto,
   SyncPairingCreateDto,
+  SyncPairingItemSearchDto,
+  SyncPairingItemsResponseDto,
   SyncPairingResponseDto,
   SyncPairingUpdateDto,
 } from 'src/dtos/sync-node.dto';
-import { JobName, SyncNodeStatus } from 'src/enum';
+import { JobName, SyncItemFilter, SyncNodeStatus } from 'src/enum';
 import { NodeClientError, NodeCredentials } from 'src/repositories/node-client.repository';
 import { BaseService } from 'src/services/base.service';
 
@@ -125,6 +128,34 @@ export class SyncNodeService extends BaseService {
         mapSyncPairing(pairing, await this.syncNodeRepository.getItemCounts(pairing.id, NODE_SYNC_MAX_ATTEMPTS)),
       ),
     );
+  }
+
+  async getPairing(pairingId: string): Promise<SyncPairingResponseDto> {
+    const pairing = await this.findPairingOrFail(pairingId);
+    const counts = await this.syncNodeRepository.getItemCounts(pairingId, NODE_SYNC_MAX_ATTEMPTS);
+    return mapSyncPairing(pairing, counts);
+  }
+
+  /** The outstanding work for one pairing, so a stalled sync can be looked at item by item. */
+  async getPairingItems(pairingId: string, dto: SyncPairingItemSearchDto): Promise<SyncPairingItemsResponseDto> {
+    await this.findPairingOrFail(pairingId);
+
+    const filter = dto.filter ?? SyncItemFilter.All;
+    const [items, total] = await Promise.all([
+      this.syncNodeRepository.getItems(pairingId, {
+        maxAttempts: NODE_SYNC_MAX_ATTEMPTS,
+        filter,
+        take: dto.size,
+        skip: (dto.page - 1) * dto.size,
+      }),
+      this.syncNodeRepository.getItemTotal(pairingId, NODE_SYNC_MAX_ATTEMPTS, filter),
+    ]);
+
+    return {
+      items: items.map((item) => mapSyncPairingItem(item, NODE_SYNC_MAX_ATTEMPTS)),
+      total,
+      maxAttempts: NODE_SYNC_MAX_ATTEMPTS,
+    };
   }
 
   async createPairing(id: string, dto: SyncPairingCreateDto): Promise<SyncPairingResponseDto> {
