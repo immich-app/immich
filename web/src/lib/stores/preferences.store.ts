@@ -49,6 +49,8 @@ const persistedObject = <T>(key: string, defaults: T) =>
 
 export const mapSettings = persistedObject<MapSettings>('map-settings', defaultMapSettings);
 
+export const DEFAULT_ALBUM_GROUP_DELIMITER = '-';
+
 export interface AlbumViewSettings {
   view: string;
   filter: string;
@@ -56,6 +58,8 @@ export interface AlbumViewSettings {
   groupOrder: string;
   sortBy: string;
   sortOrder: string;
+  /** Delimiter used when grouping albums by name. First segment becomes the group. */
+  groupDelimiter?: string;
   collapsedGroups: {
     // Grouping Option => Array<Group ID>
     [group: string]: string[];
@@ -90,6 +94,7 @@ export enum AlbumGroupBy {
   None = 'None',
   Year = 'Year',
   Owner = 'Owner',
+  Name = 'Name',
 }
 
 export enum AlbumSortBy {
@@ -101,13 +106,14 @@ export enum AlbumSortBy {
   OldestPhoto = 'OldestPhoto',
 }
 
-export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
+export const albumViewSettings = persistedObject<AlbumViewSettings>('album-view-settings', {
   view: AlbumViewMode.Cover,
   filter: AlbumFilter.All,
   groupBy: AlbumGroupBy.Year,
   groupOrder: SortOrder.Desc,
   sortBy: AlbumSortBy.MostRecentPhoto,
   sortOrder: SortOrder.Desc,
+  groupDelimiter: DEFAULT_ALBUM_GROUP_DELIMITER,
   collapsedGroups: {},
 });
 

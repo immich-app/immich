@@ -137,6 +137,11 @@ export const groupOptionsMetadata: AlbumGroupOptionMetadata[] = [
     defaultOrder: SortOrder.Asc,
     isDisabled: () => false,
   },
+  {
+    id: AlbumGroupBy.Name,
+    defaultOrder: SortOrder.Asc,
+    isDisabled: () => false,
+  },
 ];
 
 export const findGroupOptionMetadata = (groupBy: string) => {

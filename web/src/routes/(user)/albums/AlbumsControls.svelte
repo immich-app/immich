@@ -7,6 +7,7 @@
     AlbumGroupBy,
     AlbumSortBy,
     AlbumViewMode,
+    DEFAULT_ALBUM_GROUP_DELIMITER,
     albumViewSettings,
     SortOrder,
   } from '$lib/stores/preferences.store';
@@ -109,6 +110,7 @@
     [AlbumGroupBy.None]: $t('group_no'),
     [AlbumGroupBy.Owner]: $t('group_owner'),
     [AlbumGroupBy.Year]: $t('group_year'),
+    [AlbumGroupBy.Name]: $t('group_name'),
   });
 </script>
 
@@ -162,6 +164,24 @@
     disabled: isDisabled(),
   })}
 />
+
+{#if selectedGroupOption?.id === AlbumGroupBy.Name}
+  <label class="flex h-10 items-center" in:fly={{ x: -50, duration: 250 }}>
+    <span class="sr-only">{$t('group_name_delimiter')}</span>
+    <input
+      class="h-10 w-16 rounded-xl bg-gray-200 px-2 text-center text-sm dark:bg-gray-800 dark:text-white"
+      title={$t('group_name_delimiter')}
+      aria-label={$t('group_name_delimiter')}
+      bind:value={$albumViewSettings.groupDelimiter}
+      maxlength="8"
+      onblur={() => {
+        if (!$albumViewSettings.groupDelimiter) {
+          $albumViewSettings.groupDelimiter = DEFAULT_ALBUM_GROUP_DELIMITER;
+        }
+      }}
+    />
+  </label>
+{/if}
 
 {#if getSelectedAlbumGroupOption($albumViewSettings) !== AlbumGroupBy.None}
   <span in:fly={{ x: -50, duration: 250 }}>

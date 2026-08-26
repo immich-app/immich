@@ -17,6 +17,7 @@
     SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
+  import { parseAlbumNameGroup, UNCATEGORIZED_ALBUM_GROUP_ID } from '$lib/utils/album-name-group';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -116,6 +117,28 @@
       return sortedByOwnerNames.map(([ownerId, albums]) => ({
         id: ownerId,
         name: ownerId === currentUserId ? $t('my_albums') : albums[0].albumUsers[0].user.name,
+        albums,
+      }));
+    },
+
+    /** Group by the name prefix before the configured delimiter */
+    [AlbumGroupBy.Name]: (order, albums): AlbumGroup[] => {
+      const groupedByName = groupBy(
+        albums,
+        (album) => parseAlbumNameGroup(album.albumName, userSettings.groupDelimiter) ?? UNCATEGORIZED_ALBUM_GROUP_ID,
+      );
+
+      const sortSign = order === SortOrder.Desc ? -1 : 1;
+      const sortedByName = Object.entries(groupedByName).sort(([a], [b]) => {
+        if (a === UNCATEGORIZED_ALBUM_GROUP_ID) {
+          return 1;
+        }
+        return b === UNCATEGORIZED_ALBUM_GROUP_ID ? -1 : a.localeCompare(b, $locale) * sortSign;
+      });
+
+      return sortedByName.map(([groupId, albums]) => ({
+        id: groupId,
+        name: groupId === UNCATEGORIZED_ALBUM_GROUP_ID ? $t('uncategorized') : groupId,
         albums,
       }));
     },
