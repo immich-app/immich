@@ -796,9 +796,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   const filter = options.filter ?? {};
   const branches = filter.or ?? [];
   const ownershipPredicate = (eb: AssetExpressionBuilder) => eb('asset.ownerId', '=', anyUuid(scope.userIds));
-  // search universe: own+partner assets unless album-confined, which searches the albums instead.
-  // The ownership predicate lands in exactly one place: nowhere when the top level confines the
-  // whole query, inside each unconfined branch when only some branches are confined, else globally
+  // search universe: own+partner assets unless album-confined, which searches the albums instead;
+  // ownership lands nowhere (top level confined), per unconfined branch, or hoisted globally
   const topConfined = isAlbumConfined(filter);
   const anyBranchConfined = branches.some((branch) => isAlbumConfined(branch));
   const scopePerBranch = !topConfined && anyBranchConfined;

@@ -306,14 +306,16 @@ export class SearchService extends BaseService {
     const filter = dto.filter ?? {};
     const effectiveFilter = applyLockedVisibilityPolicy(auth, filter);
 
+    const fullyConfined = isFullyAlbumConfined(filter);
     // a shared link visitor does not have a universe, so there every branch must be confined
-    if (auth.sharedLink && !isFullyAlbumConfined(filter)) {
+    if (auth.sharedLink && !fullyConfined) {
       throw new BadRequestException('Shared link access is only allowed in combination with an albumIds filter');
     }
 
     const albumIds = collectFilterIds(filter, 'albumIds');
     const [userIds] = await Promise.all([
-      this.getUserIdsToSearch(auth),
+      // a fully confined filter searches albums only, so the unused universe can skip the partner lookup
+      fullyConfined ? [auth.user.id] : this.getUserIdsToSearch(auth),
       albumIds.length > 0 ? this.requireAccess({ auth, ids: albumIds, permission: Permission.AlbumRead }) : undefined,
     ]);
 
