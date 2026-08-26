@@ -8,6 +8,10 @@ After making any changes in the `server/src/schema`, a database migration need t
 mise //server:migrations generate <migration-name>
 ```
 
+```bash
+DB_URL="postgres://postgres:postgres@database:5432/immich" pnpm run migrations:generate -- src/schema/migrations/<migration-name>
+```
+
 2. Check if the migration file makes sense.
 3. Move the migration file to folder `./server/src/schema/migrations` in your code editor.
 
