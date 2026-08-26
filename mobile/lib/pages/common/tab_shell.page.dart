@@ -77,7 +77,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     }
 
     return AutoTabsRouter(
-      routes: const [MainTimelineRoute(), DriftSearchRoute(), DriftAlbumsRoute(), DriftLibraryRoute()],
+      routes: const [MainTimelineRoute(), SearchRoute(), AlbumsRoute(), LibraryRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
@@ -111,7 +111,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   }
 
   if (index == kPhotoTabIndex) {
-    ref.invalidate(driftMemoryLaneProvider);
+    ref.invalidate(memoryLaneProvider);
   }
 
   if (router.activeIndex != kSearchTabIndex && index == kSearchTabIndex) {
