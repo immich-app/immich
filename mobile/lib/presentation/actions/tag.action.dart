@@ -85,11 +85,27 @@ Future<void> tagAssets(
   }
 }
 
-Future<void> untagAsset(WidgetRef ref, String assetId, String tagId) async {
-  try {
-    await ref.read(tagServiceProvider).untagAssets(tagId, [assetId]);
-    ref.invalidate(assetTagsProvider);
-  } catch (error, stack) {
-    handleError(error, stack: stack, description: "Failed to remove the tag");
+class UnTagAction extends AssetActionBuilder {
+  final String tagId;
+
+  const UnTagAction({required super.source, required this.tagId});
+
+  @override
+  ActionItem? create(BuildContext context, WidgetRef ref) {
+    final assetIds = ref.watch(_stateProvider(source));
+    if (assetIds == null) {
+      return null;
+    }
+
+    return .new(icon: Icons.close, label: context.t.remove_tag, onAction: () => _untag(ref, assetIds, tagId));
+  }
+
+  Future<void> _untag(WidgetRef ref, List<String> assetIds, String tagId) async {
+    try {
+      await ref.read(tagServiceProvider).untagAssets(tagId, assetIds);
+      ref.invalidate(assetTagsProvider);
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: "Failed to remove the tag");
+    }
   }
 }

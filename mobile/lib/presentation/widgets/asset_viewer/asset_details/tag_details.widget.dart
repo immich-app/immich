@@ -101,7 +101,10 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
               shape: const StadiumBorder(),
               side: BorderSide(color: tagBorder),
               deleteIcon: Icon(Icons.close, size: 16, color: tagText),
-              onDeleted: () => unawaited(untagAsset(ref, asset.id, tag.id)),
+              onDeleted: switch (UnTagAction(source: .viewer, tagId: tag.id).create(context, ref)) {
+                final action? => () async => await action.onAction(),
+                null => null,
+              },
               deleteButtonTooltipMessage: context.t.remove_tag,
             ),
         ],
