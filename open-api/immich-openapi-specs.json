@@ -23075,6 +23075,8 @@
           "StorageTargetImportObject",
           "NodeSyncQueueAll",
           "NodeSyncPair",
+          "NodeSyncPushAsset",
+          "NodeSyncRetryFailed",
           "NodeSyncPullAsset",
           "NodeSyncAlbums"
         ],
@@ -29602,6 +29604,12 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "pendingCount": {
+            "description": "Items still to be transferred, including ones awaiting another attempt",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
           "pullEnabled": {
             "description": "Whether remote assets are brought here",
             "type": "boolean"
@@ -29619,6 +29627,12 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
+          },
+          "stuckCount": {
+            "description": "Items that have failed too many times and need attention",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           }
         },
         "required": [
@@ -29628,10 +29642,12 @@
           "lastSyncedAt",
           "localUserId",
           "nodeId",
+          "pendingCount",
           "pullEnabled",
           "pushEnabled",
           "remoteUserEmail",
-          "remoteUserId"
+          "remoteUserId",
+          "stuckCount"
         ],
         "type": "object"
       },

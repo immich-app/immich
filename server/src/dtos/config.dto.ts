@@ -620,7 +620,7 @@ export const defaults = Object.freeze<SystemConfig>({
     editor: { concurrency: 2 },
     integrityCheck: { concurrency: 1 },
     storageTarget: { concurrency: 3 },
-    nodeSync: { concurrency: 2 },
+    nodeSync: { concurrency: 4 },
   },
   logging: {
     enabled: true,

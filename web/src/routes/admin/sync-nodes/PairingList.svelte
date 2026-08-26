@@ -43,6 +43,16 @@
         </div>
 
         <div class="flex items-center gap-3">
+          {#if pairing.stuckCount > 0}
+            <Badge size="small" color="danger">
+              {$t('admin.sync_pairing_stuck', { values: { count: pairing.stuckCount } })}
+            </Badge>
+          {/if}
+          {#if pairing.pendingCount > 0}
+            <Badge size="small" color="warning">
+              {$t('admin.sync_pairing_pending', { values: { count: pairing.pendingCount } })}
+            </Badge>
+          {/if}
           {#if pairing.error}
             <Text size="tiny" color="danger">{pairing.error}</Text>
           {:else}

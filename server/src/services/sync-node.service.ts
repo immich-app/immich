@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { serverVersion } from 'src/constants';
+import { NODE_SYNC_MAX_ATTEMPTS, serverVersion } from 'src/constants';
 import {
   mapSyncNode,
   mapSyncPairing,
@@ -119,7 +119,12 @@ export class SyncNodeService extends BaseService {
   async getPairings(id: string): Promise<SyncPairingResponseDto[]> {
     await this.findOrFail(id);
     const pairings = await this.syncNodeRepository.getPairings(id);
-    return pairings.map((pairing) => mapSyncPairing(pairing));
+
+    return Promise.all(
+      pairings.map(async (pairing) =>
+        mapSyncPairing(pairing, await this.syncNodeRepository.getItemCounts(pairing.id, NODE_SYNC_MAX_ATTEMPTS)),
+      ),
+    );
   }
 
   async createPairing(id: string, dto: SyncPairingCreateDto): Promise<SyncPairingResponseDto> {

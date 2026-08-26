@@ -52,13 +52,33 @@ export class WebDavDriver implements RemoteStorageDriver {
       return;
     }
 
+    // Each level is created in turn rather than leaning on the client's recursive
+    // mode. Under concurrency a collision answers 405, and tolerating that for a
+    // whole recursive call abandons every level beneath the one that collided --
+    // the deepest collection is then missing and the upload answers 404. Creating
+    // level by level keeps one worker's collision from cancelling another's work.
+    const segments = directory.split('/').filter(Boolean);
+
+    let current = '';
+    for (const segment of segments) {
+      current += `/${segment}`;
+      await this.withLockRetry(() => this.createCollection(current));
+    }
+  }
+
+  private async createCollection(path: string) {
     try {
-      await this.client.createDirectory(directory, { recursive: true });
+      await this.client.createDirectory(path);
     } catch (error: any) {
-      // 405 is the collection already existing, which is the whole point.
-      if (error?.status !== 405) {
-        throw error;
+      // Servers disagree on how to answer MKCOL for a collection that already
+      // exists: 405 is the usual reply, Nextcloud sometimes says 403, and a race
+      // can produce others. Rather than keep a list of codes that mean "fine",
+      // ask the only question that matters -- is the collection there now?
+      if (await this.client.exists(path).catch(() => false)) {
+        return;
       }
+
+      throw error;
     }
   }
 
@@ -142,7 +162,7 @@ export class WebDavDriver implements RemoteStorageDriver {
   async upload(key: string, stream: Readable, options?: RemoteUploadOptions): Promise<RemoteObject> {
     const path = this.fullPath(key);
 
-    await this.withLockRetry(() => this.ensureDirectory(path));
+    await this.ensureDirectory(path);
 
     await new Promise<void>((resolve, reject) => {
       // The write stream is a PassThrough feeding a PUT; it never emits 'finish'

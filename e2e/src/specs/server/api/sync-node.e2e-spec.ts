@@ -259,6 +259,52 @@ describe('/admin/sync-nodes', () => {
     expect(onB).toHaveLength(1);
   }, 180_000);
 
+  it('should transfer a batch and drain the work ledger', async () => {
+    if (!available) {
+      return;
+    }
+
+    const names = ['batch-1.jpg', 'batch-2.jpg', 'batch-3.jpg'];
+    const sources = ['cyclamen_persicum', 'polemonium_reptans', 'silver_fir'];
+
+    for (const [index, name] of names.entries()) {
+      await utils.createAsset(userA.accessToken, {
+        assetData: {
+          filename: name,
+          bytes: readFileSync(`${testAssetDir}/albums/nature/${sources[index]}.jpg`),
+        },
+      });
+    }
+
+    const [pairing] = await pairings(nodeId, adminA.accessToken);
+    await request(nodeA).post(`/admin/sync-nodes/pairings/${pairing.id}/sync`).set(bearer(adminA.accessToken));
+
+    // All three arrive, rather than one at a time across successive runs.
+    await eventually(
+      async () => {
+        const counts = await Promise.all(names.map((name) => assetsOf(nodeB, userB.accessToken, name)));
+        return counts.filter((items) => items.length > 0).length;
+      },
+      (arrived) => arrived === names.length,
+    );
+
+    // Nothing left outstanding once they have landed: every queued item is
+    // removed from the ledger as it succeeds, so a non-zero count here would
+    // mean work had been silently dropped or left stuck.
+    // Draining trails the arrivals: the pull side re-scans and the retry pass runs
+    // at the end of the pair job, so allow well past the transfer itself.
+    const drained = await eventually(
+      async () => {
+        const [current] = await pairings(nodeId, adminA.accessToken);
+        return current;
+      },
+      (current) => current.pendingCount === 0,
+      150_000,
+    );
+
+    expect(drained.stuckCount).toBe(0);
+  }, 240_000);
+
   it("should propagate a local deletion to the other server's trash", async () => {
     if (!available) {
       return;
@@ -285,5 +331,5 @@ describe('/admin/sync-nodes', () => {
 
 const pairings = async (nodeId: string, token: string) => {
   const { body } = await request(nodeA).get(`/admin/sync-nodes/${nodeId}/pairings`).set(bearer(token));
-  return body as { id: string }[];
+  return body as { id: string; pendingCount: number; stuckCount: number }[];
 };

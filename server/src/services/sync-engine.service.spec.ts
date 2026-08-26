@@ -1,4 +1,5 @@
 import { Readable, Writable } from 'node:stream';
+import { NODE_SYNC_MAX_ATTEMPTS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { AssetVisibility, JobStatus, SyncNodeStatus } from 'src/enum';
 import { SyncEngineService } from 'src/services/sync-engine.service';
@@ -115,6 +116,11 @@ describe(SyncEngineService.name, () => {
     mocks.syncNode.getAlbumsForOwner.mockResolvedValue([]);
     mocks.syncNode.getAlbumMappings.mockResolvedValue([]);
     mocks.storage.checkFileExists.mockResolvedValue(false);
+    mocks.syncNode.markQueued.mockResolvedValue(void 0);
+    mocks.syncNode.markSucceeded.mockResolvedValue(void 0);
+    mocks.syncNode.markFailed.mockResolvedValue(void 0);
+    mocks.syncNode.getRetryableItems.mockResolvedValue([]);
+    mocks.syncNode.getAssetsByIds.mockResolvedValue([assetStub] as never);
   });
 
   it('should work', () => {
@@ -164,28 +170,50 @@ describe(SyncEngineService.name, () => {
       expect(mocks.nodeClient.searchAssets).not.toHaveBeenCalled();
     });
 
-    it('should advance the push cursor to the last asset seen', async () => {
+    it('should queue one job per asset so transfers can run in parallel', async () => {
       mocks.syncNode.getPairing.mockResolvedValue({ ...pairingStub, pullEnabled: false });
       mocks.syncNode.getChangedAssets.mockResolvedValueOnce([
         { ...assetStub, id: 'a', updateId: 'u1' },
         { ...assetStub, id: 'b', updateId: 'u2' },
       ] as never);
-      mocks.syncNode.getAssetMapping.mockResolvedValue(mappingStub);
 
+      await sut.handlePair({ pairingId: 'pairing-1' });
+
+      const pushJobs = mocks.job.queue.mock.calls.filter(([job]) => job.name === 'NodeSyncPushAsset');
+      expect(pushJobs).toHaveLength(2);
+      expect(mocks.syncNode.markQueued).toHaveBeenCalledWith('pairing-1', 'push', ['a', 'b']);
+    });
+
+    it('should advance the cursor once a page is queued, not once it has finished', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue({ ...pairingStub, pullEnabled: false });
+      mocks.syncNode.getChangedAssets.mockResolvedValueOnce([
+        { ...assetStub, id: 'a', updateId: 'u1' },
+        { ...assetStub, id: 'b', updateId: 'u2' },
+      ] as never);
+
+      // A single difficult asset must not pin the cursor and make every later
+      // run re-attempt the same page.
       await sut.handlePair({ pairingId: 'pairing-1' });
 
       expect(mocks.syncNode.updatePairing).toHaveBeenCalledWith('pairing-1', { pushCursor: 'u2' });
     });
 
+    it('should queue a retry pass at the end of a run', async () => {
+      await sut.handlePair({ pairingId: 'pairing-1' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: 'NodeSyncRetryFailed',
+        data: { pairingId: 'pairing-1' },
+      });
+    });
+
     it("should adopt the peer's copy when it already holds identical bytes", async () => {
-      mocks.syncNode.getPairing.mockResolvedValue({ ...pairingStub, pullEnabled: false });
-      mocks.syncNode.getChangedAssets.mockResolvedValueOnce([assetStub] as never);
       mocks.syncNode.getAssetMapping.mockResolvedValue(void 0);
       mocks.nodeClient.bulkUploadCheck.mockResolvedValue({
         'asset-1': { action: 'reject', assetId: 'remote-existing' },
       });
 
-      await sut.handlePair({ pairingId: 'pairing-1' });
+      await sut.handlePushAsset({ pairingId: 'pairing-1', assetId: 'asset-1' });
 
       expect(mocks.nodeClient.uploadAsset).not.toHaveBeenCalled();
       expect(mocks.syncNode.upsertAssetMapping).toHaveBeenCalledWith(
@@ -193,15 +221,30 @@ describe(SyncEngineService.name, () => {
       );
     });
 
+    it('should record a failed push instead of aborting the run', async () => {
+      mocks.syncNode.getAssetMapping.mockResolvedValue(void 0);
+      mocks.nodeClient.bulkUploadCheck.mockRejectedValue(new Error('peer timed out'));
+
+      await expect(sut.handlePushAsset({ pairingId: 'pairing-1', assetId: 'asset-1' })).resolves.toBe(JobStatus.Failed);
+
+      expect(mocks.syncNode.markFailed).toHaveBeenCalledWith('pairing-1', 'push', 'asset-1', 'peer timed out');
+      expect(mocks.syncNode.markSucceeded).not.toHaveBeenCalled();
+    });
+
+    it('should clear an item from the ledger once it succeeds', async () => {
+      mocks.syncNode.getAssetMapping.mockResolvedValue(mappingStub);
+
+      await sut.handlePushAsset({ pairingId: 'pairing-1', assetId: 'asset-1' });
+
+      expect(mocks.syncNode.markSucceeded).toHaveBeenCalledWith('pairing-1', 'push', 'asset-1');
+    });
+
     it('should propagate a local trash to the peer exactly once', async () => {
-      mocks.syncNode.getPairing.mockResolvedValue({ ...pairingStub, pullEnabled: false });
-      mocks.syncNode.getChangedAssets.mockResolvedValueOnce([
-        { ...assetStub, deletedAt: new Date('2026-02-01') },
-      ] as never);
+      mocks.syncNode.getAssetsByIds.mockResolvedValue([{ ...assetStub, deletedAt: new Date('2026-02-01') }] as never);
       mocks.syncNode.getAssetMapping.mockResolvedValue(mappingStub);
       mocks.syncNode.updateAssetMapping.mockResolvedValue(mappingStub);
 
-      await sut.handlePair({ pairingId: 'pairing-1' });
+      await sut.handlePushAsset({ pairingId: 'pairing-1', assetId: 'asset-1' });
 
       expect(mocks.nodeClient.trashAssets).toHaveBeenCalledWith(expect.anything(), ['remote-asset-1']);
       expect(mocks.syncNode.updateAssetMapping).toHaveBeenCalledWith(
@@ -211,18 +254,15 @@ describe(SyncEngineService.name, () => {
     });
 
     it('should not re-trash an asset whose deletion already travelled', async () => {
-      mocks.syncNode.getPairing.mockResolvedValue({ ...pairingStub, pullEnabled: false });
-      mocks.syncNode.getChangedAssets.mockResolvedValueOnce([
-        { ...assetStub, deletedAt: new Date('2026-02-01') },
-      ] as never);
+      mocks.syncNode.getAssetsByIds.mockResolvedValue([{ ...assetStub, deletedAt: new Date('2026-02-01') }] as never);
       mocks.syncNode.getAssetMapping.mockResolvedValue({ ...mappingStub, trashSyncedAt: new Date('2026-02-02') });
 
-      await sut.handlePair({ pairingId: 'pairing-1' });
+      await sut.handlePushAsset({ pairingId: 'pairing-1', assetId: 'asset-1' });
 
       expect(mocks.nodeClient.trashAssets).not.toHaveBeenCalled();
     });
 
-    it('should never send an external or offline asset, having no local bytes', async () => {
+    it('should never queue an external or offline asset, having no local bytes', async () => {
       mocks.syncNode.getPairing.mockResolvedValue({ ...pairingStub, pullEnabled: false });
       mocks.syncNode.getChangedAssets.mockResolvedValueOnce([
         { ...assetStub, id: 'ext', isExternal: true },
@@ -231,8 +271,10 @@ describe(SyncEngineService.name, () => {
 
       await sut.handlePair({ pairingId: 'pairing-1' });
 
-      expect(mocks.nodeClient.uploadAsset).not.toHaveBeenCalled();
-      expect(mocks.syncNode.getAssetMapping).not.toHaveBeenCalled();
+      const pushJobs = mocks.job.queue.mock.calls.filter(([job]) => job.name === 'NodeSyncPushAsset');
+      expect(pushJobs).toHaveLength(0);
+      // Not queued means not in the ledger, so they never look like outstanding work.
+      expect(mocks.syncNode.markQueued).toHaveBeenCalledWith('pairing-1', 'push', []);
     });
 
     it('should only queue remote assets it has never seen', async () => {
@@ -246,9 +288,49 @@ describe(SyncEngineService.name, () => {
 
       await sut.handlePair({ pairingId: 'pairing-1' });
 
-      const pullJobs = mocks.job.queue.mock.calls.filter(([job]: any[]) => job.name === 'NodeSyncPullAsset');
+      const pullJobs = mocks.job.queue.mock.calls.filter(([job]) => job.name === 'NodeSyncPullAsset');
       expect(pullJobs).toHaveLength(1);
       expect(pullJobs[0][0].data).toEqual({ pairingId: 'pairing-1', assetId: 'remote-b' });
+    });
+  });
+
+  describe('handleRetryFailed', () => {
+    it('should re-queue outstanding items in the direction they belong to', async () => {
+      mocks.syncNode.getRetryableItems.mockResolvedValue([
+        { direction: 'push', assetId: 'local-1' },
+        { direction: 'pull', assetId: 'remote-1' },
+      ] as never);
+
+      await expect(sut.handleRetryFailed({ pairingId: 'pairing-1' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: 'NodeSyncPushAsset',
+        data: { pairingId: 'pairing-1', assetId: 'local-1' },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: 'NodeSyncPullAsset',
+        data: { pairingId: 'pairing-1', assetId: 'remote-1' },
+      });
+    });
+
+    it('should leave items past the attempt ceiling alone', async () => {
+      // The repository applies the ceiling, so nothing coming back means nothing
+      // to do rather than an error.
+      mocks.syncNode.getRetryableItems.mockResolvedValue([]);
+
+      await expect(sut.handleRetryFailed({ pairingId: 'pairing-1' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should ask for retryable items using the shared attempt ceiling', async () => {
+      await sut.handleRetryFailed({ pairingId: 'pairing-1' });
+
+      expect(mocks.syncNode.getRetryableItems).toHaveBeenCalledWith(
+        'pairing-1',
+        NODE_SYNC_MAX_ATTEMPTS,
+        expect.any(Number),
+      );
     });
   });
 

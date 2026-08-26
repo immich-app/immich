@@ -95,6 +95,33 @@ from
 where
   "nodeUserId" = $1
 
+-- SyncNodeRepository.getRetryableItems
+select
+  "sync_node_item".*
+from
+  "sync_node_item"
+where
+  "nodeUserId" = $1
+  and "attempts" < $2
+order by
+  "createdAt" asc
+limit
+  $3
+
+-- SyncNodeRepository.getItemCounts
+select
+  count(*) as "total",
+  sum(
+    case
+      when "attempts" >= $1 then 1
+      else 0
+    end
+  ) as "exhausted"
+from
+  "sync_node_item"
+where
+  "nodeUserId" = $2
+
 -- SyncNodeRepository.getChangedAssets
 select
   "asset"."id",
@@ -122,6 +149,29 @@ order by
   "asset"."updateId" asc
 limit
   $3
+
+-- SyncNodeRepository.getAssetsByIds
+select
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset"."checksum",
+  "asset"."type",
+  "asset"."isFavorite",
+  "asset"."visibility",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."deletedAt",
+  "asset"."updateId",
+  "asset"."isExternal",
+  "asset"."isOffline",
+  "asset_exif"."description"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."id" in ($1)
 
 -- SyncNodeRepository.getAlbumsForOwner
 select

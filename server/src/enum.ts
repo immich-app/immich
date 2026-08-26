@@ -355,6 +355,14 @@ export enum SyncDirection {
 
 export const SyncDirectionSchema = z.enum(SyncDirection).describe('Sync direction').meta({ id: 'SyncDirection' });
 
+export enum SyncItemStatus {
+  /** Queued, or queued and then lost with the queue. Retried either way. */
+  Pending = 'pending',
+  Failed = 'failed',
+}
+
+export const SyncItemStatusSchema = z.enum(SyncItemStatus).describe('Sync item status').meta({ id: 'SyncItemStatus' });
+
 export enum StorageTargetKind {
   S3 = 's3',
   WebDav = 'webdav',
@@ -1019,6 +1027,8 @@ export enum JobName {
   // Node sync
   NodeSyncQueueAll = 'NodeSyncQueueAll',
   NodeSyncPair = 'NodeSyncPair',
+  NodeSyncPushAsset = 'NodeSyncPushAsset',
+  NodeSyncRetryFailed = 'NodeSyncRetryFailed',
   NodeSyncPullAsset = 'NodeSyncPullAsset',
   NodeSyncAlbums = 'NodeSyncAlbums',
 }

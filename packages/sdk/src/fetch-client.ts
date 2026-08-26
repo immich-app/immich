@@ -707,6 +707,8 @@ export type SyncPairingResponseDto = {
     localUserId: string;
     /** Sync node ID */
     nodeId: string;
+    /** Items still to be transferred, including ones awaiting another attempt */
+    pendingCount: number;
     /** Whether remote assets are brought here */
     pullEnabled: boolean;
     /** Whether local assets are sent to the peer */
@@ -715,6 +717,8 @@ export type SyncPairingResponseDto = {
     remoteUserEmail: string;
     /** Paired user on the peer */
     remoteUserId: string;
+    /** Items that have failed too many times and need attention */
+    stuckCount: number;
 };
 export type SyncNodeUpdateDto = {
     /** API key for the peer. Write-only: never returned. */
@@ -8624,6 +8628,8 @@ export enum JobName {
     StorageTargetImportObject = "StorageTargetImportObject",
     NodeSyncQueueAll = "NodeSyncQueueAll",
     NodeSyncPair = "NodeSyncPair",
+    NodeSyncPushAsset = "NodeSyncPushAsset",
+    NodeSyncRetryFailed = "NodeSyncRetryFailed",
     NodeSyncPullAsset = "NodeSyncPullAsset",
     NodeSyncAlbums = "NodeSyncAlbums"
 }

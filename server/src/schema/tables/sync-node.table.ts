@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { SyncNodeStatus } from 'src/enum';
+import { SyncDirection, SyncItemStatus, SyncNodeStatus } from 'src/enum';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -173,6 +173,50 @@ export class SyncNodeAssetTable {
    */
   @Column({ type: 'timestamp with time zone', nullable: true, default: null })
   trashSyncedAt!: Timestamp | null;
+
+  @CreateDateColumn()
+  createdAt!: Generated<Timestamp>;
+
+  @UpdateDateColumn()
+  updatedAt!: Generated<Timestamp>;
+}
+
+/**
+ * The durable work list for one pairing.
+ *
+ * An item is written here when it is queued and removed when it succeeds, so
+ * anything still present is either in flight, waiting, or failed. That is what
+ * lets the cursor advance as soon as a page is queued rather than only once
+ * every item in it has succeeded: a single unco-operative asset no longer pins
+ * the cursor and makes every later run re-attempt the same page forever.
+ *
+ * It also survives Redis losing its queue, since the leftover rows are the
+ * record of what still has to happen.
+ */
+@Table('sync_node_item')
+@Unique({ columns: ['nodeUserId', 'direction', 'assetId'] })
+export class SyncNodeItemTable {
+  @PrimaryGeneratedColumn()
+  id!: Generated<string>;
+
+  @ForeignKeyColumn(() => SyncNodeUserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', index: false })
+  nodeUserId!: string;
+
+  @Column()
+  direction!: SyncDirection;
+
+  /** Local asset id when pushing, the peer's asset id when pulling. */
+  @Column({ type: 'uuid' })
+  assetId!: string;
+
+  @Column({ default: SyncItemStatus.Pending })
+  status!: Generated<SyncItemStatus>;
+
+  @Column({ type: 'integer', default: 0 })
+  attempts!: Generated<number>;
+
+  @Column({ type: 'character varying', nullable: true, default: null })
+  lastError!: string | null;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;

@@ -90,6 +90,8 @@ const SyncPairingResponseSchema = z
     pushEnabled: z.boolean().describe('Whether local assets are sent to the peer'),
     pullEnabled: z.boolean().describe('Whether remote assets are brought here'),
     lastSyncedAt: z.string().meta({ format: 'date-time' }).nullable().describe('Last successful sync'),
+    pendingCount: z.int().describe('Items still to be transferred, including ones awaiting another attempt'),
+    stuckCount: z.int().describe('Items that have failed too many times and need attention'),
     error: z.string().nullable().describe('Reason the last sync failed'),
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
   })
@@ -120,7 +122,10 @@ export function mapSyncNode(entity: Selectable<SyncNodeTable>): SyncNodeResponse
   };
 }
 
-export function mapSyncPairing(entity: Selectable<SyncNodeUserTable>): SyncPairingResponseDto {
+export function mapSyncPairing(
+  entity: Selectable<SyncNodeUserTable>,
+  counts?: { pending: number; exhausted: number },
+): SyncPairingResponseDto {
   return {
     id: entity.id,
     nodeId: entity.nodeId,
@@ -129,6 +134,8 @@ export function mapSyncPairing(entity: Selectable<SyncNodeUserTable>): SyncPairi
     remoteUserEmail: entity.remoteUserEmail,
     pushEnabled: entity.pushEnabled,
     pullEnabled: entity.pullEnabled,
+    pendingCount: counts?.pending ?? 0,
+    stuckCount: counts?.exhausted ?? 0,
     lastSyncedAt: entity.lastSyncedAt ? asDateTimeString(entity.lastSyncedAt) : null,
     error: entity.error,
     createdAt: asDateTimeString(entity.createdAt),

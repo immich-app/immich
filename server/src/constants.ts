@@ -55,6 +55,13 @@ const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
 
+/**
+ * How many times a node sync retries one asset before leaving it for a human.
+ * Transient problems clear well inside this; anything that does not is a real
+ * fault worth looking at rather than retrying forever.
+ */
+export const NODE_SYNC_MAX_ATTEMPTS = 5;
+
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;
 

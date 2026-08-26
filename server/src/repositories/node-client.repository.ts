@@ -54,7 +54,15 @@ export class NodeClientError extends Error {
   }
 }
 
-const TIMEOUT_MS = 60_000;
+/** Plenty for a JSON round-trip, short enough that an unresponsive peer is noticed. */
+const API_TIMEOUT_MS = 60_000;
+
+/**
+ * Moving an asset is not an API call. A large video over a slow link legitimately
+ * takes many minutes, and holding it to the same timeout is what turns a working
+ * sync into a stream of aborted transfers.
+ */
+const TRANSFER_TIMEOUT_MS = 30 * 60_000;
 
 /**
  * A client for another Immich instance. This is the only place that speaks to a
@@ -73,9 +81,9 @@ export class NodeClientRepository {
   private async request<T>(
     { url, apiKey }: NodeCredentials,
     path: string,
-    init: RequestInit & { raw?: boolean } = {},
+    init: RequestInit & { raw?: boolean; transfer?: boolean } = {},
   ): Promise<T> {
-    const { raw, ...rest } = init;
+    const { raw, transfer, ...rest } = init;
     const target = new URL(`/api${path}`, url).href;
 
     let response: Response;
@@ -87,7 +95,7 @@ export class NodeClientRepository {
           Accept: 'application/json',
           ...rest.headers,
         },
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: AbortSignal.timeout(transfer ? TRANSFER_TIMEOUT_MS : API_TIMEOUT_MS),
       });
     } catch (error: any) {
       // A transport failure is not the same as a rejection, and the caller needs
@@ -212,7 +220,11 @@ export class NodeClientRepository {
       form.append('sidecarData', await openAsBlob(options.sidecar.path), options.sidecar.filename);
     }
 
-    return this.request<{ id: string; status: string }>(credentials, '/assets', { method: 'POST', body: form });
+    return this.request<{ id: string; status: string }>(credentials, '/assets', {
+      method: 'POST',
+      body: form,
+      transfer: true,
+    });
   }
 
   getRemoteAsset(credentials: NodeCredentials, assetId: string): Promise<RemoteAsset> {
@@ -220,7 +232,10 @@ export class NodeClientRepository {
   }
 
   async downloadAsset(credentials: NodeCredentials, assetId: string): Promise<Readable> {
-    const response = await this.request<Response>(credentials, `/assets/${assetId}/original`, { raw: true });
+    const response = await this.request<Response>(credentials, `/assets/${assetId}/original`, {
+      raw: true,
+      transfer: true,
+    });
     if (!response.body) {
       throw new NodeClientError(`Asset ${assetId} returned no body`);
     }

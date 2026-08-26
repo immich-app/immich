@@ -54,6 +54,8 @@ describe(SyncNodeService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(SyncNodeService));
+
+    mocks.syncNode.getItemCounts.mockResolvedValue({ pending: 0, exhausted: 0 });
   });
 
   it('should work', () => {

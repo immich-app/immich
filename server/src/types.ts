@@ -333,7 +333,7 @@ export interface INodeSyncPairJob {
 
 export interface INodeSyncAssetJob {
   pairingId: string;
-  /** The asset's id on the peer. */
+  /** Local asset id when pushing, the peer's asset id when pulling. */
   assetId: string;
 }
 
@@ -514,6 +514,8 @@ export type JobItem =
   // Node sync
   | { name: JobName.NodeSyncQueueAll; data?: IBaseJob }
   | { name: JobName.NodeSyncPair; data: INodeSyncPairJob }
+  | { name: JobName.NodeSyncPushAsset; data: INodeSyncAssetJob }
+  | { name: JobName.NodeSyncRetryFailed; data: INodeSyncPairJob }
   | { name: JobName.NodeSyncPullAsset; data: INodeSyncAssetJob }
   | { name: JobName.NodeSyncAlbums; data: INodeSyncPairJob }
 

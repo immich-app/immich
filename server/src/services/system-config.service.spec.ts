@@ -44,7 +44,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.StorageTarget]: { concurrency: 3 },
-    [QueueName.NodeSync]: { concurrency: 2 },
+    [QueueName.NodeSync]: { concurrency: 4 },
     [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
   },

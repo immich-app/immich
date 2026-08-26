@@ -86,6 +86,7 @@ import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.ta
 import {
   SyncNodeAlbumTable,
   SyncNodeAssetTable,
+  SyncNodeItemTable,
   SyncNodeTable,
   SyncNodeUserTable,
 } from 'src/schema/tables/sync-node.table';
@@ -164,6 +165,7 @@ export class ImmichDatabase {
     SyncNodeUserTable,
     SyncNodeAssetTable,
     SyncNodeAlbumTable,
+    SyncNodeItemTable,
     StackAuditTable,
     SessionSyncCheckpointTable,
     SystemMetadataTable,
@@ -299,6 +301,7 @@ export interface DB {
   sync_node_user: SyncNodeUserTable;
   sync_node_asset: SyncNodeAssetTable;
   sync_node_album: SyncNodeAlbumTable;
+  sync_node_item: SyncNodeItemTable;
 
   system_metadata: SystemMetadataTable;
 

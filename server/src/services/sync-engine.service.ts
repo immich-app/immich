@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { NODE_SYNC_MAX_ATTEMPTS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
@@ -12,6 +13,7 @@ import {
   JobStatus,
   QueueName,
   StorageFolder,
+  SyncDirection,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { NodeCredentials } from 'src/repositories/node-client.repository';
@@ -24,6 +26,7 @@ import { handlePromiseError } from 'src/utils/misc';
 /** How many local changes one pair run walks through before stopping. */
 const PUSH_PAGE_SIZE = 500;
 const PULL_PAGE_SIZE = 250;
+const RETRY_PAGE_SIZE = 500;
 
 @Injectable()
 export class SyncEngineService extends BaseService {
@@ -92,6 +95,10 @@ export class SyncEngineService extends BaseService {
 
       await this.jobRepository.queue({ name: JobName.NodeSyncAlbums, data: { pairingId } });
 
+      // Anything that failed earlier in this run, or was left over from a previous
+      // one, gets another attempt now rather than waiting for the next schedule.
+      await this.jobRepository.queue({ name: JobName.NodeSyncRetryFailed, data: { pairingId } });
+
       await this.syncNodeRepository.updatePairing(pairingId, { lastSyncedAt: new Date(), error: null });
       return JobStatus.Success;
     } catch (error: any) {
@@ -102,8 +109,14 @@ export class SyncEngineService extends BaseService {
   }
 
   /**
-   * Local -> remote. Walks local changes in `updateId` order, so the cursor only
-   * ever moves forward and an interrupted run resumes from where it stopped.
+   * Local -> remote. Walks local changes in `updateId` order and queues a job per
+   * asset, so several transfers run at once under the queue's concurrency rather
+   * than one at a time.
+   *
+   * The cursor advances once a page has been *queued*, not once it has finished.
+   * That is safe because every queued item is recorded in the work ledger first,
+   * so nothing is forgotten -- and it means one unco-operative asset can no
+   * longer pin the cursor and force every later run to re-attempt the same page.
    */
   private async push(pairingId: string): Promise<void> {
     const context = await this.getContext(pairingId);
@@ -111,7 +124,7 @@ export class SyncEngineService extends BaseService {
       return;
     }
 
-    const { pairing, credentials } = context;
+    const { pairing } = context;
     let cursor = pairing.pushCursor;
 
     for (;;) {
@@ -120,13 +133,24 @@ export class SyncEngineService extends BaseService {
         break;
       }
 
-      for (const asset of assets) {
-        await this.pushOne(pairingId, credentials, asset);
+      // Assets with no local bytes are skipped here rather than queued, so they
+      // never enter the ledger and never look like outstanding work.
+      const transferable = assets.filter((asset) => !asset.isExternal && !asset.isOffline);
+
+      await this.syncNodeRepository.markQueued(
+        pairingId,
+        SyncDirection.Push,
+        transferable.map(({ id }) => id),
+      );
+
+      for (const asset of transferable) {
+        await this.jobRepository.queue({
+          name: JobName.NodeSyncPushAsset,
+          data: { pairingId, assetId: asset.id },
+        });
       }
 
       cursor = assets.at(-1)!.updateId;
-
-      // Persist after every page so a crash costs at most one page of rework.
       await this.syncNodeRepository.updatePairing(pairingId, { pushCursor: cursor });
 
       if (assets.length < PUSH_PAGE_SIZE) {
@@ -135,16 +159,39 @@ export class SyncEngineService extends BaseService {
     }
   }
 
+  @OnJob({ name: JobName.NodeSyncPushAsset, queue: QueueName.NodeSync })
+  async handlePushAsset({ pairingId, assetId }: INodeSyncAssetJob): Promise<JobStatus> {
+    const context = await this.getContext(pairingId);
+    if (!context) {
+      return JobStatus.Skipped;
+    }
+
+    const [asset] = await this.syncNodeRepository.getAssetsByIds([assetId]);
+    if (!asset) {
+      // Deleted outright since being queued; there is nothing left to send.
+      await this.syncNodeRepository.markSucceeded(pairingId, SyncDirection.Push, assetId);
+      return JobStatus.Skipped;
+    }
+
+    try {
+      await this.pushOne(pairingId, context.credentials, asset);
+      await this.syncNodeRepository.markSucceeded(pairingId, SyncDirection.Push, assetId);
+      return JobStatus.Success;
+    } catch (error: any) {
+      // One difficult asset must not stop the rest. It stays in the ledger and
+      // is picked up by the retry pass at the end of the next run.
+      const message = error?.message ?? String(error);
+      this.logger.warn(`Failed to push ${assetId}, will retry later: ${message}`);
+      await this.syncNodeRepository.markFailed(pairingId, SyncDirection.Push, assetId, message);
+      return JobStatus.Failed;
+    }
+  }
+
   private async pushOne(
     pairingId: string,
     credentials: NodeCredentials,
     asset: Awaited<ReturnType<typeof this.syncNodeRepository.getChangedAssets>>[number],
   ): Promise<void> {
-    // External and offline assets have no bytes here to send.
-    if (asset.isExternal || asset.isOffline) {
-      return;
-    }
-
     const mapping = await this.syncNodeRepository.getAssetMapping(pairingId, asset.id);
 
     if (asset.deletedAt) {
@@ -252,6 +299,12 @@ export class SyncEngineService extends BaseService {
 
       const unseen = items.filter(({ id }) => !known.has(id));
 
+      await this.syncNodeRepository.markQueued(
+        pairingId,
+        SyncDirection.Pull,
+        unseen.map(({ id }) => id),
+      );
+
       for (const remote of unseen) {
         await this.jobRepository.queue({
           name: JobName.NodeSyncPullAsset,
@@ -281,6 +334,7 @@ export class SyncEngineService extends BaseService {
 
     const existing = await this.syncNodeRepository.getMappingByRemoteId(pairingId, assetId);
     if (existing) {
+      await this.syncNodeRepository.markSucceeded(pairingId, SyncDirection.Pull, assetId);
       return JobStatus.Skipped;
     }
 
@@ -320,6 +374,7 @@ export class SyncEngineService extends BaseService {
           checksum,
           origin: 'pull-dedupe',
         });
+        await this.syncNodeRepository.markSucceeded(pairingId, SyncDirection.Pull, assetId);
         return JobStatus.Skipped;
       }
 
@@ -355,14 +410,50 @@ export class SyncEngineService extends BaseService {
 
       await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
+      await this.syncNodeRepository.markSucceeded(pairingId, SyncDirection.Pull, assetId);
       return JobStatus.Success;
     } catch (error: any) {
-      this.logger.error(`Failed to pull ${assetId}: ${error?.message ?? error}`, error?.stack);
+      // Recorded rather than rethrown, so the rest of the run carries on and this
+      // item is reconsidered by the retry pass.
+      const message = error?.message ?? String(error);
+      this.logger.warn(`Failed to pull ${assetId}, will retry later: ${message}`);
       if (localPath) {
         await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [localPath] } });
       }
+      await this.syncNodeRepository.markFailed(pairingId, SyncDirection.Pull, assetId, message);
       return JobStatus.Failed;
     }
+  }
+
+  /**
+   * Re-queues outstanding work for a pairing: items that failed, and items that
+   * were queued but never reported back -- which is what a lost queue looks like.
+   *
+   * Items past the attempt ceiling are left alone and surfaced in the UI instead,
+   * so a genuinely broken asset stops consuming bandwidth on every run but is
+   * still visible rather than silently dropped.
+   */
+  @OnJob({ name: JobName.NodeSyncRetryFailed, queue: QueueName.NodeSync })
+  async handleRetryFailed({ pairingId }: INodeSyncPairJob): Promise<JobStatus> {
+    const context = await this.getContext(pairingId);
+    if (!context) {
+      return JobStatus.Skipped;
+    }
+
+    const items = await this.syncNodeRepository.getRetryableItems(pairingId, NODE_SYNC_MAX_ATTEMPTS, RETRY_PAGE_SIZE);
+    if (items.length === 0) {
+      return JobStatus.Success;
+    }
+
+    for (const item of items) {
+      await this.jobRepository.queue({
+        name: item.direction === SyncDirection.Push ? JobName.NodeSyncPushAsset : JobName.NodeSyncPullAsset,
+        data: { pairingId, assetId: item.assetId },
+      });
+    }
+
+    this.logger.log(`Re-queued ${items.length} outstanding sync item(s) for pairing ${pairingId}`);
+    return JobStatus.Success;
   }
 
   /**

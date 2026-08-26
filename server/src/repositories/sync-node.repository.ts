@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole, AssetVisibility } from 'src/enum';
+import { AlbumUserRole, AssetVisibility, SyncDirection, SyncItemStatus } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   SyncNodeAlbumTable,
@@ -178,6 +178,84 @@ export class SyncNodeRepository {
       .executeTakeFirstOrThrow();
   }
 
+  // -- work ledger --
+
+  /** Record that an item has been queued, without disturbing an existing attempt count. */
+  async markQueued(nodeUserId: string, direction: SyncDirection, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    await this.db
+      .insertInto('sync_node_item')
+      .values(assetIds.map((assetId) => ({ nodeUserId, direction, assetId, status: SyncItemStatus.Pending })))
+      .onConflict((oc) =>
+        oc.columns(['nodeUserId', 'direction', 'assetId']).doUpdateSet({ status: SyncItemStatus.Pending }),
+      )
+      .execute();
+  }
+
+  async markSucceeded(nodeUserId: string, direction: SyncDirection, assetId: string): Promise<void> {
+    await this.db
+      .deleteFrom('sync_node_item')
+      .where('nodeUserId', '=', nodeUserId)
+      .where('direction', '=', direction)
+      .where('assetId', '=', assetId)
+      .execute();
+  }
+
+  async markFailed(nodeUserId: string, direction: SyncDirection, assetId: string, error: string): Promise<void> {
+    await this.db
+      .insertInto('sync_node_item')
+      .values({
+        nodeUserId,
+        direction,
+        assetId,
+        status: SyncItemStatus.Failed,
+        attempts: 1,
+        lastError: error.slice(0, 500),
+      })
+      .onConflict((oc) =>
+        oc.columns(['nodeUserId', 'direction', 'assetId']).doUpdateSet((eb) => ({
+          status: SyncItemStatus.Failed,
+          attempts: eb('sync_node_item.attempts', '+', 1),
+          lastError: eb.ref('excluded.lastError'),
+        })),
+      )
+      .execute();
+  }
+
+  /**
+   * Items worth another go: anything failed or left pending, below the attempt
+   * ceiling. Oldest first, so a persistent straggler cannot starve newer work.
+   */
+  @GenerateSql({ params: [DummyValue.UUID, 5, 500] })
+  getRetryableItems(nodeUserId: string, maxAttempts: number, limit: number) {
+    return this.db
+      .selectFrom('sync_node_item')
+      .selectAll('sync_node_item')
+      .where('nodeUserId', '=', nodeUserId)
+      .where('attempts', '<', maxAttempts)
+      .orderBy('createdAt asc')
+      .limit(limit)
+      .execute();
+  }
+
+  /** Counts for the admin UI, split by whether anything can still be done automatically. */
+  @GenerateSql({ params: [DummyValue.UUID, 5] })
+  async getItemCounts(nodeUserId: string, maxAttempts: number) {
+    const rows = await this.db
+      .selectFrom('sync_node_item')
+      .select((eb) => [
+        eb.fn.countAll<number>().as('total'),
+        eb.fn.sum<number>(eb.case().when('attempts', '>=', maxAttempts).then(1).else(0).end()).as('exhausted'),
+      ])
+      .where('nodeUserId', '=', nodeUserId)
+      .executeTakeFirst();
+
+    return { pending: Number(rows?.total ?? 0), exhausted: Number(rows?.exhausted ?? 0) };
+  }
+
   // -- local change enumeration --
 
   /**
@@ -218,6 +296,32 @@ export class SyncNodeRepository {
   }
 
   /** Album ownership lives in `album_user` with an Owner role, not on the album. */
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getAssetsByIds(ids: string[]) {
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select([
+        'asset.id',
+        'asset.ownerId',
+        'asset.originalPath',
+        'asset.originalFileName',
+        'asset.checksum',
+        'asset.type',
+        'asset.isFavorite',
+        'asset.visibility',
+        'asset.fileCreatedAt',
+        'asset.fileModifiedAt',
+        'asset.deletedAt',
+        'asset.updateId',
+        'asset.isExternal',
+        'asset.isOffline',
+        'asset_exif.description',
+      ])
+      .where('asset.id', 'in', ids)
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getAlbumsForOwner(ownerId: string) {
     return this.db
