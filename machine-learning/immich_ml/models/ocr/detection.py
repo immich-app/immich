@@ -101,6 +101,6 @@ class TextDetector(InferenceModel):
         """Indices of `boxes` top to bottom, then left to right within a line."""
         y_order = np.argsort(boxes[:, 0, 1], kind="stable")
         lines = np.zeros(len(boxes), dtype=np.int32)  # indexed in y-sorted order, not box order
-        np.cumsum(np.abs(np.diff(boxes[y_order, 0, 1])) >= 10, out=lines[1:])
+        np.cumsum(np.diff(boxes[y_order, 0, 1]) >= 10, out=lines[1:])  # ascending, so the diffs are already positive
         order: NDArray[np.intp] = y_order[np.argsort(lines * 1e6 + boxes[y_order, 0, 0], kind="stable")]
         return order

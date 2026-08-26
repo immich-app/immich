@@ -1101,13 +1101,16 @@ class TestOcr:
         text_recognizer.session.run.return_value = [np.zeros((1, 4, 8), dtype=np.float32)]
         text_recognizer.decoder = mock.Mock()
         text_recognizer.decoder.decode.return_value = (["hello"], np.array([0.8], dtype=np.float32))
-        mocker.patch.object(text_recognizer, "get_crop_img_list", return_value=[np.zeros((48, 96, 3), dtype=np.uint8)])
+        mocker.patch.object(text_recognizer, "_crop", return_value=np.zeros((48, 96, 3), dtype=np.uint8))
         image = Image.new("RGB", (100, 50))
-        texts: Any = {"boxes": np.zeros((1, 4, 2), dtype=np.float32), "scores": np.array([0.9], dtype=np.float32)}
+        box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
 
-        assert text_recognizer._predict(image, texts, minScore=0.7)["text"] == ["hello"]
+        def texts() -> Any:  # _predict normalizes the boxes in place, so each call needs its own
+            return {"boxes": box.copy(), "scores": np.array([0.9], dtype=np.float32)}
+
+        assert text_recognizer._predict(image, texts(), minScore=0.7)["text"] == ["hello"]
         # the default (0.9) rejects a 0.8 score, and must be unaffected by the 0.7 request
-        assert text_recognizer._predict(image, texts)["text"] == []
+        assert text_recognizer._predict(image, texts())["text"] == []
 
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture

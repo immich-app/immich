@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Self
 
 import numpy as np
 from numpy.typing import NDArray
@@ -18,11 +19,11 @@ class CtcDecoder:
     def __init__(self, charset: list[str]):
         self.charset = ["", *charset, " "]  # PP-OCR: blank at 0, space last
 
-    @staticmethod
-    def from_file(charset_path: Path):
+    @classmethod
+    def from_file(cls, charset_path: Path) -> Self:
         if not charset_path.is_file():
             raise FileNotFoundError(f"Recognition charset not found: {charset_path}")
-        return CtcDecoder(charset_path.read_text(encoding="utf-8").splitlines())
+        return cls(charset_path.read_text(encoding="utf-8").splitlines())
 
     def __len__(self) -> int:
         return len(self.charset)
@@ -33,7 +34,7 @@ class CtcDecoder:
         np.not_equal(indices[:, 1:], indices[:, :-1], out=keep[:, 1:])  # repeats before blanks
         keep &= indices != 0
 
-        kept = keep.sum(1)
-        scores = np.where(kept, np.where(keep, probs, 0).sum(1) / np.maximum(kept, 1), 0)
-        texts = ["".join(self.charset[c] for c in row[k]) for row, k in zip(indices, keep)]
-        return texts, scores.astype(np.float32)
+        scores: NDArray[np.float32] = np.where(keep, probs, 0).sum(1)
+        scores /= np.maximum(keep.sum(1), 1)  # an all-blank row sums to 0, so it stays 0
+        texts = ["".join(map(self.charset.__getitem__, row[k])) for row, k in zip(indices, keep)]
+        return texts, scores
