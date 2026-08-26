@@ -16,6 +16,6 @@ class SlideshowAction extends ActionBuilder {
     icon: Icons.slideshow,
     label: context.t.slideshow,
     onAction: () async =>
-        unawaited(context.pushRoute(DriftSlideshowRoute(timeline: ref.read(timelineServiceProvider)))),
+        unawaited(context.pushRoute(SlideshowRoute(timeline: ref.read(timelineServiceProvider)))),
   );
 }

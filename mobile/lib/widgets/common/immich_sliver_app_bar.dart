@@ -9,7 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
@@ -178,8 +178,8 @@ class _BackupIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final backupEnabled = ref.watch(appConfigProvider.select((c) => c.backup.enabled));
-    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
-    final isUploading = ref.watch(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
+    final hasError = ref.watch(backupProvider.select((state) => state.error != BackupError.none));
+    final isUploading = ref.watch(backupProvider.select((state) => state.uploadItems.isNotEmpty));
     final indicatorIcon = _getBackupBadgeIcon(
       context,
       backupEnabled: backupEnabled,
@@ -188,7 +188,7 @@ class _BackupIndicator extends ConsumerWidget {
     );
 
     return IconButton(
-      onPressed: () => context.pushRoute(const DriftBackupRoute()),
+      onPressed: () => context.pushRoute(const BackupRoute()),
       icon: Badge(
         label: indicatorIcon,
         backgroundColor: Colors.transparent,

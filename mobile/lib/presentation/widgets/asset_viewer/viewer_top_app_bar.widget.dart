@@ -55,7 +55,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           onPressed: () {
             unawaited(
               context.router.push(
-                DriftActivitiesRoute(
+                ActivitiesRoute(
                   album: album,
                   assetId: asset is RemoteAsset ? asset.id : null,
                   assetName: asset.name,

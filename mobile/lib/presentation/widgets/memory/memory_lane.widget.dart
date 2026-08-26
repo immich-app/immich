@@ -5,19 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
+import 'package:immich_mobile/presentation/pages/memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-class DriftMemoryLane extends ConsumerWidget {
-  const DriftMemoryLane({super.key});
+class MemoryLane extends ConsumerWidget {
+  const MemoryLane({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memoryLaneProvider = ref.watch(driftMemoryLaneProvider);
-    final memories = memoryLaneProvider.value ?? const [];
+    final memoryLane = ref.watch(memoryLaneProvider);
+    final memories = memoryLane.value ?? const [];
     if (memories.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -33,22 +33,20 @@ class DriftMemoryLane extends ConsumerWidget {
         onTap: (index) {
           ref.read(hapticFeedbackProvider.notifier).heavyImpact();
           if (memories[index].assets.isNotEmpty) {
-            DriftMemoryPage.setMemory(ref, memories[index]);
+            MemoryPage.setMemory(ref, memories[index]);
           }
-          unawaited(context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index)));
+          unawaited(context.pushRoute(MemoryRoute(memories: memories, memoryIndex: index)));
         },
-        children: memories
-            .map((memory) => DriftMemoryCard(key: Key(memory.id), memory: memory))
-            .toList(growable: false),
+        children: memories.map((memory) => MemoryCard(key: Key(memory.id), memory: memory)).toList(growable: false),
       ),
     );
   }
 }
 
-class DriftMemoryCard extends StatelessWidget {
-  const DriftMemoryCard({super.key, required this.memory});
+class MemoryCard extends StatelessWidget {
+  const MemoryCard({super.key, required this.memory});
 
-  final DriftMemory memory;
+  final Memory memory;
 
   @override
   Widget build(BuildContext context) {

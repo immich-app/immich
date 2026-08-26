@@ -12,7 +12,7 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 
   Drift get _db => attachedDatabase;
 
-  Future<List<DriftMemory>> getAll(String ownerId, {bool onlyToday = true, bool onlyFavorites = false}) async {
+  Future<List<Memory>> getAll(String ownerId, {bool onlyToday = true, bool onlyFavorites = false}) async {
     final query =
         _db.select(_db.memoryEntity).join([
             innerJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
@@ -45,7 +45,7 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
       return const [];
     }
 
-    final Map<String, DriftMemory> memoriesMap = {};
+    final Map<String, Memory> memoriesMap = {};
 
     for (final row in rows) {
       final memory = row.readTable(_db.memoryEntity);
@@ -63,7 +63,7 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
     return memoriesMap.values.toList(growable: false);
   }
 
-  Future<DriftMemory?> get(String memoryId) async {
+  Future<Memory?> get(String memoryId) async {
     final query =
         _db.select(_db.memoryEntity).join([
             leftOuterJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
@@ -101,8 +101,8 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 }
 
 extension on MemoryEntityData {
-  DriftMemory toDto() {
-    return DriftMemory(
+  Memory toDto() {
+    return Memory(
       id: id,
       createdAt: createdAt,
       updatedAt: updatedAt,
