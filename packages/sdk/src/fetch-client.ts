@@ -678,6 +678,8 @@ export type MemoriesResponse = {
     duration: number;
     /** Whether memories are enabled */
     enabled: boolean;
+    /** Whether memories appear in web sidebar */
+    sidebarWeb: boolean;
 };
 export type PeopleResponse = {
     /** Whether people are enabled */
@@ -762,6 +764,8 @@ export type MemoriesUpdate = {
     duration?: number;
     /** Whether memories are enabled */
     enabled?: boolean;
+    /** Whether memories appear in web sidebar */
+    sidebarWeb?: boolean;
 };
 export type PeopleUpdate = {
     /** Whether people are enabled */
@@ -5582,11 +5586,14 @@ export function reverseGeocode({ lat, lon }: {
 /**
  * Retrieve memories
  */
-export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }: {
+export function searchMemories({ $for, id, isSaved, isTrashed, isUpcoming, order, page, size, $type }: {
     $for?: string;
+    id?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
+    isUpcoming?: boolean;
     order?: MemorySearchOrder;
+    page?: number;
     size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
@@ -5595,9 +5602,12 @@ export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }:
         data: MemoryResponseDto[];
     }>(`/memories${QS.query(QS.explode({
         "for": $for,
+        id,
         isSaved,
         isTrashed,
+        isUpcoming,
         order,
+        page,
         size,
         "type": $type
     }))}`, {
@@ -5622,11 +5632,14 @@ export function createMemory({ memoryCreateDto }: {
 /**
  * Retrieve memories statistics
  */
-export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $type }: {
+export function memoriesStatistics({ $for, id, isSaved, isTrashed, isUpcoming, order, page, size, $type }: {
     $for?: string;
+    id?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
+    isUpcoming?: boolean;
     order?: MemorySearchOrder;
+    page?: number;
     size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
@@ -5635,9 +5648,12 @@ export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $typ
         data: MemoryStatisticsResponseDto;
     }>(`/memories/statistics${QS.query(QS.explode({
         "for": $for,
+        id,
         isSaved,
         isTrashed,
+        isUpcoming,
         order,
+        page,
         size,
         "type": $type
     }))}`, {
