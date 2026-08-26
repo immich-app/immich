@@ -331,7 +331,29 @@ export enum Permission {
   AdminStorageTargetRead = 'adminStorageTarget.read',
   AdminStorageTargetUpdate = 'adminStorageTarget.update',
   AdminStorageTargetDelete = 'adminStorageTarget.delete',
+
+  AdminSyncNodeCreate = 'adminSyncNode.create',
+  AdminSyncNodeRead = 'adminSyncNode.read',
+  AdminSyncNodeUpdate = 'adminSyncNode.update',
+  AdminSyncNodeDelete = 'adminSyncNode.delete',
 }
+
+export enum SyncNodeStatus {
+  Unknown = 'unknown',
+  Online = 'online',
+  Unreachable = 'unreachable',
+  Unauthorized = 'unauthorized',
+  Incompatible = 'incompatible',
+}
+
+export const SyncNodeStatusSchema = z.enum(SyncNodeStatus).describe('Sync node status').meta({ id: 'SyncNodeStatus' });
+
+export enum SyncDirection {
+  Push = 'push',
+  Pull = 'pull',
+}
+
+export const SyncDirectionSchema = z.enum(SyncDirection).describe('Sync direction').meta({ id: 'SyncDirection' });
 
 export enum StorageTargetKind {
   S3 = 's3',
@@ -880,6 +902,7 @@ export enum QueueName {
   IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
   StorageTarget = 'storageTarget',
+  NodeSync = 'nodeSync',
 }
 
 export const QueueNameSchema = z.enum(QueueName).describe('Queue name').meta({ id: 'QueueName' });
@@ -992,6 +1015,12 @@ export enum JobName {
   StorageTargetExportAsset = 'StorageTargetExportAsset',
   StorageTargetImportScan = 'StorageTargetImportScan',
   StorageTargetImportObject = 'StorageTargetImportObject',
+
+  // Node sync
+  NodeSyncQueueAll = 'NodeSyncQueueAll',
+  NodeSyncPair = 'NodeSyncPair',
+  NodeSyncPullAsset = 'NodeSyncPullAsset',
+  NodeSyncAlbums = 'NodeSyncAlbums',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -1046,6 +1075,7 @@ export enum DatabaseLock {
   IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
+  NodeSync = 900,
 }
 
 export enum MaintenanceAction {
@@ -1296,6 +1326,7 @@ export enum ApiTag {
   Stacks = 'Stacks',
   Sync = 'Sync',
   SystemConfig = 'System config',
+  SyncNodes = 'Sync nodes (admin)',
   StorageTargets = 'Storage targets (admin)',
   SystemMetadata = 'System metadata',
   Tags = 'Tags',

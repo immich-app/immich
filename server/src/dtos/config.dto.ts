@@ -197,6 +197,7 @@ const AdminConfigSchemaWithVisibility = z
         editor: AdminConfigJobSettingsSchema,
         integrityCheck: AdminConfigJobSettingsSchema,
         storageTarget: AdminConfigJobSettingsSchema,
+        nodeSync: AdminConfigJobSettingsSchema,
       })
       .meta({ id: 'AdminConfigJobDto' }),
     logging: z
@@ -367,6 +368,12 @@ const AdminConfigSchemaWithVisibility = z
         syncQuotaUsage: configBool.describe('Sync quota usage'),
       })
       .meta({ id: 'AdminConfigNightlyTasksDto' }),
+    nodeSync: z
+      .object({
+        enabled: configBool.describe('Enabled'),
+        cronExpression: cronExpressionSchema.describe('Job schedule'),
+      })
+      .meta({ id: 'AdminConfigNodeSyncDto' }),
     trash: z
       .object({
         enabled: configBool.describe('Enabled').meta({ visibility: User }),
@@ -613,6 +620,7 @@ export const defaults = Object.freeze<SystemConfig>({
     editor: { concurrency: 2 },
     integrityCheck: { concurrency: 1 },
     storageTarget: { concurrency: 3 },
+    nodeSync: { concurrency: 2 },
   },
   logging: {
     enabled: true,
@@ -727,6 +735,10 @@ export const defaults = Object.freeze<SystemConfig>({
     syncQuotaUsage: true,
     missingThumbnails: true,
     clusterNewFaces: true,
+  },
+  nodeSync: {
+    enabled: false,
+    cronExpression: CronExpression.EVERY_HOUR,
   },
   trash: {
     enabled: true,

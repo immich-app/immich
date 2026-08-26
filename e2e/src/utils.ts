@@ -198,6 +198,8 @@ export const utils = {
       'integrity_report',
       // transfers and the object ledger cascade from the target
       'storage_target',
+      // pairings and the identity maps cascade from the node
+      'sync_node',
     ];
 
     const truncateTables = tables.filter((table) => table !== 'system_metadata');

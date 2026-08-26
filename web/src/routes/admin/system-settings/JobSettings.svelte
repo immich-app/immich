@@ -25,6 +25,7 @@
     QueueName.Migration,
     QueueName.Ocr,
     QueueName.StorageTarget,
+    QueueName.NodeSync,
   ];
 
   function isSystemConfigJobDto(jobName: string): jobName is keyof AdminConfigJobDto {
@@ -52,6 +53,7 @@
     [QueueName.Editor]: $t('editor'),
     [QueueName.IntegrityCheck]: $t('integrity_checks'),
     [QueueName.StorageTarget]: $t('admin.storage_targets'),
+    [QueueName.NodeSync]: $t('admin.sync_nodes'),
   });
 </script>
 

@@ -27,6 +27,7 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
+import { NodeClientRepository } from 'src/repositories/node-client.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
@@ -44,6 +45,7 @@ import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageTargetRepository } from 'src/repositories/storage-target.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
+import { SyncNodeRepository } from 'src/repositories/sync-node.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -85,6 +87,7 @@ export const repositories = [
   MemoryRepository,
   MetadataRepository,
   MoveRepository,
+  NodeClientRepository,
   NotificationRepository,
   OAuthRepository,
   OcrRepository,
@@ -102,6 +105,7 @@ export const repositories = [
   StorageRepository,
   StorageTargetRepository,
   RemoteStorageRepository,
+  SyncNodeRepository,
   SyncRepository,
   SyncCheckpointRepository,
   SystemMetadataRepository,

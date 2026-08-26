@@ -34,6 +34,7 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
+import { NodeClientRepository } from 'src/repositories/node-client.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
@@ -51,6 +52,7 @@ import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageTargetRepository } from 'src/repositories/storage-target.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
+import { SyncNodeRepository } from 'src/repositories/sync-node.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -97,6 +99,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   MemoryRepository,
   MetadataRepository,
   MoveRepository,
+  NodeClientRepository,
   NotificationRepository,
   OAuthRepository,
   OcrRepository,
@@ -113,6 +116,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   StorageRepository,
   StorageTargetRepository,
   RemoteStorageRepository,
+  SyncNodeRepository,
   SyncRepository,
   SyncCheckpointRepository,
   SystemMetadataRepository,
@@ -161,6 +165,7 @@ export class BaseService {
     protected memoryRepository: MemoryRepository,
     protected metadataRepository: MetadataRepository,
     protected moveRepository: MoveRepository,
+    protected nodeClientRepository: NodeClientRepository,
     protected notificationRepository: NotificationRepository,
     protected oauthRepository: OAuthRepository,
     protected ocrRepository: OcrRepository,
@@ -177,6 +182,7 @@ export class BaseService {
     protected storageRepository: StorageRepository,
     protected storageTargetRepository: StorageTargetRepository,
     protected remoteStorageRepository: RemoteStorageRepository,
+    protected syncNodeRepository: SyncNodeRepository,
     protected syncRepository: SyncRepository,
     protected syncCheckpointRepository: SyncCheckpointRepository,
     protected systemMetadataRepository: SystemMetadataRepository,
@@ -234,6 +240,7 @@ export class BaseService {
       ctx.memoryRepository,
       ctx.metadataRepository,
       ctx.moveRepository,
+      ctx.nodeClientRepository,
       ctx.notificationRepository,
       ctx.oauthRepository,
       ctx.ocrRepository,
@@ -250,6 +257,7 @@ export class BaseService {
       ctx.storageRepository,
       ctx.storageTargetRepository,
       ctx.remoteStorageRepository,
+      ctx.syncNodeRepository,
       ctx.syncRepository,
       ctx.syncCheckpointRepository,
       ctx.systemMetadataRepository,

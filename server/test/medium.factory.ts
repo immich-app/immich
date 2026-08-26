@@ -58,6 +58,7 @@ import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageTargetRepository } from 'src/repositories/storage-target.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
+import { SyncNodeRepository } from 'src/repositories/sync-node.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -493,6 +494,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case SharedLinkAssetRepository:
     case StackRepository:
     case StorageTargetRepository:
+    case SyncNodeRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
     case SystemMetadataRepository:

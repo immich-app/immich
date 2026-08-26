@@ -1902,6 +1902,698 @@
         "x-immich-state": "Beta"
       }
     },
+    "/admin/sync-nodes": {
+      "get": {
+        "description": "Retrieve every paired Immich instance. API keys are never included.",
+        "operationId": "getSyncNodes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncNodeResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve sync nodes",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.read",
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Pair another Immich instance. The connection is verified before it is stored.",
+        "operationId": "createSyncNode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncNodeCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncNodeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Add a sync node",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/sync-nodes/pairings/{id}": {
+      "delete": {
+        "description": "Stop syncing a user pair. Assets on both sides are left exactly as they are.",
+        "operationId": "deleteSyncPairing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Remove a pairing",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.delete",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Turn push or pull on or off for a pairing.",
+        "operationId": "updateSyncPairing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPairingUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncPairingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a pairing",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/sync-nodes/pairings/{id}/sync": {
+      "post": {
+        "description": "Queue an immediate sync for one pairing instead of waiting for the schedule.",
+        "operationId": "syncPairingNow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Sync a pairing now",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/sync-nodes/{id}": {
+      "delete": {
+        "description": "Unpair an instance. Assets on both sides are left exactly as they are.",
+        "operationId": "deleteSyncNode",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Remove a sync node",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.delete",
+        "x-immich-state": "Beta"
+      },
+      "get": {
+        "description": "Retrieve a specific sync node. The API key is never included.",
+        "operationId": "getSyncNode",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncNodeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a sync node",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.read",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Update a sync node. Omitting the API key keeps the stored one.",
+        "operationId": "updateSyncNode",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncNodeUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncNodeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a sync node",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/sync-nodes/{id}/pairings": {
+      "get": {
+        "description": "List the user pairings configured for a sync node.",
+        "operationId": "getSyncPairings",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncPairingResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve pairings",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.read",
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Pair a local user with a user on the peer, and choose which directions sync.",
+        "operationId": "createSyncPairing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPairingCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncPairingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Pair a user",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/sync-nodes/{id}/test": {
+      "post": {
+        "description": "Check that the peer is reachable, compatible, and that its API key has the needed permissions.",
+        "operationId": "testSyncNode",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncNodeTestResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Test a sync node",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/admin/sync-nodes/{id}/users": {
+      "get": {
+        "description": "List the users on the peer, so a local user can be paired with one of them.",
+        "operationId": "getSyncNodeUsers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncNodeRemoteUserDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve users on a sync node",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.read",
+        "x-immich-state": "Beta"
+      }
+    },
     "/admin/users": {
       "get": {
         "description": "Search for users.",
@@ -18083,6 +18775,10 @@
       "description": "Endpoints to view, modify, and validate the system configuration settings."
     },
     {
+      "name": "Sync nodes (admin)",
+      "description": "A sync node is another Immich instance this one is paired with, so users and their content can be kept in step across servers."
+    },
+    {
       "name": "Storage targets (admin)",
       "description": "A storage target is an external S3, WebDAV, or mounted filesystem destination that assets can be exported to or imported from."
     },
@@ -18344,6 +19040,9 @@
           "nightlyTasks": {
             "$ref": "#/components/schemas/AdminConfigNightlyTasksDto"
           },
+          "nodeSync": {
+            "$ref": "#/components/schemas/AdminConfigNodeSyncDto"
+          },
           "notifications": {
             "$ref": "#/components/schemas/AdminConfigNotificationsDto"
           },
@@ -18388,6 +19087,7 @@
           "metadata",
           "newVersionCheck",
           "nightlyTasks",
+          "nodeSync",
           "notifications",
           "oauth",
           "passwordLogin",
@@ -18808,6 +19508,9 @@
           "migration": {
             "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
           },
+          "nodeSync": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
           "notifications": {
             "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
           },
@@ -18844,6 +19547,7 @@
           "library",
           "metadataExtraction",
           "migration",
+          "nodeSync",
           "notifications",
           "ocr",
           "search",
@@ -19081,6 +19785,23 @@
           "missingThumbnails",
           "startTime",
           "syncQuotaUsage"
+        ],
+        "type": "object"
+      },
+      "AdminConfigNodeSyncDto": {
+        "properties": {
+          "cronExpression": {
+            "description": "Job schedule",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled"
         ],
         "type": "object"
       },
@@ -22351,7 +23072,11 @@
           "StorageTargetExportQueue",
           "StorageTargetExportAsset",
           "StorageTargetImportScan",
-          "StorageTargetImportObject"
+          "StorageTargetImportObject",
+          "NodeSyncQueueAll",
+          "NodeSyncPair",
+          "NodeSyncPullAsset",
+          "NodeSyncAlbums"
         ],
         "type": "string"
       },
@@ -24014,7 +24739,11 @@
           "adminStorageTarget.create",
           "adminStorageTarget.read",
           "adminStorageTarget.update",
-          "adminStorageTarget.delete"
+          "adminStorageTarget.delete",
+          "adminSyncNode.create",
+          "adminSyncNode.read",
+          "adminSyncNode.update",
+          "adminSyncNode.delete"
         ],
         "type": "string"
       },
@@ -24656,7 +25385,8 @@
           "workflow",
           "integrityCheck",
           "editor",
-          "storageTarget"
+          "storageTarget",
+          "nodeSync"
         ],
         "type": "string"
       },
@@ -24802,6 +25532,9 @@
           "migration": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "nodeSync": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "notifications": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -24844,6 +25577,7 @@
           "library",
           "metadataExtraction",
           "migration",
+          "nodeSync",
           "notifications",
           "ocr",
           "search",
@@ -28614,6 +29348,309 @@
           "type",
           "updatedAt"
         ],
+        "type": "object"
+      },
+      "SyncNodeCreateDto": {
+        "properties": {
+          "apiKey": {
+            "description": "API key for the peer. Write-only: never returned.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "isEnabled": {
+            "default": true,
+            "description": "Whether this node participates in scheduled syncs",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Human-readable name, unique across nodes",
+            "minLength": 1,
+            "type": "string"
+          },
+          "url": {
+            "description": "Base URL of the peer, e.g. https://immich.example.com",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "apiKey",
+          "name",
+          "url"
+        ],
+        "type": "object"
+      },
+      "SyncNodeRemoteUserDto": {
+        "properties": {
+          "email": {
+            "description": "Email on the peer",
+            "type": "string"
+          },
+          "id": {
+            "description": "User ID on the peer",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name on the peer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "SyncNodeResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Creation date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "error": {
+            "description": "Reason the last check failed",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Sync node ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "isEnabled": {
+            "description": "Whether this node participates in scheduled syncs",
+            "type": "boolean"
+          },
+          "lastCheckedAt": {
+            "description": "Last connectivity check",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "Human-readable name",
+            "type": "string"
+          },
+          "remoteVersion": {
+            "description": "Immich version reported by the peer",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SyncNodeStatus"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "url": {
+            "description": "Base URL of the peer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "error",
+          "id",
+          "isEnabled",
+          "lastCheckedAt",
+          "name",
+          "remoteVersion",
+          "status",
+          "updatedAt",
+          "url"
+        ],
+        "type": "object"
+      },
+      "SyncNodeStatus": {
+        "description": "Sync node status",
+        "enum": [
+          "unknown",
+          "online",
+          "unreachable",
+          "unauthorized",
+          "incompatible"
+        ],
+        "type": "string"
+      },
+      "SyncNodeTestResponseDto": {
+        "properties": {
+          "error": {
+            "description": "Failure reason when `ok` is false",
+            "nullable": true,
+            "type": "string"
+          },
+          "ok": {
+            "description": "Whether the peer could be reached and authenticated",
+            "type": "boolean"
+          },
+          "remoteVersion": {
+            "description": "Immich version reported by the peer",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SyncNodeStatus"
+          }
+        },
+        "required": [
+          "error",
+          "ok",
+          "remoteVersion",
+          "status"
+        ],
+        "type": "object"
+      },
+      "SyncNodeUpdateDto": {
+        "properties": {
+          "apiKey": {
+            "description": "API key for the peer. Write-only: never returned.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "isEnabled": {
+            "description": "Whether this node participates in scheduled syncs",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Human-readable name, unique across nodes",
+            "minLength": 1,
+            "type": "string"
+          },
+          "url": {
+            "description": "Base URL of the peer",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SyncPairingCreateDto": {
+        "properties": {
+          "localUserId": {
+            "description": "User on this node",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "pullEnabled": {
+            "default": true,
+            "description": "Bring the paired user's assets here",
+            "type": "boolean"
+          },
+          "pushEnabled": {
+            "default": true,
+            "description": "Send this user's assets to the peer",
+            "type": "boolean"
+          },
+          "remoteApiKey": {
+            "description": "An API key belonging to that user on the peer. Asset endpoints act as the key's owner, so the paired user's own key is required. Write-only: never returned.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "remoteUserId": {
+            "description": "User on the peer to pair with",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "localUserId",
+          "remoteApiKey",
+          "remoteUserId"
+        ],
+        "type": "object"
+      },
+      "SyncPairingResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Creation date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "error": {
+            "description": "Reason the last sync failed",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Pairing ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "lastSyncedAt": {
+            "description": "Last successful sync",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "localUserId": {
+            "description": "User on this node",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "nodeId": {
+            "description": "Sync node ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "pullEnabled": {
+            "description": "Whether remote assets are brought here",
+            "type": "boolean"
+          },
+          "pushEnabled": {
+            "description": "Whether local assets are sent to the peer",
+            "type": "boolean"
+          },
+          "remoteUserEmail": {
+            "description": "Paired user email on the peer",
+            "type": "string"
+          },
+          "remoteUserId": {
+            "description": "Paired user on the peer",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "error",
+          "id",
+          "lastSyncedAt",
+          "localUserId",
+          "nodeId",
+          "pullEnabled",
+          "pushEnabled",
+          "remoteUserEmail",
+          "remoteUserId"
+        ],
+        "type": "object"
+      },
+      "SyncPairingUpdateDto": {
+        "properties": {
+          "pullEnabled": {
+            "description": "Bring the paired user's assets here",
+            "type": "boolean"
+          },
+          "pushEnabled": {
+            "description": "Send this user's assets to the peer",
+            "type": "boolean"
+          },
+          "remoteApiKey": {
+            "description": "Replacement API key for the paired user",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "SyncPartnerDeleteV1": {

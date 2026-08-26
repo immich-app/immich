@@ -15,6 +15,7 @@
   import ServerSettings from './ServerSettings.svelte';
   import StorageTemplateSettings from '$lib/components/admin-settings/StorageTemplateSettings.svelte';
   import ThemeSettings from './ThemeSettings.svelte';
+  import NodeSyncSettings from './NodeSyncSettings.svelte';
   import TrashSettings from './TrashSettings.svelte';
   import UserSettings from './UserSettings.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
@@ -41,6 +42,7 @@
     mdiRobotOutline,
     mdiServerOutline,
     mdiSync,
+    mdiServerNetwork,
     mdiTrashCanOutline,
     mdiUpdate,
     mdiVideoOutline,
@@ -167,6 +169,13 @@
       subtitle: $t('admin.theme_settings_description'),
       key: 'theme',
       icon: mdiPaletteOutline,
+    },
+    {
+      component: NodeSyncSettings,
+      title: $t('admin.node_sync_settings'),
+      subtitle: $t('admin.node_sync_settings_description'),
+      key: 'node-sync',
+      icon: mdiServerNetwork,
     },
     {
       component: TrashSettings,

@@ -12,6 +12,7 @@ import type {
   ReleaseEventV1,
   SharedLinkResponseDto,
   StorageTargetResponseDto,
+  SyncNodeResponseDto,
   AdminConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
@@ -90,6 +91,7 @@ export type Events = {
   JobCreate: [{ dto: JobCreateDto }];
 
   StorageTargetUpdate: [StorageTargetResponseDto];
+  SyncNodeUpdate: [SyncNodeResponseDto];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];

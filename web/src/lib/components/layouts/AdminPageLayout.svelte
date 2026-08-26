@@ -12,6 +12,7 @@
     mdiCloudOutline,
     mdiCog,
     mdiServer,
+    mdiServerNetwork,
     mdiTrayFull,
     mdiWrench,
   } from '@mdi/js';
@@ -40,6 +41,7 @@
       <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
       <NavbarItem title={$t('admin.storage_targets')} href={Route.storageTargets()} icon={mdiCloudOutline} />
+      <NavbarItem title={$t('admin.sync_nodes')} href={Route.syncNodes()} icon={mdiServerNetwork} />
       <NavbarItem title={$t('settings')} href={Route.systemSettings()} icon={mdiCog} />
       <NavbarItem title={$t('admin.maintenance_settings')} href={Route.systemMaintenance()} icon={mdiWrench} />
       <NavbarItem title={$t('server_stats')} href={Route.systemStatistics()} icon={mdiServer} />

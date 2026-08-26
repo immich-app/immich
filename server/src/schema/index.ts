@@ -83,6 +83,12 @@ import {
   StorageTargetTransferTable,
 } from 'src/schema/tables/storage-target.table';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
+import {
+  SyncNodeAlbumTable,
+  SyncNodeAssetTable,
+  SyncNodeTable,
+  SyncNodeUserTable,
+} from 'src/schema/tables/sync-node.table';
 import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table';
@@ -154,6 +160,10 @@ export class ImmichDatabase {
     StorageTargetTable,
     StorageTargetTransferTable,
     StorageTargetObjectTable,
+    SyncNodeTable,
+    SyncNodeUserTable,
+    SyncNodeAssetTable,
+    SyncNodeAlbumTable,
     StackAuditTable,
     SessionSyncCheckpointTable,
     SystemMetadataTable,
@@ -284,6 +294,11 @@ export interface DB {
   storage_target: StorageTargetTable;
   storage_target_transfer: StorageTargetTransferTable;
   storage_target_object: StorageTargetObjectTable;
+
+  sync_node: SyncNodeTable;
+  sync_node_user: SyncNodeUserTable;
+  sync_node_asset: SyncNodeAssetTable;
+  sync_node_album: SyncNodeAlbumTable;
 
   system_metadata: SystemMetadataTable;
 

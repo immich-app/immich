@@ -46,6 +46,7 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
+import { NodeClientRepository } from 'src/repositories/node-client.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
@@ -63,6 +64,7 @@ import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageTargetRepository } from 'src/repositories/storage-target.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
+import { SyncNodeRepository } from 'src/repositories/sync-node.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -263,6 +265,7 @@ export type ServiceOverrides = {
   memory: MemoryRepository;
   metadata: MetadataRepository;
   move: MoveRepository;
+  nodeClient: NodeClientRepository;
   notification: NotificationRepository;
   ocr: OcrRepository;
   oauth: OAuthRepository;
@@ -279,6 +282,7 @@ export type ServiceOverrides = {
   storage: StorageRepository;
   storageTarget: StorageTargetRepository;
   remoteStorage: RemoteStorageRepository;
+  syncNode: SyncNodeRepository;
   sync: SyncRepository;
   syncCheckpoint: SyncCheckpointRepository;
   systemMetadata: SystemMetadataRepository;
@@ -350,6 +354,7 @@ export const getMocks = () => {
     memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
+    nodeClient: automock(NodeClientRepository, { args: [{ setContext: () => {} }] }),
     notification: automock(NotificationRepository),
     ocr: automock(OcrRepository, { strict: false }),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
@@ -367,6 +372,7 @@ export const getMocks = () => {
     storage: newStorageRepositoryMock(),
     storageTarget: automock(StorageTargetRepository, { strict: false }),
     remoteStorage: automock(RemoteStorageRepository, { args: [{ setContext: () => {} }] }),
+    syncNode: automock(SyncNodeRepository, { strict: false }),
     sync: automock(SyncRepository),
     syncCheckpoint: automock(SyncCheckpointRepository),
     systemMetadata: newSystemMetadataRepositoryMock(),
@@ -426,6 +432,7 @@ export const newTestService = <T extends BaseService>(
     overrides.memory || (mocks.memory as As<MemoryRepository>),
     overrides.metadata || (mocks.metadata as As<MetadataRepository>),
     overrides.move || (mocks.move as As<MoveRepository>),
+    overrides.nodeClient || (mocks.nodeClient as As<NodeClientRepository>),
     overrides.notification || (mocks.notification as As<NotificationRepository>),
     overrides.oauth || (mocks.oauth as As<OAuthRepository>),
     overrides.ocr || (mocks.ocr as As<OcrRepository>),
@@ -442,6 +449,7 @@ export const newTestService = <T extends BaseService>(
     overrides.storage || (mocks.storage as As<StorageRepository>),
     overrides.storageTarget || (mocks.storageTarget as As<StorageTargetRepository>),
     overrides.remoteStorage || (mocks.remoteStorage as As<RemoteStorageRepository>),
+    overrides.syncNode || (mocks.syncNode as As<SyncNodeRepository>),
     overrides.sync || (mocks.sync as As<SyncRepository>),
     overrides.syncCheckpoint || (mocks.syncCheckpoint as As<SyncCheckpointRepository>),
     overrides.systemMetadata || (mocks.systemMetadata as As<SystemMetadataRepository>),

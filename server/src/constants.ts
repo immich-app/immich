@@ -194,6 +194,8 @@ export const endpointTags: Record<ApiTag, string> = {
     'A stack is a group of related assets. One asset is the "primary" asset, and the rest are "child" assets. On the main timeline, stack parents are included by default, while child assets are hidden.',
   [ApiTag.Sync]: 'A collection of endpoints for the new mobile synchronization implementation.',
   [ApiTag.SystemConfig]: 'Endpoints to view, modify, and validate the system configuration settings.',
+  [ApiTag.SyncNodes]:
+    'A sync node is another Immich instance this one is paired with, so users and their content can be kept in step across servers.',
   [ApiTag.StorageTargets]:
     'A storage target is an external S3, WebDAV, or mounted filesystem destination that assets can be exported to or imported from.',
   [ApiTag.SystemMetadata]:

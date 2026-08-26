@@ -149,6 +149,9 @@ export const Route = {
   // storage targets
   storageTargets: () => '/admin/storage-targets',
 
+  // sync nodes
+  syncNodes: () => '/admin/sync-nodes',
+
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,

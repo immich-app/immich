@@ -26,6 +26,7 @@ import {
   mdiPencil,
   mdiPlay,
   mdiPlus,
+  mdiServerNetwork,
   mdiStateMachine,
   mdiTable,
   mdiTagFaces,
@@ -251,6 +252,11 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       icon: mdiCloudUploadOutline,
       title: $t('admin.storage_targets'),
       subtitle: $t('admin.storage_targets_description'),
+    },
+    [QueueName.NodeSync]: {
+      icon: mdiServerNetwork,
+      title: $t('admin.sync_nodes'),
+      subtitle: $t('admin.sync_nodes_description'),
     },
     [QueueName.Editor]: {
       icon: mdiPencil,

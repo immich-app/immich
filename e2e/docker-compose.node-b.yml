@@ -1,0 +1,55 @@
+# A second, independent Immich instance for exercising node-to-node sync.
+#
+#   docker compose -f docker-compose.yml up -d
+#   docker compose -f docker-compose.node-b.yml up -d
+#
+# Deliberately a separate file rather than more services in docker-compose.yml:
+# every other e2e spec would otherwise pay for a second full stack on each run.
+# The sync spec skips itself when this stack is not up.
+name: immich-e2e-node-b
+
+services:
+  immich-server-b:
+    container_name: immich-e2e-server-b
+    image: immich-server:latest
+    # Built by docker-compose.yml; never fetched from a registry.
+    pull_policy: never
+    environment:
+      DB_HOSTNAME: database-b
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE_NAME: immich
+      REDIS_HOSTNAME: redis-b
+      IMMICH_MACHINE_LEARNING_ENABLED: 'false'
+      IMMICH_ENV: testing
+      IMMICH_PORT: '2285'
+      IMMICH_IGNORE_MOUNT_CHECK_ERRORS: 'true'
+    depends_on:
+      redis-b:
+        condition: service_started
+      database-b:
+        condition: service_healthy
+    ports:
+      - 2287:2285
+
+  redis-b:
+    container_name: immich-e2e-redis-b
+    image: docker.io/valkey/valkey:9@sha256:70739f85ad2ee01a726a965584a0f94895f01b0c60b3cc8b0aeef11eaa6888cf
+    healthcheck:
+      test: redis-cli ping || exit 1
+
+  database-b:
+    container_name: immich-e2e-postgres-b
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    command: -c fsync=off -c shared_preload_libraries=vchord.so -c config_file=/var/lib/postgresql/data/postgresql.conf
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+    shm_size: 128mb
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']
+      interval: 1s
+      timeout: 5s
+      retries: 30
+      start_period: 10s

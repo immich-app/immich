@@ -44,6 +44,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.StorageTarget]: { concurrency: 3 },
+    [QueueName.NodeSync]: { concurrency: 2 },
     [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
   },
@@ -211,6 +212,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
   newVersionCheck: {
     enabled: true,
     channel: ReleaseChannel.Stable,
+  },
+  nodeSync: {
+    enabled: false,
+    cronExpression: '0 0-23/1 * * *',
   },
   trash: {
     enabled: true,

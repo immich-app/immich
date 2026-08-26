@@ -171,6 +171,7 @@ export type AdminConfigJobDto = {
     library: AdminConfigJobSettingsDto;
     metadataExtraction: AdminConfigJobSettingsDto;
     migration: AdminConfigJobSettingsDto;
+    nodeSync: AdminConfigJobSettingsDto;
     notifications: AdminConfigJobSettingsDto;
     ocr: AdminConfigJobSettingsDto;
     search: AdminConfigJobSettingsDto;
@@ -286,6 +287,12 @@ export type AdminConfigNightlyTasksDto = {
     startTime: string;
     /** Sync quota usage */
     syncQuotaUsage: boolean;
+};
+export type AdminConfigNodeSyncDto = {
+    /** Job schedule */
+    cronExpression: string;
+    /** Enabled */
+    enabled: boolean;
 };
 export type AdminConfigSmtpTransportDto = {
     /** SMTP server hostname */
@@ -420,6 +427,7 @@ export type AdminConfigDto = {
     metadata: AdminConfigMetadataDto;
     newVersionCheck: AdminConfigNewVersionCheckDto;
     nightlyTasks: AdminConfigNightlyTasksDto;
+    nodeSync: AdminConfigNodeSyncDto;
     notifications: AdminConfigNotificationsDto;
     oauth: AdminConfigOAuthDto;
     passwordLogin: AdminConfigPasswordLoginDto;
@@ -646,6 +654,106 @@ export type StorageTargetTestResponseDto = {
     error?: string;
     /** Whether the target could be reached and written to */
     ok: boolean;
+};
+export type SyncNodeResponseDto = {
+    /** Creation date */
+    createdAt: string;
+    /** Reason the last check failed */
+    error: string | null;
+    /** Sync node ID */
+    id: string;
+    /** Whether this node participates in scheduled syncs */
+    isEnabled: boolean;
+    /** Last connectivity check */
+    lastCheckedAt: string | null;
+    /** Human-readable name */
+    name: string;
+    /** Immich version reported by the peer */
+    remoteVersion: string | null;
+    status: SyncNodeStatus;
+    /** Last update date */
+    updatedAt: string;
+    /** Base URL of the peer */
+    url: string;
+};
+export type SyncNodeCreateDto = {
+    /** API key for the peer. Write-only: never returned. */
+    apiKey: string;
+    /** Whether this node participates in scheduled syncs */
+    isEnabled?: boolean;
+    /** Human-readable name, unique across nodes */
+    name: string;
+    /** Base URL of the peer, e.g. https://immich.example.com */
+    url: string;
+};
+export type SyncPairingUpdateDto = {
+    /** Bring the paired user's assets here */
+    pullEnabled?: boolean;
+    /** Send this user's assets to the peer */
+    pushEnabled?: boolean;
+    /** Replacement API key for the paired user */
+    remoteApiKey?: string;
+};
+export type SyncPairingResponseDto = {
+    /** Creation date */
+    createdAt: string;
+    /** Reason the last sync failed */
+    error: string | null;
+    /** Pairing ID */
+    id: string;
+    /** Last successful sync */
+    lastSyncedAt: string | null;
+    /** User on this node */
+    localUserId: string;
+    /** Sync node ID */
+    nodeId: string;
+    /** Whether remote assets are brought here */
+    pullEnabled: boolean;
+    /** Whether local assets are sent to the peer */
+    pushEnabled: boolean;
+    /** Paired user email on the peer */
+    remoteUserEmail: string;
+    /** Paired user on the peer */
+    remoteUserId: string;
+};
+export type SyncNodeUpdateDto = {
+    /** API key for the peer. Write-only: never returned. */
+    apiKey?: string;
+    /** Whether this node participates in scheduled syncs */
+    isEnabled?: boolean;
+    /** Human-readable name, unique across nodes */
+    name?: string;
+    /** Base URL of the peer */
+    url?: string;
+};
+export type SyncPairingCreateDto = {
+    /** User on this node */
+    localUserId: string;
+    /** Bring the paired user's assets here */
+    pullEnabled?: boolean;
+    /** Send this user's assets to the peer */
+    pushEnabled?: boolean;
+    /** An API key belonging to that user on the peer. Asset endpoints act as the key's owner, so the paired user's own key is required. Write-only: never returned. */
+    remoteApiKey: string;
+    /** User on the peer to pair with */
+    remoteUserId: string;
+};
+export type SyncNodeTestResponseDto = {
+    /** Failure reason when `ok` is false */
+    error: string | null;
+    /** Whether the peer could be reached and authenticated */
+    ok: boolean;
+    /** Immich version reported by the peer */
+    remoteVersion: string | null;
+    status: SyncNodeStatus;
+};
+export type SyncNodeRemoteUserDto = {
+    /** Email on the peer */
+    email: string;
+    /** User ID on the peer */
+    id: string;
+    /** Name on the peer */
+    name: string;
 };
 export type UserLicense = {
     /** Activation date */
@@ -1852,6 +1960,7 @@ export type QueuesResponseLegacyDto = {
     library: QueueResponseLegacyDto;
     metadataExtraction: QueueResponseLegacyDto;
     migration: QueueResponseLegacyDto;
+    nodeSync: QueueResponseLegacyDto;
     notifications: QueueResponseLegacyDto;
     ocr: QueueResponseLegacyDto;
     search: QueueResponseLegacyDto;
@@ -4113,6 +4222,166 @@ export function getStorageTargetTransfers({ id }: {
         status: 200;
         data: StorageTransferResponseDto[];
     }>(`/admin/storage-targets/${encodeURIComponent(id)}/transfers`, {
+        ...opts
+    }));
+}
+/**
+ * Retrieve sync nodes
+ */
+export function getSyncNodes(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncNodeResponseDto[];
+    }>("/admin/sync-nodes", {
+        ...opts
+    }));
+}
+/**
+ * Add a sync node
+ */
+export function createSyncNode({ syncNodeCreateDto }: {
+    syncNodeCreateDto: SyncNodeCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SyncNodeResponseDto;
+    }>("/admin/sync-nodes", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: syncNodeCreateDto
+    })));
+}
+/**
+ * Remove a pairing
+ */
+export function deleteSyncPairing({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/sync-nodes/pairings/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Update a pairing
+ */
+export function updateSyncPairing({ id, syncPairingUpdateDto }: {
+    id: string;
+    syncPairingUpdateDto: SyncPairingUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncPairingResponseDto;
+    }>(`/admin/sync-nodes/pairings/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: syncPairingUpdateDto
+    })));
+}
+/**
+ * Sync a pairing now
+ */
+export function syncPairingNow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/sync-nodes/pairings/${encodeURIComponent(id)}/sync`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Remove a sync node
+ */
+export function deleteSyncNode({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/sync-nodes/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve a sync node
+ */
+export function getSyncNode({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncNodeResponseDto;
+    }>(`/admin/sync-nodes/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a sync node
+ */
+export function updateSyncNode({ id, syncNodeUpdateDto }: {
+    id: string;
+    syncNodeUpdateDto: SyncNodeUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncNodeResponseDto;
+    }>(`/admin/sync-nodes/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: syncNodeUpdateDto
+    })));
+}
+/**
+ * Retrieve pairings
+ */
+export function getSyncPairings({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncPairingResponseDto[];
+    }>(`/admin/sync-nodes/${encodeURIComponent(id)}/pairings`, {
+        ...opts
+    }));
+}
+/**
+ * Pair a user
+ */
+export function createSyncPairing({ id, syncPairingCreateDto }: {
+    id: string;
+    syncPairingCreateDto: SyncPairingCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SyncPairingResponseDto;
+    }>(`/admin/sync-nodes/${encodeURIComponent(id)}/pairings`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: syncPairingCreateDto
+    })));
+}
+/**
+ * Test a sync node
+ */
+export function testSyncNode({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncNodeTestResponseDto;
+    }>(`/admin/sync-nodes/${encodeURIComponent(id)}/test`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Retrieve users on a sync node
+ */
+export function getSyncNodeUsers({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncNodeRemoteUserDto[];
+    }>(`/admin/sync-nodes/${encodeURIComponent(id)}/users`, {
         ...opts
     }));
 }
@@ -7940,6 +8209,13 @@ export enum StorageTransferStatus {
     Failed = "failed",
     Cancelled = "cancelled"
 }
+export enum SyncNodeStatus {
+    Unknown = "unknown",
+    Online = "online",
+    Unreachable = "unreachable",
+    Unauthorized = "unauthorized",
+    Incompatible = "incompatible"
+}
 export enum UserStatus {
     Active = "active",
     Removing = "removing",
@@ -8143,7 +8419,11 @@ export enum Permission {
     AdminStorageTargetCreate = "adminStorageTarget.create",
     AdminStorageTargetRead = "adminStorageTarget.read",
     AdminStorageTargetUpdate = "adminStorageTarget.update",
-    AdminStorageTargetDelete = "adminStorageTarget.delete"
+    AdminStorageTargetDelete = "adminStorageTarget.delete",
+    AdminSyncNodeCreate = "adminSyncNode.create",
+    AdminSyncNodeRead = "adminSyncNode.read",
+    AdminSyncNodeUpdate = "adminSyncNode.update",
+    AdminSyncNodeDelete = "adminSyncNode.delete"
 }
 export enum AssetFileType {
     Fullsize = "fullsize",
@@ -8233,7 +8513,8 @@ export enum QueueName {
     Workflow = "workflow",
     IntegrityCheck = "integrityCheck",
     Editor = "editor",
-    StorageTarget = "storageTarget"
+    StorageTarget = "storageTarget",
+    NodeSync = "nodeSync"
 }
 export enum QueueCommand {
     Start = "start",
@@ -8340,7 +8621,11 @@ export enum JobName {
     StorageTargetExportQueue = "StorageTargetExportQueue",
     StorageTargetExportAsset = "StorageTargetExportAsset",
     StorageTargetImportScan = "StorageTargetImportScan",
-    StorageTargetImportObject = "StorageTargetImportObject"
+    StorageTargetImportObject = "StorageTargetImportObject",
+    NodeSyncQueueAll = "NodeSyncQueueAll",
+    NodeSyncPair = "NodeSyncPair",
+    NodeSyncPullAsset = "NodeSyncPullAsset",
+    NodeSyncAlbums = "NodeSyncAlbums"
 }
 export enum SearchSuggestionType {
     Country = "country",

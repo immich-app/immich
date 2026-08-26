@@ -39,6 +39,8 @@ import { StorageTargetService } from 'src/services/storage-target.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageTransferService } from 'src/services/storage-transfer.service';
 import { StorageService } from 'src/services/storage.service';
+import { SyncEngineService } from 'src/services/sync-engine.service';
+import { SyncNodeService } from 'src/services/sync-node.service';
 import { SyncService } from 'src/services/sync.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
@@ -94,6 +96,8 @@ export const services = [
   StackService,
   StorageService,
   StorageTargetService,
+  SyncEngineService,
+  SyncNodeService,
   StorageTemplateService,
   StorageTransferService,
   SyncService,

@@ -39,6 +39,7 @@ const QueuesResponseLegacySchema = z
     [QueueName.Editor]: QueueResponseLegacySchema,
     [QueueName.IntegrityCheck]: QueueResponseLegacySchema,
     [QueueName.StorageTarget]: QueueResponseLegacySchema,
+    [QueueName.NodeSync]: QueueResponseLegacySchema,
   })
   .meta({ id: 'QueuesResponseLegacyDto' });
 
