@@ -199,6 +199,7 @@ class ServiceMocks {
 
   void _stubTagService() {
     when(tag.bulkTagAssets).thenAnswer((_) async => 0);
+    when(tag.untagAssets).thenAnswer((_) async => 0);
     when(tag.upsertTags).thenAnswer((_) async => const []);
     when(tag.getAllTags).thenAnswer((_) async => const {});
   }
@@ -442,6 +443,9 @@ extension type const PermissionRepositoryStub(MockPermissionRepository repo) imp
 extension type const TagServiceStub(MockTagService service) implements Stub<MockTagService> {
   Future<int> Function() get bulkTagAssets =>
       () => service.bulkTagAssets(any(), any());
+
+  Future<int> Function() get untagAssets =>
+      () => service.untagAssets(any(), any());
 
   Future<List<Tag>> Function() get upsertTags =>
       () => service.upsertTags(any());

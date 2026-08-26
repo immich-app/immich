@@ -86,7 +86,7 @@ class TagPicker extends HookConsumerWidget {
     final searchQuery = useState('');
     final tags = ref.watch(tagProvider);
     final selectedTagIds = useState<Set<String>>(filter);
-    const borderRadius = BorderRadius.all(Radius.circular(10));
+    const borderRadius = BorderRadius.all(Radius.circular(20));
     final selectedNewTagValues = useState<Set<String>>({});
 
     return Column(
@@ -102,8 +102,8 @@ class TagPicker extends HookConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 0),
-          child: Divider(color: context.colorScheme.surfaceContainerHighest, thickness: 1),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
+          child: Divider(height: 1, color: context.colorScheme.surfaceContainerHighest, thickness: 1),
         ),
         Expanded(
           child: tags.widgetWhen(
@@ -125,33 +125,31 @@ class TagPicker extends HookConsumerWidget {
                     // Create new tag tile
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 2.0),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: isCreateSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        ),
-                        child: ListTile(
-                          title: Text(
-                            trimmedQuery,
-                            style: context.textTheme.bodyLarge?.copyWith(
-                              color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
-                            ),
-                          ),
-                          trailing: Icon(
-                            Icons.add,
+                      child: ListTile(
+                        shape: const RoundedRectangleBorder(borderRadius: borderRadius),
+                        selected: isCreateSelected,
+                        selectedTileColor: context.primaryColor,
+                        tileColor: context.primaryColor.withAlpha(25),
+                        title: Text(
+                          trimmedQuery,
+                          style: context.textTheme.bodyLarge?.copyWith(
                             color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
                           ),
-                          onTap: () {
-                            final newSelectedNewTagValues = {...selectedNewTagValues.value};
-                            if (isCreateSelected) {
-                              newSelectedNewTagValues.remove(trimmedQuery);
-                            } else {
-                              newSelectedNewTagValues.add(trimmedQuery);
-                            }
-                            selectedNewTagValues.value = newSelectedNewTagValues;
-                            onSelectNewTag!.call(newSelectedNewTagValues);
-                          },
                         ),
+                        trailing: Icon(
+                          Icons.add,
+                          color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
+                        ),
+                        onTap: () {
+                          final newSelectedNewTagValues = {...selectedNewTagValues.value};
+                          if (isCreateSelected) {
+                            newSelectedNewTagValues.remove(trimmedQuery);
+                          } else {
+                            newSelectedNewTagValues.add(trimmedQuery);
+                          }
+                          selectedNewTagValues.value = newSelectedNewTagValues;
+                          onSelectNewTag!.call(newSelectedNewTagValues);
+                        },
                       ),
                     );
                   }
@@ -159,30 +157,28 @@ class TagPicker extends HookConsumerWidget {
                   final isSelected = selectedTagIds.value.any((id) => id == tag.id);
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: isSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
-                        borderRadius: borderRadius,
-                      ),
-                      child: ListTile(
-                        title: Text(
-                          tag.value,
-                          style: context.textTheme.bodyLarge?.copyWith(
-                            color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
-                          ),
+                    padding: const EdgeInsets.only(bottom: 7.0, right: 2.0, left: 2.0),
+                    child: ListTile(
+                      shape: const RoundedRectangleBorder(borderRadius: borderRadius),
+                      selected: isSelected,
+                      selectedTileColor: context.primaryColor,
+                      tileColor: context.primaryColor.withAlpha(25),
+                      title: Text(
+                        tag.value,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
                         ),
-                        onTap: () {
-                          final newSelected = {...selectedTagIds.value};
-                          if (isSelected) {
-                            newSelected.removeWhere((id) => id == tag.id);
-                          } else {
-                            newSelected.add(tag.id);
-                          }
-                          selectedTagIds.value = newSelected;
-                          onSelectExistingTag(tags.where((t) => newSelected.contains(t.id)));
-                        },
                       ),
+                      onTap: () {
+                        final newSelected = {...selectedTagIds.value};
+                        if (isSelected) {
+                          newSelected.removeWhere((id) => id == tag.id);
+                        } else {
+                          newSelected.add(tag.id);
+                        }
+                        selectedTagIds.value = newSelected;
+                        onSelectExistingTag(tags.where((t) => newSelected.contains(t.id)));
+                      },
                     ),
                   );
                 },
