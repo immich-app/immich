@@ -436,49 +436,32 @@ void main() {
       expect(resultEnd, [album2.id, album1.id]);
     });
 
-    test('ignores trashed assets when sorting albums by date', () async {
-      // Album 1: one active asset at Jan 10, one trashed asset at Jan 1 (older)
+    test('ignores trashed, hidden, and locked assets when sorting albums by date', () async {
+      // Album 1: active asset at Jan 20, trashed asset at Jan 1, hidden asset at Jan 2
       final album1 = await ctx.newRemoteAlbum(ownerId: userId);
       final trashedEarly = await ctx.newRemoteAsset(
         ownerId: userId,
         createdAt: DateTime(2024, 1, 1),
         deletedAt: DateTime(2025, 1, 1),
       );
-      final active = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
+      final hiddenEarly = await ctx.newRemoteAsset(
+        ownerId: userId,
+        createdAt: DateTime(2024, 1, 2),
+        visibility: AssetVisibility.hidden,
+      );
+      final active1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 20));
       await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: trashedEarly.id);
-      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: active.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: hiddenEarly.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: active1.id);
 
-      // Album 2: one active asset at Jan 5 (earlier than album1's active asset)
+      // Album 2: one active asset at Jan 10 (earlier than album1's active asset)
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
-      final active2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 5));
+      final active2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
       await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: active2.id);
 
       final result = await sut.getSortedAlbumIds([album1.id, album2.id], aggregation: AssetDateAggregation.start);
 
-      // album2 (Jan 5) should come before album1 (Jan 10, ignoring trashed Jan 1)
-      expect(result, [album2.id, album1.id]);
-    });
-
-    test('ignores hidden and locked assets when sorting albums by date', () async {
-      // Album 1: active asset at Jan 20, hidden asset at Jan 1 (should be ignored)
-      final album1 = await ctx.newRemoteAlbum(ownerId: userId);
-      final hiddenEarly = await ctx.newRemoteAsset(
-        ownerId: userId,
-        createdAt: DateTime(2024, 1, 1),
-        visibility: AssetVisibility.hidden,
-      );
-      final activeAlbum1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 20));
-      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: hiddenEarly.id);
-      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: activeAlbum1.id);
-
-      // Album 2: one active asset at Jan 10 (earlier than album1's visible start)
-      final album2 = await ctx.newRemoteAlbum(ownerId: userId);
-      final activeAlbum2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
-      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: activeAlbum2.id);
-
-      final result = await sut.getSortedAlbumIds([album1.id, album2.id], aggregation: AssetDateAggregation.start);
-
-      // album2 (Jan 10) before album1 (Jan 20, ignoring hidden Jan 1)
+      // album2 (Jan 10) should come before album1 (Jan 20, ignoring trashed Jan 1 and hidden Jan 2)
       expect(result, [album2.id, album1.id]);
     });
   });

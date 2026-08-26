@@ -22,6 +22,10 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
 
   Drift get _db => attachedDatabase;
 
+  Expression<bool> get _activeAssetFilter =>
+      _db.remoteAssetEntity.deletedAt.isNull() &
+      _db.remoteAssetEntity.visibility.isInValues([AssetVisibility.archive, AssetVisibility.timeline]);
+
   Future<List<RemoteAlbum>> getAll({Set<SortRemoteAlbumsBy> sortBy = const {SortRemoteAlbumsBy.updatedAt}}) {
     // Count non-trashed assets via the joined asset table. Filtering trashed assets in the
     // join condition (instead of the where clause) keeps albums whose assets are all trashed
@@ -36,9 +40,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
       ),
       leftOuterJoin(
         _db.remoteAssetEntity,
-        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
-            _db.remoteAssetEntity.deletedAt.isNull() &
-            _db.remoteAssetEntity.visibility.isIn([AssetVisibility.archive.index, AssetVisibility.timeline.index]),
+        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) & _activeAssetFilter,
         useColumns: false,
       ),
       leftOuterJoin(
@@ -97,12 +99,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
             ),
             leftOuterJoin(
               _db.remoteAssetEntity,
-              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
-                  _db.remoteAssetEntity.deletedAt.isNull() &
-                  _db.remoteAssetEntity.visibility.isIn([
-                    AssetVisibility.archive.index,
-                    AssetVisibility.timeline.index,
-                  ]),
+              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) & _activeAssetFilter,
               useColumns: false,
             ),
             leftOuterJoin(
@@ -233,9 +230,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
       ..join([
         innerJoin(
           _db.remoteAssetEntity,
-          _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
-              _db.remoteAssetEntity.deletedAt.isNull() &
-              _db.remoteAssetEntity.visibility.isIn([AssetVisibility.archive.index, AssetVisibility.timeline.index]),
+          _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) & _activeAssetFilter,
         ),
       ]);
 
@@ -549,12 +544,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
             ),
             leftOuterJoin(
               _db.remoteAssetEntity,
-              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
-                  _db.remoteAssetEntity.deletedAt.isNull() &
-                  _db.remoteAssetEntity.visibility.isIn([
-                    AssetVisibility.archive.index,
-                    AssetVisibility.timeline.index,
-                  ]),
+              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) & _activeAssetFilter,
               useColumns: false,
             ),
             leftOuterJoin(
