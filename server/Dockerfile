@@ -39,7 +39,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   pnpm --filter immich build && \
   pnpm --filter immich --prod --no-optional deploy /output/server-pruned
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
-  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --dir /output/server-pruned/node_modules/sharp exec npm run build
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
 
 FROM sdk AS web
 
