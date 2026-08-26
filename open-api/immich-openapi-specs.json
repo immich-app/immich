@@ -20130,7 +20130,8 @@
         "enum": [
           "crop",
           "rotate",
-          "mirror"
+          "mirror",
+          "color"
         ],
         "type": "string"
       },
@@ -20149,9 +20150,12 @@
               },
               {
                 "$ref": "#/components/schemas/MirrorParameters"
+              },
+              {
+                "$ref": "#/components/schemas/ColorParameters"
               }
             ],
-            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+            "description": "Edit parameters for crop, rotate, mirror, or color actions"
           }
         },
         "required": [
@@ -20181,9 +20185,12 @@
               },
               {
                 "$ref": "#/components/schemas/MirrorParameters"
+              },
+              {
+                "$ref": "#/components/schemas/ColorParameters"
               }
             ],
-            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+            "description": "Edit parameters for crop, rotate, mirror, or color actions"
           }
         },
         "required": [
@@ -20196,7 +20203,7 @@
       "AssetEditsCreateDto": {
         "properties": {
           "edits": {
-            "description": "List of edit actions to apply (crop, rotate, or mirror)",
+            "description": "List of edit actions to apply (crop, rotate, mirror, or color)",
             "items": {
               "$ref": "#/components/schemas/AssetEditActionItemDto"
             },
@@ -21505,6 +21512,27 @@
           "createdAt",
           "id",
           "userId"
+        ],
+        "type": "object"
+      },
+      "ColorParameters": {
+        "properties": {
+          "brightness": {
+            "description": "Brightness adjustment from -100 to 100",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          },
+          "contrast": {
+            "description": "Contrast adjustment from -100 to 100",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          }
+        },
+        "required": [
+          "brightness",
+          "contrast"
         ],
         "type": "object"
       },
