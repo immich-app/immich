@@ -63,7 +63,6 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
   @override
   Widget build(BuildContext context) {
     final asset = widget.asset;
-    final tagAction = const TagAction(source: .viewer).create(context, ref);
     final isTagsEnabled = ref.watch(userMetadataPreferencesProvider).valueOrNull?.tagsEnabled ?? false;
     final user = ref.watch(currentUserProvider);
     if (asset is! RemoteAsset || !isTagsEnabled || asset.ownerId != user?.id) {
@@ -71,6 +70,7 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
     }
 
     final tags = ref.watch(assetTagsProvider(asset.id)).valueOrNull ?? const <Tag>[];
+    final tagAction = const TagAction(source: .viewer).create(context, ref);
     final tagBackground = context.primaryColor.withAlpha(25);
     final tagBorder = context.colorScheme.outlineVariant;
     final tagText = context.colorScheme.onSurface;

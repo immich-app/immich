@@ -12,8 +12,12 @@ import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_page.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../fixtures/asset.stub.dart';
+import '../../../service.mocks.dart';
 
 /// Timeline displaying a single asset that we can swap
 class _SwappableTimelineService extends TimelineService {
@@ -42,10 +46,16 @@ class _ZoomedNotifier extends AssetViewerStateNotifier {
 void main() {
   testWidgets('resets zoom when the displayed asset is replaced on reload', (tester) async {
     final timeline = _SwappableTimelineService(LocalAssetStub.image1);
+    final userService = MockUserService();
+    when(userService.tryGetMyUser).thenReturn(null);
+    when(userService.watchMyUser).thenAnswer((_) => const Stream.empty());
+
     final container = ProviderContainer(
       overrides: [
         timelineServiceProvider.overrideWithValue(timeline),
         assetViewerProvider.overrideWith(_ZoomedNotifier.new),
+        currentUserProvider.overrideWith((ref) => CurrentUserProvider(userService)),
+        userMetadataPreferencesProvider.overrideWith((ref) async => null),
       ],
     );
     addTearDown(container.dispose);
