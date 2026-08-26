@@ -6,15 +6,12 @@ on:
       releaseType:
         description: 'Release type'
         required: true
-        default: 'false'
+        default: 'preminor'
         type: choice
         options:
-          - 'false'
-          - minor
-          - patch
           - premajor
           - preminor
-          - prepatch
+          - patch
           - prerelease
           - release
       skipTranslations:
@@ -32,7 +29,7 @@ jobs:
   merge_translations:
     uses: ./.github/workflows/merge-translations.yml
     with:
-      skip: ${{ inputs.skipTranslations }}
+      skip: ${{ inputs.skipTranslations || github.ref_name != 'main' }}
     permissions:
       pull-requests: write
     secrets:
@@ -47,6 +44,20 @@ jobs:
       version: ${{ steps.output.outputs.version }}
     permissions: {}
     steps:
+      - name: Check the release type suits this branch
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RELEASE_TYPE: ${{ inputs.releaseType }}
+        run: |
+          case "${BRANCH}:${RELEASE_TYPE}" in
+            main:premajor | main:preminor) ;;
+            release/*:patch | release/*:prerelease | release/*:release) ;;
+            *)
+              echo "::error::${RELEASE_TYPE} cannot be released from ${BRANCH}"
+              exit 1
+              ;;
+          esac
+
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
         with:
@@ -59,7 +70,6 @@ jobs:
         with:
           token: ${{ steps.token.outputs.token }}
           persist-credentials: true
-          ref: main
 
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
@@ -87,3 +97,11 @@ jobs:
           git add -A
           git commit -m "chore: version ${VERSION}"
           git push
+
+      - name: Cut the release branch
+        if: ${{ github.ref_name == 'main' }}
+        env:
+          VERSION: ${{ steps.output.outputs.version }}
+        run: |
+          line=$(sed -E 's/^(v[0-9]+\.[0-9]+).*/\1/' <<< "${VERSION}")
+          git push origin "HEAD:refs/heads/release/${line}"
