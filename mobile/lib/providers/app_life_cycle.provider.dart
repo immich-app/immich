@@ -7,7 +7,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -128,7 +128,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           syncSuccess = await backgroundManager.syncRemote();
         }, "syncRemote"),
       ]);
-      _ref.invalidate(driftAllMemoriesProvider);
+      _ref.invalidate(allMemoriesProvider);
       if (syncSuccess) {
         await Future.wait([
           _safeRun(backgroundManager.hashAssets, "hashAssets").then((_) {
@@ -157,7 +157,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
         await _safeRun(
-          () => _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
+          () => _ref.read(backupProvider.notifier).startForegroundBackup(currentUser.id),
           "handleBackupResume",
         );
       }
@@ -207,7 +207,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
-      _ref.read(driftBackupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
+      _ref.read(backupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
       _ref.read(websocketProvider.notifier).disconnect();
     }

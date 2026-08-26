@@ -53,6 +53,7 @@ class PresentationContext {
   List<Override> get overrides => [
     driftProvider.overrideWithValue(_mockDrift()),
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
+    userServiceProvider.overrideWithValue(service.user.service),
     assetServiceProvider.overrideWithValue(service.asset.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
     remoteAlbumServiceProvider.overrideWithValue(service.album.service),

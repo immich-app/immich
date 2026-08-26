@@ -16,7 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -59,4 +59,4 @@ class MockUserApiRepository extends Mock implements UserApiRepository {}
 
 class MockSyncApiRepository extends Mock implements SyncApiRepository {}
 
-class MockDriftAlbumApiRepository extends Mock implements DriftAlbumApiRepository {}
+class MockAlbumApiRepository extends Mock implements AlbumApiRepository {}
