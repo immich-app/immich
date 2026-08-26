@@ -752,6 +752,14 @@ export type SyncPairingItemsResponseDto = {
     /** How many items match the filter, across every page */
     total: number;
 };
+export type SyncPairingRetryDto = {
+    /** Ledger entries to requeue. Omit to requeue every item that is out of attempts. */
+    itemIds?: string[];
+};
+export type SyncPairingRetryResponseDto = {
+    /** How many items were put back in the queue */
+    count: number;
+};
 export type SyncNodeUpdateDto = {
     /** API key for the peer. Write-only: never returned. */
     apiKey?: string;
@@ -4346,6 +4354,22 @@ export function getSyncPairingItems({ filter, id, page, size }: {
     }))}`, {
         ...opts
     }));
+}
+/**
+ * Retry the items that need attention
+ */
+export function retrySyncPairingItems({ id, syncPairingRetryDto }: {
+    id: string;
+    syncPairingRetryDto: SyncPairingRetryDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncPairingRetryResponseDto;
+    }>(`/admin/sync-nodes/pairings/${encodeURIComponent(id)}/retry`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: syncPairingRetryDto
+    })));
 }
 /**
  * Sync a pairing now

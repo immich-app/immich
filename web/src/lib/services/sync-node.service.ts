@@ -3,6 +3,7 @@ import {
   createSyncPairing,
   deleteSyncNode,
   deleteSyncPairing,
+  retrySyncPairingItems,
   syncPairingNow,
   testSyncNode,
   updateSyncNode,
@@ -11,6 +12,7 @@ import {
   type SyncNodeResponseDto,
   type SyncNodeUpdateDto,
   type SyncPairingCreateDto,
+  type SyncPairingItemDto,
   type SyncPairingResponseDto,
   type SyncPairingUpdateDto,
 } from '@immich/sdk';
@@ -194,6 +196,64 @@ const handleDeletePairing = async (pairing: SyncPairingResponseDto) => {
     eventManager.emit('SyncNodeUpdate', { id: pairing.nodeId } as SyncNodeResponseDto);
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_sync_pairing'));
+  }
+};
+
+/**
+ * Puts every item that has run out of attempts back in the queue.
+ *
+ * Confirmed rather than immediate: if whatever broke these is still broken they
+ * will just burn through their attempts again, and the count says how much work
+ * that would be.
+ */
+export const handleRetryStuckItems = async (pairing: SyncPairingResponseDto) => {
+  const $t = await getFormatter();
+
+  if (pairing.stuckCount === 0) {
+    toastManager.info($t('admin.sync_pairing_retry_nothing'));
+    return false;
+  }
+
+  const confirmed = await modalManager.showDialog({
+    title: $t('admin.sync_pairing_retry_title'),
+    prompt: $t('admin.sync_pairing_retry_prompt', { values: { count: pairing.stuckCount } }),
+    confirmText: $t('admin.sync_pairing_retry'),
+  });
+
+  if (!confirmed) {
+    return false;
+  }
+
+  return retryItems(pairing.id, {});
+};
+
+/** Retries one item, for when only a single asset was the problem. */
+export const handleRetryStuckItem = async (pairing: SyncPairingResponseDto, item: SyncPairingItemDto) => {
+  const $t = await getFormatter();
+
+  const confirmed = await modalManager.showDialog({
+    title: $t('admin.sync_pairing_retry_title'),
+    prompt: $t('admin.sync_pairing_retry_item_prompt', { values: { name: item.fileName ?? item.assetId } }),
+    confirmText: $t('admin.sync_pairing_retry'),
+  });
+
+  if (!confirmed) {
+    return false;
+  }
+
+  return retryItems(pairing.id, { itemIds: [item.id] });
+};
+
+const retryItems = async (id: string, syncPairingRetryDto: { itemIds?: string[] }) => {
+  const $t = await getFormatter();
+
+  try {
+    const { count } = await retrySyncPairingItems({ id, syncPairingRetryDto });
+    toastManager.info($t('admin.sync_pairing_retry_queued', { values: { count } }));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_retry_sync_items'));
+    return false;
   }
 };
 

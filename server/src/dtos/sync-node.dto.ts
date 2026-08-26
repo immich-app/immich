@@ -128,6 +128,21 @@ const SyncPairingItemSchema = z
   })
   .meta({ id: 'SyncPairingItemDto' });
 
+const SyncPairingRetrySchema = z
+  .object({
+    itemIds: z
+      .array(z.uuidv4())
+      .optional()
+      .describe('Ledger entries to requeue. Omit to requeue every item that is out of attempts.'),
+  })
+  .meta({ id: 'SyncPairingRetryDto' });
+
+const SyncPairingRetryResponseSchema = z
+  .object({
+    count: z.int().describe('How many items were put back in the queue'),
+  })
+  .meta({ id: 'SyncPairingRetryResponseDto' });
+
 const SyncPairingItemsResponseSchema = z
   .object({
     items: z.array(SyncPairingItemSchema).describe('Outstanding items on this page'),
@@ -147,6 +162,8 @@ export class SyncPairingResponseDto extends createZodDto(SyncPairingResponseSche
 export class SyncPairingItemSearchDto extends createZodDto(SyncPairingItemSearchSchema) {}
 export class SyncPairingItemDto extends createZodDto(SyncPairingItemSchema) {}
 export class SyncPairingItemsResponseDto extends createZodDto(SyncPairingItemsResponseSchema) {}
+export class SyncPairingRetryDto extends createZodDto(SyncPairingRetrySchema) {}
+export class SyncPairingRetryResponseDto extends createZodDto(SyncPairingRetryResponseSchema) {}
 
 /** Note the absence of `apiKey`: it is write-only and must never reach a client. */
 export function mapSyncNode(entity: Selectable<SyncNodeTable>): SyncNodeResponseDto {

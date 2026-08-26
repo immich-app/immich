@@ -2271,6 +2271,74 @@
         "x-immich-state": "Beta"
       }
     },
+    "/admin/sync-nodes/pairings/{id}/retry": {
+      "post": {
+        "description": "Put items that have run out of attempts back in the queue and start them, for once whatever was blocking them has been dealt with. Omit the item list to retry all of them.",
+        "operationId": "retrySyncPairingItems",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPairingRetryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncPairingRetryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retry the items that need attention",
+        "tags": [
+          "Sync nodes (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "adminSyncNode.update",
+        "x-immich-state": "Beta"
+      }
+    },
     "/admin/sync-nodes/pairings/{id}/sync": {
       "post": {
         "description": "Queue an immediate sync for one pairing instead of waiting for the schedule.",
@@ -29926,6 +29994,34 @@
           "retryingCount",
           "stuckCount",
           "syncedCount"
+        ],
+        "type": "object"
+      },
+      "SyncPairingRetryDto": {
+        "properties": {
+          "itemIds": {
+            "description": "Ledger entries to requeue. Omit to requeue every item that is out of attempts.",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SyncPairingRetryResponseDto": {
+        "properties": {
+          "count": {
+            "description": "How many items were put back in the queue",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
         ],
         "type": "object"
       },

@@ -298,6 +298,58 @@ describe(SyncNodeService.name, () => {
     });
   });
 
+  describe('retryPairingItems', () => {
+    it('should requeue every stuck item and start it', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(pairingStub);
+      mocks.syncNode.retryExhaustedItems.mockResolvedValue([
+        { id: 'item-1', direction: SyncDirection.Push, assetId: 'asset-1' },
+        { id: 'item-2', direction: SyncDirection.Pull, assetId: 'remote-asset-2' },
+      ]);
+
+      await expect(sut.retryPairingItems('pairing-1', {})).resolves.toEqual({ count: 2 });
+
+      expect(mocks.syncNode.retryExhaustedItems).toHaveBeenCalledWith('pairing-1', NODE_SYNC_MAX_ATTEMPTS, void 0);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: 'NodeSyncPushAsset',
+        data: { pairingId: 'pairing-1', assetId: 'asset-1' },
+      });
+      // A pull is queued as a pull: the id is the peer's, and pushing it would
+      // look for a local asset that does not exist.
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: 'NodeSyncPullAsset',
+        data: { pairingId: 'pairing-1', assetId: 'remote-asset-2' },
+      });
+    });
+
+    it('should pass a requested subset through rather than retrying everything', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(pairingStub);
+      mocks.syncNode.retryExhaustedItems.mockResolvedValue([
+        { id: 'item-1', direction: SyncDirection.Push, assetId: 'asset-1' },
+      ]);
+
+      await expect(sut.retryPairingItems('pairing-1', { itemIds: ['item-1'] })).resolves.toEqual({ count: 1 });
+
+      expect(mocks.syncNode.retryExhaustedItems).toHaveBeenCalledWith('pairing-1', NODE_SYNC_MAX_ATTEMPTS, ['item-1']);
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
+    });
+
+    it('should queue nothing when there is nothing stuck', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(pairingStub);
+      mocks.syncNode.retryExhaustedItems.mockResolvedValue([]);
+
+      await expect(sut.retryPairingItems('pairing-1', {})).resolves.toEqual({ count: 0 });
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should throw for a pairing that does not exist', async () => {
+      mocks.syncNode.getPairing.mockResolvedValue(void 0);
+
+      await expect(sut.retryPairingItems('nope', {})).rejects.toBeInstanceOf(NotFoundException);
+      expect(mocks.syncNode.retryExhaustedItems).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getPairingItems', () => {
     const itemStub = {
       id: 'item-1',

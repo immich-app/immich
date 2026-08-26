@@ -13,9 +13,11 @@ import {
   SyncPairingItemSearchDto,
   SyncPairingItemsResponseDto,
   SyncPairingResponseDto,
+  SyncPairingRetryDto,
+  SyncPairingRetryResponseDto,
   SyncPairingUpdateDto,
 } from 'src/dtos/sync-node.dto';
-import { JobName, SyncItemFilter, SyncNodeStatus } from 'src/enum';
+import { JobName, SyncDirection, SyncItemFilter, SyncNodeStatus } from 'src/enum';
 import { NodeClientError, NodeCredentials } from 'src/repositories/node-client.repository';
 import { BaseService } from 'src/services/base.service';
 
@@ -156,6 +158,37 @@ export class SyncNodeService extends BaseService {
       total,
       maxAttempts: NODE_SYNC_MAX_ATTEMPTS,
     };
+  }
+
+  /**
+   * Hands items that ran out of attempts back to the queue.
+   *
+   * The attempt ceiling stops a broken asset consuming bandwidth on every run,
+   * but the thing that broke is usually outside the asset -- a peer that was
+   * down, a full disk, a key without the right permission. Once that is fixed
+   * there has to be a way to say so, or the only route back is unpairing and
+   * resyncing the whole library.
+   *
+   * Work is queued here rather than only cleared for the next scheduled run, so
+   * pressing the button visibly does something.
+   */
+  async retryPairingItems(pairingId: string, dto: SyncPairingRetryDto): Promise<SyncPairingRetryResponseDto> {
+    await this.findPairingOrFail(pairingId);
+
+    const items = await this.syncNodeRepository.retryExhaustedItems(pairingId, NODE_SYNC_MAX_ATTEMPTS, dto.itemIds);
+
+    for (const item of items) {
+      await this.jobRepository.queue({
+        name: item.direction === SyncDirection.Push ? JobName.NodeSyncPushAsset : JobName.NodeSyncPullAsset,
+        data: { pairingId, assetId: item.assetId },
+      });
+    }
+
+    if (items.length > 0) {
+      this.logger.log(`Requeued ${items.length} stuck sync item(s) for pairing ${pairingId}`);
+    }
+
+    return { count: items.length };
   }
 
   async createPairing(id: string, dto: SyncPairingCreateDto): Promise<SyncPairingResponseDto> {

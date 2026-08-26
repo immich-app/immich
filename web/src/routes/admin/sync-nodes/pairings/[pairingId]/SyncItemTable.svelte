@@ -1,7 +1,18 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { SyncDirection, type SyncPairingItemDto } from '@immich/sdk';
-  import { Badge, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow, Text } from '@immich/ui';
+  import {
+    Badge,
+    IconButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableHeading,
+    TableRow,
+    Text,
+  } from '@immich/ui';
+  import { mdiRestart } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -9,9 +20,11 @@
     items: SyncPairingItemDto[];
     maxAttempts: number;
     nodeName: string;
+    /** Given only where retrying makes sense, which is the out-of-attempts table. */
+    onRetry?: (item: SyncPairingItemDto) => void;
   };
 
-  const { items, maxAttempts, nodeName }: Props = $props();
+  const { items, maxAttempts, nodeName, onRetry }: Props = $props();
 
   const formatDate = (value: string) => DateTime.fromISO(value).setLocale($locale).toRelative();
 
@@ -27,6 +40,9 @@
     <TableHeading class="w-1/5 text-left">{$t('admin.sync_pairing_reason')}</TableHeading>
     <TableHeading class="w-1/5 text-left">{$t('admin.sync_pairing_attempts_heading')}</TableHeading>
     <TableHeading class="w-1/5 text-left">{$t('admin.sync_pairing_last_tried')}</TableHeading>
+    {#if onRetry}
+      <TableHeading class="w-16 text-right"></TableHeading>
+    {/if}
   </TableHeader>
 
   <TableBody>
@@ -42,7 +58,8 @@
 
         <TableCell class="px-4 text-left">
           {#if item.lastError}
-            <Text size="tiny" color={item.isStuck ? 'danger' : 'warning'} class="wrap-break-word">{item.lastError}</Text>
+            <Text size="tiny" color={item.isStuck ? 'danger' : 'warning'} class="wrap-break-word">{item.lastError}</Text
+            >
           {:else}
             <Text size="tiny" color="secondary">{$t('admin.sync_pairing_item_waiting')}</Text>
           {/if}
@@ -57,6 +74,20 @@
         <TableCell class="px-4 text-left">
           <Text size="tiny" color="secondary">{formatDate(item.updatedAt)}</Text>
         </TableCell>
+
+        {#if onRetry}
+          <TableCell class="px-4 text-right">
+            <IconButton
+              icon={mdiRestart}
+              aria-label={$t('admin.sync_pairing_retry')}
+              title={$t('admin.sync_pairing_retry')}
+              size="small"
+              variant="ghost"
+              color="primary"
+              onclick={() => onRetry(item)}
+            />
+          </TableCell>
+        {/if}
       </TableRow>
     {/each}
   </TableBody>

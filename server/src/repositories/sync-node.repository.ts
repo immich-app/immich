@@ -226,6 +226,33 @@ export class SyncNodeRepository {
   }
 
   /**
+   * Puts items that ran out of attempts back in the queue's reach.
+   *
+   * Resetting the attempt count is the whole point: the retry pass selects on
+   * `attempts < maxAttempts`, so an exhausted item is invisible to it until the
+   * counter goes back to zero. The last error is cleared with it, since keeping
+   * it next to a zero attempt count would describe a run that no longer stands.
+   *
+   * Only exhausted items are touched. An item still being retried has a counter
+   * that means something, and resetting it would hand it an unbounded supply of
+   * attempts -- exactly the runaway the ceiling exists to stop.
+   */
+  async retryExhaustedItems(nodeUserId: string, maxAttempts: number, itemIds?: string[]) {
+    if (itemIds && itemIds.length === 0) {
+      return [];
+    }
+
+    return this.db
+      .updateTable('sync_node_item')
+      .set({ status: SyncItemStatus.Pending, attempts: 0, lastError: null })
+      .where('nodeUserId', '=', nodeUserId)
+      .where('attempts', '>=', maxAttempts)
+      .$if(itemIds !== undefined, (qb) => qb.where('id', 'in', itemIds!))
+      .returning(['id', 'direction', 'assetId'])
+      .execute();
+  }
+
+  /**
    * Items worth another go: anything failed or left pending, below the attempt
    * ceiling. Oldest first, so a persistent straggler cannot starve newer work.
    */

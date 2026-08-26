@@ -11,6 +11,8 @@ import {
   SyncPairingItemSearchDto,
   SyncPairingItemsResponseDto,
   SyncPairingResponseDto,
+  SyncPairingRetryDto,
+  SyncPairingRetryResponseDto,
   SyncPairingUpdateDto,
 } from 'src/dtos/sync-node.dto';
 import { ApiTag, Permission } from 'src/enum';
@@ -148,6 +150,22 @@ export class SyncNodeAdminController {
     @Query() dto: SyncPairingItemSearchDto,
   ): Promise<SyncPairingItemsResponseDto> {
     return this.service.getPairingItems(id, dto);
+  }
+
+  @Post('pairings/:id/retry')
+  @Authenticated({ permission: Permission.AdminSyncNodeUpdate, admin: true })
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Retry the items that need attention',
+    description:
+      'Put items that have run out of attempts back in the queue and start them, for once whatever was blocking them has been dealt with. Omit the item list to retry all of them.',
+    history: new HistoryBuilder().added('v3').beta('v3'),
+  })
+  retrySyncPairingItems(
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: SyncPairingRetryDto,
+  ): Promise<SyncPairingRetryResponseDto> {
+    return this.service.retryPairingItems(id, dto);
   }
 
   @Put('pairings/:id')

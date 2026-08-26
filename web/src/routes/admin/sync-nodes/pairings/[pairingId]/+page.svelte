@@ -7,18 +7,20 @@
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Route } from '$lib/route';
-  import { getSyncPairingActions } from '$lib/services/sync-node.service';
+  import { getSyncPairingActions, handleRetryStuckItem, handleRetryStuckItems } from '$lib/services/sync-node.service';
   import { locale } from '$lib/stores/preferences.store';
   import {
     getSyncPairing,
     getSyncPairingItems,
     QueueName,
     SyncItemFilter,
+    type SyncPairingItemDto,
     type SyncPairingItemsResponseDto,
     type SyncPairingResponseDto,
   } from '@immich/sdk';
   import {
     Badge,
+    Button,
     Card,
     CardBody,
     CardDescription,
@@ -29,6 +31,7 @@
     ProgressBar,
     Text,
   } from '@immich/ui';
+  import { mdiRestart } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -75,6 +78,20 @@
       polled = { id, pairing, active, stuck };
     } catch {
       // A failed tick leaves the last good numbers on screen; the next one tries again.
+    }
+  };
+
+  // Requeuing moves rows between the two tables, so the page is refreshed at once
+  // rather than leaving the old split on screen until the next tick.
+  const retryAll = async () => {
+    if (await handleRetryStuckItems(pairing)) {
+      await refresh();
+    }
+  };
+
+  const retryOne = async (item: SyncPairingItemDto) => {
+    if (await handleRetryStuckItem(pairing, item)) {
+      await refresh();
     }
   };
 
@@ -221,16 +238,29 @@
       {#if stuck.total > 0}
         <Card>
           <CardHeader>
-            <CardTitle>
-              <span class="text-danger">{$t('admin.sync_pairing_items_needs_attention')}</span>
-            </CardTitle>
-            <CardDescription>
-              {$t('admin.sync_pairing_items_needs_attention_description', { values: { count: stuck.maxAttempts } })}
-            </CardDescription>
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div class="flex flex-col gap-1">
+                <CardTitle>
+                  <span class="text-danger">{$t('admin.sync_pairing_items_needs_attention')}</span>
+                </CardTitle>
+                <CardDescription>
+                  {$t('admin.sync_pairing_items_needs_attention_description', { values: { count: stuck.maxAttempts } })}
+                </CardDescription>
+              </div>
+
+              <Button size="small" shape="round" leadingIcon={mdiRestart} onclick={() => void retryAll()}>
+                {$t('admin.sync_pairing_retry_all')}
+              </Button>
+            </div>
           </CardHeader>
 
           <CardBody>
-            <SyncItemTable items={stuck.items} maxAttempts={stuck.maxAttempts} nodeName={node.name} />
+            <SyncItemTable
+              items={stuck.items}
+              maxAttempts={stuck.maxAttempts}
+              nodeName={node.name}
+              onRetry={(item) => void retryOne(item)}
+            />
             {#if stuck.total > stuck.items.length}
               <Text size="tiny" color="secondary" class="mt-2">
                 {$t('admin.sync_pairing_items_truncated', {
