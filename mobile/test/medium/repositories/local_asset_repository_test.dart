@@ -86,6 +86,44 @@ void main() {
     });
   });
 
+  group('watch', () {
+    test('emits remoteId when a matching current-user remote asset appears', () async {
+      const checksum = 'watch-matching-checksum';
+      const remoteId = 'remote-1';
+      final user = await ctx.newUser();
+      await ctx.newAuthUser(id: user.id);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      final updates = <LocalAsset?>[];
+      final subscription = sut.watch(local.id).listen(updates.add);
+      addTearDown(subscription.cancel);
+
+      await pumpEventQueue();
+      expect(updates.last?.remoteId, isNull);
+
+      await ctx.newRemoteAsset(id: remoteId, ownerId: user.id, checksum: checksum);
+
+      await pumpEventQueue();
+      expect(updates.last?.remoteId, remoteId);
+    });
+
+    test('keeps local-only state when only a partner remote asset appears', () async {
+      const checksum = 'watch-partner-checksum';
+      final user = await ctx.newUser();
+      final partner = await ctx.newUser();
+      await ctx.newAuthUser(id: user.id);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      final updates = <LocalAsset?>[];
+      final subscription = sut.watch(local.id).listen(updates.add);
+      addTearDown(subscription.cancel);
+
+      await pumpEventQueue();
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+
+      await pumpEventQueue();
+      expect(updates.last?.remoteId, isNull);
+    });
+  });
+
   group('getRemovalCandidates', () {
     final cutoffDate = DateTime(2024, 1, 1);
     final beforeCutoff = DateTime(2023, 12, 31);

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -12,6 +15,8 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
+import '../factories/local_asset_factory.dart';
+import '../factories/remote_asset_factory.dart';
 import '../mocks.dart';
 
 void main() {
@@ -53,6 +58,30 @@ void main() {
 
   tearDown(() async {
     await Store.delete(StoreKey.manageLocalMediaAndroid);
+  });
+
+  group('AssetService.watchAsset', () {
+    test('promotes a watched local asset to its linked remote asset', () async {
+      final localAsset = LocalAssetFactory.create(id: 'local-1');
+      final linkedLocalAsset = localAsset.copyWith(remoteId: 'remote-1');
+      final remoteAsset = RemoteAssetFactory.create(id: 'remote-1');
+      final localUpdates = StreamController<LocalAsset?>();
+      final remoteUpdates = StreamController<RemoteAsset?>();
+      addTearDown(localUpdates.close);
+      addTearDown(remoteUpdates.close);
+
+      when(() => mocks.localAsset.repo.watch(localAsset.id)).thenAnswer((_) => localUpdates.stream);
+      when(() => remoteRepository.watch(remoteAsset.id)).thenAnswer((_) => remoteUpdates.stream);
+
+      final updates = expectLater(sut.watchAsset(localAsset), emitsInOrder([localAsset, remoteAsset]));
+
+      localUpdates.add(localAsset);
+      localUpdates.add(linkedLocalAsset);
+      remoteUpdates.add(remoteAsset);
+
+      await updates;
+      verify(() => remoteRepository.watch(remoteAsset.id)).called(1);
+    });
   });
 
   group('AssetService.updateDateTime', () {
