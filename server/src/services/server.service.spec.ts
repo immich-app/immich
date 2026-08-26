@@ -160,6 +160,7 @@ describe(ServerService.name, () => {
       await expect(sut.getSystemConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
+        oauthAccountManagementUrl: '',
         trashDays: 30,
         userDeleteDelay: 7,
         isInitialized: false,

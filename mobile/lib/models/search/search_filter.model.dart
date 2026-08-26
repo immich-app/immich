@@ -7,15 +7,11 @@ import 'package:immich_mobile/utils/option.dart';
 
 part 'search_filter.model.freezed.dart';
 
-class SearchLocationFilter {
-  String? country;
-  String? state;
-  String? city;
-  SearchLocationFilter({this.country, this.state, this.city});
+@Freezed(fromJson: false, toJson: false)
+abstract class SearchLocationFilter with _$SearchLocationFilter {
+  const SearchLocationFilter._();
 
-  SearchLocationFilter copyWith({String? country, String? state, String? city}) {
-    return SearchLocationFilter(country: country ?? this.country, state: state ?? this.state, city: city ?? this.city);
-  }
+  const factory SearchLocationFilter({String? country, String? state, String? city}) = _SearchLocationFilter;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'country': country, 'state': state, 'city': city};
@@ -33,31 +29,13 @@ class SearchLocationFilter {
 
   factory SearchLocationFilter.fromJson(String source) =>
       SearchLocationFilter.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() => 'SearchLocationFilter(country: $country, state: $state, city: $city)';
-
-  @override
-  bool operator ==(covariant SearchLocationFilter other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.country == country && other.state == state && other.city == city;
-  }
-
-  @override
-  int get hashCode => country.hashCode ^ state.hashCode ^ city.hashCode;
 }
 
-class SearchCameraFilter {
-  String? make;
-  String? model;
-  SearchCameraFilter({this.make, this.model});
+@Freezed(fromJson: false, toJson: false)
+abstract class SearchCameraFilter with _$SearchCameraFilter {
+  const SearchCameraFilter._();
 
-  SearchCameraFilter copyWith({String? make, String? model}) {
-    return SearchCameraFilter(make: make ?? this.make, model: model ?? this.model);
-  }
+  const factory SearchCameraFilter({String? make, String? model}) = _SearchCameraFilter;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'make': make, 'model': model};
@@ -74,31 +52,13 @@ class SearchCameraFilter {
 
   factory SearchCameraFilter.fromJson(String source) =>
       SearchCameraFilter.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() => 'SearchCameraFilter(make: $make, model: $model)';
-
-  @override
-  bool operator ==(covariant SearchCameraFilter other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.make == make && other.model == model;
-  }
-
-  @override
-  int get hashCode => make.hashCode ^ model.hashCode;
 }
 
-class SearchDateFilter {
-  DateTime? takenBefore;
-  DateTime? takenAfter;
-  SearchDateFilter({this.takenBefore, this.takenAfter});
+@Freezed(fromJson: false, toJson: false)
+abstract class SearchDateFilter with _$SearchDateFilter {
+  const SearchDateFilter._();
 
-  SearchDateFilter copyWith({DateTime? takenBefore, DateTime? takenAfter}) {
-    return SearchDateFilter(takenBefore: takenBefore ?? this.takenBefore, takenAfter: takenAfter ?? this.takenAfter);
-  }
+  const factory SearchDateFilter({DateTime? takenBefore, DateTime? takenAfter}) = _SearchDateFilter;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -118,31 +78,15 @@ class SearchDateFilter {
 
   factory SearchDateFilter.fromJson(String source) =>
       SearchDateFilter.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() => 'SearchDateFilter(takenBefore: $takenBefore, takenAfter: $takenAfter)';
-
-  @override
-  bool operator ==(covariant SearchDateFilter other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.takenBefore == takenBefore && other.takenAfter == takenAfter;
-  }
-
-  @override
-  int get hashCode => takenBefore.hashCode ^ takenAfter.hashCode;
 }
 
-class SearchRatingFilter {
-  /// none = no filter; some(null) = filter for unrated; some(1-5) = filter for that rating
-  Option<int?> rating;
-  SearchRatingFilter({this.rating = const Option.none()});
+@Freezed(fromJson: false, toJson: false)
+abstract class SearchRatingFilter with _$SearchRatingFilter {
+  const SearchRatingFilter._();
 
-  SearchRatingFilter copyWith({Option<int?>? rating}) {
-    return SearchRatingFilter(rating: rating ?? this.rating);
-  }
+  /// [rating]: none = no filter; some(null) = filter for unrated; some(1-5) = filter for that rating
+  // TODO(agg23): Switch to enum
+  const factory SearchRatingFilter({@Default(Option.none()) Option<int?> rating}) = _SearchRatingFilter;
 
   Map<String, dynamic> toMap() {
     if (rating.isNone) {
@@ -153,7 +97,7 @@ class SearchRatingFilter {
 
   factory SearchRatingFilter.fromMap(Map<String, dynamic> map) {
     if (!(map['active'] as bool? ?? false)) {
-      return SearchRatingFilter();
+      return const SearchRatingFilter();
     }
     return SearchRatingFilter(rating: Option.some(map['value'] as int?));
   }
@@ -162,21 +106,6 @@ class SearchRatingFilter {
 
   factory SearchRatingFilter.fromJson(String source) =>
       SearchRatingFilter.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() => 'SearchRatingFilter(rating: $rating)';
-
-  @override
-  bool operator ==(covariant SearchRatingFilter other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.rating == rating;
-  }
-
-  @override
-  int get hashCode => rating.hashCode;
 }
 
 @freezed
@@ -185,40 +114,26 @@ abstract class SearchDisplayFilters with _$SearchDisplayFilters {
       _SearchDisplayFilters;
 }
 
-class SearchFilter {
-  String? context;
-  String? filename;
-  String? description;
-  String? ocr;
-  String? language;
-  String? assetId;
-  List<String>? tagIds;
-  Set<Person> people;
-  SearchLocationFilter location;
-  SearchCameraFilter camera;
-  SearchDateFilter date;
-  SearchRatingFilter rating;
-  SearchDisplayFilters display;
+@freezed
+abstract class SearchFilter with _$SearchFilter {
+  const SearchFilter._();
 
-  // Enum
-  AssetType mediaType;
-
-  SearchFilter({
-    this.context,
-    this.filename,
-    this.description,
-    this.ocr,
-    this.language,
-    this.assetId,
-    this.tagIds,
-    required this.people,
-    required this.location,
-    required this.camera,
-    required this.date,
-    required this.display,
-    required this.rating,
-    required this.mediaType,
-  });
+  const factory SearchFilter({
+    String? context,
+    String? filename,
+    String? description,
+    String? ocr,
+    String? language,
+    String? assetId,
+    List<String>? tagIds,
+    required Set<Person> people,
+    required SearchLocationFilter location,
+    required SearchCameraFilter camera,
+    required SearchDateFilter date,
+    required SearchRatingFilter rating,
+    required SearchDisplayFilters display,
+    required AssetType mediaType,
+  }) = _SearchFilter;
 
   bool get isEmpty {
     return (context == null || (context != null && context!.isEmpty)) &&
@@ -240,84 +155,5 @@ class SearchFilter {
         display.isFavorite == false &&
         rating.rating.isNone &&
         mediaType == AssetType.other;
-  }
-
-  SearchFilter copyWith({
-    String? context,
-    String? filename,
-    String? description,
-    String? language,
-    String? ocr,
-    String? assetId,
-    Set<Person>? people,
-    List<String>? tagIds,
-    SearchLocationFilter? location,
-    SearchCameraFilter? camera,
-    SearchDateFilter? date,
-    SearchDisplayFilters? display,
-    SearchRatingFilter? rating,
-    AssetType? mediaType,
-  }) {
-    return SearchFilter(
-      context: context ?? this.context,
-      filename: filename ?? this.filename,
-      description: description ?? this.description,
-      language: language ?? this.language,
-      ocr: ocr ?? this.ocr,
-      assetId: assetId ?? this.assetId,
-      people: people ?? this.people,
-      location: location ?? this.location,
-      camera: camera ?? this.camera,
-      date: date ?? this.date,
-      display: display ?? this.display,
-      rating: rating ?? this.rating,
-      mediaType: mediaType ?? this.mediaType,
-      tagIds: tagIds ?? this.tagIds,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
-  }
-
-  @override
-  bool operator ==(covariant SearchFilter other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.context == context &&
-        other.filename == filename &&
-        other.description == description &&
-        other.language == language &&
-        other.ocr == ocr &&
-        other.assetId == assetId &&
-        other.people == people &&
-        other.tagIds == tagIds &&
-        other.location == location &&
-        other.camera == camera &&
-        other.date == date &&
-        other.display == display &&
-        other.rating == rating &&
-        other.mediaType == mediaType;
-  }
-
-  @override
-  int get hashCode {
-    return context.hashCode ^
-        filename.hashCode ^
-        description.hashCode ^
-        language.hashCode ^
-        ocr.hashCode ^
-        assetId.hashCode ^
-        people.hashCode ^
-        tagIds.hashCode ^
-        location.hashCode ^
-        camera.hashCode ^
-        date.hashCode ^
-        display.hashCode ^
-        rating.hashCode ^
-        mediaType.hashCode;
   }
 }

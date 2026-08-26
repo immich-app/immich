@@ -6,7 +6,7 @@ version: 3.1.0+3057
 
 environment:
   sdk: '>=3.12.0 <4.0.0'
-  flutter: 3.44.9
+  flutter: 3.47.1
 
 dependencies:
   async: ^2.13.1
@@ -44,7 +44,7 @@ dependencies:
   intl: ^0.20.2
   local_auth: ^2.3.0
   logging: ^1.3.0
-  maplibre_gl: ^0.26.0
+  maplibre_gl: ^0.27.0
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player

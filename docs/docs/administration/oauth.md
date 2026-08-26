@@ -154,9 +154,10 @@ identity_providers:
       - client_id: 'immich'
         client_name: 'Immich'
         # https://www.authelia.com/integration/openid-connect/frequently-asked-questions/#how-do-i-generate-a-client-identifier-or-client-secret
-        client_secret: $pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'
+        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'
         public: false
-        require_pkce: false
+        require_pkce: true
+        pkce_challenge_method: 'S256'
         redirect_uris:
           - 'https://example.immich.app/auth/login'
           - 'https://example.immich.app/user-settings'
@@ -180,7 +181,7 @@ Configuration of OAuth in Immich System Settings
 
 | Setting                            | Value                                                               |
 | ---------------------------------- | ------------------------------------------------------------------- |
-| Issuer URL                         | `https://example.immich.app/.well-known/openid-configuration`       |
+| Issuer URL                         | `https://auth.example.com`                                          |
 | Client ID                          | immich                                                              |
 | Client Secret                      | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw... |
 | Token Endpoint Auth Method         | client_secret_post                                                  |
@@ -212,21 +213,21 @@ Configuration of Authorised redirect URIs (Authentik OAuth2/OpenID Provider)
 
 Configuration of OAuth in Immich System Settings
 
-| Setting                      | Value                                                                              |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
-| Issuer URL                   | `https://example.immich.app/application/o/immich/.well-known/openid-configuration` |
-| Client ID                    | AFCj2rM1f4rps**\*\*\*\***\***\*\*\*\***lCLEum6hH9...                               |
-| Client Secret                | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw...                |
-| Scope                        | openid email profile                                                               |
-| Signing Algorithm            | RS256                                                                              |
-| Storage Label Claim          | preferred_username                                                                 |
-| Storage Quota Claim          | immich_quota                                                                       |
-| Default Storage Quota (GiB)  | 0 (empty for unlimited quota)                                                      |
-| Button Text                  | Sign in with Authentik (optional)                                                  |
-| Auto Register                | Enabled (optional)                                                                 |
-| Auto Launch                  | Enabled (optional)                                                                 |
-| Mobile Redirect URI Override | Disable                                                                            |
-| Mobile Redirect URI          |                                                                                    |
+| Setting                      | Value                                                               |
+| ---------------------------- | ------------------------------------------------------------------- |
+| Issuer URL                   | `https://authentik.example.com/application/o/immich/`               |
+| Client ID                    | AFCj2rM1f4rps**\*\*\*\***\***\*\*\*\***lCLEum6hH9...                |
+| Client Secret                | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw... |
+| Scope                        | openid email profile                                                |
+| Signing Algorithm            | RS256                                                               |
+| Storage Label Claim          | preferred_username                                                  |
+| Storage Quota Claim          | immich_quota                                                        |
+| Default Storage Quota (GiB)  | 0 (empty for unlimited quota)                                       |
+| Button Text                  | Sign in with Authentik (optional)                                   |
+| Auto Register                | Enabled (optional)                                                  |
+| Auto Launch                  | Enabled (optional)                                                  |
+| Mobile Redirect URI Override | Disable                                                             |
+| Mobile Redirect URI          |                                                                     |
 
 </details>
 

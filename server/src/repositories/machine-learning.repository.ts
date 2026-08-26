@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
-import { MachineLearningConfig } from 'src/config';
-import { CLIPConfig } from 'src/dtos/model-config.dto';
+import { MachineLearningConfig } from 'src/dtos/config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export interface BoundingBox {
@@ -179,9 +178,7 @@ export class MachineLearningRepository {
           `Machine learning request to "${url}" failed with status ${response.status}: ${response.statusText}`,
         );
       } catch (error: Error | unknown) {
-        this.logger.warn(
-          `Machine learning request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
-        );
+        this.logger.warn(`Machine learning request to "${url}" failed`, error);
       }
 
       this.setHealthy(url, false);
@@ -205,7 +202,7 @@ export class MachineLearningRepository {
     };
   }
 
-  async encodeImage(imagePath: string, { modelName }: CLIPConfig) {
+  async encodeImage(imagePath: string, { modelName }: MachineLearningConfig['clip']) {
     const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
     const response = await this.predict<ClipVisualResponse>({ imagePath }, request);
     return response[ModelTask.SEARCH];

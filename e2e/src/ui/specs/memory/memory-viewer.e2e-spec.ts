@@ -79,7 +79,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const firstMemory = memories[0];
       const middleAsset = firstMemory.assets[1];
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, middleAsset.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, firstMemory.id, middleAsset.id);
       await memoryGalleryUtils.clickThumbnail(page, middleAsset.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -93,7 +93,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const firstMemory = memories[0];
       const lastAssetOfFirstMemory = firstMemory.assets.at(-1)!;
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, lastAssetOfFirstMemory.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, firstMemory.id, lastAssetOfFirstMemory.id);
       await memoryGalleryUtils.clickThumbnail(page, lastAssetOfFirstMemory.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -107,7 +107,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const lastMemory = memories.at(-1)!;
       const firstAssetOfLastMemory = lastMemory.assets[0];
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, firstAssetOfLastMemory.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, lastMemory.id, firstAssetOfLastMemory.id);
       await memoryGalleryUtils.clickThumbnail(page, firstAssetOfLastMemory.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -123,7 +123,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const lastAssetOfFirst = firstMemory.assets.at(-1)!;
       const firstAssetOfSecond = secondMemory.assets[0];
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, lastAssetOfFirst.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, firstMemory.id, lastAssetOfFirst.id);
       await memoryGalleryUtils.clickThumbnail(page, lastAssetOfFirst.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -141,7 +141,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const lastAssetOfFirst = firstMemory.assets.at(-1)!;
       const firstAssetOfSecond = secondMemory.assets[0];
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, firstAssetOfSecond.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, secondMemory.id, firstAssetOfSecond.id);
       await memoryGalleryUtils.clickThumbnail(page, firstAssetOfSecond.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -155,7 +155,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const firstMemory = memories[0];
       const veryFirstAsset = firstMemory.assets[0];
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, veryFirstAsset.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, firstMemory.id, veryFirstAsset.id);
       await memoryGalleryUtils.clickThumbnail(page, veryFirstAsset.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -169,7 +169,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const lastMemory = memories.at(-1)!;
       const veryLastAsset = lastMemory.assets.at(-1)!;
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, veryLastAsset.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, lastMemory.id, veryLastAsset.id);
       await memoryGalleryUtils.clickThumbnail(page, veryLastAsset.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -187,7 +187,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const lastAssetOfFirst = firstMemory.assets.at(-1)!;
       const firstAssetOfSecond = secondMemory.assets[0];
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, firstAssetOfSecond.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, secondMemory.id, firstAssetOfSecond.id);
       await memoryGalleryUtils.clickThumbnail(page, firstAssetOfSecond.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -203,7 +203,7 @@ test.describe('Memory Viewer - Gallery Asset Viewer Navigation', () => {
       const lastAssetOfFirst = firstMemory.assets.at(-1)!;
       const firstAssetOfSecond = secondMemory.assets[0];
 
-      await memoryViewerUtils.openMemoryPageWithAsset(page, lastAssetOfFirst.id);
+      await memoryViewerUtils.openMemoryPageWithAsset(page, firstMemory.id, lastAssetOfFirst.id);
       await memoryGalleryUtils.clickThumbnail(page, lastAssetOfFirst.id);
 
       await memoryAssetViewerUtils.waitForViewerOpen(page);
@@ -277,7 +277,7 @@ test.describe('Memory Viewer - Single Asset Memory Edge Cases', () => {
     const singleAssetMemory = memories[1];
     const singleAsset = singleAssetMemory.assets[0];
 
-    await memoryViewerUtils.openMemoryPageWithAsset(page, singleAsset.id);
+    await memoryViewerUtils.openMemoryPageWithAsset(page, singleAssetMemory.id, singleAsset.id);
     await memoryGalleryUtils.clickThumbnail(page, singleAsset.id);
 
     await memoryAssetViewerUtils.waitForViewerOpen(page);

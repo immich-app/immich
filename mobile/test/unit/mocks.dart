@@ -65,6 +65,7 @@ class RepositoryMocks {
     _stubAssetApiRepository();
     _stubAssetMediaRepository();
     _stubDownloadRepository();
+    _stubTrashedAssetRepository();
     _stubPermissionRepository();
   }
 
@@ -86,6 +87,7 @@ class RepositoryMocks {
   void _stubLocalAssetRepository() {
     when(localAsset.reconcileHashesFromCloudId).thenAnswer((_) async => {});
     when(localAsset.updateHashes).thenAnswer((_) async => {});
+    when(localAsset.deleteAssets).thenAnswer((_) async => {});
   }
 
   void _stubNativeSyncApi() {
@@ -97,12 +99,17 @@ class RepositoryMocks {
   }
 
   void _stubAssetMediaRepository() {
+    when(assetMedia.deleteAll).thenAnswer((inv) async => inv.positionalArguments.first as List<String>);
     when(assetMedia.shareAssets).thenAnswer((_) async => 1);
     when(assetMedia.getOriginalFilename).thenAnswer((_) async => null);
   }
 
   void _stubDownloadRepository() {
     when(download.downloadAllAssets).thenAnswer((_) async => const []);
+  }
+
+  void _stubTrashedAssetRepository() {
+    when(() => trashedAsset.applyTrashedAssets(any())).thenAnswer((_) async => {});
   }
 
   void _stubPermissionRepository() {
@@ -158,6 +165,7 @@ class ServiceMocks {
     when(user.watchMyUser).thenAnswer((_) => const Stream.empty());
     when(user.refreshMyUser).thenAnswer((_) async => null);
     when(user.createProfileImage).thenAnswer((_) async => null);
+    when(user.watch).thenAnswer((_) => const Stream.empty());
   }
 
   void _stubPartnerService() {
@@ -254,6 +262,9 @@ extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo)
 
   Future<void> Function() get updateHashes =>
       () => repo.updateHashes(any());
+
+  Future<void> Function() get deleteAssets =>
+      () => repo.deleteAssets(any());
 }
 
 extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
@@ -326,6 +337,9 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 
   Future<String?> Function() get createProfileImage =>
       () => service.createProfileImage(any(), any());
+
+  Stream<User?> Function() get watch =>
+      () => service.watch(any());
 }
 
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
@@ -357,7 +371,7 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
       () => service.applyEdits(any(), any());
 
   Future<int> Function() get deleteLocal =>
-      () => service.deleteLocal(any());
+      () => service.deleteLocal(any(), trash: any(named: 'trash'));
 }
 
 extension type const RemoteAlbumServiceStub(MockRemoteAlbumService service) implements Stub<MockRemoteAlbumService> {
@@ -393,6 +407,9 @@ extension type const AssetApiRepositoryStub(MockAssetApiRepository api) implemen
 }
 
 extension type const AssetMediaRepositoryStub(MockAssetMediaRepository api) implements Stub<MockAssetMediaRepository> {
+  Future<List<String>> Function() get deleteAll =>
+      () => api.deleteAll(any(), trash: any(named: 'trash'));
+
   Future<int> Function() get shareAssets =>
       () => api.shareAssets(
         any(),
