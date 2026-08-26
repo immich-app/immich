@@ -170,9 +170,15 @@ class Drift extends $Drift {
       await customStatement('PRAGMA foreign_keys = OFF');
 
       try {
-        await transaction(
-          () => m.runMigrationSteps(
-            from: from,
+        await transaction(() async {
+          // Re-read the current version inside the transaction to avoid race between different connections.
+          final current = (await customSelect('PRAGMA user_version').getSingle()).read<int>('user_version');
+          if (current >= to) {
+            return;
+          }
+
+          await m.runMigrationSteps(
+            from: current,
             to: to,
             steps: migrationSteps(
               from1To2: (m, v2) async {
@@ -360,8 +366,13 @@ class Drift extends $Drift {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
               },
             ),
-          ),
-        );
+          );
+
+          // This prevents a drift between the current connection and other connections in the pool,
+          // which is waiting for the transaction to finish. Drift updates this outside of the transaction,
+          // so doing it inside the transaction ensures that all connections are in sync.
+          await customStatement('PRAGMA user_version = $to');
+        });
 
         if (kDebugMode) {
           // Fail if the migration broke foreign keys
