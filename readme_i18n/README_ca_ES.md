@@ -55,8 +55,8 @@
 - [Quant a](https://docs.immich.app/overview/introduction)
 - [Instal·lació](https://docs.immich.app/install/requirements)
 - [Full de ruta](https://immich.app/roadmap)
-- [Demostració](#demo)
-- [Funcionalitats](#features)
+- [Demostració](#demostració)
+- [Funcionalitats](#funcionalitats)
 - [Traduccions](https://docs.immich.app/developer/translations)
 - [Contribucions](https://docs.immich.app/overview/support-the-project)
 
@@ -66,9 +66,9 @@ Accediu a la demostració [aquí](https://demo.immich.app). Per a l’aplicació
 
 ### Credencials d’inici de sessió
 
-| Adreça electrònica | Contraseya |
-| ------------------ | ---------- |
-| demo@immich.app    | demo       |
+| Adreça electrònica | Contrasenya |
+| ------------------ | ----------- |
+| demo@immich.app    | demo        |
 
 # Funcionalitats
 
