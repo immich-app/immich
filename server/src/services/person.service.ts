@@ -148,8 +148,9 @@ export class PersonService extends BaseService {
     for (const { ownerId, personGroupId } of changeFeaturePhoto) {
       const assetFace = await this.personRepository.getRandomFace(personGroupId);
 
+      await this.personRepository.update({ ownerId, personGroupId, faceAssetId: assetFace?.id ?? null });
+
       if (assetFace) {
-        await this.personRepository.update({ ownerId, personGroupId, faceAssetId: assetFace.id });
         jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
       }
     }
@@ -737,6 +738,12 @@ export class PersonService extends BaseService {
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
 
-    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+    const face = await this.personRepository.getFaceById(id, { viewingUserId: auth.user.id });
+
+    await (dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id));
+
+    if (face.person?.faceAssetId === id) {
+      await this.createNewFeaturePhoto([face.person]);
+    }
   }
 }

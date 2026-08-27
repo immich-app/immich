@@ -1309,6 +1309,61 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('deleteFace', () => {
+    it('should pick a new feature photo when the deleted face was the featured one', async () => {
+      const auth = AuthFactory.create();
+      const faceId = newUuid();
+      const face = AssetFaceFactory.from({ id: faceId }).person({ faceAssetId: faceId }).build();
+      const remainingFace = AssetFaceFactory.create({ personGroupId: face.personGroupId });
+
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([faceId]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+      mocks.person.getRandomFace.mockResolvedValue(remainingFace);
+
+      await expect(sut.deleteFace(auth, faceId, { force: false })).resolves.toBeUndefined();
+
+      expect(mocks.person.softDeleteAssetFaces).toHaveBeenCalledWith(faceId);
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: face.person!.ownerId,
+        personGroupId: face.person!.personGroupId,
+        faceAssetId: remainingFace.id,
+      });
+    });
+
+    it('should clear the feature photo when no face is left to promote', async () => {
+      const auth = AuthFactory.create();
+      const faceId = newUuid();
+      const face = AssetFaceFactory.from({ id: faceId }).person({ faceAssetId: faceId }).build();
+
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([faceId]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+      mocks.person.getRandomFace.mockResolvedValue(void 0);
+
+      await expect(sut.deleteFace(auth, faceId, { force: true })).resolves.toBeUndefined();
+
+      expect(mocks.person.deleteAssetFace).toHaveBeenCalledWith(faceId);
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: face.person!.ownerId,
+        personGroupId: face.person!.personGroupId,
+        faceAssetId: null,
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should leave the feature photo alone when another face is deleted', async () => {
+      const auth = AuthFactory.create();
+      const face = AssetFaceFactory.from().person({ faceAssetId: newUuid() }).build();
+
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+
+      await expect(sut.deleteFace(auth, face.id, { force: false })).resolves.toBeUndefined();
+
+      expect(mocks.person.softDeleteAssetFaces).toHaveBeenCalledWith(face.id);
+      expect(mocks.person.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('mapFace', () => {
     it('should map a face', () => {
       const user = UserFactory.create();
