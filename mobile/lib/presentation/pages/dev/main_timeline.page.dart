@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_dialog.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dart';
@@ -11,6 +10,7 @@ import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
 class MainTimelinePage extends ConsumerStatefulWidget {
@@ -71,9 +71,8 @@ class _AssetOriginFilterButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentSelection = ref.watch(assetOriginFilterProvider);
-    final setFilter = ref.watch(assetOriginFilterProvider.notifier).setFilter;
 
-    return MenuAnchor(
+    return ImmichMenu(
       style: MenuStyle(
         elevation: const WidgetStatePropertyAll(1),
         shape: WidgetStateProperty.all(
@@ -88,65 +87,23 @@ class _AssetOriginFilterButton extends ConsumerWidget {
           tooltip: context.t.timeline_filter_tooltip,
         );
       },
-      menuChildren: [
-        _FilterMenuItem(
-          AssetOriginFilter.all,
-          context.t.timeline_filter_all,
-          Icons.filter_alt_outlined,
-          Icons.filter_alt,
-          currentSelection,
-          setFilter,
+      children: [
+        ImmichMenuItem(
+          icon: currentSelection == AssetOriginFilter.all ? Icons.filter_alt : Icons.filter_alt_outlined,
+          label: context.t.timeline_filter_all,
+          onPressed: () => ref.read(assetOriginFilterProvider.notifier).setFilter(AssetOriginFilter.all),
         ),
-        _FilterMenuItem(
-          AssetOriginFilter.remote,
-          context.t.timeline_filter_remote,
-          Icons.dns_outlined,
-          Icons.dns,
-          currentSelection,
-          setFilter,
+        ImmichMenuItem(
+          icon: currentSelection == AssetOriginFilter.remote ? Icons.dns : Icons.dns_outlined,
+          label: context.t.timeline_filter_remote,
+          onPressed: () => ref.read(assetOriginFilterProvider.notifier).setFilter(AssetOriginFilter.remote),
         ),
-        _FilterMenuItem(
-          AssetOriginFilter.local,
-          context.t.timeline_filter_local,
-          Icons.smartphone_outlined,
-          Icons.smartphone,
-          currentSelection,
-          setFilter,
+        ImmichMenuItem(
+          icon: currentSelection == AssetOriginFilter.local ? Icons.smartphone : Icons.smartphone_outlined,
+          label: context.t.timeline_filter_local,
+          onPressed: () => ref.read(assetOriginFilterProvider.notifier).setFilter(AssetOriginFilter.local),
         ),
       ],
-    );
-  }
-}
-
-class _FilterMenuItem extends StatelessWidget {
-  final AssetOriginFilter staticFilter;
-  final String label;
-  final IconData icon;
-  final IconData iconActive;
-  final AssetOriginFilter currentFilter;
-  final ValueChanged<AssetOriginFilter> onSelected;
-
-  const _FilterMenuItem(this.staticFilter, this.label, this.icon, this.iconActive, this.currentFilter, this.onSelected);
-
-  @override
-  Widget build(BuildContext context) {
-    final isSelected = staticFilter == currentFilter;
-    final primaryColor = context.colorScheme.primary;
-
-    return MenuItemButton(
-      onPressed: () => onSelected(staticFilter),
-      child: ListTile(
-        leading: Icon(isSelected ? iconActive : icon, color: isSelected ? primaryColor : null),
-        title: Text(
-          label,
-          style: context.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w500,
-            color: isSelected ? primaryColor : null,
-          ),
-        ),
-        selected: isSelected,
-        selectedColor: primaryColor,
-      ),
     );
   }
 }
