@@ -43,23 +43,17 @@ void main() {
   late Completer<List<String>> shareCall;
 
   setUpAll(() async {
-    // an in memory store, the share flow reads the server endpoint from it
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     store = await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
     await SettingsRepository.ensureInitialized(db);
     await Store.put(StoreKey.serverEndpoint, 'https://example.com/api');
-    // downloader init reads the persistent storage, and picks its implementation
-    // from defaultTargetPlatform, the desktop one would bypass the mocked channel
+    // the downloader keeps the storage it gets on its first call. the default one spawns an isolate
+    // that needs the real path_provider plugin, so a stub answers init and the resume data cleanup
     final persistentStorage = _MockPersistentStorage();
     when(persistentStorage.initialize).thenAnswer((_) async {});
     when(() => persistentStorage.removeResumeData(any())).thenAnswer((_) async {});
     when(() => persistentStorage.removePausedTask(any())).thenAnswer((_) async {});
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    try {
-      await FileDownloader(persistentStorage: persistentStorage).ready;
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
+    await FileDownloader(persistentStorage: persistentStorage).ready;
   });
 
   tearDownAll(() async {
@@ -152,13 +146,12 @@ void main() {
         final paths = await shareCall.future.timeout(const Duration(seconds: 5));
         return (count: count, names: paths.map(p.basename).toList());
       });
-      // cleanup after a share is fire and forget disk IO, wait briefly for it
-      // to land so the tests can assert the end state
+      // the share result comes back before the cleanup behind it has run
       await tester.runAsync(
         () => Future.doWhile(() async {
-          await Future<void>.delayed(const Duration(milliseconds: 1));
+          await Future<void>.delayed(Duration.zero);
           return taskDirs.any((directory) => directory.existsSync());
-        }).timeout(const Duration(seconds: 1), onTimeout: () {}),
+        }).timeout(const Duration(seconds: 5)),
       );
       await tester.pump();
 
@@ -179,7 +172,6 @@ void main() {
 
     expect(result.count, 3);
     expect(result.names, ['holiday_Photo 1 名字.jpg', 'remote-2', 'remote-3']);
-    expect(taskDirs.every((directory) => !directory.existsSync()), isTrue);
   });
 
   testWidgets('keeps the first copy and uses the first free ordinal for the next', (tester) async {
@@ -223,11 +215,6 @@ void main() {
 
     expect(result.count, 1);
     expect(result.names, ['IMG.jpg']);
-    expect(
-      tempRoot.listSync().whereType<Directory>().where((directory) => p.basename(directory.path).contains('remote-1')),
-      isEmpty,
-    );
-    expect(taskDirs.every((directory) => !directory.existsSync()), isTrue);
   });
 
   testWidgets('cleans the current iOS temp file when cancelled during retrieval', (tester) async {
