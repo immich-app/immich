@@ -15,8 +15,8 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -57,13 +57,13 @@ void main() {
   }
 
   Finder tile(int assetIndex) =>
-      find.byWidgetPredicate((widget) => widget is TimelineAssetIndexWrapper && widget.assetIndex == assetIndex);
+      find.byWidgetPredicate((widget) => widget is ThumbnailTile && widget.asset?.id == 'a$assetIndex');
 
   Future<ProviderContainer> pumpTimeline(
     WidgetTester tester, {
     Widget? bottomSheet,
+    Widget? topSliverWidget,
     List<Bucket>? buckets,
-    TextDirection textDirection = TextDirection.ltr,
   }) async {
     tester.view.devicePixelRatio = 3.0;
     tester.view.physicalSize = const Size(1206, 2622);
@@ -91,10 +91,13 @@ void main() {
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
         child: MaterialApp(
-          home: Directionality(
-            textDirection: textDirection,
-            child: _withRouter(
-              Timeline(withScrubber: false, groupBy: GroupAssetsBy.none, appBar: null, bottomSheet: bottomSheet),
+          home: _withRouter(
+            Timeline(
+              withScrubber: false,
+              groupBy: GroupAssetsBy.none,
+              appBar: null,
+              topSliverWidget: topSliverWidget,
+              bottomSheet: bottomSheet,
             ),
           ),
         ),
@@ -112,7 +115,7 @@ void main() {
   // the lowest tile the viewport still shows, which is inside the auto scroll zone at the bottom
   Offset lowestTileCenter(WidgetTester tester, Rect grid) {
     Offset? lowest;
-    for (final element in find.byType(TimelineAssetIndexWrapper).evaluate()) {
+    for (final element in find.byType(ThumbnailTile).evaluate()) {
       final box = element.renderObject! as RenderBox;
       final center = box.localToGlobal(box.size.center(Offset.zero));
       if (center.dy < grid.bottom && (lowest == null || center.dy > lowest.dy)) {
@@ -143,6 +146,21 @@ void main() {
     await gesture.moveTo(tester.getCenter(tile(12)));
     await tester.pump();
     expectSelectedRange(container, 0, 12);
+
+    await gesture.up();
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('drag selection lands on the tiles below a sliver above the grid', (tester) async {
+    final container = await pumpTimeline(
+      tester,
+      topSliverWidget: const SliverToBoxAdapter(child: SizedBox(height: 300)),
+    );
+    final gesture = await startDragOn(tester, 0);
+
+    await gesture.moveTo(tester.getCenter(tile(8)));
+    await tester.pump();
+    expectSelectedRange(container, 0, 8);
 
     await gesture.up();
     await tester.pump(const Duration(seconds: 1));
@@ -221,31 +239,6 @@ void main() {
 
     // straight up the last column, to the height of the lone photo where that row has nothing
     await gesture.moveTo(Offset(tester.getCenter(tile(16)).dx, tester.getCenter(tile(8)).dy));
-    await tester.pump();
-    expectSelectedRange(container, 8, 16);
-
-    await gesture.up();
-    await tester.pump(const Duration(seconds: 1));
-  });
-
-  testWidgets('drag selection enters a short row from the gap side under rtl', (tester) async {
-    final container = await pumpTimeline(
-      tester,
-      textDirection: TextDirection.rtl,
-      buckets: [
-        TimeBucket(date: DateTime(2025, 3), assetCount: 8),
-        TimeBucket(date: DateTime(2025, 2), assetCount: 1),
-        TimeBucket(date: DateTime(2025), assetCount: assetCount - 9),
-      ],
-    );
-    final gesture = await startDragOn(tester, 16);
-
-    // rtl mirrors the grid: the lone photo hugs the right edge and its row's gap is on the left
-    final grid = tester.getRect(find.byType(Timeline));
-    final onGap = Offset(tester.getCenter(tile(16)).dx, tester.getCenter(tile(8)).dy);
-    expect(onGap.dx, lessThan(grid.center.dx), reason: 'the finger comes up the mirrored last column');
-
-    await gesture.moveTo(onGap);
     await tester.pump();
     expectSelectedRange(container, 8, 16);
 

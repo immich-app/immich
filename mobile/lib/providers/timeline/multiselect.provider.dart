@@ -64,11 +64,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void updateSelection({required List<BaseAsset> added, required List<BaseAsset> removed}) {
-    final selectedAssets = state.selectedAssets.toSet()
-      ..removeAll(removed)
-      ..addAll(added);
-
-    state = state.copyWith(selectedAssets: selectedAssets);
+    state = state.copyWith(selectedAssets: {...state.selectedAssets, ...added}..removeAll(removed));
   }
 
   void toggleAssetSelection(BaseAsset asset) {
