@@ -18,7 +18,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
@@ -308,7 +308,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         }
 
         if (Platform.isIOS) {
-          return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
+          return _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id);
         }
 
         return _ref
