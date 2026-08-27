@@ -93,6 +93,18 @@ export class ClusterGroupController {
     return value;
   }
 
+  @Post(':id/regenerate-people')
+  @Authenticated({ permission: Permission.ClusterGroupRead })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Regenerate people of users in cluster group',
+    description: 'Forcefully re-run facial recognition for all faces of users in this group.',
+    history: new HistoryBuilder().added('v3.2.0'),
+  })
+  clusterGroupRegeneratePeople(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.regeneratePeople(auth, id);
+  }
+
   @Post(':id/leave')
   @Authenticated({ permission: Permission.ClusterGroupLeave })
   @HttpCode(HttpStatus.NO_CONTENT)
