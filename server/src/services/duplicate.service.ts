@@ -200,6 +200,19 @@ export class DuplicateService extends BaseService {
         }
       }
 
+      // Comments and likes on the losers would otherwise cascade away with them. Move them onto the
+      // keeper after album membership has been merged, since an activity can only live in an album
+      // the keeper belongs to. Doing this before the trash means a failure here leaves the losers
+      // untrashed rather than losing the activities.
+      const mergedActivities = await this.activityRepository.mergeAssetActivities({
+        sourceAssetIds: idsToTrash,
+        targetAssetId: idsToKeep[0],
+      });
+
+      if (mergedActivities > 0) {
+        this.logger.debug(`Moved ${mergedActivities} activities onto asset ${idsToKeep[0]}`);
+      }
+
       const hasExifUpdate = Object.keys(exifUpdate).length > 0;
       const hasTagUpdate = mergedTagIds.length > 0;
 

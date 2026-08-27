@@ -2,6 +2,8 @@ import { Kysely } from 'kysely';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetStatus, AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -25,7 +27,9 @@ const setup = (db?: Kysely<DB>) => {
     database: db || defaultDatabase,
     real: [
       AccessRepository,
+      ActivityRepository,
       AlbumRepository,
+      AlbumUserRepository,
       AssetRepository,
       ConfigRepository,
       DuplicateRepository,
@@ -57,6 +61,17 @@ const newDuplicateAsset = async (
 
 const newTag = async (ctx: MediumTestContext, userId: string, value: string) => {
   return ctx.get(TagRepository).create({ userId, value });
+};
+
+const newComment = async (
+  ctx: MediumTestContext,
+  dto: { albumId: string; assetId: string; userId: string; comment: string },
+) => {
+  return ctx.get(ActivityRepository).create({ ...dto, isLiked: false });
+};
+
+const newLike = async (ctx: MediumTestContext, dto: { albumId: string; assetId: string; userId: string }) => {
+  return ctx.get(ActivityRepository).create({ ...dto, isLiked: true });
 };
 
 const expectSuccess = (results: BulkIdResponseDto[], duplicateId: string) => {
@@ -586,6 +601,212 @@ describe(DuplicateService.name, () => {
           isFavorite: false,
           duplicateId: null,
         });
+      });
+    });
+
+    describe('activity merging', () => {
+      it('should move a comment on a trashed duplicate onto the keeper', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [trashed.id]);
+
+        await newComment(ctx, { albumId: album.id, assetId: trashed.id, userId: user.id, comment: 'nice one' });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+          }),
+          duplicateId,
+        );
+
+        // activity search hides activities on trashed assets, so an unmoved comment reads as gone
+        await expect(ctx.get(ActivityRepository).search({ albumId: album.id })).resolves.toEqual([
+          expect.objectContaining({ assetId: keeper.id, comment: 'nice one', isLiked: false }),
+        ]);
+      });
+
+      it('should move a comment left by another album member', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const { user: member } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [trashed.id]);
+        await ctx.newAlbumUser({ albumId: album.id, userId: member.id });
+
+        await newComment(ctx, { albumId: album.id, assetId: trashed.id, userId: member.id, comment: 'from a friend' });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+          }),
+          duplicateId,
+        );
+
+        await expect(ctx.get(ActivityRepository).search({ albumId: album.id })).resolves.toEqual([
+          expect.objectContaining({ assetId: keeper.id, userId: member.id, comment: 'from a friend' }),
+        ]);
+      });
+
+      it('should merge the comments of both copies onto the keeper', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [keeper.id, trashed.id]);
+
+        await newComment(ctx, { albumId: album.id, assetId: keeper.id, userId: user.id, comment: 'on the keeper' });
+        await newComment(ctx, { albumId: album.id, assetId: trashed.id, userId: user.id, comment: 'on the trashed' });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+          }),
+          duplicateId,
+        );
+
+        // the keeper's own comment stays put and the trashed copy's comment joins it
+        const activities = await ctx.get(ActivityRepository).search({ albumId: album.id });
+        expect(activities.every(({ assetId }) => assetId === keeper.id)).toBe(true);
+        expect(activities.map(({ comment }) => comment).sort()).toEqual(['on the keeper', 'on the trashed']);
+      });
+
+      it('should keep both comments when the copies carry the same text', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [keeper.id, trashed.id]);
+
+        await newComment(ctx, { albumId: album.id, assetId: keeper.id, userId: user.id, comment: 'same' });
+        await newComment(ctx, { albumId: album.id, assetId: trashed.id, userId: user.id, comment: 'same' });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+          }),
+          duplicateId,
+        );
+
+        // two separate comments really did exist, so both are kept rather than silently collapsed
+        const activities = await ctx.get(ActivityRepository).search({ albumId: album.id, assetId: keeper.id });
+        expect(activities).toHaveLength(2);
+        expect(activities.map(({ comment }) => comment)).toEqual(['same', 'same']);
+      });
+
+      it('should move a like on a trashed duplicate onto the keeper', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [trashed.id]);
+
+        await newLike(ctx, { albumId: album.id, assetId: trashed.id, userId: user.id });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+          }),
+          duplicateId,
+        );
+
+        await expect(ctx.get(ActivityRepository).search({ albumId: album.id })).resolves.toEqual([
+          expect.objectContaining({ assetId: keeper.id, userId: user.id, isLiked: true }),
+        ]);
+      });
+
+      it('should not violate the like constraint when both copies were liked by the same user', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [keeper.id, trashed.id]);
+
+        await newLike(ctx, { albumId: album.id, assetId: keeper.id, userId: user.id });
+        await newLike(ctx, { albumId: album.id, assetId: trashed.id, userId: user.id });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+          }),
+          duplicateId,
+        );
+
+        await expect(
+          ctx.get(ActivityRepository).search({ albumId: album.id, assetId: keeper.id, isLiked: true }),
+        ).resolves.toHaveLength(1);
+      });
+
+      it('should move only one like when two trashed copies were liked by the same user', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed1 = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const trashed2 = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [trashed1.id, trashed2.id]);
+
+        await newLike(ctx, { albumId: album.id, assetId: trashed1.id, userId: user.id });
+        await newLike(ctx, { albumId: album.id, assetId: trashed2.id, userId: user.id });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [keeper.id], trashAssetIds: [trashed1.id, trashed2.id] }],
+          }),
+          duplicateId,
+        );
+
+        await expect(
+          ctx.get(ActivityRepository).search({ albumId: album.id, assetId: keeper.id, isLiked: true }),
+        ).resolves.toHaveLength(1);
+      });
+
+      it('should leave an activity alone when the keeper is not a member of its album', async () => {
+        const { ctx } = setup();
+        const { user } = await ctx.newUser();
+
+        const keeper = await newDuplicateAsset(ctx, { ownerId: user.id });
+        const loser = await newDuplicateAsset(ctx, { ownerId: user.id });
+        const { album } = await ctx.newAlbum({ ownerId: user.id }, [loser.id]);
+
+        const comment = await newComment(ctx, {
+          albumId: album.id,
+          assetId: loser.id,
+          userId: user.id,
+          comment: 'unreachable if moved',
+        });
+
+        // the (albumId, assetId) foreign key would reject the move, so the row stays put
+        const activityRepo = ctx.get(ActivityRepository);
+        await expect(
+          activityRepo.mergeAssetActivities({ sourceAssetIds: [loser.id], targetAssetId: keeper.id }),
+        ).resolves.toBe(0);
+
+        await expect(activityRepo.search({ albumId: album.id })).resolves.toEqual([
+          expect.objectContaining({ id: comment.id, assetId: loser.id }),
+        ]);
       });
     });
 

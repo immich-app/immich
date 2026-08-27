@@ -321,6 +321,7 @@ describe(DuplicateService.name, () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-2']));
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
+      mocks.activity.mergeAssetActivities.mockResolvedValue(0);
       mocks.duplicateRepository.get.mockResolvedValue({
         duplicateId: 'group-1',
         assets: [
@@ -367,6 +368,45 @@ describe(DuplicateService.name, () => {
 
       // Verify SidecarWrite was queued (to write tags to sidecar)
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: asset1.id } }]);
+    });
+
+    it('should merge activities from the trashed assets onto the keeper', async () => {
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset2.id]));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
+      });
+      mocks.activity.mergeAssetActivities.mockResolvedValue(2);
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
+      });
+
+      expect(result[0].success).toBe(true);
+      expect(mocks.activity.mergeAssetActivities).toHaveBeenCalledWith({
+        sourceAssetIds: [asset2.id],
+        targetAssetId: asset1.id,
+      });
+    });
+
+    it('should not merge activities when multiple assets are kept', async () => {
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id, asset2.id], trashAssetIds: [] }],
+      });
+
+      expect(result[0].success).toBe(true);
+      expect(mocks.activity.mergeAssetActivities).not.toHaveBeenCalled();
     });
 
     it('should not merge metadata when multiple assets are kept', async () => {
