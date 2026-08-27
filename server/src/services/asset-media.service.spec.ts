@@ -781,7 +781,11 @@ describe(AssetMediaService.name, () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.asset.getForVideo.mockResolvedValue({
         originalPath: asset.originalPath,
+        originalEncryptionNonce: null,
+        originalEncryptionAuthTag: null,
         encodedVideoPath: asset.files[0].path,
+        encodedVideoEncryptionNonce: null,
+        encodedVideoEncryptionAuthTag: null,
       });
 
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
@@ -798,7 +802,11 @@ describe(AssetMediaService.name, () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.asset.getForVideo.mockResolvedValue({
         originalPath: asset.originalPath,
+        originalEncryptionNonce: null,
+        originalEncryptionAuthTag: null,
         encodedVideoPath: null,
+        encodedVideoEncryptionNonce: null,
+        encodedVideoEncryptionAuthTag: null,
       });
 
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
@@ -808,6 +816,56 @@ describe(AssetMediaService.name, () => {
           contentType: 'application/octet-stream',
         }),
       );
+    });
+
+    it('should decrypt an encrypted encoded video when a session DEK is available', async () => {
+      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const auth = AuthFactory.from().session({ rawToken: 'raw-token' }).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForVideo.mockResolvedValue({
+        originalPath: asset.originalPath,
+        originalEncryptionNonce: null,
+        originalEncryptionAuthTag: null,
+        encodedVideoPath: '/path/to/encoded/video.mp4',
+        encodedVideoEncryptionNonce: 'nonce',
+        encodedVideoEncryptionAuthTag: 'auth-tag',
+      });
+      mocks.session.get.mockResolvedValue({
+        id: auth.session!.id,
+        expiresAt: null,
+        pinExpiresAt: null,
+        oauthBearerToken: null,
+        wrappedDek: 'wrapped-session-dek',
+        dekNonce: 'session-dek-nonce',
+      });
+      const decipher = new PassThrough() as unknown as DecipherGCM;
+      mocks.crypto.createDecryptStream.mockReturnValue(decipher);
+
+      const response = await sut.playbackVideo(auth, asset.id);
+
+      expect(mocks.crypto.createDecryptStream).toHaveBeenCalledWith(
+        Buffer.from('dek', 'utf8'),
+        Buffer.from('nonce', 'base64'),
+        Buffer.from('auth-tag', 'base64'),
+      );
+      expect(response.decrypt).toBeDefined();
+    });
+
+    it('should throw if an encrypted video cannot be decrypted for the current session', async () => {
+      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const auth = AuthFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForVideo.mockResolvedValue({
+        originalPath: asset.originalPath,
+        originalEncryptionNonce: null,
+        originalEncryptionAuthTag: null,
+        encodedVideoPath: '/path/to/encoded/video.mp4',
+        encodedVideoEncryptionNonce: 'nonce',
+        encodedVideoEncryptionAuthTag: 'auth-tag',
+      });
+
+      await expect(sut.playbackVideo(auth, asset.id)).rejects.toBeInstanceOf(ForbiddenException);
+      expect(mocks.crypto.createDecryptStream).not.toHaveBeenCalled();
     });
   });
 

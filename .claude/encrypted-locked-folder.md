@@ -301,33 +301,64 @@ lock (out of scope for this pass — see TODO #8).
 
 ### Not yet implemented / explicitly deferred in this pass
 
-- **Thumbnails/preview/fullsize/transcoded-video files are never encrypted**, only `asset.originalPath`. These
-  are derivative, lower-sensitivity renderings; the design doc's stated goal ("someone with raw
-  filesystem/backup access can't view them") is centered on the master file. Extending the same
-  nonce/tag-column + encrypt-at-lock-time pattern to `asset_file` rows is a natural, mechanically similar
-  follow-up (see TODO #8) but was scoped out here.
-- **`viewThumbnail`/`playbackVideo` don't decrypt anything** — they only ever serve derivative files (see
-  above), so this is consistent with today's scope, not an oversight, but worth restating: Locked Folder's
-  thumbnail/video-preview UX for an encrypted asset is unaffected by this pass either way.
+- **Thumbnails/preview/fullsize/transcoded-video files are now also encrypted** at lock time and decrypted at
+  unlock time, alongside `asset.originalPath` — see "Thumbnail/preview/video-derivative encryption" below
+  (formerly TODO #8, now done). The one remaining caveat is Range/seek support for video playback, noted just
+  below.
+- **`viewThumbnail`/`playbackVideo` now both decrypt** derivative files when encrypted (see below) — no longer
+  deferred. **Known limitation:** the `decrypt` transform path in `sendFile()` (`server/src/utils/file.ts`) has
+  no HTTP Range/seek support — it always streams the full decrypted body with a plain `200`, never `206 Partial
+  Content`. For a Locked, encrypted video this means initial playback works, but scrubbing/seeking within the
+  video may not (depends on how forgiving the browser's `<video>` element is about a non-seekable response).
+  Unencrypted videos, and thumbnails/images generally, are unaffected. Properly supporting Range on an
+  AES-256-GCM-encrypted file is a non-trivial follow-up (GCM doesn't support random-access decryption of a
+  sub-range without re-deriving/verifying from the start, or switching to a seekable AEAD chunking scheme) — not
+  attempted here.
 - **Bulk zip download (`DownloadService`) skips encrypted assets** rather than including them — see TODO #9.
 - **Assets that were `Locked` before this feature shipped, or ones locked without a resolvable session DEK,
   stay unencrypted indefinitely** — nothing ever retries. See TODO #4 (unchanged from before).
+
+### Thumbnail/preview/video-derivative encryption (formerly TODO #8, now done)
+
+- **Schema**: `AssetFileTable` (`server/src/schema/tables/asset-file.table.ts`) has nullable
+  `encryptionNonce`/`encryptionAuthTag` columns, mirroring the `asset` table's pair, since one asset can have
+  several `asset_file` rows (thumbnail, preview, fullsize, encoded video, sidecar, ...).
+- **`AssetService.encryptLockedAssets()`/`decryptUnlockedAssets()`** loop over
+  `assetFileRepository.search({ assetId })` for every asset being locked/unlocked and encrypt/decrypt each row's
+  `path` in place, reusing the same `encryptOriginalFile`/`decryptOriginalFile` streaming helpers used for
+  `asset.originalPath`. This transparently covers the transcoded video file too, since `encodedVideoPath` was
+  migrated to live as an `asset_file` row (type `encoded_video`) rather than a column on `asset` — see
+  `1773242919341-EncodedVideoAssetFiles.ts`.
+- **`AssetRepository.getForThumbnail()`** selects `asset_file.encryptionNonce`/`encryptionAuthTag` alongside
+  `path`; **`AssetMediaService.viewThumbnail()`** resolves the session DEK and sets `ImmichFileResponse.decrypt`
+  when those are present, exactly like `downloadOriginal()`.
+- **`AssetRepository.getForVideo()`** now left-joins `asset_file` (type `encoded_video`) and selects both the
+  original's and the encoded video's nonce/authTag separately (`originalEncryptionNonce`/`originalEncryptionAuthTag`
+  vs `encodedVideoEncryptionNonce`/`encodedVideoEncryptionAuthTag`), since playback may fall back to
+  `originalPath` if no encoded video exists yet, and each has its own independent encryption state.
+  **`AssetMediaService.playbackVideo()`** picks whichever pair matches the path actually being served and
+  decrypts accordingly. **Bug found and fixed in this pass**: `playbackVideo()` previously never decrypted
+  anything at all — it was the reason a locked video's thumbnail rendered fine (via `viewThumbnail`) but the
+  video itself failed to play (server was serving raw AES-256-GCM ciphertext bytes as if they were an MP4).
+- Tests: `asset-media.service.spec.ts` has decrypt-success/`ForbiddenException`-without-DEK cases for both
+  `viewThumbnail` and `playbackVideo`, mirroring the existing `downloadOriginal` ones.
 
 ## known follow-up work / TODO
 
 1. ~~`changePassword()` does not re-wrap the DEK~~ — **done**, see above.
 2. ~~Implement session-scoped DEK caching~~ — **done**, see above.
-3. ~~Nothing actually encrypts/decrypts asset bytes~~ — **done for the original file**, see "Implemented: TODO
-   #3" above. Thumbnails/preview/video derivatives remain unencrypted (TODO #8); bulk zip download of encrypted
-   assets is skipped rather than supported (TODO #9).
+3. ~~Nothing actually encrypts/decrypts asset bytes~~ — **done**, see "Implemented: TODO #3" and "Thumbnail/
+   preview/video-derivative encryption" above. Bulk zip download of encrypted assets is still skipped rather
+   than supported (TODO #9). Video Range/seek support for encrypted videos is a known, currently-unaddressed
+   caveat — see above.
 4. **Existing locked assets aren't migrated, and neither are assets locked without a resolvable DEK.** No
    background job retries encryption for these — by design, per the background-job DEK problem above, a
    background job *can't* retry this itself. Any future migration path needs to be a foreground, request-scoped
    operation (e.g. re-run at the next login for assets the user owns), not a job.
 5. **SQL snapshots not regenerated.** `server/src/queries/user.repository.sql`, `session.repository.sql`, and
-   now also `asset.repository.sql`/`asset.job.repository.sql` have not been regenerated against the updated
-   queries (needs a live Postgres instance — see root `CLAUDE.md` for the exact command). Do this once a DB is
-   reachable, and check the diff only touches the expected query blocks.
+   now also `asset.repository.sql` (`getForThumbnail`, `getForVideo`) /`asset.job.repository.sql` have not been
+   regenerated against the updated queries (needs a live Postgres instance — see root `CLAUDE.md` for the exact
+   command). Do this once a DB is reachable, and check the diff only touches the expected query blocks.
 6. **OAuth-only users have no password, and their sessions never get a DEK either.** Still unresolved — see "The
    OAuth problem" section above for the full breakdown and options. Population 2 (hybrid users) has a clear,
    low-risk fix (hook bootstrap into `changePassword`/`updateMe`) that just hasn't been implemented yet. This
@@ -337,13 +368,9 @@ lock (out of scope for this pass — see TODO #8).
 7. **New migrations for the `session` and `asset` tables need applying/regenerating against a real DB** the same
    way the `user` table one does, and their hand-written form should ideally be double-checked against `pnpm run
    migrations:generate` output once a DB is reachable.
-8. **Thumbnails/preview/fullsize/transcoded-video files for Locked assets are never encrypted**, only the
-   original. Extending this to `asset_file` rows would need: per-file nonce/tag columns (or a shared
-   `asset_file.encryptionNonce`/`encryptionAuthTag` pair, since one asset can have several file rows), the same
-   encrypt-at-lock-time treatment in `AssetService.encryptLockedAssets()`, and decrypt support in
-   `AssetMediaService.viewThumbnail()`/`playbackVideo()` — the latter currently rely on `res.sendFile`'s Range
-   support for video scrubbing, which the current `decrypt` transform approach explicitly does not preserve, so
-   this needs more thought than a mechanical copy-paste of the original-file approach.
+8. ~~Thumbnails/preview/fullsize/transcoded-video files for Locked assets are never encrypted~~ — **done**, see
+   "Thumbnail/preview/video-derivative encryption" above. Remaining caveat: video Range/seek support is not
+   preserved through the decrypt path (see above) — playback works, scrubbing may not.
 9. **Bulk zip download (`DownloadService.downloadArchive`) skips encrypted assets** instead of including them.
    Fixing this means switching `StorageRepository.createZipStream()`'s `addFile` from `archiver.file(path)` to
    `archiver.append(stream, opts)` for encrypted assets specifically, threading a resolved DEK through

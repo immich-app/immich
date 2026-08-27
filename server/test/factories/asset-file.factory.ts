@@ -28,6 +28,8 @@ export class AssetFileFactory {
       isProgressive: false,
       isTransparent: false,
       isEdited,
+      encryptionNonce: null,
+      encryptionAuthTag: null,
       ...dto,
     });
   }

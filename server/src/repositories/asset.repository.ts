@@ -46,7 +46,6 @@ import {
   withExif,
   withFaces,
   withFacesAndPeople,
-  withFilePath,
   withFiles,
   withLibrary,
   withOwner,
@@ -1177,7 +1176,13 @@ export class AssetRepository {
       .leftJoin('asset_file', (join) =>
         join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
       )
-      .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
+      .select([
+        'asset.originalPath',
+        'asset.originalFileName',
+        'asset_file.path as path',
+        'asset_file.encryptionNonce as encryptionNonce',
+        'asset_file.encryptionAuthTag as encryptionAuthTag',
+      ])
       .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
       .executeTakeFirstOrThrow();
   }
@@ -1186,8 +1191,17 @@ export class AssetRepository {
   async getForVideo(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.originalPath'])
-      .select((eb) => withFilePath(eb, AssetFileType.EncodedVideo).as('encodedVideoPath'))
+      .leftJoin('asset_file', (join) =>
+        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', AssetFileType.EncodedVideo),
+      )
+      .select([
+        'asset.originalPath',
+        'asset.encryptionNonce as originalEncryptionNonce',
+        'asset.encryptionAuthTag as originalEncryptionAuthTag',
+        'asset_file.path as encodedVideoPath',
+        'asset_file.encryptionNonce as encodedVideoEncryptionNonce',
+        'asset_file.encryptionAuthTag as encodedVideoEncryptionAuthTag',
+      ])
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();

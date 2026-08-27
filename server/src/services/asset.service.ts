@@ -4,7 +4,6 @@ import { DateTime, Duration } from 'luxon';
 import { pipeline } from 'node:stream/promises';
 import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
-import { AssetFileSearchDto } from 'src/dtos/asset-file.dto';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
@@ -237,16 +236,19 @@ export class AssetService extends BaseService {
       }
 
       const assetFiles = await this.assetFileRepository.search({
-        assetId: asset.id
-      })
+        assetId: asset.id,
+      });
 
       for (const assetFile of assetFiles) {
-
         this.logger.debug(`[DEK]     Encrypting ${assetFile.type} at path=${assetFile.path}`);
 
         try {
           const { nonce, authTag } = await this.encryptOriginalFile(assetFile.path, dek);
-          await this.assetFileRepository.update({ id: assetFile.id, encryptionNonce: nonce, encryptionAuthTag: authTag });
+          await this.assetFileRepository.update({
+            id: assetFile.id,
+            encryptionNonce: nonce,
+            encryptionAuthTag: authTag,
+          });
           this.logger.debug(`[DEK]     Successfully encrypted and persisted nonce/authTag for ${assetFile.type}`);
         } catch (error: any) {
           this.logger.error(`[DEK]     Failed to encrypt thumbnail: ${error}`, error?.stack);
@@ -322,8 +324,8 @@ export class AssetService extends BaseService {
       }
 
       const assetFiles = await this.assetFileRepository.search({
-        assetId: asset.id
-      })
+        assetId: asset.id,
+      });
 
       for (const assetFile of assetFiles) {
         if (!assetFile.encryptionNonce || !assetFile.encryptionAuthTag) {
@@ -339,16 +341,15 @@ export class AssetService extends BaseService {
             Buffer.from(assetFile.encryptionNonce, 'base64'),
             Buffer.from(assetFile.encryptionAuthTag, 'base64'),
           );
-          await this.assetFileRepository.update({ id: asset.id, encryptionNonce: null, encryptionAuthTag: null });
-          this.logger.debug(`[DEK]     Successfully decrypted and cleared nonce/authTag for assetFile: ${assetFile.type}`);
+          await this.assetFileRepository.update({ id: assetFile.id, encryptionNonce: null, encryptionAuthTag: null });
+          this.logger.debug(
+            `[DEK]     Successfully decrypted and cleared nonce/authTag for assetFile: ${assetFile.type}`,
+          );
         } catch (error: any) {
           this.logger.error(`[DEK]     Failed to decrypt unlocked asset ${asset.id} at rest: ${error}`, error?.stack);
         }
-
       }
     }
-
-
   }
 
   /** Decrypts `originalPath` in place with `dek`/`nonce`/`authTag`, the inverse of `encryptOriginalFile`. */
