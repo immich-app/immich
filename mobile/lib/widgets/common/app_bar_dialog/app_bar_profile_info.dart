@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup_server.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -55,7 +55,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
             unawaited(ref.read(currentUserProvider.notifier).refresh());
           }
 
-          unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
+          unawaited(ref.read(backupServerProvider.notifier).updateDiskInfo());
         }
       }
     }

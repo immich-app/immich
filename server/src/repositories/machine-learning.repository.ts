@@ -178,9 +178,7 @@ export class MachineLearningRepository {
           `Machine learning request to "${url}" failed with status ${response.status}: ${response.statusText}`,
         );
       } catch (error: Error | unknown) {
-        this.logger.warn(
-          `Machine learning request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
-        );
+        this.logger.warn(`Machine learning request to "${url}" failed`, error);
       }
 
       this.setHealthy(url, false);
