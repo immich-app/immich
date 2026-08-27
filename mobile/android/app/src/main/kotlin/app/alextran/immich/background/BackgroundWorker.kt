@@ -15,7 +15,6 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import app.alextran.immich.MainActivity
 import app.alextran.immich.R
-import app.alextran.immich.connectivity.ConnectivityApiImpl
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
@@ -76,48 +75,53 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       return Futures.immediateFuture(Result.success())
     }
 
-    Log.i(TAG, "Starting background upload worker")
+    try {
+      Log.i(TAG, "Starting background upload worker")
 
-    if (!loader.initialized()) {
-      loader.startInitialization(ctx)
-    }
-
-    val notificationChannel = NotificationChannel(
-      NOTIFICATION_CHANNEL_ID,
-      ctx.getString(R.string.background_worker_notification_channel_name),
-      NotificationManager.IMPORTANCE_LOW
-    )
-    notificationManager.createNotificationChannel(notificationChannel)
-    val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
-    showNotification(notificationConfig.first, notificationConfig.second)
-
-    loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
-      if (isStopped || isComplete) {
-        return@ensureInitializationCompleteAsync
+      if (!loader.initialized()) {
+        loader.startInitialization(ctx)
       }
 
-      engine = FlutterEngine(ctx)
-      FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
-
-      // Register custom plugins
-      MainActivity.registerPlugins(ctx, engine!!)
-      flutterApi =
-        BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
-      BackgroundWorkerBgHostApi.setUp(
-        binaryMessenger = engine!!.dartExecutor.binaryMessenger,
-        api = this
+      val notificationChannel = NotificationChannel(
+        NOTIFICATION_CHANNEL_ID,
+        ctx.getString(R.string.background_worker_notification_channel_name),
+        NotificationManager.IMPORTANCE_LOW
       )
+      notificationManager.createNotificationChannel(notificationChannel)
+      val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
+      showNotification(notificationConfig.first, notificationConfig.second)
 
-      engine!!.dartExecutor.executeDartEntrypoint(
-        DartExecutor.DartEntrypoint(
-          loader.findAppBundlePath(),
-          "package:immich_mobile/domain/services/background_worker.service.dart",
-          "backgroundSyncNativeEntrypoint"
+      loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
+        if (isStopped || isComplete) {
+          return@ensureInitializationCompleteAsync
+        }
+
+        engine = FlutterEngine(ctx)
+        FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
+
+        // Register custom plugins
+        MainActivity.registerPlugins(ctx, engine!!)
+        flutterApi =
+          BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
+        BackgroundWorkerBgHostApi.setUp(
+          binaryMessenger = engine!!.dartExecutor.binaryMessenger,
+          api = this
         )
-      )
-    }
 
-    return completionHandler
+        engine!!.dartExecutor.executeDartEntrypoint(
+          DartExecutor.DartEntrypoint(
+            loader.findAppBundlePath(),
+            "package:immich_mobile/domain/services/background_worker.service.dart",
+            "backgroundSyncNativeEntrypoint"
+          )
+        )
+      }
+
+      return completionHandler
+    } catch (error: Throwable) {
+      activeWorker.compareAndSet(this, null)
+      throw error
+    }
   }
 
   /**
@@ -200,8 +204,8 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     result.fold(
       onSuccess = { needsRetry ->
-        val offline = ConnectivityApiImpl(ctx).getCapabilities().isEmpty()
-        if (needsRetry && offline && !tags.contains(BackgroundWorkerApiImpl.RETRY_TAG)) {
+        // The connected worker cannot enqueue itself while it is running, so it retries in place
+        if (needsRetry && !tags.contains(BackgroundWorkerApiImpl.RETRY_TAG)) {
           BackgroundWorkerApiImpl.enqueueBackgroundWorkerWhenConnected(ctx)
           complete(Result.success())
         } else {
