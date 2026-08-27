@@ -187,6 +187,7 @@ export class MediaRepository {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
+      limitInputChannels: false,
       limitInputPixels: false,
       raw: options.raw,
       unlimited: true,

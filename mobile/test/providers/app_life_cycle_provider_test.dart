@@ -9,7 +9,7 @@ import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -66,7 +66,7 @@ class TestWebsocketNotifier extends WebsocketNotifier {
   void disconnect() => disconnectCount++;
 }
 
-class TestDriftBackupNotifier extends DriftBackupNotifier {
+class TestDriftBackupNotifier extends BackupNotifier {
   TestDriftBackupNotifier() : super(MockForegroundUploadService(), MockBackgroundUploadService(), UploadSpeedManager());
 }
 
@@ -116,7 +116,7 @@ void main() {
         websocketProvider.overrideWith((ref) {
           return websocket = TestWebsocketNotifier(ref);
         }),
-        driftBackupProvider.overrideWith((_) => TestDriftBackupNotifier()),
+        backupProvider.overrideWith((_) => TestDriftBackupNotifier()),
         backgroundWorkerLockServiceProvider.overrideWithValue(lockService),
       ],
     );

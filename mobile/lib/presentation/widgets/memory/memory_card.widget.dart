@@ -9,14 +9,14 @@ import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 
-class DriftMemoryCard extends StatelessWidget {
+class MemoryCard extends StatelessWidget {
   final RemoteAsset asset;
   final String title;
   final bool showTitle;
   final bool isCurrent;
   final Function()? onVideoEnded;
 
-  const DriftMemoryCard({
+  const MemoryCard({
     required this.asset,
     required this.title,
     required this.showTitle,

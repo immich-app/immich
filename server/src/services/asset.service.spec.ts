@@ -326,6 +326,7 @@ describe(AssetService.name, () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset));
       mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(unlinkedAsset));
       mocks.asset.update.mockResolvedValueOnce(getForAsset(unlinkedAsset));
 
       await sut.update(auth, asset.id, { livePhotoVideoId: null });

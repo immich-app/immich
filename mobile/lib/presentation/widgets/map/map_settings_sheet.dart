@@ -8,14 +8,14 @@ import 'package:immich_mobile/widgets/map/map_settings/map_settings_list_tile.da
 import 'package:immich_mobile/widgets/map/map_settings/map_settings_time_dropdown.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_theme_picker.dart';
 
-class DriftMapSettingsSheet extends ConsumerStatefulWidget {
-  const DriftMapSettingsSheet({super.key});
+class MapSettingsSheet extends ConsumerStatefulWidget {
+  const MapSettingsSheet({super.key});
 
   @override
-  ConsumerState<DriftMapSettingsSheet> createState() => _DriftMapSettingsSheetState();
+  ConsumerState<MapSettingsSheet> createState() => _MapSettingsSheetState();
 }
 
-class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
+class _MapSettingsSheetState extends ConsumerState<MapSettingsSheet> {
   late bool useCustomRange;
 
   @override

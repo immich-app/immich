@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { debounce } from 'lodash';
 import { DateTime } from 'luxon';
 import path, { basename } from 'node:path';
-import { PassThrough, Readable, Writable } from 'node:stream';
+import { Duplex, PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import semver from 'semver';
 import { serverVersion } from 'src/constants';
@@ -129,6 +129,7 @@ export class DatabaseBackupService {
 
     const args: string[] = [];
     let databaseUsername;
+    let databasePassword;
 
     if (isUrlConnection) {
       if (bin !== 'pg_dump') {
@@ -142,16 +143,19 @@ export class DatabaseBackupService {
         parsedUrl.searchParams.delete('uselibpqcompat');
 
         databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
+        databasePassword = parsedUrl.password;
 
         url = parsedUrl.href;
       }
 
       // assume typical values if we can't parse URL or not present
       databaseUsername ??= 'postgres';
+      databasePassword ??= '';
 
       args.push(url);
     } else {
       databaseUsername = databaseConfig.username;
+      databasePassword = databaseConfig.password;
 
       args.push(
         '--username',
@@ -214,7 +218,7 @@ export class DatabaseBackupService {
       bin: `/usr/lib/postgresql/${databaseMajorVersion}/bin/${bin}`,
       args,
       databaseUsername,
-      databasePassword: isUrlConnection ? new URL(databaseConfig.url).password : databaseConfig.password,
+      databasePassword,
       databaseVersion,
       databaseMajorVersion,
     };
@@ -232,21 +236,26 @@ export class DatabaseBackupService {
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     const temporaryFilePath = `${backupFilePath}.tmp`;
 
+    let pgdump: Duplex | undefined;
+    let gzip: Duplex | undefined;
+
     try {
-      const pgdump = this.processRepository.spawnDuplexStream(bin, args, {
+      pgdump = this.processRepository.spawnDuplexStream(bin, args, {
         env: {
           PATH: process.env.PATH,
           PGPASSWORD: databasePassword,
         },
       });
 
-      const gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
+      gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
       const fileStream = this.storageRepository.createWriteStream(temporaryFilePath);
 
       await pipeline(pgdump, gzip, fileStream);
       await this.storageRepository.rename(temporaryFilePath, backupFilePath);
     } catch (error) {
       this.logger.error(`Database Backup Failure: ${error}`);
+      pgdump?.destroy();
+      gzip?.destroy();
       await this.storageRepository
         .unlink(temporaryFilePath)
 
@@ -580,7 +589,7 @@ function createSqlOwnerTransformStream(databaseUsername: string) {
   const DATA_MARKER_START = new TextEncoder().encode('FROM stdin');
   const LINE_END = new TextEncoder().encode(';');
 
-  const owner = new TextEncoder().encode(databaseUsername);
+  const owner = new TextEncoder().encode(`"${databaseUsername}"`);
 
   let ownerSequenceIndex = 0;
 
