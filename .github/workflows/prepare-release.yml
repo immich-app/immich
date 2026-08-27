@@ -64,6 +64,7 @@ jobs:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: write
+          permission-issues: write
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -101,7 +102,11 @@ jobs:
       - name: Cut the release branch
         if: ${{ github.ref_name == 'main' }}
         env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
           VERSION: ${{ steps.output.outputs.version }}
         run: |
           line=$(sed -E 's/^(v[0-9]+\.[0-9]+).*/\1/' <<< "${VERSION}")
           git push origin "HEAD:refs/heads/release/${line}"
+          gh label create "backport:release/${line}" --force \
+            --description "Backport this pull request to release/${line}" \
+            --color 5319e7

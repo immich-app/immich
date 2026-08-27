@@ -54,6 +54,28 @@ jobs:
             echo "rc=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: main
+          persist-credentials: false
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
+        with:
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Install dependencies
+        run: mise //server:install
+
+      - name: Verify the release line does not diverge from main
+        env:
+          MAIN_MIGRATIONS: ${{ github.workspace }}/main/server/src/schema/migrations
+          ORDER: ${{ github.workspace }}/server/src/schema/migrations/ORDER
+        run: mise //server:migrations verify-order --source-folder "${MAIN_MIGRATIONS}" --append-only-from "${ORDER}"
+
       - name: Push tag
         env:
           TAG: ${{ steps.version.outputs.version }}
