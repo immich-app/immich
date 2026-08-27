@@ -3,6 +3,22 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'exif.model.freezed.dart';
 
+// Aligned with web: https://github.com/immich-app/immich/blob/main/web/src/lib/constants.ts
+enum ProjectionType {
+  equirectangular('EQUIRECTANGULAR'),
+  cubemap('CUBEMAP'),
+  cubestrip('CUBESTRIP'),
+  equirectangularStereo('EQUIRECTANGULAR_STEREO'),
+  cubemapStereo('CUBEMAP_STEREO'),
+  cubestripStereo('CUBESTRIP_STEREO'),
+  cylinder('CYLINDER'),
+  none('NONE');
+
+  const ProjectionType(this.value);
+  final String value;
+  static ProjectionType? fromValue(String? value) => values.where((type) => type.value == value).firstOrNull;
+}
+
 @freezed
 abstract class ExifInfo with _$ExifInfo {
   const ExifInfo._();
@@ -18,6 +34,7 @@ abstract class ExifInfo with _$ExifInfo {
     int? rating,
     int? width,
     int? height,
+    ProjectionType? projectionType,
 
     // GPS
     double? latitude,
