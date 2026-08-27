@@ -26598,6 +26598,49 @@
       "SyncAssetEditV1": {
         "properties": {
           "action": {
+            "enum": [
+              "crop",
+              "rotate",
+              "mirror"
+            ],
+            "type": "string"
+          },
+          "assetId": {
+            "description": "Asset ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Edit ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {},
+            "description": "Edit parameters",
+            "type": "object"
+          },
+          "sequence": {
+            "description": "Edit sequence",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "assetId",
+          "id",
+          "parameters",
+          "sequence"
+        ],
+        "type": "object"
+      },
+      "SyncAssetEditV2": {
+        "properties": {
+          "action": {
             "$ref": "#/components/schemas/AssetEditAction"
           },
           "assetId": {
@@ -27536,6 +27579,7 @@
           "AssetDeleteV1",
           "AssetExifV1",
           "AssetEditV1",
+          "AssetEditV2",
           "AssetEditDeleteV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
@@ -27890,6 +27934,7 @@
           "AssetsV2",
           "AssetExifsV1",
           "AssetEditsV1",
+          "AssetEditsV2",
           "AssetMetadataV1",
           "AssetOcrV1",
           "AuthUsersV1",

@@ -3152,6 +3152,19 @@ export type SyncAssetEditDeleteV1 = {
     editId: string;
 };
 export type SyncAssetEditV1 = {
+    action: Action;
+    /** Asset ID */
+    assetId: string;
+    /** Edit ID */
+    id: string;
+    /** Edit parameters */
+    parameters: {
+        [key: string]: any;
+    };
+    /** Edit sequence */
+    sequence: number;
+};
+export type SyncAssetEditV2 = {
     action: AssetEditAction;
     /** Asset ID */
     assetId: string;
@@ -8117,6 +8130,7 @@ export enum SyncEntityType {
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
     AssetEditV1 = "AssetEditV1",
+    AssetEditV2 = "AssetEditV2",
     AssetEditDeleteV1 = "AssetEditDeleteV1",
     AssetMetadataV1 = "AssetMetadataV1",
     AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
@@ -8181,6 +8195,7 @@ export enum SyncRequestType {
     AssetsV2 = "AssetsV2",
     AssetExifsV1 = "AssetExifsV1",
     AssetEditsV1 = "AssetEditsV1",
+    AssetEditsV2 = "AssetEditsV2",
     AssetMetadataV1 = "AssetMetadataV1",
     AssetOcrV1 = "AssetOcrV1",
     AuthUsersV1 = "AuthUsersV1",
@@ -8215,6 +8230,11 @@ export enum ReleaseType {
     Patch = "patch",
     Prepatch = "prepatch",
     Prerelease = "prerelease"
+}
+export enum Action {
+    Crop = "crop",
+    Rotate = "rotate",
+    Mirror = "mirror"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",
