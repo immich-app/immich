@@ -1,8 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
-import { Readable } from 'node:stream';
+import { DecipherGCM } from 'node:crypto';
+import { PassThrough, Readable } from 'node:stream';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { DownloadService } from 'src/services/download.service';
 import { AssetFactory } from 'test/factories/asset.factory';
+import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
@@ -33,6 +35,7 @@ describe(DownloadService.name, () => {
     it('should skip asset ids that could not be found', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -53,6 +56,7 @@ describe(DownloadService.name, () => {
     it('should log a warning if the original path could not be resolved', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -78,6 +82,7 @@ describe(DownloadService.name, () => {
     it('should download an archive', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -101,6 +106,7 @@ describe(DownloadService.name, () => {
     it('should handle duplicate file names', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -123,6 +129,7 @@ describe(DownloadService.name, () => {
     it('should be deterministic', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -153,6 +160,7 @@ describe(DownloadService.name, () => {
     ])('should sanitize unsafe originalFileName "$input" to "$expected"', async ({ input, expected }) => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -172,6 +180,7 @@ describe(DownloadService.name, () => {
     it('should dedupe sanitized duplicate unsafe filenames', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -200,6 +209,7 @@ describe(DownloadService.name, () => {
     it('should resolve symlinks', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
+        addReadable: vitest.fn(),
         finalize: vitest.fn(),
         stream: new Readable(),
       };
@@ -215,6 +225,70 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', asset.originalFileName);
+    });
+
+    it('should decrypt an encrypted-at-rest asset and add it as a readable when a session DEK is available', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        addReadable: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+
+      const asset = AssetFactory.create({ encryptionNonce: 'nonce', encryptionAuthTag: 'auth-tag' });
+      const auth = AuthFactory.from().session({ rawToken: 'raw-token' }).build();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+      mocks.session.get.mockResolvedValue({
+        id: auth.session!.id,
+        expiresAt: null,
+        pinExpiresAt: null,
+        oauthBearerToken: null,
+        wrappedDek: 'wrapped-session-dek',
+        dekNonce: 'session-dek-nonce',
+      });
+      const cipherStream = new PassThrough();
+      mocks.storage.createPlainReadStream.mockReturnValue(cipherStream);
+      const decipher = new PassThrough() as unknown as DecipherGCM;
+      mocks.crypto.createDecryptStream.mockReturnValue(decipher);
+
+      await expect(sut.downloadArchive(auth, { assetIds: [asset.id] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(mocks.crypto.createDecryptStream).toHaveBeenCalledWith(
+        Buffer.from('dek', 'utf8'),
+        Buffer.from('nonce', 'base64'),
+        Buffer.from('auth-tag', 'base64'),
+      );
+      expect(archiveMock.addFile).not.toHaveBeenCalled();
+      expect(archiveMock.addReadable).toHaveBeenCalledTimes(1);
+      expect(archiveMock.addReadable).toHaveBeenCalledWith(expect.anything(), asset.originalFileName);
+    });
+
+    it('should skip an encrypted-at-rest asset when no session DEK is available', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        addReadable: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+
+      const asset = AssetFactory.create({ encryptionNonce: 'nonce', encryptionAuthTag: 'auth-tag' });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).not.toHaveBeenCalled();
+      expect(archiveMock.addReadable).not.toHaveBeenCalled();
+      expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('no DEK available for this session'));
     });
   });
 

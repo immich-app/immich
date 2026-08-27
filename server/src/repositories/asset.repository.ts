@@ -1155,7 +1155,7 @@ export class AssetRepository {
           .select('asset_file.path as editedPath'),
       )
       .select('originalPath')
-      .select(['encryptionNonce', 'encryptionAuthTag']);
+      .select(['asset.encryptionNonce', 'asset.encryptionAuthTag']);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, true] })

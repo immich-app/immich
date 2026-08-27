@@ -88,22 +88,18 @@ export class DownloadService extends BaseService {
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
+    // Lazily resolved (and cached) the first time we hit an encrypted-at-rest asset; `null` means we tried and
+    // there's no DEK available for this session (e.g. no password-login session), so we skip further encrypted
+    // assets too rather than retrying resolution for every one of them.
+    let dek: Buffer | null | undefined;
+
     for (const assetId of dto.assetIds) {
       const asset = assetMap.get(assetId);
       if (!asset) {
         continue;
       }
 
-      const { originalPath, editedPath, originalFileName, encryptionNonce } = asset;
-
-      // Encrypted-at-rest Locked Folder originals aren't supported in bulk zip downloads yet (would require
-      // streaming through a decrypt transform rather than `archive.file(path)`); skip rather than silently zip
-      // up raw ciphertext. Single-asset downloads (`AssetMediaService.downloadOriginal`) do support this.
-      const usingEncryptedOriginal = encryptionNonce && !(dto.edited && editedPath);
-      if (usingEncryptedOriginal) {
-        this.logger.warn(`Skipping encrypted-at-rest asset ${assetId} in bulk zip download`);
-        continue;
-      }
+      const { originalPath, editedPath, originalFileName, encryptionNonce, encryptionAuthTag } = asset;
 
       let filename = sanitize(originalFileName) || 'unnamed';
       const count = paths[filename] || 0;
@@ -119,6 +115,31 @@ export class DownloadService extends BaseService {
         realpath = await this.storageRepository.realpath(realpath);
       } catch {
         this.logger.warn('Unable to resolve realpath', { originalPath });
+      }
+
+      // Only the original file (not the derivative edited file) is ever encrypted at rest by the Locked Folder
+      // feature — see `AssetService.encryptLockedAssets`.
+      const usingEncryptedOriginal = !!(encryptionNonce && encryptionAuthTag) && !(dto.edited && editedPath);
+      if (usingEncryptedOriginal) {
+        if (dek === undefined) {
+          dek = await this.resolveSessionDek(auth);
+        }
+
+        if (!dek) {
+          this.logger.warn(
+            `Skipping encrypted-at-rest asset ${assetId} in bulk zip download: no DEK available for this session`,
+          );
+          continue;
+        }
+
+        const decipher = this.cryptoRepository.createDecryptStream(
+          dek,
+          Buffer.from(encryptionNonce!, 'base64'),
+          Buffer.from(encryptionAuthTag!, 'base64'),
+        );
+        const cipherStream = this.storageRepository.createPlainReadStream(realpath);
+        zip.addReadable(cipherStream.pipe(decipher), filename);
+        continue;
       }
 
       zip.addFile(realpath, filename);

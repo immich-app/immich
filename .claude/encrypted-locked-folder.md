@@ -281,9 +281,9 @@ lock (out of scope for this pass — see TODO #8).
   session with its own resolvable DEK.
 - **`ImmichFileResponse`/`sendFile()`** (`server/src/utils/file.ts`): new optional `decrypt?: (cipherStream:
   Readable) => Readable` field. When set, `sendFile` pipes the raw file bytes through it instead of delegating
-  to `res.sendFile()`. **Trade-off: no HTTP Range/seek support for these responses** — acceptable for a
-  full-file "Download" action, not suitable for scrubbable video playback (which is why this pass deliberately
-  does not touch `viewThumbnail`/`playbackVideo` — see Not yet implemented, below).
+  to `res.sendFile()`. Originally shipped with no HTTP Range/seek support; **Range support was added in a later
+  pass** (see "Thumbnail/preview/video-derivative encryption" below) once this turned out to actually break
+  video playback outright, not just scrubbing — see the Range-support bullet there.
 - **Reprocessing guards**: `MediaService.handleGenerateThumbnails`, `MediaService.handleVideoConversion`, and
   `MetadataService.handleMetadataExtraction` all now check `asset.encryptionNonce` first and return
   `JobStatus.Skipped` (same pattern already used for `AssetVisibility.Hidden`) rather than attempting to hand
@@ -294,27 +294,21 @@ lock (out of scope for this pass — see TODO #8).
   `'asset.encryptionNonce'` to the corresponding `AssetJobRepository` query selects
   (`getForGenerateThumbnailJob`, `getForVideoConversion`; `getForMetadataExtraction` already picked it up via
   `columns.asset`).
-- **`DownloadService.downloadArchive()`** (bulk zip download): skips encrypted-original assets with a warning
-  log rather than zipping up raw ciphertext under the asset's real filename/extension. `archiver`'s `.file(path,
-  opts)` streams directly from disk by path with no decrypt hook; wiring that up (via `.append(stream, opts)`
-  instead) is deferred — see TODO #9. Single-asset `downloadOriginal` is the fully-supported path today.
+- **`DownloadService.downloadArchive()`** (bulk zip download): originally skipped encrypted-original assets with
+  a warning log rather than zipping up raw ciphertext under the asset's real filename/extension. **Fixed in a
+  later pass** (see "Bulk zip download now decrypts encrypted assets" below) — no longer skipped.
 
 ### Not yet implemented / explicitly deferred in this pass
 
 - **Thumbnails/preview/fullsize/transcoded-video files are now also encrypted** at lock time and decrypted at
   unlock time, alongside `asset.originalPath` — see "Thumbnail/preview/video-derivative encryption" below
-  (formerly TODO #8, now done). The one remaining caveat is Range/seek support for video playback, noted just
-  below.
+  (formerly TODO #8, now done). Range/seek support for video playback (noted below) is also now implemented.
 - **`viewThumbnail`/`playbackVideo` now both decrypt** derivative files when encrypted (see below) — no longer
-  deferred. **Known limitation:** the `decrypt` transform path in `sendFile()` (`server/src/utils/file.ts`) has
-  no HTTP Range/seek support — it always streams the full decrypted body with a plain `200`, never `206 Partial
-  Content`. For a Locked, encrypted video this means initial playback works, but scrubbing/seeking within the
-  video may not (depends on how forgiving the browser's `<video>` element is about a non-seekable response).
-  Unencrypted videos, and thumbnails/images generally, are unaffected. Properly supporting Range on an
-  AES-256-GCM-encrypted file is a non-trivial follow-up (GCM doesn't support random-access decryption of a
-  sub-range without re-deriving/verifying from the start, or switching to a seekable AEAD chunking scheme) — not
-  attempted here.
-- **Bulk zip download (`DownloadService`) skips encrypted assets** rather than including them — see TODO #9.
+  deferred. **Range/seek support has been added** to the `decrypt` transform path in `sendFile()`
+  (`server/src/utils/file.ts`) — see "Range support for encrypted streaming responses" below for how, and its
+  performance trade-off.
+- **Bulk zip download (`DownloadService`) now decrypts encrypted assets** rather than skipping them — see "Bulk
+  zip download now decrypts encrypted assets" below (formerly TODO #9, now done).
 - **Assets that were `Locked` before this feature shipped, or ones locked without a resolvable session DEK,
   stay unencrypted indefinitely** — nothing ever retries. See TODO #4 (unchanged from before).
 
@@ -343,14 +337,53 @@ lock (out of scope for this pass — see TODO #8).
 - Tests: `asset-media.service.spec.ts` has decrypt-success/`ForbiddenException`-without-DEK cases for both
   `viewThumbnail` and `playbackVideo`, mirroring the existing `downloadOriginal` ones.
 
+### Range support for encrypted streaming responses (fixes video playback breaking outright, not just scrubbing)
+
+- **Root cause of "thumbnail shows but video won't play" after locking**: fixing `playbackVideo()`'s decrypt
+  support (above) turned out to be necessary but not sufficient. Live devcontainer logs showed the same URL
+  going from `206 Partial Content` (pre-lock) to `200 OK` (post-lock, same byte range requested) — browsers'
+  `<video>` elements issue real `Range` requests even for "play from the start", and `sendFile()`'s `decrypt`
+  path (`server/src/utils/file.ts`) ignored `Range` headers entirely, always responding `200` with the full body
+  from byte 0. Getting back the wrong response type broke playback outright.
+- **Fix**: added `parseByteRange()`, `ByteRangeTransform`, and `sendFileWithDecrypt()` to `file.ts`. Because
+  AES-256-GCM's auth tag covers the whole ciphertext, a Range request still decrypts+authenticates the *entire*
+  file server-side and only trims the *output* to the requested `[start,end]` window — there's no way to
+  randomly-access-decrypt a sub-range of one-shot GCM without re-deriving/verifying from the start. This is a
+  CPU-cost trade-off (every seek re-decrypts the whole file), accepted for now; see TODO list for the follow-up
+  if this becomes a real problem for larger videos.
+- Handles `bytes=N-M`, `bytes=N-` (open-ended), `bytes=-N` (suffix), out-of-bounds -> `416`, and malformed/
+  multi-range headers -> falls back to a full `200` response.
+- Tests: `server/src/utils/file.spec.ts` (6 tests, real temp file + real streams, no DB needed) covering full
+  response / mid-range / open-ended range / suffix range / 416 / malformed-range-fallback.
+
+### Bulk zip download now decrypts encrypted assets (formerly TODO #9, now done)
+
+- **Symptom reported**: downloading a Locked video (or any Locked asset) via the bulk zip-download endpoint
+  (`POST /download/archive`, used by the web UI's "Download" action) produced a near-empty file — the
+  previous behavior was to silently `continue` past encrypted-original assets rather than adding them to the
+  zip at all, so the resulting archive had no entries for them (just the zip's own end-of-central-directory
+  bytes, hence "a few bytes, empty file just with the name").
+- **Fix**: `StorageRepository.createZipStream()` gained an `addReadable(readable, filename)` method alongside
+  the existing `addFile(path, filename)`, implemented via `archiver`'s `.append(stream, opts)` instead of
+  `.file(path, opts)`. `DownloadService.downloadArchive()` now resolves the session DEK (once, lazily, and
+  caches the `null` result too so it doesn't retry per-asset) when it hits an encrypted-original asset, builds a
+  decrypt stream via `cryptoRepository.createDecryptStream()` piped from `storageRepository.createPlainReadStream()`,
+  and adds that piped stream to the zip instead of skipping. If no DEK is resolvable for the session (e.g.
+  API-key/shared-link auth, or a session created before the user had a DEK), it still falls back to skipping
+  that asset with a warning log — same best-effort philosophy as the rest of this feature, never blocks the
+  whole download.
+- Tests: `download.service.spec.ts` (`downloadArchive`, 2 new tests): decrypts and adds via `addReadable` when a
+  session DEK is available; skips (and warns) when no DEK is available, without ever calling `addFile` on
+  ciphertext.
+
 ## known follow-up work / TODO
 
 1. ~~`changePassword()` does not re-wrap the DEK~~ — **done**, see above.
 2. ~~Implement session-scoped DEK caching~~ — **done**, see above.
 3. ~~Nothing actually encrypts/decrypts asset bytes~~ — **done**, see "Implemented: TODO #3" and "Thumbnail/
-   preview/video-derivative encryption" above. Bulk zip download of encrypted assets is still skipped rather
-   than supported (TODO #9). Video Range/seek support for encrypted videos is a known, currently-unaddressed
-   caveat — see above.
+   preview/video-derivative encryption" above. Bulk zip download of encrypted assets is now also fixed — see
+   "Bulk zip download now decrypts encrypted assets" above (formerly TODO #9). Video Range/seek support for
+   encrypted videos has also been added, with a known CPU-cost trade-off (every seek fully re-decrypts the file) — see above.
 4. **Existing locked assets aren't migrated, and neither are assets locked without a resolvable DEK.** No
    background job retries encryption for these — by design, per the background-job DEK problem above, a
    background job *can't* retry this itself. Any future migration path needs to be a foreground, request-scoped
@@ -369,12 +402,17 @@ lock (out of scope for this pass — see TODO #8).
    way the `user` table one does, and their hand-written form should ideally be double-checked against `pnpm run
    migrations:generate` output once a DB is reachable.
 8. ~~Thumbnails/preview/fullsize/transcoded-video files for Locked assets are never encrypted~~ — **done**, see
-   "Thumbnail/preview/video-derivative encryption" above. Remaining caveat: video Range/seek support is not
-   preserved through the decrypt path (see above) — playback works, scrubbing may not.
-9. **Bulk zip download (`DownloadService.downloadArchive`) skips encrypted assets** instead of including them.
-   Fixing this means switching `StorageRepository.createZipStream()`'s `addFile` from `archiver.file(path)` to
-   `archiver.append(stream, opts)` for encrypted assets specifically, threading a resolved DEK through
-   `DownloadService`.
+   "Thumbnail/preview/video-derivative encryption" above. ~~Remaining caveat: video Range/seek support is not
+   preserved through the decrypt path~~ — **done**, see "Range support for encrypted streaming responses" above.
+9. ~~Bulk zip download (`DownloadService.downloadArchive`) skips encrypted assets~~ instead of including them —
+   **done**, see "Bulk zip download now decrypts encrypted assets" above.
+10. **Scrubbing/seek performance for encrypted video** is a live, not just theoretical, cost now that Range
+    support decrypts+authenticates the whole file per seek (see "Range support for encrypted streaming
+    responses" above) — user has not yet reported back on whether this is acceptable for their real video
+    sizes. If it becomes a real problem, the next step is redesigning on-disk encryption as chunked/seekable
+    (e.g. per-block AES-GCM with an index) instead of one-shot whole-file GCM — non-trivial, not started.
+11. **SQL snapshot regeneration still pending** for `asset.repository.sql`'s rewritten `getForVideo` join (see
+    item 5) — needs to be re-run again since that query changed again in the Range-support pass.
 
 ## Testing status
 
@@ -392,8 +430,17 @@ lock (out of scope for this pass — see TODO #8).
 - `server/src/services/metadata.service.spec.ts` / `media.service.spec.ts` (3 new tests total): the
   `handleMetadataExtraction`/`handleGenerateThumbnails`/`handleVideoConversion` reprocessing guards return
   `JobStatus.Skipped` and never call into `exiftool`/`sharp`/`ffmpeg` for an asset with `encryptionNonce` set.
-- Verified clean: `pnpm exec tsc --noEmit -p tsconfig.json`, `pnpm run lint`, `pnpm exec prettier --check`, and
-  the full non-controller unit test suite (2036 passed; the only failures are pre-existing sandboxed
+- `server/src/services/asset-media.service.spec.ts` (`playbackVideo`, 2 more tests): decrypts an encrypted
+  encoded video when a session DEK is available; throws `ForbiddenException` when no DEK is available.
+- `server/src/utils/file.spec.ts` (6 tests, new file): `sendFile`'s decrypt+Range path — full response with no
+  `Range` header, mid-range (`bytes=N-M`, `206`), open-ended (`bytes=N-`), suffix (`bytes=-N`), out-of-bounds
+  range (`416`), and malformed/multi-range header falling back to a full `200` response. Uses a real temp file
+  and real Node streams (no DB, no mocked crypto) to exercise `ByteRangeTransform`/`parseByteRange` faithfully.
+- `server/src/services/download.service.spec.ts` (`downloadArchive`, 2 new tests): decrypts an encrypted-at-rest
+  asset and adds it to the zip via the new `addReadable` path when a session DEK is available (and asserts
+  `addFile` is never called with ciphertext); skips (with a warning) when no DEK is available for the session.
+- Verified clean: `tsc --noEmit -p tsconfig.json`, `eslint --max-warnings 0` on all touched files, and the full
+  non-controller unit test suite (2249+ passed; the only failures are pre-existing sandboxed
   `supertest`/network-`EPERM` errors in `*.controller.spec.ts` files, unrelated to this work — see root
   `CLAUDE.md`).
 - No dedicated spec file for the new `CryptoRepository.createEncryptStream`/`createDecryptStream` methods
