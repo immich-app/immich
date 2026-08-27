@@ -20,6 +20,21 @@ beforeAll(async () => {
 });
 
 describe(SyncRequestType.AssetEditsV1, () => {
+  it('should not sync color edits', async () => {
+    const { auth, ctx } = await setup();
+    const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
+    const assetEditRepo = ctx.get(AssetEditRepository);
+
+    await assetEditRepo.replaceAll(asset.id, [
+      {
+        action: AssetEditAction.Color,
+        parameters: { brightness: 10, contrast: -10 },
+      },
+    ]);
+
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
+  });
+
   it('should detect and sync the first asset edit', async () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
@@ -296,5 +311,48 @@ describe(SyncRequestType.AssetEditsV1, () => {
 
     // Should not see partner's asset edits in own sync
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
+  });
+});
+
+describe(SyncRequestType.AssetEditsV2, () => {
+  it('should sync color edits', async () => {
+    const { auth, ctx } = await setup();
+    const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
+    const assetEditRepo = ctx.get(AssetEditRepository);
+
+    const [edit] = await assetEditRepo.replaceAll(asset.id, [
+      {
+        action: AssetEditAction.Color,
+        parameters: { brightness: 10, contrast: -10 },
+      },
+    ]);
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV2]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          action: AssetEditAction.Color,
+          parameters: { brightness: 10, contrast: -10 },
+          sequence: 0,
+        },
+        type: SyncEntityType.AssetEditV2,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+
+    await ctx.syncAckAll(auth, response);
+    await assetEditRepo.replaceAll(asset.id, []);
+
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetEditsV2])).resolves.toEqual([
+      {
+        ack: expect.any(String),
+        data: { editId: edit.id },
+        type: SyncEntityType.AssetEditDeleteV1,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
   });
 });
