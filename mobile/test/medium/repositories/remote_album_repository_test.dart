@@ -192,13 +192,11 @@ void main() {
       final active1 = await ctx.newRemoteAsset(
         ownerId: user.id,
         createdAt: DateTime(2024, 5, 10),
-        localDateTime: DateTime(2024, 5, 1),
         visibility: AssetVisibility.timeline,
       );
       final active2 = await ctx.newRemoteAsset(
         ownerId: user.id,
         createdAt: DateTime(2024, 10, 10),
-        localDateTime: DateTime(2024, 10, 1),
         visibility: AssetVisibility.archive,
       );
       final hidden = await ctx.newRemoteAsset(
@@ -214,35 +212,9 @@ void main() {
 
       final range = await sut.watchDateRange(album.id).first;
 
-      expect(range.$1.toUtc(), active1.localDateTime!.toUtc());
-      expect(range.$2.toUtc(), active2.localDateTime!.toUtc());
-    });
-
-    test('prioritizes localDateTime over createdAt for date range calculation', () async {
-      final user = await ctx.newUser();
-      final album = await ctx.newRemoteAlbum(ownerId: user.id);
-
-      final asset1 = await ctx.newRemoteAsset(
-        ownerId: user.id,
-        createdAt: DateTime(2024, 5, 10),
-        localDateTime: DateTime(2024, 5, 1),
-        visibility: AssetVisibility.timeline,
-      );
-      final asset2 = await ctx.newRemoteAsset(
-        ownerId: user.id,
-        createdAt: DateTime(2024, 10, 10),
-        localDateTime: DateTime(2024, 10, 1),
-        visibility: AssetVisibility.archive,
-      );
-
-      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: asset1.id);
-      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: asset2.id);
-
-      final range = await sut.watchDateRange(album.id).first;
-
-      // Dates should match localDateTime, not createdAt
-      expect(range.$1.toUtc(), DateTime(2024, 5, 1).toUtc());
-      expect(range.$2.toUtc(), DateTime(2024, 10, 1).toUtc());
+      // Trashed (Jan 2023) and hidden (Dec 2024) are excluded; range is May–Oct 2024
+      expect(range.$1.toUtc(), active1.createdAt.toUtc());
+      expect(range.$2.toUtc(), active2.createdAt.toUtc());
     });
   });
 

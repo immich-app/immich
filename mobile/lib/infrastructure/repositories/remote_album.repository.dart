@@ -223,10 +223,9 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
   }
 
   Stream<(DateTime, DateTime)> watchDateRange(String albumId) {
-    final dateExp = coalesce([_db.remoteAssetEntity.localDateTime, _db.remoteAssetEntity.createdAt]);
     final query = _db.remoteAlbumAssetEntity.selectOnly()
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([dateExp.min(), dateExp.max()])
+      ..addColumns([_db.remoteAssetEntity.createdAt.min(), _db.remoteAssetEntity.createdAt.max()])
       ..join([
         innerJoin(
           _db.remoteAssetEntity,
@@ -235,8 +234,8 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
       ]);
 
     return query.map((row) {
-      final minDate = row.read(dateExp.min());
-      final maxDate = row.read(dateExp.max());
+      final minDate = row.read(_db.remoteAssetEntity.createdAt.min());
+      final maxDate = row.read(_db.remoteAssetEntity.createdAt.max());
       return (minDate ?? DateTime.now(), maxDate ?? DateTime.now());
     }).watchSingle();
   }
