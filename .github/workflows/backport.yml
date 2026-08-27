@@ -45,5 +45,6 @@ jobs:
               "conflict_resolution": "draft_commit_conflicts"
             }
           pull_title: '${pull_title}'
+          pull_description: 'Backport of #${pull_number} to `${target_branch}`.'
           git_committer_name: 'immich-push-o-matic[bot]'
           git_committer_email: '179150890+immich-push-o-matic[bot]@users.noreply.github.com'
