@@ -46,4 +46,10 @@ export class AssetFileTable {
 
   @Column({ type: 'boolean', default: false })
   isTransparent!: Generated<boolean>;
+
+  @Column({ nullable: true, default: null })
+  encryptionNonce!: string | null;
+
+  @Column({ nullable: true, default: null })
+  encryptionAuthTag!: string | null;
 }

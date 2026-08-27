@@ -623,7 +623,7 @@ export class AuthService extends BaseService {
     const hashed = this.cryptoRepository.hashSha256(token);
     const session = await this.sessionRepository.getByToken(hashed);
     if (session?.user) {
-      this.logger.debug(`[DEK] Validated session ${session.id} for user ${session.user.id}`);
+      // this.logger.debug(`[DEK] Validated session ${session.id} for user ${session.user.id}`);
       const { appVersion, deviceOS, deviceType } = getUserAgentDetails(headers);
       const now = DateTime.now();
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
@@ -652,7 +652,7 @@ export class AuthService extends BaseService {
         }
       }
 
-      this.logger.debug(`[DEK] Returning AuthDto for session ${session.id} with rawToken length=${token.length}`);
+      // this.logger.debug(`[DEK] Returning AuthDto for session ${session.id} with rawToken length=${token.length}`);
 
       return {
         user: session.user,
