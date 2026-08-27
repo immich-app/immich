@@ -175,7 +175,7 @@ export class MediaRepository {
       const contrast = 1 + color.parameters.contrast / 100;
 
       // Keep the contrast midpoint at middle gray, matching CSS brightness() and contrast().
-      pipeline = pipeline.linear(brightness, 0).linear(contrast, 128 * (1 - contrast));
+      pipeline = pipeline.linear(brightness * contrast, 128 * (1 - contrast));
     }
 
     return pipeline;
