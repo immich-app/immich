@@ -20,19 +20,36 @@ beforeAll(async () => {
 });
 
 describe(SyncRequestType.AssetEditsV1, () => {
-  it('should not sync color edits', async () => {
+  it('should only sync supported edit actions', async () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const assetEditRepo = ctx.get(AssetEditRepository);
 
     await assetEditRepo.replaceAll(asset.id, [
       {
+        action: AssetEditAction.Crop,
+        parameters: { x: 10, y: 20, width: 100, height: 200 },
+      },
+      {
         action: AssetEditAction.Color,
         parameters: { brightness: 10, contrast: -10 },
       },
     ]);
 
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetEditsV1])).resolves.toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          action: AssetEditAction.Crop,
+          parameters: { x: 10, y: 20, width: 100, height: 200 },
+          sequence: 0,
+        },
+        type: SyncEntityType.AssetEditV1,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
   });
 
   it('should detect and sync the first asset edit', async () => {

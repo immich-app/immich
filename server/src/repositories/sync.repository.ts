@@ -530,7 +530,7 @@ class AssetEditSync extends BaseSync {
       .select([...columns.syncAssetEdit, 'asset_edit.updateId'])
       .innerJoin('asset', 'asset.id', 'asset_edit.assetId')
       .where('asset.ownerId', '=', options.userId)
-      .where('asset_edit.action', '!=', AssetEditAction.Color)
+      .where('asset_edit.action', 'in', [AssetEditAction.Crop, AssetEditAction.Rotate, AssetEditAction.Mirror])
       .stream();
   }
 
