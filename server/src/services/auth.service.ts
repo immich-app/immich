@@ -89,7 +89,9 @@ export class AuthService extends BaseService {
       dek = await this.generateUserDek(user.id, dto.password);
     }
 
-    this.logger.debug(`[DEK] Login for user ${user.id} completed with dek=${dek ? `present (length=${dek.length})` : 'MISSING'}`);
+    this.logger.debug(
+      `[DEK] Login for user ${user.id} completed with dek=${dek ? `present (length=${dek.length})` : 'MISSING'}`,
+    );
 
     return this.createLoginResponse(user, details, { dek });
   }

@@ -92,5 +92,7 @@ export async function configureExpress(
   server.requestTimeout = 24 * 60 * 60 * 1000;
 
   logger.log(`${IMMICH_SERVER_START} on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
-  logger.warn('SANITY-CHECK-DEK-BUILD-MARKER-v1 -- if you see this line, this container is running the latest server code');
+  logger.warn(
+    'SANITY-CHECK-DEK-BUILD-MARKER-v1 -- if you see this line, this container is running the latest server code',
+  );
 }

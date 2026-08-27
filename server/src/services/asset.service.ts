@@ -212,10 +212,14 @@ export class AssetService extends BaseService {
       return;
     }
 
-    this.logger.debug(`[DEK] Resolved session DEK, attempting to encrypt ${ids.length} locked asset(s): ${ids.join(', ')}`);
+    this.logger.debug(
+      `[DEK] Resolved session DEK, attempting to encrypt ${ids.length} locked asset(s): ${ids.join(', ')}`,
+    );
 
     const assets = await this.assetRepository.getByIds(ids);
-    this.logger.debug(`[DEK] Fetched ${assets.length} asset row(s) for encryption out of ${ids.length} requested id(s)`);
+    this.logger.debug(
+      `[DEK] Fetched ${assets.length} asset row(s) for encryption out of ${ids.length} requested id(s)`,
+    );
     for (const asset of assets) {
       if (asset.encryptionNonce) {
         this.logger.debug(`[DEK] Asset ${asset.id} is already encrypted (nonce present), skipping`);
@@ -249,9 +253,74 @@ export class AssetService extends BaseService {
     const authTag = cipher.getAuthTag();
     await this.storageRepository.rename(tmpPath, originalPath);
 
-    this.logger.debug(`[DEK] Encrypted file written and renamed back to ${originalPath} (authTag length=${authTag.length})`);
+    this.logger.debug(
+      `[DEK] Encrypted file written and renamed back to ${originalPath} (authTag length=${authTag.length})`,
+    );
 
     return { nonce: nonce.toString('base64'), authTag: authTag.toString('base64') };
+  }
+
+  /**
+   * Decrypts the original file, at rest, for assets moved out of the Locked Folder (to Timeline, Archive, or
+   * Hidden). Mirrors `encryptLockedAssets`: best-effort, never blocks the visibility change. If the current
+   * session has no DEK available, the asset is left encrypted on disk even though its visibility has changed —
+   * see the design doc's known-limitations section. Assets that aren't currently encrypted are skipped.
+   */
+  private async decryptUnlockedAssets(auth: AuthDto, ids: string[]): Promise<void> {
+    const assets = await this.assetRepository.getByIds(ids);
+    const encryptedAssets = assets.filter((asset) => asset.encryptionNonce);
+    if (encryptedAssets.length === 0) {
+      this.logger.debug('[DEK] No previously-encrypted assets among the ones being unlocked, nothing to decrypt');
+      return;
+    }
+
+    const dek = await this.resolveSessionDek(auth);
+    if (!dek) {
+      this.logger.warn(
+        `[DEK] Cannot decrypt ${encryptedAssets.length} asset(s) being moved out of Locked Folder: no DEK available for this session — file(s) will remain encrypted at rest despite the visibility change`,
+      );
+      return;
+    }
+
+    this.logger.debug(`[DEK] Resolved session DEK, attempting to decrypt ${encryptedAssets.length} unlocked asset(s)`);
+
+    for (const asset of encryptedAssets) {
+      if (!asset.encryptionNonce || !asset.encryptionAuthTag) {
+        continue;
+      }
+
+      this.logger.debug(`[DEK] Decrypting asset ${asset.id} at originalPath=${asset.originalPath}`);
+      try {
+        await this.decryptOriginalFile(
+          asset.originalPath,
+          dek,
+          Buffer.from(asset.encryptionNonce, 'base64'),
+          Buffer.from(asset.encryptionAuthTag, 'base64'),
+        );
+        await this.assetRepository.update({ id: asset.id, encryptionNonce: null, encryptionAuthTag: null });
+        this.logger.debug(`[DEK] Successfully decrypted and cleared nonce/authTag for asset ${asset.id}`);
+      } catch (error: any) {
+        this.logger.error(`[DEK] Failed to decrypt unlocked asset ${asset.id} at rest: ${error}`, error?.stack);
+      }
+    }
+  }
+
+  /** Decrypts `originalPath` in place with `dek`/`nonce`/`authTag`, the inverse of `encryptOriginalFile`. */
+  private async decryptOriginalFile(originalPath: string, dek: Buffer, nonce: Buffer, authTag: Buffer): Promise<void> {
+    const decipher = this.cryptoRepository.createDecryptStream(dek, nonce, authTag);
+    const tmpPath = `${originalPath}.decrypting`;
+
+    this.logger.debug(`[DEK] Streaming ${originalPath} -> ${tmpPath} through AES-256-GCM decipher`);
+
+    await pipeline(
+      this.storageRepository.createPlainReadStream(originalPath),
+      decipher,
+      this.storageRepository.createWriteStream(tmpPath),
+    );
+
+    await this.storageRepository.rename(tmpPath, originalPath);
+
+    this.logger.debug(`[DEK] Decrypted file written and renamed back to ${originalPath}`);
   }
 
   async copy(

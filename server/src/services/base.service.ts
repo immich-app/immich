@@ -360,7 +360,9 @@ export class BaseService {
         Buffer.from(session.dekNonce, 'base64'),
         sessionKek,
       );
-      this.logger.debug(`[DEK] resolveSessionDek: successfully resolved DEK for session ${auth.session.id} (length=${dek.length})`);
+      this.logger.debug(
+        `[DEK] resolveSessionDek: successfully resolved DEK for session ${auth.session.id} (length=${dek.length})`,
+      );
       return dek;
     } catch (error) {
       this.logger.warn(`[DEK] Failed to unwrap session DEK for session ${auth.session.id}: ${error}`);
