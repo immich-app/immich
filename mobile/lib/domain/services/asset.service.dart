@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
@@ -40,14 +41,23 @@ class AssetService {
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     return switch (asset) {
       RemoteAsset(:final id) => _remoteRepository.watch(id),
-      LocalAsset(:final id) => _localRepository.watch(id).switchMap((localAsset) {
-        final remoteId = localAsset?.remoteId;
-        if (remoteId == null) {
-          return Stream.value(localAsset);
-        }
-        return _remoteRepository.watch(remoteId).map((remoteAsset) => remoteAsset ?? localAsset);
-      }),
+      LocalAsset() => _watchLocalAsset(asset),
     };
+  }
+
+  Stream<BaseAsset?> _watchLocalAsset(LocalAsset asset) {
+    final [remoteLinkUpdates, localUpdates] = StreamSplitter.splitFrom(_localRepository.watch(asset.id));
+    final remoteUpdates = remoteLinkUpdates
+        .map((localAsset) => localAsset?.remoteId)
+        .startWith(asset.remoteId)
+        .whereType<String>()
+        .distinct()
+        .switchMap(_remoteRepository.watch);
+    final seededRemoteUpdates = asset.remoteId == null ? remoteUpdates.startWith(null) : remoteUpdates;
+
+    return seededRemoteUpdates
+        .combineLatest(localUpdates, (remoteAsset, localAsset) => remoteAsset ?? localAsset)
+        .distinct();
   }
 
   Future<List<LocalAsset?>> getLocalAssetsByChecksum(String checksum) {

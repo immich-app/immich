@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -89,21 +91,19 @@ void main() {
   group('watch', () {
     test('emits remoteId when a matching current-user remote asset appears', () async {
       const checksum = 'watch-matching-checksum';
-      const remoteId = 'remote-1';
       final user = await ctx.newUser();
       await ctx.newAuthUser(id: user.id);
       final local = await ctx.newLocalAsset(checksum: checksum);
-      final updates = <LocalAsset?>[];
-      final subscription = sut.watch(local.id).listen(updates.add);
-      addTearDown(subscription.cancel);
+      final updates = StreamIterator(sut.watch(local.id));
+      addTearDown(updates.cancel);
 
-      await pumpEventQueue();
-      expect(updates.last?.remoteId, isNull);
+      expect(await updates.moveNext(), isTrue);
+      expect(updates.current?.remoteId, isNull);
 
-      await ctx.newRemoteAsset(id: remoteId, ownerId: user.id, checksum: checksum);
+      final remote = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
 
-      await pumpEventQueue();
-      expect(updates.last?.remoteId, remoteId);
+      expect(await updates.moveNext(), isTrue);
+      expect(updates.current?.remoteId, remote.id);
     });
 
     test('keeps local-only state when only a partner remote asset appears', () async {
@@ -112,15 +112,17 @@ void main() {
       final partner = await ctx.newUser();
       await ctx.newAuthUser(id: user.id);
       final local = await ctx.newLocalAsset(checksum: checksum);
-      final updates = <LocalAsset?>[];
-      final subscription = sut.watch(local.id).listen(updates.add);
-      addTearDown(subscription.cancel);
+      final updates = StreamIterator(sut.watch(local.id));
+      addTearDown(updates.cancel);
 
-      await pumpEventQueue();
+      expect(await updates.moveNext(), isTrue);
+      expect(updates.current?.remoteId, isNull);
+
+      final next = updates.moveNext();
       await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
 
-      await pumpEventQueue();
-      expect(updates.last?.remoteId, isNull);
+      expect(await next, isTrue);
+      expect(updates.current?.remoteId, isNull);
     });
   });
 
