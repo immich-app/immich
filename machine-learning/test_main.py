@@ -617,6 +617,38 @@ class TestCLIP:
         assert len(embedding) == clip_model_cfg["embed_dim"]
         mocked.run.assert_called_once()
 
+    def test_reads_model_configs_as_utf8(self, mocker: MockerFixture, tmp_path: Path) -> None:
+        original_open = Path.open
+
+        def locale_default_is_ascii(self: Path, mode: str = "r", *args: Any, **kwargs: Any) -> Any:
+            if "b" not in mode and kwargs.get("encoding") is None:
+                kwargs["encoding"] = "ascii"
+            return original_open(self, mode, *args, **kwargs)
+
+        mocker.patch.object(OpenClipTextualEncoder, "download")
+        mocker.patch.object(OpenClipVisualEncoder, "download")
+
+        textual = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=tmp_path)
+        visual = OpenClipVisualEncoder("ViT-B-32__openai", cache_dir=tmp_path)
+        paths = [
+            textual.model_cfg_path,
+            textual.tokenizer_file_path,
+            textual.tokenizer_cfg_path,
+            visual.model_cfg_path,
+            visual.preprocess_cfg_path,
+        ]
+        for path in paths:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(orjson.dumps({"eos_token": "<|café|>"}).decode(), encoding="utf-8")
+
+        mocker.patch.object(Path, "open", locale_default_is_ascii)
+
+        assert textual.model_cfg["eos_token"] == "<|café|>"
+        assert textual.tokenizer_file["eos_token"] == "<|café|>"
+        assert textual.tokenizer_cfg["eos_token"] == "<|café|>"
+        assert visual.model_cfg["eos_token"] == "<|café|>"
+        assert visual.preprocess_cfg["eos_token"] == "<|café|>"
+
     def test_openclip_tokenizer(
         self,
         mocker: MockerFixture,
