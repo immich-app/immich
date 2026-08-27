@@ -76,7 +76,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == false && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == false && !github.event.pull_request.head.repo.fork && !startsWith(github.ref, 'refs/heads/release/') && !startsWith(github.base_ref, 'release/') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -129,7 +129,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == false && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == false && !github.event.pull_request.head.repo.fork && !startsWith(github.ref, 'refs/heads/release/') && !startsWith(github.base_ref, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
@@ -153,7 +153,7 @@ jobs:
   machine-learning:
     name: Build and Push ML
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true || startsWith(github.base_ref, 'release/') }}
     strategy:
       fail-fast: false
       matrix:
@@ -171,7 +171,7 @@ jobs:
       runner-mapping: ${{ matrix.runner-mapping }}
       suffixes: ${{ matrix.suffixes }}
       tags: &tag-rules |
-        type=ref,event=branch
+        type=ref,event=branch,enable=${{ !startsWith(github.ref, 'refs/heads/release/') }}
         type=ref,event=pr
         type=sha,format=long,prefix=commit-
         type=semver,pattern={{version}},prefix=v
@@ -184,7 +184,7 @@ jobs:
   server:
     name: Build and Push Server
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true || startsWith(github.base_ref, 'release/') }}
     uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@4d420cf8e5ea499f99b2c2849ff9a219d5f7b178 # multi-runner-build-workflow-v4.0.0
     permissions:
       contents: read
