@@ -108,6 +108,4 @@ jobs:
         run: |
           line=$(sed -E 's/^(v[0-9]+\.[0-9]+).*/\1/' <<< "${VERSION}")
           git push origin "HEAD:refs/heads/release/${line}"
-          gh label create "backport:release/${line}" --force \
-            --description "Backport this pull request to release/${line}" \
-            --color 5319e7
+          gh label create "backport:release/${line}" --force --color 5319e7
