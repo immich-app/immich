@@ -1,5 +1,5 @@
 [tools]
-java = "21.0.2"
+java = "25.0.4+101.0.LTS"
 
 [tools."aqua:flutter/flutter"]
 version = "3.47.1"
