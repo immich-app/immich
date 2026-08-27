@@ -192,7 +192,8 @@ select
             from
               "person"
             where
-              "asset_face"."personId" = "person"."id"
+              "person"."personGroupId" = "asset_face"."personGroupId"
+              and "person"."ownerId" = "asset"."ownerId"
           ) as "person" on true
         where
           "asset_face"."assetId" = "asset"."id"
@@ -530,7 +531,7 @@ where
   and "libraryId" = $5::uuid
   and (
     not "originalPath" like $6
-    or "originalPath" like $7
+    or "originalPath" ~ $7
   )
 
 -- AssetRepository.filterNewExternalAssetPaths

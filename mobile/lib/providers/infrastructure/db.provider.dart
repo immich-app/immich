@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 
 Drift Function(Ref ref) driftOverride(Drift drift) => (ref) {
   ref.onDispose(() => unawaited(drift.close()));

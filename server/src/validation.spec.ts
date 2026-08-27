@@ -1,4 +1,4 @@
-import { IsNotSiblingOf } from 'src/validation';
+import { IsNotSiblingOf, toEmail } from 'src/validation';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
@@ -40,6 +40,34 @@ describe('Validation', () => {
         attribute3: 'value2',
       });
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe('toEmail', () => {
+    it.each([
+      'test@immich.cloud',
+      'test@immich',
+      'first.last+tag@immich.cloud',
+      // unicode local parts and internationalized domain names
+      'tëst@immich.cloud',
+      'leoñ@immich.cloud',
+      'test@яндекс.рф',
+      'test@xn--d1acpjx3f.xn--p1ai',
+      '用户@例子.广告',
+      'test@ท่องเที่ยว.ไทย',
+    ])('should accept %s', (email) => {
+      expect(toEmail.safeParse(email).success).toBe(true);
+    });
+
+    it.each(['immich', 'test@@immich.cloud', 'test user@immich.cloud', 'test@immich..cloud', 'test@-immich.cloud'])(
+      'should reject %s',
+      (email) => {
+        expect(toEmail.safeParse(email).success).toBe(false);
+      },
+    );
+
+    it('should convert the email to lower case', () => {
+      expect(toEmail.parse('tÉst@Immich.Cloud')).toBe('tést@immich.cloud');
     });
   });
 });

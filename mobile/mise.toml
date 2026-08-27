@@ -1,9 +1,12 @@
 [tools]
-"aqua:flutter/flutter" = "3.44.9"
 java = "21.0.2"
 
+[tools."aqua:flutter/flutter"]
+version = "3.47.1"
+postinstall = "bash {{config_root}}/ios/scripts/xcode_flutter_patch.sh"
+
 [tools."github:CQLabs/homebrew-dcm"]
-version = "1.37.0"
+version = "1.39.1"
 bin = "dcm"
 postinstall = "chmod +x \"$MISE_TOOL_INSTALL_PATH/dcm\" || true"
 
@@ -17,7 +20,14 @@ windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
 [tasks.codegen]
 alias = "codegen"
 description = "Generate all codegen artifacts"
-depends = ["//:open-api-dart", "codegen:dart", "codegen:drift:schema", "codegen:pigeon", "codegen:translation"]
+depends = [
+  "//:open-api-dart",
+  "codegen:dart",
+  "codegen:drift:migration",
+  "codegen:drift:schema",
+  "codegen:pigeon",
+  "codegen:translation",
+]
 
 [tasks."codegen:dart"]
 description = "Execute build_runner to auto-generate dart code"
@@ -25,13 +35,27 @@ sources = [
   "pubspec.yaml",
   "build.yaml",
   "lib/**/*.dart",
-  "infrastructure/**/*.drift",
+  "lib/**/*.drift",
 ]
 outputs = { auto = true }
 run = [
   "dart run build_runner build",
   "dart format lib/routing/router.gr.dart",
 ]
+depends = ["//:open-api-dart"]
+wait_for = ["codegen:drift:migration"]
+
+[tasks."codegen:drift:migration"]
+alias = "migration"
+description = "Generate Drift migrations"
+sources = [
+  "build.yaml",
+  "pubspec.yaml",
+  "drift_schemas/main/*.json",
+  "lib/data/db/**/*.dart",
+]
+outputs = ["lib/data/db/main/database.steps.dart"]
+run = "dart run drift_dev make-migrations"
 depends = ["//:open-api-dart"]
 
 [tasks."codegen:drift:schema"]
@@ -40,6 +64,7 @@ sources = ["drift_schemas/main/*.json"]
 outputs = { auto = true }
 run = "dart run drift_dev schema generate --data-classes --companions drift_schemas/main/ test/drift/main/generated/"
 depends = ["//:open-api-dart"]
+wait_for = ["codegen:drift:migration"]
 
 [tasks."codegen:watch"]
 alias = "watch"
@@ -89,11 +114,6 @@ run = "dart format --set-exit-if-changed $(find lib -name '*.dart' -not \\( -nam
 [tasks."build:android"]
 description = "Build Android release"
 run = "flutter build appbundle"
-
-[tasks."drift:migration"]
-alias = "migration"
-description = "Generate database migrations"
-run = "dart run drift_dev make-migrations"
 
 [tasks.install]
 alias = "install"

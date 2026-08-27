@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { JobStatus } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -22,12 +23,61 @@ const setup = (db?: Kysely<DB>) => {
   });
 };
 
+/** A tag owned by one user, plus another user's auth to attempt access with */
+const newTagOfAnotherUser = async (ctx: ReturnType<typeof setup>['ctx']) => {
+  const { user } = await ctx.newUser();
+  const { user: otherUser } = await ctx.newUser();
+  const [tag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['tag-1'] });
+
+  return { tag, auth: factory.auth({ user }), otherAuth: factory.auth({ user: otherUser }) };
+};
+
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
 
 describe(TagService.name, () => {
+  describe('get', () => {
+    it('should not return a tag of another user', async () => {
+      const { sut, ctx } = setup();
+      const { tag, otherAuth } = await newTagOfAnotherUser(ctx);
+
+      await expect(sut.get(otherAuth, tag.id)).rejects.toThrow('Not found or no tag.read access');
+    });
+  });
+
+  describe('update', () => {
+    it('should not update a tag of another user', async () => {
+      const { sut, ctx } = setup();
+      const { tag, otherAuth } = await newTagOfAnotherUser(ctx);
+
+      await expect(sut.update(otherAuth, tag.id, { color: '#000000' })).rejects.toThrow(
+        'Not found or no tag.update access',
+      );
+    });
+  });
+
+  describe('remove', () => {
+    it('should not remove a tag of another user', async () => {
+      const { sut, ctx } = setup();
+      const { tag, auth, otherAuth } = await newTagOfAnotherUser(ctx);
+
+      await expect(sut.remove(otherAuth, tag.id)).rejects.toThrow('Not found or no tag.delete access');
+      await expect(sut.get(auth, tag.id)).resolves.toEqual(expect.objectContaining({ id: tag.id }));
+    });
+  });
+
   describe('addAssets', () => {
+    it('should not add assets to a tag of another user', async () => {
+      const { sut, ctx } = setup();
+      const { tag, otherAuth } = await newTagOfAnotherUser(ctx);
+      const { asset } = await ctx.newAsset({ ownerId: otherAuth.user.id });
+
+      await expect(sut.addAssets(otherAuth, tag.id, { ids: [asset.id] })).rejects.toThrow(
+        'Not found or no tag.asset access',
+      );
+    });
+
     it('should lock exif column', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
@@ -52,7 +102,38 @@ describe(TagService.name, () => {
       );
       await expect(ctx.get(TagRepository).getAssetIds(tag.id, [asset.id])).resolves.toContain(asset.id);
     });
+
+    it('should not tag a partner asset', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const [tag] = await upsertTags(ctx.get(TagRepository), { userId: owner.id, tags: ['tag-1'] });
+      const authDto = factory.auth({ user: owner });
+
+      await expect(sut.addAssets(authDto, tag.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
+    });
   });
+
+  describe('removeAssets', () => {
+    it('should not remove assets from a tag of another user', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { tag, auth, otherAuth } = await newTagOfAnotherUser(ctx);
+      const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
+      await sut.addAssets(auth, tag.id, { ids: [asset.id] });
+
+      await expect(sut.removeAssets(otherAuth, tag.id, { ids: [asset.id] })).rejects.toThrow(
+        'Not found or no tag.asset access',
+      );
+      await expect(ctx.get(TagRepository).getAssetIds(tag.id, [asset.id])).resolves.toContain(asset.id);
+    });
+  });
+
   describe('deleteEmptyTags', () => {
     it('single tag exists, not connected to any assets, and is deleted', async () => {
       const { sut, ctx } = setup();
