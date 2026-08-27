@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, Updateable } from 'kysely';
+import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFileSearchDto } from 'src/dtos/asset-file.dto';
-import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { DB } from 'src/schema';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { asUuid } from 'src/utils/database';
@@ -37,13 +37,8 @@ export class AssetFileRepository {
     delete value.id;
 
     if (!isEmpty(value)) {
-      await this.db
-        .updateTable('asset_file')
-        .set(assetFile)
-        .where('id', '=', asUuid(assetFile.id))
-        .execute();
+      await this.db.updateTable('asset_file').set(assetFile).where('id', '=', asUuid(assetFile.id)).execute();
       return;
     }
   }
-
 }

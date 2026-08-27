@@ -1,4 +1,5 @@
 import { NextFunction, Response } from 'express';
+import { EventEmitter } from 'node:events';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -36,11 +37,14 @@ describe(sendFile.name, () => {
   const createRes = (rangeHeader?: string) => {
     const chunks: Buffer[] = [];
     const writable = new PassThrough();
-    writable.on('data', (chunk) => chunks.push(chunk as Buffer));
+    writable.on('data', (chunk) => {
+      chunks.push(chunk as Buffer);
+    });
 
+    const req = Object.assign(new EventEmitter(), { headers: { range: rangeHeader } });
     const headers: Record<string, string> = {};
     const res = Object.assign(writable, {
-      req: { headers: { range: rangeHeader } },
+      req,
       headersSent: false,
       statusCode: 200,
       status(code: number) {
@@ -123,7 +127,7 @@ describe(sendFile.name, () => {
     );
 
     expect(res.statusCode).toBe(206);
-    expect(getBody()).toEqual(plaintext.subarray(plaintext.length - 50));
+    expect(getBody()).toEqual(plaintext.subarray(-50));
     expect(headers['Content-Length']).toBe('50');
   });
 
@@ -144,7 +148,7 @@ describe(sendFile.name, () => {
     );
 
     expect(res.statusCode).toBe(206);
-    expect(getBody()).toEqual(plaintext.subarray(plaintext.length - 50));
+    expect(getBody()).toEqual(plaintext.subarray(-50));
   });
 
   it('responds 416 with Content-Range when the requested range is out of bounds', async () => {

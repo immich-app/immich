@@ -346,9 +346,7 @@ export class AssetMediaService extends BaseService {
     const usingEncodedVideo = !!asset.encodedVideoPath;
     const filepath = asset.encodedVideoPath || asset.originalPath;
     const encryptionNonce = usingEncodedVideo ? asset.encodedVideoEncryptionNonce : asset.originalEncryptionNonce;
-    const encryptionAuthTag = usingEncodedVideo
-      ? asset.encodedVideoEncryptionAuthTag
-      : asset.originalEncryptionAuthTag;
+    const encryptionAuthTag = usingEncodedVideo ? asset.encodedVideoEncryptionAuthTag : asset.originalEncryptionAuthTag;
 
     // The encoded video (or, if none exists, the original) may be encrypted at rest by the Locked Folder feature —
     // see `AssetService.encryptLockedAssets`. Range requests are not supported when decrypting, since the
