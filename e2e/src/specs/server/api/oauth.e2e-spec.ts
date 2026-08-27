@@ -1,7 +1,7 @@
 import { OAuthClient, OAuthUser, generateLogoutToken } from '@immich/e2e-auth-server';
 import {
+  AdminConfigOAuthDto,
   LoginResponseDto,
-  SystemConfigOAuthDto,
   getConfigDefaults,
   getMyUser,
   getSessions,
@@ -70,17 +70,18 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   return { url: redirectUrl, state, codeVerifier };
 };
 
-const setupOAuth = async (token: string, dto: Partial<SystemConfigOAuthDto>) => {
+const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
   const options = { headers: asBearerAuth(token) };
   const defaults = await getConfigDefaults(options);
   const merged = {
     ...defaults.oauth,
     buttonText: 'Login with Immich',
     issuerUrl: `${authServer.internal}/.well-known/openid-configuration`,
+    accountManagementUrl: authServer.internal,
     allowInsecureRequests: true,
     ...dto,
   };
-  await updateConfig({ systemConfigDto: { ...defaults, oauth: merged } }, options);
+  await updateConfig({ adminConfigDto: { ...defaults, oauth: merged } }, options);
 };
 
 describe(`/oauth`, () => {
@@ -283,6 +284,21 @@ describe(`/oauth`, () => {
         userEmail: 'oauth-rs256-token@immich.app',
         userId: expect.any(String),
       });
+    });
+
+    it('should set the profile picture from a picture claim with an embedded image', async () => {
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_EMBEDDED_PROFILE_PICTURE);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        userId: expect.any(String),
+        userEmail: 'oauth-with-embedded-profile-picture@immich.app',
+        profileImagePath: expect.any(String),
+      });
+
+      const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+      expect(user.profileImagePath.length).toBeGreaterThan(0);
     });
 
     it('should work with RS256 signed user profiles', async () => {

@@ -893,7 +893,13 @@ export class MetadataService extends BaseService {
   }
 
   private async applyTaggedFaces(
-    asset: { id: string; ownerId: string; faces: { id: string; sourceType: SourceType }[]; originalPath: string },
+    asset: {
+      id: string;
+      ownerId: string;
+      clusterGroupId: string;
+      faces: { id: string; sourceType: SourceType }[];
+      originalPath: string;
+    },
     tags: ImmichTags,
   ) {
     if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
@@ -902,9 +908,11 @@ export class MetadataService extends BaseService {
 
     const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
-    const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
-    const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
+    const existingNameMap = new Map(
+      existingNames.map(({ personGroupId, name }) => [name.toLowerCase(), personGroupId]),
+    );
+    const missing: (Insertable<PersonTable> & { name: string; personGroupId: string; clusterGroupId: string })[] = [];
+    const missingWithFaceAsset: { personGroupId: string; ownerId: string; faceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
     const imageWidth = adjustedRegionInfo.AppliedToDimensions.W;
@@ -916,7 +924,7 @@ export class MetadataService extends BaseService {
       }
 
       const loweredName = region.Name.toLowerCase();
-      const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+      const personGroupId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
       const X = Number(region.Area.X);
       const Y = Number(region.Area.Y);
@@ -925,7 +933,7 @@ export class MetadataService extends BaseService {
 
       const face = {
         id: this.cryptoRepository.randomUUID(),
-        personId,
+        personGroupId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
@@ -938,15 +946,27 @@ export class MetadataService extends BaseService {
 
       facesToAdd.push(face);
       if (!existingNameMap.has(loweredName)) {
-        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
-        missingWithFaceAsset.push({ id: personId, ownerId: asset.ownerId, faceAssetId: face.id });
+        missing.push({
+          personGroupId,
+          ownerId: asset.ownerId,
+          clusterGroupId: asset.clusterGroupId,
+          name: region.Name,
+        });
+        missingWithFaceAsset.push({ personGroupId, ownerId: asset.ownerId, faceAssetId: face.id });
       }
     }
 
     if (missing.length > 0) {
-      this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
-      const newPersonIds = await this.personRepository.createAll(missing);
-      const jobs = newPersonIds.map((id) => ({ name: JobName.PersonGenerateThumbnail, data: { id } }) as const);
+      this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.personGroupId}`)}`);
+      await this.personRepository.createGroups(
+        missing.map((item) => ({ id: item.personGroupId, clusterGroupId: asset.clusterGroupId })),
+      );
+      await this.personRepository.createAll(missing);
+
+      const jobs = missing.map(
+        ({ personGroupId, ownerId }) =>
+          ({ name: JobName.PersonGenerateThumbnail, data: { personGroupId, ownerId } }) as const,
+      );
       await this.jobRepository.queueAll(jobs);
     }
 

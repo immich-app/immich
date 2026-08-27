@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
@@ -12,25 +13,23 @@ import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class MapState {
-  final ThemeMode themeMode;
-  final LatLngBounds bounds;
-  final bool onlyFavorites;
-  final bool includeArchived;
-  final bool withPartners;
-  final int relativeDays;
-  final TimeRange timeRange;
+part 'map.state.freezed.dart';
 
-  const MapState({
-    this.themeMode = ThemeMode.system,
-    required this.bounds,
-    this.onlyFavorites = false,
-    this.includeArchived = false,
-    this.withPartners = false,
-    this.relativeDays = 0,
-    this.timeRange = const TimeRange(),
-  });
+@Freezed(equal: false)
+abstract class MapState with _$MapState {
+  const MapState._();
 
+  const factory MapState({
+    @Default(ThemeMode.system) ThemeMode themeMode,
+    required LatLngBounds bounds,
+    @Default(false) bool onlyFavorites,
+    @Default(false) bool includeArchived,
+    @Default(false) bool withPartners,
+    @Default(0) int relativeDays,
+    @Default(TimeRange()) TimeRange timeRange,
+  }) = _MapState;
+
+  // We only care about bounds changes, overriding Freezed
   @override
   bool operator ==(covariant MapState other) {
     return bounds == other.bounds;
@@ -38,26 +37,6 @@ class MapState {
 
   @override
   int get hashCode => bounds.hashCode;
-
-  MapState copyWith({
-    LatLngBounds? bounds,
-    ThemeMode? themeMode,
-    bool? onlyFavorites,
-    bool? includeArchived,
-    bool? withPartners,
-    int? relativeDays,
-    TimeRange? timeRange,
-  }) {
-    return MapState(
-      bounds: bounds ?? this.bounds,
-      themeMode: themeMode ?? this.themeMode,
-      onlyFavorites: onlyFavorites ?? this.onlyFavorites,
-      includeArchived: includeArchived ?? this.includeArchived,
-      withPartners: withPartners ?? this.withPartners,
-      relativeDays: relativeDays ?? this.relativeDays,
-      timeRange: timeRange ?? this.timeRange,
-    );
-  }
 
   TimelineMapOptions toOptions() => TimelineMapOptions(
     bounds: bounds,

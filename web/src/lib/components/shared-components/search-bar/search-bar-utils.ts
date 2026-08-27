@@ -95,6 +95,30 @@ export const getSearchTypeTitle = (type: string) => {
   }
 };
 
+export const getSearchTypePlaceholder = (type: string) => {
+  const $t = get(t);
+  switch (type) {
+    case 'metadata': {
+      return $t('search_by_filename_example');
+    }
+    case 'description': {
+      return $t('search_by_description_example');
+    }
+    case 'fullPath': {
+      return $t('search_by_full_path_example');
+    }
+    case 'ocr': {
+      return $t('search_by_ocr_example');
+    }
+    case 'smart': {
+      return $t('search_by_context_example');
+    }
+    default: {
+      return $t('search_your_photos');
+    }
+  }
+};
+
 export const getSearchPlacesTitle = (city?: string, state?: string, country?: string) =>
   [city, state, country].filter(Boolean).join(', ') || undefined;
 
