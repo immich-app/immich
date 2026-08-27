@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-root
   cancel-in-progress: false
 
 permissions: {}
