@@ -32,7 +32,10 @@ high-level design (hexagonal-ish layering: `src/controllers` → `src/services` 
   **Any new method added to one of those hand-mocked repositories must be added to its corresponding
   `test/repositories/*.repository.mock.ts` file too**, or tests fail at runtime with `<method> is not a function`
   even though the real class compiles fine (TypeScript won't catch this ahead of time in all cases).
-- Run a single spec file/pattern with `pnpm run test -- <pattern>` (vitest), e.g. `pnpm run test -- auth.service`.
+- Run a single spec file with vitest directly (the `pnpm run test -- <pattern>` form does **not** reliably
+  filter to one file in this repo's config — it still collects/runs the whole suite):
+  `pnpm exec vitest run --config test/vitest.config.mjs <path-to-spec>`, e.g.
+  `pnpm exec vitest run --config test/vitest.config.mjs src/services/auth.service.spec.ts`.
 
 ## Active feature work: encrypted-at-rest "Locked Folder"
 
@@ -40,6 +43,21 @@ See `../.claude/encrypted-locked-folder.md` for the full design/progress notes. 
 
 - Auth/session endpoints: `src/controllers/auth.controller.ts` (`login`, `change-password`, `pin-code`,
   `session/unlock`, `session/lock`), backed by `src/services/auth.service.ts`.
-- Locked Folder today is just `AssetVisibility.Locked` (`src/enum.ts`) plus a PIN code stored on the user and a
-  temporary "unlocked session" — it does **not** currently encrypt anything at rest. That's the gap this feature
-  work is closing.
+- Locked Folder today is `AssetVisibility.Locked` (`src/enum.ts`) plus a PIN code stored on the user and a
+  temporary "unlocked session" (`session.pinExpiresAt` / `auth.session.hasElevatedPermission`), **plus real
+  encryption at rest for the original file** (not thumbnails/preview/video derivatives — see the design doc).
+- Implemented: a per-user DEK, wrapped by a password-derived KEK (`user.wrappedDek`/`kekSalt`/`kekNonce`), and
+  re-wrapped per-session under a key derived from that session's own raw access token
+  (`session.wrappedDek`/`dekNonce`) so an active session can use the DEK without re-prompting for the password
+  or PIN. The PIN itself stays a pure visibility/authorization gate, unchanged. `changePassword()` correctly
+  re-wraps the user-level DEK under the new password. Additionally: `AssetService.updateAll()` encrypts an
+  asset's `originalPath` in place (AES-256-GCM, streamed) the moment it's moved into the Locked Folder, using
+  the *requesting session's* DEK — background job processors never see the DEK at all, which is why encryption
+  happens at lock-time rather than upload-time (see "The background-job DEK problem" in the design doc).
+  `AssetMediaService.downloadOriginal()` decrypts on the fly for supported sessions; `MediaService`/
+  `MetadataService` reprocessing jobs (`handleGenerateThumbnails`/`handleVideoConversion`/
+  `handleMetadataExtraction`) skip encrypted originals rather than crashing on ciphertext.
+- Not yet implemented: encrypting thumbnail/preview/fullsize/transcoded-video derivative files (only the
+  original is encrypted), bulk zip download support for encrypted assets (currently skipped, single-asset
+  download is the supported path), and a documented-but-unresolved gap for OAuth-only users (no password → no
+  DEK at all, ever). See the TODO list in `../.claude/encrypted-locked-folder.md` for the full, current state.

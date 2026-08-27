@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AuthSharedLink } from 'src/database';
@@ -233,18 +239,34 @@ export class AssetMediaService extends BaseService {
       dto.edited = true;
     }
 
-    const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
-      id,
-      dto.edited ?? false,
-    );
+    const { originalPath, originalFileName, editedPath, encryptionNonce, encryptionAuthTag } =
+      await this.assetRepository.getForOriginal(id, dto.edited ?? false);
 
     const path = editedPath ?? originalPath!;
+
+    // Only the original file (not the derivative edited file) is ever encrypted at rest by the Locked Folder
+    // feature — see `AssetService.encryptLockedAssets`.
+    let decrypt: ImmichFileResponse['decrypt'];
+    if (!editedPath && encryptionNonce && encryptionAuthTag) {
+      const dek = await this.resolveSessionDek(auth);
+      if (!dek) {
+        throw new ForbiddenException('This asset is encrypted at rest and cannot be decrypted for this session');
+      }
+
+      const decipher = this.cryptoRepository.createDecryptStream(
+        dek,
+        Buffer.from(encryptionNonce, 'base64'),
+        Buffer.from(encryptionAuthTag, 'base64'),
+      );
+      decrypt = (cipherStream) => cipherStream.pipe(decipher);
+    }
 
     return new ImmichFileResponse({
       path,
       fileName: getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),
       contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
+      decrypt,
     });
   }
 

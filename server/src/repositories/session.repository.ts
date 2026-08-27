@@ -27,10 +27,11 @@ export class SessionRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  get(id: string) {
+  get(id: string, options?: { withDek?: boolean }) {
     return this.db
       .selectFrom('session')
       .select(['id', 'expiresAt', 'pinExpiresAt', 'oauthBearerToken'])
+      .$if(!!options?.withDek, (qb) => qb.select(['wrappedDek', 'dekNonce']))
       .where('id', '=', id)
       .executeTakeFirst();
   }

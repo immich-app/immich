@@ -1,7 +1,10 @@
 import { HttpException, NotFoundException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
+import { createReadStream } from 'node:fs';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -29,6 +32,13 @@ export class ImmichFileResponse {
   public readonly contentType!: string;
   public readonly cacheControl!: CacheControl;
   public readonly fileName?: string;
+  /**
+   * When set, `path` on disk holds ciphertext rather than the real file: `sendFile` pipes the raw bytes through
+   * this transform instead of delegating to `res.sendFile`. Note this means no HTTP Range/seek support for these
+   * responses (unlike the normal `res.sendFile` path) — acceptable for a full-file download, not suitable for
+   * scrubbable video playback.
+   */
+  public readonly decrypt?: (cipherStream: Readable) => Readable;
 
   constructor(response: ImmichFileResponse) {
     Object.assign(this, response);
@@ -68,6 +78,11 @@ export const sendFile = async (
     res.header('Content-Type', file.contentType);
     if (file.fileName) {
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
+    }
+
+    if (file.decrypt) {
+      await pipeline(file.decrypt(createReadStream(file.path)), res);
+      return;
     }
 
     return await _sendFile(file.path, { dotfiles: 'allow' });

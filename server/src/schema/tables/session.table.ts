@@ -58,4 +58,10 @@ export class SessionTable {
 
   @Column({ nullable: true })
   oauthBearerToken!: string | null;
+
+  @Column({ nullable: true, default: null })
+  wrappedDek!: string | null;
+
+  @Column({ nullable: true, default: null })
+  dekNonce!: string | null;
 }

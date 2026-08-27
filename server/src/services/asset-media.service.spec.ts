@@ -1,9 +1,12 @@
 import {
   BadRequestException,
+  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { DecipherGCM } from 'node:crypto';
+import { PassThrough } from 'node:stream';
 import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
@@ -167,6 +170,8 @@ const assetEntity = Object.freeze({
     longitude: 10.703075,
   },
   livePhotoVideoId: null,
+  encryptionNonce: null,
+  encryptionAuthTag: null,
 } as MapAsset);
 
 describe(AssetMediaService.name, () => {
@@ -492,6 +497,42 @@ describe(AssetMediaService.name, () => {
           cacheControl: CacheControl.PrivateWithCache,
         }),
       );
+    });
+
+    it('should decrypt an encrypted original when a session DEK is available', async () => {
+      const asset = AssetFactory.create({ encryptionNonce: 'nonce', encryptionAuthTag: 'auth-tag' });
+      const auth = AuthFactory.from().session({ rawToken: 'raw-token' }).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+      mocks.session.get.mockResolvedValue({
+        id: auth.session!.id,
+        expiresAt: null,
+        pinExpiresAt: null,
+        oauthBearerToken: null,
+        wrappedDek: 'wrapped-session-dek',
+        dekNonce: 'session-dek-nonce',
+      });
+      const decipher = new PassThrough() as unknown as DecipherGCM;
+      mocks.crypto.createDecryptStream.mockReturnValue(decipher);
+
+      const response = await sut.downloadOriginal(auth, asset.id, {});
+
+      expect(mocks.crypto.createDecryptStream).toHaveBeenCalledWith(
+        Buffer.from('dek', 'utf8'),
+        Buffer.from('nonce', 'base64'),
+        Buffer.from('auth-tag', 'base64'),
+      );
+      expect(response.decrypt).toBeDefined();
+    });
+
+    it('should throw if an encrypted original cannot be decrypted for the current session', async () => {
+      const asset = AssetFactory.create({ encryptionNonce: 'nonce', encryptionAuthTag: 'auth-tag' });
+      const auth = AuthFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+
+      await expect(sut.downloadOriginal(auth, asset.id, {})).rejects.toBeInstanceOf(ForbiddenException);
+      expect(mocks.crypto.createDecryptStream).not.toHaveBeenCalled();
     });
 
     it('should download edited file by default when edits exist', async () => {

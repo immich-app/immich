@@ -91,6 +91,11 @@ services:
       IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://docs.immich.app
       IMMICH_THIRD_PARTY_SUPPORT_URL: https://docs.immich.app/community-guides
       IMMICH_HELMET_FILE: 'true'
+      # Podman/Docker on macOS runs through a Linux VM (virtiofs/gRPC-FUSE); inotify events from host-side
+      # file writes don't reliably propagate through the bind mount, so tsc's default native watcher
+      # (used by `nest start --watch`) never sees changes. Force it to poll instead.
+      TSC_WATCHFILE: DynamicPriorityPolling
+      TSC_WATCHDIRECTORY: DynamicPriorityPolling
     ports:
       - 9230:9230
       - 9231:9231
@@ -103,7 +108,11 @@ services:
       database:
         condition: service_started
     healthcheck:
-      disable: false
+      test: ['CMD', 'immich-healthcheck']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   immich-web:
     extends:
@@ -150,7 +159,11 @@ services:
       - database
     restart: unless-stopped
     healthcheck:
-      disable: false
+      test: ['CMD', 'python3', 'healthcheck.py']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   redis:
     container_name: immich_redis
@@ -174,7 +187,11 @@ services:
       - 5432:5432
     shm_size: 128mb
     healthcheck:
-      disable: false
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus

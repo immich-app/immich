@@ -125,6 +125,7 @@ export class AssetJobRepository {
         'asset.ownerId',
         'asset.thumbhash',
         'asset.type',
+        'asset.encryptionNonce',
       ])
       .select((eb) =>
         jsonArrayFrom(
@@ -344,7 +345,7 @@ export class AssetJobRepository {
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .innerJoin('asset_video', 'asset_video.assetId', 'asset.id')
       .leftJoin('asset_audio', 'asset_audio.assetId', 'asset.id')
-      .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
+      .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encryptionNonce'])
       .select(withFiles)
       .select((eb) => withAudioStream(eb).as('audioStream'))
       .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))

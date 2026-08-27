@@ -408,6 +408,19 @@ describe(MediaService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalledWith();
     });
 
+    it('should skip assets that are encrypted at rest', async () => {
+      const asset = AssetFactory.from().exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        encryptionNonce: 'nonce',
+      });
+
+      expect(await sut.handleGenerateThumbnails({ id: asset.id })).toEqual(JobStatus.Skipped);
+
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalledWith();
+    });
+
     it('should delete previous preview if different path', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.Webp } } });
@@ -2002,6 +2015,13 @@ describe(MediaService.name, () => {
 
     it('should skip transcoding if asset not found', async () => {
       await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should skip transcoding if the asset is encrypted at rest', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, encryptionNonce: 'nonce' });
+
+      await expect(sut.handleVideoConversion({ id: 'video-id' })).resolves.toBe(JobStatus.Skipped);
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 

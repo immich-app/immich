@@ -94,7 +94,16 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { originalPath, editedPath, originalFileName } = asset;
+      const { originalPath, editedPath, originalFileName, encryptionNonce } = asset;
+
+      // Encrypted-at-rest Locked Folder originals aren't supported in bulk zip downloads yet (would require
+      // streaming through a decrypt transform rather than `archive.file(path)`); skip rather than silently zip
+      // up raw ciphertext. Single-asset downloads (`AssetMediaService.downloadOriginal`) do support this.
+      const usingEncryptedOriginal = encryptionNonce && !(dto.edited && editedPath);
+      if (usingEncryptedOriginal) {
+        this.logger.warn(`Skipping encrypted-at-rest asset ${assetId} in bulk zip download`);
+        continue;
+      }
 
       let filename = sanitize(originalFileName) || 'unnamed';
       const count = paths[filename] || 0;

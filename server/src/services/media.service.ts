@@ -205,6 +205,11 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    if (asset.encryptionNonce) {
+      this.logger.debug(`Thumbnail generation skipped for asset ${id}: original is encrypted at rest`);
+      return JobStatus.Skipped;
+    }
+
     let generated: Awaited<ReturnType<MediaService['generateImageThumbnails']>>;
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
       this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
@@ -549,6 +554,11 @@ export class MediaService extends BaseService {
     const asset = await this.assetJobRepository.getForVideoConversion(id);
     if (!asset) {
       return JobStatus.Failed;
+    }
+
+    if (asset.encryptionNonce) {
+      this.logger.debug(`Video conversion skipped for asset ${id}: original is encrypted at rest`);
+      return JobStatus.Skipped;
     }
 
     const input = asset.originalPath;

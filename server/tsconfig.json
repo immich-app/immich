@@ -27,6 +27,13 @@
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "noErrorTruncation": true
   },
+  "watchOptions": {
+    "watchFile": "usePolling",
+    "watchDirectory": "usePolling",
+    "fallbackPolling": "dynamicPriority",
+    "synchronousWatchDirectory": true,
+    "excludeDirectories": ["**/node_modules", "**/dist"]
+  },
   "include": ["src", "test"],
   "exclude": ["dist", "node_modules", "upload"]
 }

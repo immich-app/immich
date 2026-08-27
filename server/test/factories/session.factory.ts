@@ -27,6 +27,8 @@ export class SessionFactory {
       userId: newUuid(),
       oauthSid: newUuid(),
       oauthBearerToken: 'oauth-bearer-token',
+      wrappedDek: null,
+      dekNonce: null,
       ...dto,
     });
   }

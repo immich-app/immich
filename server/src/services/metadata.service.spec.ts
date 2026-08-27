@@ -187,6 +187,16 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
+    it('should skip an asset that is encrypted at rest', async () => {
+      const asset = AssetFactory.create({ encryptionNonce: 'nonce', encryptionAuthTag: 'auth-tag' });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+
+      await expect(sut.handleMetadataExtraction({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.metadata.readTags).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
+    });
+
     it('should handle a date in a sidecar file', async () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');

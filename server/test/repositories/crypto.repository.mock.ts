@@ -23,5 +23,8 @@ export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepo
       nonce: Buffer.from('nonce', 'utf8'),
     }),
     unwrapDek: vitest.fn().mockReturnValue(Buffer.from('dek', 'utf8')),
+    deriveSessionKek: vitest.fn().mockReturnValue(Buffer.from('session-kek', 'utf8')),
+    createEncryptStream: vitest.fn(),
+    createDecryptStream: vitest.fn(),
   };
 };

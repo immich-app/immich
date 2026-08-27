@@ -158,6 +158,8 @@ export const getForMetadataExtraction = (
   isEdited: asset.isEdited,
   width: asset.width,
   height: asset.height,
+  encryptionNonce: asset.encryptionNonce,
+  encryptionAuthTag: asset.encryptionAuthTag,
   faces: asset.faces.map((face) => getDehydrated(face)),
   files: asset.files.map((file) => getDehydrated(file)),
 });
@@ -170,6 +172,7 @@ export const getForGenerateThumbnail = (asset: ReturnType<AssetFactory['build']>
   ownerId: asset.ownerId,
   thumbhash: asset.thumbhash,
   type: asset.type,
+  encryptionNonce: asset.encryptionNonce,
   files: asset.files.map((file) => getDehydrated(file)),
   exifInfo: getDehydrated(asset.exifInfo),
   edits: asset.edits.map(({ action, parameters }) => ({ action, parameters })) as AssetEditActionItem[],

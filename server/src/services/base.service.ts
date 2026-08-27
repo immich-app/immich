@@ -4,6 +4,7 @@ import sanitize from 'sanitize-filename';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { SystemConfig } from 'src/dtos/config.dto';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -328,5 +329,42 @@ export class BaseService {
     await this.eventRepository.emit('UserCreate', user);
 
     return user;
+  }
+
+  /**
+   * Resolves the Locked Folder data encryption key (DEK) available to the current request's session, if any.
+   * Returns `null` (never throws) when there's no session (API key/shared link auth), the session has no
+   * session-level wrapped DEK yet, or unwrapping otherwise fails — callers should treat a `null` result as "act
+   * as if this asset/session isn't encrypted", never as a reason to fail the calling request.
+   */
+  async resolveSessionDek(auth: AuthDto): Promise<Buffer | null> {
+    if (!auth.session?.rawToken) {
+      this.logger.debug(
+        `[DEK] resolveSessionDek: no rawToken on auth.session (session=${auth.session?.id ?? 'none'}) — likely API key/shared link auth, or an AuthDto that lost its rawToken`,
+      );
+      return null;
+    }
+
+    const session = await this.sessionRepository.get(auth.session.id, { withDek: true });
+    if (!session?.wrappedDek || !session?.dekNonce) {
+      this.logger.debug(
+        `[DEK] resolveSessionDek: session ${auth.session.id} has no wrappedDek/dekNonce (wrappedDek=${!!session?.wrappedDek}, dekNonce=${!!session?.dekNonce}) — this session was created before the user had a DEK, or the user has no DEK at all (e.g. OAuth-only)`,
+      );
+      return null;
+    }
+
+    try {
+      const sessionKek = this.cryptoRepository.deriveSessionKek(auth.session.rawToken);
+      const dek = this.cryptoRepository.unwrapDek(
+        Buffer.from(session.wrappedDek, 'base64'),
+        Buffer.from(session.dekNonce, 'base64'),
+        sessionKek,
+      );
+      this.logger.debug(`[DEK] resolveSessionDek: successfully resolved DEK for session ${auth.session.id} (length=${dek.length})`);
+      return dek;
+    } catch (error) {
+      this.logger.warn(`[DEK] Failed to unwrap session DEK for session ${auth.session.id}: ${error}`);
+      return null;
+    }
   }
 }

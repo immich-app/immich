@@ -154,6 +154,8 @@ export type MapAsset = {
   width: number | null;
   height: number | null;
   isEdited: boolean;
+  encryptionNonce: string | null;
+  encryptionAuthTag: string | null;
 };
 
 export type AssetMapOptions = {

@@ -198,6 +198,14 @@ export type Album = Selectable<AlbumTable> & {
 export type AuthSession = {
   id: string;
   hasElevatedPermission: boolean;
+  /**
+   * The session's own raw (unhashed) access token, kept only in-memory for the lifetime of a single request.
+   * Never persisted or serialized to any response DTO. Named distinctly from the DB `session.token` column
+   * (which stores only the hash) to avoid any type/naming collision with that column. Used to derive this
+   * session's session-KEK on demand, so a request that needs the Locked Folder DEK doesn't need the account
+   * password again.
+   */
+  rawToken?: string;
 };
 
 export type Partner = {
@@ -304,6 +312,8 @@ export const columns = {
     'asset.width',
     'asset.height',
     'asset.isEdited',
+    'asset.encryptionNonce',
+    'asset.encryptionAuthTag',
   ],
   searchAsset: [
     'asset.id',
@@ -334,6 +344,8 @@ export const columns = {
     'asset.type',
     'asset.width',
     'asset.height',
+    'asset.encryptionNonce',
+    'asset.encryptionAuthTag',
   ],
   workflowAssetV1: [
     'asset.id',

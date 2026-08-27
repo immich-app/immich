@@ -112,7 +112,7 @@ export class UserRepository {
   getForChangePassword(id: string) {
     return this.db
       .selectFrom('user')
-      .select(['user.id', 'user.password'])
+      .select(['user.id', 'user.password', 'user.wrappedDek', 'user.kekSalt', 'user.kekNonce'])
       .where('user.id', '=', id)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirstOrThrow();

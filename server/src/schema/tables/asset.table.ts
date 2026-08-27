@@ -145,4 +145,12 @@ export class AssetTable {
 
   @Column({ type: 'boolean', default: false })
   isEdited!: Generated<boolean>;
+
+  /** base64 AES-256-GCM nonce/IV used to encrypt `originalPath` at rest, when non-null. */
+  @Column({ nullable: true, default: null })
+  encryptionNonce!: string | null;
+
+  /** base64 AES-256-GCM auth tag for the ciphertext stored at `originalPath`, when non-null. */
+  @Column({ nullable: true, default: null })
+  encryptionAuthTag!: string | null;
 }

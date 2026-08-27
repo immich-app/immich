@@ -238,6 +238,11 @@ export class MetadataService extends BaseService {
       return;
     }
 
+    if (asset.encryptionNonce) {
+      this.logger.debug(`Metadata extraction skipped for asset ${data.id}: original is encrypted at rest`);
+      return JobStatus.Skipped;
+    }
+
     const [exifResult, stats] = await Promise.all([
       this.getExifTags(asset),
       this.storageRepository.stat(asset.originalPath),

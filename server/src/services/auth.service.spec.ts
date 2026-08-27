@@ -88,6 +88,93 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
+
+    it('should generate a DEK for a user that does not have one yet', async () => {
+      const user = UserFactory.create({ password: 'immich_password', wrappedDek: null });
+      const session = SessionFactory.create();
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(session);
+
+      await sut.login(dto, loginDetails);
+
+      expect(mocks.crypto.generateDek).toHaveBeenCalledTimes(1);
+      expect(mocks.crypto.generateKekSalt).toHaveBeenCalledTimes(1);
+      expect(mocks.crypto.deriveKek).toHaveBeenCalledWith(dto.password, Buffer.from('kek-salt', 'utf8'));
+      expect(mocks.crypto.wrapDek).toHaveBeenCalledWith(Buffer.from('dek', 'utf8'), Buffer.from('kek', 'utf8'));
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        wrappedDek: Buffer.from('wrapped-dek', 'utf8').toString('base64'),
+        kekSalt: Buffer.from('kek-salt', 'utf8').toString('base64'),
+        kekNonce: Buffer.from('nonce', 'utf8').toString('base64'),
+      });
+
+      // the freshly generated DEK should also be wrapped for this session, using a KEK derived from the
+      // session's own raw token, so the session can use it without needing the password again
+      const rawToken = Buffer.from('random-bytes').toString('base64');
+      expect(mocks.crypto.deriveSessionKek).toHaveBeenCalledWith(rawToken);
+      expect(mocks.session.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          wrappedDek: Buffer.from('wrapped-dek', 'utf8').toString('base64'),
+          dekNonce: Buffer.from('nonce', 'utf8').toString('base64'),
+        }),
+      );
+    });
+
+    it('should not generate a new DEK for a user that already has one, but should still unwrap it', async () => {
+      const user = UserFactory.create({
+        password: 'immich_password',
+        wrappedDek: 'existing-wrapped-dek',
+        kekSalt: 'existing-kek-salt',
+        kekNonce: 'existing-kek-nonce',
+      });
+      const session = SessionFactory.create();
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(session);
+
+      await sut.login(dto, loginDetails);
+
+      expect(mocks.crypto.generateDek).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
+
+      expect(mocks.crypto.deriveKek).toHaveBeenCalledWith(dto.password, Buffer.from('existing-kek-salt', 'base64'));
+      expect(mocks.crypto.unwrapDek).toHaveBeenCalledWith(
+        Buffer.from('existing-wrapped-dek', 'base64'),
+        Buffer.from('existing-kek-nonce', 'base64'),
+        Buffer.from('kek', 'utf8'),
+      );
+
+      // the unwrapped DEK should be re-wrapped for this session using a KEK derived from the session's own
+      // raw token
+      const rawToken = Buffer.from('random-bytes').toString('base64');
+      expect(mocks.crypto.deriveSessionKek).toHaveBeenCalledWith(rawToken);
+      expect(mocks.crypto.wrapDek).toHaveBeenCalledWith(Buffer.from('dek', 'utf8'), Buffer.from('session-kek', 'utf8'));
+      expect(mocks.session.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          wrappedDek: Buffer.from('wrapped-dek', 'utf8').toString('base64'),
+          dekNonce: Buffer.from('nonce', 'utf8').toString('base64'),
+        }),
+      );
+    });
+
+    it('should not fail login if the existing DEK cannot be unwrapped', async () => {
+      const user = UserFactory.create({
+        password: 'immich_password',
+        wrappedDek: 'existing-wrapped-dek',
+        kekSalt: 'existing-kek-salt',
+        kekNonce: 'existing-kek-nonce',
+      });
+      const session = SessionFactory.create();
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(session);
+      mocks.crypto.unwrapDek.mockImplementation(() => {
+        throw new Error('Unsupported state or unable to authenticate data');
+      });
+
+      await expect(sut.login(dto, loginDetails)).resolves.toBeDefined();
+
+      // no session-level DEK should be cached in this case, but login itself must still succeed
+      expect(mocks.crypto.deriveSessionKek).not.toHaveBeenCalled();
+      expect(mocks.session.create).toHaveBeenCalledWith(expect.objectContaining({ wrappedDek: null, dekNonce: null }));
+    });
   });
 
   describe('changePassword', () => {
@@ -96,7 +183,13 @@ describe(AuthService.name, () => {
       const auth = AuthFactory.create(user);
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.getForChangePassword.mockResolvedValue({
+        id: user.id,
+        password: 'hash-password',
+        wrappedDek: null,
+        kekSalt: null,
+        kekNonce: null,
+      });
       mocks.user.update.mockResolvedValue(user);
 
       await sut.changePassword(auth, dto);
@@ -110,6 +203,39 @@ describe(AuthService.name, () => {
       });
     });
 
+    it('should re-wrap the DEK with a KEK derived from the new password when one already exists', async () => {
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      mocks.user.getForChangePassword.mockResolvedValue({
+        id: user.id,
+        password: 'hash-password',
+        wrappedDek: 'old-wrapped-dek',
+        kekSalt: 'old-kek-salt',
+        kekNonce: 'old-kek-nonce',
+      });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePassword(auth, dto);
+
+      expect(mocks.crypto.unwrapDek).toHaveBeenCalledWith(
+        Buffer.from('old-wrapped-dek', 'base64'),
+        Buffer.from('old-kek-nonce', 'base64'),
+        Buffer.from('kek', 'utf8'),
+      );
+      expect(mocks.crypto.deriveKek).toHaveBeenCalledWith('old-password', Buffer.from('old-kek-salt', 'base64'));
+      expect(mocks.crypto.generateKekSalt).toHaveBeenCalledTimes(1);
+      expect(mocks.crypto.deriveKek).toHaveBeenCalledWith('new-password', Buffer.from('kek-salt', 'utf8'));
+      expect(mocks.crypto.wrapDek).toHaveBeenCalledWith(Buffer.from('dek', 'utf8'), Buffer.from('kek', 'utf8'));
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        password: expect.any(String),
+        wrappedDek: Buffer.from('wrapped-dek', 'utf8').toString('base64'),
+        kekSalt: Buffer.from('kek-salt', 'utf8').toString('base64'),
+        kekNonce: Buffer.from('nonce', 'utf8').toString('base64'),
+      });
+    });
+
     it('should throw when password does not match existing password', async () => {
       const user = UserFactory.create();
       const auth = AuthFactory.create(user);
@@ -117,7 +243,13 @@ describe(AuthService.name, () => {
 
       mocks.crypto.compareBcrypt.mockReturnValue(false);
 
-      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.getForChangePassword.mockResolvedValue({
+        id: user.id,
+        password: 'hash-password',
+        wrappedDek: null,
+        kekSalt: null,
+        kekNonce: null,
+      });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -127,7 +259,13 @@ describe(AuthService.name, () => {
       const auth = AuthFactory.create(user);
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: '' });
+      mocks.user.getForChangePassword.mockResolvedValue({
+        id: user.id,
+        password: '',
+        wrappedDek: null,
+        kekSalt: null,
+        kekNonce: null,
+      });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -137,7 +275,13 @@ describe(AuthService.name, () => {
       const auth = AuthFactory.create(user);
       const dto = { password: 'old-password', newPassword: 'new-password', invalidateSessions: true };
 
-      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.getForChangePassword.mockResolvedValue({
+        id: user.id,
+        password: 'hash-password',
+        wrappedDek: null,
+        kekSalt: null,
+        kekNonce: null,
+      });
       mocks.user.update.mockResolvedValue(user);
 
       await sut.changePassword(auth, dto);
@@ -364,6 +508,7 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
+          rawToken: 'auth_token',
         },
       });
     });
@@ -531,6 +676,7 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
+          rawToken: 'auth_token',
         },
       });
     });
