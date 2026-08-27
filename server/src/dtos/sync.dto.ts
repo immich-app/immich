@@ -178,7 +178,9 @@ const SyncAssetEditSchema = z.object({
   sequence: z.int().describe('Edit sequence'),
 });
 
-const SyncAssetEditActionV1Schema = AssetEditActionSchema.exclude(['Color']).meta({ id: 'SyncAssetEditActionV1' });
+const SyncAssetEditActionV1Schema = AssetEditActionSchema.extract(['Crop', 'Rotate', 'Mirror']).meta({
+  id: 'SyncAssetEditActionV1',
+});
 
 const SyncAssetEditV1Schema = SyncAssetEditSchema.extend({
   action: SyncAssetEditActionV1Schema,
