@@ -9,7 +9,9 @@ permissions: {}
 jobs:
   backport:
     name: Backport pull request
-    if: ${{ github.event.pull_request.merged }}
+    if: >-
+      ${{ github.event.pull_request.merged
+      && contains(join(github.event.pull_request.labels.*.name, ' '), 'backport:release/') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
