@@ -5017,6 +5017,17 @@ export function leaveClusterGroup({ id }: {
     }));
 }
 /**
+ * Regenerate people of users in cluster group
+ */
+export function clusterGroupRegeneratePeople({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/cluster-groups/${encodeURIComponent(id)}/regenerate-people`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Retrieve the requests sent by a cluster group
  */
 export function getClusterGroupRequestsForGroup({ id }: {

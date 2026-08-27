@@ -6298,6 +6298,51 @@
         "x-immich-permission": "clusterGroup.leave"
       }
     },
+    "/cluster-groups/{id}/regenerate-people": {
+      "post": {
+        "description": "Forcefully re-run facial recognition for all faces of users in this group.",
+        "operationId": "clusterGroupRegeneratePeople",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Regenerate people of users in cluster group",
+        "tags": [
+          "Cluster groups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "clusterGroup.read"
+      }
+    },
     "/cluster-groups/{id}/requests": {
       "get": {
         "description": "Retrieve the pending requests for other users to join the cluster group.",
