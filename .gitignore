@@ -10,7 +10,6 @@ docker/upload
 docker/library
 uploads
 coverage
-.local-test-data/
 
 mobile/generated
 mobile/gradle.properties
