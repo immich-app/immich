@@ -3,7 +3,7 @@ name: Migration Order
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, 'release/*']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,6 +14,7 @@ permissions: {}
 jobs:
   migration-order:
     name: Verify migration ORDER
+    if: ${{ !github.event.created }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
