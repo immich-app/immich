@@ -121,3 +121,43 @@ jobs:
             docker/hwaccel.transcoding.yml \
             docker/prometheus.yml \
             *.apk
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [tag, draft_release]
+    environment: release
+    permissions: {}
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.tag.outputs.version }}
+          PRERELEASE: ${{ needs.tag.outputs.rc }}
+        run: |
+          previous=$(gh api "repos/${REPO}/releases/latest" --jq '.tag_name' 2>/dev/null || true)
+          # version-sort the two and see which wins: if it is TAG, it supersedes the current latest
+          newest=$(printf '%s\n%s\n' "${previous}" "${TAG}" | sort --version-sort | tail -1)
+
+          if [[ "${PRERELEASE}" == "true" ]]; then
+            latest=false
+          elif [[ -z "${previous}" || "${newest}" == "${TAG}" ]]; then
+            latest=true
+          else
+            # an older release line, published after a newer one
+            latest=false
+          fi
+
+          echo "publishing ${TAG} (latest=${latest}, prerelease=${PRERELEASE}, previous=${previous:-none})"
+          gh release edit "${TAG}" \
+            --repo "${REPO}" \
+            --draft=false \
+            --latest="${latest}" \
+            --prerelease="${PRERELEASE}"
