@@ -603,6 +603,7 @@ export enum ApiCustomExtension {
   AdminOnly = 'x-immich-admin-only',
   History = 'x-immich-history',
   State = 'x-immich-state',
+  Required = 'x-immich-required',
 }
 
 export enum MetadataKey {

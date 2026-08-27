@@ -27,7 +27,6 @@ from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
-from immich_ml.models.ocr.schemas import OcrOptions
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
@@ -1079,76 +1078,69 @@ class TestFaceRecognition:
 
 
 class TestOcr:
-    def test_set_det_min_score(self, path: mock.Mock) -> None:
+    def test_det_min_score_is_per_request(self, path: mock.Mock) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        text_detector = TextDetector("PP-OCRv5_mobile", cache_dir="test_cache")
+        probs = np.zeros((1, 1, 64, 64), dtype=np.float32)
+        probs[..., 16:32, 8:56] = 0.6
+        text_detector.session = mock.Mock()
+        text_detector.session.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 64, 64))]
+        text_detector.session.run.return_value = [probs]
+        image = Image.new("RGB", (64, 64))
 
-        text_detector = TextDetector("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+        assert len(text_detector._predict(image, minScore=0.5)["boxes"]) == 1
+        assert len(text_detector._predict(image, minScore=0.9)["boxes"]) == 0
+        # the default must be unaffected by the request that just ran
+        assert len(text_detector._predict(image)["boxes"]) == 1
 
-        assert text_detector.postprocess.box_thresh == 0.8
-
-    def test_set_rec_min_score(self, path: mock.Mock) -> None:
+    def test_rec_min_score_is_per_request(self, path: mock.Mock, mocker: MockerFixture) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.session = mock.Mock()
+        text_recognizer.session.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 48, 96))]
+        text_recognizer.session.run.return_value = [np.zeros((1, 4, 8), dtype=np.float32)]
+        text_recognizer.decoder = mock.Mock()
+        text_recognizer.decoder.decode.return_value = (["hello"], np.array([0.8], dtype=np.float32))
+        mocker.patch.object(text_recognizer, "_crop", return_value=np.zeros((48, 96, 3), dtype=np.uint8))
+        image = Image.new("RGB", (100, 50))
+        box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
 
-        text_recognizer = TextRecognizer("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+        def texts() -> Any:  # _predict normalizes the boxes in place, so each call needs its own
+            return {"boxes": box.copy(), "scores": np.array([0.9], dtype=np.float32)}
 
-        assert text_recognizer.min_score == 0.8
+        assert text_recognizer._predict(image, texts(), minScore=0.7)["text"] == ["hello"]
+        # the default (0.9) rejects a 0.8 score, and must be unaffected by the 0.7 request
+        assert text_recognizer._predict(image, texts())["text"] == []
 
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
         mocker.patch("immich_ml.models.base.InferenceModel.download")
-        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
 
         text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
-        text_recognizer.load()
 
-        rapid_recognizer.assert_called_once_with(
-            OcrOptions(
-                session=ort_session.return_value,
-                rec_batch_num=6,
-                rec_img_shape=(3, 48, 320),
-                model_root_dir=text_recognizer.cache_dir,
-            )
-        )
+        assert text_recognizer.batch_size == 6
 
     def test_set_custom_max_batch_size(self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
         mocker.patch("immich_ml.models.base.InferenceModel.download")
-        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
         mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=4))
 
         text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
-        text_recognizer.load()
 
-        rapid_recognizer.assert_called_once_with(
-            OcrOptions(
-                session=ort_session.return_value,
-                rec_batch_num=4,
-                rec_img_shape=(3, 48, 320),
-                model_root_dir=text_recognizer.cache_dir,
-            )
-        )
+        assert text_recognizer.batch_size == 4
 
     def test_ignore_other_custom_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
         mocker.patch("immich_ml.models.base.InferenceModel.download")
-        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
         mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=3))
 
         text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
-        text_recognizer.load()
 
-        rapid_recognizer.assert_called_once_with(
-            OcrOptions(
-                session=ort_session.return_value,
-                rec_batch_num=6,
-                rec_img_shape=(3, 48, 320),
-                model_root_dir=text_recognizer.cache_dir,
-            )
-        )
+        assert text_recognizer.batch_size == 6
 
 
 @pytest.mark.asyncio

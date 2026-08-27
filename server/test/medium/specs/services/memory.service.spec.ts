@@ -249,6 +249,43 @@ describe(MemoryService.name, () => {
         }),
       );
     });
+
+    it('should not link a partner asset', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const auth = factory.auth({ user: owner });
+      const dto = {
+        type: MemoryType.OnThisDay,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+        assetIds: [asset.id],
+      };
+
+      await expect(sut.create(auth, dto)).resolves.toEqual(expect.objectContaining({ assets: [] }));
+    });
+  });
+
+  describe('addAssets', () => {
+    it('should not link a partner asset', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const auth = factory.auth({ user: owner });
+      const memory = await sut.create(auth, {
+        type: MemoryType.OnThisDay,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+      });
+
+      await expect(sut.addAssets(auth, memory.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
+    });
   });
 
   describe('onMemoryCreate', () => {

@@ -1,0 +1,112 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/routing/router.dart';
+
+@RoutePage()
+class BackupAssetDetailPage extends ConsumerWidget {
+  const BackupAssetDetailPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<LocalAsset>> result = ref.watch(backupCandidateProvider);
+    return Scaffold(
+      appBar: AppBar(title: Text(context.t.backup_controller_page_remainder)),
+      body: result.when(
+        data: (List<LocalAsset> candidates) {
+          return ListView.separated(
+            padding: const EdgeInsets.only(top: 16.0),
+            separatorBuilder: (context, index) => Divider(color: context.colorScheme.outlineVariant),
+            itemCount: candidates.length,
+            itemBuilder: (context, index) {
+              final asset = candidates[index];
+              final albumsAsyncValue = ref.watch(candidateBackupAlbumInfoProvider(asset.id));
+              final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
+              return FutureBuilder<String?>(
+                future: assetMediaRepository.getOriginalFilename(asset.id),
+                builder: (context, snapshot) {
+                  final displayName = snapshot.data ?? asset.name;
+                  return LargeLeadingTile(
+                    title: Text(
+                      displayName,
+                      style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          asset.createdAt.toString(),
+                          style: TextStyle(fontSize: 13.0, color: context.colorScheme.onSurfaceSecondary),
+                        ),
+                        Text(
+                          asset.checksum ?? "N/A",
+                          style: TextStyle(fontSize: 13.0, color: context.colorScheme.onSurfaceSecondary),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        albumsAsyncValue.when(
+                          data: (albums) {
+                            if (albums.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Text(
+                              albums.map((a) => a.name).join(', '),
+                              style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          },
+                          error: (error, stackTrace) => Text(
+                            context.t.error_saving_image(error: error.toString()),
+                            style: TextStyle(color: context.colorScheme.error),
+                          ),
+                          loading: () =>
+                              const SizedBox(height: 16, width: 16, child: CircularProgressIndicator.adaptive()),
+                        ),
+                      ],
+                    ),
+                    leading: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                      child: SizedBox(
+                        width: 64,
+                        height: 64,
+                        child: Thumbnail.fromAsset(asset: asset, size: const Size(64, 64), fit: BoxFit.cover),
+                      ),
+                    ),
+                    trailing: const Padding(
+                      padding: EdgeInsets.only(right: 24, left: 8),
+                      child: Icon(Icons.image_search),
+                    ),
+                    onTap: () async {
+                      await context.maybePop();
+                      if (!context.mounted) {
+                        return;
+                      }
+
+                      await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+                      EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+        error: (Object error, StackTrace stackTrace) {
+          return Center(child: Text(context.t.error_saving_image(error: error.toString())));
+        },
+        loading: () {
+          return const SizedBox(height: 48, width: 48, child: Center(child: CircularProgressIndicator.adaptive()));
+        },
+      ),
+    );
+  }
+}
