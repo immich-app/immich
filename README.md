@@ -1,135 +1,84 @@
-<p align="center"> 
-  <br/>
-  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
-  <a href="https://discord.immich.app">
-    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
-  </a>
-  <br/>
-  <br/>
-</p>
+# Immich Server with encrypted locked folders
 
-<p align="center">
-<img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
-</p>
-<h3 align="center">High performance self-hosted photo and video management solution</h3>
-<br/>
-<a href="https://immich.app">
-<img src="design/immich-screenshots.png" title="Main Screenshot">
-</a>
-<br/>
+As of August 2026, Immich's "Locked Folder" is just a PIN that controls *visibility* in the UI. Nothing is
+actually hidden from the server admin — the underlying asset files sit on disk exactly like any other photo, so
+anyone with filesystem or backup access to the server can open them directly, PIN or no PIN. This repo is a drop-in
+replacement for the `immich-server` image likely used in your Docker Compose setup. It adds real encryption-at-rest
+for Locked Folder assets (originals, thumbnails, previews, and transcoded video), so that even the server's
+admin, or anyone with raw access to the filesystem/backups, can't view them without the owning user's password.
 
-<p align="center">
-  <a href="readme_i18n/README_ca_ES.md">Català</a>
-  <a href="readme_i18n/README_es_ES.md">Español</a>
-  <a href="readme_i18n/README_fr_FR.md">Français</a>
-  <a href="readme_i18n/README_it_IT.md">Italiano</a>
-  <a href="readme_i18n/README_ja_JP.md">日本語</a>
-  <a href="readme_i18n/README_ko_KR.md">한국어</a>
-  <a href="readme_i18n/README_de_DE.md">Deutsch</a>
-  <a href="readme_i18n/README_nl_NL.md">Nederlands</a>
-  <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
-  <a href="readme_i18n/README_zh_CN.md">简体中文</a>
-  <a href="readme_i18n/README_zh_TW.md">正體中文</a>
-  <a href="readme_i18n/README_uk_UA.md">Українська</a>
-  <a href="readme_i18n/README_ru_RU.md">Русский</a>
-  <a href="readme_i18n/README_bg_BG.md">Български</a>
-  <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
-  <a href="readme_i18n/README_sv_SE.md">Svenska</a>
-  <a href="readme_i18n/README_ar_JO.md">العربية</a>
-  <a href="readme_i18n/README_vi_VN.md">Tiếng Việt</a>
-  <a href="readme_i18n/README_th_TH.md">ภาษาไทย</a>
-  <a href="readme_i18n/README_ml_IN.md">മലയാളം</a>
-</p>
+The Locked Folder PIN unlock flow itself is completely unchanged — same UX, same API, same clients. This is a
+server-only change: no web/mobile app modifications are required, and no API contract changes were made.
 
+## How it works
 
-> [!WARNING]
-> ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
-> 
- 
+- **DEK (Data Encryption Key)** — a random 256-bit key, generated once per user, that actually encrypts/decrypts
+  asset bytes (AES-256-GCM). The plaintext DEK is never stored.
+- **KEK (Key Encryption Key)** — derived from the user's password via `scrypt` plus a per-user random salt. Also
+  never stored; it's re-derived from the password whenever needed, and used only to "wrap" (encrypt) the DEK for
+  storage on the `user` row.
+- **Session-KEK** — because the Locked Folder unlock uses a PIN, not the password, and because the server only
+  ever sees the plaintext password briefly during login, each login session gets its own independent wrapping of
+  the DEK, keyed off that session's own access token. This lets an active session decrypt/encrypt assets for its
+  entire lifetime without re-prompting for the password, while the PIN continues to do exactly what it always
+  did: gate *visibility* of Locked Folder assets to sessions that have been unlocked.
+- **Encryption timing** — rather than encrypting at upload time, assets are encrypted the moment they're moved
+  into the Locked Folder (`visibility = Locked`), since that's a normal authenticated request that already has
+  access to the session's DEK. Background jobs (thumbnail generation, metadata extraction, transcoding, ML) never
+  touch ciphertext — they either already produced their derivatives before the asset was locked, or they detect
+  the asset is encrypted and skip re-processing it.
+- **Decryption** — happens on demand, per request, for original downloads, thumbnails, video playback (including
+  HTTP Range/seek support), and bulk zip downloads — provided the requesting session has a resolvable DEK. If it
+  doesn't, the server refuses to serve raw ciphertext as if it were a normal file; it returns an error instead of
+  silently corrupting the response.
 
-> [!NOTE]
-> You can find the main documentation, including installation guides, at https://immich.app/.
+For the full design rationale, data model, and known limitations, see
+[`.claude/encrypted-locked-folder.md`](.claude/encrypted-locked-folder.md).
 
-## Links
+## Known limitations
 
-- [Documentation](https://docs.immich.app/)
-- [About](https://docs.immich.app/overview/introduction)
-- [Installation](https://docs.immich.app/install/requirements)
-- [Roadmap](https://immich.app/roadmap)
-- [Demo](#demo)
-- [Features](#features)
-- [Translations](https://docs.immich.app/developer/translations)
-- [Contributing](https://docs.immich.app/overview/support-the-project)
+- **OAuth-only accounts** (no password ever set) currently can't get a DEK at all, so their Locked Folder assets
+  stay unencrypted — same as today's behavior, not a regression, but not yet solved either.
+- **Assets already in the Locked Folder before upgrading**, or assets locked while no session DEK was available,
+  are not retroactively encrypted. There's no background migration; encryption only happens going forward, on
+  sessions that have password-derived key material available.
+- **Scrubbing/seeking in encrypted videos re-decrypts the whole file per seek** (AES-GCM's auth tag covers the
+  entire file, so partial/random-access decryption isn't possible without a different on-disk format). This is a
+  real CPU cost for large videos, not just a theoretical one.
+- This only protects data **at rest**. It does nothing to change Immich's existing in-app access-control model —
+  PIN-gated visibility, session/API-key permissions, etc. are all unchanged.
 
-## Demo
+## Using this image
 
-Access the demo [here](https://demo.immich.app). For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoint URL`.
+This is meant to be a drop-in replacement for `ghcr.io/immich-app/immich-server` in your existing Docker Compose
+setup — no config, environment variable, or client changes required.
 
-### Login credentials
+1. Build the image from this repository:
 
-| Email           | Password |
-| --------------- | -------- |
-| demo@immich.app | demo     |
+   ```bash
+   docker build -f server/Dockerfile -t immich-server-encrypted .
+   ```
 
-## Features
+2. In your `docker-compose.yml`, point the `immich-server` service at your locally built image instead of the
+   upstream one:
 
-| Features                                     | Mobile | Web |
-| :------------------------------------------- | ------ | --- |
-| Upload and view videos and photos            | Yes    | Yes |
-| Auto backup when the app is opened           | Yes    | N/A |
-| Prevent duplication of assets                | Yes    | Yes |
-| Selective album(s) for backup                | Yes    | N/A |
-| Download photos and videos to local device   | Yes    | Yes |
-| Multi-user support                           | Yes    | Yes |
-| Album and Shared albums                      | Yes    | Yes |
-| Scrubbable/draggable scrollbar               | Yes    | Yes |
-| Support raw formats                          | Yes    | Yes |
-| Metadata view (EXIF, map)                    | Yes    | Yes |
-| Search by metadata, objects, faces, and CLIP | Yes    | Yes |
-| Administrative functions (user management)   | No     | Yes |
-| Background backup                            | Yes    | N/A |
-| Virtual scroll                               | Yes    | Yes |
-| OAuth support                                | Yes    | Yes |
-| API Keys                                     | N/A    | Yes |
-| LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |
-| Support 360 degree image display             | No     | Yes |
-| User-defined storage structure               | Yes    | Yes |
-| Public Sharing                               | Yes    | Yes |
-| Archive and Favorites                        | Yes    | Yes |
-| Global Map                                   | Yes    | Yes |
-| Partner Sharing                              | Yes    | Yes |
-| Facial recognition and clustering            | Yes    | Yes |
-| Memories (x years ago)                       | Yes    | Yes |
-| Offline support                              | Yes    | No  |
-| Read-only gallery                            | Yes    | Yes |
-| Stacked Photos                               | Yes    | Yes |
-| Tags                                         | No     | Yes |
-| Folder View                                  | Yes    | Yes |
+   ```yaml
+   services:
+     immich-server:
+       image: immich-server-encrypted
+       # image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}  # previous line
+   ```
 
-## Translations
+3. Restart the stack (`docker compose up -d`). Existing data, sessions, and settings are unaffected — the new
+   `wrappedDek`/`kekSalt`/`kekNonce`/encryption-related columns are added via normal migrations
 
-Read more about translations [here](https://docs.immich.app/developer/translations).
+4. Log out and log back in to generate a DEK
 
-<a href="https://hosted.weblate.org/engage/immich/">
-<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
-</a>
+5. Move a file into the locked folder (or out of, and then back into) to encrypt
 
-## Repository activity
+## ⚠️ Disclaimer
 
-![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
-
-## Star history
-
-<a href="https://star-history.com/#immich-app/immich&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=date" width="100%" />
- </picture>
-</a>
-
-## Contributors
-
-<a href="https://github.com/immich-app/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
-</a>
+This is exploratory, community-modified code, not an official Immich feature, and it has not been reviewed or
+endorsed by the Immich maintainers. Treat it as experimental: back up your data before running it, review the
+design notes above, and don't rely on it as your only safeguard for sensitive photos. As always with self-hosted
+software handling personal data, use at your own risk.
