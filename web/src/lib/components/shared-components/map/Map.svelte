@@ -216,8 +216,9 @@
     }
 
     return {
-      fileCreatedAfter: dateAfter,
-      fileCreatedBefore: dateBefore,
+      // $mapSettings stores no value as an empty string
+      fileCreatedAfter: dateAfter || undefined,
+      fileCreatedBefore: dateBefore || undefined,
     };
   }
 
