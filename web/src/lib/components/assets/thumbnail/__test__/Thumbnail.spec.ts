@@ -1,8 +1,8 @@
-import { render } from '@testing-library/svelte';
+import { fireEvent, render } from '@testing-library/svelte';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
 import { getTabbable } from '$lib/utils/focus-util';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import { assetFactory, timelineAssetFactory } from '@test-data/factories/asset-factory';
 
 vi.mock('$lib/utils/navigation', () => ({
   currentUrlReplaceAssetId: vi.fn(),
@@ -47,6 +47,19 @@ describe('Thumbnail component', () => {
     // Guarding against inserting extra tabbable elements in future in <Thumbnail/>
     const tabbables = getTabbable(container!);
     expect(tabbables.length).toBe(0);
+  });
+
+  it('reports whether the pointer is over the thumbnail', async () => {
+    const asset = timelineAssetFactory.build();
+    const onMouseEvent = vi.fn();
+    const { baseElement } = render(Thumbnail, { asset, onMouseEvent });
+
+    const container = baseElement.querySelector('[data-thumbnail-focus-container]')!;
+    await fireEvent.mouseEnter(container);
+    await fireEvent.mouseLeave(container);
+
+    expect(onMouseEvent).toHaveBeenNthCalledWith(1, expect.objectContaining({ isMouseOver: true }));
+    expect(onMouseEvent).toHaveBeenNthCalledWith(2, expect.objectContaining({ isMouseOver: false }));
   });
 
   it('shows thumbhash while image is loading', () => {
