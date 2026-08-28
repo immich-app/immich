@@ -98,11 +98,11 @@ class DeleteAction extends AssetActionBuilder {
 
   Future<String?> _removeLocalAssets(BuildContext context, WidgetRef ref, List<String> localIds) async {
     final count = await _cleanupLocalAssets(context, ref, localIds);
-    if (count <= 0 || !context.mounted) {
+    if (count <= 0) {
       return null;
     }
 
-    return context.t.cleanup_deleted_assets(count: count);
+    return StaticTranslations.instance.cleanup_deleted_assets(count: count);
   }
 
   Future<String?> _moveToTrash(
@@ -112,14 +112,11 @@ class DeleteAction extends AssetActionBuilder {
     List<String> localIds,
   ) async {
     final assetService = ref.read(assetServiceProvider);
+    final message = context.t.trash_action_prompt(count: remoteIds.length);
     if (localIds.isNotEmpty) {
       await _cleanupLocalAssets(context, ref, localIds);
-      if (!context.mounted) {
-        return null;
-      }
     }
 
-    final message = context.t.trash_action_prompt(count: remoteIds.length);
     await assetService.trash(remoteIds);
     return message;
   }
@@ -131,19 +128,19 @@ class DeleteAction extends AssetActionBuilder {
     List<String> localIds,
   ) async {
     final assetService = ref.read(assetServiceProvider);
+    final message = context.t.delete_permanently_action_prompt(count: remoteIds.length);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => ConfirmDialog(
-        title: context.t.delete_dialog_title,
-        content: context.t.delete_dialog_alert,
-        ok: context.t.delete_permanently,
+      builder: (dialogContext) => ConfirmDialog(
+        title: dialogContext.t.delete_dialog_title,
+        content: dialogContext.t.delete_dialog_alert,
+        ok: dialogContext.t.delete_permanently,
       ),
     );
     if (confirmed != true || !context.mounted) {
       return null;
     }
 
-    final message = context.t.delete_permanently_action_prompt(count: remoteIds.length);
     // Server first, so a failed request will not remove the local copy
     await assetService.delete(remoteIds);
     if (localIds.isNotEmpty && context.mounted) {
@@ -223,10 +220,10 @@ Future<int> _cleanupLocalAssets(
   if (requiresPrompt) {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => ConfirmDialog(
-        title: context.t.move_to_device_trash,
-        content: context.t.free_up_space_description,
-        ok: context.t.ok,
+      builder: (dialogContext) => ConfirmDialog(
+        title: dialogContext.t.move_to_device_trash,
+        content: dialogContext.t.free_up_space_description,
+        ok: dialogContext.t.ok,
       ),
     );
     if (confirmed != true) {
