@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -53,6 +53,7 @@ class PresentationContext {
   List<Override> get overrides => [
     driftProvider.overrideWithValue(_mockDrift()),
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
+    userServiceProvider.overrideWithValue(service.user.service),
     assetServiceProvider.overrideWithValue(service.asset.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
     remoteAlbumServiceProvider.overrideWithValue(service.album.service),

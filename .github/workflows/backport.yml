@@ -1,0 +1,50 @@
+name: Backport
+
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] no pull request code is checked out or executed
+    types: [closed, labeled]
+
+permissions: {}
+
+jobs:
+  backport:
+    name: Backport pull request
+    if: >-
+      ${{ github.event.pull_request.merged
+      && contains(join(github.event.pull_request.labels.*.name, ' '), 'backport:release/') }}
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.token.outputs.token }}
+          persist-credentials: true
+
+      - name: Create backport pull requests
+        uses: korthout/backport-action@2e830a1d0b8269505846ddd407a70876913ad1f8 # v4.6.0
+        with:
+          github_token: ${{ steps.token.outputs.token }}
+          label_pattern: '^backport:(release/.+)$'
+          add_team_reviewers: team
+          auto_merge_enabled: true
+          auto_merge_method: squash
+          comment_style: summary
+          copy_all_reviewers: true
+          copy_labels_pattern: '^changelog:'
+          experimental: |
+            {
+              "conflict_resolution": "draft_commit_conflicts"
+            }
+          pull_title: '${pull_title}'
+          pull_description: 'Backport of #${pull_number} to `${target_branch}`.'
+          git_committer_name: 'immich-push-o-matic[bot]'
+          git_committer_email: '179150890+immich-push-o-matic[bot]@users.noreply.github.com'

@@ -31,6 +31,7 @@ const DownloadArchiveSchema = z
     // which would limit this DTO to a maximum of 1000 assets.
     assetIds: z
       .preprocess((val) => (typeof val === 'string' ? val.split(',') : val), z.array(z.uuidv4()))
+      .nonoptional()
       .describe('Asset IDs'),
     edited: z
       .preprocess((val) => {

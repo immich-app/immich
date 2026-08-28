@@ -88,6 +88,12 @@ analyzer:
     - lib/generated_plugin_registrant.dart
     - lib/**/*.g.dart
     - lib/**/*.drift.dart
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
   # NOTE: We explicitly do not use riverpod_lint as there are analyzer version conflicts between
   # our Flutter version and the required old riverpod_lint 2.x

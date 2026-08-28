@@ -58,9 +58,10 @@ export interface GetAllFacesOptions {
   personGroupId?: string | null;
   assetId?: string;
   sourceType?: SourceType;
+  clusterGroupId?: string;
 }
 
-export type UnassignFacesOptions = DeleteFacesOptions;
+export type UnassignFacesOptions = DeleteFacesOptions & { clusterGroupId?: string };
 
 export type GetFacesOptions = WithPersonOptions & { isVisible?: boolean };
 
@@ -112,11 +113,17 @@ export class PersonRepository {
     return Number(result.numChangedRows ?? 0);
   }
 
-  async unassignFaces({ sourceType }: UnassignFacesOptions): Promise<void> {
+  @GenerateSql({ params: [{ sourceType: SourceType.MachineLearning, clusterGroupId: DummyValue.UUID }] })
+  async unassignFaces({ sourceType, clusterGroupId }: UnassignFacesOptions): Promise<void> {
     await this.db
       .updateTable('asset_face')
       .set({ personGroupId: null })
+      .from('asset')
+      .whereRef('asset_face.assetId', '=', 'asset.id')
       .where('asset_face.sourceType', '=', sourceType)
+      .$if(!!clusterGroupId, (qb) =>
+        qb.innerJoin('user', 'user.id', 'asset.ownerId').where('user.clusterGroupId', '=', clusterGroupId!),
+      )
       .execute();
   }
 
@@ -179,6 +186,10 @@ export class PersonRepository {
     await this.db.deleteFrom('asset_face').where('asset_face.sourceType', '=', sourceType).execute();
   }
 
+  @GenerateSql({
+    params: [{ personGroupId: null, sourceType: SourceType.MachineLearning, clusterGroupId: DummyValue.UUID }],
+    stream: true,
+  })
   getAllFaces(options: GetAllFacesOptions = {}) {
     return this.db
       .selectFrom('asset_face')
@@ -187,6 +198,12 @@ export class PersonRepository {
       .$if(!!options.personGroupId, (qb) => qb.where('asset_face.personGroupId', '=', options.personGroupId!))
       .$if(!!options.sourceType, (qb) => qb.where('asset_face.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_face.assetId', '=', options.assetId!))
+      .$if(!!options.clusterGroupId, (qb) =>
+        qb
+          .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+          .innerJoin('user', 'user.id', 'asset.ownerId')
+          .where('user.clusterGroupId', '=', options.clusterGroupId!),
+      )
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .stream();
@@ -288,7 +305,7 @@ export class PersonRepository {
       .selectAll('person')
       .leftJoin('asset_face', 'asset_face.personGroupId', 'person.personGroupId')
       .where('asset_face.deletedAt', 'is', null)
-      .where('asset_face.isVisible', 'is', true)
+      .where((eb) => eb.or([eb('asset_face.isVisible', 'is', null), eb('asset_face.isVisible', '=', true)]))
       .having((eb) => eb.fn.count('asset_face.assetId'), '=', 0)
       .groupBy(['person.ownerId', 'person.personGroupId'])
       .execute();

@@ -123,12 +123,17 @@ export const getNewVersion = (versionRaw: string, type: string) => {
   switch (type) {
     case 'patch':
     case 'prepatch':
-    case 'minor':
-    case 'preminor':
-    case 'premajor': {
+    case 'minor': {
       newVersionRaw = inc(version, type);
       // can only use while not in a prerelease
       valid = !isPrerelease(version);
+      break;
+    }
+
+    case 'preminor':
+    case 'premajor': {
+      // cutting the next release line is allowed while main sits on a prerelease
+      newVersionRaw = inc(version, type);
       break;
     }
 
