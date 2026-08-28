@@ -3,7 +3,7 @@ name: Docker
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, 'release/*']
   pull_request:
   release:
     types: [published]
@@ -25,6 +25,8 @@ jobs:
       contents: read
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
+      highest-overall: ${{ steps.scope.outputs.highest-overall }}
+      highest-in-line: ${{ steps.scope.outputs.highest-in-line }}
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
@@ -50,13 +52,31 @@ jobs:
             - '.github/workflows/docker.yml'
           force-events: 'workflow_dispatch,release'
 
+      - name: Determine release scope
+        id: scope
+        if: ${{ github.event_name == 'release' }}
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          overall=$(gh api "repos/${REPO}/releases/latest" --jq '.tag_name' 2>/dev/null || true)
+
+          releases=$(gh api "repos/${REPO}/releases" --paginate --slurp | jq 'flatten | map(select(.draft | not))')
+          in_line=$(jq -r --argjson pre "${PRERELEASE}" '.[] | select(.prerelease == $pre) | .tag_name' <<< "${releases}" \
+            | grep -E "^${TAG%%.*}\." | sort --version-sort | tail -1)
+
+          echo "highest-overall=$([[ "${TAG}" == "${overall}" ]] && echo true || echo false)" | tee -a "$GITHUB_OUTPUT"
+          echo "highest-in-line=$([[ "${TAG}" == "${in_line}" ]] && echo true || echo false)" | tee -a "$GITHUB_OUTPUT"
+
   retag_ml:
     name: Re-Tag ML
     needs: pre-job
     permissions:
       contents: read
       packages: write
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == false && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == false && !github.event.pull_request.head.repo.fork && !startsWith(github.ref, 'refs/heads/release/') && !startsWith(github.base_ref, 'release/') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -109,7 +129,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == false && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == false && !github.event.pull_request.head.repo.fork && !startsWith(github.ref, 'refs/heads/release/') && !startsWith(github.base_ref, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
@@ -133,7 +153,7 @@ jobs:
   machine-learning:
     name: Build and Push ML
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true || startsWith(github.base_ref, 'release/') }}
     strategy:
       fail-fast: false
       matrix:
@@ -151,20 +171,20 @@ jobs:
       runner-mapping: ${{ matrix.runner-mapping }}
       suffixes: ${{ matrix.suffixes }}
       tags: &tag-rules |
-        type=ref,event=branch
+        type=ref,event=branch,enable=${{ !startsWith(github.ref, 'refs/heads/release/') }}
         type=ref,event=pr
         type=sha,format=long,prefix=commit-
         type=semver,pattern={{version}},prefix=v
-        type=semver,pattern={{major}},prefix=v
-        type=match,pattern=v(\d+),group=1,prefix=v,suffix=-rc,enable=${{ github.event.release.prerelease == true }}
-        type=raw,value=release,enable=${{ github.event_name == 'release' && github.event.release.prerelease == false }}
+        type=semver,pattern={{major}},prefix=v,enable=${{ needs.pre-job.outputs.highest-in-line == 'true' }}
+        type=match,pattern=v(\d+),group=1,prefix=v,suffix=-rc,enable=${{ github.event.release.prerelease == true && needs.pre-job.outputs.highest-in-line == 'true' }}
+        type=raw,value=release,enable=${{ github.event_name == 'release' && github.event.release.prerelease == false && needs.pre-job.outputs.highest-overall == 'true' }}
       build-args: |
         DEVICE=${{ matrix.device }}
 
   server:
     name: Build and Push Server
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true || startsWith(github.base_ref, 'release/') }}
     uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@4d420cf8e5ea499f99b2c2849ff9a219d5f7b178 # multi-runner-build-workflow-v4.0.0
     permissions:
       contents: read
@@ -180,7 +200,7 @@ jobs:
 
   mirror:
     name: Mirror to Docker Hub
-    needs: [machine-learning, server]
+    needs: [pre-job, machine-learning, server]
     if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
     permissions:
       packages: read

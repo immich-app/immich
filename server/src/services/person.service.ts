@@ -414,7 +414,11 @@ export class PersonService extends BaseService {
   }
 
   @OnJob({ name: JobName.FacialRecognitionQueueAll, queue: QueueName.FacialRecognition })
-  async handleQueueRecognizeFaces({ force, nightly }: JobOf<JobName.FacialRecognitionQueueAll>): Promise<JobStatus> {
+  async handleQueueRecognizeFaces({
+    force,
+    nightly,
+    clusterGroupId,
+  }: JobOf<JobName.FacialRecognitionQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -437,7 +441,8 @@ export class PersonService extends BaseService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FacialRecognition);
 
     if (force) {
-      await this.personRepository.unassignFaces({ sourceType: SourceType.MachineLearning });
+      console.log('unassigning faces');
+      await this.personRepository.unassignFaces({ clusterGroupId, sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: false });
     } else if (waiting) {
@@ -452,7 +457,9 @@ export class PersonService extends BaseService {
     const lastRun = new Date().toISOString();
 
     const faces = this.personRepository.getAllFaces(
-      force ? undefined : { personGroupId: null, sourceType: SourceType.MachineLearning },
+      force
+        ? { clusterGroupId, sourceType: clusterGroupId ? SourceType.MachineLearning : undefined }
+        : { personGroupId: null, clusterGroupId, sourceType: SourceType.MachineLearning },
     );
     for await (const batch of batched(faces)) {
       await this.jobRepository.queueAll(

@@ -115,6 +115,46 @@ describe(SearchController.name, () => {
       );
     });
 
+    it('should reject a deprecated field combined with a new structure field', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: {}, city: 'Oslo' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['city'], message: 'Deprecated field city cannot be combined with filter' }]),
+      );
+    });
+
+    it('should reject an unknown key in the filter', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: { previewPath: { eq: 'preview.webp' } } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['filter'], message: 'Unrecognized key: "previewPath"' }]),
+      );
+    });
+
+    it('should reject a nested or', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: { or: [{ or: [{ city: { eq: 'Oslo' } }] }] } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['filter', 'or', 0], message: 'Unrecognized key: "or"' }]),
+      );
+    });
+
+    it('should reject an empty or branch', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: { or: [{}] } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['filter', 'or', 0], message: 'At least one filter condition is required' }]),
+      );
+    });
+
     describe('POST /search/random', () => {
       it('should reject if withStacked is not a boolean', async () => {
         const { status, body } = await request(ctx.getHttpServer())

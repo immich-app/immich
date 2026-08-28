@@ -40,43 +40,43 @@ url = "https://github.com/extism/cli/releases/download/v1.6.3/extism-v1.6.3-wind
 url_api = "https://api.github.com/repos/extism/cli/releases/assets/275694035"
 
 [[tools."github:extism/js-pdk"]]
-version = "1.6.0"
+version = "1.7.0"
 backend = "github:extism/js-pdk"
 
 [tools."github:extism/js-pdk"."platforms.linux-arm64"]
-checksum = "sha256:15a186250e68d6bff4ec839fff275d45a90e383a69209dcc1239eb9e3aee6e1b"
-url = "https://github.com/extism/js-pdk/releases/download/v1.6.0/extism-js-aarch64-linux-v1.6.0.gz"
-url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353223214"
+checksum = "sha256:025f4050b199d68413c159bde1187271ae270021a9f7171e7beb509922821f2a"
+url = "https://github.com/extism/js-pdk/releases/download/v1.7.0/extism-js-aarch64-linux-v1.7.0.gz"
+url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/518632503"
 
 [tools."github:extism/js-pdk"."platforms.linux-arm64-musl"]
-checksum = "sha256:15a186250e68d6bff4ec839fff275d45a90e383a69209dcc1239eb9e3aee6e1b"
-url = "https://github.com/extism/js-pdk/releases/download/v1.6.0/extism-js-aarch64-linux-v1.6.0.gz"
-url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353223214"
+checksum = "sha256:025f4050b199d68413c159bde1187271ae270021a9f7171e7beb509922821f2a"
+url = "https://github.com/extism/js-pdk/releases/download/v1.7.0/extism-js-aarch64-linux-v1.7.0.gz"
+url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/518632503"
 
 [tools."github:extism/js-pdk"."platforms.linux-x64"]
-checksum = "sha256:4ded271ccf465031ccd0dc35e7a140e134d7f30721671cc4a8e1ff805d4aad68"
-url = "https://github.com/extism/js-pdk/releases/download/v1.6.0/extism-js-x86_64-linux-v1.6.0.gz"
-url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353223119"
+checksum = "sha256:63b72da2f5e88655522dc21477de549f238a2f40546a69ce4e0fce7e78654035"
+url = "https://github.com/extism/js-pdk/releases/download/v1.7.0/extism-js-x86_64-linux-v1.7.0.gz"
+url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/518632991"
 
 [tools."github:extism/js-pdk"."platforms.linux-x64-musl"]
-checksum = "sha256:4ded271ccf465031ccd0dc35e7a140e134d7f30721671cc4a8e1ff805d4aad68"
-url = "https://github.com/extism/js-pdk/releases/download/v1.6.0/extism-js-x86_64-linux-v1.6.0.gz"
-url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353223119"
+checksum = "sha256:63b72da2f5e88655522dc21477de549f238a2f40546a69ce4e0fce7e78654035"
+url = "https://github.com/extism/js-pdk/releases/download/v1.7.0/extism-js-x86_64-linux-v1.7.0.gz"
+url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/518632991"
 
 [tools."github:extism/js-pdk"."platforms.macos-arm64"]
-checksum = "sha256:548e25bda3971a07c32d78a249135cf8cb7b3eede101e878e06e53e01ac2e0ce"
-url = "https://github.com/extism/js-pdk/releases/download/v1.6.0/extism-js-aarch64-macos-v1.6.0.gz"
-url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353223215"
+checksum = "sha256:12c01c2bb2240a6a05a4f8babe680c793c397d84e6a1497a7ca1312e78a475c3"
+url = "https://github.com/extism/js-pdk/releases/download/v1.7.0/extism-js-aarch64-macos-v1.7.0.gz"
+url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/518632812"
 
 [tools."github:extism/js-pdk"."platforms.macos-x64"]
-checksum = "sha256:d85a875c2a071f0c29fe572764c52c3a499f157ab7f9efac8939a4364390e29b"
-url = "https://github.com/extism/js-pdk/releases/download/v1.6.0/extism-js-x86_64-macos-v1.6.0.gz"
-url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353223239"
+checksum = "sha256:cce4a756eceb34b5aaac5ea864607d6c8b0610535e2c1b0c05a96bdbda69c7bb"
+url = "https://github.com/extism/js-pdk/releases/download/v1.7.0/extism-js-x86_64-macos-v1.7.0.gz"
+url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/518633618"
 
 [tools."github:extism/js-pdk"."platforms.windows-x64"]
-checksum = "sha256:97b7b746141e4777e1ca2b76febdeb16dc9d314ff6a4257df05a476b67228acc"
-url = "https://github.com/extism/js-pdk/releases/download/v1.6.0/extism-js-x86_64-windows-v1.6.0.gz"
-url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353224133"
+checksum = "sha256:409ac023f88f79d763fbf9dd5bb5d9b2fd595ac452e0822d49bf7d05bf6794be"
+url = "https://github.com/extism/js-pdk/releases/download/v1.7.0/extism-js-x86_64-windows-v1.7.0.gz"
+url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/518636347"
 
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
@@ -86,6 +86,23 @@ backend = "github:jellyfin/jellyfin-ffmpeg"
 checksum = "sha256:7b7168149689610296f3a187c717056ce0786cc125a31caf28056737e9ba1cc1"
 url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_win64-clang-gpl.zip"
 url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409036094"
+
+[[tools."github:jellyfin/jellyfin-ffmpeg"]]
+version = "7.1.3-6"
+backend = "github:jellyfin/jellyfin-ffmpeg"
+
+[tools."github:jellyfin/jellyfin-ffmpeg".options]
+asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
+
+[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64"]
+checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
+url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
+url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
+
+[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64-musl"]
+checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
+url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
+url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
 
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
@@ -115,23 +132,6 @@ asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz"
 checksum = "sha256:066ede9774aaae97a18098aaeea8b7e0d286653eb8618f640476e99c59a536c2"
 url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_mac64-gpl.tar.xz"
 url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995889"
-
-[[tools."github:jellyfin/jellyfin-ffmpeg"]]
-version = "7.1.3-6"
-backend = "github:jellyfin/jellyfin-ffmpeg"
-
-[tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64"]
-checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64-musl"]
-checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
 
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
@@ -252,43 +252,43 @@ version = "7.5.0"
 backend = "npm:oazapfts"
 
 [[tools.opentofu]]
-version = "1.12.5"
+version = "1.12.6"
 backend = "aqua:opentofu/opentofu"
 
 [tools.opentofu."platforms.linux-arm64"]
-checksum = "sha256:e67e9da2b1ddf5050ebee62a584cb826eafe1dfd3827d7ec20899ac62791ed1a"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.5/tofu_1.12.5_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/484602545"
+checksum = "sha256:9bd0228a81bcd0c88f7045c74378f45a815779f19897191dff7d9efba9976b9e"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.6_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762688"
 
 [tools.opentofu."platforms.linux-arm64-musl"]
-checksum = "sha256:e67e9da2b1ddf5050ebee62a584cb826eafe1dfd3827d7ec20899ac62791ed1a"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.5/tofu_1.12.5_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/484602545"
+checksum = "sha256:9bd0228a81bcd0c88f7045c74378f45a815779f19897191dff7d9efba9976b9e"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.6_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762688"
 
 [tools.opentofu."platforms.linux-x64"]
-checksum = "sha256:a6894d45ae7a17ce83189cce8fe04b5a65f68cefceb62455b5a6a89fa53ab38f"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.5/tofu_1.12.5_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/484602624"
+checksum = "sha256:50a6106fa4de523d09c87af85f3db1dd47535fc005727fdca6852146476b88ec"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.6_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762723"
 
 [tools.opentofu."platforms.linux-x64-musl"]
-checksum = "sha256:a6894d45ae7a17ce83189cce8fe04b5a65f68cefceb62455b5a6a89fa53ab38f"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.5/tofu_1.12.5_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/484602624"
+checksum = "sha256:50a6106fa4de523d09c87af85f3db1dd47535fc005727fdca6852146476b88ec"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.6_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762723"
 
 [tools.opentofu."platforms.macos-arm64"]
-checksum = "sha256:2ae38150a667f5c0bd57b318d18ad8091d08f93fcca40345f3d88998661de5a9"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.5/tofu_1.12.5_darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/484602544"
+checksum = "sha256:f958ec5e511063be9feb180ca015a4cb7977566a9cf6a8550bba8c2a9b5aba74"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.6_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762710"
 
 [tools.opentofu."platforms.macos-x64"]
-checksum = "sha256:1012d8f3d4567bcbcd1f2c7d766feca39a30bced32fb8be47e1887fbbee2456d"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.5/tofu_1.12.5_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/484602621"
+checksum = "sha256:44bb1855f372f17f365fb94517906e78da5001da10f4c98de57a39bf982f3a92"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.6_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762655"
 
 [tools.opentofu."platforms.windows-x64"]
-checksum = "sha256:af11850b496f3720e0184084c56d8b43aa74ea92d2338978bf368d70c96473f1"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.5/tofu_1.12.5_windows_amd64.tar.gz"
-url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/484602547"
+checksum = "sha256:bcbcd9ca744af6c4053e2d5e75dae79ff33ad7dc38d45e1233e693d096284538"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.6_windows_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762708"
 
 [[tools.pnpm]]
 version = "11.22.0"

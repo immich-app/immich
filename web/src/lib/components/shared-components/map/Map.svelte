@@ -11,13 +11,14 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
+  import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
@@ -31,7 +32,7 @@
     type Map,
     type MapMouseEvent,
   } from 'maplibre-gl';
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -60,6 +61,9 @@
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
     onClusterSelect?: (assetIds: string[], bbox: SelectionBBox) => void;
+    onViewportClose?: () => void;
+    viewportGridActive?: boolean;
+    autoOpenPanel?: boolean;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
@@ -79,6 +83,9 @@
     onOpenInMapView = undefined,
     onSelect = () => {},
     onClusterSelect,
+    onViewportClose,
+    viewportGridActive = false,
+    autoOpenPanel = false,
     onClickPoint = () => {},
     popup,
     rounded = false,
@@ -216,8 +223,9 @@
     }
 
     return {
-      fileCreatedAfter: dateAfter,
-      fileCreatedBefore: dateBefore,
+      // $mapSettings stores no value as an empty string
+      fileCreatedAfter: dateAfter || undefined,
+      fileCreatedBefore: dateBefore || undefined,
     };
   }
 
@@ -275,6 +283,15 @@
     if (!mapMarkers) {
       mapMarkers = await loadMapMarkers();
     }
+    if (autoOpenPanel) {
+      // Wait for the map to finish rendering before opening the panel
+      await tick();
+      if (map) {
+        map.resize();
+        await map.once('idle');
+        handleViewportSelect();
+      }
+    }
   });
 
   onDestroy(() => {
@@ -316,15 +333,43 @@
     untrack(() => map?.jumpTo({ center, zoom }));
   });
 
+  const handleViewportSelect = () => {
+    if (!map || !onClusterSelect || !mapMarkers) {
+      return;
+    }
+    const bounds = map.getBounds();
+    const west = bounds.getWest();
+    const east = bounds.getEast();
+
+    // When zoomed out enough to see the whole world, show all markers
+    const showAll = east - west >= 360;
+    const visibleIds = showAll
+      ? mapMarkers.map(({ id }) => id)
+      : mapMarkers.filter(({ lon, lat }) => bounds.contains([lon, lat])).map(({ id }) => id);
+
+    const bbox: SelectionBBox = {
+      west: showAll ? -180 : west,
+      south: showAll ? -90 : bounds.getSouth(),
+      east: showAll ? 180 : east,
+      north: showAll ? 90 : bounds.getNorth(),
+    };
+    onClusterSelect(visibleIds, bbox);
+  };
+
+  const handleMoveEnd = () => {
+    if (viewportGridActive && !assetViewerManager.isViewing) {
+      handleViewportSelect();
+    }
+  };
+
   const onAssetsChanged = async () => {
     mapMarkers = await loadMapMarkers();
   };
 </script>
 
 <OnEvents onAssetsDelete={onAssetsChanged} onAssetsArchive={onAssetsChanged} onAssetsUnarchive={onAssetsChanged} />
-<!--  We handle style loading ourselves so we set style blank here -->
-
 <svelte:boundary>
+  <!--  We handle style loading ourselves so we set style blank here -->
   <MapLibre
     {hash}
     style=""
@@ -338,6 +383,7 @@
     onload={(event: Map) => {
       event.setMaxZoom(18);
       event.on('click', handleMapClick);
+      event.on('moveend', handleMoveEnd);
       if (!simplified) {
         event.addControl(new GlobeControl(), 'top-left');
       }
@@ -350,6 +396,15 @@
 
         {#if !simplified}
           <GeolocateControl position="top-left" />
+          {#if onClusterSelect}
+            <Control position="top-left">
+              <ControlGroup>
+                <ControlButton onclick={() => (viewportGridActive ? onViewportClose?.() : handleViewportSelect())}>
+                  <Icon title={$t('show_photos_in_area')} icon={mdiImageMultiple} size="100%" class="text-black/80" />
+                </ControlButton>
+              </ControlGroup>
+            </Control>
+          {/if}
           <ScaleControl />
           <AttributionControl compact={false} />
         {/if}
