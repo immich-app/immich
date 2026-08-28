@@ -31,7 +31,7 @@ class RepositoryMocks {
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
   final remoteAlbum = MockRemoteAlbumRepository();
-  final albumApi = MockDriftAlbumApiRepository();
+  final albumApi = MockAlbumApiRepository();
   final permission = PermissionRepositoryStub(MockPermissionRepository());
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());

@@ -172,7 +172,8 @@
     galleryInView = false;
     // only call play after the first page load. When page first loads the gallery will not be visible
     // and calling play here will result in duplicate invocation.
-    if (!galleryFirstLoad) {
+    // also check if the element is visible to avoid playback in the background
+    if (!galleryFirstLoad && videoPlayer?.checkVisibility()) {
       handlePromiseError(handleAction('galleryOutOfView', 'play'));
     }
     galleryFirstLoad = false;

@@ -3,8 +3,8 @@ import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/providers/infrastructure/search.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/activity_api.repository.dart';
+import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 
 void invalidateAllApiRepositoryProviders(WidgetRef ref) {
@@ -16,5 +16,5 @@ void invalidateAllApiRepositoryProviders(WidgetRef ref) {
   ref.invalidate(searchApiRepositoryProvider);
 
   // Drift
-  ref.invalidate(driftAlbumApiRepositoryProvider);
+  ref.invalidate(albumApiRepositoryProvider);
 }

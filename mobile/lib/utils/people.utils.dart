@@ -39,7 +39,7 @@ Future<String?> showNameEditModal(BuildContext context, Person person) {
     context: context,
     useRootNavigator: false,
     builder: (BuildContext context) {
-      return DriftPersonNameEditForm(person: person);
+      return PersonNameEditForm(person: person);
     },
   );
 }
@@ -49,7 +49,7 @@ Future<DateTime?> showBirthdayEditModal(BuildContext context, Person person) {
     context: context,
     useRootNavigator: false,
     builder: (BuildContext context) {
-      return DriftPersonBirthdayEditForm(person: person);
+      return PersonBirthdayEditForm(person: person);
     },
   );
 }

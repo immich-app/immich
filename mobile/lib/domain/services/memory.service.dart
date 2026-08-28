@@ -2,22 +2,23 @@ import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/memory.repository.dart';
 import 'package:logging/logging.dart';
 
-class DriftMemoryService {
-  final log = Logger("DriftMemoryService");
+/// Accesses Memories; a specialized collection of assets with some novel display mechanism
+class MemoryService {
+  final log = Logger("MemoryService");
 
   final MemoryRepository _repository;
 
-  DriftMemoryService(this._repository);
+  MemoryService(this._repository);
 
-  Future<List<DriftMemory>> getMemoryLane(String ownerId) {
+  Future<List<Memory>> getMemoryLane(String ownerId) {
     return _repository.getAll(ownerId);
   }
 
-  Future<List<DriftMemory>> getAll(String ownerId, {bool onlyFavorites = false}) {
+  Future<List<Memory>> getAll(String ownerId, {bool onlyFavorites = false}) {
     return _repository.getAll(ownerId, onlyToday: false, onlyFavorites: onlyFavorites);
   }
 
-  Future<DriftMemory?> get(String memoryId) {
+  Future<Memory?> get(String memoryId) {
     return _repository.get(memoryId);
   }
 
