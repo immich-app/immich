@@ -20,6 +20,7 @@ import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
 import '../repository.mocks.dart';
+import '../service.mocks.dart';
 
 void main() {
   late BackgroundUploadService sut;
@@ -28,6 +29,7 @@ void main() {
   late MockLocalAssetRepository mockLocalAssetRepository;
   late MockBackupRepository mockBackupRepository;
   late MockAssetMediaRepository mockAssetMediaRepository;
+  late MockStackService mockStackService;
   late Drift db;
 
   setUpAll(() async {
@@ -50,6 +52,8 @@ void main() {
     mockLocalAssetRepository = MockLocalAssetRepository();
     mockBackupRepository = MockBackupRepository();
     mockAssetMediaRepository = MockAssetMediaRepository();
+    mockStackService = MockStackService();
+    when(() => mockStackService.priorRemoteId(any())).thenAnswer((_) async => null);
 
     sut = BackgroundUploadService(
       mockUploadRepository,
@@ -57,6 +61,7 @@ void main() {
       mockLocalAssetRepository,
       mockBackupRepository,
       mockAssetMediaRepository,
+      mockStackService,
     );
 
     mockUploadRepository.onUploadStatus = (_) {};
@@ -234,6 +239,7 @@ void main() {
         mockLocalAssetRepository,
         mockBackupRepository,
         mockAssetMediaRepository,
+        mockStackService,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -274,6 +280,22 @@ void main() {
       expect(metadata[0]['value']['longitude'], isNotNull);
     });
 
+    test('includes the previous asset id when the asset has an uploaded prior', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => File('/path/to/test.jpg'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'test.jpg');
+      when(() => mockStackService.priorRemoteId(asset.id)).thenAnswer((_) async => 'prior-id');
+
+      final task = await sut.getUploadTask(asset);
+
+      final metadata = jsonDecode(task!.fields['metadata']!) as List;
+      expect(metadata[0]['value']['previousAssetId'], equals('prior-id'));
+    });
+
     test('should NOT include metadata on Android regardless of server version', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -284,6 +306,7 @@ void main() {
         mockLocalAssetRepository,
         mockBackupRepository,
         mockAssetMediaRepository,
+        mockStackService,
       );
       addTearDown(() => sutAndroid.dispose());
 
@@ -324,6 +347,7 @@ void main() {
         mockLocalAssetRepository,
         mockBackupRepository,
         mockAssetMediaRepository,
+        mockStackService,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -364,6 +388,7 @@ void main() {
         mockLocalAssetRepository,
         mockBackupRepository,
         mockAssetMediaRepository,
+        mockStackService,
       );
       addTearDown(() => sutWithV24.dispose());
 

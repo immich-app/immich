@@ -16,6 +16,7 @@ import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
+import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -61,3 +62,5 @@ class MockWidgetService extends Mock implements WidgetService {}
 class MockBackgroundUploadService extends Mock implements BackgroundUploadService {}
 
 class MockBackgroundWorkerLockService extends Mock implements BackgroundWorkerLockService {}
+
+class MockStackService extends Mock implements StackService {}

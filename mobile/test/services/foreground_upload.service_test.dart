@@ -19,6 +19,7 @@ import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
 import '../repository.mocks.dart';
+import '../service.mocks.dart';
 
 void main() {
   late ForegroundUploadService sut;
@@ -27,6 +28,7 @@ void main() {
   late MockBackupRepository mockBackupRepository;
   late MockConnectivityApi mockConnectivityApi;
   late MockAssetMediaRepository mockAssetMediaRepository;
+  late MockStackService mockStackService;
   late Drift db;
 
   setUpAll(() async {
@@ -52,6 +54,9 @@ void main() {
     mockBackupRepository = MockBackupRepository();
     mockConnectivityApi = MockConnectivityApi();
     mockAssetMediaRepository = MockAssetMediaRepository();
+    mockStackService = MockStackService();
+    when(() => mockStackService.afterUpload(any(), any())).thenAnswer((_) async {});
+    when(() => mockStackService.priorRemoteId(any())).thenAnswer((_) async => null);
 
     sut = ForegroundUploadService(
       mockUploadRepository,
@@ -59,6 +64,7 @@ void main() {
       mockBackupRepository,
       mockConnectivityApi,
       mockAssetMediaRepository,
+      mockStackService,
     );
   });
 

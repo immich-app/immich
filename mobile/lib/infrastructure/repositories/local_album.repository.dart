@@ -280,9 +280,10 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
     // Reset checksum if asset changed
     await _db.batch((batch) async {
       for (final asset in localAssets) {
-        final companion = LocalAssetEntityCompanion(
-          checksum: const Value(null),
-          adjustmentTime: Value(asset.adjustmentTime),
+        final companion = LocalAssetEntityCompanion.custom(
+          checksum: const Constant(null),
+          adjustmentTime: Variable(asset.adjustmentTime),
+          priorChecksum: _db.localAssetEntity.checksum,
         );
         batch.update(
           _db.localAssetEntity,
@@ -343,7 +344,11 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
           companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+          onConflict: DoUpdate(
+            // SET reads the existing row, so this keeps the checksum being cleared
+            (_) => RawValuesInsertable({...companion.toColumns(true), 'prior_checksum': _db.localAssetEntity.checksum}),
+            where: (old) => old.updatedAt.isNotValue(asset.updatedAt),
+          ),
         );
       }
     });

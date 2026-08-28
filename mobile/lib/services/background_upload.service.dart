@@ -21,6 +21,7 @@ import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api;
@@ -36,6 +37,7 @@ final backgroundUploadServiceProvider = Provider((ref) {
     db.localAssetRepository,
     db.backupRepository,
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(stackServiceProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -86,6 +88,7 @@ class BackgroundUploadService {
     this._localAssetRepository,
     this._backupRepository,
     this._assetMediaRepository,
+    this._stackService,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -96,6 +99,7 @@ class BackgroundUploadService {
   final LocalAssetRepository _localAssetRepository;
   final BackupRepository _backupRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final StackService _stackService;
   final Logger _logger = Logger('BackgroundUploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -190,6 +194,7 @@ class BackgroundUploadService {
     switch (update.status) {
       case TaskStatus.complete:
         unawaited(_handleLivePhoto(update));
+        unawaited(_stackEditedAsset(update));
 
         if (CurrentPlatform.isIOS) {
           try {
@@ -235,6 +240,22 @@ class BackgroundUploadService {
       await enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
+    }
+  }
+
+  Future<void> _stackEditedAsset(TaskStatusUpdate update) async {
+    try {
+      if (update.responseBody == null || update.responseBody!.isEmpty) {
+        return;
+      }
+      // A live photo uploads its video first; only the still that follows is the asset to stack
+      if (UploadTaskMetadata.fromJson(update.task.metaData).isLivePhotos) {
+        return;
+      }
+
+      await _stackService.afterUpload(update.task.taskId, jsonDecode(update.responseBody!)['id'] as String);
+    } catch (error, stackTrace) {
+      dPrint(() => "Error stacking edited asset upload: $error $stackTrace");
     }
   }
 
@@ -297,6 +318,7 @@ class BackgroundUploadService {
       fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.toString()} : null,
       cloudId: entity.isLivePhoto ? null : asset.cloudId,
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
+      previousAssetId: entity.isLivePhoto ? null : await _stackService.priorRemoteId(asset.id),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),
       longitude: entity.isLivePhoto ? null : asset.longitude?.toString(),
     );
@@ -332,6 +354,7 @@ class BackgroundUploadService {
       requiresWiFi: requiresWiFi,
       cloudId: asset.cloudId,
       adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      previousAssetId: await _stackService.priorRemoteId(asset.id),
       latitude: asset.latitude?.toString(),
       longitude: asset.longitude?.toString(),
     );
@@ -364,6 +387,7 @@ class BackgroundUploadService {
     String? adjustmentTime,
     String? latitude,
     String? longitude,
+    String? previousAssetId,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -380,7 +404,7 @@ class BackgroundUploadService {
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       ...?fields,
-      if (CurrentPlatform.isIOS && cloudId != null)
+      if ((CurrentPlatform.isIOS && cloudId != null) || previousAssetId != null)
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(
             key: RemoteAssetMetadataKey.mobileApp,
@@ -390,6 +414,7 @@ class BackgroundUploadService {
               adjustmentTime: adjustmentTime,
               latitude: latitude,
               longitude: longitude,
+              previousAssetId: previousAssetId,
             ),
           ),
         ]),

@@ -20,6 +20,7 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
+import 'package:immich_mobile/services/stack.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -43,6 +44,7 @@ final foregroundUploadServiceProvider = Provider((ref) {
     ref.watch(driftProvider).backupRepository,
     ref.watch(connectivityApiProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(stackServiceProvider),
   );
 });
 
@@ -58,6 +60,7 @@ class ForegroundUploadService {
     this._backupRepository,
     this._connectivityApi,
     this._assetMediaRepository,
+    this._stackService,
   );
 
   final UploadRepository _uploadRepository;
@@ -65,6 +68,7 @@ class ForegroundUploadService {
   final BackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
   final AssetMediaRepository _assetMediaRepository;
+  final StackService _stackService;
   final Logger _logger = Logger('ForegroundUploadService');
 
   bool shouldAbortUpload = false;
@@ -349,8 +353,9 @@ class ForegroundUploadService {
         fields['livePhotoVideoId'] = livePhotoVideoId;
       }
 
+      final previousAssetId = await _stackService.priorRemoteId(asset.localId!);
       // Add cloudId metadata only to the still image, not the motion video, becasue when the sync id happens, the motion video can get associated with the wrong still image.
-      if (CurrentPlatform.isIOS && asset.cloudId != null) {
+      if ((CurrentPlatform.isIOS && asset.cloudId != null) || previousAssetId != null) {
         fields['metadata'] = jsonEncode([
           RemoteAssetMetadataItem(
             key: RemoteAssetMetadataKey.mobileApp,
@@ -360,6 +365,7 @@ class ForegroundUploadService {
               adjustmentTime: asset.adjustmentTime?.toIso8601String(),
               latitude: asset.latitude?.toString(),
               longitude: asset.longitude?.toString(),
+              previousAssetId: previousAssetId,
             ),
           ),
         ]);
@@ -379,6 +385,7 @@ class ForegroundUploadService {
 
       if (result.isSuccess && result.remoteAssetId != null) {
         callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
+        await _stackService.afterUpload(asset.localId!, result.remoteAssetId!);
       } else if (result.isCancelled) {
         shouldAbortUpload = true;
       } else if (result.errorMessage != null) {

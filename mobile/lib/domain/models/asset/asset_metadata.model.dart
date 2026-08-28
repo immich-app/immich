@@ -29,6 +29,7 @@ class RemoteAssetMobileAppMetadata extends RemoteAssetMetadataValue {
   final String? adjustmentTime;
   final String? latitude;
   final String? longitude;
+  final String? previousAssetId;
 
   const RemoteAssetMobileAppMetadata({
     this.cloudId,
@@ -36,6 +37,7 @@ class RemoteAssetMobileAppMetadata extends RemoteAssetMetadataValue {
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    this.previousAssetId,
   });
 
   @override
@@ -55,6 +57,9 @@ class RemoteAssetMobileAppMetadata extends RemoteAssetMetadataValue {
     }
     if (longitude != null) {
       map["longitude"] = longitude;
+    }
+    if (previousAssetId != null) {
+      map["previousAssetId"] = previousAssetId;
     }
 
     return map;
