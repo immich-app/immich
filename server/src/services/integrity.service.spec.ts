@@ -65,6 +65,13 @@ describe(IntegrityService.name, () => {
       expect(mocks.storage.stat).not.toHaveBeenCalled();
     });
 
+    it('should not query for references when the batch is empty', async () => {
+      await sut.handleUntrackedRefresh({ items: [] });
+
+      expect(mocks.integrityReport.getAssetPathsByPaths).not.toHaveBeenCalled();
+      expect(mocks.integrityReport.deleteByIds).not.toHaveBeenCalled();
+    });
+
     it('should keep a report whose path is still untracked and present on disk', async () => {
       mocks.storage.stat.mockResolvedValue({} as never);
 

@@ -296,6 +296,10 @@ export class IntegrityService extends BaseService {
   private async getTrackedPaths(paths: string[], type?: 'asset' | 'asset_file'): Promise<Set<string>> {
     const trackedPaths = new Set<string>();
 
+    if (paths.length === 0) {
+      return trackedPaths;
+    }
+
     if (type !== 'asset_file') {
       for (const { originalPath, encodedVideoPath } of await this.integrityRepository.getAssetPathsByPaths(paths)) {
         trackedPaths.add(originalPath);
