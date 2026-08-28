@@ -32,9 +32,13 @@ class PeopleService {
     return _repository.updateName(personId, name);
   }
 
-  Future<int> mergePeople({required String targetPersonId, required List<String> mergePersonIds}) async {
-    await _personApiRepository.merge(targetPersonId, mergePersonIds);
-    return _repository.mergePeople(targetPersonId, mergePersonIds);
+  Future<List<String>> merge({required String targetPersonId, required List<String> mergePersonIds}) async {
+    final mergedIds = await _personApiRepository.merge(targetPersonId, mergePersonIds);
+    if (mergedIds.isNotEmpty) {
+      await _repository.merge(targetPersonId, mergedIds);
+    }
+
+    return mergedIds;
   }
 
   Future<int> updateBirthday(String personId, DateTime birthday) async {

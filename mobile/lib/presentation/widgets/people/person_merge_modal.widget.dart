@@ -28,7 +28,7 @@ class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
     try {
       await ref
           .read(peopleServiceProvider)
-          .mergePeople(targetPersonId: widget.mergeTarget.id, mergePersonIds: [widget.person.id]);
+          .merge(targetPersonId: widget.mergeTarget.id, mergePersonIds: [widget.person.id]);
 
       if (mounted) {
         Navigator.of(context).pop(widget.mergeTarget);
