@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/data/db/main/dao/person.dart';
 import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
@@ -30,7 +29,7 @@ extension type const PersonStore._(Provider<PersonMutations> _provider) implemen
   AutoDisposeStreamProvider<List<Person>> all() => _allProvider;
 }
 
-final _peopleDb = Provider((ref) => PeopleDbRepository(ref.watch(driftProvider)));
+final _peopleDb = driftProvider.select((db) => db.peopleDbRepository);
 
 // We have to map from non-reactive existing Drift queries to Riverpod reactivity, so we wrap each call in a provider family
 // Note that the only reactivity here is in going from no data (fetch start) to data (fetch completed), and the DB swapping (basically never)
