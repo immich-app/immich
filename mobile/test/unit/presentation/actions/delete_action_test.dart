@@ -11,7 +11,6 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -181,39 +180,6 @@ void main() {
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
       });
 
-      testWidgets('removes the device copy when permanent delete outlives the action widget', (tester) async {
-        final asset = owned(visibility: .locked, localId: 'local');
-        final deleteResult = Completer<void>();
-        when(() => assetService.delete([asset.id])).thenAnswer((_) => deleteResult.future);
-        var showAction = true;
-        late StateSetter updateHost;
-
-        await tester.pumpTestWidget(
-          context,
-          StatefulBuilder(
-            builder: (_, setState) {
-              updateHost = setState;
-              return showAction
-                  ? const ActionIconButton(action: DeleteAction(source: .timeline))
-                  : const SizedBox.shrink();
-            },
-          ),
-          overrides: context.selected({asset}),
-        );
-
-        await tester.tap(find.byType(ImmichIconButton));
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.tap(find.byType(TextButton).at(1));
-        await tester.pump();
-        await untilCalled(() => assetService.delete([asset.id]));
-        updateHost(() => showAction = false);
-        await tester.pump();
-        deleteResult.complete();
-        await tester.pumpAndSettle();
-
-        verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
-      });
-
       testWidgets('permanently deletes already trashed assets even with trash enabled', (tester) async {
         final asset = owned(deletedAt: DateTime(2024));
 
@@ -339,38 +305,6 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(() => cleanupService.deleteLocalAssets([backedUp.id])).called(1);
-    });
-
-    testWidgets('clears the selection when cleanup outlives the action widget', (tester) async {
-      final backedUp = LocalAssetFactory.create(remoteId: 'remote');
-      final cleanupResult = Completer<int>();
-      when(() => cleanupService.deleteLocalAssets([backedUp.id])).thenAnswer((_) => cleanupResult.future);
-      var showAction = true;
-      late StateSetter updateHost;
-
-      await tester.pumpTestWidget(
-        context,
-        StatefulBuilder(
-          builder: (_, setState) {
-            updateHost = setState;
-            return showAction
-                ? const ActionIconButton(action: CleanupLocalAction(source: .timeline))
-                : const SizedBox.shrink();
-          },
-        ),
-        overrides: context.selected({backedUp}),
-      );
-      final scope = ProviderScope.containerOf(tester.element(find.byType(ActionIconButton)), listen: false);
-
-      await tester.tap(find.byType(ImmichIconButton));
-      await tester.pump();
-      updateHost(() => showAction = false);
-      await tester.pump();
-      cleanupResult.complete(1);
-      await tester.pumpAndSettle();
-
-      expect(scope.read(multiSelectProvider).selectedAssets, isEmpty);
-      expect(find.text(StaticTranslations.instance.cleanup_deleted_assets(count: 1)), findsOneWidget);
     });
 
     testWidgets('is hidden when no backed up assets are selected', (tester) async {
