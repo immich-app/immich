@@ -128,6 +128,7 @@ class DeleteAction extends AssetActionBuilder {
     List<String> localIds,
   ) async {
     final assetService = ref.read(assetServiceProvider);
+    final cleanupService = localIds.isEmpty ? null : ref.read(cleanupServiceProvider);
     final message = context.t.delete_permanently_action_prompt(count: remoteIds.length);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -137,14 +138,14 @@ class DeleteAction extends AssetActionBuilder {
         ok: dialogContext.t.delete_permanently,
       ),
     );
-    if (confirmed != true || !context.mounted) {
+    if (confirmed != true) {
       return null;
     }
 
     // Server first, so a failed request will not remove the local copy
     await assetService.delete(remoteIds);
-    if (localIds.isNotEmpty && context.mounted) {
-      await _cleanupLocalAssets(context, ref, localIds, requestCustomPrompt: false);
+    if (cleanupService != null) {
+      await cleanupService.deleteLocalAssets(localIds);
     }
 
     return message;
@@ -185,11 +186,11 @@ class CleanupLocalAction extends AssetActionBuilder {
 
     try {
       final count = await _cleanupLocalAssets(context, ref, assetIds);
-      if (count <= 0 || !context.mounted) {
+      if (count <= 0) {
         return;
       }
 
-      toastService.success(context.t.cleanup_deleted_assets(count: count));
+      toastService.success(StaticTranslations.instance.cleanup_deleted_assets(count: count));
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to remove the device copies");
