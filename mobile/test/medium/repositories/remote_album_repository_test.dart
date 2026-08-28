@@ -321,5 +321,25 @@ void main() {
       // album2 (Jan 1) should come before album1 (Jan 25)
       expect(resultEnd, [album2.id, album1.id]);
     });
+
+    test('ignores deleted assets when sorting by end date', () async {
+      final album1 = await ctx.newRemoteAlbum(ownerId: userId);
+      final activeAsset = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
+      final deletedAsset = await ctx.newRemoteAsset(
+        ownerId: userId,
+        createdAt: DateTime(2024, 1, 30),
+        deletedAt: DateTime(2024, 2, 1),
+      );
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: activeAsset.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: deletedAsset.id);
+
+      final album2 = await ctx.newRemoteAlbum(ownerId: userId);
+      final asset2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 20));
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
+
+      final result = await sut.getSortedAlbumIds([album1.id, album2.id], aggregation: AssetDateAggregation.end);
+
+      expect(result, [album1.id, album2.id]);
+    });
   });
 }
