@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
+import 'package:immich_mobile/data/db/main/dao/person.dart';
 
 import '../repository_context.dart';
 

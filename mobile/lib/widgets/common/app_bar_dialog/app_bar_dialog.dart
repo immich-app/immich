@@ -9,7 +9,7 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup_server.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -29,7 +29,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
-    final ServerDiskInfo backupState = ref.watch(backupProvider);
+    final ServerDiskInfo backupState = ref.watch(backupServerProvider);
     final theme = context.themeData;
     final bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
@@ -38,7 +38,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     useEffect(() {
-      unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
+      unawaited(ref.read(backupServerProvider.notifier).updateDiskInfo());
       unawaited(ref.read(currentUserProvider.notifier).refresh());
       return null;
     }, []);

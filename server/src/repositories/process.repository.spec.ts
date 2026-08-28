@@ -81,5 +81,34 @@ describe(ProcessRepository.name, () => {
 
       await pipeline(Readable.from(data()), process);
     });
+
+    it('should kill the child process when the stream is destroyed', async () => {
+      const process = sut.spawnDuplexStream('bash', ['-c', 'sleep 60']);
+      const realProcess = (process as never as { _process: ChildProcessWithoutNullStreams })._process;
+
+      expect(realProcess.exitCode).toBeNull();
+
+      const exited = new Promise<void>((resolve) => realProcess.once('exit', () => resolve()));
+      process.destroy();
+      await exited;
+
+      expect(realProcess.killed).toBe(true);
+    });
+
+    it('should kill the child when pipeline tears the stream down after a failure', async () => {
+      const process = sut.spawnDuplexStream('yes');
+      const realProcess = (process as never as { _process: ChildProcessWithoutNullStreams })._process;
+      const failingSink = new Writable({
+        write(_chunk, _encoding, callback) {
+          callback(new Error('sink exploded'));
+        },
+      });
+
+      const exited = new Promise<void>((resolve) => realProcess.once('exit', () => resolve()));
+      await expect(pipeline(process, failingSink)).rejects.toThrow('sink exploded');
+      await exited;
+
+      expect(realProcess.killed).toBe(true);
+    });
   });
 });

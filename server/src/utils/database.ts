@@ -24,6 +24,7 @@ import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import {
   DEFAULT_SEARCH_ORDER,
   IdsFilter,
+  isAlbumConfined,
   SearchFilterBranch,
   SearchOrder,
   StringFilter,
@@ -38,7 +39,11 @@ import {
   ExifOrientation,
   SearchOrderField,
 } from 'src/enum';
-import { AssetSearchBuilderOptions, AssetSearchBuilderV3Options } from 'src/repositories/search.repository';
+import {
+  AssetSearchBuilderOptions,
+  AssetSearchBuilderV3Options,
+  AssetSearchScope,
+} from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
@@ -787,8 +792,16 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
 
 // ordering is deliberately left to the caller so aggregate-only consumers (counts, stats)
 // can compose the same filters without stripping an order by
-export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderV3Options) {
+export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
   const filter = options.filter ?? {};
+  const branches = filter.or ?? [];
+  const ownershipPredicate = (eb: AssetExpressionBuilder) => eb('asset.ownerId', '=', anyUuid(scope.userIds));
+  // search universe: own+partner assets unless album-confined, which searches the albums instead;
+  // ownership lands nowhere (top level confined), per unconfined branch, or hoisted globally
+  const topConfined = isAlbumConfined(filter);
+  const anyBranchConfined = branches.some((branch) => isAlbumConfined(branch));
+  const scopePerBranch = !topConfined && anyBranchConfined;
+  const scopeGlobally = !topConfined && !anyBranchConfined;
 
   return (
     kysely
@@ -797,17 +810,27 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       // postgres eliminates the left join when no exif column is referenced, so unused joins are free
       .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .$if(!!options.withExif, (qb) => qb.select(selectExifInfo))
-      .$if(!!options.userIds && options.userIds.length > 0, (qb) =>
-        qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
+      .$if(scopeGlobally, (qb) => qb.where(ownershipPredicate))
+      .where((eb) =>
+        eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),
       )
       .$if(!!(options.withFaces || options.withPeople), (qb) =>
-        qb.select(withFacesAndPeople({ viewingUserId: options.viewingUserId! })),
+        qb.select(withFacesAndPeople({ viewingUserId: scope.viewingUserId! })),
       )
       .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
       .where((eb) => {
         const predicates = branchPredicates(eb, filter);
-        if (filter.or && filter.or.length > 0) {
-          predicates.push(eb.or(filter.or.map((branch) => eb.and(branchPredicates(eb, branch)))));
+        if (branches.length > 0) {
+          predicates.push(
+            eb.or(
+              branches.map((branch) =>
+                eb.and([
+                  ...branchPredicates(eb, branch),
+                  ...(scopePerBranch && !isAlbumConfined(branch) ? [ownershipPredicate(eb)] : []),
+                ]),
+              ),
+            ),
+          );
         }
         return predicates.length > 0 ? eb.and(predicates) : eb.lit(true);
       })
@@ -836,160 +859,238 @@ export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order
   );
 }
 
+const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwnerId: DummyValue.UUID };
+
 export const searchMetadataV3Examples: GenerateSqlQueries[] = [
-  { name: 'baseline', params: [{ size: 100 }, { userIds: [DummyValue.UUID] }] },
-  { name: 'empty', params: [{ size: 100 }, {}] },
+  { name: 'baseline', params: [{ take: 100 }, {}, scopeExample] },
+  {
+    name: 'or-mixed-scope',
+    params: [
+      { take: 100 },
+      {
+        filter: { or: [{ albumIds: { any: [DummyValue.UUID] } }, { city: { eq: DummyValue.STRING } }] },
+      },
+      scopeExample,
+    ],
+  },
   {
     name: 'or-exif-only',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { or: [{ city: { eq: DummyValue.STRING } }] } }],
+    params: [
+      { take: 100 },
+      {
+        filter: { or: [{ city: { eq: DummyValue.STRING } }] },
+      },
+      scopeExample,
+    ],
   },
   {
     name: 'string-eq-null',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { city: { eq: null } } }],
+    params: [{ take: 100 }, { filter: { city: { eq: null } } }, scopeExample],
   },
   {
     name: 'string-pattern-like',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { description: { like: DummyValue.STRING } } }],
+    params: [
+      { take: 100 },
+      {
+        filter: { description: { like: DummyValue.STRING } },
+      },
+      scopeExample,
+    ],
   },
   {
     name: 'string-pattern-notLike',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { description: { notLike: DummyValue.STRING } } }],
+    params: [
+      { take: 100 },
+      {
+        filter: { description: { notLike: DummyValue.STRING } },
+      },
+      scopeExample,
+    ],
   },
   {
     name: 'string-pattern-startsWith',
     params: [
-      { size: 100 },
-      { userIds: [DummyValue.UUID], filter: { originalFileName: { startsWith: DummyValue.STRING } } },
+      { take: 100 },
+      {
+        filter: { originalFileName: { startsWith: DummyValue.STRING } },
+      },
+      scopeExample,
     ],
   },
   {
     name: 'string-similarity-ocr',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { ocr: { matches: DummyValue.STRING } } }],
+    params: [{ take: 100 }, { filter: { ocr: { matches: DummyValue.STRING } } }, scopeExample],
   },
   {
     name: 'ids-any',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { albumIds: { any: [DummyValue.UUID] } } }],
+    params: [{ take: 100 }, { filter: { albumIds: { any: [DummyValue.UUID] } } }, scopeExample],
   },
   {
     name: 'ids-all',
     params: [
-      { size: 100 },
-      { userIds: [DummyValue.UUID], filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } } },
+      { take: 100 },
+      {
+        filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } },
+      },
+      scopeExample,
     ],
   },
   {
     name: 'ids-all-single',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { albumIds: { all: [DummyValue.UUID] } } }],
+    params: [{ take: 100 }, { filter: { albumIds: { all: [DummyValue.UUID] } } }, scopeExample],
   },
   {
     name: 'ids-none',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { tagIds: { none: [DummyValue.UUID] } } }],
+    params: [{ take: 100 }, { filter: { tagIds: { none: [DummyValue.UUID] } } }, scopeExample],
   },
   {
     name: 'ids-tags-all',
     params: [
-      { size: 100 },
-      { userIds: [DummyValue.UUID], filter: { tagIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } } },
+      { take: 100 },
+      {
+        filter: { tagIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } },
+      },
+      scopeExample,
     ],
   },
   {
     name: 'has-albums-false',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { hasAlbums: { eq: false } } }],
+    params: [{ take: 100 }, { filter: { hasAlbums: { eq: false } } }, scopeExample],
   },
   {
     name: 'is-encoded',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { isEncoded: { eq: true } } }],
+    params: [{ take: 100 }, { filter: { isEncoded: { eq: true } } }, scopeExample],
   },
   {
     name: 'number-range',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { fileSizeInBytes: { gte: 100, lte: 1000 } } }],
+    params: [
+      { take: 100 },
+      {
+        filter: { fileSizeInBytes: { gte: 100, lte: 1000 } },
+      },
+      scopeExample,
+    ],
   },
   {
     name: 'date-eq',
-    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { takenAt: { eq: DummyValue.DATE } } }],
+    params: [{ take: 100 }, { filter: { takenAt: { eq: DummyValue.DATE } } }, scopeExample],
   },
   {
     name: 'date-range',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
-        userIds: [DummyValue.UUID],
         filter: { takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE } },
       },
+      scopeExample,
     ],
   },
   {
     name: 'order-fileSize-noExif',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
-        userIds: [DummyValue.UUID],
         order: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc },
         withExif: false,
       },
+      scopeExample,
     ],
   },
   {
     name: 'order-rating-withExif',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
-        userIds: [DummyValue.UUID],
         order: { field: SearchOrderField.Rating, direction: AssetOrder.Asc },
         withExif: true,
       },
+      scopeExample,
     ],
   },
   {
     name: 'or-branches',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
-        userIds: [DummyValue.UUID],
         filter: {
           or: [{ isFavorite: { eq: true } }, { personIds: { any: [DummyValue.UUID] } }],
         },
       },
+      scopeExample,
     ],
   },
   {
     name: 'or-with-top-level',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
-        userIds: [DummyValue.UUID],
         filter: {
           takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE },
           or: [{ isFavorite: { eq: true } }, { albumIds: { any: [DummyValue.UUID] } }],
         },
       },
+      scopeExample,
     ],
+  },
+  {
+    name: 'cursor-offset',
+    params: [{ take: 100, skip: 100 }, { filter: { isFavorite: { eq: true } } }, scopeExample],
+  },
+];
+
+export const searchRandomV3Examples: GenerateSqlQueries[] = [
+  { name: 'baseline', params: [100, {}, scopeExample] },
+  {
+    name: 'with-filter',
+    params: [100, { filter: { isFavorite: { eq: true } } }, scopeExample],
+  },
+];
+
+export const searchSmartV3Examples: GenerateSqlQueries[] = [
+  {
+    name: 'baseline',
+    params: [{ take: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
+  },
+  {
+    name: 'with-filter',
+    params: [
+      { take: 100 },
+      {
+        embedding: DummyValue.VECTOR,
+        filter: { takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE } },
+      },
+      scopeExample,
+    ],
+  },
+  {
+    name: 'cursor-offset',
+    params: [{ take: 100, skip: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
   },
 ];
 
 export const searchStatisticsV3Examples: GenerateSqlQueries[] = [
-  { name: 'baseline', params: [{ userIds: [DummyValue.UUID] }] },
+  { name: 'baseline', params: [{}, scopeExample] },
   {
     name: 'with-filter',
     params: [
       {
-        userIds: [DummyValue.UUID],
         filter: {
           takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE },
           fileSizeInBytes: { gte: 100 },
         },
       },
+      scopeExample,
     ],
   },
   {
     name: 'with-or',
     params: [
       {
-        userIds: [DummyValue.UUID],
         filter: {
           or: [{ isFavorite: { eq: true } }, { hasAlbums: { eq: false } }],
         },
       },
+      scopeExample,
     ],
   },
 ];

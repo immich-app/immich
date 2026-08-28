@@ -2,11 +2,11 @@
 java = "21.0.2"
 
 [tools."aqua:flutter/flutter"]
-version = "3.44.9"
+version = "3.47.1"
 postinstall = "bash {{config_root}}/ios/scripts/xcode_flutter_patch.sh"
 
 [tools."github:CQLabs/homebrew-dcm"]
-version = "1.37.0"
+version = "1.39.1"
 bin = "dcm"
 postinstall = "chmod +x \"$MISE_TOOL_INSTALL_PATH/dcm\" || true"
 
@@ -35,7 +35,7 @@ sources = [
   "pubspec.yaml",
   "build.yaml",
   "lib/**/*.dart",
-  "infrastructure/**/*.drift",
+  "lib/**/*.drift",
 ]
 outputs = { auto = true }
 run = [
@@ -52,11 +52,9 @@ sources = [
   "build.yaml",
   "pubspec.yaml",
   "drift_schemas/main/*.json",
-  "lib/infrastructure/entities/*.entity.dart",
-  "lib/infrastructure/entities/*.drift",
-  "lib/infrastructure/repositories/*.repository.dart",
+  "lib/data/db/**/*.dart",
 ]
-outputs = ["lib/infrastructure/repositories/db.repository.steps.dart"]
+outputs = ["lib/data/db/main/database.steps.dart"]
 run = "dart run drift_dev make-migrations"
 depends = ["//:open-api-dart"]
 

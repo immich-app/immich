@@ -38,13 +38,16 @@ on:
         required: true
   pull_request:
   push:
-    branches: [main]
+    branches: [main, 'release/*']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: {}
+
+env:
+  DEPLOY: ${{ inputs.environment == 'production' || github.ref == 'refs/heads/main' }}
 
 jobs:
   pre-job:
@@ -143,10 +146,9 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          if [[ $IS_MAIN == 'true' ]]; then
+          if [[ $DEPLOY == 'true' ]]; then
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
@@ -229,7 +231,7 @@ jobs:
         uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           ruby-version: '3.3'
-          bundler-cache: true
+          bundler-cache: true # zizmor: ignore[cache-poisoning] release branches cannot read caches written by pull requests
           working-directory: ./mobile/ios
 
       - name: Install dependencies
@@ -288,21 +290,16 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
-          GITHUB_REF: ${{ github.ref }}
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
           FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 6
         working-directory: ./mobile/ios
         run: |
-          # Only upload to TestFlight on main branch
-          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-            if [[ "$ENVIRONMENT" == "development" ]]; then
-              bundle exec fastlane gha_testflight_dev
-            else
-              bundle exec fastlane gha_release_prod
-            fi
-          else
-            # Build only, no TestFlight upload for non-main branches
+          if [[ "$DEPLOY" != 'true' ]]; then
             bundle exec fastlane gha_build_only
+          elif [[ "$ENVIRONMENT" == "development" ]]; then
+            bundle exec fastlane gha_testflight_dev
+          else
+            bundle exec fastlane gha_release_prod
           fi
 
       - name: Clean up keychain
