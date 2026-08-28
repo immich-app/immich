@@ -125,6 +125,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
+          fetch-tags: true
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
 
@@ -140,14 +142,24 @@ jobs:
           REPO: ${{ github.repository }}
           TAG: ${{ needs.tag.outputs.version }}
           PRERELEASE: ${{ needs.tag.outputs.rc }}
+          BRANCH: ${{ github.ref_name }}
         run: |
+          exclude=()
+          if [[ "${PRERELEASE}" != 'true' ]]; then
+            exclude=(--exclude '*-rc*')
+          fi
+          previous=$(git describe --tags --abbrev=0 --match 'v*' "${exclude[@]}" --exclude "${TAG}" HEAD)
+          echo "generating notes from ${previous}"
+
           gh release create "${TAG}" \
             --repo "${REPO}" \
+            --target "${BRANCH}" \
             --draft \
             --verify-tag \
             --prerelease="${PRERELEASE}" \
             --notes-file misc/release/notes.tmpl \
             --generate-notes \
+            --notes-start-tag "${previous}" \
             docker/docker-compose.yml \
             docker/docker-compose.rootless.yml \
             docker/example.env \
