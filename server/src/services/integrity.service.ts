@@ -272,38 +272,42 @@ export class IntegrityService extends BaseService {
   async handleUntrackedFiles({ type, paths }: IIntegrityUntrackedFilesJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} files to check if they are untracked.`);
 
-    const untrackedFiles = new Set<string>(paths);
+    const lookupPaths = [...new Set(paths.flatMap((path) => [path, path.normalize('NFC'), path.normalize('NFD')]))];
+
+    const trackedPaths = new Set<string>();
     if (type === 'asset') {
-      const assets = await this.integrityRepository.getAssetPathsByPaths(paths);
+      const assets = await this.integrityRepository.getAssetPathsByPaths(lookupPaths);
       for (const { originalPath, encodedVideoPath } of assets) {
-        untrackedFiles.delete(originalPath);
+        trackedPaths.add(originalPath.normalize('NFC'));
 
         if (encodedVideoPath) {
-          untrackedFiles.delete(encodedVideoPath);
+          trackedPaths.add(encodedVideoPath.normalize('NFC'));
         }
       }
     } else {
-      const assets = await this.integrityRepository.getAssetFilePathsByPaths(paths);
+      const assets = await this.integrityRepository.getAssetFilePathsByPaths(lookupPaths);
       for (const { path } of assets) {
-        untrackedFiles.delete(path);
+        trackedPaths.add(path.normalize('NFC'));
       }
     }
 
-    const personThumbnailPaths = await this.integrityRepository.getPersonThumbnailPathsByPaths(paths);
+    const personThumbnailPaths = await this.integrityRepository.getPersonThumbnailPathsByPaths(lookupPaths);
     for (const { thumbnailPath } of personThumbnailPaths) {
-      untrackedFiles.delete(thumbnailPath);
+      trackedPaths.add(thumbnailPath.normalize('NFC'));
     }
 
-    if (untrackedFiles.size > 0) {
+    const untrackedFiles = [...new Set(paths)].filter((path) => !trackedPaths.has(path.normalize('NFC')));
+
+    if (untrackedFiles.length > 0) {
       await this.integrityRepository.create(
-        [...untrackedFiles].map((path) => ({
+        untrackedFiles.map((path) => ({
           type: IntegrityReport.UntrackedFile,
           path,
         })),
       );
     }
 
-    this.logger.log(`Processed ${paths.length} and found ${untrackedFiles.size} untracked file(s).`);
+    this.logger.log(`Processed ${paths.length} and found ${untrackedFiles.length} untracked file(s).`);
     return JobStatus.Success;
   }
 
