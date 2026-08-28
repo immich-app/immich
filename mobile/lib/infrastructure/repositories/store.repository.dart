@@ -60,17 +60,14 @@ class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin
     return StoreDto(key, value);
   }
 
-  Future<T?> _toValue<T>(StoreKey<T> key, StoreEntityData entity) async =>
-      switch (key.type) {
-            const (int) => entity.intValue,
-            const (String) => entity.stringValue,
-            const (bool) => entity.intValue == 1,
-            const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-            const (UserDto) =>
-              entity.stringValue == null ? null : await AuthUserRepository(_db).get(entity.stringValue!),
-            _ => null,
-          }
-          as T?;
+  Future<T?> _toValue<T>(StoreKey<T> key, StoreEntityData entity) async => switch (key.type) {
+    const (int) => entity.intValue,
+    const (String) => entity.stringValue,
+    const (bool) => entity.intValue == 1,
+    const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
+    const (UserDto) => entity.stringValue == null ? null : await AuthUserRepository(_db).get(entity.stringValue!),
+    _ => null,
+  } as T?;
 
   Future<StoreEntityCompanion> _fromValue<T>(StoreKey<T> key, T value) async {
     final (int? intValue, String? strValue) = switch (key.type) {

@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 
@@ -12,32 +13,24 @@ enum UserMetadataKey {
 }
 
 @freezed
-abstract class Onboarding with _$Onboarding {
-  const Onboarding._();
-
-  const factory Onboarding({required bool isOnboarded}) = _Onboarding;
-
+class const Onboarding({required final bool isOnboarded}) with _$Onboarding {
   factory Onboarding.fromMap(Map<String, Object?> map) {
     return Onboarding(isOnboarded: map["isOnboarded"]! as bool);
   }
 }
 
 @freezed
-abstract class Preferences with _$Preferences {
-  const Preferences._();
-
-  const factory Preferences({
-    @Default(false) bool foldersEnabled,
-    @Default(true) bool memoriesEnabled,
-    @Default(true) bool peopleEnabled,
-    @Default(false) bool ratingsEnabled,
-    @Default(true) bool sharedLinksEnabled,
-    @Default(false) bool tagsEnabled,
-    @Default(AvatarColor.primary) AvatarColor userAvatarColor,
-    @Default(true) bool showSupportBadge,
-    @Default(3) int minimumFaces,
-  }) = _Preferences;
-
+class const Preferences({
+  final bool foldersEnabled = false,
+  final bool memoriesEnabled = true,
+  final bool peopleEnabled = true,
+  final bool ratingsEnabled = false,
+  final bool sharedLinksEnabled = true,
+  final bool tagsEnabled = false,
+  final AvatarColor userAvatarColor = .primary,
+  final bool showSupportBadge = true,
+  final int minimumFaces = 3,
+}) with _$Preferences {
   factory Preferences.fromMap(Map<String, Object?> map) {
     return Preferences(
       foldersEnabled: (map["folders"] as Map<String, Object?>?)?["enabled"] as bool? ?? false,
@@ -57,12 +50,11 @@ abstract class Preferences with _$Preferences {
 }
 
 @freezed
-abstract class License with _$License {
-  const License._();
-
-  const factory License({required DateTime activatedAt, required String activationKey, required String licenseKey}) =
-      _License;
-
+class const License({
+  required final DateTime activatedAt,
+  required final String activationKey,
+  required final String licenseKey,
+}) with _$License {
   factory License.fromMap(Map<String, Object?> map) {
     return License(
       activatedAt: DateTime.parse(map["activatedAt"]! as String),

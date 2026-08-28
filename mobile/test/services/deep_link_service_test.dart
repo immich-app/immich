@@ -111,14 +111,7 @@ void main() {
 
     when(() => ref.read(assetViewerProvider.notifier)).thenReturn(MockAssetViewerStateNotifier());
 
-    sut = DeepLinkService(
-      timelineFactory,
-      assetService,
-      remoteAlbumService,
-      memoryService,
-      MockPeopleService(),
-      _user,
-    );
+    sut = DeepLinkService(timelineFactory, assetService, remoteAlbumService, memoryService, MockPeopleService(), _user);
 
     addTearDown(() async {
       for (final timelineService in createdTimelineServices) {

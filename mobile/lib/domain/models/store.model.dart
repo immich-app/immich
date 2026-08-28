@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 
@@ -67,6 +69,4 @@ enum StoreKey<T> {
 }
 
 @freezed
-abstract class StoreDto<T> with _$StoreDto<T> {
-  const factory StoreDto(StoreKey<T> key, T? value) = _StoreDto<T>;
-}
+class const StoreDto<T>(final StoreKey<T> key, final T? value) with _$StoreDto<T>;

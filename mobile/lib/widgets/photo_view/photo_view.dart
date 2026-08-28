@@ -637,37 +637,54 @@ PhotoViewScaleState defaultScaleStateCycle(PhotoViewScaleState actual) => switch
 typedef ScaleStateCycle = PhotoViewScaleState Function(PhotoViewScaleState actual);
 
 /// A type definition for a callback when the user taps up the photoview region
-typedef PhotoViewImageTapUpCallback =
-    Function(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue);
+typedef PhotoViewImageTapUpCallback = Function(
+  BuildContext context,
+  TapUpDetails details,
+  PhotoViewControllerValue controllerValue,
+);
 
 /// A type definition for a callback when the user taps down the photoview region
-typedef PhotoViewImageTapDownCallback =
-    Function(BuildContext context, TapDownDetails details, PhotoViewControllerValue controllerValue);
+typedef PhotoViewImageTapDownCallback = Function(
+  BuildContext context,
+  TapDownDetails details,
+  PhotoViewControllerValue controllerValue,
+);
 
 /// A type definition for a callback when the user drags up
-typedef PhotoViewImageDragStartCallback =
-    Function(
-      BuildContext context,
-      DragStartDetails details,
-      PhotoViewControllerBase controllerValue,
-      PhotoViewScaleStateController scaleStateController,
-    );
+typedef PhotoViewImageDragStartCallback = Function(
+  BuildContext context,
+  DragStartDetails details,
+  PhotoViewControllerBase controllerValue,
+  PhotoViewScaleStateController scaleStateController,
+);
 
 /// A type definition for a callback when the user drags
-typedef PhotoViewImageDragUpdateCallback =
-    Function(BuildContext context, DragUpdateDetails details, PhotoViewControllerValue controllerValue);
+typedef PhotoViewImageDragUpdateCallback = Function(
+  BuildContext context,
+  DragUpdateDetails details,
+  PhotoViewControllerValue controllerValue,
+);
 
 /// A type definition for a callback when the user taps down the photoview region
-typedef PhotoViewImageDragEndCallback =
-    Function(BuildContext context, DragEndDetails details, PhotoViewControllerValue controllerValue);
+typedef PhotoViewImageDragEndCallback = Function(
+  BuildContext context,
+  DragEndDetails details,
+  PhotoViewControllerValue controllerValue,
+);
 
 /// A type definition for a callback when a user finished scale
-typedef PhotoViewImageScaleEndCallback =
-    Function(BuildContext context, ScaleEndDetails details, PhotoViewControllerValue controllerValue);
+typedef PhotoViewImageScaleEndCallback = Function(
+  BuildContext context,
+  ScaleEndDetails details,
+  PhotoViewControllerValue controllerValue,
+);
 
 /// A type definition for a callback when the user long press start
-typedef PhotoViewImageLongPressStartCallback =
-    Function(BuildContext context, LongPressStartDetails details, PhotoViewControllerValue controllerValue);
+typedef PhotoViewImageLongPressStartCallback = Function(
+  BuildContext context,
+  LongPressStartDetails details,
+  PhotoViewControllerValue controllerValue,
+);
 
 /// A type definition for a callback to show a widget while the image is loading, a [ImageChunkEvent] is passed to inform progress
 typedef LoadingBuilder = Widget Function(BuildContext context, ImageChunkEvent? event, int index);

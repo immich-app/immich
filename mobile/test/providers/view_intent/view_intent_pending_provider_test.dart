@@ -7,17 +7,11 @@ void main() {
   late DateTime now;
   late ProviderContainer container;
 
-  final attachment = ViewIntentPayload(
-    path: '/tmp/file.jpg',
-    mimeType: 'image/jpeg',
-    localAssetId: '42',
-  );
+  final attachment = ViewIntentPayload(path: '/tmp/file.jpg', mimeType: 'image/jpeg', localAssetId: '42');
 
   setUp(() {
     now = DateTime(2026, 4, 17, 12);
-    container = ProviderContainer(
-      overrides: [viewIntentNowProvider.overrideWithValue(() => now)],
-    );
+    container = ProviderContainer(overrides: [viewIntentNowProvider.overrideWithValue(() => now)]);
     addTearDown(container.dispose);
   });
 
@@ -48,11 +42,7 @@ void main() {
   });
 
   test('newer deferred attachment replaces older one', () {
-    final newerAttachment = ViewIntentPayload(
-      path: '/tmp/file-2.jpg',
-      mimeType: 'image/jpeg',
-      localAssetId: '43',
-    );
+    final newerAttachment = ViewIntentPayload(path: '/tmp/file-2.jpg', mimeType: 'image/jpeg', localAssetId: '43');
 
     container.read(viewIntentPendingProvider.notifier).defer(attachment);
     container.read(viewIntentPendingProvider.notifier).defer(newerAttachment);

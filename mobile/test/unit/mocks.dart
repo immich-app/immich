@@ -255,8 +255,7 @@ extension type const LocalAlbumRepositoryStub(MockLocalAlbumRepository repo) imp
       () => repo.getAssetsToHash(any());
 }
 
-extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo)
-    implements Stub<MockLocalAssetRepository> {
+extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo) implements Stub<MockLocalAssetRepository> {
   Future<void> Function() get reconcileHashesFromCloudId =>
       () => repo.reconcileHashesFromCloudId();
 

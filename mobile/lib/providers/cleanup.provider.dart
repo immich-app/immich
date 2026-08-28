@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:async';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -12,18 +14,16 @@ import 'package:immich_mobile/services/cleanup.service.dart';
 part 'cleanup.provider.freezed.dart';
 
 @freezed
-abstract class CleanupState with _$CleanupState {
-  const factory CleanupState({
-    DateTime? selectedDate,
-    @Default([]) List<LocalAsset> assetsToDelete,
-    @Default(0) int totalBytes,
-    @Default(false) bool isScanning,
-    @Default(false) bool isDeleting,
-    @Default(AssetKeepType.none) AssetKeepType keepMediaType,
-    @Default(true) bool keepFavorites,
-    @Default({}) Set<String> keepAlbumIds,
-  }) = _CleanupState;
-}
+class const CleanupState({
+  final DateTime? selectedDate,
+  final List<LocalAsset> assetsToDelete = const [],
+  final int totalBytes = 0,
+  final bool isScanning = false,
+  final bool isDeleting = false,
+  final AssetKeepType keepMediaType = .none,
+  final bool keepFavorites = true,
+  final Set<String> keepAlbumIds = const {},
+}) with _$CleanupState;
 
 final cleanupProvider = StateNotifierProvider<CleanupNotifier, CleanupState>((ref) {
   return CleanupNotifier(

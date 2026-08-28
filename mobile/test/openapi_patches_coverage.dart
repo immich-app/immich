@@ -22,9 +22,7 @@ void main() {
     final revisionSpec = _loadSpec(revisionPath);
     final revisionRequired = _requiredBySchema(revisionSpec);
     final deserialized = _deserializedSchemas(revisionSpec);
-    final patched = openApiPatches.map(
-      (type, fields) => MapEntry(type, fields.keys.toSet()),
-    );
+    final patched = openApiPatches.map((type, fields) => MapEntry(type, fields.keys.toSet()));
 
     final missing = <String>[];
     for (final entry in revisionRequired.entries) {
@@ -38,9 +36,7 @@ void main() {
       }
 
       final have = patched[entry.key] ?? const <String>{};
-      final newlyRequired = entry.value.difference(
-        baseRequired[entry.key] ?? const <String>{},
-      );
+      final newlyRequired = entry.value.difference(baseRequired[entry.key] ?? const <String>{});
       for (final field in newlyRequired) {
         if (!have.contains(field)) {
           missing.add('${entry.key}.$field');
@@ -59,13 +55,10 @@ void main() {
   });
 }
 
-Map<String, dynamic> _loadSpec(String path) =>
-    jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
+Map<String, dynamic> _loadSpec(String path) => jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
 
 Map<String, dynamic> _schemas(Map<String, dynamic> spec) =>
-    ((spec['components'] as Map?)?['schemas'] as Map?)
-        ?.cast<String, dynamic>() ??
-    const {};
+    ((spec['components'] as Map?)?['schemas'] as Map?)?.cast<String, dynamic>() ?? const {};
 
 Map<String, Set<String>> _requiredBySchema(Map<String, dynamic> spec) {
   final result = <String, Set<String>>{};

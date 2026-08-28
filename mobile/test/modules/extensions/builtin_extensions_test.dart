@@ -61,10 +61,7 @@ void main() {
 
     test('diacritic removal is order-independent', () {
       const raw = 'Árvíztűrő';
-      expect(
-        raw.toLowerCase().removeDiacritics(),
-        raw.removeDiacritics().toLowerCase(),
-      );
+      expect(raw.toLowerCase().removeDiacritics(), raw.removeDiacritics().toLowerCase());
     });
   });
 

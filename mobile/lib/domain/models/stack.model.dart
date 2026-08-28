@@ -1,22 +1,22 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'stack.model.freezed.dart';
 
 // Model for a stack stored in the server
 @freezed
-abstract class Stack with _$Stack {
-  const factory Stack({
-    required String id,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    required String ownerId,
-    required String primaryAssetId,
-  }) = _Stack;
-}
+class const Stack({
+  required final String id,
+  required final DateTime createdAt,
+  required final DateTime updatedAt,
+  required final String ownerId,
+  required final String primaryAssetId,
+}) with _$Stack;
 
 @freezed
-abstract class StackResponse with _$StackResponse {
-  const factory StackResponse({required String id, required String primaryAssetId, required List<String> assetIds}) =
-      _StackResponse;
-}
+class const StackResponse({
+  required final String id,
+  required final String primaryAssetId,
+  required final List<String> assetIds,
+}) with _$StackResponse;

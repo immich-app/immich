@@ -1,3 +1,5 @@
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
@@ -5,11 +7,8 @@ import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dar
 part 'album_filter.utils.freezed.dart';
 
 @freezed
-abstract class AlbumFilter with _$AlbumFilter {
-  const factory AlbumFilter({required QuickFilterMode mode, String? userId, String? query}) = _AlbumFilter;
-}
+class const AlbumFilter({required final QuickFilterMode mode, final String? userId, final String? query})
+    with _$AlbumFilter;
 
 @freezed
-abstract class AlbumSort with _$AlbumSort {
-  const factory AlbumSort({required AlbumSortMode mode, @Default(false) bool isReverse}) = _AlbumSort;
-}
+class const AlbumSort({required final AlbumSortMode mode, final bool isReverse = false}) with _$AlbumSort;

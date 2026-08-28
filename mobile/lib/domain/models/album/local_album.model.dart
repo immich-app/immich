@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: annotate_overrides
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'local_album.model.freezed.dart';
@@ -13,14 +14,12 @@ enum BackupSelection {
 }
 
 @freezed
-abstract class LocalAlbum with _$LocalAlbum {
-  const factory LocalAlbum({
-    required String id,
-    required String name,
-    required DateTime updatedAt,
-    @Default(0) int assetCount,
-    @Default(BackupSelection.none) BackupSelection backupSelection,
-    @Default(false) bool isIosSharedAlbum,
-    String? linkedRemoteAlbumId,
-  }) = _LocalAlbum;
-}
+class const LocalAlbum({
+  required final String id,
+  required final String name,
+  required final DateTime updatedAt,
+  final int assetCount = 0,
+  final BackupSelection backupSelection = .none,
+  final bool isIosSharedAlbum = false,
+  final String? linkedRemoteAlbumId,
+}) with _$LocalAlbum;

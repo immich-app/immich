@@ -1,6 +1,7 @@
+// ignore_for_file: annotate_overrides
+
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -13,17 +14,15 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 part 'timeline.state.freezed.dart';
 
 @freezed
-abstract class TimelineArgs with _$TimelineArgs {
-  const factory TimelineArgs({
-    required double maxWidth,
-    required double maxHeight,
-    @Default(kTimelineSpacing) double spacing,
-    @Default(kTimelineColumnCount) int columnCount,
-    @Default(false) bool showStorageIndicator,
-    @Default(false) bool withStack,
-    GroupAssetsBy? groupBy,
-  }) = _TimelineArgs;
-}
+class const TimelineArgs({
+  required final double maxWidth,
+  required final double maxHeight,
+  final double spacing = kTimelineSpacing,
+  final int columnCount = kTimelineColumnCount,
+  final bool showStorageIndicator = false,
+  final bool withStack = false,
+  final GroupAssetsBy? groupBy,
+}) with _$TimelineArgs;
 
 @freezed
 abstract class TimelineState with _$TimelineState {
