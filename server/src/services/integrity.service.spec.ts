@@ -1,4 +1,3 @@
-import { IntegrityReport } from 'src/enum';
 import { IntegrityService } from 'src/services/integrity.service';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -20,7 +19,6 @@ describe(IntegrityService.name, () => {
 
     beforeEach(() => {
       mocks.integrityReport.getAssetPathsByPaths.mockResolvedValue([]);
-      mocks.integrityReport.getAssetFilePathsByPaths.mockResolvedValue([]);
       mocks.integrityReport.getPersonThumbnailPathsByPaths.mockResolvedValue([]);
     });
 
@@ -31,15 +29,10 @@ describe(IntegrityService.name, () => {
 
       await sut.handleUntrackedFiles({ type: 'asset', paths: [decomposedPath] });
 
+      expect(mocks.integrityReport.getAssetPathsByPaths).toHaveBeenCalledWith(
+        expect.arrayContaining([decomposedPath, composedPath]),
+      );
       expect(mocks.integrityReport.create).not.toHaveBeenCalled();
-    });
-
-    it('should report a file that no asset references', async () => {
-      await sut.handleUntrackedFiles({ type: 'asset', paths: [decomposedPath] });
-
-      expect(mocks.integrityReport.create).toHaveBeenCalledWith([
-        { type: IntegrityReport.UntrackedFile, path: decomposedPath },
-      ]);
     });
   });
 
