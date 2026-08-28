@@ -83,7 +83,7 @@ AND NOT EXISTS (
     INNER JOIN local_album_entity la on laa.album_id = la.id
     WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
 )
-ORDER BY created_at DESC
+ORDER BY created_at DESC, name DESC
 LIMIT $limit;
 
 mergedBucket(:group_by AS INTEGER):

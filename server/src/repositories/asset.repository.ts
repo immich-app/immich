@@ -834,6 +834,7 @@ export class AssetRepository {
             'asset.status',
             sql`asset."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             sql`asset."createdAt" at time zone 'utc'`.as('createdAt'),
+            'asset.originalFileName',
             eb.fn('encode', ['asset.thumbhash', sql.lit('base64')]).as('thumbhash'),
             'asset_exif.projectionType',
             eb.fn
@@ -940,6 +941,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
             eb.fn.coalesce(eb.fn('array_agg', ['livePhotoVideoId']), sql.lit('{}')).as('livePhotoVideoId'),
             eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
+            eb.fn.coalesce(eb.fn('array_agg', ['originalFileName']), sql.lit('{}')).as('originalFileName'),
             eb.fn.coalesce(eb.fn('array_agg', ['localOffsetHours']), sql.lit('{}')).as('localOffsetHours'),
             eb.fn.coalesce(eb.fn('array_agg', ['createdAt']), sql.lit('{}')).as('createdAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),

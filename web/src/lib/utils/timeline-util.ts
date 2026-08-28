@@ -150,6 +150,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   return {
     id: assetResponse.id,
     ownerId: assetResponse.ownerId,
+    originalFileName: assetResponse.originalFileName,
     tags: assetResponse.tags?.map((tag) => tag.id),
     ratio,
     thumbhash: assetResponse.thumbhash,

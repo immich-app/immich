@@ -854,6 +854,7 @@ export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order
         // nulls last: assets without an asset_exif row would otherwise lead descending results
         return nullable ? ordered.nullsLast() : ordered;
       })
+      .orderBy('asset.originalFileName', direction)
       // id tie-break for deterministic pagination
       .orderBy('asset.id', direction)
   );

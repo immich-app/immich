@@ -726,6 +726,7 @@ List<OrderingTerm Function($RemoteAssetEntityTable)> _assetDateOrder(GroupAssets
   return [
     if (groupBy != GroupAssetsBy.none) (row) => order(row.effectiveCreatedAt(groupBy)),
     (row) => order(row.createdAt),
+    (row) => order(row.name),
   ];
 }
 

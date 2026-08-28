@@ -96,8 +96,17 @@ export class TimelineDay {
   }
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
-    const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.viewerAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
+    const isAscending = sortOrder === AssetOrder.Asc;
+    const sortFn = plainDateTimeCompare.bind(undefined, isAscending);
+    this.viewerAssets.sort((a, b) => {
+      const timeCmp = sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt);
+      if (timeCmp !== 0) {
+        return timeCmp;
+      }
+      const nameA = a.asset.originalFileName ?? '';
+      const nameB = b.asset.originalFileName ?? '';
+      return isAscending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
   }
 
   getFirstAsset() {

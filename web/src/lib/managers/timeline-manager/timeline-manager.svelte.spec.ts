@@ -441,6 +441,27 @@ describe('TimelineManager', () => {
       timelineManager.upsertAssets([{ ...fixture, isTrashed: true }]);
       expect(timelineManager.assetCount).toEqual(1);
     });
+
+    it('sorts assets by originalFileName when timestamps are identical', () => {
+      const timestamp = fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z');
+      const assetB = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: timestamp,
+          originalFileName: 'photo_B.jpg',
+        }),
+      );
+      const assetA = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: timestamp,
+          originalFileName: 'photo_A.jpg',
+        }),
+      );
+
+      timelineManager.upsertAssets([assetB, assetA]);
+      const day = getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.timelineDays[0];
+      const sortedFilenames = day?.getAssets().map((a) => a.originalFileName);
+      expect(sortedFilenames).toEqual(['photo_B.jpg', 'photo_A.jpg']);
+    });
   });
 
   describe('AssetUpdate events', () => {
