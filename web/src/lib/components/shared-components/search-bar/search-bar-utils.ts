@@ -179,3 +179,8 @@ export const getSearchTagsTitle = (tags: TagResponseDto[], selected: SvelteSet<s
 
   return selected.size === 1 ? tag : $t('tag_plus_more_tags', { values: { tag, count: selected.size - 1 } });
 };
+
+export const isPopoverContent = (event: FocusEvent): boolean => {
+  const element = event.relatedTarget;
+  return element instanceof Element && element.closest('[data-popover-content]') !== null;
+};
