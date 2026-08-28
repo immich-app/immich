@@ -97,7 +97,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     MemoryRepository,
     OcrRepository,
     PartnerRepository,
-    PeopleRepository,
+    PeopleDbRepository,
     RemoteAlbumRepository,
     RemoteAssetRepository,
     RemoteExifRepository,

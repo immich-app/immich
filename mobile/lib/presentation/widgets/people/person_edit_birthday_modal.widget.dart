@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
@@ -30,7 +30,7 @@ class _PersonNameEditFormState extends ConsumerState<PersonBirthdayEditForm> {
 
   Future<void> saveBirthday() async {
     try {
-      final result = await ref.read(peopleServiceProvider).updateBirthday(widget.person.id, _selectedDate);
+      final result = await ref.read(Store.people).updateBirthday(widget.person.id, _selectedDate);
 
       if (result != 0 && mounted) {
         context.pop<DateTime>(_selectedDate);

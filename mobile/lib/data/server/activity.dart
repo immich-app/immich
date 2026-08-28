@@ -1,8 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
 final activityApiRepositoryProvider = Provider(
@@ -12,11 +12,11 @@ final activityApiRepositoryProvider = Provider(
 class ActivityApiRepository extends ApiRepository {
   final ActivitiesApi _api;
 
-  ActivityApiRepository(this._api);
+  const ActivityApiRepository(this._api);
 
   Future<List<Activity>> getAll(String albumId, {String? assetId}) async {
     final response = await checkNull(_api.getActivities(albumId, assetId: assetId));
-    return response.map(_toActivity).toList();
+    return response.map((dto) => _toActivity(dto, albumId)).toList();
   }
 
   Future<Activity> create(String albumId, ActivityType type, {String? assetId, String? comment}) async {
@@ -27,10 +27,11 @@ class ActivityApiRepository extends ApiRepository {
       comment: comment == null ? const Optional.absent() : Optional.present(comment),
     );
     final response = await checkNull(_api.createActivity(dto));
-    return _toActivity(response);
+    return _toActivity(response, albumId);
   }
 
   Future<void> delete(String id) {
+    // TODO(agg23): I think this is a bug; `checkNull` will always throw here as the response is void (null)
     return checkNull(_api.deleteActivity(id));
   }
 
@@ -39,8 +40,9 @@ class ActivityApiRepository extends ApiRepository {
     return ActivityStats(comments: response.comments);
   }
 
-  static Activity _toActivity(ActivityResponseDto dto) => Activity(
+  static Activity _toActivity(ActivityResponseDto dto, String albumId) => Activity(
     id: dto.id,
+    albumId: albumId,
     createdAt: dto.createdAt,
     type: dto.type == ReactionType.comment ? ActivityType.comment : ActivityType.like,
     user: UserConverter.fromSimpleUserDto(dto.user),

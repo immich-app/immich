@@ -1,14 +1,18 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/providers/activity_service.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
@@ -28,20 +32,20 @@ class CommentBubble extends ConsumerWidget {
     final isLike = activity.type == ActivityType.like;
     final bgColor = isOwn ? context.colorScheme.primaryContainer : context.colorScheme.surfaceContainer;
 
-    final activityNotifier = ref.watch(
-      albumActivityProvider((album.id, isAssetActivity ? activity.assetId : null)).notifier,
-    );
-
     Future<void> openAssetViewer() async {
-      final activityService = ref.read(activityServiceProvider);
-      final route = await activityService.buildAssetViewerRoute(activity.assetId!, ref);
-      if (!context.mounted) {
+      final asset = await ref.read(assetServiceProvider).getRemoteAsset(activity.assetId!);
+      if (asset == null || !context.mounted) {
         return;
       }
 
-      if (route != null) {
-        await context.pushRoute(route);
-      }
+      AssetViewer.setAsset(ref, asset);
+      await context.pushRoute(
+        AssetViewerRoute(
+          initialIndex: 0,
+          timelineService: ref.read(timelineFactoryProvider).fromAssets([asset], TimelineOrigin.albumActivities),
+          currentAlbum: ref.read(currentRemoteAlbumProvider),
+        ),
+      );
     }
 
     // avatar (hidden for own messages)
@@ -112,7 +116,7 @@ class CommentBubble extends ConsumerWidget {
     final List<Widget> contentChildren = [thumbnail, likes, commentBubble].whereType<Widget>().toList();
 
     return DismissibleActivity(
-      onDismiss: canDelete ? (id) async => await activityNotifier.removeActivity(id) : null,
+      onDismiss: canDelete ? (id) async => await ref.read(Store.activity).remove(activity) : null,
       activity.id,
       Align(
         alignment: isOwn ? Alignment.centerRight : Alignment.centerLeft,

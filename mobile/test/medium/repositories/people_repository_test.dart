@@ -5,11 +5,11 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late PeopleRepository sut;
+  late PeopleDbRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = PeopleRepository(ctx.db);
+    sut = PeopleDbRepository(ctx.db);
   });
 
   tearDown(() async {
