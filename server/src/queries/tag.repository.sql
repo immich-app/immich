@@ -78,21 +78,15 @@ order by
   "value"
 
 -- TagRepository.getIdsForAssets
-select distinct
-  "tagId" as "tagId",
-  (
-    select
-      coalesce(array_agg(distinct ta."assetId"), '{}')
-    from
-      tag_asset as ta
-    where
-      ta."tagId" = tag_asset."tagId"
-      and ta."assetId" in ($1)
-  ) as "assetIds"
+select
+  "tagId",
+  array_agg("assetId") as "assetIds"
 from
   "tag_asset"
 where
-  "assetId" in ($2)
+  "assetId" in ($1)
+group by
+  "tagId"
 
 -- TagRepository.create
 with
@@ -173,7 +167,7 @@ returning
 -- TagRepository.deleteAssetIds
 delete from "tag_asset"
 where
-  ("tagId", "assetId") IN (($1, $2))
+  ("tagId", "assetId") in (($1, $2))
 returning
   *
 

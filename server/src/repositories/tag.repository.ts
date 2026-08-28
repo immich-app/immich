@@ -52,16 +52,10 @@ export class TagRepository {
   getIdsForAssets(assetIds: string[]) {
     return this.db
       .selectFrom('tag_asset')
-      .select([
-        sql<string>`distinct "tagId"`.as('tagId'),
-        sql<string[]>`(
-            select coalesce(array_agg(distinct ta."assetId"), '{}')
-            from tag_asset as ta
-            where ta."tagId" = tag_asset."tagId"
-            and ta."assetId" in (${sql.join(assetIds, sql`, `)})
-          )`.as('assetIds'),
-      ])
+      .select('tagId')
+      .select((eb) => eb.fn.agg<string[]>('array_agg', ['assetId']).as('assetIds'))
       .where('assetId', 'in', assetIds)
+      .groupBy('tagId')
       .execute();
   }
 
@@ -203,11 +197,12 @@ export class TagRepository {
 
     return this.db
       .deleteFrom('tag_asset')
-      .where(
-        sql<boolean>`("tagId","assetId") IN (${sql.join(
-          items.map(({ tagId, assetId }) => sql`(${tagId}, ${assetId})`),
-          sql`, `,
-        )})`,
+      .where(({ eb, refTuple, tuple }) =>
+        eb(
+          refTuple('tagId', 'assetId'),
+          'in',
+          items.map(({ tagId, assetId }) => tuple(tagId, assetId)),
+        ),
       )
       .returningAll()
       .execute();
