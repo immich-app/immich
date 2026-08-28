@@ -77,6 +77,17 @@ describe(SharedLinkController.name, () => {
       );
       expect(service.create).not.toHaveBeenCalled();
     });
+
+    it('should allow an empty assetIds array for share type Album', async () => {
+      const albumId = newUuid();
+      await request(ctx.getHttpServer())
+        .post('/shared-links')
+        .send({ type: SharedLinkType.Album, albumId, assetIds: [] });
+      expect(service.create).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({ type: SharedLinkType.Album, albumId }),
+      );
+    });
   });
 
   describe('DELETE /shared-links/:id/assets', () => {
