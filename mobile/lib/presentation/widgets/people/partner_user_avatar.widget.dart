@@ -12,12 +12,12 @@ class PartnerUserAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final url = "${ref.watch(authSessionProvider.select((s) => s.serverEndpoint))}/users/$userId/profile-image";
+    final serverEndpoint = ref.watch(authSessionProvider.select((s) => s.serverEndpoint));
     final nameFirstLetter = name.isNotEmpty ? name[0] : "";
     return CircleAvatar(
       radius: 16,
       backgroundColor: context.primaryColor.withAlpha(50),
-      foregroundImage: RemoteImageProvider(url: url),
+      foregroundImage: RemoteImageProvider(url: "$serverEndpoint/users/$userId/profile-image"),
       // silence errors if user has no profile image, use initials as fallback
       onForegroundImageError: (exception, stackTrace) {},
       child: Text(nameFirstLetter.toUpperCase()),
