@@ -47,7 +47,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
 
-  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
+  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.id).notifier);
 
   @override
   void initState() {
@@ -66,7 +66,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
-      _notifier.pause();
+      unawaited(_notifier.pause());
       return;
     }
 
@@ -83,7 +83,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
         if (_shouldPlayOnForeground) {
@@ -91,7 +91,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         }
       case AppLifecycleState.paused:
         _shouldPlayOnForeground = await _controller?.isPlaying() ?? true;
-        if (_shouldPlayOnForeground) {
+        if (_shouldPlayOnForeground && mounted) {
           await _notifier.pause();
         }
       default:
@@ -112,11 +112,12 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final localFilePath = widget.localFilePath;
       if (localFilePath != null) {
         final file = File(localFilePath);
+        // ignore: avoid_slow_async_io
         if (!await file.exists()) {
           throw Exception('No file found for the video');
         }
 
-        return VideoSource.init(
+        return await VideoSource.init(
           path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
           type: VideoSourceType.file,
         );
@@ -140,7 +141,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
         // Pass a file:// URI so Android's Uri.parse doesn't
         // interpret characters like '#' as fragment identifiers.
-        return VideoSource.init(
+        return await VideoSource.init(
           path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
           type: VideoSourceType.file,
         );
@@ -149,12 +150,20 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final remoteAsset = videoAsset as RemoteAsset;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+      if (!context.mounted) {
+        return null;
+      }
+
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;
       final String videoUrl = '$serverEndpoint/assets/$assetId/$postfixUrl';
 
-      return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
+      return await VideoSource.init(
+        path: videoUrl,
+        type: VideoSourceType.network,
+        headers: ApiService.getRequestHeaders(),
+      );
     } catch (error) {
       _log.severe('Error creating video source for asset ${videoAsset.name}: $error');
       return null;
@@ -198,7 +207,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     return localAsset;
   }
 
-  void _onPlaybackReady() async {
+  Future<void> _onPlaybackReady() async {
     if (!mounted || !widget.isCurrent) {
       return;
     }
@@ -257,7 +266,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller?.onPlaybackEnded.removeListener(_onPlaybackEnded);
   }
 
-  void _loadVideo() async {
+  Future<void> _loadVideo() async {
     final nc = _controller;
     if (nc == null || nc.videoSource != null || !mounted) {
       return;
@@ -268,10 +277,13 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    await _notifier.load(source);
+    // Grab refs to prevent reading after dispose
     final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
-    await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
-    await _notifier.setVolume(1);
+    final localNotifier = _notifier;
+
+    await localNotifier.load(source);
+    await localNotifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
+    await localNotifier.setVolume(1);
   }
 
   void _initController(NativeVideoPlayerController nc) {
@@ -289,14 +301,14 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller = nc;
 
     if (widget.isCurrent) {
-      _loadVideo();
+      unawaited(_loadVideo());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
+    final status = ref.watch(videoPlayerProvider(widget.asset.id).select((v) => v.status));
 
     return IgnorePointer(
       child: Stack(

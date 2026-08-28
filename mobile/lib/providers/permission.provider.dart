@@ -1,3 +1,5 @@
+// ignore_for_file: use-ref-and-state-synchronously
+
 import 'dart:async';
 import 'dart:io';
 
@@ -10,7 +12,7 @@ class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
   NotificationPermissionNotifier()
     : super(Platform.isAndroid ? PermissionStatus.granted : PermissionStatus.restricted) {
     // Sets the initial state
-    getNotificationPermission().then((p) => state = p);
+    unawaited(getNotificationPermission().then((p) => state = p));
   }
 
   /// Requests the notification permission

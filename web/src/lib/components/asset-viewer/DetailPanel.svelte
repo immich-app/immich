@@ -191,9 +191,9 @@
               </a>
             </p>
           {/if}
-          {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
+          {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
             <div class="flex gap-2 text-sm">
-              {#if asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth}
+              {#if asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth}
                 {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                   <p>
                     {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
@@ -324,7 +324,7 @@
     </div>
   {/if}
 
-  {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
+  {#if currentAlbum && currentAlbum.albumUsers.length > 1 && asset.owner}
     <section class="mt-4 px-6 dark:text-immich-dark-fg">
       <Text size="small" color="muted">{$t('shared_by')}</Text>
       <div class="flex gap-4 pt-4">

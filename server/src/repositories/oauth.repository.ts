@@ -22,6 +22,7 @@ export type OAuthConfig = {
   clientId: string;
   clientSecret?: string;
   issuerUrl: string;
+  accountManagementUrl: string;
   endSessionEndpoint: string;
   mobileOverrideEnabled: boolean;
   mobileRedirectUri: string;
@@ -68,7 +69,7 @@ export class OAuthRepository {
       params.code_challenge_method = 'S256';
     }
 
-    const url = buildAuthorizationUrl(client, params).toString();
+    const url = buildAuthorizationUrl(client, params).href;
 
     return { url, state, codeVerifier };
   }
@@ -83,7 +84,7 @@ export class OAuthRepository {
     url: string,
     expectedState: string,
     codeVerifier: string,
-  ): Promise<{ profile: OAuthProfile; sid?: string }> {
+  ): Promise<{ profile: OAuthProfile; sid?: string; idToken?: string }> {
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
@@ -111,7 +112,7 @@ export class OAuthRepository {
         }
       }
 
-      return { profile, sid };
+      return { profile, sid, idToken: tokens.id_token };
     } catch (error: Error | any) {
       if (error.message.includes('unexpected JWT alg received')) {
         this.logger.warn(
@@ -122,8 +123,7 @@ export class OAuthRepository {
         );
       }
 
-      this.logger.error(`OAuth login failed: ${error.message}`);
-      this.logger.error(error);
+      this.logger.error('OAuth login failed', error);
 
       throw new Error('OAuth login failed', { cause: error });
     }
@@ -135,10 +135,7 @@ export class OAuthRepository {
       throw new Error(`Failed to fetch picture: ${response.statusText}`);
     }
 
-    return {
-      data: await response.arrayBuffer(),
-      contentType: response.headers.get('content-type'),
-    };
+    return response.arrayBuffer();
   }
 
   private jwksClients: Map<string, JWTVerifyGetKey> = new Map(); // useful for caching and performnce
@@ -173,6 +170,7 @@ export class OAuthRepository {
       // Validate specific Logout Token claims (RFC 8963):
       // "events" claim must exist and contain the backchannel-logout event
       const events = payload.events as Record<string, any> | undefined;
+      // eslint-disable-next-line unicorn/prefer-https
       if (!events || !events['http://schemas.openid.net/event/backchannel-logout']) {
         throw new Error('Missing backchannel-logout event claim');
       }
@@ -221,7 +219,7 @@ export class OAuthRepository {
         },
       );
     } catch (error: any | AggregateError) {
-      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
+      this.logger.error('Error in OAuth discovery', error);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
     }
   }

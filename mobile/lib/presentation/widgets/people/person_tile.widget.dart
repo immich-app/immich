@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 
-// TODO: Only pass person object, instead of id and name when PersonDto and DriftPerson are unified
 class PersonTile extends StatelessWidget {
   final bool isSelected;
-  final String personId;
-  final String personName;
+  final Person person;
   final double imageSize;
   final Function() onTap;
 
   const PersonTile({
     super.key,
     required this.isSelected,
-    required this.personId,
-    required this.personName,
+    required this.person,
     this.imageSize = 60.0,
     required this.onTap,
   });
@@ -29,7 +29,7 @@ class PersonTile extends StatelessWidget {
         title: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: Text(
-            personName,
+            person.name.nullIfEmpty ?? context.t.no_name,
             style: context.textTheme.bodyLarge?.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -44,7 +44,7 @@ class PersonTile extends StatelessWidget {
             elevation: 3,
             child: CircleAvatar(
               maxRadius: imageSize / 2,
-              backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(personId)),
+              backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt)),
             ),
           ),
         ),

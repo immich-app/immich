@@ -1,31 +1,33 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
-class DriftPersonMergeForm extends ConsumerStatefulWidget {
-  final DriftPerson person;
-  final DriftPerson mergeTarget;
+class PersonMergeForm extends ConsumerStatefulWidget {
+  final Person person;
+  final Person mergeTarget;
 
-  const DriftPersonMergeForm({super.key, required this.person, required this.mergeTarget});
+  const PersonMergeForm({super.key, required this.person, required this.mergeTarget});
 
   @override
-  ConsumerState<DriftPersonMergeForm> createState() => _DriftPersonMergeFormState();
+  ConsumerState<PersonMergeForm> createState() => _PersonMergeFormState();
 }
 
-class _DriftPersonMergeFormState extends ConsumerState<DriftPersonMergeForm> {
+class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
   bool _isMerging = false;
 
-  Future<void> _mergePeople(BuildContext context) async {
+  Future<void> _mergePeople() async {
     setState(() => _isMerging = true);
     try {
       await ref
-          .read(driftPeopleServiceProvider)
+          .read(peopleServiceProvider)
           .mergePeople(targetPersonId: widget.mergeTarget.id, mergePersonIds: [widget.person.id]);
 
       if (mounted) {
@@ -37,7 +39,7 @@ class _DriftPersonMergeFormState extends ConsumerState<DriftPersonMergeForm> {
           toastType: ToastType.success,
         );
       }
-      ref.invalidate(driftGetAllPeopleProvider);
+      ref.invalidate(getAllPeopleProvider);
     } catch (e) {
       if (mounted) {
         setState(() => _isMerging = false);
@@ -107,7 +109,7 @@ class _DriftPersonMergeFormState extends ConsumerState<DriftPersonMergeForm> {
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
-                  onPressed: _isMerging ? null : () => _mergePeople(context),
+                  onPressed: _isMerging ? null : () => unawaited(_mergePeople()),
                   child: _isMerging
                       ? SizedBox(
                           height: 20,

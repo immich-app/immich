@@ -1,30 +1,31 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 
-class DriftPersonNameEditForm extends ConsumerStatefulWidget {
-  final DriftPerson person;
+class PersonNameEditForm extends ConsumerStatefulWidget {
+  final Person person;
 
-  const DriftPersonNameEditForm({super.key, required this.person});
+  const PersonNameEditForm({super.key, required this.person});
 
   @override
-  ConsumerState<DriftPersonNameEditForm> createState() => _DriftPersonNameEditFormState();
+  ConsumerState<PersonNameEditForm> createState() => _PersonNameEditFormState();
 }
 
-class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditForm> {
+class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
   late TextEditingController _formController;
-  List<DriftPerson> _filteredPeople = [];
+  List<Person> _filteredPeople = [];
 
   @override
   void initState() {
@@ -38,35 +39,32 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
     super.dispose();
   }
 
-  void onMerge({required BuildContext context, required DriftPerson person, required DriftPerson mergeTarget}) async {
-    DriftPerson? response = await showMergeModal(context, person, mergeTarget);
-    if (response != null) {
-      if (mounted) {
-        context.pop<DriftPerson?>(response);
-      }
+  Future<void> onMerge({required BuildContext context, required Person person, required Person mergeTarget}) async {
+    final Person? response = await showMergeModal(context, person, mergeTarget);
+    if (response != null && mounted) {
+      this.context.pop<Person?>(response);
     }
-    return;
   }
 
-  void onEdit(DriftPerson person, String newName) async {
+  Future<void> onEdit(Person person, String newName) async {
     try {
-      final result = await ref.read(driftPeopleServiceProvider).updateName(person.id, newName);
+      final result = await ref.read(peopleServiceProvider).updateName(person.id, newName);
       if (result != 0) {
-        ref.invalidate(driftGetAllPeopleProvider);
+        ref.invalidate(getAllPeopleProvider);
         if (mounted) {
-          context.pop<DriftPerson>(person);
+          context.pop<Person>(person);
         }
       }
     } catch (error) {
       dPrint(() => 'Error updating name: $error');
 
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
 
       ImmichToast.show(
         context: context,
-        msg: 'scaffold_body_error_occurred'.t(context: context),
+        msg: context.t.scaffold_body_error_occurred,
         gravity: ToastGravity.BOTTOM,
         toastType: ToastType.error,
       );
@@ -74,11 +72,11 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
   }
 
   // TODO: Add diacritic filtering?
-  void _filterPeople(List<DriftPerson> people, String query) {
+  void _filterPeople(List<Person> people, String query) {
     final queryParts = query.toLowerCase().split(' ').where((e) => e.isNotEmpty).toList();
 
-    List<DriftPerson> startsWithMatches = [];
-    List<DriftPerson> containsMatches = [];
+    final startsWithMatches = <Person>[];
+    final containsMatches = <Person>[];
 
     for (final p in people) {
       if (p.id == widget.person.id) {
@@ -110,11 +108,11 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
 
   @override
   Widget build(BuildContext context) {
-    final curatedPeople = ref.watch(driftGetAllPeopleProvider);
-    List<DriftPerson> people = [];
+    final curatedPeople = ref.watch(getAllPeopleProvider);
+    List<Person> people = [];
 
     return AlertDialog(
-      title: const Text("edit_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+      title: Text(context.t.edit_name, style: const TextStyle(fontWeight: FontWeight.bold)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -124,7 +122,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
               controller: _formController,
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
-                hintText: 'add_a_name'.tr(),
+                hintText: context.t.add_a_name,
                 border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
               onChanged: (value) => _filterPeople(people, value),
@@ -163,10 +161,9 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
                                     _formController.selection = TextSelection.fromPosition(
                                       TextPosition(offset: _formController.text.length),
                                     );
-                                    onMerge(context: context, person: widget.person, mergeTarget: person);
+                                    unawaited(onMerge(context: context, person: widget.person, mergeTarget: person));
                                   },
-                                  personName: person.name,
-                                  personId: person.id,
+                                  person: person,
                                 );
                               }).toList(),
                             ),
@@ -187,16 +184,16 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
         TextButton(
           onPressed: () => context.pop(null),
           child: Text(
-            "cancel",
+            context.t.cancel,
             style: TextStyle(color: Colors.red[300], fontWeight: FontWeight.bold),
-          ).tr(),
+          ),
         ),
         TextButton(
-          onPressed: () => onEdit(widget.person, _formController.text),
+          onPressed: () => unawaited(onEdit(widget.person, _formController.text)),
           child: Text(
-            "save",
+            context.t.save,
             style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold),
-          ).tr(),
+          ),
         ),
       ],
     );

@@ -29,7 +29,7 @@ allowBuilds:
   postman-code-generators: false
 overrides:
   canvas: 3.2.3
-  sharp: ^0.34.5
+  sharp: ^0.35.3
 packageExtensions:
   nestjs-kysely:
     dependencies:
@@ -66,4 +66,5 @@ injectWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
-  - '@immich/ui@0.81.1'
+  - '@immich/ui@0.86.0'
+  - '@immich/sql-tools@0.6.3'

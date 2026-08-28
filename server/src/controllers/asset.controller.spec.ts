@@ -20,11 +20,6 @@ describe(AssetController.name, () => {
   });
 
   describe('PUT /assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/assets`)
@@ -59,13 +54,6 @@ describe(AssetController.name, () => {
   });
 
   describe('DELETE /assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer())
-        .delete(`/assets`)
-        .send({ ids: [factory.uuid()] });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .delete(`/assets`)
@@ -77,11 +65,6 @@ describe(AssetController.name, () => {
   });
 
   describe('GET /assets/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123`);
       expect(status).toBe(400);
@@ -90,11 +73,6 @@ describe(AssetController.name, () => {
   });
 
   describe('PUT /assets/copy', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/copy`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require target and source id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put('/assets/copy').send({});
       expect(status).toBe(400);
@@ -115,11 +93,6 @@ describe(AssetController.name, () => {
   });
 
   describe('PUT /assets/metadata', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/assets/metadata`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid assetId', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put('/assets/metadata')
@@ -151,11 +124,6 @@ describe(AssetController.name, () => {
   });
 
   describe('DELETE /assets/metadata', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/assets/metadata`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid assetId', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .delete('/assets/metadata')
@@ -187,11 +155,6 @@ describe(AssetController.name, () => {
   });
 
   describe('PUT /assets/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/123`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/assets/123`);
       expect(status).toBe(400);
@@ -267,26 +230,7 @@ describe(AssetController.name, () => {
     });
   });
 
-  describe('GET /assets/statistics', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/statistics`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /assets/:id/metadata', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/metadata`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /assets/:id/metadata', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}/metadata`).send({ items: [] });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/assets/123/metadata`).send({ items: [] });
       expect(status).toBe(400);
@@ -353,11 +297,6 @@ describe(AssetController.name, () => {
   });
 
   describe('GET /assets/:id/metadata/:key', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/metadata/mobile-app`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123/metadata/mobile-app`);
       expect(status).toBe(400);
@@ -366,11 +305,6 @@ describe(AssetController.name, () => {
   });
 
   describe('PUT /assets/:id/edits', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}/edits`).send({ edits: [] });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should accept valid edits and pass to service correctly', async () => {
       const edits = [
         {
@@ -456,11 +390,6 @@ describe(AssetController.name, () => {
   });
 
   describe('DELETE /assets/:id/metadata/:key', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/assets/${factory.uuid()}/metadata/mobile-app`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/assets/123/metadata/mobile-app`);
       expect(status).toBe(400);

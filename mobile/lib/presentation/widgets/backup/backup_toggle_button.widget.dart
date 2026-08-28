@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 
 class BackupToggleButton extends ConsumerStatefulWidget {
@@ -55,13 +55,13 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
   @override
   Widget build(BuildContext context) {
-    final uploadTasks = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
+    final uploadTasks = ref.watch(backupProvider.select((state) => state.uploadItems));
 
-    final isSyncing = ref.watch(driftBackupProvider.select((state) => state.isSyncing));
+    final isSyncing = ref.watch(backupProvider.select((state) => state.isSyncing));
 
-    final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
+    final iCloudProgress = ref.watch(backupProvider.select((state) => state.iCloudDownloadProgress));
 
-    final errorCount = ref.watch(driftBackupProvider.select((state) => state.errorCount));
+    final errorCount = ref.watch(backupProvider.select((state) => state.errorCount));
 
     final isProcessing = uploadTasks.isNotEmpty || isSyncing || iCloudProgress.isNotEmpty;
 
@@ -135,7 +135,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                           children: [
                             Flexible(
                               child: Text(
-                                "enable_backup".t(context: context),
+                                context.t.enable_backup,
                                 style: context.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: context.primaryColor,
@@ -148,7 +148,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
+                              context.t.upload_error_with_count(count: errorCount),
                               style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
                             ),
                           ),

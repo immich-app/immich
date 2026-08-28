@@ -19,9 +19,12 @@ describe(TimelineService.name, () => {
       await expect(sut.getTimeBuckets(authStub.admin, {})).resolves.toEqual(
         expect.arrayContaining([{ timeBucket: 'bucket', count: 1 }]),
       );
-      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith({
-        userIds: [authStub.admin.user.id],
-      });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        {
+          userIds: [authStub.admin.user.id],
+        },
+        authStub.admin,
+      );
     });
 
     it('should pass bbox options to repository when all bbox fields are provided', async () => {
@@ -36,10 +39,13 @@ describe(TimelineService.name, () => {
         },
       });
 
-      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith({
-        userIds: [authStub.admin.user.id],
-        bbox: { west: -70, south: -30, east: 120, north: 55 },
-      });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        {
+          userIds: [authStub.admin.user.id],
+          bbox: { west: -70, south: -30, east: 120, north: 55 },
+        },
+        authStub.admin,
+      );
     });
   });
 

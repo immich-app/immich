@@ -204,10 +204,12 @@ describe(HlsService.name, () => {
       mocks.videoStream.getForMainPlaylist.mockResolvedValue(asset);
       mocks.crypto.randomUUID.mockReturnValue(sessionId);
       mocks.websocket.serverSend.mockImplementation((event, ...rest) => {
-        if (event === 'HlsSessionRequest') {
-          const { sessionId: id } = rest[0] as { sessionId: string };
-          queueMicrotask(() => sut.onSessionResult({ sessionId: id }));
+        if (event !== 'HlsSessionRequest') {
+          return;
         }
+
+        const { sessionId: id } = rest[0] as { sessionId: string };
+        queueMicrotask(() => sut.onSessionResult({ sessionId: id }));
       });
     };
 

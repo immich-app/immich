@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { PassThrough, Readable } from 'node:stream';
-import { defaults, SystemConfig } from 'src/config';
+import { Duplex, PassThrough, Readable } from 'node:stream';
 import { StorageCore } from 'src/cores/storage.core';
+import { defaults, SystemConfig } from 'src/dtos/config.dto';
 import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { DatabaseBackupService } from 'src/services/database-backup.service';
@@ -250,6 +250,25 @@ describe(DatabaseBackupService.name, () => {
         throw new Error('error');
       });
       await expect(sut.handleBackupDatabase()).rejects.toThrow('error');
+    });
+
+    it('should destroy the spawned processes if the write stream fails', async () => {
+      const spawned: Duplex[] = [];
+      mocks.process.spawnDuplexStream.mockImplementation(() => {
+        const duplex = mockDuplex()('command', 0, 'data', '');
+        spawned.push(duplex);
+        return duplex;
+      });
+      mocks.storage.createWriteStream.mockImplementation(() => {
+        throw new Error('ENOENT: no such file or directory');
+      });
+
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('ENOENT');
+
+      expect(spawned).toHaveLength(2);
+      for (const stream of spawned) {
+        expect(stream.destroyed).toBe(true);
+      }
     });
 
     it('should fail if rename fails', async () => {
@@ -557,6 +576,48 @@ describe(DatabaseBackupService.name, () => {
               "--output=/dev/null",
             ],
             "bin": "/usr/lib/postgresql/14/bin/psql",
+            "databaseMajorVersion": 14,
+            "databasePassword": "",
+            "databaseUsername": "postgres",
+            "databaseVersion": "14.10 (Debian 14.10-1.pgdg120+1)",
+          }
+        `);
+      });
+    });
+
+    describe('using an unparsable URL', () => {
+      beforeEach(() => {
+        // unix domain socket URLs cannot be parsed by `new URL`
+        const dbUrl = 'socket://mypg:mypwd@/var/run/postgresql?db=myimmich';
+        const configMock = {
+          getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+          getWorker: () => ImmichWorker.Api,
+          isDev: () => false,
+        } as unknown as any;
+
+        sut = new DatabaseBackupService(
+          mocks.logger as never,
+          mocks.storage as never,
+          configMock as never,
+          mocks.systemMetadata as never,
+          mocks.process,
+          mocks.database as never,
+          mocks.user as never,
+          mocks.cron as never,
+          mocks.job as never,
+          void 0 as never,
+        );
+      });
+
+      it('should fallback to reasonable defaults', async () => {
+        await expect(sut.buildPostgresLaunchArguments('pg_dump')).resolves.toMatchInlineSnapshot(`
+          {
+            "args": [
+              "socket://mypg:mypwd@/var/run/postgresql?db=myimmich",
+              "--clean",
+              "--if-exists",
+            ],
+            "bin": "/usr/lib/postgresql/14/bin/pg_dump",
             "databaseMajorVersion": 14,
             "databasePassword": "",
             "databaseUsername": "postgres",

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,7 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -25,7 +27,7 @@ class PeopleDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final peopleFuture = ref.watch(driftPeopleAssetProvider(asset.id));
+    final peopleFuture = ref.watch(peopleAssetProvider(asset.id));
 
     return peopleFuture.when(
       data: (people) {
@@ -37,7 +39,7 @@ class PeopleDetails extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
                 child: Text(
-                  "people".t(context: context),
+                  context.t.people,
                   style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ),
@@ -56,34 +58,36 @@ class PeopleDetails extends ConsumerWidget {
                           final previousRouteArgs = previousRouteData?.arguments;
 
                           // Prevent circular navigation
-                          if (previousRouteArgs is DriftPersonRouteArgs &&
-                              previousRouteArgs.initialPerson.id == person.id) {
+                          if (previousRouteArgs is PersonRouteArgs && previousRouteArgs.initialPerson.id == person.id) {
                             context.back();
                             return;
                           }
                           ContextHelper(context).pop();
-                          context.pushRoute(DriftPersonRoute(initialPerson: person));
+                          unawaited(context.pushRoute(PersonRoute(initialPerson: person)));
                         },
                         onNameTap: () async {
                           // Needs to be before the modal, as this overwrites the previousRouteDataProvider
                           final previousRouteData = ref.read(previousRouteDataProvider);
                           final previousRouteArgs = previousRouteData?.arguments;
-                          final previousPersonId = previousRouteArgs is DriftPersonRouteArgs
+                          final previousPersonId = previousRouteArgs is PersonRouteArgs
                               ? previousRouteArgs.initialPerson.id
                               : null;
 
-                          DriftPerson? newPerson = await showNameEditModal(context, person);
+                          final Person? newPerson = await showNameEditModal(context, person);
 
                           // If the name edit resulted in a new person (e.g. from merging)
                           // And if we are currently nested below the drift person page if said
                           // old person id, we need to pop, otherwise the timeline provider complains
                           // and the asset viewer goes black
                           // TODO: Preferably we would replace the timeline provider, and let it listen to the new person id (Relevant function is the ```TimelineService person(String userId, String personId)``` in timeline.service.dart)
-                          if (newPerson != null && newPerson.id != person.id && previousPersonId == person.id) {
+                          if (newPerson != null &&
+                              newPerson.id != person.id &&
+                              previousPersonId == person.id &&
+                              context.mounted) {
                             await context.maybePop();
                           }
 
-                          ref.invalidate(driftPeopleAssetProvider(asset.id));
+                          ref.invalidate(peopleAssetProvider(asset.id));
                         },
                       ),
                   ],
@@ -95,14 +99,14 @@ class PeopleDetails extends ConsumerWidget {
           duration: Durations.short4,
         );
       },
-      error: (error, stack) => Text("error_loading_people".t(context: context), style: context.textTheme.bodyMedium),
+      error: (error, stack) => Text(context.t.errors.failed_to_load_people, style: context.textTheme.bodyMedium),
       loading: () => const SizedBox.shrink(),
     );
   }
 }
 
 class _Avatar extends StatelessWidget {
-  final DriftPerson person;
+  final Person person;
   final DateTime assetFileCreatedAt;
   final VoidCallback? onTap;
   final VoidCallback? onNameTap;
@@ -129,7 +133,9 @@ class _Avatar extends StatelessWidget {
                   elevation: 3,
                   child: CircleAvatar(
                     maxRadius: imageSize / 2,
-                    backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                    backgroundImage: RemoteImageProvider(
+                      url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                    ),
                   ),
                 ),
               ),
@@ -139,7 +145,7 @@ class _Avatar extends StatelessWidget {
               GestureDetector(
                 onTap: () => onNameTap?.call(),
                 child: Text(
-                  "add_a_name".t(context: context),
+                  context.t.add_a_name,
                   style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

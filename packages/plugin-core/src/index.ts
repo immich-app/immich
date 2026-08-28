@@ -2,7 +2,48 @@ import { wrapper } from '@immich/plugin-sdk';
 import { AssetVisibility } from '@immich/sdk';
 import type { Manifest } from '../dist/index.d.ts';
 
+type MatchValueConfig = {
+  pattern: string;
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
+  caseSensitive?: boolean;
+};
+
+const matchValueResult = (value: string, config: MatchValueConfig) => {
+  const { pattern, matchType = 'contains', caseSensitive = false } = config;
+  const searchName = caseSensitive ? value : value.toLowerCase();
+  const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
+
+  switch (matchType) {
+    case 'contains': {
+      return { workflow: { continue: searchName.includes(searchPattern) } };
+    }
+
+    case 'exact': {
+      return { workflow: { continue: searchName === searchPattern } };
+    }
+
+    case 'startsWith': {
+      return { workflow: { continue: searchName.startsWith(searchPattern) } };
+    }
+
+    case 'regex': {
+      const flags = caseSensitive ? '' : 'i';
+      const regex = new RegExp(searchPattern, flags);
+      return { workflow: { continue: regex.test(value) } };
+    }
+
+    default: {
+      return {};
+    }
+  }
+};
+
 const methods = wrapper<Manifest>({
+  assetAddTags: ({ config, data, functions }) => {
+    functions.bulkTagAssets({ assetIds: [data.asset.id], tagIds: config.tags });
+    return {};
+  },
+
   assetAddToAlbums: ({ config, data, functions }) => {
     const assetId = data.asset.id;
 
@@ -53,39 +94,8 @@ const methods = wrapper<Manifest>({
     }
   },
 
-  assetFileFilter: ({ data, config }) => {
-    const { pattern, matchType = 'contains', caseSensitive = false } = config;
-
-    const { asset } = data;
-
-    const fileName = asset.originalFileName || '';
-    const searchName = caseSensitive ? fileName : fileName.toLowerCase();
-    const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
-
-    switch (matchType) {
-      case 'contains': {
-        return { workflow: { continue: searchName.includes(searchPattern) } };
-      }
-
-      case 'exact': {
-        return { workflow: { continue: searchName === searchPattern } };
-      }
-
-      case 'startsWith': {
-        return { workflow: { continue: searchName.startsWith(searchPattern) } };
-      }
-
-      case 'regex': {
-        const flags = caseSensitive ? '' : 'i';
-        const regex = new RegExp(searchPattern, flags);
-        return { workflow: { continue: regex.test(fileName) } };
-      }
-
-      default: {
-        return {};
-      }
-    }
-  },
+  assetFileFilter: ({ data, config }) =>
+    matchValueResult(config.usePath ? data.asset.originalPath : data.asset.originalFileName, config),
 
   assetLocationFilter: ({ config, data }) => {
     if (
@@ -96,10 +106,10 @@ const methods = wrapper<Manifest>({
       return { workflow: { continue: false } };
     }
 
-    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
-    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+    const configLat = config.coordinate?.latitude;
+    const configLon = config.coordinate?.longitude;
 
-    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+    if (configLat === undefined || configLon === undefined) {
       return { workflow: { continue: true } };
     }
 
@@ -124,6 +134,35 @@ const methods = wrapper<Manifest>({
     return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
   },
 
+  assetExifFilter: ({ config, data }) => {
+    if (!data.asset.exifInfo || data.asset.exifInfo[config.property] === null) {
+      return { workflow: { continue: false } };
+    }
+
+    return matchValueResult(String(data.asset.exifInfo[config.property]), config);
+  },
+
+  assetDateFilter: ({ config, data }) => {
+    const assetDate = new Date(data.asset.localDateTime);
+    let startDate = new Date(config.startDate.year, config.startDate.month - 1, config.startDate.day);
+    let endDate = new Date(config.endDate.year, config.endDate.month - 1, config.endDate.day + 1);
+
+    if (config.recurring) {
+      startDate.setFullYear(assetDate.getFullYear());
+      endDate.setFullYear(assetDate.getFullYear());
+
+      if (endDate < startDate) {
+        if (assetDate > endDate) {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          startDate.setFullYear(startDate.getFullYear() - 1);
+        }
+      }
+    }
+
+    return { workflow: { continue: assetDate >= startDate && assetDate < endDate } };
+  },
+
   assetLock: ({ config, data }) => {
     if (!config.inverse && data.asset.visibility !== AssetVisibility.Locked) {
       return { changes: { asset: { visibility: AssetVisibility.Locked } } };
@@ -140,6 +179,24 @@ const methods = wrapper<Manifest>({
     const hasTimeZone = !!data.asset?.exifInfo?.timeZone;
     const needsTimeZone = config.inverse ? true : false;
     return { workflow: { continue: hasTimeZone === needsTimeZone } };
+  },
+
+  assetTagFilter: ({ config, data }) => {
+    const assetTags = data.asset.tags.map((tag) => tag.id);
+
+    for (const tag of config.tags) {
+      if (assetTags.includes(tag)) {
+        if (config.matching === 'any') {
+          break;
+        } else if (config.matching === 'none') {
+          return { workflow: { continue: false } };
+        }
+      } else if (config.matching === 'all') {
+        return { workflow: { continue: false } };
+      }
+    }
+
+    return { workflow: { continue: true } };
   },
 
   assetTypeFilter: ({ config, data }) => {
@@ -174,13 +231,17 @@ const methods = wrapper<Manifest>({
 });
 
 const {
+  assetAddTags,
   assetAddToAlbums,
   assetArchive,
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetExifFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
+  assetTagFilter,
   assetTypeFilter,
   assetVisibility,
   webhook,
@@ -190,13 +251,17 @@ const {
 } = methods;
 
 export {
+  assetAddTags,
   assetAddToAlbums,
   assetArchive,
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetExifFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
+  assetTagFilter,
   assetTypeFilter,
   assetVisibility,
   webhook,

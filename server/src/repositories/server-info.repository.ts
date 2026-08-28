@@ -4,19 +4,9 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { ReleaseChannel } from 'src/dtos/system-config.dto';
+import { ReleaseChannel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-
-export interface GitHubRelease {
-  id: number;
-  url: string;
-  tag_name: string;
-  name: string;
-  created_at: string;
-  published_at: string;
-  body: string;
-}
 
 export interface VersionResponse {
   version: string;
@@ -35,7 +25,7 @@ const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
   try {
     const { stdout } = await exec(command);
-    return stdout.trim().split('\n')[0] || '';
+    return stdout.trim().split('\n', 1)[0] || '';
   } catch {
     return '';
   }
@@ -111,6 +101,7 @@ export class ServerInfoRepository {
 
       const lockfile: BuildLockfile | undefined = await readFile(resourcePaths.lockFile)
         .then((buffer) => JSON.parse(buffer.toString()))
+
         .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
       const [nodejsVersion, ffmpegVersion, magickVersion, exiftoolVersion] = await Promise.all([
