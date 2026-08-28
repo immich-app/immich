@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 
@@ -14,6 +16,21 @@ void main() {
 
   tearDown(() async {
     await ctx.dispose();
+  });
+
+  test('watch emits localId when a matching local asset appears', () async {
+    final user = await ctx.newUser();
+    final remote = await ctx.newRemoteAsset(ownerId: user.id);
+    final updates = StreamIterator(sut.watch(remote.id));
+    addTearDown(updates.cancel);
+
+    expect(await updates.moveNext(), isTrue);
+    expect(updates.current?.localId, isNull);
+
+    final local = await ctx.newLocalAsset(checksum: remote.checksum);
+
+    expect(await updates.moveNext(), isTrue);
+    expect(updates.current?.localId, local.id);
   });
 
   group('getByChecksum', () {

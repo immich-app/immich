@@ -16,6 +16,8 @@ import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:stream_transform/stream_transform.dart';
 
+typedef _LinkedSnapshot<T extends BaseAsset> = ({T? asset, bool isResolved});
+
 class AssetService {
   final RemoteAssetRepository _remoteRepository;
   final RemoteExifRepository _exifRepository;
@@ -40,24 +42,57 @@ class AssetService {
 
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     return switch (asset) {
-      RemoteAsset(:final id) => _remoteRepository.watch(id),
-      LocalAsset() => _watchLocalAsset(asset),
+      LocalAsset() => _watchLinkedAssets<LocalAsset, RemoteAsset>(
+        primary: _localRepository.watch(asset.id),
+        initialLinkedId: asset.remoteId,
+        getLinkedId: (localAsset) => localAsset?.remoteId,
+        watchLinked: _remoteRepository.watch,
+      ),
+      RemoteAsset() => _watchLinkedAssets<RemoteAsset, LocalAsset>(
+        primary: _remoteRepository.watch(asset.id),
+        initialLinkedId: asset.localId,
+        getLinkedId: (remoteAsset) => remoteAsset?.localId,
+        watchLinked: _localRepository.watch,
+      ),
     };
   }
 
-  Stream<BaseAsset?> _watchLocalAsset(LocalAsset asset) {
-    final [remoteLinkUpdates, localUpdates] = StreamSplitter.splitFrom(_localRepository.watch(asset.id));
-    final remoteUpdates = remoteLinkUpdates
-        .map((localAsset) => localAsset?.remoteId)
-        .startWith(asset.remoteId)
+  Stream<BaseAsset?> _watchLinkedAssets<Primary extends BaseAsset, Linked extends BaseAsset>({
+    required Stream<Primary?> primary,
+    required String? initialLinkedId,
+    required String? Function(Primary?) getLinkedId,
+    required Stream<Linked?> Function(String) watchLinked,
+  }) {
+    final [linkedIdUpdates, primaryUpdates] = StreamSplitter.splitFrom(primary);
+    final linkedUpdates = linkedIdUpdates
+        .map(getLinkedId)
+        .startWith(initialLinkedId)
         .whereType<String>()
         .distinct()
-        .switchMap(_remoteRepository.watch);
-    final seededRemoteUpdates = asset.remoteId == null ? remoteUpdates.startWith(null) : remoteUpdates;
+        .switchMap(watchLinked);
+    final _LinkedSnapshot<Linked> initialLinkedSnapshot = (asset: null, isResolved: initialLinkedId == null);
+    final linkedSnapshots = linkedUpdates
+        .map<_LinkedSnapshot<Linked>>((asset) => (asset: asset, isResolved: true))
+        .startWith(initialLinkedSnapshot);
 
-    return seededRemoteUpdates
-        .combineLatest(localUpdates, (remoteAsset, localAsset) => remoteAsset ?? localAsset)
+    return primaryUpdates
+        .combineLatest(linkedSnapshots, (primary, linked) {
+          final asset = _preferRemote(primary, linked.asset);
+          return (shouldEmit: asset is RemoteAsset || linked.isResolved, asset: asset);
+        })
+        .where((snapshot) => snapshot.shouldEmit)
+        .map((snapshot) => snapshot.asset)
         .distinct();
+  }
+
+  BaseAsset? _preferRemote(BaseAsset? first, BaseAsset? second) {
+    return switch ((first, second)) {
+      (final RemoteAsset remote, _) => remote,
+      (_, final RemoteAsset remote) => remote,
+      (final LocalAsset local, _) => local,
+      (_, final LocalAsset local) => local,
+      _ => null,
+    };
   }
 
   Future<List<LocalAsset?>> getLocalAssetsByChecksum(String checksum) {

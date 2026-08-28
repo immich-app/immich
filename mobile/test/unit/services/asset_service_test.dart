@@ -61,81 +61,125 @@ void main() {
   });
 
   group('AssetService.watchAsset', () {
-    test('watches a known remote asset when the local asset is already absent', () async {
+    test('prefers remote and emits null only after linked local and remote assets disappear', () async {
+      final localAsset = LocalAssetFactory.create();
+      final remoteAsset = RemoteAssetFactory.create();
+      final linkedLocalAsset = localAsset.copyWith(remoteId: remoteAsset.id);
+      final updatedRemoteAsset = remoteAsset.copyWith(isFavorite: true);
+      final localUpdates = StreamController<LocalAsset?>(sync: true);
+      final remoteUpdates = StreamController<RemoteAsset?>(sync: true);
+      addTearDown(localUpdates.close);
+      addTearDown(remoteUpdates.close);
+      when(() => mocks.localAsset.repo.watch(localAsset.id)).thenAnswer((_) => localUpdates.stream);
+      when(() => remoteRepository.watch(remoteAsset.id)).thenAnswer((_) => remoteUpdates.stream);
+      final updates = StreamIterator(sut.watchAsset(localAsset));
+      addTearDown(updates.cancel);
+
+      localUpdates.add(localAsset);
+      expect(await updates.moveNext(), isTrue);
+      expect(updates.current, localAsset);
+
+      final promoted = updates.moveNext();
+      localUpdates.add(linkedLocalAsset);
+      await untilCalled(() => remoteRepository.watch(remoteAsset.id));
+      remoteUpdates.add(remoteAsset);
+      expect(await promoted, isTrue);
+      expect(updates.current, remoteAsset);
+
+      final remoteOnly = updates.moveNext();
+      localUpdates.add(null);
+      await pumpEventQueue();
+      remoteUpdates.add(updatedRemoteAsset);
+      expect(await remoteOnly, isTrue);
+      expect(updates.current, updatedRemoteAsset);
+
+      final absent = updates.moveNext();
+      remoteUpdates.add(null);
+      expect(await absent, isTrue);
+      expect(updates.current, isNull);
+
+      verify(() => remoteRepository.watch(remoteAsset.id)).called(1);
+    });
+
+    test('falls back to linked local when the watched remote asset disappears', () async {
+      final localAsset = LocalAssetFactory.create();
+      final remoteAsset = RemoteAssetFactory.create(localId: localAsset.id);
+      final updatedLocalAsset = localAsset.copyWith(isFavorite: true);
+      final localUpdates = StreamController<LocalAsset?>(sync: true);
+      final remoteUpdates = StreamController<RemoteAsset?>(sync: true);
+      addTearDown(localUpdates.close);
+      addTearDown(remoteUpdates.close);
+      when(() => mocks.localAsset.repo.watch(localAsset.id)).thenAnswer((_) => localUpdates.stream);
+      when(() => remoteRepository.watch(remoteAsset.id)).thenAnswer((_) => remoteUpdates.stream);
+      final updates = StreamIterator(sut.watchAsset(remoteAsset));
+      addTearDown(updates.cancel);
+
+      final initial = updates.moveNext();
+      await untilCalled(() => mocks.localAsset.repo.watch(localAsset.id));
+      remoteUpdates.add(remoteAsset);
+      expect(await initial.timeout(const Duration(seconds: 1)), isTrue);
+      expect(updates.current, remoteAsset);
+
+      localUpdates.add(localAsset);
+      final localFallback = updates.moveNext();
+      remoteUpdates.add(null);
+      expect(await localFallback, isTrue);
+      expect(updates.current, localAsset);
+
+      final localUpdate = updates.moveNext();
+      localUpdates.add(updatedLocalAsset);
+      expect(await localUpdate, isTrue);
+      expect(updates.current, updatedLocalAsset);
+
+      final absent = updates.moveNext();
+      localUpdates.add(null);
+      expect(await absent, isTrue);
+      expect(updates.current, isNull);
+
+      verify(() => mocks.localAsset.repo.watch(localAsset.id)).called(1);
+    });
+
+    test('waits for the linked asset before emitting null for a missing primary asset', () async {
+      final localAsset = LocalAssetFactory.create();
+      final remoteAsset = RemoteAssetFactory.create(localId: localAsset.id);
+      final localUpdates = StreamController<LocalAsset?>(sync: true);
+      final remoteUpdates = StreamController<RemoteAsset?>(sync: true);
+      addTearDown(localUpdates.close);
+      addTearDown(remoteUpdates.close);
+      when(() => mocks.localAsset.repo.watch(localAsset.id)).thenAnswer((_) => localUpdates.stream);
+      when(() => remoteRepository.watch(remoteAsset.id)).thenAnswer((_) => remoteUpdates.stream);
+      final updates = StreamIterator(sut.watchAsset(remoteAsset));
+      addTearDown(updates.cancel);
+
+      final initial = updates.moveNext();
+      await untilCalled(() => mocks.localAsset.repo.watch(localAsset.id));
+      remoteUpdates.add(null);
+      localUpdates.add(localAsset);
+
+      expect(await initial, isTrue);
+      expect(updates.current, localAsset);
+    });
+
+    test('does not emit an already linked local asset before its remote asset', () async {
       final remoteAsset = RemoteAssetFactory.create();
       final localAsset = LocalAssetFactory.create(remoteId: remoteAsset.id);
       final localUpdates = StreamController<LocalAsset?>(sync: true);
       final remoteUpdates = StreamController<RemoteAsset?>(sync: true);
       addTearDown(localUpdates.close);
       addTearDown(remoteUpdates.close);
-
       when(() => mocks.localAsset.repo.watch(localAsset.id)).thenAnswer((_) => localUpdates.stream);
       when(() => remoteRepository.watch(remoteAsset.id)).thenAnswer((_) => remoteUpdates.stream);
-
       final updates = StreamIterator(sut.watchAsset(localAsset));
+      addTearDown(updates.cancel);
 
-      try {
-        final next = updates.moveNext();
-        localUpdates.add(null);
-        await untilCalled(() => remoteRepository.watch(remoteAsset.id));
-        remoteUpdates.add(remoteAsset);
+      final initial = updates.moveNext();
+      await untilCalled(() => remoteRepository.watch(remoteAsset.id));
+      localUpdates.add(localAsset);
+      await pumpEventQueue();
+      remoteUpdates.add(remoteAsset);
 
-        expect(await next, isTrue);
-        expect(updates.current, remoteAsset);
-      } finally {
-        await updates.cancel();
-      }
-    });
-
-    test('keeps watching the linked remote until both asset records are absent', () async {
-      final localAsset = LocalAssetFactory.create();
-      final remoteAsset = RemoteAssetFactory.create();
-      final linkedLocalAsset = localAsset.copyWith(remoteId: remoteAsset.id);
-      final updatedRemoteAsset = remoteAsset.copyWith(name: 'updated.jpg');
-      final localUpdates = StreamController<LocalAsset?>(sync: true);
-      final remoteUpdates = StreamController<RemoteAsset?>(sync: true);
-      addTearDown(localUpdates.close);
-      addTearDown(remoteUpdates.close);
-
-      when(() => mocks.localAsset.repo.watch(localAsset.id)).thenAnswer((_) => localUpdates.stream);
-      when(() => remoteRepository.watch(remoteAsset.id)).thenAnswer((_) => remoteUpdates.stream);
-
-      final updates = StreamIterator(sut.watchAsset(localAsset));
-
-      try {
-        localUpdates.add(localAsset);
-        expect(await updates.moveNext(), isTrue);
-        expect(updates.current, localAsset);
-
-        final promoted = updates.moveNext();
-        localUpdates.add(linkedLocalAsset);
-        await untilCalled(() => remoteRepository.watch(remoteAsset.id));
-        remoteUpdates.add(remoteAsset);
-        expect(await promoted, isTrue);
-        expect(updates.current, remoteAsset);
-
-        remoteUpdates.add(null);
-        expect(await updates.moveNext(), isTrue);
-        expect(updates.current, linkedLocalAsset);
-
-        remoteUpdates.add(remoteAsset);
-        expect(await updates.moveNext(), isTrue);
-        expect(updates.current, remoteAsset);
-
-        final remoteOnly = updates.moveNext();
-        localUpdates.add(null);
-        remoteUpdates.add(updatedRemoteAsset);
-        expect(await remoteOnly, isTrue);
-        expect(updates.current, updatedRemoteAsset);
-
-        remoteUpdates.add(null);
-        expect(await updates.moveNext(), isTrue);
-        expect(updates.current, isNull);
-      } finally {
-        await updates.cancel();
-      }
-
-      verify(() => remoteRepository.watch(remoteAsset.id)).called(1);
+      expect(await initial, isTrue);
+      expect(updates.current, remoteAsset);
     });
   });
 
