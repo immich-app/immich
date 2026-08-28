@@ -44,6 +44,7 @@ import 'package:immich_mobile/wm_executor.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:timezone/data/latest.dart';
 
 void main() async {
@@ -73,6 +74,12 @@ Future<void> initApp() async {
     } catch (e) {
       dPrint(() => "Error setting high refresh rate: $e");
     }
+
+    // Render maps into a TextureView. The default SurfaceView cannot be hosted by
+    // Flutter's texture-layer composition, so Flutter falls back to allocating a
+    // VirtualDisplay per map, whose overlay layers Android does not reliably free
+    // (#31087). Must be set before the first MapLibreMap is built.
+    MapLibreMap.useHybridComposition = true;
   }
 
   await DynamicTheme.fetchSystemPalette();
