@@ -44,6 +44,38 @@ describe(IntegrityService.name, () => {
     });
   });
 
+  describe('deleteIntegrityReport', () => {
+    it('should not unlink a path that is now tracked', async () => {
+      const path = '/data/upload/admin/ab/asset.mov';
+      mocks.integrityReport.getById.mockResolvedValue({ path } as never);
+      mocks.integrityReport.getTrackedPaths.mockResolvedValue([{ path }] as never);
+
+      await sut.deleteIntegrityReport('user-id', 'report-id');
+
+      expect(mocks.storage.unlink).not.toHaveBeenCalled();
+      expect(mocks.integrityReport.deleteById).toHaveBeenCalledWith('report-id');
+    });
+  });
+
+  describe('handleDeleteIntegrityReports', () => {
+    it('should unlink only paths that are still untracked', async () => {
+      const tracked = '/data/upload/admin/ab/asset.mov';
+      const untracked = '/data/upload/orphan.mov';
+      mocks.integrityReport.getTrackedPaths.mockResolvedValue([{ path: tracked }] as never);
+      mocks.storage.unlink.mockResolvedValue();
+
+      await sut.handleDeleteIntegrityReports({
+        reports: [
+          { id: 'tracked-report', path: tracked },
+          { id: 'untracked-report', path: untracked },
+        ] as never,
+      });
+
+      expect(mocks.storage.unlink).toHaveBeenCalledExactlyOnceWith(untracked);
+      expect(mocks.integrityReport.deleteByIds).toHaveBeenCalledWith(['tracked-report', 'untracked-report']);
+    });
+  });
+
   describe('handleDeleteAllIntegrityReports', () => {
     beforeEach(() => {
       mocks.integrityReport.streamIntegrityReportsByProperty.mockReturnValue((function* () {})() as never);
