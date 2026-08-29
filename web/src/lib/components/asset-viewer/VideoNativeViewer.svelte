@@ -9,6 +9,7 @@
   import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import { observeVideoOrientation } from '$lib/utils/video-orientation';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
@@ -26,7 +27,14 @@
   } from '@mdi/js';
   import 'hls-video-element';
   import type HlsVideoElement from 'hls-video-element';
-  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
+  import Hls, {
+    AbrController,
+    Events,
+    type FragLoadedData,
+    type FragLoadingData,
+    type HlsConfig,
+    type Level,
+  } from 'hls.js';
   import 'media-chrome/media-control-bar';
   import 'media-chrome/media-controller';
   import 'media-chrome/media-fullscreen-button';
@@ -36,7 +44,6 @@
   import 'media-chrome/media-time-display';
   import 'media-chrome/media-volume-range';
   import 'media-chrome/menu/media-playback-rate-menu';
-  import 'media-chrome/menu/media-rendition-menu';
   import 'media-chrome/menu/media-settings-menu';
   import 'media-chrome/menu/media-settings-menu-button';
   import 'media-chrome/menu/media-settings-menu-item';
@@ -44,6 +51,7 @@
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import './immich-rendition-menu';
   import './immich-time-range';
 
   interface Props {
@@ -77,6 +85,7 @@
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
   let hasLoadedMetadata = $state(false);
+  let originalRenditionId = $state<string>();
   let assetFileUrl = $derived.by(() => {
     if (featureFlagsManager.value.realtimeTranscoding) {
       return getAssetHlsUrl(assetId);
@@ -177,6 +186,35 @@
     return el?.tagName === 'HLS-VIDEO';
   };
 
+  const isOriginalLevel = (level?: Level) => level?.attrs['STABLE-VARIANT-ID'] === 'original';
+  const isOriginalH264Level = (level?: Level) => isOriginalLevel(level) && level?.videoCodec?.startsWith('avc1.');
+
+  type RenditionList = Iterable<{ id?: string; src?: string }>;
+
+  const findOriginalRenditionId = (el: HlsVideoElement, level?: Level) => {
+    const source = level?.url[0];
+    const renditions = (el as HlsVideoElement & { videoRenditions?: RenditionList }).videoRenditions;
+    return source ? [...(renditions ?? [])].find((rendition) => rendition.src === source)?.id : undefined;
+  };
+
+  let stopOrientationCorrection: (() => void) | undefined;
+
+  const clearOrientationCorrection = () => {
+    stopOrientationCorrection?.();
+    stopOrientationCorrection = undefined;
+  };
+
+  const updateOrientationCorrection = (el: HlsVideoElement, level?: Level) => {
+    clearOrientationCorrection();
+    if (isOriginalH264Level(level)) {
+      stopOrientationCorrection = observeVideoOrientation({
+        container: el,
+        orientation: asset.exifInfo?.orientation,
+        video: el.nativeEl,
+      });
+    }
+  };
+
   const wireHlsListeners = (el: HlsVideoElement, assetId: string, resumeTime?: number) => {
     const api = el.api;
     if (!api) {
@@ -190,6 +228,20 @@
       configurable: true,
       get: () => api.currentLevel,
       set: (level: number) => {
+        const current = api.levels[api.currentLevel];
+        const next = api.levels[level];
+        if (current && isOriginalH264Level(current) !== isOriginalH264Level(next)) {
+          // H.264 Original uses MPEG-TS, whose SourceBuffer layout is incompatible with the encoded fMP4 renditions.
+          const media = api.media;
+          if (media && !media.paused) {
+            api.once(Hls.Events.MEDIA_ATTACHED, () => {
+              void media.play().catch(() => console.warn('Failed to resume video after changing quality'));
+            });
+          }
+          api.loadLevel = level;
+          api.recoverMediaError();
+          return;
+        }
         api.currentLevel = level;
       },
     });
@@ -198,6 +250,10 @@
     api.on(Hls.Events.MANIFEST_PARSED, async () => {
       // Defer hls.js's first fragment load until we filter out suboptimal variants
       api.stopLoad();
+      originalRenditionId = findOriginalRenditionId(
+        el,
+        api.levels.find((level) => isOriginalLevel(level)),
+      );
       const id = api.levels[0]?.url[0]?.match(SESSION_ID_REGEX)?.[1];
       if (id) {
         activeSession = { assetId, id };
@@ -211,6 +267,12 @@
       }
 
       api.startLoad(resumeTime);
+    });
+
+    api.on(Hls.Events.LEVEL_SWITCHING, (_, data) => {
+      if (el.api === api) {
+        updateOrientationCorrection(el, api.levels[data.level]);
+      }
     });
 
     api.on(Hls.Events.FRAG_LOADED, () => (rebuildCount = 0));
@@ -243,6 +305,8 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     hasLoadedMetadata = false;
+    originalRenditionId = undefined;
+    clearOrientationCorrection();
     if (videoPlayer && assetFileUrl) {
       hasFocused = false;
       rebuildCount = 0;
@@ -256,7 +320,10 @@
         videoPlayer.load();
       }
     }
-    return releaseSession;
+    return () => {
+      clearOrientationCorrection();
+      releaseSession();
+    };
   });
 
   const onPagehide = (event: PageTransitionEvent) => {
@@ -271,6 +338,7 @@
   });
 
   onDestroy(() => {
+    clearOrientationCorrection();
     if (videoPlayer) {
       videoPlayer.src = '';
     }
@@ -444,10 +512,16 @@
               <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
                 {$t('video_quality')}
                 <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />
-                <media-rendition-menu slot="submenu" hidden>
+                <immich-rendition-menu
+                  slot="submenu"
+                  hidden
+                  auto-label={$t('media_chrome.auto')}
+                  original-label={$t('video_quality_original')}
+                  original-rendition-id={originalRenditionId}
+                >
                   <Icon slot="back-icon" icon={mdiChevronLeft} class="m-2" />
                   <span slot="title">{$t('video_quality')}</span>
-                </media-rendition-menu>
+                </immich-rendition-menu>
               </media-settings-menu-item>
             {/if}
           </media-settings-menu>

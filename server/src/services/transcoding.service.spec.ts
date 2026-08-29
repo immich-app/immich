@@ -4,6 +4,7 @@ import {
   HLS_CLEANUP_INTERVAL_MS,
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
+  HLS_ORIGINAL_VARIANT_INDEX,
 } from 'src/constants';
 import { TranscodingService } from 'src/services/transcoding.service';
 import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database';
@@ -385,7 +386,7 @@ describe(TranscodingService.name, () => {
       '2',
       '-copyts',
       '-r',
-      '50130000/2012441',
+      '50130000/2012606',
       '-avoid_negative_ts',
       'disabled',
       '-f',
@@ -486,19 +487,86 @@ describe(TranscodingService.name, () => {
 
       expect(mocks.process.spawn.mock.calls[0][1].toSorted()).toEqual(expected);
     });
+
+    it('copies H.264 into MPEG-TS segments for the original variant', async () => {
+      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', ''));
+
+      await sut.onSessionRequest({ sessionId, assetId, ownerId });
+      await sut.onSegmentRequest({
+        sessionId,
+        assetId,
+        variantIndex: HLS_ORIGINAL_VARIANT_INDEX,
+        segmentIndex: 0,
+      });
+
+      const args = mocks.process.spawn.mock.calls[0][1];
+      expect(args).toEqual(
+        expect.arrayContaining([
+          '-i',
+          'eiffel-tower.mp4',
+          '-c:v',
+          'copy',
+          '-c:a',
+          'copy',
+          '-hls_segment_type',
+          'mpegts',
+          '-hls_playlist_type',
+          'vod',
+          '-hls_segment_filename',
+          `/data/encoded-video/user-1/se/ss/session-1/${HLS_ORIGINAL_VARIANT_INDEX}/seg_%d.ts`,
+        ]),
+      );
+      expect(args).not.toContain('-ss');
+    });
+
+    it('copies HEVC into fMP4 segments from the beginning', async () => {
+      mocks.videoStream.getForTranscoding.mockResolvedValue(waterfall);
+      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', ''));
+
+      await sut.onSessionRequest({ sessionId, assetId, ownerId });
+      await sut.onSegmentRequest({
+        sessionId,
+        assetId,
+        variantIndex: HLS_ORIGINAL_VARIANT_INDEX,
+        segmentIndex: 3,
+      });
+
+      const args = mocks.process.spawn.mock.calls[0][1];
+      expect(args).toEqual(
+        expect.arrayContaining([
+          '-i',
+          'waterfall.mp4',
+          '-map',
+          '0:2',
+          '-c:v',
+          'copy',
+          '-tag:v',
+          'hvc1',
+          '-hls_segment_type',
+          'fmp4',
+          '-hls_fmp4_init_filename',
+          'init.mp4',
+          '-hls_segment_filename',
+          `/data/encoded-video/user-1/se/ss/session-1/${HLS_ORIGINAL_VARIANT_INDEX}/seg_%d.m4s`,
+          '-start_number',
+          '0',
+        ]),
+      );
+      expect(args).not.toContain('-ss');
+    });
   });
 
   describe('FFmpeg seek per segment', () => {
     const eiffelSeeks = [
-      0, 1.98715, 3.994372222222222, 6.001594444444444, 8.008816666666666, 10.016038888888888, 12.023261111111111,
-      14.030483333333333, 16.037705555555554, 18.044927777777776, 20.052149999999997, 22.059372222222223,
+      0, 1.9873129263913825, 3.994699720726112, 6.002086515060841, 8.009473309395572, 10.016860103730302,
+      12.02424689806503, 14.03163369239976, 16.03902048673449, 18.04640728106922, 20.05379407540395, 22.061180869738678,
     ];
     const waterfallSeeks = [
       0, 1.994642826321467, 4.006047357065803, 6.0174518878101395, 8.028856418554476, 10.040260949298812,
     ];
     const trainSeeks = [
-      0, 1.9916666666666667, 3.9916666666666667, 5.991666666666666, 7.991666666666666, 9.991666666666667,
-      11.991666666666667, 13.991666666666667, 15.991666666666667, 17.991666666666667, 19.991666666666667,
+      0, 2.007567805804177, 4.023979522647139, 6.0403912394901, 8.056802956333062, 10.073214673176023,
+      12.089626390018987, 14.106038106861948, 16.12244982370491, 18.13886154054787, 20.15527325739083,
     ];
     const cases = [
       ...eiffelSeeks.map((expected, segmentIndex) => ({

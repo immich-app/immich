@@ -8,6 +8,7 @@ import {
   HLS_CRF,
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
+  HLS_ORIGINAL_VARIANT_INDEX,
   HLS_SEGMENT_DURATION,
   HLS_SEGMENT_FILENAME_REGEX,
   HLS_VARIANTS,
@@ -16,9 +17,11 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
+import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
 import { BaseService } from 'src/services/base.service';
 import { VideoInterfaces } from 'src/types';
 import { isVideoStreamSessionPkConstraint } from 'src/utils/database';
+import { getHlsOriginalCommand, getHlsOriginalStream } from 'src/utils/hls';
 import { BaseConfig } from 'src/utils/media';
 
 type Session = {
@@ -190,6 +193,10 @@ export class TranscodingService extends BaseService {
       return;
     }
 
+    if (variantIndex === HLS_ORIGINAL_VARIANT_INDEX) {
+      return this.startOriginalStream(session, asset);
+    }
+
     const variant = HLS_VARIANTS[variantIndex];
     if (!variant) {
       this.logger.error(`Variant ${variantIndex} out of range for asset ${session.assetId}`);
@@ -259,6 +266,40 @@ export class TranscodingService extends BaseService {
     return process;
   }
 
+  private async startOriginalStream(
+    session: Session,
+    asset: NonNullable<Awaited<ReturnType<VideoStreamRepository['getForTranscoding']>>>,
+  ) {
+    const original = getHlsOriginalStream(asset.videoStream, asset.audioStream, asset.packets);
+    if (!original) {
+      this.logger.error(`Original stream is not available for asset ${session.assetId}`);
+      await this.failSession(session, 'Original stream is not available for this asset');
+      return;
+    }
+
+    const variantDir = StorageCore.getHlsVariantFolder({
+      ownerId: session.ownerId,
+      sessionId: session.id,
+      variantIndex: HLS_ORIGINAL_VARIANT_INDEX,
+    });
+    this.storageRepository.mkdirSync(variantDir);
+    // A full run keeps FFmpeg's segment numbering and durations aligned with the server playlist.
+    const args = getHlsOriginalCommand(
+      {
+        initFilename: 'init.mp4',
+        inputPath: asset.originalPath,
+        playlistFilename: join(variantDir, 'playlist.m3u8'),
+        segmentFilename: join(variantDir, `seg_%d.${original.extension}`),
+      },
+      asset.videoStream,
+      asset.audioStream,
+    );
+    this.logger.log(`Starting HLS original stream for asset ${session.assetId} with command: ffmpeg ${args.join(' ')}`);
+    const process = this.processRepository.spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    this.attachProcessHandlers(process, session, HLS_ORIGINAL_VARIANT_INDEX);
+    return process;
+  }
+
   private failSession(session: Session, error: string) {
     this.websocketRepository.serverSend('HlsSessionResult', { sessionId: session.id, error });
     return this.onSessionEnd({ sessionId: session.id });
@@ -272,10 +313,9 @@ export class TranscodingService extends BaseService {
       variantIndex,
     });
 
-    // hlsenc writes each segment as `seg_K.m4s.tmp` then renames to
-    // `seg_K.m4s`. The rename event fires the moment the renamed file is
-    // observable — the only signal we need to tell the API worker the
-    // segment is ready to serve.
+    // hlsenc writes each segment to a temporary file then renames it. The rename
+    // event fires when the segment is observable — the only signal we need to
+    // tell the API worker it is ready to serve.
     const watcher = this.storageRepository.watchDir(variantDir, (eventType, filename) => {
       if (eventType !== 'rename' || !filename || session.process !== process) {
         return;

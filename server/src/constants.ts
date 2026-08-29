@@ -239,7 +239,7 @@ export const HLS_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 export const HLS_LEASE_DURATION_MS = 30 * 60 * 1000;
 export const HLS_PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 export const HLS_SEGMENT_DURATION = 2;
-export const HLS_SEGMENT_FILENAME_REGEX = /^seg_(\d+)\.m4s$/;
+export const HLS_SEGMENT_FILENAME_REGEX = /^seg_(\d+)\.(?:m4s|ts)$/;
 export const HLS_VARIANTS = [
   { resolution: 480, codec: VideoCodec.Av1, bitrate: 1_000_000 },
   { resolution: 480, codec: VideoCodec.Hevc, bitrate: 1_200_000 },
@@ -257,6 +257,7 @@ export const HLS_VARIANTS = [
   { resolution: 2160, codec: VideoCodec.Hevc, bitrate: 14_000_000 },
   { resolution: 2160, codec: VideoCodec.H264, bitrate: 25_000_000 },
 ];
+export const HLS_ORIGINAL_VARIANT_INDEX = HLS_VARIANTS.length;
 export const HLS_VERSION = 7;
 
 export type CodecLevel = { maxFrame: number; maxRate: number; token: string };

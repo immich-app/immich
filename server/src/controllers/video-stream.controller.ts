@@ -69,7 +69,7 @@ export class VideoStreamController {
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   @Endpoint({
     summary: 'Get HLS segment or init file',
-    description: 'Streams an HLS init segment (init.mp4) or media segment (seg_N.m4s).',
+    description: 'Streams an HLS init segment (init.mp4) or media segment (seg_N.m4s or seg_N.ts).',
     history: new HistoryBuilder().added('v3').alpha('v3'),
   })
   async getSegment(

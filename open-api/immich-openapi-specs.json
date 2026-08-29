@@ -5456,7 +5456,7 @@
     },
     "/assets/{id}/video/stream/{sessionId}/{variantIndex}/{filename}": {
       "get": {
-        "description": "Streams an HLS init segment (init.mp4) or media segment (seg_N.m4s).",
+        "description": "Streams an HLS init segment (init.mp4) or media segment (seg_N.m4s or seg_N.ts).",
         "operationId": "getSegment",
         "parameters": [
           {
@@ -5464,7 +5464,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "pattern": "^(init\\.mp4|seg_\\d+\\.m4s)$",
+              "pattern": "^(init\\.mp4|seg_\\d+\\.(?:m4s|ts))$",
               "type": "string"
             }
           },

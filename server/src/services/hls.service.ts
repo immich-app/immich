@@ -1,7 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { constants } from 'node:fs';
 import { join } from 'node:path';
-import { HLS_SEGMENT_DURATION, HLS_SEGMENT_FILENAME_REGEX, HLS_VARIANTS, HLS_VERSION } from 'src/constants';
+import {
+  HLS_ORIGINAL_VARIANT_INDEX,
+  HLS_SEGMENT_DURATION,
+  HLS_SEGMENT_FILENAME_REGEX,
+  HLS_VARIANTS,
+  HLS_VERSION,
+} from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -9,12 +15,17 @@ import { ConfigFFmpegDto } from 'src/dtos/config.dto';
 import { CacheControl, ImmichWorker, Permission } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { VideoPacketInfo, VideoStreamInfo } from 'src/types';
+import { AudioStreamInfo, VideoPacketInfo, VideoStreamInfo } from 'src/types';
 import { PendingEvents } from 'src/utils/event';
 import { ImmichFileResponse } from 'src/utils/file';
-import { getCodecString, getOutputSize } from 'src/utils/media';
+import { getHlsOriginalStream, HlsOriginalStream } from 'src/utils/hls';
+import { getCodecString, getOutputSize, isVideoRotated } from 'src/utils/media';
 
-type AssetWithStreamInfo = { videoStream: VideoStreamInfo & { timeBase: number }; packets: VideoPacketInfo };
+type AssetWithStreamInfo = {
+  audioStream: AudioStreamInfo | null;
+  packets: VideoPacketInfo;
+  videoStream: VideoStreamInfo & { timeBase: number };
+};
 type Segmentation = { fps: number; framesPerSegment: number; segmentCount: number; segmentDuration: number };
 type ApiSession = { lastRequestedSegment: number | null; lastVariantIndex: number | null };
 
@@ -74,6 +85,17 @@ export class HlsService extends BaseService {
       throw new NotFoundException('Asset not found or metadata not yet ready for streaming');
     }
 
+    if (variantIndex === HLS_ORIGINAL_VARIANT_INDEX) {
+      const original = getHlsOriginalStream(asset.videoStream, asset.audioStream, asset.packets);
+      if (!original) {
+        throw new NotFoundException('Original stream is not available for this asset');
+      }
+      const hintedSegment =
+        position === undefined ? undefined : this.originalPositionToSegmentIndex(original, position);
+      this.prewarmVariant(assetId, sessionId, variantIndex, hintedSegment);
+      return this.generateOriginalMediaPlaylist(original);
+    }
+
     const segmentation = this.getSegmentation(asset);
     const hintedSegment = position === undefined ? undefined : this.positionToSegmentIndex(segmentation, position);
     this.prewarmVariant(assetId, sessionId, variantIndex, hintedSegment);
@@ -100,7 +122,7 @@ export class HlsService extends BaseService {
     const path = join(variantDir, filename);
     const response = new ImmichFileResponse({
       path,
-      contentType: 'video/mp4',
+      contentType: filename.endsWith('.ts') ? 'video/mp2t' : 'video/mp4',
       cacheControl: CacheControl.PrivateWithCache,
     });
 
@@ -129,7 +151,12 @@ export class HlsService extends BaseService {
     const roundedFps = fps.toFixed(3);
     const sourceResolution = Math.min(asset.videoStream.height, asset.videoStream.width);
     const targetResolution = Math.max(sourceResolution, HLS_VARIANTS[0].resolution);
-    const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`, '#EXT-X-INDEPENDENT-SEGMENTS'];
+    const original = getHlsOriginalStream(asset.videoStream, asset.audioStream, asset.packets);
+    const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`];
+    if (!original) {
+      lines.push('#EXT-X-INDEPENDENT-SEGMENTS');
+    }
+    let variantCount = 0;
     const { videoCodecs, resolutions } = ffmpeg.realtime;
     for (let i = 0; i < HLS_VARIANTS.length; i++) {
       const { resolution, bitrate, codec } = HLS_VARIANTS[i];
@@ -142,10 +169,21 @@ export class HlsService extends BaseService {
         `#EXT-X-STREAM-INF:BANDWIDTH=${Math.round(bitrate * 1.35)},RESOLUTION=${width}x${height},CODECS="${codecString},mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=${roundedFps}`,
         `${sessionId}/${i}/playlist.m3u8`,
       );
+      variantCount++;
+    }
+    if (original) {
+      const rotated = isVideoRotated(asset.videoStream);
+      const width = rotated ? asset.videoStream.height : asset.videoStream.width;
+      const height = rotated ? asset.videoStream.width : asset.videoStream.height;
+      lines.push(
+        `#EXT-X-STREAM-INF:BANDWIDTH=${Math.round(original.bitrate * 1.1)},RESOLUTION=${width}x${height},CODECS="${original.codecs}",FRAME-RATE=${roundedFps},STABLE-VARIANT-ID="original"`,
+        `${sessionId}/${HLS_ORIGINAL_VARIANT_INDEX}/playlist.m3u8`,
+      );
+      variantCount++;
     }
     lines.push('');
 
-    if (lines.length === 4) {
+    if (variantCount === 0) {
       throw new NotFoundException('No supported variants for this video');
     }
 
@@ -161,6 +199,17 @@ export class HlsService extends BaseService {
 
   private positionToSegmentIndex({ segmentDuration, segmentCount }: Segmentation, position: number) {
     return Math.min(Math.max(Math.floor(position / segmentDuration), 0), segmentCount - 1);
+  }
+
+  private originalPositionToSegmentIndex({ durations }: HlsOriginalStream, position: number) {
+    let end = 0;
+    for (const [index, duration] of durations.entries()) {
+      end += duration;
+      if (position < end) {
+        return index;
+      }
+    }
+    return durations.length - 1;
   }
 
   private generateMediaPlaylist({ packets }: AssetWithStreamInfo, segmentation: Segmentation) {
@@ -186,13 +235,34 @@ export class HlsService extends BaseService {
     return lines.join('\n');
   }
 
+  private generateOriginalMediaPlaylist({ durations, extension, targetDuration }: HlsOriginalStream) {
+    const lines = [
+      '#EXTM3U',
+      `#EXT-X-VERSION:${extension === 'ts' ? 3 : HLS_VERSION}`,
+      `#EXT-X-TARGETDURATION:${targetDuration}`,
+      '#EXT-X-MEDIA-SEQUENCE:0',
+      '#EXT-X-PLAYLIST-TYPE:VOD',
+    ];
+    if (extension === 'm4s') {
+      lines.push('#EXT-X-MAP:URI="init.mp4"');
+    }
+    for (const [index, duration] of durations.entries()) {
+      lines.push(`#EXTINF:${duration.toFixed(6)},`, `seg_${index}.${extension}`);
+    }
+    lines.push('#EXT-X-ENDLIST', '');
+    return lines.join('\n');
+  }
+
   private prewarmVariant(assetId: string, sessionId: string, variantIndex: number, hintedSegment?: number) {
     const session = this.sessions.get(sessionId);
     if (session?.lastVariantIndex === variantIndex) {
       return;
     }
 
-    const nextSegment = session && session.lastRequestedSegment !== null ? session.lastRequestedSegment + 1 : undefined;
+    const comparable =
+      variantIndex !== HLS_ORIGINAL_VARIANT_INDEX && session?.lastVariantIndex !== HLS_ORIGINAL_VARIANT_INDEX;
+    const nextSegment =
+      comparable && session && session.lastRequestedSegment !== null ? session.lastRequestedSegment + 1 : undefined;
     const segmentIndex = hintedSegment ?? nextSegment;
     if (segmentIndex !== undefined) {
       this.websocketRepository.serverSend('HlsSegmentRequest', { sessionId, assetId, variantIndex, segmentIndex });
@@ -226,6 +296,9 @@ export class HlsService extends BaseService {
 
     if (session.lastVariantIndex !== null && session.lastVariantIndex !== variantIndex) {
       this.pendingSegments.rejectByPrefix(`${id}:${session.lastVariantIndex}:`, 'Variant changed');
+      if (session.lastVariantIndex === HLS_ORIGINAL_VARIANT_INDEX || variantIndex === HLS_ORIGINAL_VARIANT_INDEX) {
+        session.lastRequestedSegment = null;
+      }
     }
     session.lastVariantIndex = variantIndex;
     return session;
