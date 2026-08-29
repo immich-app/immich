@@ -1,7 +1,7 @@
 name: Docs build
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/*']
   pull_request:
   release:
     types: [published]

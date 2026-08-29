@@ -223,7 +223,7 @@ class _SyncStatsCounts extends ConsumerWidget {
     final assetService = ref.watch(assetServiceProvider);
     final localAlbumService = LocalAlbumService(db.localAlbumRepository);
     final remoteAlbumService = ref.watch(remoteAlbumServiceProvider);
-    final memoryService = DriftMemoryService(db.memoryRepository);
+    final memoryService = MemoryService(db.memoryRepository);
     final appSettingsService = ref.watch(appSettingsServiceProvider);
 
     Future<List<dynamic>> loadCounts() async {

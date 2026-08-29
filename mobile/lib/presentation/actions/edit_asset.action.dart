@@ -58,7 +58,7 @@ class EditAssetAction extends AssetActionBuilder {
       ref.read(editorStateProvider.notifier).init(edits, exif);
       unawaited(
         context.pushRoute(
-          DriftEditImageRoute(
+          EditImageRoute(
             image: Image(image: getFullImageProvider(asset, edited: false)),
             applyEdits: (newEdits) => applyEdits(ref, asset.id, newEdits),
           ),

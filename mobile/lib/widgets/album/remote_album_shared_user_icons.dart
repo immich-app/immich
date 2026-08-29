@@ -25,7 +25,7 @@ class RemoteAlbumSharedUserIcons extends ConsumerWidget {
         }
 
         return GestureDetector(
-          onTap: () => context.pushRoute(DriftAlbumOptionsRoute(album: currentAlbum)),
+          onTap: () => context.pushRoute(AlbumOptionsRoute(album: currentAlbum)),
           child: SizedBox(
             height: 50,
             child: ListView.builder(

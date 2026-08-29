@@ -36,15 +36,12 @@ import z from 'zod';
 const { Admin, User, Public } = ConfigVisibility;
 
 const configBool = z
-  .preprocess((val) => {
-    if (val === 'true') {
-      return true;
-    }
-    if (val === 'false') {
-      return false;
-    }
-    return val;
-  }, z.boolean())
+  .preprocess(
+    (val) => z.stringbool({ truthy: ['true'], falsy: ['false'], case: 'sensitive' }).safeParse(val).data ?? val,
+    z.boolean(),
+  )
+
+  .nonoptional()
   .meta({ type: 'boolean' });
 
 const cronExpressionSchema = z

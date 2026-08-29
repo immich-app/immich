@@ -67,3 +67,6 @@ libisar.so
 
 # Translation file
 lib/generated/
+
+# Flutter widget previews cache
+.widget_preview/
