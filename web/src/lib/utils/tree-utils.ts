@@ -3,6 +3,9 @@
 /* eslint-disable unicorn/prefer-at */
 import type { TagResponseDto } from '@immich/sdk';
 
+// Natural (numeric-aware) collator so e.g. "2) Foo" sorts before "10) Foo".
+const naturalCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
 export class TreeNode extends Map<string, TreeNode> {
   value: string;
   path: string;
@@ -106,7 +109,7 @@ export class TreeNode extends Map<string, TreeNode> {
   }
 
   get children(): TreeNode[] {
-    return (this._children ??= Array.from(this.values()));
+    return (this._children ??= Array.from(this.values()).sort((a, b) => naturalCollator.compare(a.value, b.value)));
   }
 }
 
