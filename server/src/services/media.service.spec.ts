@@ -1600,6 +1600,46 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should transform the face crop after a manual rotation', async () => {
+      const person = PersonFactory.create();
+      const data = {
+        ...personThumbnailStub.newThumbnailMiddle,
+        edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }],
+      };
+      const decodedImage = Buffer.from('decoded');
+      const editedImage = Buffer.from('edited');
+      const decodedInfo = { width: 400, height: 500 } as OutputInfo;
+      const editedInfo = { width: 500, height: 400 } as OutputInfo;
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(data);
+      mocks.media.decodeImage.mockResolvedValueOnce({ data: decodedImage, info: decodedInfo });
+      mocks.media.decodeImage.mockResolvedValueOnce({ data: editedImage, info: editedInfo });
+      mocks.media.generateThumbnail.mockResolvedValue();
+
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.decodeImage).toHaveBeenNthCalledWith(2, decodedImage, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+        raw: decodedInfo,
+        edits: data.edits,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        editedImage,
+        expect.objectContaining({
+          raw: editedInfo,
+          edits: [
+            {
+              action: 'crop',
+              parameters: expect.objectContaining({ x: 295, y: 95, width: 110, height: 110 }),
+            },
+          ],
+        }),
+        expect.any(String),
+      );
+    });
+
     it('should use preview path if video', async () => {
       const person = PersonFactory.create();
 

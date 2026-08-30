@@ -43,7 +43,7 @@ import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { batched, clamp } from 'src/utils/misc';
-import { getOutputDimensions } from 'src/utils/transform';
+import { getOutputDimensions, transformFaceBoundingBox } from 'src/utils/transform';
 
 interface UpsertFileOptions {
   assetId: string;
@@ -401,7 +401,7 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath, edits } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
@@ -423,13 +423,34 @@ export class MediaService extends BaseService {
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
 
+    // Face coordinates are stored relative to the unedited, auto-oriented preview. Apply the same edits to both the
+    // image and the coordinates before extracting the face, so manual rotations do not shift the crop.
+    const face = transformFaceBoundingBox(
+      {
+        boundingBoxX1: x1,
+        boundingBoxY1: y1,
+        boundingBoxX2: x2,
+        boundingBoxY2: y2,
+        imageWidth: oldWidth,
+        imageHeight: oldHeight,
+      },
+      edits,
+      { width: info.width, height: info.height },
+    );
+    const decoded = edits.length > 0 ? await this.mediaRepository.decodeImage(decodedImage, {
+      colorspace: image.colorspace,
+      processInvalidImages: false,
+      raw: info,
+      edits,
+    }) : { data: decodedImage, info };
+
     const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId });
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
       colorspace: image.colorspace,
       format: ImageFormat.Jpeg,
-      raw: info,
+      raw: decoded.info,
       quality: image.thumbnail.quality,
       progressive: false,
       processInvalidImages: false,
@@ -438,14 +459,22 @@ export class MediaService extends BaseService {
         {
           action: AssetEditAction.Crop,
           parameters: this.getCrop(
-            { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
-            { x1, y1, x2, y2 },
+            {
+              old: { width: face.imageWidth, height: face.imageHeight },
+              new: { width: decoded.info.width, height: decoded.info.height },
+            },
+            {
+              x1: face.boundingBoxX1,
+              y1: face.boundingBoxY1,
+              x2: face.boundingBoxX2,
+              y2: face.boundingBoxY2,
+            },
           ),
         },
       ],
     };
 
-    await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
+    await this.mediaRepository.generateThumbnail(decoded.data, thumbnailOptions, thumbnailPath);
     await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
 
     return JobStatus.Success;

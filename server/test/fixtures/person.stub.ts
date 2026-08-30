@@ -14,6 +14,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
+    edits: [],
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   newThumbnailMiddle: Object.freeze({
@@ -27,6 +28,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
+    edits: [],
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   newThumbnailEnd: Object.freeze({
@@ -40,6 +42,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
+    edits: [],
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   rawEmbeddedThumbnail: Object.freeze({
@@ -53,6 +56,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.dng',
     exifOrientation: '1',
+    edits: [],
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   negativeCoordinate: Object.freeze({
@@ -66,6 +70,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
+    edits: [],
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   overflowingCoordinate: Object.freeze({
@@ -79,6 +84,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
+    edits: [],
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   videoThumbnail: Object.freeze({
@@ -92,6 +98,7 @@ export const personThumbnailStub = {
     type: AssetType.Video,
     originalPath: '/original/path.mp4',
     exifOrientation: '1',
+    edits: [],
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
 };

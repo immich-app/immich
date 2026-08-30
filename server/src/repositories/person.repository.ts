@@ -10,7 +10,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonGroupTable } from 'src/schema/tables/person-group.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database';
+import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withEdits, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
@@ -378,6 +378,7 @@ export class PersonRepository {
         'asset_exif.orientation as exifOrientation',
       ])
       .select((eb) => withFilePath(eb, AssetFileType.Preview).as('previewPath'))
+      .select(withEdits)
       .where('person.ownerId', '=', ownerId)
       .where('person.personGroupId', '=', personGroupId)
       .where('asset_face.deletedAt', 'is', null)
