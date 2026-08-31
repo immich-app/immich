@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -40,7 +41,6 @@ class _ScopedMapTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: this causes the timeline to switch to flicker to "loading" state and back. This is both janky and inefficient.
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith((ref) {
@@ -49,14 +49,24 @@ class _ScopedMapTimeline extends StatelessWidget {
             throw Exception('User must be logged in to access archive');
           }
 
-          final users = ref.watch(mapStateProvider).withPartners
-              ? ref.watch(timelineUsersProvider).valueOrNull ?? [user.id]
-              : [user.id];
+          final withPartners = ref.watch(mapStateProvider.select((s) => s.withPartners));
+          final users = withPartners ? ref.watch(timelineUsersProvider).valueOrNull ?? [user.id] : [user.id];
+
+          final optionsController = StreamController<TimelineMapOptions>.broadcast();
+          ref.onDispose(optionsController.close);
+
+          var currentOptions = ref.read(mapStateProvider).toOptions();
+
+          ref.listen(mapStateProvider.select((state) => state.toOptions()), (_, newOptions) {
+            currentOptions = newOptions;
+            optionsController.add(newOptions);
+          });
 
           final timelineService = ref
               .watch(timelineFactoryProvider)
-              .map(users, ref.watch(mapStateProvider).toOptions());
+              .geographicMap(users, () => currentOptions, optionsController.stream);
           ref.onDispose(timelineService.dispose);
+
           return timelineService;
         }),
       ],
