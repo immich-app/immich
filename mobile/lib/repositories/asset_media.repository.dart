@@ -22,7 +22,9 @@ import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
-typedef _ShareFile = ({File file, bool cleanup, String displayName});
+/// A file staged for the share sheet. [tempEntity] is the temp file or
+/// directory to delete afterwards, null when [file] is a gallery original.
+typedef _ShareFile = ({File file, FileSystemEntity? tempEntity, String displayName});
 
 final assetMediaRepositoryProvider = Provider(
   (ref) => AssetMediaRepository(ref.watch(nativeSyncApiProvider), ref.watch(storageRepositoryProvider)),
@@ -98,12 +100,15 @@ class AssetMediaRepository {
     }
   }
 
-  /// Deletes temporary files in parallel
-  Future<void> _cleanupTempFiles(List<File> tempFiles) async {
+  @protected
+  @visibleForTesting
+  Future<void> cleanupTempFiles(List<FileSystemEntity> tempFiles) async {
     await Future.wait(
       tempFiles.map((file) async {
         try {
-          await file.delete();
+          if (file.existsSync()) {
+            await file.delete(recursive: true);
+          }
         } catch (e) {
           _log.warning("Failed to delete temporary file: ${file.path}", e);
         }
@@ -111,27 +116,44 @@ class AssetMediaRepository {
     );
   }
 
-  String _sanitizeFilename(String filename) {
-    return filename.replaceAll(RegExp(r'[\\/]'), '_');
+  static final RegExp _pathSeparators = RegExp(r'[\\/]');
+
+  static String _sanitizeFilename(String filename) {
+    return filename.replaceAll(_pathSeparators, '_');
   }
 
-  String _getPreviewFilename(BaseAsset asset) {
+  static String _getOriginalShareFilename(BaseAsset asset) {
+    final hasUsableName = asset.name.replaceAll(_pathSeparators, '').isNotEmpty;
+    return hasUsableName ? _sanitizeFilename(asset.name) : _shareFallbackName(asset);
+  }
+
+  static String _shareFallbackName(BaseAsset asset) => asset.remoteId ?? asset.localId ?? 'asset';
+
+  static String _getPreviewFilename(BaseAsset asset) {
     final sanitizedFilename = _sanitizeFilename(asset.name);
     final baseName = p.basenameWithoutExtension(sanitizedFilename);
-    final fallbackName = asset.remoteId ?? asset.localId ?? 'asset';
-    return '${baseName.isEmpty ? fallbackName : baseName}-preview.jpg';
+    return '${baseName.isEmpty ? _shareFallbackName(asset) : baseName}-preview.jpg';
   }
+
+  static String _shareDisplayName(BaseAsset asset, ShareAssetType fileType) =>
+      switch (asset.isVideo ? ShareAssetType.original : fileType) {
+        ShareAssetType.original => _getOriginalShareFilename(asset),
+        ShareAssetType.preview => _getPreviewFilename(asset),
+      };
+
+  static String _ordinalShareFilename(String filename, int occurrence) =>
+      '${p.basenameWithoutExtension(filename)} ($occurrence)${p.extension(filename)}';
 
   bool _isCancelled(Completer<void>? cancelCompleter) => cancelCompleter?.isCompleted ?? false;
 
-  Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId) async {
+  Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId, String displayName) async {
     final file = await _storageRepository.getFileForAsset(localId);
     if (file == null) {
       _log.warning("Local original file not found for sharing: $asset");
       return null;
     }
 
-    return (file: file, cleanup: CurrentPlatform.isIOS, displayName: _sanitizeFilename(asset.name));
+    return (file: file, tempEntity: CurrentPlatform.isIOS ? file : null, displayName: displayName);
   }
 
   Future<_ShareFile?> _downloadRemoteShareFile({
@@ -145,7 +167,8 @@ class AssetMediaRepository {
       taskId: taskId,
       url: url,
       headers: ApiService.getRequestHeaders(),
-      filename: '$taskId-$displayName',
+      filename: displayName,
+      directory: taskId,
       baseDirectory: BaseDirectory.temporary,
       group: kShareDownloadGroup,
       updates: Updates.statusAndProgress,
@@ -162,14 +185,17 @@ class AssetMediaRepository {
       },
     );
 
+    final file = File(await task.filePath());
     if (_isCancelled(cancelCompleter)) {
+      await cleanupTempFiles([file.parent]);
       return null;
     }
 
     if (statusUpdate.status == TaskStatus.complete) {
-      return (file: File(await task.filePath()), cleanup: true, displayName: displayName);
+      return (file: file, tempEntity: file.parent, displayName: displayName);
     }
 
+    await cleanupTempFiles([file.parent]);
     _log.severe("Download for $displayName failed with status ${statusUpdate.status}", statusUpdate.exception);
     return null;
   }
@@ -177,13 +203,14 @@ class AssetMediaRepository {
   Future<_ShareFile?> _getRemoteOriginalShareFile(
     BaseAsset asset,
     String remoteId, {
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) {
     return _downloadRemoteShareFile(
       taskId: 'share-original-$remoteId-${DateTime.now().microsecondsSinceEpoch}',
       url: getOriginalUrlForRemoteId(remoteId, edited: asset.isEdited),
-      displayName: _sanitizeFilename(asset.name),
+      displayName: displayName,
       cancelCompleter: cancelCompleter,
       onProgress: onProgress,
     );
@@ -192,13 +219,14 @@ class AssetMediaRepository {
   Future<_ShareFile?> _getRemotePreviewShareFile(
     BaseAsset asset,
     String remoteId, {
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) {
     return _downloadRemoteShareFile(
       taskId: 'share-preview-$remoteId-${DateTime.now().microsecondsSinceEpoch}',
       url: getThumbnailUrlForRemoteId(remoteId, type: AssetMediaSize.preview, edited: asset.isEdited),
-      displayName: _getPreviewFilename(asset),
+      displayName: displayName,
       cancelCompleter: cancelCompleter,
       onProgress: onProgress,
     );
@@ -206,12 +234,13 @@ class AssetMediaRepository {
 
   Future<_ShareFile?> _getOriginalShareFile(
     BaseAsset asset, {
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) {
     final localId = asset.localId;
     if (localId != null && !asset.isEdited) {
-      return _getLocalOriginalShareFile(asset, localId);
+      return _getLocalOriginalShareFile(asset, localId, displayName);
     }
 
     final remoteId = asset.remoteId;
@@ -220,11 +249,18 @@ class AssetMediaRepository {
       return Future.value(null);
     }
 
-    return _getRemoteOriginalShareFile(asset, remoteId, cancelCompleter: cancelCompleter, onProgress: onProgress);
+    return _getRemoteOriginalShareFile(
+      asset,
+      remoteId,
+      displayName: displayName,
+      cancelCompleter: cancelCompleter,
+      onProgress: onProgress,
+    );
   }
 
   Future<_ShareFile?> _getPreviewShareFile(
     BaseAsset asset, {
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) async {
@@ -233,6 +269,7 @@ class AssetMediaRepository {
       final remotePreview = await _getRemotePreviewShareFile(
         asset,
         remoteId,
+        displayName: displayName,
         cancelCompleter: cancelCompleter,
         onProgress: onProgress,
       );
@@ -243,11 +280,40 @@ class AssetMediaRepository {
 
     final localId = asset.localId;
     if (localId != null) {
-      return _getLocalOriginalShareFile(asset, localId);
+      return _getLocalOriginalShareFile(asset, localId, _shareDisplayName(asset, ShareAssetType.original));
     }
 
     _log.warning("Asset has no local or remote ID for preview sharing: $asset");
     return null;
+  }
+
+  /// As of share_plus 10.1.4, sharing copies every file into a single cache
+  /// folder regardless of where it came from, and equal names overwrite each
+  /// other there. Downloads are renamed to their display name first since
+  /// receivers only see the on-disk filename, and a name already taken in the
+  /// batch gets the first free ` (n)` suffix because gallery originals cannot
+  /// be renamed.
+  Future<void> _resolveShareFiles(List<_ShareFile> files) async {
+    final usedNames = {
+      for (final shareFile in files)
+        if (shareFile.tempEntity is! Directory) p.basename(shareFile.file.path),
+    };
+    for (var index = 0; index < files.length; index++) {
+      final shareFile = files[index];
+      if (shareFile.tempEntity is! Directory) {
+        continue;
+      }
+
+      var occurrence = 0;
+      var displayName = shareFile.displayName;
+      while (usedNames.contains(displayName)) {
+        displayName = _ordinalShareFilename(shareFile.displayName, ++occurrence);
+      }
+
+      usedNames.add(displayName);
+      final file = await shareFile.file.rename(p.join(shareFile.file.parent.path, displayName));
+      files[index] = (file: file, tempEntity: shareFile.tempEntity, displayName: displayName);
+    }
   }
 
   Future<int> shareAssets(
@@ -257,8 +323,8 @@ class AssetMediaRepository {
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) async {
-    final downloadedXFiles = <XFile>[];
-    final tempFiles = <File>[];
+    final shareFiles = <_ShareFile>[];
+    final tempFiles = <FileSystemEntity>[];
     final totalAssets = assets.length;
     var processedAssets = 0;
 
@@ -277,27 +343,34 @@ class AssetMediaRepository {
 
     for (final asset in assets) {
       if (_isCancelled(cancelCompleter)) {
-        await _cleanupTempFiles(tempFiles);
+        await cleanupTempFiles(tempFiles);
         return 0;
       }
 
       final effectiveFileType = asset.isVideo ? ShareAssetType.original : fileType;
+      final displayName = _shareDisplayName(asset, fileType);
 
       final shareFile = switch (effectiveFileType) {
         ShareAssetType.original => await _getOriginalShareFile(
           asset,
+          displayName: displayName,
           cancelCompleter: cancelCompleter,
           onProgress: updateProgress,
         ),
         ShareAssetType.preview => await _getPreviewShareFile(
           asset,
+          displayName: displayName,
           cancelCompleter: cancelCompleter,
           onProgress: updateProgress,
         ),
       };
 
+      final tempEntity = shareFile?.tempEntity;
+      if (tempEntity != null) {
+        tempFiles.add(tempEntity);
+      }
       if (_isCancelled(cancelCompleter)) {
-        await _cleanupTempFiles(tempFiles);
+        await cleanupTempFiles(tempFiles);
         return 0;
       }
 
@@ -307,23 +380,33 @@ class AssetMediaRepository {
         continue;
       }
 
-      downloadedXFiles.add(XFile(shareFile.file.path, name: shareFile.displayName));
-      if (shareFile.cleanup) {
-        tempFiles.add(shareFile.file);
-      }
+      shareFiles.add(shareFile);
       processedAssets++;
       updateProgress();
     }
 
-    if (downloadedXFiles.isEmpty) {
+    if (shareFiles.isEmpty) {
       _log.warning("No asset can be retrieved for share");
       return 0;
     }
 
     if (_isCancelled(cancelCompleter) || !context.mounted) {
-      await _cleanupTempFiles(tempFiles);
+      await cleanupTempFiles(tempFiles);
       return 0;
     }
+
+    try {
+      await _resolveShareFiles(shareFiles);
+    } catch (e, s) {
+      _log.warning("Failed to prepare files for sharing", e, s);
+      await cleanupTempFiles(tempFiles);
+      return 0;
+    }
+    if (_isCancelled(cancelCompleter) || !context.mounted) {
+      await cleanupTempFiles(tempFiles);
+      return 0;
+    }
+    final downloadedXFiles = shareFiles.map((shareFile) => XFile(shareFile.file.path)).toList();
 
     // we dont want to await the share result since the
     // "preparing" dialog will not disappear until
@@ -332,8 +415,8 @@ class AssetMediaRepository {
       Share.shareXFiles(
         downloadedXFiles,
         sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
-      ).then((result) async {
-        await _cleanupTempFiles(tempFiles);
+      ).whenComplete(() async {
+        await cleanupTempFiles(tempFiles);
       }),
     );
 
