@@ -201,9 +201,15 @@ jobs:
             latest=false
           fi
 
+          discussion=()
+          if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.0(-rc\.[0-9]+)?$ ]]; then
+            discussion=(--discussion-category Announcements)
+          fi
+
           echo "publishing ${TAG} (latest=${latest}, prerelease=${PRERELEASE}, previous=${previous:-none})"
           gh release edit "${TAG}" \
             --repo "${REPO}" \
             --draft=false \
             --latest="${latest}" \
-            --prerelease="${PRERELEASE}"
+            --prerelease="${PRERELEASE}" \
+            "${discussion[@]}"
