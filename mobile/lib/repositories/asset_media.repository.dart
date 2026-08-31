@@ -100,7 +100,9 @@ class AssetMediaRepository {
     }
   }
 
-  Future<void> _cleanupTempFiles(List<FileSystemEntity> tempFiles) async {
+  @protected
+  @visibleForTesting
+  Future<void> cleanupTempFiles(List<FileSystemEntity> tempFiles) async {
     await Future.wait(
       tempFiles.map((file) async {
         try {
@@ -185,7 +187,7 @@ class AssetMediaRepository {
 
     final file = File(await task.filePath());
     if (_isCancelled(cancelCompleter)) {
-      await _cleanupTempFiles([file.parent]);
+      await cleanupTempFiles([file.parent]);
       return null;
     }
 
@@ -193,7 +195,7 @@ class AssetMediaRepository {
       return (file: file, tempEntity: file.parent, displayName: displayName);
     }
 
-    await _cleanupTempFiles([file.parent]);
+    await cleanupTempFiles([file.parent]);
     _log.severe("Download for $displayName failed with status ${statusUpdate.status}", statusUpdate.exception);
     return null;
   }
@@ -341,7 +343,7 @@ class AssetMediaRepository {
 
     for (final asset in assets) {
       if (_isCancelled(cancelCompleter)) {
-        await _cleanupTempFiles(tempFiles);
+        await cleanupTempFiles(tempFiles);
         return 0;
       }
 
@@ -368,7 +370,7 @@ class AssetMediaRepository {
         tempFiles.add(tempEntity);
       }
       if (_isCancelled(cancelCompleter)) {
-        await _cleanupTempFiles(tempFiles);
+        await cleanupTempFiles(tempFiles);
         return 0;
       }
 
@@ -389,7 +391,7 @@ class AssetMediaRepository {
     }
 
     if (_isCancelled(cancelCompleter) || !context.mounted) {
-      await _cleanupTempFiles(tempFiles);
+      await cleanupTempFiles(tempFiles);
       return 0;
     }
 
@@ -397,11 +399,11 @@ class AssetMediaRepository {
       await _resolveShareFiles(shareFiles);
     } catch (e, s) {
       _log.warning("Failed to prepare files for sharing", e, s);
-      await _cleanupTempFiles(tempFiles);
+      await cleanupTempFiles(tempFiles);
       return 0;
     }
     if (_isCancelled(cancelCompleter) || !context.mounted) {
-      await _cleanupTempFiles(tempFiles);
+      await cleanupTempFiles(tempFiles);
       return 0;
     }
     final downloadedXFiles = shareFiles.map((shareFile) => XFile(shareFile.file.path)).toList();
@@ -414,7 +416,7 @@ class AssetMediaRepository {
         downloadedXFiles,
         sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
       ).whenComplete(() async {
-        await _cleanupTempFiles(tempFiles);
+        await cleanupTempFiles(tempFiles);
       }),
     );
 

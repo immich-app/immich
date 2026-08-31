@@ -30,6 +30,22 @@ class _MockPersistentStorage extends Mock implements PersistentStorage {}
 
 class _MockStorageRepository extends Mock implements StorageRepository {}
 
+class _TestAssetMediaRepository extends AssetMediaRepository {
+  _TestAssetMediaRepository(super.nativeSyncApi, super.storageRepository, this.shareCall);
+
+  final Completer<List<String>> shareCall;
+  final cleanups = <List<FileSystemEntity>>[];
+  final cleanupAfterShare = Completer<List<FileSystemEntity>>();
+
+  @override
+  Future<void> cleanupTempFiles(List<FileSystemEntity> tempFiles) async {
+    cleanups.add(tempFiles);
+    if (shareCall.isCompleted) {
+      cleanupAfterShare.complete(tempFiles);
+    }
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -37,8 +53,8 @@ void main() {
   late StoreService store;
   late Directory tempRoot;
   late _MockStorageRepository storage;
-  late AssetMediaRepository repository;
-  late List<Directory> taskDirs;
+  late _TestAssetMediaRepository repository;
+  late List<String> taskDirs;
   late Set<String> failedRemoteIds;
   late Completer<List<String>> shareCall;
 
@@ -65,10 +81,10 @@ void main() {
   setUp(() {
     tempRoot = Directory.systemTemp.createTempSync('immich-share-test');
     storage = _MockStorageRepository();
-    repository = AssetMediaRepository(_MockNativeSyncApi(), storage);
+    shareCall = Completer<List<String>>();
+    repository = _TestAssetMediaRepository(_MockNativeSyncApi(), storage, shareCall);
     taskDirs = [];
     failedRemoteIds = {};
-    shareCall = Completer<List<String>>();
 
     // keeps every temp path the code asks for inside this test's own folder
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -94,12 +110,14 @@ void main() {
         final args = call.arguments! as List;
         final task = Task.createFromJsonString(args.first as String) as DownloadTask;
         final file = File(await task.filePath());
-        taskDirs.add(file.parent);
         await file.parent.create(recursive: true);
         await file.writeAsString(task.taskId);
         final status = failedRemoteIds.any((id) => task.taskId.contains('-$id-'))
             ? TaskStatus.failed
             : TaskStatus.complete;
+        if (status == TaskStatus.complete) {
+          taskDirs.add(file.parent.path);
+        }
         FileDownloader().downloaderForTesting.processStatusUpdate(TaskStatusUpdate(task, status));
         return true;
       },
@@ -143,17 +161,11 @@ void main() {
         if (cancelCompleter?.isCompleted ?? false) {
           return (count: count, names: <String>[]);
         }
-        final paths = await shareCall.future.timeout(const Duration(seconds: 5));
+        final paths = await shareCall.future;
+        final cleaned = await repository.cleanupAfterShare.future;
+        expect(cleaned.map((entity) => entity.path), taskDirs);
         return (count: count, names: paths.map(p.basename).toList());
       });
-      // the share result comes back before the cleanup behind it has run
-      await tester.runAsync(
-        () => Future.doWhile(() async {
-          await Future<void>.delayed(Duration.zero);
-          return taskDirs.any((directory) => directory.existsSync());
-        }).timeout(const Duration(seconds: 5)),
-      );
-      await tester.pump();
 
       return result!;
     } finally {
@@ -233,7 +245,7 @@ void main() {
     expect(result.count, 0);
     expect(result.names, isEmpty);
     expect(shareCall.isCompleted, isFalse);
-    expect(localFile.existsSync(), isFalse);
+    expect(repository.cleanups.singleOrNull, [localFile]);
   });
 
   testWidgets('adds an ordinal when preview and video names match', (tester) async {
