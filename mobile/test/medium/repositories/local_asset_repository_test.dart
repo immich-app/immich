@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -85,44 +83,6 @@ void main() {
       expect(result, isNotNull);
       expect(result!.remoteId, remote.id);
       expect(result.storage, AssetState.merged);
-    });
-  });
-
-  group('watch', () {
-    test('emits remoteId when a matching current-user remote asset appears', () async {
-      const checksum = 'watch-matching-checksum';
-      final user = await ctx.newUser();
-      await ctx.newAuthUser(id: user.id);
-      final local = await ctx.newLocalAsset(checksum: checksum);
-      final updates = StreamIterator(sut.watch(local.id));
-      addTearDown(updates.cancel);
-
-      expect(await updates.moveNext(), isTrue);
-      expect(updates.current?.remoteId, isNull);
-
-      final remote = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
-
-      expect(await updates.moveNext(), isTrue);
-      expect(updates.current?.remoteId, remote.id);
-    });
-
-    test('keeps local-only state when only a partner remote asset appears', () async {
-      const checksum = 'watch-partner-checksum';
-      final user = await ctx.newUser();
-      final partner = await ctx.newUser();
-      await ctx.newAuthUser(id: user.id);
-      final local = await ctx.newLocalAsset(checksum: checksum);
-      final updates = StreamIterator(sut.watch(local.id));
-      addTearDown(updates.cancel);
-
-      expect(await updates.moveNext(), isTrue);
-      expect(updates.current?.remoteId, isNull);
-
-      final next = updates.moveNext();
-      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
-
-      expect(await next, isTrue);
-      expect(updates.current?.remoteId, isNull);
     });
   });
 

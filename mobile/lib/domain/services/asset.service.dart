@@ -1,4 +1,3 @@
-import 'package:async/async.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
@@ -14,9 +13,6 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:stream_transform/stream_transform.dart';
-
-typedef _LinkedSnapshot<T extends BaseAsset> = ({T? asset, bool isResolved});
 
 class AssetService {
   final RemoteAssetRepository _remoteRepository;
@@ -42,56 +38,8 @@ class AssetService {
 
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     return switch (asset) {
-      LocalAsset() => _watchLinkedAssets<LocalAsset, RemoteAsset>(
-        primary: _localRepository.watch(asset.id),
-        initialLinkedId: asset.remoteId,
-        getLinkedId: (localAsset) => localAsset?.remoteId,
-        watchLinked: _remoteRepository.watch,
-      ),
-      RemoteAsset() => _watchLinkedAssets<RemoteAsset, LocalAsset>(
-        primary: _remoteRepository.watch(asset.id),
-        initialLinkedId: asset.localId,
-        getLinkedId: (remoteAsset) => remoteAsset?.localId,
-        watchLinked: _localRepository.watch,
-      ),
-    };
-  }
-
-  Stream<BaseAsset?> _watchLinkedAssets<Primary extends BaseAsset, Linked extends BaseAsset>({
-    required Stream<Primary?> primary,
-    required String? initialLinkedId,
-    required String? Function(Primary?) getLinkedId,
-    required Stream<Linked?> Function(String) watchLinked,
-  }) {
-    final [linkedIdUpdates, primaryUpdates] = StreamSplitter.splitFrom(primary);
-    final linkedUpdates = linkedIdUpdates
-        .map(getLinkedId)
-        .startWith(initialLinkedId)
-        .whereType<String>()
-        .distinct()
-        .switchMap(watchLinked);
-    final _LinkedSnapshot<Linked> initialLinkedSnapshot = (asset: null, isResolved: initialLinkedId == null);
-    final linkedSnapshots = linkedUpdates
-        .map<_LinkedSnapshot<Linked>>((asset) => (asset: asset, isResolved: true))
-        .startWith(initialLinkedSnapshot);
-
-    return primaryUpdates
-        .combineLatest(linkedSnapshots, (primary, linked) {
-          final asset = _preferRemote(primary, linked.asset);
-          return (shouldEmit: asset is RemoteAsset || linked.isResolved, asset: asset);
-        })
-        .where((snapshot) => snapshot.shouldEmit)
-        .map((snapshot) => snapshot.asset)
-        .distinct();
-  }
-
-  BaseAsset? _preferRemote(BaseAsset? first, BaseAsset? second) {
-    return switch ((first, second)) {
-      (final RemoteAsset remote, _) => remote,
-      (_, final RemoteAsset remote) => remote,
-      (final LocalAsset local, _) => local,
-      (_, final LocalAsset local) => local,
-      _ => null,
+      LocalAsset() => _remoteRepository.watchMergedAsset(localId: asset.localId, checksum: asset.checksum),
+      RemoteAsset() => _remoteRepository.watchMergedAsset(remoteId: asset.remoteId, checksum: asset.checksum),
     };
   }
 
