@@ -34,6 +34,7 @@ import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { mergeTimeZone } from 'src/utils/date.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, isFaceImportEnabled } from 'src/utils/misc.js';
+import { isSpatialMedia } from 'src/utils/spatial.js';
 import { upsertTags } from 'src/utils/tag.js';
 import { Tasks } from 'src/utils/tasks.js';
 
@@ -225,6 +226,36 @@ export class MetadataService extends BaseService {
     return JobStatus.Success;
   }
 
+  @OnJob({ name: JobName.AssetDetectSpatialMetadataQueueAll, queue: QueueName.MetadataExtraction })
+  async handleQueueSpatialMetadataExtraction(): Promise<JobStatus> {
+    for await (const assets of batched(this.assetJobRepository.streamForSpatialMetadataExtraction())) {
+      await this.jobRepository.queueAll(
+        assets
+          .filter(({ originalPath }) => mimeTypes.isHeifImage(originalPath) || mimeTypes.isVideo(originalPath))
+          .map(({ id }) => ({ name: JobName.AssetDetectSpatialMetadata, data: { id } })),
+      );
+    }
+
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.AssetDetectSpatialMetadata, queue: QueueName.MetadataExtraction })
+  async handleSpatialMetadataExtraction({ id }: JobOf<JobName.AssetDetectSpatialMetadata>): Promise<JobStatus> {
+    const asset = await this.assetJobRepository.getForSpatialMetadataExtraction(id);
+    if (!asset) {
+      return JobStatus.Skipped;
+    }
+
+    const stats = await this.storageRepository.stat(asset.originalPath);
+    const isSpatial = await this.detectSpatial(asset, stats);
+    if (isSpatial === undefined) {
+      return JobStatus.Failed;
+    }
+
+    await this.assetRepository.updateSpatialMetadata(asset.id, isSpatial);
+    return JobStatus.Success;
+  }
+
   @OnJob({ name: JobName.AssetExtractMetadata, queue: QueueName.MetadataExtraction })
   async handleMetadataExtraction(data: JobOf<JobName.AssetExtractMetadata>) {
     const [{ metadata, reverseGeocoding }, asset] = await Promise.all([
@@ -258,6 +289,7 @@ export class MetadataService extends BaseService {
     }
 
     const tags = this.getTagList(exifTags);
+    const isSpatial = await this.detectSpatial(asset, stats);
 
     const exifData: Insertable<AssetExifTable> = {
       assetId: asset.id,
@@ -280,6 +312,8 @@ export class MetadataService extends BaseService {
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? exifTags.ProjectionType.toUpperCase() : null,
+      // undefined when the file could not be read, which leaves the stored value in place
+      isSpatial,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
@@ -655,6 +689,39 @@ export class MetadataService extends BaseService {
       id,
       results.map((tag) => tag.id),
     );
+  }
+
+  /**
+   * Apple spatial photos and videos mark themselves with ISOBMFF boxes that exiftool does not
+   * decode, so the container is read directly. Only HEIF stills and videos can carry them.
+   *
+   * Returns undefined when the file could not be read, which leaves the stored flag untouched:
+   * a transient read failure must not clear a value an earlier successful read established.
+   */
+  private async detectSpatial(asset: { originalPath: string }, stats: Stats): Promise<boolean | undefined> {
+    const { originalPath } = asset;
+    if (!mimeTypes.isHeifImage(originalPath) && !mimeTypes.isVideo(originalPath)) {
+      return false;
+    }
+
+    try {
+      return await isSpatialMedia({
+        size: stats.size,
+        read: (position, length) => {
+          const size = Math.min(length, stats.size - position);
+          return this.storageRepository.readFile(originalPath, {
+            buffer: Buffer.alloc(size),
+            offset: 0,
+            length: size,
+            position,
+          });
+        },
+      });
+    } catch (error: Error | any) {
+      // an unreadable container should not fail the whole extraction
+      this.logger.warn(`Unable to read spatial metadata for asset ${asset.originalPath}: ${error}`, error?.stack);
+      return undefined;
+    }
   }
 
   private isMotionPhoto(asset: { type: AssetType }, tags: ImmichTags): boolean {
