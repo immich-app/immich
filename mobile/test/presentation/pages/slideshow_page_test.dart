@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
+import 'package:immich_mobile/presentation/pages/slideshow.page.dart';
 import 'package:immich_mobile/presentation/widgets/slideshow/slideshow_controller.dart';
 import 'package:immich_mobile/presentation/widgets/slideshow/slideshow_slide.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
@@ -90,7 +90,7 @@ void main() {
 
       await tester.pumpTestWidget(
         ctx,
-        DriftSlideshowPage(timeline: (timeline ?? () => timelineOf(images(3)))()),
+        SlideshowPage(timeline: (timeline ?? () => timelineOf(images(3)))()),
         expectSettle: false,
         overrides: [
           appConfigProvider.overrideWithValue(
@@ -110,7 +110,7 @@ void main() {
 
   /// The delegate for this page
   SlideshowDelegate delegateOf(WidgetTester tester) =>
-      tester.state<ConsumerState<DriftSlideshowPage>>(find.byType(DriftSlideshowPage)) as SlideshowDelegate;
+      tester.state<ConsumerState<SlideshowPage>>(find.byType(SlideshowPage)) as SlideshowDelegate;
 
   /// The currently visible slide index
   int visibleIndex(WidgetTester tester) =>
@@ -199,16 +199,12 @@ void main() {
       expect(currentZoomOf(tester, 1), 0.0);
     }, disableAnimations: true);
 
-    slideshowTest(
-      'should show a loading indicator for a slide that isnt ready',
-      (tester) async {
-        await tester.drag(find.byType(PageView), const Offset(-800, 0));
-        await tester.pump();
+    slideshowTest('should show a loading indicator for a slide that isnt ready', (tester) async {
+      await tester.drag(find.byType(PageView), const Offset(-800, 0));
+      await tester.pump();
 
-        expect(find.byType(ImmichLoadingIndicator), findsOneWidget);
-      },
-      timeline: () => partlyLoaded(images(2), stall: Completer<void>()),
-    );
+      expect(find.byType(ImmichLoadingIndicator), findsOneWidget);
+    }, timeline: () => partlyLoaded(images(2), stall: Completer<void>()));
   });
 
   group('interactions', () {
@@ -268,28 +264,24 @@ void main() {
 
     late Completer<void> arrived;
 
-    slideshowTest(
-      'should properly handle an async load the user navigated away from',
-      (tester) async {
-        await tester.pump(slideDuration + tick);
-        expect(visibleIndex(tester), 1);
+    slideshowTest('should properly handle an async load the user navigated away from', (tester) async {
+      await tester.pump(slideDuration + tick);
+      expect(visibleIndex(tester), 1);
 
-        // This slide will get stuck
-        await tester.pump(slideDuration + tick);
+      // This slide will get stuck
+      await tester.pump(slideDuration + tick);
 
-        // Since the slide is stuck, the user swipes back to the first asset
-        await tester.drag(find.byType(PageView), const Offset(800, 0));
-        await tester.pump();
-        expect(visibleIndex(tester), 0);
+      // Since the slide is stuck, the user swipes back to the first asset
+      await tester.drag(find.byType(PageView), const Offset(800, 0));
+      await tester.pump();
+      expect(visibleIndex(tester), 0);
 
-        // The stuck slide loads, but it doesn't matter
-        arrived.complete();
-        await tester.pump();
-        await tester.pump();
-        expect(visibleIndex(tester), 0);
-      },
-      timeline: () => partlyLoaded(images(3), stall: arrived = Completer<void>()),
-    );
+      // The stuck slide loads, but it doesn't matter
+      arrived.complete();
+      await tester.pump();
+      await tester.pump();
+      expect(visibleIndex(tester), 0);
+    }, timeline: () => partlyLoaded(images(3), stall: arrived = Completer<void>()));
 
     slideshowTest('should start the slide timer when navigating to a new slide', (tester) async {
       await tester.pump(slideDuration * 0.75);
