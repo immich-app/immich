@@ -100,17 +100,15 @@ export class PersonRepository {
   async reassignFaces({ oldPersonGroupId, faceIds, ownerId, newPersonGroupId }: UpdateFacesData): Promise<number> {
     const result = await this.db
       .updateTable('asset_face')
+      .from('asset')
+      .whereRef('asset_face.assetId', '=', 'asset.id')
       .set({ personGroupId: newPersonGroupId })
       .$if(!!oldPersonGroupId, (qb) => qb.where('asset_face.personGroupId', '=', oldPersonGroupId!))
       .$if(!!faceIds, (qb) => qb.where('asset_face.id', 'in', faceIds!))
-      .$if(!!ownerId, (qb) =>
-        qb.where('asset_face.personGroupId', 'in', (eb) =>
-          eb.selectFrom('person').select('person.personGroupId').where('person.ownerId', '=', ownerId!),
-        ),
-      )
+      .$if(!!ownerId, (qb) => qb.where('asset.ownerId', '=', ownerId!))
       .executeTakeFirst();
 
-    return Number(result.numChangedRows ?? 0);
+    return Number(result.numUpdatedRows ?? 0);
   }
 
   @GenerateSql({ params: [{ sourceType: SourceType.MachineLearning, clusterGroupId: DummyValue.UUID }] })
