@@ -166,6 +166,13 @@
 			path = Sync;
 			sourceTree = "<group>";
 		};
+		B2CF7F8C2DDE4EBB00744BF7 /* AssetMedia */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = AssetMedia;
+			sourceTree = "<group>";
+		};
 		F0B57D3D2DF764BD00DC5BCC /* WidgetExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -293,6 +300,7 @@
 				B25D37792E72CA15008B6CA7 /* Connectivity */,
 				B21E34A62E5AF9760031FDB9 /* Background */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
+				B2CF7F8C2DDE4EBB00744BF7 /* AssetMedia */,
 				B2EE00052E72CA15008B6CA7 /* Permission */,
 				FA9973382CF6DF4B000EF859 /* Runner.entitlements */,
 				FAC7416727DB9F5500C668D8 /* RunnerProfile.entitlements */,
@@ -388,6 +396,7 @@
 			fileSystemSynchronizedGroups = (
 				B231F52D2E93A44A00BC45D1 /* Core */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
+				B2CF7F8C2DDE4EBB00744BF7 /* AssetMedia */,
 				FEE084F22EC172080045228E /* Schemas */,
 			);
 			name = Runner;
