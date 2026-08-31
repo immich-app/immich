@@ -340,7 +340,6 @@ describe('/shared-links', () => {
       expect(status).toBe(201);
       expect(body).toEqual(expect.objectContaining({ type: SharedLinkType.Album, userId: user1.userId }));
     });
-
   });
 
   describe('PATCH /shared-links/:id', () => {
