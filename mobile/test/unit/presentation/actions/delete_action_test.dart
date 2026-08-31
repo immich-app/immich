@@ -247,6 +247,58 @@ void main() {
         verifyNever(() => cleanupService.deleteLocalAssets(any()));
         debugDefaultTargetPlatformOverride = null;
       });
+
+      testWidgets('local only delete on Android below API 30 asks before deleting', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        final asset = LocalAssetFactory.create();
+
+        await pumpDelete(tester, {asset});
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text(StaticTranslations.instance.delete_dialog_alert_local_non_backed_up), findsOneWidget);
+        await respondToDialog(tester, confirm: true);
+
+        verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('local only delete on Android below API 30 deletes nothing when cancelled', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+
+        await pumpDelete(tester, {LocalAssetFactory.create()});
+        await respondToDialog(tester, confirm: false);
+
+        verifyNever(() => cleanupService.deleteLocalAssets(any()));
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('local only delete on Android 31 shows no prompt', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 31);
+        final asset = LocalAssetFactory.create();
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ConfirmDialog), findsNothing);
+        verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('mixed delete on Android below API 30 keeps the trash flow', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        final asset = owned(localId: 'local');
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ConfirmDialog), findsNothing);
+        verify(() => assetService.trash([asset.id])).called(1);
+        verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
     });
 
     testWidgets('is hidden when nothing can be deleted', (tester) async {

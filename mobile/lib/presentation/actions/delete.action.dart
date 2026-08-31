@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
@@ -97,6 +98,27 @@ class DeleteAction extends AssetActionBuilder {
   }
 
   Future<String?> _removeLocalAssets(BuildContext context, WidgetRef ref, List<String> localIds) async {
+    // Android below API 30 has no system delete prompt, so ask before removing the only copy
+    final requiresPrompt =
+        CurrentPlatform.isAndroid && await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30;
+    if (!context.mounted) {
+      return null;
+    }
+
+    if (requiresPrompt) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => ConfirmDialog(
+          title: context.t.delete_dialog_title,
+          content: context.t.delete_dialog_alert_local_non_backed_up,
+          ok: context.t.delete_local_dialog_ok_force,
+        ),
+      );
+      if (confirmed != true || !context.mounted) {
+        return null;
+      }
+    }
+
     final count = await _cleanupLocalAssets(context, ref, localIds);
     if (count <= 0 || !context.mounted) {
       return null;
