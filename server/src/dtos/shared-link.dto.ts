@@ -37,7 +37,7 @@ const SharedLinkCreateSchema = z
         if (!albumId) {
           ctx.addIssue(`albumId is required for type ${SharedLinkType.Album}`);
         }
-        if (assetIds) {
+        if (assetIds && assetIds.length > 0) {
           ctx.addIssue(`assetIds can only be used with type ${SharedLinkType.Individual}`);
         }
         return;
