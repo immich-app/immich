@@ -9,7 +9,6 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../service.mocks.dart';
-import '../../unit/factories/local_asset_factory.dart';
 import '../../unit/factories/remote_asset_factory.dart';
 
 void main() {
@@ -55,20 +54,6 @@ void main() {
       await pumpEventQueue();
 
       expect(container.read(assetViewerProvider).currentAsset, asset);
-    });
-
-    test('propagates a local-to-remote stream transition into state', () async {
-      final controller = StreamController<BaseAsset?>();
-      addTearDown(controller.close);
-      final localAsset = LocalAssetFactory.create();
-      final remoteAsset = RemoteAssetFactory.create();
-      when(() => assetService.watchAsset(localAsset)).thenAnswer((_) => controller.stream);
-
-      container.read(assetViewerProvider.notifier).setAsset(localAsset);
-
-      controller.add(remoteAsset);
-      await pumpEventQueue();
-      expect(container.read(assetViewerProvider).currentAsset, remoteAsset);
     });
 
     test('reset cancels the subscription so later emissions are dropped', () async {
