@@ -65,6 +65,33 @@ describe(VersionService.name, () => {
         }),
       );
     });
+
+    it('should queue spatial metadata detection for versions before 3.2.0-rc.0', async () => {
+      mocks.versionHistory.getLatest.mockResolvedValue({
+        id: 'version-1',
+        createdAt: new Date(),
+        version: '3.1.0',
+      });
+      mocks.versionHistory.create.mockResolvedValue(factory.versionHistory());
+      mocks.job.queue.mockResolvedValue();
+
+      await sut.onBootstrap();
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetDetectSpatialMetadataQueueAll });
+    });
+
+    it('should not queue spatial metadata detection after 3.2.0-rc.0', async () => {
+      mocks.versionHistory.getLatest.mockResolvedValue({
+        id: 'version-1',
+        createdAt: new Date(),
+        version: '3.2.0-rc.0',
+      });
+      mocks.versionHistory.create.mockResolvedValue(factory.versionHistory());
+
+      await sut.onBootstrap();
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
   });
 
   describe('getVersion', () => {

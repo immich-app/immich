@@ -278,6 +278,7 @@ export class AssetRepository {
                 latitude: ref('latitude'),
                 longitude: ref('longitude'),
                 projectionType: ref('projectionType'),
+                isSpatial: ref('isSpatial'),
                 city: ref('city'),
                 livePhotoCID: ref('livePhotoCID'),
                 autoStackId: ref('autoStackId'),
@@ -324,6 +325,11 @@ export class AssetRepository {
       }))
       .where('assetId', 'in', ids)
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  updateSpatialMetadata(assetId: string, isSpatial: boolean) {
+    return this.db.updateTable('asset_exif').set({ isSpatial }).where('assetId', '=', assetId).execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })

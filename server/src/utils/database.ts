@@ -534,6 +534,11 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(options.isMotion !== undefined, (qb) =>
       qb.where('asset.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
     )
+    .$if(options.isSpatial !== undefined, (qb) =>
+      qb
+        .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+        .where('asset_exif.isSpatial', '=', options.isSpatial!),
+    )
     .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id')))),
     )
@@ -743,6 +748,7 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
     ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
     ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
+    ...(branch.isSpatial ? [eb('asset_exif.isSpatial', '=', branch.isSpatial.eq)] : []),
     ...existsPredicates(eb, branch.isEncoded, () => encodedVideoFiles(eb)),
     ...existsPredicates(eb, branch.hasAlbums, () => albumAssets(eb)),
     ...existsPredicates(eb, branch.hasPeople, () => visibleFaces(eb)),

@@ -1878,6 +1878,7 @@
   "search_filter_date_this_year": "This year",
   "search_filter_date_title": "Select a date range",
   "search_filter_display_option_not_in_album": "Not in album",
+  "search_filter_display_option_spatial": "Spatial",
   "search_filter_display_options": "Display Options",
   "search_filter_filename": "Search by file name",
   "search_filter_location": "Location",

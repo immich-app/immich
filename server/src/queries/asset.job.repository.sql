@@ -362,6 +362,17 @@ from
 where
   "asset"."id" = $3
 
+-- AssetJobRepository.getForSpatialMetadataExtraction
+select
+  "asset"."id",
+  "asset"."originalPath"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1::uuid
+  and "asset"."deletedAt" is null
+
 -- AssetJobRepository.getLockedPropertiesForMetadataExtraction
 select
   "asset_exif"."lockedProperties"
@@ -712,6 +723,16 @@ where
     or "asset_job_status"."assetId" is null
   )
   and "asset"."deletedAt" is null
+
+-- AssetJobRepository.streamForSpatialMetadataExtraction
+select
+  "asset"."id",
+  "asset"."originalPath"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."deletedAt" is null
 
 -- AssetJobRepository.getForStorageTemplateJob
 select
