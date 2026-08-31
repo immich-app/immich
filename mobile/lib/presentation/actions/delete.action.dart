@@ -98,28 +98,7 @@ class DeleteAction extends AssetActionBuilder {
   }
 
   Future<String?> _removeLocalAssets(BuildContext context, WidgetRef ref, List<String> localIds) async {
-    // Android below API 30 has no system delete prompt, so ask before removing the only copy
-    final requiresPrompt =
-        CurrentPlatform.isAndroid && await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30;
-    if (!context.mounted) {
-      return null;
-    }
-
-    if (requiresPrompt) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => ConfirmDialog(
-          title: context.t.delete_dialog_title,
-          content: context.t.delete_dialog_alert_local_non_backed_up,
-          ok: context.t.delete_local_dialog_ok_force,
-        ),
-      );
-      if (confirmed != true || !context.mounted) {
-        return null;
-      }
-    }
-
-    final count = await _cleanupLocalAssets(context, ref, localIds);
+    final count = await _cleanupLocalAssets(context, ref, localIds, notBackedUp: true);
     if (count <= 0 || !context.mounted) {
       return null;
     }
@@ -226,30 +205,45 @@ class CleanupLocalAction extends AssetActionBuilder {
 ///
 /// iOS and Android without MANAGE_MEDIA prompt the user
 /// with MANAGE_MEDIA, we do it ourselves unless [requestCustomPrompt] is false.
+/// Android below API 30 deletes silently and permanently, so [notBackedUp] assets get asked first.
 Future<int> _cleanupLocalAssets(
   BuildContext context,
   WidgetRef ref,
   List<String> assetIds, {
   bool requestCustomPrompt = true,
+  bool notBackedUp = false,
 }) async {
   if (assetIds.isEmpty) {
     return 0;
   }
 
   final cleanupService = ref.read(cleanupServiceProvider);
-  final requiresPrompt =
+  final requiresDeletePrompt =
+      notBackedUp &&
+      CurrentPlatform.isAndroid &&
+      await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30;
+  if (!context.mounted) {
+    return 0;
+  }
+  final requiresTrashPrompt =
       requestCustomPrompt &&
       CurrentPlatform.isAndroid &&
       ref.read(storeServiceProvider).get(.manageLocalMediaAndroid, false);
 
-  if (requiresPrompt) {
+  if (requiresDeletePrompt || requiresTrashPrompt) {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => ConfirmDialog(
-        title: context.t.move_to_device_trash,
-        content: context.t.free_up_space_description,
-        ok: context.t.ok,
-      ),
+      builder: (_) => requiresDeletePrompt
+          ? ConfirmDialog(
+              title: context.t.delete_dialog_title,
+              content: context.t.delete_dialog_alert_local_non_backed_up,
+              ok: context.t.delete_local_dialog_ok_force,
+            )
+          : ConfirmDialog(
+              title: context.t.move_to_device_trash,
+              content: context.t.free_up_space_description,
+              ok: context.t.ok,
+            ),
     );
     if (confirmed != true) {
       return 0;
