@@ -12,6 +12,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  snapshot_test:
+    path: '../snapshot_test'
 
 flutter:
   uses-material-design: true

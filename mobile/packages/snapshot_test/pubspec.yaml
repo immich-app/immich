@@ -1,0 +1,12 @@
+name: snapshot_test
+description: Shared harness for visual snapshot tests
+publish_to: none
+
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
