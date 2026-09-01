@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -9,6 +10,8 @@ import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -40,24 +43,44 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final isInTrash = ref.watch(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final origin = ref.watch(timelineServiceProvider).origin;
+    final isInTrash = origin == TimelineOrigin.trash;
+    final isSyncTrash = origin == TimelineOrigin.syncTrash;
 
     final originalTheme = context.themeData;
 
-    final actions = <Widget>[
-      ..._actionColumnButtons(context, ref, const [RestoreAction(source: .viewer), ShareAction(source: .viewer)]),
+    final actions = isSyncTrash
+        ? <Widget>[
+            KeepOnDeviceActionButton(
+              source: ActionSource.viewer,
+              onResult: (result) {
+                showKeepResultToast(context, result);
+                _updateView(ref);
+              },
+            ),
+            MoveToTrashActionButton(
+              source: ActionSource.viewer,
+              onResult: (result) {
+                showTrashResultToast(context, result);
+                _updateView(ref);
+              },
+            ),
+          ]
+        : <Widget>[
+            ..._actionColumnButtons(context, ref, const [RestoreAction(source: .viewer), ShareAction(source: .viewer)]),
 
-      if (!isInLockedView) ...[
-        if (!isInTrash) ...[
-          ..._actionColumnButtons(context, ref, const [
-            UploadAction(source: .viewer, showProgress: true),
-            EditAssetAction(source: .viewer),
-          ]),
-          if (asset.hasRemote) ImmichColorOverride(color: null, child: AddActionButton(originalTheme: originalTheme)),
-        ],
-        ..._actionColumnButtons(context, ref, const [DeleteAction(source: .viewer)]),
-      ],
-    ];
+            if (!isInLockedView) ...[
+              if (!isInTrash) ...[
+                ..._actionColumnButtons(context, ref, const [
+                  UploadAction(source: .viewer, showProgress: true),
+                  EditAssetAction(source: .viewer),
+                ]),
+                if (asset.hasRemote)
+                  ImmichColorOverride(color: null, child: AddActionButton(originalTheme: originalTheme)),
+              ],
+              ..._actionColumnButtons(context, ref, const [DeleteAction(source: .viewer)]),
+            ],
+          ];
 
     return AnimatedSwitcher(
       duration: Durations.short4,
@@ -108,5 +131,13 @@ class ViewerBottomBar extends ConsumerWidget {
               ),
             ),
     );
+  }
+
+  void _updateView(WidgetRef ref) {
+    Future.delayed(Durations.extralong4, () {
+      if (ref.context.mounted) {
+        ref.read(assetViewerProvider.notifier).setControls(true);
+      }
+    });
   }
 }

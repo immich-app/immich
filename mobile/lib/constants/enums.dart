@@ -37,6 +37,8 @@ enum TrashSyncStatus {
    * to copy the checksum back into the local asset table
    */
   restored,
+  reviewRejected,
+  reviewApproved,
 }
 
 enum DevicePermission { photos, videos, storage, mediaLocation }
@@ -49,3 +51,5 @@ enum DevicePermissionStatus {
 
   bool get hasAccess => this == granted || this == limited;
 }
+
+enum TrashSyncMode { off, autoSync, review }

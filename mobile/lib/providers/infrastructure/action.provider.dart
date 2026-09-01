@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
@@ -65,6 +66,30 @@ class ActionNotifier extends Notifier<void> {
         null => const {},
       },
     };
+  }
+
+  Future<ActionResult> resolveRemoteTrash(ActionSource source, {required bool keep}) async {
+    final assets = _getAssets(source);
+    final assetIds = assets.map((asset) => asset.localId).nonNulls.toSet();
+    return _resolveRemoteTrash(assetIds, keep: keep);
+  }
+
+  Future<ActionResult> resolveAllRemoteTrash({required bool keep}) async {
+    final assetIds = await ref.read(trashSyncRepositoryProvider).getPendingAssetIds();
+    return _resolveRemoteTrash(assetIds, keep: keep);
+  }
+
+  Future<ActionResult> _resolveRemoteTrash(Iterable<String> assetIds, {required bool keep}) async {
+    if (assetIds.isEmpty) {
+      return const ActionResult(count: 0, success: false, error: 'No assets to resolve');
+    }
+    try {
+      final result = await _service.resolveRemoteTrash(assetIds, keep: keep);
+      return ActionResult(count: result.displayCount, success: result.success);
+    } catch (error, stack) {
+      _logger.severe('Failed to resolve remote trash review', error, stack);
+      return ActionResult(count: assetIds.length, success: false, error: error.toString());
+    }
   }
 
   Future<ActionResult> troubleshoot(ActionSource source, BuildContext context) async {
