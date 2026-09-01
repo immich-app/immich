@@ -1,9 +1,10 @@
+import ffmpeg, { type FfprobeData } from 'fluent-ffmpeg';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
-import { Colorspace, ImageFormat } from 'src/enum';
+import { AacProfile, Colorspace, ImageFormat } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { automock } from 'test/utils';
@@ -66,6 +67,38 @@ describe(MediaRepository.name, () => {
   beforeEach(() => {
     // eslint-disable-next-line no-sparse-arrays
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+  });
+
+  describe('probe', () => {
+    it('should ignore audio streams without a resolved codec', async () => {
+      vi.spyOn(ffmpeg, 'ffprobe').mockImplementationOnce((...args) => {
+        const callback = args.at(-1) as (error: Error | null, data: FfprobeData) => void;
+        callback(null, {
+          streams: [
+            {
+              index: 1,
+              codec_type: 'audio',
+              codec_name: 'aac',
+              profile: 'LC',
+              bit_rate: '151550',
+              disposition: { default: 1 },
+            },
+            {
+              index: 2,
+              codec_type: 'audio',
+              codec_tag_string: 'apac',
+              bit_rate: '398950',
+              disposition: { default: 1 },
+            },
+          ],
+          format: {},
+        } as FfprobeData);
+      });
+
+      const result = await sut.probe('spatial-audio.mov');
+
+      expect(result.audioStreams).toEqual([{ index: 1, codecName: 'aac', profile: AacProfile.Lc, bitrate: 151_550 }]);
+    });
   });
 
   describe('applyEdits (single actions)', () => {
