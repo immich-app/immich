@@ -72,14 +72,14 @@ from
   "asset"
 where
   "asset"."originalPath" in $1
-union all
+union
 select
   "asset_file"."path" as "path"
 from
   "asset_file"
 where
   "asset_file"."path" in $2
-union all
+union
 select
   "person"."thumbnailPath" as "path"
 from

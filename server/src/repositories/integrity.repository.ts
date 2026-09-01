@@ -100,10 +100,10 @@ export class IntegrityRepository {
       .selectFrom('asset')
       .select('asset.originalPath as path')
       .where('asset.originalPath', 'in', paths)
-      .unionAll((eb) =>
+      .union((eb) =>
         eb.selectFrom('asset_file').select('asset_file.path as path').where('asset_file.path', 'in', paths),
       )
-      .unionAll((eb) =>
+      .union((eb) =>
         eb
           .selectFrom('person')
           .select((eb) => eb.ref('person.thumbnailPath').$castTo<string>().as('path'))

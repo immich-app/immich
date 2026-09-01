@@ -314,12 +314,9 @@ export class IntegrityService extends BaseService {
   async handleUntrackedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
-    const trackedPaths = new Set<string>();
-    if (items.length > 0) {
-      for (const { path } of await this.integrityRepository.getTrackedPaths(items.map((item) => item.path))) {
-        trackedPaths.add(path);
-      }
-    }
+    const tracked =
+      items.length > 0 ? await this.integrityRepository.getTrackedPaths(items.map(({ path }) => path)) : [];
+    const trackedPaths = new Set(tracked.map(({ path }) => path));
 
     const results = await Promise.all(
       items.map(async ({ reportId, path }) => {
