@@ -15,7 +15,7 @@ config_roots = [
 ]
 
 [tools]
-node = "24.15.0"
+node = "24.20.0"
 pnpm = "11.24.0"
 terragrunt = "1.1.1"
 opentofu = "1.12.6"
