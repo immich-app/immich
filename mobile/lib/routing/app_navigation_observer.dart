@@ -15,6 +15,7 @@ class AppNavigationObserver extends AutoRouterObserver {
   void didPush(Route route, Route? previousRoute) {
     ref.invalidate(inLockedViewProvider);
     ref.invalidate(isAssetViewerOpenProvider);
+    ref.invalidate(timelinePersonProvider);
     unawaited(
       Future(() {
         ref.read(currentRouteNameProvider.notifier).state = route.settings.name;
@@ -28,6 +29,7 @@ class AppNavigationObserver extends AutoRouterObserver {
   void didPop(Route route, Route? previousRoute) {
     ref.invalidate(inLockedViewProvider);
     ref.invalidate(isAssetViewerOpenProvider);
+    ref.invalidate(timelinePersonProvider);
   }
 }
 

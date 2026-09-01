@@ -54,11 +54,8 @@ class PeopleDetails extends ConsumerWidget {
                         person: person,
                         assetFileCreatedAt: asset.createdAt,
                         onTap: () {
-                          final previousRouteData = ref.read(previousRouteDataProvider);
-                          final previousRouteArgs = previousRouteData?.arguments;
-
                           // Prevent circular navigation
-                          if (previousRouteArgs is PersonRouteArgs && previousRouteArgs.person.id == person.id) {
+                          if (ref.read(timelinePersonProvider)?.id == person.id) {
                             context.back();
                             return;
                           }
@@ -66,28 +63,22 @@ class PeopleDetails extends ConsumerWidget {
                           unawaited(context.pushRoute(PersonRoute(person: person)));
                         },
                         onNameTap: () async {
-                          // Needs to be before the modal, as this overwrites the previousRouteDataProvider
-                          final previousRouteData = ref.read(previousRouteDataProvider);
-                          final previousRouteArgs = previousRouteData?.arguments;
-                          final previousPersonId = previousRouteArgs is PersonRouteArgs
-                              ? previousRouteArgs.person.id
-                              : null;
+                          final isFromTheSamePersonTimeline = ref.read(timelinePersonProvider)?.id == person.id;
+                          final mergedInto = await showNameEditModal(context, person);
 
-                          final Person? newPerson = await showNameEditModal(context, person);
+                          // Pop the current route if the person was merged into another person
+                          // and we are on the person's timeline
+                          if (mergedInto != null && isFromTheSamePersonTimeline && context.mounted) {
+                            await context.router.maybePop();
 
-                          // If the name edit resulted in a new person (e.g. from merging)
-                          // And if we are currently nested below the drift person page if said
-                          // old person id, we need to pop, otherwise the timeline provider complains
-                          // and the asset viewer goes black
-                          // TODO: Preferably we would replace the timeline provider, and let it listen to the new person id (Relevant function is the ```TimelineService person(String userId, String personId)``` in timeline.service.dart)
-                          if (newPerson != null &&
-                              newPerson.id != person.id &&
-                              previousPersonId == person.id &&
-                              context.mounted) {
-                            await context.maybePop();
+                            if (context.mounted) {
+                              await context.router.replace(PersonRoute(person: mergedInto));
+                            }
                           }
 
-                          ref.invalidate(peopleAssetProvider(asset.id));
+                          if (context.mounted) {
+                            ref.invalidate(peopleAssetProvider(asset.id));
+                          }
                         },
                       ),
                   ],

@@ -52,7 +52,7 @@ class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
       if (result != 0) {
         ref.invalidate(getAllPeopleProvider);
         if (mounted) {
-          context.pop<Person>(person);
+          context.pop();
         }
       }
     } catch (error) {
