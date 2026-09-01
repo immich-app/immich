@@ -17,9 +17,9 @@ import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
 @RoutePage()
 class PersonPage extends ConsumerStatefulWidget {
-  final Person initialPerson;
+  final Person person;
 
-  const PersonPage({super.key, required this.initialPerson});
+  const PersonPage({super.key, required this.person});
 
   @override
   ConsumerState<PersonPage> createState() => _PersonPageState();
@@ -31,7 +31,7 @@ class _PersonPageState extends ConsumerState<PersonPage> {
   @override
   void initState() {
     super.initState();
-    _person = widget.initialPerson;
+    _person = widget.person;
   }
 
   Future<bool> handleEditName(BuildContext context) async {
@@ -41,7 +41,7 @@ class _PersonPageState extends ConsumerState<PersonPage> {
     if (result != null && result.id != _person.id && mounted) {
       setState(() => _person = result);
 
-      await this.context.replaceRoute(PersonRoute(initialPerson: result));
+      await this.context.replaceRoute(PersonRoute(person: result));
       return true;
     }
     return false;
@@ -89,7 +89,7 @@ class _PersonPageState extends ConsumerState<PersonPage> {
               // Check if we are currently on the PersonRoute that corresponds to the deleted _person
               if (currentRoute.name == PersonRoute.name &&
                   currentArgs is PersonRouteArgs &&
-                  currentArgs.initialPerson.id == _person.id) {
+                  currentArgs.person.id == _person.id) {
                 unawaited(AutoRouter.of(context).replace(const PeopleCollectionRoute()));
               }
             }

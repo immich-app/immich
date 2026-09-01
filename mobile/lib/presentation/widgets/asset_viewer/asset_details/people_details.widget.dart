@@ -58,19 +58,19 @@ class PeopleDetails extends ConsumerWidget {
                           final previousRouteArgs = previousRouteData?.arguments;
 
                           // Prevent circular navigation
-                          if (previousRouteArgs is PersonRouteArgs && previousRouteArgs.initialPerson.id == person.id) {
+                          if (previousRouteArgs is PersonRouteArgs && previousRouteArgs.person.id == person.id) {
                             context.back();
                             return;
                           }
                           ContextHelper(context).pop();
-                          unawaited(context.pushRoute(PersonRoute(initialPerson: person)));
+                          unawaited(context.pushRoute(PersonRoute(person: person)));
                         },
                         onNameTap: () async {
                           // Needs to be before the modal, as this overwrites the previousRouteDataProvider
                           final previousRouteData = ref.read(previousRouteDataProvider);
                           final previousRouteArgs = previousRouteData?.arguments;
                           final previousPersonId = previousRouteArgs is PersonRouteArgs
-                              ? previousRouteArgs.initialPerson.id
+                              ? previousRouteArgs.person.id
                               : null;
 
                           final Person? newPerson = await showNameEditModal(context, person);

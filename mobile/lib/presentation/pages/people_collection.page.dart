@@ -92,7 +92,7 @@ class _PeopleCollectionPageState extends ConsumerState<PeopleCollectionPage> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            unawaited(context.pushRoute(PersonRoute(initialPerson: person)));
+                            unawaited(context.pushRoute(PersonRoute(person: person)));
                           },
                           child: Material(
                             shape: const CircleBorder(side: BorderSide.none),

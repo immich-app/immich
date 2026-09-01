@@ -153,6 +153,6 @@ class DeepLinkService {
       return null;
     }
 
-    return PersonRoute(initialPerson: person);
+    return PersonRoute(person: person);
   }
 }
