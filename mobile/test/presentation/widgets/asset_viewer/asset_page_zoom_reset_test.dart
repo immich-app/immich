@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 import '../../../fixtures/asset.stub.dart';
+import '../../../unit/presentation/presentation_context.dart';
 
 /// Timeline displaying a single asset that we can swap
 class _SwappableTimelineService extends TimelineService {
@@ -40,10 +41,21 @@ class _ZoomedNotifier extends AssetViewerStateNotifier {
 }
 
 void main() {
+  late PresentationContext context;
+
+  setUp(() async {
+    context = await PresentationContext.create();
+  });
+
+  tearDown(() async {
+    await context.dispose();
+  });
+
   testWidgets('resets zoom when the displayed asset is replaced on reload', (tester) async {
     final timeline = _SwappableTimelineService(LocalAssetStub.image1);
     final container = ProviderContainer(
       overrides: [
+        ...context.overrides,
         timelineServiceProvider.overrideWithValue(timeline),
         assetViewerProvider.overrideWith(_ZoomedNotifier.new),
       ],
@@ -73,8 +85,6 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 600));
-    // Ignore any image load errors
-    tester.takeException();
 
     expect(container.read(assetViewerProvider).isZoomed, isTrue);
 
@@ -84,7 +94,6 @@ void main() {
 
     await tester.idle();
     await tester.pump();
-    tester.takeException();
 
     expect(container.read(assetViewerProvider).isZoomed, isFalse);
   });
