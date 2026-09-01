@@ -80,6 +80,7 @@ Future<void> tagAssets(
 
   final count = await tagService.bulkTagAssets(assetIds, tagIds.toList());
   ref.invalidate(tagProvider);
+  ref.invalidate(assetTagsProvider);
   if (context.mounted) {
     toastService.success(context.t.tagged_assets(count: count));
   }

@@ -23,3 +23,7 @@ class TagNotifier extends AsyncNotifier<Set<Tag>> {
 }
 
 final tagProvider = AsyncNotifierProvider<TagNotifier, Set<Tag>>(TagNotifier.new);
+
+final assetTagsProvider = FutureProvider.autoDispose.family<List<Tag>, String>((ref, assetId) {
+  return ref.watch(tagServiceProvider).getTagsForAsset(assetId);
+});

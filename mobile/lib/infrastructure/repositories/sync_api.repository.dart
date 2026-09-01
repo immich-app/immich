@@ -65,6 +65,7 @@ class SyncApiRepository {
           SyncRequestType.peopleV1,
           serverVersion.supports(.assetFacesV2) ? SyncRequestType.assetFacesV2 : SyncRequestType.assetFacesV1,
           if (serverVersion.supports(.assetOcr)) SyncRequestType.assetOcrV1,
+          if (serverVersion.supports(.tagSync)) ...[SyncRequestType.tagsV1, SyncRequestType.tagToAssetsV1],
         ],
       ).toJson(),
     );
@@ -197,6 +198,10 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
   SyncEntityType.assetOcrV1: SyncAssetOcrV1.fromJson,
   SyncEntityType.assetOcrDeleteV1: SyncAssetOcrDeleteV1.fromJson,
+  SyncEntityType.tagV1: SyncTagV1.fromJson,
+  SyncEntityType.tagDeleteV1: SyncTagDeleteV1.fromJson,
+  SyncEntityType.tagToAssetV1: SyncTagToAssetV1.fromJson,
+  SyncEntityType.tagToAssetDeleteV1: SyncTagToAssetDeleteV1.fromJson,
   SyncEntityType.syncCompleteV1: _SyncEmptyDto.fromJson,
 };
 
