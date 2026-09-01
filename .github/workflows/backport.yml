@@ -22,6 +22,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: write
           permission-pull-requests: write
+          permission-workflows: write
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
