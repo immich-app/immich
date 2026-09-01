@@ -180,6 +180,7 @@ jobs:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: write
+          permission-discussions: write
 
       - name: Publish release
         env:
