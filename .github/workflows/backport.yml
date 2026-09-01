@@ -36,6 +36,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           label_pattern: '^backport:(release/.+)$'
           add_team_reviewers: team
+          add_labels: 'backport'
           auto_merge_enabled: true
           auto_merge_method: squash
           comment_style: summary
