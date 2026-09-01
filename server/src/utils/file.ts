@@ -82,6 +82,10 @@ export const sendFile = async (
       logger.error(`Unable to send file: ${error}`, error.stack);
     }
 
+    // prevent the browser from caching the error response, which would otherwise
+    // reuse a long-lived Cache-Control header set before the send failed
+    res.set('Cache-Control', 'private, no-store');
+
     next(new NotFoundException());
   }
 };
