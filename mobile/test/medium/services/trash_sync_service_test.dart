@@ -27,7 +27,7 @@ void main() {
     );
     userId = (await ctx.newUser()).id;
     await ctx.newAuthUser(id: userId);
-    await ctx.settings.write(.trashSyncEnabled, true);
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.autoSync);
 
     when(() => ctx.assetMediaApi.trash(any())).thenAnswer(_mapStatus(.done));
     when(() => ctx.assetMediaApi.restore(any())).thenAnswer(_mapStatus(.done));
@@ -68,7 +68,7 @@ void main() {
   });
 
   test('trash sync disabled: trashed asset is left untouched', () async {
-    await ctx.settings.write(.trashSyncEnabled, false);
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.off);
     final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
 
     await sut.reconcile();

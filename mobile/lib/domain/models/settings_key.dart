@@ -37,7 +37,6 @@ enum SettingsKey<T> {
   albumIsGrid<bool>(),
 
   // Sync
-  trashSyncEnabled<bool>(),
   trashSyncMode<TrashSyncMode>(codec: EnumCodec(TrashSyncMode.values)),
 
   // Backup

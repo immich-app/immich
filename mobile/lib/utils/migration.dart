@@ -21,6 +21,8 @@ import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 const int targetVersion = 28;
+@visibleForTesting
+const legacyTrashSyncEnabledKey = 'trashSyncEnabled';
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
@@ -155,7 +157,14 @@ Future<void> _migrateTo26(Drift drift) async {
 
 Future<void> _migrateTo27(Drift drift) async {
   final migrator = _StoreMigrator(drift);
-  await migrator.migrateBool(.legacyManageLocalMediaAndroid, .trashSyncEnabled);
+  final enabled = await migrator.readLegacyStoreInt(StoreKey.legacyManageLocalMediaAndroid.id);
+  if (enabled != null) {
+    migrator.stage(
+      .legacyManageLocalMediaAndroid,
+      .trashSyncMode,
+      enabled != 0 ? TrashSyncMode.autoSync : TrashSyncMode.off,
+    );
+  }
   await migrator.complete();
 }
 
@@ -276,16 +285,18 @@ class _StoreMigrator {
   }
 
   Future<void> migrateLegacyTrashSyncSetting() async {
-    final row = await (_db.settingsEntity.select()..where((row) => row.key.equals(SettingsKey.trashSyncEnabled.name)))
-        .getSingleOrNull();
-    if (row == null) {
+    _settingsToDelete.add(legacyTrashSyncEnabledKey);
+
+    final raw = await readSetting(legacyTrashSyncEnabledKey);
+    final enabled = raw == null ? null : bool.tryParse(raw);
+    if (enabled == null) {
       return;
     }
 
-    if (row.value != null && SettingsKey.trashSyncEnabled.decode(row.value!)) {
-      _cache[SettingsKey.trashSyncMode] = TrashSyncMode.autoSync;
+    final currentMode = await readSetting(SettingsKey.trashSyncMode.name);
+    if (currentMode == null) {
+      _cache[SettingsKey.trashSyncMode] = enabled ? TrashSyncMode.autoSync : TrashSyncMode.off;
     }
-    _settingsToDelete.add(SettingsKey.trashSyncEnabled.name);
   }
 
   Future<void> migrateInt(StoreKey<int> legacyKey, SettingsKey<int> newKey) async {
@@ -336,6 +347,11 @@ class _StoreMigrator {
       }
     });
     await deleteLegacyStoreRows(_migratedStoreIds);
+  }
+
+  Future<String?> readSetting(String key) async {
+    final row = await (_db.settingsEntity.select()..where((row) => row.key.equals(key))).getSingleOrNull();
+    return row?.value;
   }
 
   Future<String?> readLegacyStoreString(int id) async {
