@@ -444,7 +444,7 @@ extension type const TagServiceStub(MockTagService service) implements Stub<Mock
       () => service.bulkTagAssets(any(), any());
 
   Future<List<Tag>> Function() get upsertTags =>
-      () => service.upsertTags(any());
+      () => service.upsertTags(any(), ownerId: any(named: 'ownerId'));
 
   Future<Set<Tag>> Function() get getAllTags =>
       () => service.getAllTags();
