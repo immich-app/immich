@@ -2,7 +2,7 @@ import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
-import { defaults } from 'src/config';
+import { defaults } from 'src/dtos/config.dto';
 import {
   AssetFileType,
   AssetType,
@@ -17,6 +17,7 @@ import {
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { firstDateTime, MetadataService } from 'src/services/metadata.service';
 import { AssetFactory } from 'test/factories/asset.factory';
+import { PersonGroupFactory } from 'test/factories/person-group.factory';
 import { PersonFactory } from 'test/factories/person.factory';
 import { videoInfoStub } from 'test/fixtures/media.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
@@ -39,7 +40,10 @@ const forSidecarJob = (
   };
 };
 
-const makeFaceTags = (face: Partial<{ Name: string }> = {}, orientation?: ImmichTags['Orientation']) => ({
+const makeFaceTags = (
+  face: Partial<{ Name: string }> = {},
+  orientation?: ImmichTags['Orientation'],
+): Partial<ImmichTags> => ({
   Orientation: orientation,
   RegionInfo: {
     AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
@@ -1371,6 +1375,36 @@ describe(MetadataService.name, () => {
       expect(mocks.person.updateAll).not.toHaveBeenCalled();
     });
 
+    it('should handle string coordinates in face region bounding box calculation by limiting to 16 decimal places', async () => {
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create();
+
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      const faceTags = makeFaceTags({ Name: person.name });
+
+      // Simulating EXIF returning a string with >16 decimal places
+      faceTags.RegionInfo!.RegionList[0].Area.X = '0.48564814814814824';
+      faceTags.RegionInfo!.RegionList[0].Area.W = '0.2';
+
+      mockReadTags(faceTags);
+      mocks.person.getDistinctNames.mockResolvedValue([]);
+      mocks.person.createGroups.mockResolvedValue([PersonGroupFactory.create({ id: person.personGroupId })]);
+      mocks.person.createAll.mockResolvedValue([person]);
+      mocks.person.update.mockResolvedValue(person);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            boundingBoxX1: Math.floor((0.4856481481481482 - 0.2 / 2) * 1000),
+          }),
+        ],
+        [],
+      );
+    });
+
     it('should apply metadata face tags creating new people', async () => {
       const asset = AssetFactory.create();
       const person = PersonFactory.create();
@@ -1379,7 +1413,8 @@ describe(MetadataService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
       mockReadTags(makeFaceTags({ Name: person.name }));
       mocks.person.getDistinctNames.mockResolvedValue([]);
-      mocks.person.createAll.mockResolvedValue([person.id]);
+      mocks.person.createGroups.mockResolvedValue([PersonGroupFactory.create({ id: person.personGroupId })]);
+      mocks.person.createAll.mockResolvedValue([person]);
       mocks.person.update.mockResolvedValue(person);
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
@@ -1390,7 +1425,7 @@ describe(MetadataService.name, () => {
           {
             id: 'random-uuid',
             assetId: asset.id,
-            personId: 'random-uuid',
+            personGroupId: 'random-uuid',
             imageHeight: 100,
             imageWidth: 1000,
             boundingBoxX1: 0,
@@ -1403,12 +1438,12 @@ describe(MetadataService.name, () => {
         [],
       );
       expect(mocks.person.updateAll).toHaveBeenCalledWith([
-        { id: 'random-uuid', ownerId: asset.ownerId, faceAssetId: 'random-uuid' },
+        { ownerId: asset.ownerId, personGroupId: 'random-uuid', faceAssetId: 'random-uuid' },
       ]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.PersonGenerateThumbnail,
-          data: { id: person.id },
+          data: { ownerId: asset.ownerId, personGroupId: 'random-uuid' },
         },
       ]);
     });
@@ -1420,7 +1455,8 @@ describe(MetadataService.name, () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
       mockReadTags(makeFaceTags({ Name: person.name }));
-      mocks.person.getDistinctNames.mockResolvedValue([{ id: person.id, name: person.name }]);
+      mocks.person.getDistinctNames.mockResolvedValue([{ personGroupId: person.personGroupId, name: person.name }]);
+      mocks.person.createGroups.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([]);
       mocks.person.update.mockResolvedValue(person);
       await sut.handleMetadataExtraction({ id: asset.id });
@@ -1432,7 +1468,7 @@ describe(MetadataService.name, () => {
           {
             id: 'random-uuid',
             assetId: asset.id,
-            personId: person.id,
+            personGroupId: person.personGroupId,
             imageHeight: 100,
             imageWidth: 1000,
             boundingBoxX1: 0,
@@ -1508,7 +1544,8 @@ describe(MetadataService.name, () => {
           mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
           mockReadTags(makeFaceTags({ Name: person.name }, orientation));
           mocks.person.getDistinctNames.mockResolvedValue([]);
-          mocks.person.createAll.mockResolvedValue([person.id]);
+          mocks.person.createGroups.mockResolvedValue([PersonGroupFactory.create({ id: person.personGroupId })]);
+          mocks.person.createAll.mockResolvedValue([person]);
           mocks.person.update.mockResolvedValue(person);
           await sut.handleMetadataExtraction({ id: asset.id });
           expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
@@ -1521,7 +1558,7 @@ describe(MetadataService.name, () => {
               {
                 id: 'random-uuid',
                 assetId: asset.id,
-                personId: 'random-uuid',
+                personGroupId: 'random-uuid',
                 imageWidth: imgW,
                 imageHeight: imgH,
                 boundingBoxX1: x1,
@@ -1534,12 +1571,12 @@ describe(MetadataService.name, () => {
             [],
           );
           expect(mocks.person.updateAll).toHaveBeenCalledWith([
-            { id: 'random-uuid', ownerId: asset.ownerId, faceAssetId: 'random-uuid' },
+            { ownerId: asset.ownerId, personGroupId: 'random-uuid', faceAssetId: 'random-uuid' },
           ]);
           expect(mocks.job.queueAll).toHaveBeenCalledWith([
             {
               name: JobName.PersonGenerateThumbnail,
-              data: { id: person.id },
+              data: { ownerId: asset.ownerId, personGroupId: 'random-uuid' },
             },
           ]);
         },

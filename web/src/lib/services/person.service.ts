@@ -99,7 +99,7 @@ const handleShowPerson = async (person: { id: string }) => {
   }
 };
 
-export const handleUpdatePersonBirthDate = async (person: PersonResponseDto, birthDate: string) => {
+export const handleUpdatePersonBirthDate = async (person: PersonResponseDto, birthDate: string | null) => {
   const $t = await getFormatter();
 
   try {

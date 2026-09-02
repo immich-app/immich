@@ -16,10 +16,9 @@ class ImmichCloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ImmichIconButton(
-        key: key,
-        icon: Icons.close,
-        color: color,
-        variant: variant,
-        onPressed: onPressed ?? () => Navigator.of(context).pop(),
-      );
+    icon: Icons.close,
+    color: color,
+    variant: variant,
+    onPressed: onPressed ?? () => Navigator.of(context).pop(),
+  );
 }

@@ -94,6 +94,24 @@ export class IntegrityRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getTrackedPaths(paths: string[]) {
+    return this.db
+      .selectFrom('asset')
+      .select('asset.originalPath as path')
+      .where('asset.originalPath', 'in', paths)
+      .union((eb) =>
+        eb.selectFrom('asset_file').select('asset_file.path as path').where('asset_file.path', 'in', paths),
+      )
+      .union((eb) =>
+        eb
+          .selectFrom('person')
+          .select((eb) => eb.ref('person.thumbnailPath').$castTo<string>().as('path'))
+          .where('person.thumbnailPath', 'in', paths),
+      )
+      .execute();
+  }
+
   @GenerateSql({ params: [] })
   getAssetCount() {
     return this.db
@@ -119,7 +137,7 @@ export class IntegrityRepository {
   }
 
   @GenerateSql({ params: [], stream: true })
-  streamAssetPaths() {
+  streamAssetPathsForMissingFiles() {
     return this.db
       .selectFrom((eb) =>
         eb
@@ -143,7 +161,7 @@ export class IntegrityRepository {
       )
       .leftJoin('integrity_report', (join) =>
         join
-          .on('integrity_report.type', '=', IntegrityReport.UntrackedFile)
+          .on('integrity_report.type', '=', IntegrityReport.MissingFile)
           .on((eb) =>
             eb.or([
               eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
@@ -154,14 +172,13 @@ export class IntegrityRepository {
       .select(['allPaths.path as path', 'allPaths.assetId', 'allPaths.fileAssetId', 'integrity_report.id as reportId'])
       .stream() as AsyncIterableIterator<
       { path: string; reportId: string | null } & (
-        | { assetId: string; fileAssetId: null }
-        | { assetId: null; fileAssetId: string }
+        { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
       )
     >;
   }
 
-  @GenerateSql({ params: [DummyValue.DATE, DummyValue.DATE], stream: true })
-  streamAssetChecksums(startMarker?: Date, endMarker?: Date) {
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
+  streamAssetChecksums(startMarker?: Date) {
     return this.db
       .selectFrom('asset')
       .where('asset.deletedAt', 'is', null)
@@ -177,9 +194,9 @@ export class IntegrityRepository {
         'asset.id as assetId',
         'integrity_report.id as reportId',
       ])
-      .$if(startMarker !== undefined, (qb) => qb.where('createdAt', '>=', startMarker!))
-      .$if(endMarker !== undefined, (qb) => qb.where('createdAt', '<=', endMarker!))
-      .orderBy('createdAt', 'asc')
+      .where('asset.isExternal', '=', sql.lit(false))
+      .$if(startMarker !== undefined, (qb) => qb.where('asset.createdAt', '>=', startMarker!))
+      .orderBy('asset.createdAt', 'asc')
       .stream();
   }
 

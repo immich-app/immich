@@ -63,6 +63,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { untrack, type Snippet } from 'svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
 
   type Props = {
     asset: AssetResponseDto;
@@ -232,7 +233,7 @@
       style:width={rasterWidth}
       style:height={rasterHeight}
       style:transform="scale({rasterScale})"
-      style:transform-origin="0 0"
+      style:transform-origin={languageManager.rtl ? 'right top' : 'left top'}
       style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
     >
       {#if show.alphaBackground}
@@ -261,10 +262,6 @@
         />
       {/if}
 
-      {#if show.brokenAsset}
-        <BrokenAsset class="absolute size-full text-xl" />
-      {/if}
-
       {#if show.preview}
         <ImageLayer
           {adaptiveImageLoader}
@@ -289,6 +286,10 @@
         />
       {/if}
     </div>
+
+    {#if show.brokenAsset}
+      <BrokenAsset class="absolute inset-0 z-10 size-full text-xl" />
+    {/if}
 
     {#if overlays}
       <div class="pointer-events-none absolute inset-0">

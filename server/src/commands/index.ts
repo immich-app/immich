@@ -8,13 +8,13 @@ import {
 } from 'src/commands/media-location.command';
 import { DisableOAuthLogin, EnableOAuthLogin } from 'src/commands/oauth-login';
 import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/commands/password-login';
-import { PromptPasswordQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
+import { PromptPasswordResetQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
 import { SchemaCheck } from 'src/commands/schema-check';
 import { VersionCommand } from 'src/commands/version.command';
 
 export const commandsAndQuestions = [
   ResetAdminPasswordCommand,
-  PromptPasswordQuestions,
+  PromptPasswordResetQuestions,
   PromptEmailQuestion,
   EnablePasswordLoginCommand,
   DisablePasswordLoginCommand,

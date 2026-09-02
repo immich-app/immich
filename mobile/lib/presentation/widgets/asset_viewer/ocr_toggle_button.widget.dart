@@ -28,7 +28,7 @@ class OcrToggleButton extends ConsumerWidget {
                   shape: const CircleBorder(),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
-                    onTap: ref.read(assetViewerProvider.notifier).toggleOcr,
+                    onTap: ref.watch(assetViewerProvider.notifier).toggleOcr,
                     child: const Padding(
                       padding: EdgeInsets.all(10.0),
                       child: Icon(Icons.text_fields_rounded, size: 22, color: Colors.white),

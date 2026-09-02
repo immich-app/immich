@@ -53,7 +53,7 @@ class ApiService {
     _apiClient.client = NetworkRepository.client;
   }
 
-  setEndpoint(String endpoint) {
+  void setEndpoint(String endpoint) {
     _apiClient.basePath = endpoint;
     _apiClient.client = NetworkRepository.client;
     usersApi = UsersApi(_apiClient);
@@ -96,12 +96,12 @@ class ApiService {
   ///  port   - optional (default: based on schema)
   ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
-    String url = sanitizeUrl(serverUrl);
+    String url = normalizeServerUrl(serverUrl);
 
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
     if (wellKnownEndpoint.isNotEmpty) {
-      url = sanitizeUrl(wellKnownEndpoint);
+      url = normalizeServerUrl(wellKnownEndpoint);
     }
 
     if (!await _isEndpointAvailable(url)) {
@@ -113,12 +113,10 @@ class ApiService {
   }
 
   Future<bool> _isEndpointAvailable(String serverUrl) async {
-    if (!serverUrl.endsWith('/api')) {
-      serverUrl += '/api';
-    }
+    final endpoint = serverUrl.endsWith('/api') ? serverUrl : '$serverUrl/api';
 
     try {
-      await setEndpoint(serverUrl);
+      setEndpoint(endpoint);
       await serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;
@@ -155,7 +153,7 @@ class ApiService {
   }
 
   Future<void> setDeviceInfoHeader() async {
-    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
     if (Platform.isIOS) {
       final iosInfo = await deviceInfoPlugin.iosInfo;

@@ -1,8 +1,7 @@
 import AsyncLock from 'async-lock';
 import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
-import { SystemConfig, defaults } from 'src/config';
-import { SystemConfigSchema } from 'src/dtos/system-config.dto';
+import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto';
 import { DatabaseLock, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -29,10 +28,12 @@ export const getConfig = async (repos: RepoDeps, { withCache }: { withCache: boo
   if (!withCache || !config) {
     const timestamp = lastUpdated;
     await asyncLock.acquire(DatabaseLock[DatabaseLock.GetSystemConfig], async () => {
-      if (timestamp === lastUpdated) {
-        config = await buildConfig(repos);
-        lastUpdated = Date.now();
+      if (timestamp !== lastUpdated) {
+        return;
       }
+
+      config = await buildConfig(repos);
+      lastUpdated = Date.now();
     });
   }
 
@@ -45,7 +46,7 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
   const partialConfig: DeepPartial<SystemConfig> = {};
   for (const property of getKeysDeep(defaults)) {
     const newValue = _.get(newConfig, property);
-    const isEmpty = newValue === undefined || newValue === null || newValue === '';
+    const isEmpty = [undefined, null, ''].includes(newValue);
     const defaultValue = _.get(defaults, property);
     const isEqual = newValue === defaultValue || _.isEqual(newValue, defaultValue);
 
@@ -64,7 +65,7 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
 const loadFromFile = async ({ metadataRepo, logger }: RepoDeps, filepath: string) => {
   try {
     const file = await metadataRepo.readFile(filepath);
-    return loadYaml(file.toString()) as unknown;
+    return loadYaml(file) as unknown;
   } catch (error: Error | any) {
     logger.error(`Unable to load configuration file: ${filepath}`);
     logger.error(error);
@@ -98,7 +99,7 @@ const buildConfig = async (repos: RepoDeps) => {
   }
 
   // validate with Zod schema
-  const result = SystemConfigSchema.safeParse(rawConfig);
+  const result = AdminConfigDto.schema.safeParse(rawConfig);
   if (!result.success) {
     const messages = ['Invalid system config: '];
     for (const issue of result.error.issues) {
@@ -107,9 +108,8 @@ const buildConfig = async (repos: RepoDeps) => {
     }
     if (configFile) {
       throw new Error(messages.join('\n'));
-    } else {
-      logger.error('Validation error', messages);
     }
+    logger.error('Validation error', messages);
   }
 
   const config = (result.success ? result.data : rawConfig) as SystemConfig;
@@ -117,10 +117,10 @@ const buildConfig = async (repos: RepoDeps) => {
   if (config.server.externalDomain.length > 0) {
     const domain = new URL(config.server.externalDomain);
 
-    let externalDomain = domain.origin;
-    if (domain.password && domain.username) {
-      externalDomain = `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`;
-    }
+    const externalDomain =
+      domain.password && domain.username
+        ? `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`
+        : domain.origin;
 
     config.server.externalDomain = externalDomain;
   }

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-top-level-assignment-in-function */
 import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
@@ -177,12 +178,14 @@ export const utils = {
   resetDatabase: async (tables?: string[]) => {
     client = await utils.connectDatabase();
 
-    tables = tables || [
+    tables ||= [
       // TODO e2e test for deleting a stack, since it is quite complex
       'stack',
       'library',
       'shared_link',
       'person',
+      'person_group',
+      'cluster_group',
       'album',
       'asset',
       'asset_face',
@@ -304,7 +307,7 @@ export const utils = {
   },
 
   adminSetup: async (options?: AdminSetupOptions) => {
-    options = options || { onboarding: true };
+    options ||= { onboarding: true };
 
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
@@ -433,12 +436,12 @@ export const utils = {
     return person;
   },
 
-  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
+  createFace: async ({ assetId, personGroupId }: { assetId: string; personGroupId: string }) => {
     if (!client) {
       return;
     }
 
-    await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
+    await client.query('INSERT INTO asset_face ("assetId", "personGroupId") VALUES ($1, $2)', [assetId, personGroupId]);
   },
 
   setPersonThumbnail: async (personId: string) => {
@@ -446,7 +449,9 @@ export const utils = {
       return;
     }
 
-    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
+    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "personGroupId" = $1`, [
+      personId,
+    ]);
   },
 
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
@@ -545,6 +550,7 @@ export const utils = {
       {
         headers: asBearerAuth(accessToken),
         fetch: (...args: Parameters<typeof fetch>) =>
+          // eslint-disable-next-line unicorn/no-invalid-argument-count, unicorn/prefer-await
           fetch(...args).then((response) => {
             setCookie = response.headers.getSetCookie();
             return response;
@@ -645,7 +651,7 @@ export const utils = {
 
   resetAdminConfig: async (accessToken: string) => {
     const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
-    await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
+    await updateConfig({ adminConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
   },
 
   isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseLegacyDto) => {
@@ -673,9 +679,9 @@ export const utils = {
   },
 
   cliLogin: async (accessToken: string) => {
-    const key = await utils.createApiKey(accessToken, [Permission.All]);
-    await immichCli(['login', app, `${key.secret}`]);
-    return key.secret;
+    const { secret } = await utils.createApiKey(accessToken, [Permission.All]);
+    await immichCli(['login', app, secret]);
+    return secret;
   },
 
   scan: async (accessToken: string, id: string) => {
@@ -706,6 +712,7 @@ export const utils = {
   },
 };
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 utils.initSdk();
 
 if (!existsSync(`${testAssetDir}/albums`)) {
