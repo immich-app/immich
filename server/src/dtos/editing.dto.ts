@@ -31,7 +31,7 @@ const CropParametersSchema = z
 const RotateParametersSchema = z
   .object({
     angle: z
-      .number()
+      .int()
       .refine((v) => [0, 90, 180, 270].includes(v), {
         error: 'Angle must be one of the following values: 0, 90, 180, 270',
       })
