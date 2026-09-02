@@ -30,6 +30,7 @@ enum TimelineOrigin {
   video,
   place,
   person,
+  tag,
   map,
   search,
   deepLink,
@@ -76,6 +77,8 @@ class TimelineFactory {
 
   TimelineService person(String userId, String personId) =>
       TimelineService(_timelineRepository.person(userId, personId, groupBy));
+
+  TimelineService tag(String userId, String tagId) => TimelineService(_timelineRepository.tag(userId, tagId, groupBy));
 
   TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));

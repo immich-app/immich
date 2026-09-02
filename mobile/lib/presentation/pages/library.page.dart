@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -424,6 +425,9 @@ class _QuickAccessButtonList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final partnerSharedWithAsync = ref.watch(sharedWithPartnerProvider);
     final partners = partnerSharedWithAsync.valueOrNull ?? [];
+    final tagsEnabled = ref.watch(
+      userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
+    );
 
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
@@ -471,6 +475,15 @@ class _QuickAccessButtonList extends ConsumerWidget {
                 ),
                 onTap: () => context.pushRoute(const LockedFolderRoute()),
               ),
+              if (tagsEnabled)
+                ListTile(
+                  leading: const Icon(Icons.sell_outlined, size: 26),
+                  title: Text(
+                    context.t.tags,
+                    style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  onTap: () => context.pushRoute(TagsRoute()),
+                ),
               ListTile(
                 leading: const Icon(Icons.group_outlined, size: 26),
                 title: Text(

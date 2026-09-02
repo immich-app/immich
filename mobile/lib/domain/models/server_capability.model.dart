@@ -8,7 +8,7 @@ enum ServerCapability {
   assetFacesV2(SemVer(major: 2, minor: 6, patch: 0)),
   syncV2(SemVer(major: 3, minor: 0, patch: 0)),
   assetOcr(SemVer(major: 3, minor: 0, patch: 0)),
-  tagSync(SemVer(major: 3, minor: 2, patch: 0)),
+  tagSync(SemVer(major: 3, minor: 2, patch: 0)), // TODO: Change this to the next version before merging
 
   // Migrations
   assetPayloadChange20260128(SemVer(major: 2, minor: 5, patch: 0)),

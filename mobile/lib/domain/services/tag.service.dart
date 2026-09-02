@@ -15,7 +15,9 @@ class TagService {
   const TagService(this._apiRepository, this._repository);
 
   Future<int> bulkTagAssets(List<String> assetIds, List<String> tagIds) async {
-    return _apiRepository.bulkTagAssets(assetIds, tagIds);
+    final count = await _apiRepository.bulkTagAssets(assetIds, tagIds);
+    await _repository.addTagAssets(assetIds, tagIds);
+    return count;
   }
 
   Future<Set<Tag>> getAllTags() async {
@@ -36,11 +38,40 @@ class TagService {
     return _repository.getForAsset(assetId);
   }
 
-  Future<List<Tag>> upsertTags(List<String> tags) async {
+  Stream<List<Tag>> watchAllTags() {
+    return _repository.watchAll();
+  }
+
+  Future<List<Tag>> upsertTags(List<String> tags, {String? ownerId}) async {
     final dtos = await _apiRepository.upsertTags(tags);
     if (dtos == null) {
       return [];
     }
-    return dtos.map(Tag.fromDto).toList();
+    final result = dtos.map(Tag.fromDto).toList();
+    if (ownerId != null) {
+      await _repository.upsertTags(result, ownerId);
+    }
+    return result;
+  }
+
+  Future<Tag?> updateTag(String id, {String? name, String? color}) async {
+    final dto = await _apiRepository.updateTag(id, name: name, color: color);
+    if (dto == null) {
+      return null;
+    }
+    final tag = Tag.fromDto(dto);
+    await _repository.updateTag(id, value: tag.value, color: tag.color);
+    return tag;
+  }
+
+  Future<void> deleteTag(String id) async {
+    await _apiRepository.deleteTag(id);
+    await _repository.deleteTag(id);
+  }
+
+  Future<int> untagAssets(String tagId, List<String> assetIds) async {
+    final count = await _apiRepository.untagAssets(tagId, assetIds);
+    await _repository.removeTagAssets(tagId, assetIds);
+    return count;
   }
 }

@@ -23,4 +23,23 @@ class TagsApiRepository extends ApiRepository {
   Future<List<TagResponseDto>?> upsertTags(List<String> tags) async {
     return _api.upsertTags(TagUpsertDto(tags: tags));
   }
+
+  Future<TagResponseDto?> updateTag(String id, {String? name, String? color}) async {
+    return _api.updateTag(
+      id,
+      TagUpdateDto(
+        name: name == null ? const Optional.absent() : Optional.present(name),
+        color: Optional.present(color),
+      ),
+    );
+  }
+
+  Future<void> deleteTag(String id) async {
+    return _api.deleteTag(id);
+  }
+
+  Future<int> untagAssets(String tagId, List<String> assetIds) async {
+    final response = await _api.untagAssets(tagId, BulkIdsDto(ids: assetIds));
+    return response?.where((r) => r.success).length ?? 0;
+  }
 }

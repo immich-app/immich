@@ -14,10 +14,11 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class MesmerizingSliverAppBar extends ConsumerStatefulWidget {
-  const MesmerizingSliverAppBar({super.key, required this.title, this.icon = Icons.camera});
+  const MesmerizingSliverAppBar({super.key, required this.title, this.icon = Icons.camera, this.actions});
 
   final String title;
   final IconData icon;
+  final List<Widget>? actions;
   @override
   ConsumerState<MesmerizingSliverAppBar> createState() => _MesmerizingSliverAppBarState();
 }
@@ -55,6 +56,14 @@ class _MesmerizingSliverAppBarState extends ConsumerState<MesmerizingSliverAppBa
             pinned: true,
             snap: false,
             elevation: 0,
+            actions: widget.actions == null
+                ? null
+                : [
+                    IconTheme.merge(
+                      data: IconThemeData(color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress)),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: widget.actions!),
+                    ),
+                  ],
             leading: IconButton(
               icon: Icon(
                 Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
