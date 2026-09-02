@@ -2,7 +2,7 @@
 FROM ghcr.io/immich-app/base-server-dev:202608300913@sha256:188679bfc2e7a496bdc13bd145cf59d90b2fb8f9dbf7131b2c1a368cd637b1a0 AS dev
 
 
-COPY --from=ghcr.io/jdx/mise:2026.8.12@sha256:0b65495ca65878cd93e6cdd47d9cbad6806a43416b768eeffbfc734ba034c7d2 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.8.16@sha256:05fdec33a6b3f72198fd918927cfa2a345dc3df48175531c1bc3050eaa06f328 /usr/local/bin/mise /usr/local/bin/mise
 
 RUN echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
   echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
