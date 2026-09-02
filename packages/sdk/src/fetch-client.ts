@@ -3695,6 +3695,38 @@ export type SyncStackV1 = {
     /** Updated at */
     updatedAt: string;
 };
+export type SyncTagDeleteV1 = {
+    /** Tag ID */
+    tagId: string;
+};
+export type SyncTagToAssetDeleteV1 = {
+    /** Asset ID */
+    assetId: string;
+    /** Tag ID */
+    tagId: string;
+};
+export type SyncTagToAssetV1 = {
+    /** Asset ID */
+    assetId: string;
+    /** Tag ID */
+    tagId: string;
+};
+export type SyncTagV1 = {
+    /** Tag color (hex) */
+    color: string | null;
+    /** Created at */
+    createdAt: string;
+    /** Tag ID */
+    id: string;
+    /** Owner ID */
+    ownerId: string;
+    /** Parent tag ID */
+    parentId: string | null;
+    /** Updated at */
+    updatedAt: string;
+    /** Tag value (full path) */
+    value: string;
+};
 export type SyncUserDeleteV1 = {
     /** User ID */
     userId: string;
@@ -8344,6 +8376,10 @@ export enum SyncEntityType {
     AssetFaceV1 = "AssetFaceV1",
     AssetFaceV2 = "AssetFaceV2",
     AssetFaceDeleteV1 = "AssetFaceDeleteV1",
+    TagV1 = "TagV1",
+    TagDeleteV1 = "TagDeleteV1",
+    TagToAssetV1 = "TagToAssetV1",
+    TagToAssetDeleteV1 = "TagToAssetDeleteV1",
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
@@ -8373,6 +8409,8 @@ export enum SyncRequestType {
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     PartnerStacksV1 = "PartnerStacksV1",
     StacksV1 = "StacksV1",
+    TagsV1 = "TagsV1",
+    TagToAssetsV1 = "TagToAssetsV1",
     UsersV1 = "UsersV1",
     PeopleV1 = "PeopleV1",
     AssetFacesV1 = "AssetFacesV1",
