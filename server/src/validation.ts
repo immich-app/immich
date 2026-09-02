@@ -185,7 +185,7 @@ export const isoDateToDate = z
  * // Pipe (query): coerce string to number then validate range
  * z.coerce.number().pipe(latitudeSchema).describe('Latitude (-90 to 90)')
  */
-export const latitudeSchema = z.number().min(-90).max(90);
+export const latitudeSchema = z.number().meta({ format: 'double' }).min(-90).max(90);
 
 /**
  * Longitude in range [-180, 180]. Reuse for body or query params.
@@ -198,7 +198,7 @@ export const latitudeSchema = z.number().min(-90).max(90);
  * // Pipe (query): coerce string to number then validate range
  * z.coerce.number().pipe(longitudeSchema).describe('Longitude (-180 to 180)')
  */
-export const longitudeSchema = z.number().min(-180).max(180);
+export const longitudeSchema = z.number().meta({ format: 'double' }).min(-180).max(180);
 
 /**
  * Parse string to boolean
