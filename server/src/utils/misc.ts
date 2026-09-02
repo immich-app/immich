@@ -225,6 +225,8 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
     document.components.schemas = sortKeys(schemas);
 
+    const errors: string[] = [];
+
     for (const [schemaName, schema] of Object.entries(schemas)) {
       if (!schema.properties) {
         continue;
@@ -232,16 +234,35 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
       schema.properties = sortKeys(schema.properties);
 
-      for (const [key, value] of Object.entries(schema.properties)) {
-        if (typeof value === 'string') {
+      for (const [key, initialValue] of Object.entries(schema.properties)) {
+        if (typeof initialValue === 'string' || !isSchema(initialValue)) {
           continue;
         }
 
-        if (isSchema(value) && value.type === 'number' && value.format === 'float') {
-          throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        // check array types
+        let value: SchemaObject | ReferenceObject = initialValue;
+        if (value.type === 'array' && value.items) {
+          value = value.items;
+        }
+
+        if (isSchema(value) && value.type === 'number') {
+          if (value.format === 'float') {
+            errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+          }
+
+          // verify it was meant to be a number (and not an integer)
+          if (!value.format) {
+            errors.push(
+              `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
+            );
+          }
         }
       }
       schema.required?.sort();
+
+      if (errors.length > 0) {
+        throw new Error(`Schema validation failed:\n  ${errors.join('\n  ')}`);
+      }
     }
   }
 
