@@ -1,13 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/mapper.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/partner.repository.drift.dart';
 
-class PartnerRepository {
-  final Drift _db;
-  const PartnerRepository(this._db);
+@DriftAccessor()
+class PartnerRepository extends DatabaseAccessor<Drift> with $PartnerRepositoryMixin {
+  PartnerRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<Partner> get({required String sharedById, required String sharedWithId}) =>
       (_db.select(_db.partnerEntity).join([
@@ -46,11 +49,11 @@ class PartnerRepository {
         ),
       );
 
-  Future<void> update({required String sharedById, required String sharedWithId, required bool inTimeline}) =>
+  Future<void> updatePartner({required String sharedById, required String sharedWithId, required bool inTimeline}) =>
       (_db.partnerEntity.update()..where((t) => t.sharedById.equals(sharedById) & t.sharedWithId.equals(sharedWithId)))
           .write(PartnerEntityCompanion(inTimeline: Value(inTimeline)));
 
-  Future<void> delete({required String sharedById, required String sharedWithId}) =>
+  Future<void> deletePartner({required String sharedById, required String sharedWithId}) =>
       (_db.partnerEntity.delete()..where((t) => t.sharedById.equals(sharedById) & t.sharedWithId.equals(sharedWithId)))
           .go();
 

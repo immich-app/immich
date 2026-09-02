@@ -2,23 +2,50 @@
 
 -- SearchRepository.searchMetadata
 select
-  "asset".*
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
-  $6
+  $5
 offset
-  $7
+  $6
 
 -- SearchRepository.searchStatistics
 select
@@ -27,74 +54,152 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 
 -- SearchRepository.searchRandom
 select
-  "asset".*
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 order by
   random()
 limit
-  $6
+  $5
 
 -- SearchRepository.searchLargeAssets
 select
-  "asset".*,
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height",
   to_json("asset_exif") as "exifInfo"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
-  and "asset_exif"."fileSizeInByte" > $6
+  and "asset_exif"."fileSizeInByte" > $5
 order by
   "asset_exif"."fileSizeInByte" desc
 limit
-  $7
+  $6
 
 -- SearchRepository.searchSmart
 begin
 set
   local vchordrq.probes = 1
 select
-  "asset".*
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 order by
-  smart_search.embedding <=> $6
+  smart_search.embedding <=> $5,
+  "asset"."id" asc
 limit
-  $7
+  $6
 offset
-  $8
+  $7
 commit
 
 -- SearchRepository.getEmbedding
@@ -113,15 +218,21 @@ with
   "cte" as (
     select
       "asset_face"."id",
-      "asset_face"."personId",
+      "asset_face"."personGroupId",
       face_search.embedding <=> $1 as "distance"
     from
       "asset_face"
       inner join "asset" on "asset"."id" = "asset_face"."assetId"
       inner join "face_search" on "face_search"."faceId" = "asset_face"."id"
-      left join "person" on "person"."id" = "asset_face"."personId"
     where
-      "asset"."ownerId" = any ($2::uuid[])
+      "asset"."ownerId" in (
+        select
+          "user"."id"
+        from
+          "user"
+        where
+          "user"."clusterGroupId" = $2
+      )
       and "asset"."deletedAt" is null
     order by
       "distance"
@@ -134,7 +245,7 @@ from
   "cte"
 where
   "cte"."distance" <= $4
-commit
+rollback
 
 -- SearchRepository.searchPlaces
 select
@@ -208,7 +319,34 @@ with recursive
     )
   )
 select
-  "asset".*,
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height",
   to_jsonb("asset_exif") as "exifInfo"
 from
   "asset"
@@ -281,3 +419,1528 @@ where
   and "deletedAt" is null
   and "lensModel" is not null
   and "lensModel" != $3
+
+-- SearchRepository.searchMetadataV3 (baseline)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $4
+offset
+  $5
+
+-- SearchRepository.searchMetadataV3 (or-mixed-scope)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  (
+    "asset"."visibility" != $1
+    or "asset"."ownerId" = $2
+  )
+  and (
+    exists (
+      select
+      from
+        "album_asset"
+      where
+        "album_asset"."assetId" = "asset"."id"
+        and "album_asset"."albumId" = any ($3::uuid[])
+    )
+    or (
+      "asset_exif"."city" = $4
+      and "asset"."ownerId" = any ($5::uuid[])
+    )
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $6
+offset
+  $7
+
+-- SearchRepository.searchMetadataV3 (or-exif-only)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and "asset_exif"."city" = $4
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (string-eq-null)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and "asset_exif"."city" is null
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $4
+offset
+  $5
+
+-- SearchRepository.searchMetadataV3 (string-pattern-like)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and f_unaccent ("asset_exif"."description") ilike ('%' || f_unaccent ($4) || '%')
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (string-pattern-notLike)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and f_unaccent ("asset_exif"."description") not ilike ('%' || f_unaccent ($4) || '%')
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (string-pattern-startsWith)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and f_unaccent ("asset"."originalFileName") ilike (f_unaccent ($4) || '%')
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (string-similarity-ocr)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and exists (
+    select
+    from
+      "ocr_search"
+    where
+      "ocr_search"."assetId" = "asset"."id"
+      and f_unaccent (ocr_search.text) %>> f_unaccent ($4)
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (ids-any)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  (
+    "asset"."visibility" != $1
+    or "asset"."ownerId" = $2
+  )
+  and exists (
+    select
+    from
+      "album_asset"
+    where
+      "album_asset"."assetId" = "asset"."id"
+      and "album_asset"."albumId" = any ($3::uuid[])
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $4
+offset
+  $5
+
+-- SearchRepository.searchMetadataV3 (ids-all)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and exists (
+    select
+      "asset_face"."assetId"
+    from
+      "asset_face"
+    where
+      "asset_face"."assetId" = "asset"."id"
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" = $4
+      and "asset_face"."personGroupId" = any ($5::uuid[])
+    group by
+      "asset_face"."assetId"
+    having
+      count(distinct "asset_face"."personGroupId") = $6
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $7
+offset
+  $8
+
+-- SearchRepository.searchMetadataV3 (ids-all-single)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  (
+    "asset"."visibility" != $1
+    or "asset"."ownerId" = $2
+  )
+  and exists (
+    select
+    from
+      "album_asset"
+    where
+      "album_asset"."assetId" = "asset"."id"
+      and "album_asset"."albumId" = any ($3::uuid[])
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $4
+offset
+  $5
+
+-- SearchRepository.searchMetadataV3 (ids-none)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and not exists (
+    select
+    from
+      "tag_asset"
+      inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+    where
+      "tag_asset"."assetId" = "asset"."id"
+      and "tag_closure"."id_ancestor" = any ($4::uuid[])
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (ids-tags-all)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and exists (
+    select
+      "tag_asset"."assetId"
+    from
+      "tag_asset"
+      inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+    where
+      "tag_asset"."assetId" = "asset"."id"
+      and "tag_closure"."id_ancestor" = any ($4::uuid[])
+    group by
+      "tag_asset"."assetId"
+    having
+      count(distinct "tag_closure"."id_ancestor") = $5
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $6
+offset
+  $7
+
+-- SearchRepository.searchMetadataV3 (has-albums-false)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and not exists (
+    select
+    from
+      "album_asset"
+    where
+      "album_asset"."assetId" = "asset"."id"
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $4
+offset
+  $5
+
+-- SearchRepository.searchMetadataV3 (is-encoded)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and exists (
+    select
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $4
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (number-range)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and (
+    "asset_exif"."fileSizeInByte" <= $4
+    and "asset_exif"."fileSizeInByte" >= $5
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $6
+offset
+  $7
+
+-- SearchRepository.searchMetadataV3 (date-eq)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and "asset"."fileCreatedAt" = $4
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchMetadataV3 (date-range)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and (
+    "asset"."fileCreatedAt" < $4
+    and "asset"."fileCreatedAt" >= $5
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $6
+offset
+  $7
+
+-- SearchRepository.searchMetadataV3 (order-fileSize-noExif)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+order by
+  "asset_exif"."fileSizeInByte" desc nulls last,
+  "asset"."id" desc
+limit
+  $4
+offset
+  $5
+
+-- SearchRepository.searchMetadataV3 (order-rating-withExif)
+select
+  to_json("asset_exif") as "exifInfo",
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+order by
+  "asset_exif"."rating" asc nulls last,
+  "asset"."id" asc
+limit
+  $4
+offset
+  $5
+
+-- SearchRepository.searchMetadataV3 (or-branches)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and (
+    "asset"."isFavorite" = $4
+    or exists (
+      select
+      from
+        "asset_face"
+      where
+        "asset_face"."assetId" = "asset"."id"
+        and "asset_face"."deletedAt" is null
+        and "asset_face"."isVisible" = $5
+        and "asset_face"."personGroupId" = any ($6::uuid[])
+    )
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $7
+offset
+  $8
+
+-- SearchRepository.searchMetadataV3 (or-with-top-level)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  (
+    "asset"."visibility" != $1
+    or "asset"."ownerId" = $2
+  )
+  and (
+    "asset"."fileCreatedAt" < $3
+    and "asset"."fileCreatedAt" >= $4
+    and (
+      (
+        "asset"."isFavorite" = $5
+        and "asset"."ownerId" = any ($6::uuid[])
+      )
+      or exists (
+        select
+        from
+          "album_asset"
+        where
+          "album_asset"."assetId" = "asset"."id"
+          and "album_asset"."albumId" = any ($7::uuid[])
+      )
+    )
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $8
+offset
+  $9
+
+-- SearchRepository.searchMetadataV3 (cursor-offset)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and "asset"."isFavorite" = $4
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $5
+offset
+  $6
+
+-- SearchRepository.searchRandomV3 (baseline)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+order by
+  random()
+limit
+  $4
+
+-- SearchRepository.searchRandomV3 (with-filter)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and "asset"."isFavorite" = $4
+order by
+  random()
+limit
+  $5
+
+-- SearchRepository.searchSmartV3 (baseline)
+begin
+set
+  local vchordrq.probes = 1
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+order by
+  smart_search.embedding <=> $4,
+  "asset"."id" asc
+limit
+  $5
+offset
+  $6
+commit
+
+-- SearchRepository.searchSmartV3 (with-filter)
+begin
+set
+  local vchordrq.probes = 1
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and (
+    "asset"."fileCreatedAt" < $4
+    and "asset"."fileCreatedAt" >= $5
+  )
+order by
+  smart_search.embedding <=> $6,
+  "asset"."id" asc
+limit
+  $7
+offset
+  $8
+commit
+
+-- SearchRepository.searchSmartV3 (cursor-offset)
+begin
+set
+  local vchordrq.probes = 1
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+order by
+  smart_search.embedding <=> $4,
+  "asset"."id" asc
+limit
+  $5
+offset
+  $6
+commit
+
+-- SearchRepository.searchStatisticsV3 (baseline)
+select
+  count(*) as "total"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+
+-- SearchRepository.searchStatisticsV3 (with-filter)
+select
+  count(*) as "total"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and (
+    "asset_exif"."fileSizeInByte" >= $4
+    and "asset"."fileCreatedAt" < $5
+    and "asset"."fileCreatedAt" >= $6
+  )
+
+-- SearchRepository.searchStatisticsV3 (with-or)
+select
+  count(*) as "total"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and (
+    "asset"."isFavorite" = $4
+    or not exists (
+      select
+      from
+        "album_asset"
+      where
+        "album_asset"."assetId" = "asset"."id"
+    )
+  )

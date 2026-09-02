@@ -5,6 +5,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
@@ -75,6 +76,7 @@
 
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
+  let hasLoadedMetadata = $state(false);
   let assetFileUrl = $derived.by(() => {
     if (featureFlagsManager.value.realtimeTranscoding) {
       return getAssetHlsUrl(assetId);
@@ -150,6 +152,15 @@
       },
     },
     useMediaCapabilities: false,
+    xhrSetup: (xhr: XMLHttpRequest, url: string) => {
+      const authenticatedUrl = new URL(url, location.origin);
+      for (const [key, value] of Object.entries(authManager.params)) {
+        if (value) {
+          authenticatedUrl.searchParams.set(key, value as string);
+        }
+      }
+      xhr.open('GET', authenticatedUrl.href);
+    },
   };
 
   const releaseSession = () => {
@@ -231,6 +242,7 @@
 
   $effect(() => {
     // reactive on `assetFileUrl` changes
+    hasLoadedMetadata = false;
     if (videoPlayer && assetFileUrl) {
       hasFocused = false;
       rebuildCount = 0;
@@ -298,8 +310,7 @@
   const onSwipe = (event: SwipeCustomEvent) => {
     if (event.detail.direction === 'left') {
       onNextAsset();
-    }
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       onPreviousAsset();
     }
   };
@@ -376,13 +387,16 @@
             {...useSwipe(onSwipe)}
             class="h-full object-contain"
             oncanplay={(e: Event) => handleCanPlay(e.currentTarget as HTMLVideoElement)}
+            onloadedmetadata={() => (hasLoadedMetadata = true)}
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e: Event) => {
-              if (!hasFocused) {
-                (e.currentTarget as HTMLElement).focus();
-                hasFocused = true;
+              if (hasFocused) {
+                return;
               }
+
+              (e.currentTarget as HTMLElement).focus();
+              hasFocused = true;
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
@@ -399,13 +413,16 @@
             {...useSwipe(onSwipe)}
             class="h-full object-contain"
             oncanplay={(e) => handleCanPlay(e.currentTarget)}
+            onloadedmetadata={() => (hasLoadedMetadata = true)}
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e) => {
-              if (!hasFocused) {
-                e.currentTarget.focus();
-                hasFocused = true;
+              if (hasFocused) {
+                return;
               }
+
+              e.currentTarget.focus();
+              hasFocused = true;
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
@@ -476,7 +493,7 @@
         </div>
       {/if}
 
-      {#if assetViewerManager.isFaceEditMode && videoPlayer}
+      {#if assetViewerManager.isFaceEditMode && videoPlayer && hasLoadedMetadata}
         <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
       {/if}
     {/if}

@@ -42,10 +42,12 @@ export class MaintenanceHealthRepository {
       worker.on('error', (error) => reject(new Error(`Server health check failed, process threw: ${error}`)));
 
       setTimeout(() => {
-        if (worker.exitCode === null) {
-          reject(new Error('Server health check failed, took too long to start.'));
-          worker.kill('SIGTERM');
+        if (worker.exitCode !== null) {
+          return;
         }
+
+        reject(new Error('Server health check failed, took too long to start.'));
+        worker.kill('SIGTERM');
       }, 180_000);
     });
   }

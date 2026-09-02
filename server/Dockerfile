@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202606161235@sha256:9f88b07acc8b7bf37a1dd3d5a19193f664443eaaab4e08e9f9341414c5e4b23f AS builder
+FROM ghcr.io/immich-app/base-server-dev:202608300913@sha256:188679bfc2e7a496bdc13bd145cf59d90b2fb8f9dbf7131b2c1a368cd637b1a0 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -9,78 +9,84 @@ RUN npm install --global corepack@latest && \
   corepack enable pnpm && \
   pnpm config set store-dir "$PNPM_HOME"
 
-FROM builder AS server
-
 WORKDIR /usr/src/app
-COPY ./server ./server/
-COPY ./packages/sdk ./packages/sdk/
-COPY ./packages/plugin-sdk ./packages/plugin-sdk/
-RUN --mount=type=cache,id=pnpm-server,target=/buildcache/pnpm-store \
-  --mount=type=bind,source=package.json,target=package.json \
-  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
-  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter immich build && \
-  SHARP_FORCE_GLOBAL_LIBVIPS=true  pnpm --filter immich --prod --no-optional deploy /output/server-pruned
 
-FROM builder AS web
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
+
+FROM builder AS sdk
+
+COPY ./packages/sdk/package.json ./packages/sdk/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/sdk install --frozen-lockfile
+
+COPY ./packages/sdk ./packages/sdk/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/sdk build
+
+FROM sdk AS plugin-sdk
+
+COPY ./packages/plugin-sdk/package.json ./packages/plugin-sdk/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk install --frozen-lockfile
+
+COPY ./packages/plugin-sdk ./packages/plugin-sdk/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk build
+
+FROM plugin-sdk AS server
+
+COPY ./server/package.json ./server/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich install --frozen-lockfile
+
+COPY ./server ./server/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  pnpm --filter immich build && \
+  pnpm --filter immich --prod --no-optional deploy /output/server-pruned
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
+
+FROM sdk AS web
+
+COPY ./web/package.json ./web/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich-web install --frozen-lockfile
+
+COPY ./i18n ./i18n/
+COPY ./web ./web/
 
 ARG BUILD_ID
 ENV IMMICH_BUILD=${BUILD_ID}
 
-WORKDIR /usr/src/app
-COPY ./web ./web/
-COPY ./i18n ./i18n/
-COPY ./packages ./packages/
-RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
-  --mount=type=bind,source=package.json,target=package.json \
-  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
-  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web install --frozen-lockfile --force && \
-  pnpm --filter @immich/sdk --filter immich-web build
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich-web build
 
-FROM builder AS cli
+FROM sdk AS cli
 
-COPY ./packages ./packages/
-RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
-  --mount=type=bind,source=package.json,target=package.json \
-  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
-  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && \
-  pnpm --filter @immich/sdk --filter @immich/cli build && \
+COPY ./packages/cli/package.json ./packages/cli/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/cli install --frozen-lockfile
+
+COPY ./packages/cli ./packages/cli/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  pnpm --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-FROM builder AS plugins
+FROM plugin-sdk AS plugins
 
 ARG TARGETPLATFORM
 
-COPY --from=ghcr.io/jdx/mise:2026.6.10@sha256:f57ac375a262f52f8ac3f9101348dbff2187d5e4b59612154f2f2808dbe46ef6 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.8.16@sha256:05fdec33a6b3f72198fd918927cfa2a345dc3df48175531c1bc3050eaa06f328 /usr/local/bin/mise /usr/local/bin/mise
 
-WORKDIR /app
 COPY ./mise.toml ./mise.toml
+COPY ./mise.lock ./mise.lock
 COPY ./packages/plugin-core/mise.toml ./packages/plugin-core/
-ENV MISE_TRUSTED_CONFIG_PATHS=/app/mise.toml
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
 ENV MISE_DISABLE_TOOLS=flutter
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
-  mise install
+  mise install --locked
 
-COPY ./packages/sdk ./packages/sdk/
 COPY ./packages/plugin-core ./packages/plugin-core/
-COPY ./packages/plugin-sdk ./packages/plugin-sdk/
 
 # Build plugins
-RUN --mount=type=cache,id=pnpm-packages,target=/buildcache/pnpm-store \
-  --mount=type=bind,source=package.json,target=package.json \
-  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
-  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
-FROM ghcr.io/immich-app/base-server-prod:202606161235@sha256:c6d59e3923f548d29a212b4dc51b6281a722cfa1da7972a009c0f3830f5762d6
+FROM ghcr.io/immich-app/base-server-prod:202608300913@sha256:e809772a5ee5babfe2073563a40757818f997feff8d161d30bf7b904ca49eb6b
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -90,8 +96,8 @@ ENV NODE_ENV=production \
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
-COPY --from=plugins /app/packages/plugin-core/dist /build/plugins/immich-plugin-core/dist
-COPY --from=plugins /app/packages/plugin-core/manifest.json /build/plugins/immich-plugin-core/manifest.json
+COPY --from=plugins /usr/src/app/packages/plugin-core/dist /build/plugins/immich-plugin-core/dist
+COPY --from=plugins /usr/src/app/packages/plugin-core/manifest.json /build/plugins/immich-plugin-core/manifest.json
 RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE

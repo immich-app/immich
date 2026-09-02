@@ -4,8 +4,16 @@ import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseEventV1, ReleaseType, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ReleaseChannel } from 'src/dtos/system-config.dto';
-import { CronJob, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
+import {
+  CronJob,
+  DatabaseLock,
+  ImmichWorker,
+  JobName,
+  JobStatus,
+  QueueName,
+  ReleaseChannel,
+  SystemMetadataKey,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { VersionCheckMetadata } from 'src/types';
@@ -17,7 +25,7 @@ const asNotification = (
 ): ReleaseEventV1 => {
   return {
     // can't use gt because it's broken for release candidates F https://github.com/npm/node-semver/issues/483
-    isAvailable: semver.intersects(`>${serverVersion}`, releaseVersion.toString(), {
+    isAvailable: semver.intersects(`>${serverVersion}`, releaseVersion, {
       includePrerelease: channel === ReleaseChannel.ReleaseCandidate,
     }),
     checkedAt,
@@ -60,8 +68,8 @@ export class VersionService extends BaseService {
         this.logger.log(`Adding ${current} to upgrade history`);
         await this.versionRepository.create({ version: current });
 
-        const needsNewMemories = semver.lt(previousVersion, '1.129.0');
-        if (needsNewMemories) {
+        const isNeedsNewMemories = semver.lt(previousVersion, '1.129.0');
+        if (isNeedsNewMemories) {
           await this.jobRepository.queue({ name: JobName.MemoryGenerate });
         }
       }
@@ -115,7 +123,7 @@ export class VersionService extends BaseService {
 
       // can't use gt because it's broken for release candidates F https://github.com/npm/node-semver/issues/483
       if (
-        semver.intersects(`>${serverVersion}`, releaseVersion.toString(), {
+        semver.intersects(`>${serverVersion}`, releaseVersion, {
           includePrerelease: newVersionCheck.channel === ReleaseChannel.ReleaseCandidate,
         })
       ) {

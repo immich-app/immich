@@ -1,4 +1,4 @@
-import { BrowserContext, expect, Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { DateTime } from 'luxon';
 import { TimelineAssetConfig } from 'src/ui/generators/timeline';
 
@@ -7,21 +7,9 @@ export const sleep = (ms: number) => {
 };
 
 export const padYearMonth = (yearMonth: string) => {
-  const [year, month] = yearMonth.split('-');
+  const [year, month] = yearMonth.split('-', 2);
   return `${year}-${month.padStart(2, '0')}`;
 };
-
-export async function throttlePage(context: BrowserContext, page: Page) {
-  const session = await context.newCDPSession(page);
-  await session.send('Network.emulateNetworkConditions', {
-    offline: false,
-    downloadThroughput: (1.5 * 1024 * 1024) / 8,
-    uploadThroughput: (750 * 1024) / 8,
-    latency: 40,
-    connectionType: 'cellular3g',
-  });
-  await session.send('Emulation.setCPUThrottlingRate', { rate: 10 });
-}
 
 export const poll = async <T>(
   page: Page,
@@ -72,6 +60,7 @@ export const thumbnailUtils = {
   },
   async queryThumbnailInViewport(page: Page, collector: (assetId: string) => boolean) {
     const assetIds: string[] = [];
+    // eslint-disable-next-line unicorn/no-this-outside-of-class
     for (const thumb of await this.locator(page).all()) {
       const box = await thumb.boundingBox();
       if (box) {
@@ -143,6 +132,7 @@ export const timelineUtils = {
     return page.locator('#asset-grid');
   },
   async waitForTimelineLoad(page: Page) {
+    await expect(timelineUtils.locator(page)).toHaveCount(1);
     await expect(timelineUtils.locator(page)).toBeInViewport();
     await expect.poll(() => thumbnailUtils.locator(page).count()).toBeGreaterThan(0);
   },
@@ -151,6 +141,7 @@ export const timelineUtils = {
       page.evaluate(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
+
         return document.querySelector('#asset-grid').scrollTop;
       });
     await expect.poll(queryTop).toBeGreaterThan(0);
@@ -177,6 +168,7 @@ export const assetViewerUtils = {
       page.evaluate(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
+        // eslint-disable-next-line unicorn/no-optional-chaining-on-undeclared-variable
         return document.activeElement?.dataset?.asset;
       });
     await expect(poll(page, activeElement, (result) => result === assetId)).resolves.toBe(assetId);
@@ -220,7 +212,7 @@ export const pageUtils = {
     await section.locator('.w-8').click();
   },
   async pauseTestDebug() {
-    console.log('NOTE: pausing test indefinately for debug');
+    console.log('NOTE: pausing test indefinitely for debug');
     await new Promise(() => void 0);
   },
 };

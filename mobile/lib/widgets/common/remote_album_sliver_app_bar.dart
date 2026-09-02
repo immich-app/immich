@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -12,7 +11,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
@@ -64,9 +63,9 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
-    Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
+    final Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
 
-    List<Shadow> actionIconShadows = [
+    final List<Shadow> actionIconShadows = [
       if (_scrollProgress < 0.95)
         Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
       else
@@ -91,7 +90,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
             ),
       actions: [
         IconButton(
-          onPressed: () => context.pushRoute(DriftSlideshowRoute(timeline: ref.read(timelineServiceProvider))),
+          onPressed: () => context.pushRoute(SlideshowRoute(timeline: ref.read(timelineServiceProvider))),
           icon: Icon(Icons.slideshow_outlined, color: actionIconColor, shadows: actionIconShadows),
         ),
         if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
@@ -172,7 +171,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
-        _slideController.forward();
+        unawaited(_slideController.forward());
       }
     });
   }
@@ -240,7 +239,6 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                         DateRangeFormatting.formatDateRange(
                           dateRange.value!.$1.toLocal(),
                           dateRange.value!.$2.toLocal(),
-                          context.locale,
                         ),
                         style: const TextStyle(
                           color: Colors.white,
@@ -309,7 +307,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 
   @override
   void dispose() {
-    _reloadSubscription?.cancel();
+    unawaited(_reloadSubscription?.cancel());
     super.dispose();
   }
 
@@ -318,7 +316,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
     final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
 
     return Text(
-      'items_count'.t(context: context, args: {"count": assetCount}),
+      context.t.items_count(count: assetCount),
       style: context.textTheme.labelLarge?.copyWith(
         color: Colors.white,
         shadows: [const Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black87)],
@@ -390,13 +388,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
 
   void _startAnimationCycle() {
     if (_isZoomingIn) {
-      _zoomController.forward().then((_) {
-        _loadNextAsset();
-      });
+      unawaited(
+        _zoomController.forward().then((_) {
+          unawaited(_loadNextAsset());
+        }),
+      );
     } else {
-      _zoomController.reverse().then((_) {
-        _loadNextAsset();
-      });
+      unawaited(
+        _zoomController.reverse().then((_) {
+          unawaited(_loadNextAsset());
+        }),
+      );
     }
   }
 
@@ -472,10 +474,8 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          filterQuality: Platform.isAndroid ? FilterQuality.low : null,
           child: Transform.translate(
             offset: _panAnimation.value,
-            filterQuality: Platform.isAndroid ? FilterQuality.low : null,
             child: Stack(
               fit: StackFit.expand,
               children: [

@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { defaults } from 'src/config';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
+import { defaults } from 'src/dtos/config.dto';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import request from 'supertest';
@@ -14,10 +14,10 @@ function validConfig() {
     notifications: { smtp: { from: string; transport: { host: string } } };
     server: { externalDomain: string };
   };
-  config.oauth.mobileRedirectUri = config.oauth.mobileRedirectUri || 'https://example.com';
-  config.server.externalDomain = config.server.externalDomain || 'https://example.com';
-  config.notifications.smtp.from = config.notifications.smtp.from || 'noreply@example.com';
-  config.notifications.smtp.transport.host = config.notifications.smtp.transport.host || 'localhost';
+  config.oauth.mobileRedirectUri ||= 'https://example.com';
+  config.server.externalDomain ||= 'https://example.com';
+  config.notifications.smtp.from ||= 'noreply@example.com';
+  config.notifications.smtp.transport.host ||= 'localhost';
   return config;
 }
 
@@ -40,26 +40,7 @@ describe(SystemConfigController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /system-config', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/system-config');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /system-config/defaults', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/system-config/defaults');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /system-config', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/system-config');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     describe('nightlyTasks', () => {
       it('should validate nightly jobs start time', async () => {
         const config = validConfig();

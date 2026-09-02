@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 
 export enum SlideshowState {
   PlaySlideshow = 'play-slideshow',
+  PauseSlideshow = 'pause-slideshow',
   StopSlideshow = 'stop-slideshow',
   None = 'none',
 }
@@ -23,12 +24,6 @@ export enum SlideshowMetadataOverlayMode {
   DescriptionOnly = 'description-only',
   Full = 'full',
 }
-
-export const slideshowLookCssMapping: Record<SlideshowLook, string> = {
-  [SlideshowLook.Contain]: 'object-contain',
-  [SlideshowLook.Cover]: 'object-cover',
-  [SlideshowLook.BlurredBackground]: 'object-contain',
-};
 
 function createSlideshowStore() {
   const restartState = writable<boolean>(false);
@@ -58,10 +53,12 @@ function createSlideshowStore() {
       set: (value: boolean) => {
         // Trigger an action whenever the restartProgress is set to true. Automatically
         // reset the restart state after that
-        if (value) {
-          restartState.set(true);
-          restartState.set(false);
+        if (!value) {
+          return;
         }
+
+        restartState.set(true);
+        restartState.set(false);
       },
     },
     stopProgress: {
@@ -69,10 +66,12 @@ function createSlideshowStore() {
       set: (value: boolean) => {
         // Trigger an action whenever the stopProgress is set to true. Automatically
         // reset the stop state after that
-        if (value) {
-          stopState.set(true);
-          stopState.set(false);
+        if (!value) {
+          return;
         }
+
+        stopState.set(true);
+        stopState.set(false);
       },
     },
     slideshowNavigation,

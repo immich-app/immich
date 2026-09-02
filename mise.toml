@@ -1,4 +1,4 @@
-experimental_monorepo_root = true
+monorepo_root = true
 
 [monorepo]
 config_roots = [
@@ -16,13 +16,14 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-pnpm = "11.6.0"
-terragrunt = "1.0.3"
-opentofu = "1.11.6"
+pnpm = "11.24.0"
+terragrunt = "1.1.1"
+opentofu = "1.12.6"
+"npm:@openapitools/openapi-generator-cli" = "2.41.0"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
-"github:extism/js-pdk" = "1.6.0"
+"github:extism/js-pdk" = "v1.7.0"
 java = "21.0.2"
 
 [tools."github:jellyfin/jellyfin-ffmpeg"]
@@ -35,9 +36,16 @@ macos-x64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz" }
 macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz" }
 
 [settings]
-experimental = true
 pin = true
 lockfile = true
+
+[tasks.release]
+run = [
+  "pnpm --filter @immich/scripts install --frozen-lockfile",
+  "pnpm --filter @immich/scripts build",
+  "pnpm --filter @immich/scripts cli release {{arg(name='args', var=true)}}",
+  { task = "//:open-api" },
+]
 
 [tasks.plugins]
 run = [
@@ -54,10 +62,17 @@ run = [
 
 [tasks.open-api-dart]
 dir = "open-api"
+sources = [
+  "immich-openapi-specs.json",
+  "openapitools.json",
+  "templates/**/*",
+  "patch/*",
+  "bin/generate-dart-sdk.sh",
+]
+outputs = ["../mobile/generated/openapi/"]
 run = "bash ./bin/generate-dart-sdk.sh"
 
 [tasks.open-api]
-env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
 run = [
   { task = "//:plugins" },
   { task = "//server:install" },

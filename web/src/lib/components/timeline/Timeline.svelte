@@ -201,7 +201,7 @@
   export const scrollAfterNavigate = async () => {
     if (timelineManager.viewportHeight === 0 || timelineManager.viewportWidth === 0) {
       // this can happen if you do the following navigation order
-      // /photos?at=<id>, /photos/<id>, http://example.com, browser back, browser back
+      // /photos?at=<id>, /photos/<id>, https://example.com, browser back, browser back
       const rect = scrollableElement?.getBoundingClientRect();
       if (rect) {
         timelineManager.viewportHeight = rect.height;
@@ -209,17 +209,14 @@
       }
     }
     const scrollTarget = assetViewerManager.gridScrollTarget?.at;
-    let scrolled = false;
-    if (scrollTarget) {
-      scrolled = await scrollAndLoadAsset(scrollTarget);
-    }
-    if (!scrolled) {
-      // if the asset is not found, scroll to the top
-      timelineManager.scrollTo(0);
-    } else if (scrollTarget) {
+    const scrolled = scrollTarget ? await scrollAndLoadAsset(scrollTarget) : false;
+    if (scrolled && scrollTarget) {
       await tick();
       focusAsset(scrollTarget);
+    } else {
+      timelineManager.scrollTo(lastVisibleScrollTop);
     }
+
     invisible = false;
   };
 
@@ -227,6 +224,9 @@
   let initialLoadWasAssetViewer: boolean | null = null;
   // only modified in beforeNavigate()
   let hasNavigatedToOrFromAssetViewer: boolean = false;
+  // The layout sets `display: none` on this subtree while the viewer is open.
+  // Browsers drop the scroll offset of a hidden element.
+  let lastVisibleScrollTop = 0;
 
   // beforeNavigate is only called AFTER a svelte route has already been loaded
   // and a new route is being navigated to. It will never be called on direct
@@ -311,6 +311,9 @@
   const handleTimelineScroll = () => {
     if (!scrollableElement) {
       return;
+    }
+    if (!assetViewerManager.isViewing) {
+      lastVisibleScrollTop = scrollableElement.scrollTop;
     }
 
     if (timelineManager.limitedScroll) {
@@ -503,10 +506,12 @@
   });
 
   $effect(() => {
-    if (assetViewerManager.asset && assetViewerManager.isViewing) {
-      const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
-      void timelineManager.loadTimelineMonth({ year: localDateTime.year, month: localDateTime.month });
+    if (!(assetViewerManager.asset && assetViewerManager.isViewing)) {
+      return;
     }
+
+    const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
+    void timelineManager.loadTimelineMonth({ year: localDateTime.year, month: localDateTime.month });
   });
 
   const assetSelectHandler = (
@@ -582,10 +587,7 @@
     bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
-      let amount = 50;
-      if (keyboardManager.shift) {
-        amount = 500;
-      }
+      let amount = keyboardManager.shift ? 500 : 50;
       if (evt.key === 'ArrowUp') {
         amount = -amount;
         if (keyboardManager.shift) {

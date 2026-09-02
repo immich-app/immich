@@ -5,7 +5,7 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto';
 import {
   AssetFileType,
   AssetPathType,
@@ -20,7 +20,7 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, StorageAsset } from 'src/types';
 import { getAssetFile } from 'src/utils/asset.util';
-import { getLivePhotoMotionFilename } from 'src/utils/file';
+import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],
@@ -129,7 +129,7 @@ export class StorageTemplateService extends BaseService {
     }
   }
 
-  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+  getStorageTemplateOptions(): ConfigTemplateStorageOptionDto {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 
@@ -141,8 +141,8 @@ export class StorageTemplateService extends BaseService {
   @OnJob({ name: JobName.StorageTemplateMigrationSingle, queue: QueueName.StorageTemplateMigration })
   async handleMigrationSingle({ id }: JobOf<JobName.StorageTemplateMigrationSingle>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
-    const storageTemplateEnabled = config.storageTemplate.enabled;
-    if (!storageTemplateEnabled) {
+    const isStorageTemplateEnabled = config.storageTemplate.enabled;
+    if (!isStorageTemplateEnabled) {
       return JobStatus.Skipped;
     }
 
@@ -267,10 +267,10 @@ export class StorageTemplateService extends BaseService {
     const { storageLabel, filename } = metadata;
 
     try {
-      const filenameWithoutExtension = path.basename(filename, path.extname(filename));
+      const filenameWithoutExtension = path.basename(filename, getFilenameExtension(filename));
 
       const source = asset.originalPath;
-      let extension = path.extname(source).split('.').pop() as string;
+      let extension = getFilenameExtension(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filenameWithoutExtension, `.${extension}`));
       extension = extension?.toLowerCase();
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
@@ -372,8 +372,8 @@ export class StorageTemplateService extends BaseService {
       let duplicateCount = 0;
 
       while (true) {
-        const exists = await this.storageRepository.checkFileExists(destination);
-        if (!exists) {
+        const isExists = await this.storageRepository.checkFileExists(destination);
+        if (!isExists) {
           break;
         }
 
@@ -402,8 +402,8 @@ export class StorageTemplateService extends BaseService {
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
-      filetype: asset.type == AssetType.Image ? 'IMG' : 'VID',
-      filetypefull: asset.type == AssetType.Image ? 'IMAGE' : 'VIDEO',
+      filetype: asset.type === AssetType.Image ? 'IMG' : 'VID',
+      filetypefull: asset.type === AssetType.Image ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album

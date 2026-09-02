@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:logging/logging.dart';
@@ -68,7 +68,11 @@ class MapUtils {
     bool silent = false,
   }) async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!context.mounted) {
+        return (null, LocationPermission.unableToDetermine);
+      }
+
       if (!serviceEnabled && !silent) {
         unawaited(showDialog(context: context, builder: (context) => _LocationServiceDisabledDialog()));
         return (null, LocationPermission.deniedForever);
@@ -78,6 +82,10 @@ class MapUtils {
       bool shouldRequestPermission = false;
 
       if (permission == LocationPermission.denied && !silent) {
+        if (!context.mounted) {
+          return (null, LocationPermission.unableToDetermine);
+        }
+
         shouldRequestPermission = await showDialog(
           context: context,
           builder: (context) => _LocationPermissionDisabledDialog(),
@@ -95,7 +103,7 @@ class MapUtils {
         return (null, LocationPermission.deniedForever);
       }
 
-      Position currentUserLocation = await Geolocator.getCurrentPosition(
+      final Position currentUserLocation = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
           distanceFilter: 0,
@@ -113,10 +121,10 @@ class MapUtils {
 class _LocationServiceDisabledDialog extends ConfirmDialog {
   _LocationServiceDisabledDialog()
     : super(
-        title: 'map_location_service_disabled_title'.tr(),
-        content: 'map_location_service_disabled_content'.tr(),
-        cancel: 'cancel'.tr(),
-        ok: 'yes'.tr(),
+        title: StaticTranslations.instance.map_location_service_disabled_title,
+        content: StaticTranslations.instance.map_location_service_disabled_content,
+        cancel: StaticTranslations.instance.cancel,
+        ok: StaticTranslations.instance.yes,
         onOk: () async {
           await Geolocator.openLocationSettings();
         },
@@ -126,10 +134,10 @@ class _LocationServiceDisabledDialog extends ConfirmDialog {
 class _LocationPermissionDisabledDialog extends ConfirmDialog {
   _LocationPermissionDisabledDialog()
     : super(
-        title: 'map_no_location_permission_title'.tr(),
-        content: 'map_no_location_permission_content'.tr(),
-        cancel: 'cancel'.tr(),
-        ok: 'yes'.tr(),
+        title: StaticTranslations.instance.map_no_location_permission_title,
+        content: StaticTranslations.instance.map_no_location_permission_content,
+        cancel: StaticTranslations.instance.cancel,
+        ok: StaticTranslations.instance.yes,
         onOk: () {},
       );
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
+  import { navigating } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
@@ -178,11 +179,13 @@
   };
 
   const updateThumbnailUsingCurrentSelection = async () => {
-    if (assetMultiSelectManager.assets.length === 1) {
-      const [firstAsset] = assetMultiSelectManager.assets;
-      assetMultiSelectManager.clear();
-      await updateThumbnail(firstAsset.id);
+    if (assetMultiSelectManager.assets.length !== 1) {
+      return;
     }
+
+    const [firstAsset] = assetMultiSelectManager.assets;
+    assetMultiSelectManager.clear();
+    await updateThumbnail(firstAsset.id);
   };
 
   const updateThumbnail = async (assetId: string) => {
@@ -274,10 +277,12 @@
   };
 
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
-    if (id === album.id) {
-      await goto(Route.albums());
-      viewMode = AlbumPageViewMode.VIEW;
+    if (id !== album.id) {
+      return;
     }
+
+    await goto(Route.albums());
+    viewMode = AlbumPageViewMode.VIEW;
   };
 
   const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
@@ -308,6 +313,9 @@
 
   const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
     album = newAlbum;
+
+    // invalidating during navigation causes an infinite page load
+    await navigating.complete;
 
     await invalidate('album:data');
   };
@@ -465,7 +473,7 @@
           ></FavoriteAction>
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
-          <DownloadAction menuItem filename="{album.albumName}.zip" />
+          <DownloadAction menuItem filename={album.albumName} />
           {#if assetMultiSelectManager.isAllUserOwned}
             <ChangeDate menuItem />
             <ChangeDescription menuItem />

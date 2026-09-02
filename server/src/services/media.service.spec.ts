@@ -1,7 +1,7 @@
 import { ShallowDehydrateObject } from 'kysely';
 import { OutputInfo } from 'sharp';
-import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
 import {
   AssetFileType,
@@ -72,7 +72,7 @@ describe(MediaService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.PersonGenerateThumbnail,
-          data: { id: person.id },
+          data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
         },
       ]);
     });
@@ -129,7 +129,8 @@ describe(MediaService.name, () => {
         {
           name: JobName.PersonGenerateThumbnail,
           data: {
-            id: person1.id,
+            ownerId: person1.ownerId,
+            personGroupId: person1.personGroupId,
           },
         },
       ]);
@@ -207,8 +208,7 @@ describe(MediaService.name, () => {
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
-
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(1);
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
@@ -237,7 +237,10 @@ describe(MediaService.name, () => {
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } },
+      ]);
 
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
@@ -295,7 +298,12 @@ describe(MediaService.name, () => {
 
       expect(mocks.storage.removeEmptyDirs).toHaveBeenCalledTimes(2);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetFileMigration, data: { id: asset.id } }]);
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.PersonFileMigration, data: { id: person.id } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.PersonFileMigration,
+          data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
+        },
+      ]);
     });
   });
 
@@ -1507,28 +1515,34 @@ describe(MediaService.name, () => {
   });
 
   describe('handleGeneratePersonThumbnail', () => {
-    it('should skip if machine learning is disabled', async () => {
+    it('should generate a thumbnail even if machine learning is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      mocks.media.decodeImage.mockResolvedValue({
+        data: Buffer.from(''),
+        info: { width: 1000, height: 1000 } as OutputInfo,
+      });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.Skipped);
-      expect(mocks.asset.getByIds).not.toHaveBeenCalled();
-      expect(mocks.systemMetadata.get).toHaveBeenCalled();
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: 'owner-1', personGroupId: 'person-group-1' }),
+      ).resolves.toBe(JobStatus.Success);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
 
     it('should skip a person not found', async () => {
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      await sut.handleGeneratePersonThumbnail({ ownerId: 'owner-1', personGroupId: 'person-group-1' });
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should skip a person without a face asset id', async () => {
       const person = PersonFactory.create({ faceAssetId: null });
-      mocks.person.getById.mockResolvedValue(person);
-      await sut.handleGeneratePersonThumbnail({ id: person.id });
+      await sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId });
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should skip a person with face not found', async () => {
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      await sut.handleGeneratePersonThumbnail({ ownerId: 'owner-1', personGroupId: 'person-group-1' });
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
     });
 
@@ -1541,9 +1555,14 @@ describe(MediaService.name, () => {
       const info = { width: 1000, height: 1000 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(person.id);
+      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+      });
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.originalPath, {
         colorspace: Colorspace.P3,
@@ -1574,7 +1593,11 @@ describe(MediaService.name, () => {
         },
         expect.any(String),
       );
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, thumbnailPath: expect.any(String) });
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        thumbnailPath: expect.any(String),
+      });
     });
 
     it('should use preview path if video', async () => {
@@ -1586,9 +1609,14 @@ describe(MediaService.name, () => {
       const info = { width: 1000, height: 1000 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(person.id);
+      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+      });
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.any(String), {
         colorspace: Colorspace.P3,
@@ -1619,7 +1647,11 @@ describe(MediaService.name, () => {
         },
         expect.any(String),
       );
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, thumbnailPath: expect.any(String) });
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        thumbnailPath: expect.any(String),
+      });
     });
 
     it('should generate a thumbnail without going negative', async () => {
@@ -1631,7 +1663,9 @@ describe(MediaService.name, () => {
       const info = { width: 2160, height: 3840 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailStart.originalPath, {
         colorspace: Colorspace.P3,
@@ -1674,7 +1708,9 @@ describe(MediaService.name, () => {
       const info = { width: 1000, height: 1000 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailEnd.originalPath, {
         colorspace: Colorspace.P3,
@@ -1717,7 +1753,9 @@ describe(MediaService.name, () => {
       const info = { width: 4624, height: 3080 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.negativeCoordinate.originalPath, {
         colorspace: Colorspace.P3,
@@ -1760,7 +1798,9 @@ describe(MediaService.name, () => {
       const info = { width: 4624, height: 3080 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.overflowingCoordinate.originalPath, {
         colorspace: Colorspace.P3,
@@ -1807,7 +1847,9 @@ describe(MediaService.name, () => {
       mocks.media.decodeImage.mockResolvedValue({ data, info });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 2160, height: 3840, isTransparent: false });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extracted, {
@@ -1850,7 +1892,9 @@ describe(MediaService.name, () => {
       const info = { width: 2160, height: 3840 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.extract).not.toHaveBeenCalled();
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
@@ -1866,7 +1910,9 @@ describe(MediaService.name, () => {
       const info = { width: 2160, height: 3840 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
@@ -1890,7 +1936,9 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
@@ -2227,6 +2275,26 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v', 'copy', '-tag:v', 'hvc1']),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should include hevc tag when target is hevc and using hwa', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamHDR10 });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          targetVideoCodec: VideoCodec.Hevc,
+          accel: TranscodeHardwareAcceleration.Nvenc,
+        },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v', 'hevc_nvenc', '-tag:v', 'hvc1']),
           twoPass: false,
         }),
       );

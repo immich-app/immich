@@ -14,6 +14,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -23,6 +24,7 @@
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -97,6 +99,7 @@
     slideshowNavigation,
     slideshowState,
     slideshowRepeat,
+    slideshowAutoplay,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -149,6 +152,15 @@
     }
   };
 
+  const onAssetsUndoArchive = async (assets: TimelineAsset[]) => {
+    if (assets.length === 0) {
+      return;
+    }
+    const restoredAsset = assets[0];
+    await assetViewerManager.setAssetId(restoredAsset.id);
+    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
   const onStackCreate = (createdStack: StackResponseDto) => {
     if (createdStack.assets.map((a) => a.id).includes(asset.id)) {
       stack = createdStack;
@@ -156,12 +168,14 @@
   };
 
   const onStackUpdate = (updatedStack: StackResponseDto) => {
-    if (stack?.id === updatedStack.id) {
-      stack = updatedStack;
-      if (!stack.assets.map((a) => a.id).includes(asset.id)) {
-        // current asset was removed from stack, go to primary
-        cursor.current = stack.assets[0];
-      }
+    if (stack?.id !== updatedStack.id) {
+      return;
+    }
+
+    stack = updatedStack;
+    if (!stack.assets.map((a) => a.id).includes(asset.id)) {
+      // current asset was removed from stack, go to primary
+      cursor.current = stack.assets[0];
     }
   };
 
@@ -178,10 +192,12 @@
     });
 
     const slideshowNavigationUnsubscribe = slideshowNavigation.subscribe((value) => {
-      if (value === SlideshowNavigation.Shuffle) {
-        slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
+      if (value !== SlideshowNavigation.Shuffle) {
+        return;
       }
+
+      slideshowHistory.reset();
+      slideshowHistory.queue(toTimelineAsset(asset));
     });
 
     return () => {
@@ -299,6 +315,9 @@
 
   const handlePlaySlideshow = async () => {
     slideshowStartAssetId = asset.id;
+    if (!$slideshowAutoplay) {
+      $slideshowState = SlideshowState.PauseSlideshow;
+    }
     try {
       await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
@@ -466,16 +485,14 @@
 
     if (event.detail.direction === 'left') {
       navigateAsset('next');
-    }
-
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       navigateAsset('previous');
     }
   };
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} {onStackCreate} onStackDelete={() => closeViewer()} {onStackUpdate} />
+<OnEvents {onAssetUpdate} {onAssetsUndoArchive} {onStackCreate} onStackDelete={() => closeViewer()} {onStackUpdate} />
 
 <svelte:document
   bind:fullscreenElement
@@ -510,7 +527,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState != SlideshowState.None}
+  {#if $slideshowState !== SlideshowState.None}
     <div class="absolute inset-s-0 top-0 flex w-full justify-start">
       <SlideshowBar
         {isFullScreen}
@@ -625,7 +642,7 @@
     </div>
   {/if}
 
-  {#if stack && withStacked && !assetViewerManager.isShowEditor}
+  {#if stack && withStacked && !assetViewerManager.isShowEditor && $slideshowState === SlideshowState.None}
     {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-fit max-w-full">
       <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">
