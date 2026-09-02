@@ -188,6 +188,51 @@ describe(ApiKeyService.name, () => {
     });
   });
 
+  describe('rotate', () => {
+    it('should throw an error if the key is not found', async () => {
+      const auth = AuthFactory.create();
+      const id = newUuid();
+
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
+      await expect(sut.rotate(auth, id)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.apiKey.update).not.toHaveBeenCalled();
+    });
+
+    it('should replace the secret of a key', async () => {
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
+
+      mocks.crypto.randomBytesAsText.mockReturnValue('super-secret');
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+      mocks.apiKey.update.mockResolvedValue(apiKey);
+
+      await expect(sut.rotate(auth, apiKey.id)).resolves.toEqual(
+        expect.objectContaining({ secret: 'super-secret', apiKey: expect.objectContaining({ id: apiKey.id }) }),
+      );
+
+      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, {
+        key: Buffer.from('super-secret (hashed)'),
+      });
+    });
+
+    it('should not rotate a key with permissions the caller does not have', async () => {
+      const auth = AuthFactory.from()
+        .apiKey({ permissions: [Permission.ApiKeyRotate] })
+        .build();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id, permissions: [Permission.All] });
+
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+
+      await expect(sut.rotate(auth, apiKey.id)).rejects.toThrow(
+        'Cannot rotate an API Key with permissions you do not have',
+      );
+
+      expect(mocks.apiKey.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('delete', () => {
     it('should throw an error if the key is not found', async () => {
       const auth = AuthFactory.create();

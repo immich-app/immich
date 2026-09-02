@@ -51,7 +51,7 @@
 
         <TableBody>
           {#each keys as key (key.id)}
-            {@const { Update, Delete } = getApiKeyActions($t, key)}
+            {@const { Update, Rotate, Delete } = getApiKeyActions($t, key)}
             <TableRow>
               <TableCell>{key.name}</TableCell>
               <TableCell>
@@ -64,6 +64,7 @@
               <TableCell>{new Date(key.createdAt).toLocaleDateString($locale, dateFormats.settings)}</TableCell>
               <TableCell class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1">
                 <TableButton action={Update} size="small" />
+                <TableButton action={Rotate} size="small" />
                 <TableButton action={Delete} size="small" />
               </TableCell>
             </TableRow>

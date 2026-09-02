@@ -1,10 +1,9 @@
-import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
-import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import { AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
@@ -30,15 +29,15 @@ import {
   SystemMetadataKey,
   TranscodeTarget,
   UserMetadataKey,
-  WorkflowType,
 } from 'src/enum';
+import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T
-  : T extends Record<string, unknown>
-    ? { [K in keyof T]?: DeepPartial<T[K]> }
-    : T extends Array<infer R>
-      ? DeepPartial<R>[]
+  : T extends Array<infer R>
+    ? DeepPartial<R>[]
+    : T extends object
+      ? { [K in keyof T]?: DeepPartial<T[K]> }
       : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
@@ -77,14 +76,6 @@ export interface DecodeToBufferOptions extends DecodeImageOptions {
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
 export type GenerateThumbhashOptions = DecodeImageOptions;
-
-export interface GenerateThumbnailsOptions {
-  colorspace: string;
-  preview?: ImageOptions;
-  processInvalidImages: boolean;
-  thumbhash?: boolean;
-  thumbnail?: ImageOptions;
-}
 
 export interface VideoStreamInfo {
   index: number;
@@ -142,10 +133,6 @@ export interface ImageDimensions {
   height: number;
 }
 
-export interface InputDimensions extends ImageDimensions {
-  inputPath: string;
-}
-
 export interface VideoInfo {
   format: VideoFormat;
   videoStreams: VideoStreamInfo[];
@@ -188,11 +175,6 @@ export interface BitrateDistribution {
   unit: string;
 }
 
-export interface ImageBuffer {
-  data: Buffer;
-  info: RawImageInfo;
-}
-
 export interface VideoCodecSWConfig {
   getCommand(
     target: TranscodeTarget,
@@ -233,6 +215,11 @@ export interface IDelayedJob extends IBaseJob {
 }
 
 export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
+export interface IPersonJob {
+  ownerId: string;
+  personGroupId: string;
+}
+
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;
@@ -259,16 +246,8 @@ export interface ILibraryBulkIdsJob {
   totalAssets: number;
 }
 
-export interface IBulkEntityJob {
-  ids: string[];
-}
-
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
-}
-
-export interface ISidecarWriteJob extends IEntityJob {
-  tags?: true;
 }
 
 export interface IDeferrableJob extends IEntityJob {
@@ -306,12 +285,6 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
-export type IWorkflowJob<T extends WorkflowType = WorkflowType> = {
-  id: string;
-  trigger: WorkflowTrigger;
-  type: T;
-};
-
 export interface IIntegrityJob {
   refreshOnly?: boolean;
 }
@@ -336,8 +309,7 @@ export interface IIntegrityUntrackedFilesJob {
 
 export interface IIntegrityMissingFilesJob {
   items: ({ path: string; reportId: string | null } & (
-    | { assetId: string; fileAssetId: null }
-    | { assetId: null; fileAssetId: string }
+    { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
   ))[];
 }
 
@@ -347,6 +319,10 @@ export interface IIntegrityPathWithReportJob {
 
 export interface IIntegrityPathWithChecksumJob {
   items: { path: string; reportId: string | null; checksum?: string | null }[];
+}
+
+export interface IFacialRecognitionQueueAll extends INightlyJob {
+  clusterGroupId?: string;
 }
 
 export interface JobCounts {
@@ -385,7 +361,7 @@ export type JobItem =
   // Migration
   | { name: JobName.FileMigrationQueueAll; data?: IBaseJob }
   | { name: JobName.AssetFileMigration; data: IEntityJob }
-  | { name: JobName.PersonFileMigration; data: IEntityJob }
+  | { name: JobName.PersonFileMigration; data: IPersonJob }
 
   // Metadata Extraction
   | { name: JobName.AssetExtractMetadataQueueAll; data: IBaseJob }
@@ -402,9 +378,9 @@ export type JobItem =
   // Facial Recognition
   | { name: JobName.AssetDetectFacesQueueAll; data: IBaseJob }
   | { name: JobName.AssetDetectFaces; data: IEntityJob }
-  | { name: JobName.FacialRecognitionQueueAll; data: INightlyJob }
+  | { name: JobName.FacialRecognitionQueueAll; data: IFacialRecognitionQueueAll }
   | { name: JobName.FacialRecognition; data: IDeferrableJob }
-  | { name: JobName.PersonGenerateThumbnail; data: IEntityJob }
+  | { name: JobName.PersonGenerateThumbnail; data: IPersonJob }
 
   // Smart Search
   | { name: JobName.SmartSearchQueueAll; data: IBaseJob }
@@ -553,8 +529,7 @@ export interface MemoryData {
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
-  | { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto }
-  | { isMaintenanceMode: false };
+  { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto } | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
@@ -586,6 +561,7 @@ export type UserPreferences = {
   memories: {
     enabled: boolean;
     duration: number;
+    sidebarWeb: boolean;
   };
   people: {
     enabled: boolean;
@@ -619,6 +595,9 @@ export type UserPreferences = {
   cast: {
     gCastEnabled: boolean;
   };
+  recentlyAdded: {
+    sidebarWeb: boolean;
+  };
 };
 
 export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
@@ -646,7 +625,10 @@ export type JSONSchemaProperty = {
   required?: string[];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export interface ClassConstructor<T = any> extends Function {
-  new (...args: any[]): T;
-}
+export type ClassConstructor<T> = T extends new (...args: infer R) => infer L
+  ? new (...args: R) => L
+  : new (...args: any[]) => unknown;
+
+export type ClassConstructorsToInstances<T extends readonly ClassConstructor<unknown>[]> = {
+  [K in keyof T]: InstanceType<T[K]> | Mocked<InstanceType<T[K]>>;
+};

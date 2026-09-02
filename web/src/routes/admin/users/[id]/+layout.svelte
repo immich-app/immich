@@ -74,10 +74,12 @@
   const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
   const onUpdate = async (update: UserAdminResponseDto) => {
-    if (update.id === user.id) {
-      data.user = update;
-      await invalidateAll();
+    if (update.id !== user.id) {
+      return;
     }
+
+    data.user = update;
+    await invalidateAll();
   };
 
   const onUserAdminDeleted = async ({ id }: { id: string }) => {
@@ -211,7 +213,7 @@
           </Stack>
         </AdminCard>
 
-        <div class="col-span-2 px-4 py-2">
+        <div class="col-span-full px-4 py-2">
           <div class="flex gap-2 text-primary">
             <Icon icon={mdiCloudUploadOutline} size="1.5rem" />
             <CardTitle>{$t('uploads')}</CardTitle>

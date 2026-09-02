@@ -32,7 +32,7 @@ const PluginMethodResponseSchema = z
 
 const PluginResponseSchema = z
   .object({
-    id: z.string().describe('Plugin ID'),
+    id: z.uuidv4().describe('Plugin ID'),
     name: z.string().describe('Plugin name'),
     title: z.string().describe('Plugin title'),
     description: z.string().describe('Plugin description'),

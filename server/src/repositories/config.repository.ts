@@ -243,14 +243,16 @@ const getEnv = (): EnvData => {
       };
 
   let vectorExtension: VectorExtension | undefined;
-  switch (dto.DB_VECTOR_EXTENSION) {
-    case 'pgvector': {
-      vectorExtension = DatabaseExtension.Vector;
-      break;
-    }
-    case 'vectorchord': {
-      vectorExtension = DatabaseExtension.VectorChord;
-      break;
+  if (dto.DB_VECTOR_EXTENSION) {
+    switch (dto.DB_VECTOR_EXTENSION) {
+      case 'pgvector': {
+        vectorExtension = DatabaseExtension.Vector;
+        break;
+      }
+      case 'vectorchord': {
+        vectorExtension = DatabaseExtension.VectorChord;
+        break;
+      }
     }
   }
 

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
@@ -15,21 +16,25 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart' as api;
 import 'package:path/path.dart' as p;
 
+part 'background_upload.service.freezed.dart';
+
 final backgroundUploadServiceProvider = Provider((ref) {
+  final db = ref.watch(driftProvider);
   final service = BackgroundUploadService(
     ref.watch(uploadRepositoryProvider),
     ref.watch(storageRepositoryProvider),
-    ref.watch(localAssetRepository),
-    ref.watch(backupRepositoryProvider),
+    db.localAssetRepository,
+    db.backupRepository,
     ref.watch(assetMediaRepositoryProvider),
   );
 
@@ -38,20 +43,15 @@ final backgroundUploadServiceProvider = Provider((ref) {
 });
 
 /// Metadata for upload tasks to track live photo handling
-class UploadTaskMetadata {
-  final String localAssetId;
-  final bool isLivePhotos;
-  final String livePhotoVideoId;
+@Freezed(fromJson: false, toJson: false)
+abstract class UploadTaskMetadata with _$UploadTaskMetadata {
+  const UploadTaskMetadata._();
 
-  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
-
-  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
-    return UploadTaskMetadata(
-      localAssetId: localAssetId ?? this.localAssetId,
-      isLivePhotos: isLivePhotos ?? this.isLivePhotos,
-      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
-    );
-  }
+  const factory UploadTaskMetadata({
+    required String localAssetId,
+    required bool isLivePhotos,
+    required String livePhotoVideoId,
+  }) = _UploadTaskMetadata;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -69,28 +69,10 @@ class UploadTaskMetadata {
     );
   }
 
-  String toJson() => json.encode(toMap());
-
   factory UploadTaskMetadata.fromJson(String source) =>
       UploadTaskMetadata.fromMap(json.decode(source) as Map<String, dynamic>);
 
-  @override
-  String toString() =>
-      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId)';
-
-  @override
-  bool operator ==(covariant UploadTaskMetadata other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.localAssetId == localAssetId &&
-        other.isLivePhotos == isLivePhotos &&
-        other.livePhotoVideoId == livePhotoVideoId;
-  }
-
-  @override
-  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
+  String toJson() => json.encode(toMap());
 }
 
 /// Service for handling background uploads using iOS URLSession (background_downloader)
@@ -111,8 +93,8 @@ class BackgroundUploadService {
 
   final UploadRepository _uploadRepository;
   final StorageRepository _storageRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftBackupRepository _backupRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final BackupRepository _backupRepository;
   final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('BackgroundUploadService');
 
@@ -134,12 +116,12 @@ class BackgroundUploadService {
     if (!_taskStatusController.isClosed) {
       _taskStatusController.add(update);
     }
-    _handleTaskStatusUpdate(update);
+    unawaited(_handleTaskStatusUpdate(update));
   }
 
   void dispose() {
-    _taskStatusController.close();
-    _taskProgressController.close();
+    unawaited(_taskStatusController.close());
+    unawaited(_taskProgressController.close());
   }
 
   /// Enqueue tasks to the background upload queue
@@ -170,7 +152,7 @@ class BackgroundUploadService {
 
     const batchSize = 100;
     final batch = candidates.take(batchSize).toList();
-    List<UploadTask> tasks = [];
+    final List<UploadTask> tasks = [];
 
     for (final asset in batch) {
       final task = await getUploadTask(asset);
@@ -204,7 +186,7 @@ class BackgroundUploadService {
     return _uploadRepository.start();
   }
 
-  void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
+  Future<void> _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     switch (update.status) {
       case TaskStatus.complete:
         unawaited(_handleLivePhoto(update));
@@ -217,8 +199,6 @@ class BackgroundUploadService {
             _logger.severe('Error deleting file path for iOS: $e');
           }
         }
-
-        break;
 
       default:
         break;
@@ -289,15 +269,12 @@ class BackgroundUploadService {
       return null;
     }
 
-    String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
-    final hasExtension = p.extension(fileName).isNotEmpty;
-    if (!hasExtension) {
-      fileName = p.setExtension(fileName, p.extension(asset.name));
-    }
+    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
+    final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
+    final originalFileName = p.setExtension(fileName, extension);
 
-    final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
-
-    String metadata = UploadTaskMetadata(
+    final String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
       isLivePhotos: entity.isLivePhoto,
       livePhotoVideoId: '',
@@ -316,6 +293,8 @@ class BackgroundUploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
+      fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.toString()} : null,
       cloudId: entity.isLivePhoto ? null : asset.cloudId,
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),
@@ -400,7 +379,7 @@ class BackgroundUploadService {
       'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
-      if (fields != null) ...fields,
+      ...?fields,
       if (CurrentPlatform.isIOS && cloudId != null)
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(

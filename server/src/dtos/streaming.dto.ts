@@ -32,3 +32,11 @@ const HlsSegmentHeaderSchema = z.object({
 });
 
 export class HlsSegmentHeaderDto extends createZodDto(HlsSegmentHeaderSchema) {}
+
+const HlsPlaylistHeaderSchema = z.object({
+  // Lets the client hint at which segment will be loaded after the playlist.
+  // A position rather than a segment index since indices aren't comparable across variants.
+  [ImmichHeader.HlsPosition]: z.coerce.number().min(0).optional(),
+});
+
+export class HlsPlaylistHeaderDto extends createZodDto(HlsPlaylistHeaderSchema) {}

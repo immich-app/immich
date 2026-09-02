@@ -5,8 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "pnpm build:tsc && pnpm build:wasm",
-    "build:tsc": "tsc --noEmit && node esbuild.js",
-    "build:wasm": "extism-js dist/index.js -i src/index.d.ts -o dist/plugin.wasm"
+    "build:tsc": "plugin-sdk prepareBuild && tsc --noEmit && node esbuild.js",
+    "build:wasm": "extism-js dist/index.js -i dist/index.d.ts -o dist/plugin.wasm"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,6 @@
     "@immich/sdk": "workspace:*",
     "@immich/plugin-sdk": "workspace:*",
     "esbuild": "^0.28.0",
-    "typescript": "^6.0.0"
+    "typescript": "^7.0.0"
   }
 }

@@ -33,7 +33,7 @@ const PersonUpdateSchema = PersonCreateSchema.extend({
 }).meta({ id: 'PersonUpdateDto' });
 
 const PeopleUpdateItemSchema = PersonUpdateSchema.extend({
-  id: z.string().describe('Person ID'),
+  id: z.uuidv4().describe('Person ID'),
 }).meta({ id: 'PeopleUpdateItem' });
 
 const PeopleUpdateSchema = z
@@ -60,7 +60,7 @@ const PersonSearchSchema = z
 
 export const PersonResponseSchema = z
   .object({
-    id: z.string().describe('Person ID'),
+    id: z.uuidv4().describe('Person ID'),
     name: z.string().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
@@ -173,7 +173,7 @@ export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 
 export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
-    id: person.id,
+    id: person.personGroupId,
     name: person.name,
     birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
@@ -215,6 +215,6 @@ export function mapFaces(
 ): AssetFaceResponseDto {
   return {
     ...mapFacesWithoutPerson(face, edits, assetDimensions),
-    person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
+    person: face.person ? mapPerson(face.person) : null,
   };
 }

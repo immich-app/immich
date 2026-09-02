@@ -32,6 +32,7 @@
   let isActive = $derived($selectedIdStore === id);
 
   const handleClick = () => {
+    // eslint-disable-next-line unicorn/no-optional-chaining-on-undeclared-variable
     $optionClickCallbackStore?.();
     onClick();
   };

@@ -1,8 +1,7 @@
 import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
-import { defaults } from 'src/config';
-import { ReleaseChannel } from 'src/dtos/system-config.dto';
-import { CronJob, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
+import { defaults } from 'src/dtos/config.dto';
+import { CronJob, JobName, JobStatus, ReleaseChannel, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
