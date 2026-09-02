@@ -68,6 +68,7 @@ export type Events = {
   StackCreate: [StackResponseDto];
   /** Unstacked, with assets to handle */
   StackDelete: [{ id: string; assets: AssetResponseDto[] }];
+  /** Contains the new stack. If any assets are removed, AssetUpdate events are emitted for each. */
   StackUpdate: [StackResponseDto];
 
   TagCreate: [TagResponseDto];

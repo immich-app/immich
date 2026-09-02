@@ -146,7 +146,7 @@ const handleRemoveFromStack = async (stack: StackResponseDto, asset: AssetRespon
     };
 
     toastManager.primary($t('removed_from_stack'));
-    eventManager.emit('AssetUpdate', asset); // todo: check if this re-inserts into timeline
+    eventManager.emit('AssetUpdate', asset);
     eventManager.emit('StackUpdate', updatedStack);
   } catch (error) {
     handleError(error, $t('errors.failed_to_unstack_assets'));
@@ -159,7 +159,6 @@ const handleSetPrimaryAsset = async (stack: StackResponseDto, asset: AssetRespon
   try {
     const updatedStack = await updateStack({ id: stack.id, stackUpdateDto: { primaryAssetId: asset.id } });
 
-    // todo: toast?
     eventManager.emit('StackUpdate', updatedStack);
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));

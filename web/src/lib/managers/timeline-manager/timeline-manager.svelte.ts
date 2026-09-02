@@ -123,8 +123,15 @@ export class TimelineManager extends VirtualScrollManager {
           }
         },
         AssetsUnarchive: (assets) => this.upsertAssets(assets),
-        StackCreate: (stack) => updateStackedAssetInTimeline(this, stack),
+        StackCreate: (stack) => {
+          if (this.#options.withStacked) {
+            updateStackedAssetInTimeline(this, stack);
+          }
+        },
         StackDelete: ({ assets }) => {
+          if (!this.#options.withStacked) {
+            return;
+          }
           this.update(
             assets.map((asset) => asset.id),
             (asset) => (asset.stack = null),
@@ -132,6 +139,9 @@ export class TimelineManager extends VirtualScrollManager {
           this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
         },
         StackUpdate: (stack) => {
+          if (!this.#options.withStacked) {
+            return;
+          }
           // unstack and re-stack
           this.update(
             stack.assets.map((asset) => asset.id),
