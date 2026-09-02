@@ -8,11 +8,7 @@ import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
 
 const consume = async <T>(generator: AsyncIterableIterator<T>) => {
-  const values: T[] = [];
-
-  for await (const value of generator) {
-    values.push(value);
-  }
+  const values: T[] = await Array.fromAsync(generator);
 
   return values;
 };

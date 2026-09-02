@@ -19,6 +19,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
@@ -200,7 +201,7 @@
   export const scrollAfterNavigate = async () => {
     if (timelineManager.viewportHeight === 0 || timelineManager.viewportWidth === 0) {
       // this can happen if you do the following navigation order
-      // /photos?at=<id>, /photos/<id>, http://example.com, browser back, browser back
+      // /photos?at=<id>, /photos/<id>, https://example.com, browser back, browser back
       const rect = scrollableElement?.getBoundingClientRect();
       if (rect) {
         timelineManager.viewportHeight = rect.height;
@@ -208,17 +209,14 @@
       }
     }
     const scrollTarget = assetViewerManager.gridScrollTarget?.at;
-    let scrolled = false;
-    if (scrollTarget) {
-      scrolled = await scrollAndLoadAsset(scrollTarget);
-    }
-    if (!scrolled) {
-      // if the asset is not found, scroll to the top
-      timelineManager.scrollTo(0);
-    } else if (scrollTarget) {
+    const scrolled = scrollTarget ? await scrollAndLoadAsset(scrollTarget) : false;
+    if (scrolled && scrollTarget) {
       await tick();
       focusAsset(scrollTarget);
+    } else {
+      timelineManager.scrollTo(lastVisibleScrollTop);
     }
+
     invisible = false;
   };
 
@@ -226,6 +224,9 @@
   let initialLoadWasAssetViewer: boolean | null = null;
   // only modified in beforeNavigate()
   let hasNavigatedToOrFromAssetViewer: boolean = false;
+  // The layout sets `display: none` on this subtree while the viewer is open.
+  // Browsers drop the scroll offset of a hidden element.
+  let lastVisibleScrollTop = 0;
 
   // beforeNavigate is only called AFTER a svelte route has already been loaded
   // and a new route is being navigated to. It will never be called on direct
@@ -261,6 +262,7 @@
     if (!enableRouting) {
       invisible = false;
     }
+    scrollableElement?.focus({ preventScroll: true });
   });
 
   const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, timelineMonthScrollPercent: number) => {
@@ -309,6 +311,9 @@
   const handleTimelineScroll = () => {
     if (!scrollableElement) {
       return;
+    }
+    if (!assetViewerManager.isViewing) {
+      lastVisibleScrollTop = scrollableElement.scrollTop;
     }
 
     if (timelineManager.limitedScroll) {
@@ -369,21 +374,6 @@
 
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
 
-  let shiftKeyIsDown = $state(false);
-
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = true;
-    }
-  };
-
-  const onKeyUp = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = false;
-    }
-  };
   const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
     if (asset) {
       void selectAssetCandidates(asset);
@@ -484,7 +474,7 @@
   };
 
   const selectAssetCandidates = async (endAsset: TimelineAsset) => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       return;
     }
 
@@ -504,22 +494,24 @@
   });
 
   $effect(() => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
-    if (shiftKeyIsDown && lastAssetMouseEvent) {
+    if (keyboardManager.shift && lastAssetMouseEvent) {
       void selectAssetCandidates(lastAssetMouseEvent);
     }
   });
 
   $effect(() => {
-    if (assetViewerManager.asset && assetViewerManager.isViewing) {
-      const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
-      void timelineManager.loadTimelineMonth({ year: localDateTime.year, month: localDateTime.month });
+    if (!(assetViewerManager.asset && assetViewerManager.isViewing)) {
+      return;
     }
+
+    const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
+    void timelineManager.loadTimelineMonth({ year: localDateTime.year, month: localDateTime.month });
   });
 
   const assetSelectHandler = (
@@ -559,8 +551,6 @@
   };
 </script>
 
-<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
-
 <HotModuleReload
   onAfterUpdate={() => {
     const asset = page.url.searchParams.get('at');
@@ -597,13 +587,10 @@
     bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
-      let amount = 50;
-      if (shiftKeyIsDown) {
-        amount = 500;
-      }
+      let amount = keyboardManager.shift ? 500 : 50;
       if (evt.key === 'ArrowUp') {
         amount = -amount;
-        if (shiftKeyIsDown) {
+        if (keyboardManager.shift) {
           scrollableElement?.scrollBy({ top: amount, behavior: 'smooth' });
         }
       } else if (evt.key === 'ArrowDown') {

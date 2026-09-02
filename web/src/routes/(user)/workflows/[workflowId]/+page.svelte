@@ -63,9 +63,9 @@
 
   let { data }: Props = $props();
 
-  let { id, enabled, name, description, trigger } = $derived(data.workflow);
+  let { id, enabled, name, description, trigger } = $state(data.workflow);
   let steps = $state(data.workflow.steps.map((step) => ({ ...step, id: generateId() })));
-  let savedWorkflow = $state(cloneDeep(data.workflow));
+  let savedWorkflow = $derived(cloneDeep(data.workflow));
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
@@ -73,7 +73,13 @@
   let dragSourceId: string | undefined;
 
   const workflowSummary = $derived({ name, description, trigger, steps });
-  const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({
+    name,
+    description,
+    enabled,
+    trigger,
+    steps: steps.map(({ id: _, ...step }) => step),
+  });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -183,11 +189,13 @@
   };
 
   const onWorkflowUpdate = async (response: WorkflowResponseDto) => {
-    if (id === response.id) {
-      data.workflow = response;
-      savedWorkflow = cloneDeep(response);
-      await invalidate('workflow:data');
+    if (id !== response.id) {
+      return;
     }
+
+    data.workflow = response;
+    savedWorkflow = cloneDeep(response);
+    await invalidate('workflow:data');
   };
 
   const onWorkflowDelete = async (response: WorkflowResponseDto) => {
@@ -246,16 +254,18 @@
     }
 
     void confirmNavigation().then((confirmed) => {
-      if (confirmed) {
-        allowNavigation = true;
-        void goto(to.url);
+      if (!confirmed) {
+        return;
       }
+
+      allowNavigation = true;
+      void goto(to.url);
     });
   });
 
   $effect(() => console.log(steps));
 
-  const { Download, Duplicate, CopyJson, Delete } = $derived(
+  const { Download, Duplicate, CopyJson, Delete, Logs } = $derived(
     getWorkflowActions($t, { ...savedWorkflow, name, description, enabled, trigger, steps }),
   );
 </script>
@@ -270,7 +280,7 @@
       {onClose}
       translations={{ close: $t('back') }}
       closeIcon={mdiArrowLeft}
-      actions={[Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
+      actions={[Logs, Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
     >
       <ControlBarHeader>
         <ControlBarTitle>{data.workflow.name}</ControlBarTitle>

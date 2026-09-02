@@ -4,15 +4,13 @@ from typing import Any
 import numpy as np
 import onnx
 import onnxruntime as ort
-from insightface.model_zoo import ArcFaceONNX
-from insightface.utils.face_align import norm_crop
 from numpy.typing import NDArray
 from onnx.tools.update_model_dims import update_inputs_outputs_dims
 from PIL import Image
 
 from immich_ml.config import log, settings
 from immich_ml.models.base import InferenceModel
-from immich_ml.models.transforms import decode_cv2, serialize_np_array
+from immich_ml.models.transforms import decode_pil, normalize, serialize_np_array
 from immich_ml.schemas import (
     FaceDetectionOutput,
     FacialRecognitionOutput,
@@ -21,6 +19,8 @@ from immich_ml.schemas import (
     ModelTask,
     ModelType,
 )
+
+from ._ops import align_face
 
 
 class FaceRecognizer(InferenceModel):
@@ -37,10 +37,6 @@ class FaceRecognizer(InferenceModel):
         if (not self.batch_size or self.batch_size > 1) and str(session.get_inputs()[0].shape[0]) != "batch":
             self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
-        self.model = ArcFaceONNX(
-            self.model_path_for_format(ModelFormat.ONNX).as_posix(),
-            session=session,
-        )
         return session
 
     def _predict(
@@ -48,20 +44,21 @@ class FaceRecognizer(InferenceModel):
     ) -> FacialRecognitionOutput:
         if faces["boxes"].shape[0] == 0:
             return []
-        inputs = decode_cv2(inputs)
-        cropped_faces = self._crop(inputs, faces)
-        embeddings = self._predict_batch(cropped_faces)
+        image = np.asarray(decode_pil(inputs), dtype=np.uint8)
+        crops = np.stack([align_face(image, kps).transpose(2, 0, 1) for kps in faces["landmarks"]])
+        embeddings = self._predict_batch(normalize(crops, mean=127.5, std=127.5))
         return self.postprocess(faces, embeddings)
 
-    def _predict_batch(self, cropped_faces: list[NDArray[np.uint8]]) -> NDArray[np.float32]:
-        if not self.batch_size or len(cropped_faces) <= self.batch_size:
-            embeddings: NDArray[np.float32] = self.model.get_feat(cropped_faces)
-            return embeddings
+    def _predict_batch(self, crops: NDArray[np.float32]) -> NDArray[np.float32]:
+        input_name = self.session.get_inputs()[0].name
+        if not self.batch_size or crops.shape[0] <= self.batch_size:
+            return self.session.run(None, {input_name: crops})[0]
 
-        batch_embeddings: list[NDArray[np.float32]] = []
-        for i in range(0, len(cropped_faces), self.batch_size):
-            batch_embeddings.append(self.model.get_feat(cropped_faces[i : i + self.batch_size]))
-        return np.concatenate(batch_embeddings, axis=0)
+        batches = [
+            self.session.run(None, {input_name: crops[i : i + self.batch_size]})[0]
+            for i in range(0, crops.shape[0], self.batch_size)
+        ]
+        return np.concatenate(batches, axis=0)
 
     def postprocess(self, faces: FaceDetectionOutput, embeddings: NDArray[np.float32]) -> FacialRecognitionOutput:
         return [
@@ -72,9 +69,6 @@ class FaceRecognizer(InferenceModel):
             }
             for (x1, y1, x2, y2), embedding, score in zip(faces["boxes"], embeddings, faces["scores"])
         ]
-
-    def _crop(self, image: NDArray[np.uint8], faces: FaceDetectionOutput) -> list[NDArray[np.uint8]]:
-        return [norm_crop(image, landmark) for landmark in faces["landmarks"]]
 
     def _add_batch_axis(self, model_path: Path) -> None:
         log.debug(f"Adding batch axis to model {model_path}")

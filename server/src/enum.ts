@@ -24,6 +24,8 @@ export enum ImmichHeader {
   SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
   CorrelationId = 'X-Correlation-ID',
+  HlsInitSegment = 'x-immich-hls-msn',
+  HlsPosition = 'x-immich-hls-pos',
 }
 
 export enum ImmichQuery {
@@ -59,6 +61,8 @@ export enum AssetFileType {
   Sidecar = 'sidecar',
   EncodedVideo = 'encoded_video',
 }
+
+export const AssetFileTypeSchema = z.enum(AssetFileType).describe('Type of file').meta({ id: 'AssetFileType' });
 
 export enum AlbumUserRole {
   Editor = 'editor',
@@ -115,6 +119,7 @@ export enum Permission {
   ApiKeyRead = 'apiKey.read',
   ApiKeyUpdate = 'apiKey.update',
   ApiKeyDelete = 'apiKey.delete',
+  ApiKeyRotate = 'apiKey.rotate',
 
   // ASSET_CREATE = 'asset.create',
   AssetRead = 'asset.read',
@@ -127,6 +132,10 @@ export enum Permission {
   AssetUpload = 'asset.upload',
   AssetCopy = 'asset.copy',
   AssetDerive = 'asset.derive',
+
+  AssetFileRead = 'assetFile.read',
+  AssetFileDelete = 'assetFile.delete',
+  AssetFileDownload = 'assetFile.download',
 
   AssetEditGet = 'asset.edit.get',
   AssetEditCreate = 'asset.edit.create',
@@ -157,6 +166,17 @@ export enum Permission {
   BackupDownload = 'backup.download',
   BackupUpload = 'backup.upload',
   BackupDelete = 'backup.delete',
+
+  ClusterGroupRead = 'clusterGroup.read',
+  ClusterGroupLeave = 'clusterGroup.leave',
+  ClusterGroupRequestCreate = 'clusterGroupRequest.create',
+  ClusterGroupRequestRead = 'clusterGroupRequest.read',
+  ClusterGroupRequestDelete = 'clusterGroupRequest.delete',
+
+  AdminConfigRead = 'adminConfig.read',
+  AdminConfigUpdate = 'adminConfig.update',
+
+  UserConfigRead = 'userConfig.read',
 
   DuplicateRead = 'duplicate.read',
   DuplicateDelete = 'duplicate.delete',
@@ -296,6 +316,7 @@ export enum Permission {
   WorkflowRead = 'workflow.read',
   WorkflowUpdate = 'workflow.update',
   WorkflowDelete = 'workflow.delete',
+  WorkflowLogs = 'workflow.logs',
 
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',
@@ -341,6 +362,7 @@ export enum SystemMetadataKey {
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
   License = 'license',
+  IntegrityChecksumCheckpoint = 'integrity-checksum-checkpoint',
 }
 
 export enum UserMetadataKey {
@@ -398,6 +420,17 @@ export enum SourceType {
 
 export const SourceTypeSchema = z.enum(SourceType).describe('Face detection source type').meta({ id: 'SourceType' });
 
+export enum IntegrityReport {
+  UntrackedFile = 'untracked_file',
+  MissingFile = 'missing_file',
+  ChecksumFail = 'checksum_mismatch',
+}
+
+export const IntegrityReportSchema = z
+  .enum(IntegrityReport)
+  .describe('Integrity report type')
+  .meta({ id: 'IntegrityReport' });
+
 export enum ManualJobName {
   PersonCleanup = 'person-cleanup',
   TagCleanup = 'tag-cleanup',
@@ -405,6 +438,15 @@ export enum ManualJobName {
   MemoryCleanup = 'memory-cleanup',
   MemoryCreate = 'memory-create',
   BackupDatabase = 'backup-database',
+  IntegrityMissingFiles = `integrity-missing-files`,
+  IntegrityUntrackedFiles = `integrity-untracked-files`,
+  IntegrityChecksumFiles = `integrity-checksum-mismatch`,
+  IntegrityMissingFilesRefresh = `integrity-missing-files-refresh`,
+  IntegrityUntrackedFilesRefresh = `integrity-untracked-files-refresh`,
+  IntegrityChecksumFilesRefresh = `integrity-checksum-mismatch-refresh`,
+  IntegrityMissingFilesDeleteAll = `integrity-missing-files-delete-all`,
+  IntegrityUntrackedFilesDeleteAll = `integrity-untracked-files-delete-all`,
+  IntegrityChecksumFilesDeleteAll = `integrity-checksum-mismatch-delete-all`,
 }
 
 export const ManualJobNameSchema = z.enum(ManualJobName).describe('Manual job name').meta({ id: 'ManualJobName' });
@@ -506,6 +548,19 @@ export enum CQMode {
 
 export const CQModeSchema = z.enum(CQMode).describe('CQ mode').meta({ id: 'CQMode' });
 
+export enum HlsVideoResolution {
+  p480 = 480,
+  p720 = 720,
+  p1080 = 1080,
+  p1440 = 1440,
+  p2160 = 2160,
+}
+
+export const HlsVideoResolutionSchema = z
+  .enum(HlsVideoResolution)
+  .describe('HLS video resolution')
+  .meta({ id: 'HlsVideoResolution', type: 'integer' });
+
 export enum Colorspace {
   Srgb = 'srgb',
   P3 = 'p3',
@@ -548,6 +603,7 @@ export enum ApiCustomExtension {
   AdminOnly = 'x-immich-admin-only',
   History = 'x-immich-history',
   State = 'x-immich-state',
+  Required = 'x-immich-required',
 }
 
 export enum MetadataKey {
@@ -771,6 +827,7 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+  IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
 }
 
@@ -866,6 +923,18 @@ export enum JobName {
 
   // Workflow
   WorkflowAssetTrigger = 'WorkflowAssetTrigger',
+
+  // Integrity
+  IntegrityUntrackedFilesQueueAll = 'IntegrityUntrackedFilesQueueAll',
+  IntegrityUntrackedFiles = 'IntegrityUntrackedFiles',
+  IntegrityUntrackedFilesRefresh = 'IntegrityUntrackedRefresh',
+  IntegrityMissingFilesQueueAll = 'IntegrityMissingFilesQueueAll',
+  IntegrityMissingFiles = 'IntegrityMissingFiles',
+  IntegrityMissingFilesRefresh = 'IntegrityMissingFilesRefresh',
+  IntegrityChecksumFiles = 'IntegrityChecksumFiles',
+  IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
+  IntegrityDeleteReportType = 'IntegrityDeleteReportType',
+  IntegrityDeleteReports = 'IntegrityDeleteReports',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -917,6 +986,7 @@ export enum DatabaseLock {
   BackupDatabase = 42,
   MaintenanceOperation = 621,
   MemoryCreation = 777,
+  IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
 }
@@ -1079,6 +1149,7 @@ export enum NotificationType {
   SystemMessage = 'SystemMessage',
   AlbumInvite = 'AlbumInvite',
   AlbumUpdate = 'AlbumUpdate',
+  ClusterGroupRequest = 'ClusterGroupRequest',
   Custom = 'Custom',
 }
 
@@ -1113,10 +1184,23 @@ export const AssetVisibilitySchema = z
   .describe('Asset visibility')
   .meta({ id: 'AssetVisibility' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+export const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
   VersionCheck = 'VersionCheck',
+}
+
+export enum ConfigVisibility {
+  Public = 'Public',
+  User = 'User',
+  Admin = 'Admin',
 }
 
 export enum ApiTag {
@@ -1126,11 +1210,16 @@ export enum ApiTag {
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
+  AssetFiles = 'Asset files',
+  ConfigUser = 'Config (user)',
+  ConfigAdmin = 'Config (admin)',
+  ConfigPublic = 'Config (public)',
   DatabaseBackups = 'Database Backups (admin)',
   Deprecated = 'Deprecated',
   Download = 'Download',
   Duplicates = 'Duplicates',
   Faces = 'Faces',
+  Integrity = 'Integrity (admin)',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
   Maintenance = 'Maintenance (admin)',
@@ -1138,6 +1227,7 @@ export enum ApiTag {
   Memories = 'Memories',
   Notifications = 'Notifications',
   NotificationsAdmin = 'Notifications (admin)',
+  ClusterGroups = 'Cluster groups',
   Partners = 'Partners',
   People = 'People',
   Plugins = 'Plugins',
@@ -1159,14 +1249,6 @@ export enum ApiTag {
   Workflows = 'Workflows',
 }
 
-export enum PluginContext {
-  Asset = 'asset',
-  Album = 'album',
-  Person = 'person',
-}
-
-export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
-
 export const WorkflowTriggerSchema = z
   .enum(WorkflowTrigger)
   .describe('Plugin trigger type')
@@ -1174,7 +1256,7 @@ export const WorkflowTriggerSchema = z
 
 export enum WorkflowType {
   AssetV1 = 'AssetV1',
-  AssetPersonV1 = 'AssetPersonV1',
+  // AssetPersonV1 = 'AssetPersonV1',
 }
 
 export const WorkflowTypeSchema = z.enum(WorkflowType).describe('Workflow type').meta({ id: 'WorkflowType' });
@@ -1183,3 +1265,23 @@ export enum CalendarHeatmapType {
   Upload = 'Upload',
   Taken = 'Taken',
 }
+
+export enum WorkflowResult {
+  Completed = 'completed',
+  Halted = 'halted',
+  Error = 'error',
+}
+
+export const WorkflowResultSchema = z
+  .enum(WorkflowResult)
+  .describe('Workflow run result')
+  .meta({ id: 'WorkflowResult' });
+
+export enum SearchOrderField {
+  FileCreatedAt = 'fileCreatedAt',
+  LocalDateTime = 'localDateTime',
+  FileSizeInBytes = 'fileSizeInBytes',
+  Rating = 'rating',
+}
+
+export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'SearchOrderField' });

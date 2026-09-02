@@ -1,4 +1,12 @@
-import { ApiKeyResponseDto, getMyApiKey, getMyUser, init, isHttpError, Permission } from '@immich/sdk';
+import {
+  ApiKeyResponseDto,
+  getMyApiKey,
+  getMyUser,
+  init,
+  isHttpError,
+  isMalformedResponseError,
+  Permission,
+} from '@immich/sdk';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -39,6 +47,7 @@ export const s = (count: number) => (count === 1 ? '' : 's');
 let _apiKey: ApiKeyResponseDto;
 export const requirePermissions = async (permissions: Permission[]) => {
   if (!_apiKey) {
+    // eslint-disable-next-line unicorn/no-top-level-assignment-in-function
     _apiKey = await getMyApiKey();
   }
 
@@ -67,8 +76,9 @@ Please make sure your API key has the correct permissions.`,
 export const connect = async (url: string, key: string) => {
   const wellKnownUrl = new URL('.well-known/immich', url);
   try {
-    const wellKnown = await fetch(wellKnownUrl).then((response) => response.json());
-    const endpoint = new URL(wellKnown.api.endpoint, url).toString();
+    // eslint-disable-next-line unicorn/prefer-await
+    const wellKnown = (await fetch(wellKnownUrl).then((response) => response.json())) as { api: { endpoint: string } };
+    const endpoint = new URL(wellKnown.api.endpoint, url).href;
     if (endpoint !== url) {
       console.debug(`Discovered API at ${endpoint}`);
     }
@@ -80,7 +90,7 @@ export const connect = async (url: string, key: string) => {
   init({ baseUrl: url, apiKey: key });
 
   const [error] = await withError(getMyUser());
-  if (isHttpError(error)) {
+  if (isHttpError(error) || isMalformedResponseError(error)) {
     logError(error, `Failed to connect to server ${url}`);
     process.exit(1);
   }
@@ -92,6 +102,11 @@ export const logError = (error: unknown, message: string) => {
   if (isHttpError(error)) {
     console.error(`${message}: ${error.status}`);
     console.error(JSON.stringify(error.data, undefined, 2));
+  } else if (isMalformedResponseError(error)) {
+    console.error(`${message}: ${error.message}`);
+    console.error(
+      'Check that the URL points at the Immich API, and that nothing in front of it (reverse proxy, SSO portal) is answering instead.',
+    );
   } else {
     console.error(`${message} - ${error}`);
   }
@@ -178,7 +193,7 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   const searchPatterns = patterns.map((pattern) => {
     let escapedPattern = pattern.replaceAll("'", "[']").replaceAll('"', '["]').replaceAll('`', '[`]');
     if (recursive) {
-      escapedPattern = escapedPattern + '/**';
+      escapedPattern += '/**';
     }
     return `${escapedPattern}/*.{${extensions.join(',')}}`;
   });
@@ -238,10 +253,12 @@ export class Batcher<T = unknown> {
   }
 
   private clearDebounceTimer() {
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-      this.debounceTimer = undefined;
+    if (!this.debounceTimer) {
+      return;
     }
+
+    clearTimeout(this.debounceTimer);
+    this.debounceTimer = undefined;
   }
 
   add(item: T) {

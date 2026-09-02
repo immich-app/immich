@@ -2,27 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/archive.action.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
+import 'package:immich_mobile/presentation/actions/favorite.action.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
+import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
+import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
+import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -51,8 +48,6 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    final multiselect = ref.watch(multiSelectProvider);
-    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final ownsAlbum = ref.watch(currentUserProvider)?.id == widget.album.ownerId;
 
     Future<void> addToAlbum(RemoteAlbum album) async {
@@ -63,19 +58,15 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
       }
 
       if (!result.success) {
-        ImmichToast.show(
-          context: context,
-          msg: 'scaffold_body_error_occurred'.t(context: context),
-          toastType: ToastType.error,
-        );
+        ImmichToast.show(context: context, msg: context.t.scaffold_body_error_occurred, toastType: ToastType.error);
         return;
       }
 
       ImmichToast.show(
         context: context,
         msg: result.count == 0
-            ? 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name})
-            : 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name}),
+            ? context.t.add_to_album_bottom_sheet_already_exists(album: album.name)
+            : context.t.add_to_album_bottom_sheet_added(album: album.name),
       );
     }
 
@@ -89,31 +80,32 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
       minChildSize: 0.22,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: [
-        const ShareActionButton(source: ActionSource.timeline),
-        if (multiselect.hasRemote) ...[
-          const ShareLinkActionButton(source: ActionSource.timeline),
+      actions: <ActionColumnButton>[
+        const .new(action: AssetDebugAction(source: .timeline)),
+        const .new(action: ShareAction(source: .timeline)),
+        const .new(action: ShareLinkAction(source: .timeline)),
 
-          if (ownsAlbum) ...[
-            const ArchiveActionButton(source: ActionSource.timeline),
-            const FavoriteActionButton(source: ActionSource.timeline),
-          ],
-          const DownloadActionButton(source: ActionSource.timeline),
-          if (ownsAlbum) ...[
-            isTrashEnable
-                ? const TrashActionButton(source: ActionSource.timeline)
-                : const DeletePermanentActionButton(source: ActionSource.timeline),
-            const EditDateTimeActionButton(source: ActionSource.timeline),
-            const EditLocationActionButton(source: ActionSource.timeline),
-            const MoveToLockFolderActionButton(source: ActionSource.timeline),
-            if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
-            if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
-          ],
+        if (ownsAlbum) ...const [
+          .new(action: ArchiveAction(source: .timeline)),
+          .new(action: FavoriteAction(source: .timeline)),
         ],
-        if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
-        if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
-        if (ownsAlbum && multiselect.selectedAssets.length == 1)
-          SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
+        const .new(action: DownloadAction(source: .timeline)),
+        if (ownsAlbum) ...const [
+          .new(action: DeleteAction(source: .timeline)),
+          .new(action: EditDateTimeAction(source: .timeline)),
+          .new(action: EditLocationAction(source: .timeline)),
+          .new(action: LockAction(source: .timeline)),
+          .new(action: StackAction(source: .timeline)),
+        ],
+        const .new(action: CleanupLocalAction(source: .timeline)),
+        if (ownsAlbum) ...[
+          ActionColumnButton(
+            action: RemoveFromAlbumAction(source: .timeline, albumId: widget.album.id),
+          ),
+          ActionColumnButton(
+            action: SetAlbumCoverAction(source: .timeline, albumId: widget.album.id),
+          ),
+        ],
       ],
       slivers: ownsAlbum
           ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand)]

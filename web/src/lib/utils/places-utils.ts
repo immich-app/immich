@@ -13,38 +13,6 @@ export interface PlacesGroup {
   places: AssetResponseDto[];
 }
 
-export interface PlacesGroupOptionMetadata {
-  id: PlacesGroupBy;
-  isDisabled: () => boolean;
-}
-
-export const groupOptionsMetadata: PlacesGroupOptionMetadata[] = [
-  {
-    id: PlacesGroupBy.None,
-    isDisabled: () => false,
-  },
-  {
-    id: PlacesGroupBy.Country,
-    isDisabled: () => false,
-  },
-];
-
-export const findGroupOptionMetadata = (groupBy: string) => {
-  // Default is no grouping
-  const defaultGroupOption = groupOptionsMetadata[0];
-  return groupOptionsMetadata.find(({ id }) => groupBy === id) ?? defaultGroupOption;
-};
-
-export const getSelectedPlacesGroupOption = (settings: PlacesViewSettings) => {
-  const defaultGroupOption = PlacesGroupBy.None;
-  const albumGroupOption = settings.groupBy ?? defaultGroupOption;
-
-  if (findGroupOptionMetadata(albumGroupOption).isDisabled()) {
-    return defaultGroupOption;
-  }
-  return albumGroupOption;
-};
-
 /**
  * ----------------------------
  * Places Groups Collapse/Expand

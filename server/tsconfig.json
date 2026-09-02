@@ -10,7 +10,7 @@
     "resolveJsonModule": true,
     "target": "es2024",
     "moduleResolution": "node16",
-    "lib": ["dom", "es2024"],
+    "lib": ["dom", "esnext"],
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,

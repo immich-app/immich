@@ -133,6 +133,7 @@ export type User = {
 };
 
 export type UserAdmin = User & {
+  clusterGroupId: string;
   storageLabel: string | null;
   shouldChangePassword: boolean;
   isAdmin: boolean;
@@ -241,7 +242,7 @@ export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId' | '
 
 export type Person = {
   createdAt: Date;
-  id: string;
+  personGroupId: string;
   ownerId: string;
   updatedAt: Date;
   updateId: string;
@@ -264,7 +265,7 @@ export type AssetFace = {
   boundingBoxY2: number;
   imageHeight: number;
   imageWidth: number;
-  personId: string | null;
+  personGroupId: string | null;
   sourceType: SourceType;
   person?: ShallowDehydrateObject<Person> | null;
   updatedAt: Date;
@@ -303,6 +304,36 @@ export const columns = {
     'asset.width',
     'asset.height',
     'asset.isEdited',
+  ],
+  searchAsset: [
+    'asset.id',
+    'asset.updateId',
+    'asset.createdAt',
+    'asset.updatedAt',
+    'asset.deletedAt',
+    'asset.status',
+    'asset.checksum',
+    'asset.checksumAlgorithm',
+    'asset.duplicateId',
+    'asset.duration',
+    'asset.fileCreatedAt',
+    'asset.fileModifiedAt',
+    'asset.isExternal',
+    'asset.isFavorite',
+    'asset.isOffline',
+    'asset.isEdited',
+    'asset.visibility',
+    'asset.libraryId',
+    'asset.livePhotoVideoId',
+    'asset.localDateTime',
+    'asset.originalFileName',
+    'asset.originalPath',
+    'asset.ownerId',
+    'asset.stackId',
+    'asset.thumbhash',
+    'asset.type',
+    'asset.width',
+    'asset.height',
   ],
   workflowAssetV1: [
     'asset.id',
@@ -346,6 +377,7 @@ export const columns = {
   userWithPrefix: userWithPrefixColumns,
   userAdmin: [
     ...userColumns,
+    'clusterGroupId',
     'createdAt',
     'updatedAt',
     'deletedAt',
@@ -368,6 +400,7 @@ export const columns = {
     'plugin_method.types',
     'plugin_method.schema',
     'plugin_method.hostFunctions',
+    'plugin_method.allowedHosts',
     'plugin_method.uiHints',
   ],
   syncAsset: [

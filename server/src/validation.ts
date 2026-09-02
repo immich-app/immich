@@ -1,4 +1,5 @@
-import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
+import { FileValidator, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
 import { isIP, isIPRange } from 'validator';
@@ -11,10 +12,7 @@ function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   if (isIPRange(value)) {
     return true;
   }
-  if (!requireCIDR && isIP(value)) {
-    return true;
-  }
-  return false;
+  return !requireCIDR && isIP(value);
 }
 
 /**
@@ -44,7 +42,7 @@ export function nonEmptyPartial<T extends z.ZodRawShape>(shape: T) {
     .object(shape)
     .partial()
     .refine((data) => Object.values(data as Record<string, unknown>).some((value) => value !== undefined), {
-      message: 'At least one field must be provided',
+      message: `At least one of the following fields is required: ${Object.keys(shape).join(', ')}`,
     });
 }
 
@@ -62,7 +60,7 @@ export function IsNotSiblingOf<
   TKey extends z.infer<ReturnType<TSchema['keyof']>> & keyof z.infer<TSchema>,
 >(_schema: TSchema, property: TKey, siblings: TKey[]) {
   type T = z.infer<TSchema>;
-  const message = `${String(property)} cannot exist alongside ${siblings.join(' or ')}`;
+  const message = `${property} cannot exist alongside ${siblings.join(' or ')}`;
   return z.custom<T>().refine(
     (data) => {
       if (data[property] === undefined) {
@@ -72,16 +70,6 @@ export function IsNotSiblingOf<
     },
     { message },
   );
-}
-
-@Injectable()
-export class ParseMeUUIDPipe extends ParseUUIDPipe {
-  async transform(value: string, metadata: ArgumentMetadata) {
-    if (value == 'me') {
-      return value;
-    }
-    return super.transform(value, metadata);
-  }
 }
 
 @Injectable()
@@ -110,6 +98,12 @@ const UUIDParamSchema = z.object({
 
 export class UUIDParamDto extends createZodDto(UUIDParamSchema) {}
 
+const UUIDv7ParamSchema = z.object({
+  id: z.uuidv7(),
+});
+
+export class UUIDv7ParamDto extends createZodDto(UUIDv7ParamSchema) {}
+
 const UUIDAssetIDParamSchema = z.object({
   id: z.uuidv4(),
   assetId: z.uuidv4(),
@@ -126,13 +120,21 @@ const FilenameParamSchema = z.object({
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
 /**
+ * The HTML5 email regex, but with unicode support, so that international email addresses
+ * (unicode local parts and internationalized domain names) are accepted.
+ * @see {@link z.regexes.html5Email}
+ */
+const unicodeEmail =
+  /^[\p{L}\p{M}\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]{0,61}[\p{L}\p{M}\p{N}])?(?:\.[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]{0,61}[\p{L}\p{M}\p{N}])?)*$/u;
+
+/**
  * Unified email validation
- * Converts email strings to lowercase and validates against HTML5 email regex
+ * Converts email strings to lowercase and validates against a unicode aware email regex
  * @docs https://zod.dev/api?id=email
  */
 export const toEmail = z
   .email({
-    pattern: z.regexes.html5Email,
+    pattern: unicodeEmail,
     error: (iss) => `Invalid input: expected email, received ${typeof iss.input}`,
   })
   .transform((val) => val.toLowerCase());
@@ -145,6 +147,7 @@ export const isoDatetimeToDate = z
   .codec(
     z.iso.datetime({
       error: (iss) => `Invalid input: expected ISO 8601 datetime string, received ${typeof iss.input}`,
+      offset: true,
     }),
     z.date(),
     {
@@ -166,19 +169,10 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      },
+      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });
-
-export const isValidTime = z
-  .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Invalid input: expected string in HH:mm format, received string');
 
 /**
  * Latitude in range [-90, 90]. Reuse for body or query params.

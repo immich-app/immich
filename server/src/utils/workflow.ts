@@ -4,8 +4,9 @@ import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
 
 export const triggerMap: Record<WorkflowTrigger, WorkflowType[]> = {
   [WorkflowTrigger.AssetCreate]: [WorkflowType.AssetV1],
-  [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
+  // [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
   [WorkflowTrigger.AssetMetadataExtraction]: [WorkflowType.AssetV1],
+  [WorkflowTrigger.AssetTagged]: [WorkflowType.AssetV1],
 };
 
 export const getWorkflowTriggers = () =>
@@ -14,7 +15,7 @@ export const getWorkflowTriggers = () =>
 /** some types extend other types and have implied compatibility */
 const inferredMap: Record<WorkflowType, WorkflowType[]> = {
   [WorkflowType.AssetV1]: [],
-  [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],
+  // [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],
 };
 
 const withImpliedItems = (type: WorkflowType): WorkflowType[] => {

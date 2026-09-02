@@ -34,10 +34,12 @@ export class TelemetryService extends BaseService {
 
   @OnEvent({ name: 'JobSuccess' })
   onJobSuccess({ job, response }: ArgOf<'JobSuccess'>) {
-    if (response && Object.values(JobStatus).includes(response as JobStatus)) {
-      const jobMetric = `immich.jobs.${snakeCase(job.name)}.${response}`;
-      this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
+    if (!(response && Object.values(JobStatus).includes(response as JobStatus))) {
+      return;
     }
+
+    const jobMetric = `immich.jobs.${snakeCase(job.name)}.${response}`;
+    this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
   }
 
   @OnEvent({ name: 'JobError' })

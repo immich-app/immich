@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
-import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -21,8 +21,8 @@ final deepLinkServiceProvider = Provider(
     ref.watch(timelineFactoryProvider),
     ref.watch(beta_asset_provider.assetServiceProvider),
     ref.watch(remoteAlbumServiceProvider),
-    ref.watch(driftMemoryServiceProvider),
-    ref.watch(driftPeopleServiceProvider),
+    MemoryService(ref.watch(driftProvider).memoryRepository),
+    ref.watch(peopleServiceProvider),
     ref.watch(currentUserProvider),
   ),
 );
@@ -31,8 +31,8 @@ class DeepLinkService {
   final TimelineFactory _betaTimelineFactory;
   final beta_asset_service.AssetService _betaAssetService;
   final RemoteAlbumService _betaRemoteAlbumService;
-  final DriftMemoryService _betaMemoryService;
-  final DriftPeopleService _betaPeopleService;
+  final MemoryService _betaMemoryService;
+  final PeopleService _betaPeopleService;
 
   final UserDto? _currentUser;
 
@@ -51,7 +51,7 @@ class DeepLinkService {
     final queryParams = link.uri.queryParameters;
 
     return switch (intent) {
-      "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
+      "memory" => await _buildMemoryDeepLink(queryParams['id']),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
       "people" => await _buildPeopleDeepLink(queryParams['id'] ?? ''),
@@ -70,7 +70,10 @@ class DeepLinkService {
 
     if (assetRegex.hasMatch(path)) {
       final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
-      return _buildAssetDeepLink(assetId, ref);
+      // /albums/<albumId>/photos/<assetId> links carry the album context,
+      // which drives the like/comment UI in the viewer
+      final albumId = albumRegex.firstMatch(path)?.group(1);
+      return _buildAssetDeepLink(assetId, ref, albumId: albumId);
     }
     if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
@@ -85,7 +88,7 @@ class DeepLinkService {
   }
 
   Future<PageRouteInfo?> _buildMemoryDeepLink(String? memoryId) async {
-    List<DriftMemory> memories = [];
+    List<Memory> memories = [];
 
     if (memoryId == null) {
       if (_currentUser == null) {
@@ -104,19 +107,22 @@ class DeepLinkService {
       return null;
     }
 
-    return DriftMemoryRoute(memories: memories, memoryIndex: 0);
+    return MemoryRoute(memories: memories, memoryIndex: 0);
   }
 
-  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref) async {
+  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref, {String? albumId}) async {
     final asset = await _betaAssetService.getRemoteAsset(assetId);
     if (asset == null) {
       return null;
     }
 
+    final album = albumId != null ? await _betaRemoteAlbumService.get(albumId) : null;
+
     AssetViewer.setAsset(ref, asset);
     return AssetViewerRoute(
       initialIndex: 0,
       timelineService: _betaTimelineFactory.fromAssets([asset], TimelineOrigin.deepLink),
+      currentAlbum: album,
     );
   }
 
@@ -137,7 +143,7 @@ class DeepLinkService {
       return null;
     }
 
-    return DriftActivitiesRoute(album: album);
+    return ActivitiesRoute(album: album);
   }
 
   Future<PageRouteInfo?> _buildPeopleDeepLink(String personId) async {
@@ -147,6 +153,6 @@ class DeepLinkService {
       return null;
     }
 
-    return DriftPersonRoute(person: person);
+    return PersonRoute(person: person);
   }
 }

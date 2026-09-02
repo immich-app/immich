@@ -15,7 +15,7 @@ export class MapService extends BaseService {
 
     const albumIds = options.withSharedAlbums ? await this.albumRepository.getAllIds(auth.user.id) : [];
 
-    return this.mapRepository.getMapMarkers(userIds, albumIds, options);
+    return this.mapRepository.getMapMarkers(auth.user.id, userIds, albumIds, options);
   }
 
   async reverseGeocode(dto: MapReverseGeocodeDto) {

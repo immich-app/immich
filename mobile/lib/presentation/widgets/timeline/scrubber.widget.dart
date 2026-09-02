@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -13,6 +14,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+
+part 'scrubber.widget.freezed.dart';
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
 /// for quick navigation of the BoxScrollView.
@@ -38,7 +41,6 @@ class Scrubber extends ConsumerStatefulWidget {
 
   Scrubber({
     super.key,
-    Key? scrollThumbKey,
     required this.layoutSegments,
     required this.timelineHeight,
     this.topPadding = 0,
@@ -152,7 +154,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void _resetThumbTimer() {
     _fadeOutTimer?.cancel();
     _fadeOutTimer = Timer(kTimelineScrubberFadeOutDuration, () {
-      _thumbAnimationController.reverse();
+      unawaited(_thumbAnimationController.reverse());
       _fadeOutTimer = null;
     });
   }
@@ -177,10 +179,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       if (notification is ScrollUpdateNotification) {
         _thumbTopOffset = _currentOffset;
         if (_labelAnimation.status != AnimationStatus.reverse) {
-          _labelAnimationController.reverse();
+          unawaited(_labelAnimationController.reverse());
         }
         if (_thumbAnimationController.status != AnimationStatus.forward) {
-          _thumbAnimationController.forward();
+          unawaited(_thumbAnimationController.forward());
         }
       }
       _resetThumbTimer();
@@ -210,7 +212,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void _onDragStart(DragStartDetails _) {
     setState(() {
       _isDragging = true;
-      _labelAnimationController.forward();
+      unawaited(_labelAnimationController.forward());
       _fadeOutTimer?.cancel();
       _lastLabel = null;
     });
@@ -226,7 +228,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     }
 
     if (_thumbAnimationController.status != AnimationStatus.forward) {
-      _thumbAnimationController.forward();
+      unawaited(_thumbAnimationController.forward());
     }
 
     final dragPosition = _calculateDragPosition(details);
@@ -344,7 +346,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragEnd(DragEndDetails _) {
-    _labelAnimationController.reverse();
+    unawaited(_labelAnimationController.reverse());
     setState(() {
       _isDragging = false;
     });
@@ -590,32 +592,19 @@ class _SlideFadeTransition extends StatelessWidget {
       animation: _animation,
       builder: (context, child) => _animation.value == 0.0 ? const SizedBox() : child!,
       child: SlideTransition(
-        position: Tween(begin: const Offset(0.3, 0.0), end: const Offset(0.0, 0.0)).animate(_animation),
+        position: Tween(begin: const Offset(0.3, 0.0), end: Offset.zero).animate(_animation),
         child: FadeTransition(opacity: _animation, child: _child),
       ),
     );
   }
 }
 
-class _Segment {
-  final DateTime date;
-  final double startOffset;
-  final String scrollLabel;
-  final bool showSegment;
-
-  const _Segment({required this.date, required this.startOffset, required this.scrollLabel, this.showSegment = false});
-
-  _Segment copyWith({DateTime? date, double? startOffset, String? scrollLabel, bool? showSegment}) {
-    return _Segment(
-      date: date ?? this.date,
-      startOffset: startOffset ?? this.startOffset,
-      scrollLabel: scrollLabel ?? this.scrollLabel,
-      showSegment: showSegment ?? this.showSegment,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'Segment(scrollLabel: $scrollLabel, date: $date)';
-  }
+@freezed
+abstract class _Segment with _$Segment {
+  const factory _Segment({
+    required DateTime date,
+    required double startOffset,
+    required String scrollLabel,
+    @Default(false) bool showSegment,
+  }) = __Segment;
 }

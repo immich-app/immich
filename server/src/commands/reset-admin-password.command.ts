@@ -3,7 +3,7 @@ import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { CliService } from 'src/services/cli.service';
 
 const prompt = (inquirer: InquirerService) => {
-  return function ask(admin: UserAdminResponseDto) {
+  return (admin: UserAdminResponseDto) => {
     const { id, oauthId, email, name } = admin;
     console.log(`Found Admin:
 - ID=${id}
@@ -11,7 +11,7 @@ const prompt = (inquirer: InquirerService) => {
 - Email=${email}
 - Name=${name}`);
 
-    return inquirer.ask<{ password: string }>('prompt-password', {}).then(({ password }) => password);
+    return inquirer.ask<{ newPassword: string; invalidateSessions: boolean }>('prompt-password-reset', {});
   };
 };
 
@@ -43,13 +43,23 @@ export class ResetAdminPasswordCommand extends CommandRunner {
   }
 }
 
-@QuestionSet({ name: 'prompt-password' })
-export class PromptPasswordQuestions {
+@QuestionSet({ name: 'prompt-password-reset' })
+export class PromptPasswordResetQuestions {
   @Question({
     message: 'Please choose a new password (optional)',
-    name: 'password',
+    name: 'newPassword',
   })
   parsePassword(value: string) {
+    return value;
+  }
+
+  @Question({
+    type: 'confirm',
+    message: 'Invalidate existing sessions?',
+    default: true,
+    name: 'invalidateSessions',
+  })
+  parseInvalidate(value: boolean): boolean {
     return value;
   }
 }

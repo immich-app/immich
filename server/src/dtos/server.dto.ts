@@ -73,7 +73,7 @@ const ServerVersionResponseSchema = z
 
 const ServerVersionHistoryResponseSchema = z
   .object({
-    id: z.string().describe('Version history entry ID'),
+    id: z.uuidv4().describe('Version history entry ID'),
     createdAt: isoDatetimeToDate.describe('When this version was first seen'),
     version: z.string().describe('Version string'),
   })
@@ -81,7 +81,7 @@ const ServerVersionHistoryResponseSchema = z
 
 const UsageByUserSchema = z
   .object({
-    userId: z.string().describe('User ID'),
+    userId: z.uuidv4().describe('User ID'),
     userName: z.string().describe('User name'),
     photos: z.int().describe('Number of photos'),
     videos: z.int().describe('Number of videos'),
@@ -114,6 +114,7 @@ const ServerMediaTypesResponseSchema = z
 const ServerConfigSchema = z
   .object({
     oauthButtonText: z.string().describe('OAuth button text'),
+    oauthAccountManagementUrl: z.string().describe('OAuth account management URL').optional().default(''),
     loginPageMessage: z.string().describe('Login page message'),
     trashDays: z.int().describe('Number of days before trashed assets are permanently deleted'),
     userDeleteDelay: z.int().describe('Delay in days before deleted users are permanently removed'),
