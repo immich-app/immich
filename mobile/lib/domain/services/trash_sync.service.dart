@@ -1,5 +1,6 @@
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/platform/asset_media_api.g.dart';
@@ -8,6 +9,7 @@ import 'package:logging/logging.dart';
 
 class TrashSyncService {
   final TrashSyncRepository _repo;
+  final LocalAssetRepository localAssets;
   final AssetMediaApi _assetMediaApi;
   final DevicePermissionRepository _permission;
   final SettingsRepository _settings;
@@ -15,10 +17,36 @@ class TrashSyncService {
 
   TrashSyncService({
     required this._repo,
+    required this.localAssets,
     required this._assetMediaApi,
     required this._permission,
     required this._settings,
   });
+
+  Future<int> keepReviewAssets(Iterable<String> assetIds) => _repo.rejectReviewAssets(assetIds);
+
+  Future<int> trashReviewAssets(Iterable<String> assetIds) async {
+    final reviewableAssetIds = await _repo.getReviewableAssetIds(assetIds);
+    if (reviewableAssetIds.isEmpty) {
+      return 0;
+    }
+
+    final results = await _assetMediaApi.trash(reviewableAssetIds);
+    final trashedAssetIds = results.whereStatusIn(const {.done, .alreadyInState});
+    final missingAssetIds = results.whereStatusIn(const {.notFound});
+
+    if (trashedAssetIds.isNotEmpty) {
+      final ids = trashedAssetIds.toList(growable: false);
+      await _repo.markReviewAssetsApproved(ids);
+      await localAssets.deleteAssets(ids);
+    }
+
+    if (missingAssetIds.isNotEmpty) {
+      await _repo.deleteMarkers(missingAssetIds);
+    }
+
+    return trashedAssetIds.length;
+  }
 
   Future<void> reconcile() async {
     try {

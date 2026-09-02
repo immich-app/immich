@@ -176,7 +176,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
             _db.trashSyncEntity.checksum: _db.localAssetEntity.checksum,
             _db.trashSyncEntity.status: pending,
             _db.trashSyncEntity.assetUpdatedAt: _db.localAssetEntity.updatedAt,
-            if (remoteDeletedAt != null) _db.trashSyncEntity.remoteDeletedAt: remoteDeletedAt,
+            _db.trashSyncEntity.remoteDeletedAt: ?remoteDeletedAt,
           },
           onConflict: DoUpdate.withExcluded(
             (old, excluded) => remoteDeletedAt != null

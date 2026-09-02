@@ -3,23 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/trash_review.action.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_sync_bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 @RoutePage()
-class DriftTrashReviewPage extends ConsumerWidget {
+class DriftTrashReviewPage extends StatelessWidget {
   const DriftTrashReviewPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => ProviderScope(
+  Widget build(BuildContext context) => ProviderScope(
     overrides: [
       timelineServiceProvider.overrideWith((ref) {
         final user = ref.watch(currentUserProvider);
@@ -39,7 +36,7 @@ class DriftTrashReviewPage extends ConsumerWidget {
         pinned: true,
         centerTitle: true,
         elevation: 0,
-        actions: [const _TrashReviewKebabMenu()],
+        actions: const [_TrashReviewKebabMenu()],
       ),
       topSliverWidgetHeight: 24,
       topSliverWidget: SliverPadding(
@@ -60,38 +57,11 @@ class DriftTrashReviewPage extends ConsumerWidget {
   );
 }
 
-class _TrashReviewKebabMenu extends ConsumerWidget {
+class _TrashReviewKebabMenu extends StatelessWidget {
   const _TrashReviewKebabMenu();
 
-  Future<void> _keepAllOnDevice(BuildContext context, WidgetRef ref) async {
-    final result = await ref.read(actionProvider.notifier).resolveAllRemoteTrash(keep: true);
-    if (!context.mounted) {
-      return;
-    }
-    showKeepResultToast(context, result);
-  }
-
-  Future<void> _moveAllToTrash(BuildContext context, WidgetRef ref) async {
-    final count = ref.read(pendingTrashReviewCountProvider).value ?? 0;
-    await showDialog<bool>(
-      context: context,
-      builder: (_) => ConfirmDialog(
-        title: context.t.trash_review_confirmation_title,
-        content: context.t.trash_review_confirmation_text(count: count),
-        onOk: () async {
-          final result = await ref.read(actionProvider.notifier).resolveAllRemoteTrash(keep: false);
-          if (!context.mounted) {
-            return;
-          }
-          showTrashResultToast(context, result);
-        },
-      ),
-    );
-  }
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final hasPendingAssets = (ref.watch(pendingTrashReviewCountProvider).value ?? 0) > 0;
+  Widget build(BuildContext context) {
     return MenuAnchor(
       consumeOutsideTap: true,
       style: MenuStyle(
@@ -103,19 +73,9 @@ class _TrashReviewKebabMenu extends ConsumerWidget {
         ),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
       ),
-      menuChildren: [
-        BaseActionButton(
-          label: context.t.keep_all,
-          iconData: Icons.cloud_off_outlined,
-          onPressed: hasPendingAssets ? () => _keepAllOnDevice(context, ref) : null,
-          menuItem: true,
-        ),
-        BaseActionButton(
-          label: context.t.trash_all,
-          iconData: Icons.delete_outline_rounded,
-          onPressed: hasPendingAssets ? () => _moveAllToTrash(context, ref) : null,
-          menuItem: true,
-        ),
+      menuChildren: const [
+        ActionMenuItem(action: KeepOnDeviceAction.all()),
+        ActionMenuItem(action: MoveToTrashAction.all()),
       ],
       builder: (context, controller, child) {
         return IconButton(

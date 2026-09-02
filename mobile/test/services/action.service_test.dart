@@ -17,9 +17,6 @@ void main() {
 
   late MockAssetApiRepository assetApiRepository;
   late MockRemoteAssetRepository remoteAssetRepository;
-  late MockLocalAssetRepository localAssetRepository;
-  late MockAssetMediaRepository assetMediaRepository;
-  late MockTrashSyncRepository trashSyncRepository;
 
   late Drift db;
 
@@ -40,17 +37,7 @@ void main() {
   setUp(() {
     assetApiRepository = MockAssetApiRepository();
     remoteAssetRepository = MockRemoteAssetRepository();
-    localAssetRepository = MockLocalAssetRepository();
-    assetMediaRepository = MockAssetMediaRepository();
-    trashSyncRepository = MockTrashSyncRepository();
-
-    sut = ActionService(
-      assetApiRepository,
-      remoteAssetRepository,
-      localAssetRepository,
-      assetMediaRepository,
-      trashSyncRepository,
-    );
+    sut = ActionService(assetApiRepository, remoteAssetRepository);
   });
 
   tearDown(() async {

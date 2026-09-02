@@ -177,7 +177,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         : context.t.advanced_settings_review_remote_deletions_subtitle;
     final reviewRemoteDeletionsEnabled = useState(isTrashSyncEnabled);
 
-    useValueChanged<bool, bool>(isTrashSyncEnabled, (_, __) {
+    useValueChanged<bool, bool>(isTrashSyncEnabled, (_, _) {
       reviewRemoteDeletionsEnabled.value = isTrashSyncEnabled;
       return isTrashSyncEnabled;
     });

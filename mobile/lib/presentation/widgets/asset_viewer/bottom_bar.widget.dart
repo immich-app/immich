@@ -4,14 +4,14 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_asset.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/trash_review.action.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -51,19 +51,11 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = isSyncTrash
         ? <Widget>[
-            KeepOnDeviceActionButton(
-              source: ActionSource.viewer,
-              onResult: (result) {
-                showKeepResultToast(context, result);
-                _updateView(ref);
-              },
+            ActionColumnButton(
+              action: KeepOnDeviceAction(source: ActionSource.viewer, origin: origin),
             ),
-            MoveToTrashActionButton(
-              source: ActionSource.viewer,
-              onResult: (result) {
-                showTrashResultToast(context, result);
-                _updateView(ref);
-              },
+            ActionColumnButton(
+              action: MoveToTrashAction(source: ActionSource.viewer, origin: origin),
             ),
           ]
         : <Widget>[
@@ -131,13 +123,5 @@ class ViewerBottomBar extends ConsumerWidget {
               ),
             ),
     );
-  }
-
-  void _updateView(WidgetRef ref) {
-    Future.delayed(Durations.extralong4, () {
-      if (ref.context.mounted) {
-        ref.read(assetViewerProvider.notifier).setControls(true);
-      }
-    });
   }
 }

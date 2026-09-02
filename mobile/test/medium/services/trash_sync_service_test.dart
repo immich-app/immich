@@ -21,6 +21,7 @@ void main() {
     ctx = await MediumServiceContext.init();
     sut = TrashSyncService(
       repo: ctx.trashSyncRepository,
+      localAssets: ctx.db.localAssetRepository,
       assetMediaApi: ctx.assetMediaApi,
       permission: ctx.permissionRepository,
       settings: ctx.settings,
@@ -87,6 +88,58 @@ void main() {
 
     expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
     verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('keeps selected review assets on device', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+
+    final count = await sut.keepReviewAssets([asset.localId]);
+
+    expect(count, 1);
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
+    expect(await localAssetExists(asset.localId), isTrue);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('moves only successfully handled review assets to trash', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final moved = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    final failed = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+    when(() => ctx.assetMediaApi.trash(any())).thenAnswer(
+      (_) async => [
+        AssetMediaActionResult(id: moved.localId, status: .done),
+        AssetMediaActionResult(id: failed.localId, status: .failed),
+      ],
+    );
+
+    final count = await sut.trashReviewAssets([moved.localId, failed.localId]);
+
+    expect(count, 1);
+    expect(await trashStatusOf(moved.localId), TrashSyncStatus.reviewApproved);
+    expect(await localAssetExists(moved.localId), isFalse);
+    expect(await trashStatusOf(failed.localId), TrashSyncStatus.pending);
+    expect(await localAssetExists(failed.localId), isTrue);
+  });
+
+  test('drops review marker when the platform no longer has the asset', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+    when(
+      () => ctx.assetMediaApi.trash(any()),
+    ).thenAnswer((_) async => [AssetMediaActionResult(id: asset.localId, status: .notFound)]);
+
+    final count = await sut.trashReviewAssets([asset.localId]);
+
+    expect(count, 0);
+    expect(await trashStatusOf(asset.localId), isNull);
+    expect(await localAssetExists(asset.localId), isTrue);
   });
 
   test('candidate recorded in review mode is processed after switching to auto', () async {
