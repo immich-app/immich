@@ -32,6 +32,8 @@ const RotateParametersSchema = z
   .object({
     angle: z
       .int()
+      .min(0)
+      .max(270)
       .refine((v) => [0, 90, 180, 270].includes(v), {
         error: 'Angle must be one of the following values: 0, 90, 180, 270',
       })

@@ -26489,8 +26489,8 @@
         "properties": {
           "angle": {
             "description": "Rotation angle in degrees",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "maximum": 270,
+            "minimum": 0,
             "type": "integer"
           }
         },
