@@ -54,6 +54,7 @@ class TagsDetails extends ConsumerWidget {
   }
 
   Future<void> _removeTag(BuildContext context, WidgetRef ref, RemoteAsset asset, Tag tag) async {
+    final tagService = ref.read(tagServiceProvider);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -74,7 +75,7 @@ class TagsDetails extends ConsumerWidget {
     }
 
     try {
-      await ref.read(tagServiceProvider).untagAssets(tag.id, [asset.id]);
+      await tagService.untagAssets(tag.id, [asset.id]);
       ref.invalidate(assetTagsProvider(asset.id));
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to remove the tag");
