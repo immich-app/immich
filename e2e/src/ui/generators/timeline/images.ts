@@ -21,7 +21,7 @@ export const randomImageFromString = async (
   let seedNumber = 0;
   for (let i = 0; i < seed.length; i++) {
     seedNumber = (seedNumber << 5) - seedNumber + (seed.codePointAt(i) ?? 0);
-    seedNumber = seedNumber & seedNumber; // Convert to 32bit integer
+    seedNumber &= seedNumber; // Convert to 32bit integer
   }
   return randomImage(new SeededRandom(Math.abs(seedNumber)), { width, height });
 };

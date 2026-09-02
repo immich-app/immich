@@ -3,6 +3,7 @@ import { OnEvent, OnJob } from 'src/decorators';
 import { MapAlbumDto } from 'src/dtos/album.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfigSmtpDto } from 'src/dtos/config.dto';
 import {
   mapNotification,
   NotificationDeleteAllDto,
@@ -11,7 +12,6 @@ import {
   NotificationUpdateAllDto,
   NotificationUpdateDto,
 } from 'src/dtos/notification.dto';
-import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
   JobName,
@@ -169,7 +169,7 @@ export class NotificationService extends BaseService {
       return;
     }
 
-    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
+    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId], userId);
     if (asset) {
       this.websocketRepository.clientSend(
         'on_asset_update',
@@ -217,17 +217,37 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'AlbumUpdate' })
-  async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
-    await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
-    await this.jobRepository.queue({
-      name: JobName.NotifyAlbumUpdate,
-      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
-    });
+  async onAlbumUpdate({ id, userIds, recipientIds }: ArgOf<'AlbumUpdate'>) {
+    for (const userId of userIds) {
+      this.websocketRepository.clientSend('on_album_update', userId, id);
+    }
+
+    for (const recipientId of recipientIds) {
+      await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
+      await this.jobRepository.queue({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
+      });
+    }
   }
 
   @OnEvent({ name: 'AlbumInvite' })
   async onAlbumInvite({ id, userId, senderName }: ArgOf<'AlbumInvite'>) {
     await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId, senderName } });
+  }
+
+  @OnEvent({ name: 'ClusterGroupRequest' })
+  async onClusterGroupRequest({ clusterGroupId, userId, senderName }: ArgOf<'ClusterGroupRequest'>) {
+    const item = await this.notificationRepository.create({
+      userId,
+      type: NotificationType.ClusterGroupRequest,
+      level: NotificationLevel.Info,
+      title: 'Cluster Group Request',
+      description: `${senderName} asked you to join their cluster group`,
+      data: JSON.stringify({ clusterGroupId }),
+    });
+
+    this.websocketRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 
   @OnEvent({ name: 'SessionDelete' })

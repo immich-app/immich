@@ -6,7 +6,7 @@ import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -30,12 +30,12 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFaceImportEnabled } from 'src/utils/misc';
+import { batched, isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 import { Tasks } from 'src/utils/tasks';
 
@@ -109,7 +109,7 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
   const val = validate(value);
 
   // check if the value is within the range
-  if (val == null || val < min || val > max) {
+  if (val === null || val < min || val > max) {
     return null;
   }
 
@@ -218,17 +218,12 @@ export class MetadataService extends BaseService {
   async handleQueueMetadataExtraction(job: JobOf<JobName.AssetExtractMetadataQueueAll>): Promise<JobStatus> {
     const { force } = job;
 
-    let queue: { name: JobName.AssetExtractMetadata; data: { id: string } }[] = [];
-    for await (const asset of this.assetJobRepository.streamForMetadataExtraction(force)) {
-      queue.push({ name: JobName.AssetExtractMetadata, data: { id: asset.id } });
-
-      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(queue);
-        queue = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForMetadataExtraction(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetExtractMetadata, data: { id: asset.id } })),
+      );
     }
 
-    await this.jobRepository.queueAll(queue);
     return JobStatus.Success;
   }
 
@@ -286,7 +281,7 @@ export class MetadataService extends BaseService {
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
-      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
+      projectionType: exifTags.ProjectionType ? exifTags.ProjectionType.toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
@@ -295,7 +290,7 @@ export class MetadataService extends BaseService {
         exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
       model:
         exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
-      fps: video?.frameRate ?? validate(Number.parseFloat(exifTags.VideoFrameRate!)),
+      fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
@@ -326,7 +321,7 @@ export class MetadataService extends BaseService {
         : undefined;
 
     const videoData =
-      format?.formatName && format?.formatLongName && video?.codecName && video?.timeBase
+      format?.formatName && format.formatLongName && video?.codecName && video?.timeBase
         ? {
             assetId: asset.id,
             bitrate: video.bitrate,
@@ -362,8 +357,8 @@ export class MetadataService extends BaseService {
         : undefined;
 
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
-    const assetWidth = isSidewards ? validate(height) : validate(width);
-    const assetHeight = isSidewards ? validate(width) : validate(height);
+    const assetWidth = validate(isSidewards ? height : width);
+    const assetHeight = validate(isSidewards ? width : height);
 
     const tasks = new Tasks();
 
@@ -377,8 +372,8 @@ export class MetadataService extends BaseService {
           fileModifiedAt: stats.mtime,
 
           // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
-          width: !asset.isEdited || asset.width == null ? assetWidth : undefined,
-          height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
+          width: !asset.isEdited || asset.width === null ? assetWidth : undefined,
+          height: !asset.isEdited || asset.height === null ? assetHeight : undefined,
         }),
       async () => {
         await this.assetRepository.upsertExif({
@@ -417,21 +412,11 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })
   async handleQueueSidecar({ force }: JobOf<JobName.SidecarQueueAll>): Promise<JobStatus> {
-    let jobs: JobItem[] = [];
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
-
-    const assets = this.assetJobRepository.streamForSidecar(force);
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.SidecarCheck, data: { id: asset.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForSidecar(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.SidecarCheck, data: { id: asset.id } })),
+      );
     }
-
-    await queueAll();
 
     return JobStatus.Success;
   }
@@ -445,8 +430,8 @@ export class MetadataService extends BaseService {
 
     let sidecarPath = null;
     for (const candidate of this.getSidecarCandidates(asset)) {
-      const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
-      if (!exists) {
+      const isExists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
+      if (!isExists) {
         continue;
       }
 
@@ -806,8 +791,8 @@ export class MetadataService extends BaseService {
       }
 
       // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
-      if (!existsOnDisk) {
+      const isExistsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
+      if (!isExistsOnDisk) {
         this.storageCore.ensureFolders(motionAsset.originalPath);
         await this.storageRepository.createFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
@@ -854,6 +839,13 @@ export class MetadataService extends BaseService {
     // update area coordinates and dimensions in RegionList assuming "normalized" unit as per MWG guidelines
     const adjustedRegionList = regionInfo.RegionList.map((region) => {
       let { X, Y, W, H } = region.Area;
+
+      // EXIF floats with >16 decimals are serialized as strings. Ensure they are numbers.
+      X = Number(X);
+      Y = Number(Y);
+      W = Number(W);
+      H = Number(H);
+
       switch (orientation) {
         case ExifOrientation.MirrorHorizontal: {
           X = 1 - X;
@@ -901,7 +893,13 @@ export class MetadataService extends BaseService {
   }
 
   private async applyTaggedFaces(
-    asset: { id: string; ownerId: string; faces: { id: string; sourceType: SourceType }[]; originalPath: string },
+    asset: {
+      id: string;
+      ownerId: string;
+      clusterGroupId: string;
+      faces: { id: string; sourceType: SourceType }[];
+      originalPath: string;
+    },
     tags: ImmichTags,
   ) {
     if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
@@ -910,9 +908,11 @@ export class MetadataService extends BaseService {
 
     const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
-    const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
-    const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
+    const existingNameMap = new Map(
+      existingNames.map(({ personGroupId, name }) => [name.toLowerCase(), personGroupId]),
+    );
+    const missing: (Insertable<PersonTable> & { name: string; personGroupId: string; clusterGroupId: string })[] = [];
+    const missingWithFaceAsset: { personGroupId: string; ownerId: string; faceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
     const imageWidth = adjustedRegionInfo.AppliedToDimensions.W;
@@ -924,32 +924,49 @@ export class MetadataService extends BaseService {
       }
 
       const loweredName = region.Name.toLowerCase();
-      const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+      const personGroupId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+
+      const X = Number(region.Area.X);
+      const Y = Number(region.Area.Y);
+      const W = Number(region.Area.W);
+      const H = Number(region.Area.H);
 
       const face = {
         id: this.cryptoRepository.randomUUID(),
-        personId,
+        personGroupId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
-        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
-        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
-        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
-        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        boundingBoxX1: Math.floor((X - W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((Y - H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((X + W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((Y + H / 2) * imageHeight),
         sourceType: SourceType.Exif,
       };
 
       facesToAdd.push(face);
       if (!existingNameMap.has(loweredName)) {
-        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
-        missingWithFaceAsset.push({ id: personId, ownerId: asset.ownerId, faceAssetId: face.id });
+        missing.push({
+          personGroupId,
+          ownerId: asset.ownerId,
+          clusterGroupId: asset.clusterGroupId,
+          name: region.Name,
+        });
+        missingWithFaceAsset.push({ personGroupId, ownerId: asset.ownerId, faceAssetId: face.id });
       }
     }
 
     if (missing.length > 0) {
-      this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
-      const newPersonIds = await this.personRepository.createAll(missing);
-      const jobs = newPersonIds.map((id) => ({ name: JobName.PersonGenerateThumbnail, data: { id } }) as const);
+      this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.personGroupId}`)}`);
+      await this.personRepository.createGroups(
+        missing.map((item) => ({ id: item.personGroupId, clusterGroupId: asset.clusterGroupId })),
+      );
+      await this.personRepository.createAll(missing);
+
+      const jobs = missing.map(
+        ({ personGroupId, ownerId }) =>
+          ({ name: JobName.PersonGenerateThumbnail, data: { personGroupId, ownerId } }) as const,
+      );
       await this.jobRepository.queueAll(jobs);
     }
 
@@ -991,7 +1008,7 @@ export class MetadataService extends BaseService {
 
     // timezone
     let timeZone = exifTags.zone ?? null;
-    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
+    if (timeZone === null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
@@ -1075,6 +1092,7 @@ export class MetadataService extends BaseService {
 
   private getDuration(tags: ImmichTags): number | null {
     const duration = tags.Duration;
+    // eslint-disable-next-line unicorn/prefer-number-coercion
     const seconds = typeof duration === 'number' ? duration : Number.parseFloat(duration as string);
     return Number.isFinite(seconds) ? Math.round(Duration.fromObject({ seconds }).toMillis()) : null;
   }

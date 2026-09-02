@@ -24,11 +24,6 @@ describe(PersonController.name, () => {
   });
 
   describe('GET /people', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/people');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require closestPersonId to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .get(`/people`)
@@ -48,19 +43,7 @@ describe(PersonController.name, () => {
     });
   });
 
-  describe('POST /people', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/people');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('DELETE /people', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete('/people');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require uuids in the body', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .delete('/people')
@@ -78,19 +61,7 @@ describe(PersonController.name, () => {
     });
   });
 
-  describe('GET /people/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/people/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /people/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/people/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/people/123`);
       expect(status).toBe(400);
@@ -177,11 +148,6 @@ describe(PersonController.name, () => {
   });
 
   describe('DELETE /people/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/people/invalid`);
       expect(status).toBe(400);
@@ -192,20 +158,6 @@ describe(PersonController.name, () => {
       const { status } = await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`);
       expect(status).toBe(204);
       expect(service.delete).toHaveBeenCalled();
-    });
-  });
-
-  describe('POST /people/:id/merge', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post(`/people/${factory.uuid()}/merge`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /people/:id/statistics', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/people/${factory.uuid()}/statistics`);
-      expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
 });

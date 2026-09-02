@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
@@ -8,9 +7,9 @@ import { DuplicateResolveDto, DuplicateResolveGroupDto, DuplicateResponseDto } f
 import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobOf } from 'src/types';
 import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate';
-import { isDuplicateDetectionEnabled } from 'src/utils/misc';
+import { batched, isDuplicateDetectionEnabled } from 'src/utils/misc';
 
 type ResolveRequest = {
   assetUpdate: {
@@ -220,15 +219,15 @@ export class DuplicateService extends BaseService {
     if (idsToTrash.length > 0) {
       // TODO: this is duplicated with AssetService.deleteAssets
       const { trash } = await this.getConfig({ withCache: true });
-      const force = !trash.enabled;
+      const isForce = !trash.enabled;
 
       await this.assetRepository.updateAll(idsToTrash, {
         deletedAt: new Date(),
-        status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
+        status: isForce ? AssetStatus.Deleted : AssetStatus.Trashed,
         duplicateId: null,
       });
 
-      await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
+      await this.eventRepository.emit(isForce ? 'AssetDeleteAll' : 'AssetTrashAll', {
         assetIds: idsToTrash,
         userId: auth.user.id,
       });
@@ -307,21 +306,11 @@ export class DuplicateService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    let jobs: JobItem[] = [];
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
-
-    const assets = this.assetJobRepository.streamForSearchDuplicates(force);
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForSearchDuplicates(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } })),
+      );
     }
-
-    await queueAll();
 
     return JobStatus.Success;
   }

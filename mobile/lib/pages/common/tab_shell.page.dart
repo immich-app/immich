@@ -1,18 +1,17 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
@@ -34,24 +33,24 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 
     final navigationDestinations = [
       NavigationDestination(
-        label: 'photos'.tr(),
+        label: context.t.photos,
         icon: const Icon(Icons.photo_library_outlined),
         selectedIcon: Icon(Icons.photo_library, color: context.primaryColor),
       ),
       NavigationDestination(
-        label: 'search'.tr(),
+        label: context.t.search,
         icon: const Icon(Icons.search_rounded),
         selectedIcon: Icon(Icons.search, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
-        label: 'albums'.tr(),
+        label: context.t.albums,
         icon: const Icon(Icons.photo_album_outlined),
         selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
-        label: 'library'.tr(),
+        label: context.t.library$,
         icon: const Icon(Icons.space_dashboard_outlined),
         selectedIcon: Icon(Icons.space_dashboard_rounded, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,
@@ -78,7 +77,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     }
 
     return AutoTabsRouter(
-      routes: const [MainTimelineRoute(), DriftSearchRoute(), DriftAlbumsRoute(), DriftLibraryRoute()],
+      routes: const [MainTimelineRoute(), SearchRoute(), AlbumsRoute(), LibraryRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
@@ -112,7 +111,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   }
 
   if (index == kPhotoTabIndex) {
-    ref.invalidate(driftMemoryFutureProvider);
+    ref.invalidate(memoryLaneProvider);
   }
 
   if (router.activeIndex != kSearchTabIndex && index == kSearchTabIndex) {
@@ -126,13 +125,12 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
 
   // Album page
   if (index == kAlbumTabIndex) {
-    ref.read(remoteAlbumProvider.notifier).refresh();
+    unawaited(ref.read(remoteAlbumProvider.notifier).refresh());
   }
 
   // Library page
   if (index == kLibraryTabIndex) {
     ref.invalidate(localAlbumProvider);
-    ref.invalidate(driftGetAllPeopleProvider);
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();
@@ -168,7 +166,7 @@ class _BottomNavigationBarState extends ConsumerState<_BottomNavigationBar> {
 
   @override
   void dispose() {
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
   }
 

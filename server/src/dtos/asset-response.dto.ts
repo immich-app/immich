@@ -170,12 +170,12 @@ const peopleFromFaces = (faces?: MaybeDehydrated<AssetFace>[]): PersonResponseDt
   const peopleMap: Map<string, PersonResponseDto> = new Map();
 
   for (const face of faces) {
-    if (face.person && !peopleMap.has(face.person.id)) {
-      peopleMap.set(face.person.id, mapPerson(face.person));
+    if (face.person && !peopleMap.has(face.person.personGroupId)) {
+      peopleMap.set(face.person.personGroupId, mapPerson(face.person));
     }
   }
 
-  return [...peopleMap.values()];
+  return peopleMap.values().toArray();
 };
 
 const mapStack = (entity: { stack?: Stack | null }) => {

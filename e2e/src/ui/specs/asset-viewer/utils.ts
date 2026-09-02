@@ -110,6 +110,7 @@ export async function enableTagsPreference(context: BrowserContext) {
         download: { archiveSize: 4_294_967_296, includeEmbeddedVideos: false },
         purchase: { showSupportBadge: true, hideBuyButtonUntil: '2100-02-12T00:00:00.000Z' },
         cast: { gCastEnabled: false },
+        recentlyAdded: { sidebarWeb: false },
       },
     });
   });

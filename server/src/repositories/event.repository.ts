@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import _ from 'lodash';
 import { Socket } from 'socket.io';
-import { SystemConfig } from 'src/config';
 import { Asset } from 'src/database';
 import { EventConfig } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -38,12 +38,15 @@ type EventMap = {
   ConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  AlbumUpdate: [{ id: string; recipientId: string }];
+  AlbumUpdate: [{ id: string; userIds: string[]; recipientIds: string[] }];
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
 
+  // cluster group events
+  ClusterGroupRequest: [{ clusterGroupId: string; userId: string; senderName: string }];
+
   // asset events
-  AssetCreate: [{ asset: Asset; file: UploadFile }];
-  AssetTag: [{ assetId: string }];
+  AssetCreate: [{ asset: Pick<Asset, 'id' | 'ownerId'>; file?: UploadFile }];
+  AssetTag: [{ assetId: string; userId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];
   AssetShow: [{ assetId: string; userId: string }];
@@ -213,11 +216,11 @@ export class EventRepository {
   private addHandler<T extends EmitEvent>(item: Item<T>): void {
     const event = item.event;
 
-    if (!this.emitHandlers[event]) {
+    if (!Object.hasOwn(this.emitHandlers, event)) {
       this.emitHandlers[event] = [];
     }
 
-    this.emitHandlers[event].push(item);
+    this.emitHandlers[event]!.push(item);
   }
 
   emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {

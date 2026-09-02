@@ -11,13 +11,14 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
-  import { Icon, modalManager, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
+  import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
+  import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
@@ -31,7 +32,7 @@
     type Map,
     type MapMouseEvent,
   } from 'maplibre-gl';
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -60,6 +61,9 @@
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
     onClusterSelect?: (assetIds: string[], bbox: SelectionBBox) => void;
+    onViewportClose?: () => void;
+    viewportGridActive?: boolean;
+    autoOpenPanel?: boolean;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
@@ -79,6 +83,9 @@
     onOpenInMapView = undefined,
     onSelect = () => {},
     onClusterSelect,
+    onViewportClose,
+    viewportGridActive = false,
+    autoOpenPanel = false,
     onClickPoint = () => {},
     popup,
     rounded = false,
@@ -109,14 +116,16 @@
   );
 
   export function addClipMapMarker(lng: number, lat: number) {
-    if (map) {
-      if (marker) {
-        marker.remove();
-      }
-
-      center = { lng, lat };
-      marker = new Marker().setLngLat([lng, lat]).addTo(map);
+    if (!map) {
+      return;
     }
+
+    if (marker) {
+      marker.remove();
+    }
+
+    center = { lng, lat };
+    marker = new Marker().setLngLat([lng, lat]).addTo(map);
   }
 
   function handleAssetClick(assetId: string, map: Map | null) {
@@ -159,17 +168,19 @@
   }
 
   function handleMapClick(event: MapMouseEvent) {
-    if (clickable) {
-      const { lng, lat } = event.lngLat;
-      onClickPoint({ lng, lat });
+    if (!clickable) {
+      return;
+    }
 
-      if (marker) {
-        marker.remove();
-      }
+    const { lng, lat } = event.lngLat;
+    onClickPoint({ lng, lat });
 
-      if (map) {
-        marker = new Marker().setLngLat([lng, lat]).addTo(map);
-      }
+    if (marker) {
+      marker.remove();
+    }
+
+    if (map) {
+      marker = new Marker().setLngLat([lng, lat]).addTo(map);
     }
   }
 
@@ -212,8 +223,9 @@
     }
 
     return {
-      fileCreatedAfter: dateAfter,
-      fileCreatedBefore: dateBefore,
+      // $mapSettings stores no value as an empty string
+      fileCreatedAfter: dateAfter || undefined,
+      fileCreatedBefore: dateBefore || undefined,
     };
   }
 
@@ -254,19 +266,31 @@
   };
 
   afterNavigate(() => {
-    if (map) {
-      map.resize();
+    if (!map) {
+      return;
+    }
 
-      if (globalThis.location.hash) {
-        const hashChangeEvent = new HashChangeEvent('hashchange');
-        globalThis.dispatchEvent(hashChangeEvent);
-      }
+    map.resize();
+
+    if (location.hash) {
+      const hashChangeEvent = new HashChangeEvent('hashchange');
+      // eslint-disable-next-line unicorn/no-unnecessary-global-this
+      globalThis.dispatchEvent(hashChangeEvent);
     }
   });
 
   onMount(async () => {
     if (!mapMarkers) {
       mapMarkers = await loadMapMarkers();
+    }
+    if (autoOpenPanel) {
+      // Wait for the map to finish rendering before opening the panel
+      await tick();
+      if (map) {
+        map.resize();
+        await map.once('idle');
+        handleViewportSelect();
+      }
     }
   });
 
@@ -280,7 +304,7 @@
         if (previousStyle) {
           // Preserves the custom map markers from the previous style when the theme is switched
           // Required until https://github.com/dimfeld/svelte-maplibre/issues/146 is fixed
-          const customLayers = previousStyle.layers.filter((l) => l.type == 'fill' && l.source == 'geojson');
+          const customLayers = previousStyle.layers.filter((l) => l.type === 'fill' && l.source === 'geojson');
           const layers = nextStyle.layers.concat(customLayers);
           const sources = nextStyle.sources;
 
@@ -309,115 +333,163 @@
     untrack(() => map?.jumpTo({ center, zoom }));
   });
 
-  const onAssetsDelete = async () => {
+  const handleViewportSelect = () => {
+    if (!map || !onClusterSelect || !mapMarkers) {
+      return;
+    }
+    const bounds = map.getBounds();
+    const west = bounds.getWest();
+    const east = bounds.getEast();
+
+    // When zoomed out enough to see the whole world, show all markers
+    const showAll = east - west >= 360;
+    const visibleIds = showAll
+      ? mapMarkers.map(({ id }) => id)
+      : mapMarkers.filter(({ lon, lat }) => bounds.contains([lon, lat])).map(({ id }) => id);
+
+    const bbox: SelectionBBox = {
+      west: showAll ? -180 : west,
+      south: showAll ? -90 : bounds.getSouth(),
+      east: showAll ? 180 : east,
+      north: showAll ? 90 : bounds.getNorth(),
+    };
+    onClusterSelect(visibleIds, bbox);
+  };
+
+  const handleMoveEnd = () => {
+    if (viewportGridActive && !assetViewerManager.isViewing) {
+      handleViewportSelect();
+    }
+  };
+
+  const onAssetsChanged = async () => {
     mapMarkers = await loadMapMarkers();
   };
 </script>
 
-<OnEvents {onAssetsDelete} />
+<OnEvents onAssetsDelete={onAssetsChanged} onAssetsArchive={onAssetsChanged} onAssetsUnarchive={onAssetsChanged} />
+<svelte:boundary>
+  <!--  We handle style loading ourselves so we set style blank here -->
+  <MapLibre
+    {hash}
+    style=""
+    class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
+    {zoom}
+    {center}
+    bounds={initialBounds}
+    fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
+    attributionControl={false}
+    diffStyleUpdates={true}
+    onload={(event: Map) => {
+      event.setMaxZoom(18);
+      event.on('click', handleMapClick);
+      event.on('moveend', handleMoveEnd);
+      if (!simplified) {
+        event.addControl(new GlobeControl(), 'top-left');
+      }
+    }}
+    bind:map
+  >
+    {#snippet children({ map }: { map: Map })}
+      {#if showSimpleControls}
+        <NavigationControl position="top-left" showCompass={!simplified} />
 
-<!--  We handle style loading ourselves so we set style blank here -->
-<MapLibre
-  {hash}
-  style=""
-  class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
-  {zoom}
-  {center}
-  bounds={initialBounds}
-  fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
-  attributionControl={false}
-  diffStyleUpdates={true}
-  onload={(event: Map) => {
-    event.setMaxZoom(18);
-    event.on('click', handleMapClick);
-    if (!simplified) {
-      event.addControl(new GlobeControl(), 'top-left');
-    }
-  }}
-  bind:map
->
-  {#snippet children({ map }: { map: Map })}
-    {#if showSimpleControls}
-      <NavigationControl position="top-left" showCompass={!simplified} />
-
-      {#if !simplified}
-        <GeolocateControl position="top-left" />
-        <ScaleControl />
-        <AttributionControl compact={false} />
+        {#if !simplified}
+          <GeolocateControl position="top-left" />
+          {#if onClusterSelect}
+            <Control position="top-left">
+              <ControlGroup>
+                <ControlButton onclick={() => (viewportGridActive ? onViewportClose?.() : handleViewportSelect())}>
+                  <Icon title={$t('show_photos_in_area')} icon={mdiImageMultiple} size="70%" class="text-black/80" />
+                </ControlButton>
+              </ControlGroup>
+            </Control>
+          {/if}
+          <ScaleControl />
+          <AttributionControl compact={false} />
+        {/if}
       {/if}
-    {/if}
 
-    {#if showSettings}
-      <Control>
-        <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}>
-            <Icon icon={mdiCog} size="100%" class="text-black/80" />
-          </ControlButton>
-        </ControlGroup>
-      </Control>
-    {/if}
+      {#if showSettings}
+        <Control>
+          <ControlGroup>
+            <ControlButton onclick={handleSettingsClick}>
+              <Icon icon={mdiCog} size="70%" class="text-black/80" />
+            </ControlButton>
+          </ControlGroup>
+        </Control>
+      {/if}
 
-    {#if onOpenInMapView && showSimpleControls}
-      <Control position="top-right">
-        <ControlGroup>
-          <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} icon={mdiMap} size="100%" class="text-black/80" />
-          </ControlButton>
-        </ControlGroup>
-      </Control>
-    {/if}
+      {#if onOpenInMapView && showSimpleControls}
+        <Control position="top-right">
+          <ControlGroup>
+            <ControlButton onclick={() => onOpenInMapView()}>
+              <Icon title={$t('open_in_map_view')} icon={mdiMap} size="100%" class="text-black/80" />
+            </ControlButton>
+          </ControlGroup>
+        </Control>
+      {/if}
 
-    <GeoJSON
-      data={{
-        type: 'FeatureCollection',
-        features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
-      }}
-      id="geojson"
-      cluster={{ radius: 35, maxZoom: 18 }}
-    >
-      <MarkerLayer
-        applyToClusters
-        asButton
-        onclick={(event) => handlePromiseError(handleClusterClick(event.feature.properties?.cluster_id, map))}
-      >
-        {#snippet children({ feature })}
-          <div
-            class="flex size-10 items-center justify-center rounded-full bg-immich-primary font-mono font-bold text-white opacity-90 shadow-lg transition-all duration-200 hover:bg-immich-dark-primary hover:text-immich-dark-bg"
-          >
-            {feature.properties?.point_count?.toLocaleString()}
-          </div>
-        {/snippet}
-      </MarkerLayer>
-      <MarkerLayer
-        applyToClusters={false}
-        asButton
-        onclick={(event) => {
-          if (!popup) {
-            handleAssetClick(event.feature.properties?.id, map);
-          }
+      <GeoJSON
+        data={{
+          type: 'FeatureCollection',
+          features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
         }}
+        id="geojson"
+        cluster={{ radius: 35, maxZoom: 18 }}
       >
-        {#snippet children({ feature }: { feature: Feature })}
-          {#if useLocationPin}
-            <Icon icon={mdiMapMarker} size="50px" class="translate-y-[calc(5px-50%)] text-primary" />
-          {:else}
-            <img
-              src={getAssetMediaUrl({ id: feature.properties?.id })}
-              class="size-15 rounded-full border-2 border-immich-primary bg-immich-primary object-cover shadow-lg transition-all duration-200 hover:scale-150 hover:border-immich-dark-primary"
-              alt={feature.properties?.city && feature.properties.country
-                ? $t('map_marker_for_image', {
-                    values: { city: feature.properties.city, country: feature.properties.country },
-                  })
-                : $t('map_marker_with_image')}
-            />
-          {/if}
-          {#if popup}
-            <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
-              {@render popup({ marker: asMarker(feature) })}
-            </Popup>
-          {/if}
-        {/snippet}
-      </MarkerLayer>
-    </GeoJSON>
+        <MarkerLayer
+          applyToClusters
+          asButton
+          onclick={(event) => handlePromiseError(handleClusterClick(event.feature.properties?.cluster_id, map))}
+        >
+          {#snippet children({ feature })}
+            <div
+              class="flex size-10 items-center justify-center rounded-full bg-immich-primary font-mono font-bold text-white opacity-90 shadow-lg transition-all duration-200 hover:bg-immich-dark-primary hover:text-immich-dark-bg"
+            >
+              {feature.properties?.point_count?.toLocaleString()}
+            </div>
+          {/snippet}
+        </MarkerLayer>
+        <MarkerLayer
+          applyToClusters={false}
+          asButton
+          onclick={(event) => {
+            if (!popup) {
+              handleAssetClick(event.feature.properties?.id, map);
+            }
+          }}
+        >
+          {#snippet children({ feature }: { feature: Feature })}
+            {#if useLocationPin}
+              <Icon icon={mdiMapMarker} size="50px" class="translate-y-[calc(5px-50%)] text-primary" />
+            {:else}
+              <img
+                src={getAssetMediaUrl({ id: feature.properties?.id })}
+                class="size-15 rounded-full border-2 border-immich-primary bg-immich-primary object-cover shadow-lg transition-all duration-200 hover:scale-150 hover:border-immich-dark-primary"
+                alt={feature.properties?.city && feature.properties.country
+                  ? $t('map_marker_for_image', {
+                      values: { city: feature.properties.city, country: feature.properties.country },
+                    })
+                  : $t('map_marker_with_image')}
+              />
+            {/if}
+            {#if popup}
+              <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
+                {@render popup({ marker: asMarker(feature) })}
+              </Popup>
+            {/if}
+          {/snippet}
+        </MarkerLayer>
+      </GeoJSON>
+    {/snippet}
+  </MapLibre>
+
+  {#snippet failed()}
+    <Container size="small" class="p-2">
+      <Alert color="warning" title={$t('errors.unable_to_load_map')} size={simplified ? 'medium' : 'large'}>
+        <Text size={simplified ? 'small' : 'medium'}>{$t('errors.unable_to_load_map_description')}</Text>
+      </Alert>
+    </Container>
   {/snippet}
-</MapLibre>
+</svelte:boundary>

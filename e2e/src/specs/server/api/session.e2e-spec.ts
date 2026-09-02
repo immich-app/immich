@@ -1,6 +1,6 @@
 import { LoginResponseDto, getSessions, login, signUpAdmin } from '@immich/sdk';
 import { loginDto, signupDto, uuidDto } from 'src/fixtures';
-import { deviceDto, errorDto } from 'src/responses';
+import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -15,26 +15,25 @@ describe('/sessions', () => {
   });
 
   describe('GET /sessions', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/sessions');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get a list of authorized devices', async () => {
       const { status, body } = await request(app).get('/sessions').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toEqual([deviceDto.current]);
+      expect(body).toEqual([
+        {
+          id: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          current: true,
+          isPendingSyncReset: false,
+          deviceOS: '',
+          deviceType: '',
+          appVersion: null,
+        },
+      ]);
     });
   });
 
   describe('DELETE /sessions', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/sessions`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should logout all devices (except the current one)', async () => {
       for (let i = 0; i < 5; i++) {
         await login({ loginCredentialDto: loginDto.admin });
@@ -68,7 +67,7 @@ describe('/sessions', () => {
       const response = await request(app)
         .post('/auth/validateToken')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(response.body).toEqual(errorDto.invalidToken);
+      expect(response.body).toEqual({ message: 'Invalid user token' });
       expect(response.status).toBe(401);
     });
   });

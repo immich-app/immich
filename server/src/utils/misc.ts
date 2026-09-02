@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { BadRequestException, INestApplication } from '@nestjs/common';
 import {
   ApiBodyOptions,
   DocumentBuilder,
@@ -12,10 +12,9 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
-import parse from 'picomatch/lib/parse';
-import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
+import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
 import { extraModels } from 'src/decorators';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -111,6 +110,32 @@ export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingReposi
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
+export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
+  const value = await find();
+  if (!value) {
+    throw new BadRequestException(`${entity} not found`);
+  }
+
+  return value;
+};
+
+export async function* batched<T>(items: AsyncIterable<T>, size = JOBS_ASSET_PAGINATION_SIZE): AsyncGenerator<T[]> {
+  let batch: T[] = [];
+
+  for await (const item of items) {
+    batch.push(item);
+
+    if (batch.length >= size) {
+      yield batch;
+      batch = [];
+    }
+  }
+
+  if (batch.length > 0) {
+    yield batch;
+  }
+}
+
 export interface OpenGraphTags {
   title: string;
   description: string;
@@ -152,11 +177,7 @@ export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
 const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is SchemaObject => {
-  if (typeof schema === 'string' || '$ref' in schema) {
-    return false;
-  }
-
-  return true;
+  return !(typeof schema === 'string' || '$ref' in schema);
 };
 
 const patchOpenAPI = (document: OpenAPIObject) => {
@@ -190,25 +211,37 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
     for (const schema of Object.values(schemas)) {
       delete (schema as Record<string, unknown>).id;
+
+      // documents a property as required even though it is optional during body validation
+      for (const [key, value] of Object.entries(schema.properties ?? {})) {
+        if (!(ApiCustomExtension.Required in value)) {
+          continue;
+        }
+
+        delete (value as Record<string, unknown>)[ApiCustomExtension.Required];
+        (schema.required ??= []).push(key);
+      }
     }
 
     document.components.schemas = sortKeys(schemas);
 
     for (const [schemaName, schema] of Object.entries(schemas)) {
-      if (schema.properties) {
-        schema.properties = sortKeys(schema.properties);
-
-        for (const [key, value] of Object.entries(schema.properties)) {
-          if (typeof value === 'string') {
-            continue;
-          }
-
-          if (isSchema(value) && value.type === 'number' && value.format === 'float') {
-            throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-          }
-        }
-        schema.required?.sort();
+      if (!schema.properties) {
+        continue;
       }
+
+      schema.properties = sortKeys(schema.properties);
+
+      for (const [key, value] of Object.entries(schema.properties)) {
+        if (typeof value === 'string') {
+          continue;
+        }
+
+        if (isSchema(value) && value.type === 'number' && value.format === 'float') {
+          throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        }
+      }
+      schema.required?.sort();
     }
   }
 
@@ -314,37 +347,10 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   }
 };
 
-const convertTokenToSqlPattern = (token: parse.Token): string => {
-  switch (token.type) {
-    case 'slash': {
-      return '/';
-    }
-    case 'text': {
-      return token.value;
-    }
-    case 'globstar':
-    case 'star': {
-      return '%';
-    }
-    case 'underscore': {
-      return String.raw`\_`;
-    }
-    case 'qmark': {
-      return '_';
-    }
-    case 'dot': {
-      return '.';
-    }
-    default: {
-      return '';
-    }
-  }
-};
-
-export const globToSqlPattern = (glob: string) => {
-  const tokens = picomatch.parse(glob).tokens;
-  return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
-};
+// Compiles a glob to the equivalent Postgres regex (Postgres's Advanced Regular Expression
+// dialect is a superset of what picomatch emits, so the two stay in sync with `picomatch.isMatch`,
+// including which paths a lone `*` may cross vs `/`).
+export const globToPostgresRegex = (glob: string) => picomatch.makeRe(glob).source;
 
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));

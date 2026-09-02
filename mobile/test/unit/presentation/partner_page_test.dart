@@ -3,11 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/partner.action.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 import '../factories/partner_user_factory.dart';
 import '../factories/user_factory.dart';
-import '../presentation_context.dart';
+import 'presentation_context.dart';
 
 void main() {
   late PresentationContext context;
@@ -17,19 +19,16 @@ void main() {
 
   group('PartnerSharedByList', () {
     testWidgets('shows the empty-state add button when there are no partners', (tester) async {
-      final action = const PartnerAddAction();
-
-      await tester.pumpTestWidget(const PartnerSharedByList(partners: []), overrides: context.overrides);
+      await tester.pumpTestWidget(context, const PartnerSharedByList(partners: []));
 
       expect(find.byType(ListView), findsNothing);
-      expect(find.widgetWithIcon(TextButton, action.icon), findsOneWidget);
+      expect(find.descendant(of: find.byType(ActionButton), matching: find.byType(ImmichTextButton)), findsOneWidget);
     });
 
     testWidgets('renders a tile per partner with name and email', (tester) async {
       final partner1 = PartnerFactory.create();
       final partner2 = PartnerFactory.create();
-      await tester.pumpTestWidget(PartnerSharedByList(partners: [partner1, partner2]), overrides: context.overrides);
-
+      await tester.pumpTestWidget(context, PartnerSharedByList(partners: [partner1, partner2]));
       expect(find.byType(ListTile), findsNWidgets(2));
       expect(find.text(partner1.name), findsOneWidget);
       expect(find.text(partner1.email), findsOneWidget);
@@ -40,9 +39,11 @@ void main() {
     testWidgets('renders a remove action for each partner', (tester) async {
       final partner1 = PartnerFactory.create(inTimeline: true);
       final partner2 = PartnerFactory.create();
-      final action = const PartnerRemoveAction(sharedWithId: '', partnerName: '');
-      await tester.pumpTestWidget(PartnerSharedByList(partners: [partner1, partner2]), overrides: context.overrides);
-      expect(find.byIcon(action.icon), findsNWidgets(2));
+      await tester.pumpTestWidget(context, PartnerSharedByList(partners: [partner1, partner2]));
+      expect(
+        find.descendant(of: find.byType(ActionIconButton), matching: find.byType(ImmichIconButton)),
+        findsNWidgets(2),
+      );
     });
   });
 
@@ -62,13 +63,12 @@ void main() {
     }
 
     List<Override> withCandidates(List<User> candidates) => [
-      ...context.overrides,
       candidatesStateProvider.overrideWith((ref) => Stream<Iterable<User>>.value(candidates)),
     ];
 
     testWidgets('renders an option per candidate fetched from the provider', (tester) async {
       final user = UserFactory.create();
-      await tester.pumpTestWidget(dialogWidget(), overrides: withCandidates([user]));
+      await tester.pumpTestWidget(context, dialogWidget(), overrides: withCandidates([user]));
 
       await tester.tap(find.byKey(dialogButtonKey));
       await tester.pumpAndSettle();
@@ -78,7 +78,7 @@ void main() {
     });
 
     testWidgets('shows no options when the provider returns no candidates', (tester) async {
-      await tester.pumpTestWidget(dialogWidget(), overrides: withCandidates(const []));
+      await tester.pumpTestWidget(context, dialogWidget(), overrides: withCandidates(const []));
 
       await tester.tap(find.byKey(dialogButtonKey));
       await tester.pumpAndSettle();
@@ -89,7 +89,11 @@ void main() {
     testWidgets('pops the selected candidate when an option is tapped', (tester) async {
       final user = UserFactory.create();
       User? selected;
-      await tester.pumpTestWidget(dialogWidget(onClosed: (user) => selected = user), overrides: withCandidates([user]));
+      await tester.pumpTestWidget(
+        context,
+        dialogWidget(onClosed: (user) => selected = user),
+        overrides: withCandidates([user]),
+      );
 
       await tester.tap(find.byKey(dialogButtonKey));
       await tester.pumpAndSettle();

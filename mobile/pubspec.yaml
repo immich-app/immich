@@ -2,24 +2,24 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 3.0.0-rc.2+3050
+version: 3.2.0-rc.0+3020000
 
 environment:
   sdk: '>=3.12.0 <4.0.0'
-  flutter: 3.44.1
+  flutter: 3.47.1
 
 dependencies:
   async: ^2.13.1
   auto_route: ^11.1.0
-  background_downloader: ^9.5.4
+  background_downloader: ^9.5.6
   cast: ^2.1.0
   collection: ^1.19.1
-  connectivity_plus: ^7.0.0
+  connectivity_plus: ^7.3.0
   crop_image: ^1.0.17
   crypto: ^3.0.7
   device_info_plus: ^12.4.0
   diacritic: ^0.1.6
-  drift: ^2.32.1
+  drift: ^2.34.0
   drift_sqlite_async: 0.3.1
   dynamic_color: ^1.8.1
   easy_localization: ^3.0.8
@@ -31,20 +31,20 @@ dependencies:
   flutter_local_notifications: ^17.2.4
   flutter_secure_storage: ^9.2.4
   flutter_svg: ^2.2.4
-  flutter_udid: ^4.1.2
+  flutter_udid: ^4.1.6
   flutter_web_auth_2: ^5.0.2
   fluttertoast: ^8.2.14
   geolocator: ^14.0.2
-  home_widget: ^0.8.1
+  home_widget: ^0.9.3
   hooks_riverpod: ^2.6.1
   http: ^1.6.0
-  image_picker: ^1.2.1
+  image_picker: ^1.2.3
   immich_ui:
     path: './packages/ui'
   intl: ^0.20.2
   local_auth: ^2.3.0
   logging: ^1.3.0
-  maplibre_gl: ^0.22.0
+  maplibre_gl: ^0.27.0
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
@@ -52,13 +52,13 @@ dependencies:
   network_info_plus: ^6.1.4
   octo_image: ^2.1.0
   openapi:
-    path: openapi
+    path: generated/openapi
   package_info_plus: ^8.3.1
   path: ^1.9.1
-  path_provider: ^2.1.5
+  path_provider: ^2.1.6
   path_provider_foundation: ^2.6.0
   permission_handler: ^11.4.0
-  photo_manager: ^3.9.0
+  photo_manager: 3.9.0
   pinput: ^5.0.2
   punycode: ^1.0.0
   scroll_date_picker: ^3.8.0
@@ -67,13 +67,13 @@ dependencies:
   share_plus: ^10.1.4
   sliver_tools: ^0.2.12
   stream_transform: ^2.1.1
-  sqlite3: ^3.3.2
+  sqlite3: ^3.4.0
   sqlite_async: 0.14.2
-  sqlite3_connection_pool: ^0.2.6
+  sqlite3_connection_pool: ^0.2.7
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
   url_launcher: ^6.3.2
-  uuid: ^4.5.3
+  uuid: ^4.6.0
   wakelock_plus: ^1.3.3
   worker_manager: ^7.2.9
   web_socket: ^1.0.1
@@ -84,26 +84,28 @@ dependencies:
   cupertino_http:
     git:
       url: https://github.com/mertalev/http
-      ref: 'a0a933358517c6d01cff37fc2a2752ee2d744a3c' # https://github.com/dart-lang/http/pull/1876
+      ref: '58b03c756b81d16b3975a8ae4b91d25360123bb5'
       path: pkgs/cupertino_http/
   ok_http:
     git:
       url: https://github.com/mertalev/http
       ref: '549c24b0a4d3881a9a44b70f4873450d43c1c4af' # https://github.com/dart-lang/http/pull/1877
       path: pkgs/ok_http/
+  freezed_annotation: ^3.1.0
 
 dev_dependencies:
   auto_route_generator: ^10.5.0
-  build_runner: ^2.13.1
+  build_runner: ^2.15.1
   # Drift generator
-  drift_dev: ^2.32.1
+  drift_dev: ^2.34.0
   fake_async: ^1.3.3
   file: ^7.0.1 # for MemoryFileSystem
   flutter_launcher_icons: ^0.14.4
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.7
   flutter_test:
     sdk: flutter
+  freezed: ^3.2.5
   integration_test:
     sdk: flutter
   mocktail: ^1.0.5
@@ -114,11 +116,17 @@ dev_dependencies:
 # Pin bonsoir to 5.x until cast releases a version compatible with bonsoir 6.x.
 dependency_overrides:
   bonsoir: ^5.1.11
+  objective_c:
+    git:
+      url: https://github.com/mertalev/native
+      ref: '2915556701f4734a784222f290a82adb1b101682' # https://github.com/dart-lang/native/pull/3458
+      path: pkgs/objective_c/
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/feature_message/
   fonts:
     - family: GoogleSans
       fonts:
@@ -151,4 +159,4 @@ flutter_launcher_icons:
 
 analyzer:
   exclude:
-    - openapi/**
+    - generated/**
