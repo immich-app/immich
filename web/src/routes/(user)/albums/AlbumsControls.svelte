@@ -146,14 +146,13 @@
   variant="ghost"
   color="secondary"
 />
-<div title={$t('sort_albums_by')}>
-  <Select
-    bind:value={$albumViewSettings.sortBy}
-    options={sortOptionsMetadata.map(({ id }) => ({ value: id, label: albumSortByNames[id] }))}
-    onChange={handleChangeSortBy}
-    class="w-fit min-w-45"
-  />
-</div>
+<Select
+  bind:value={$albumViewSettings.sortBy}
+  options={sortOptionsMetadata.map(({ id }) => ({ value: id, label: albumSortByNames[id] }))}
+  onChange={handleChangeSortBy}
+  title={$t('sort_albums_by')}
+  class="w-fit min-w-45"
+/>
 
 <!-- Group Albums -->
 <IconButton
@@ -171,14 +170,13 @@
   variant="ghost"
   color="secondary"
 />
-<div title={$t('group_albums_by')}>
-  <Select
-    bind:value={$albumViewSettings.groupBy}
-    options={groupByOptions}
-    onChange={handleChangeGroupBy}
-    class="w-fit min-w-45"
-  />
-</div>
+<Select
+  bind:value={$albumViewSettings.groupBy}
+  options={groupByOptions}
+  onChange={handleChangeGroupBy}
+  title={$t('group_albums_by')}
+  class="w-fit min-w-45"
+/>
 
 {#if getSelectedAlbumGroupOption($albumViewSettings) !== AlbumGroupBy.None}
   <span transition:slide={{ axis: 'x', duration: 250 }}>
