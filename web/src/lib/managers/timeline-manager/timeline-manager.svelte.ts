@@ -381,6 +381,12 @@ export class TimelineManager extends VirtualScrollManager {
     this.addAssetsUpsertSegments([...notExcluded]);
   }
 
+  upsertAssetsFromLiveEvent(assets: TimelineAsset[]) {
+    const notUpdated = this.#updateAssets(assets);
+    const insertable = notUpdated.filter((asset) => this.canInsertAssetFromLiveEvent(asset));
+    this.addAssetsUpsertSegments(insertable);
+  }
+
   async findTimelineMonthForAsset(asset: AssetDescriptor | AssetResponseDto) {
     if (!this.isInitialized) {
       await this.initTask.waitUntilExecution();
@@ -618,6 +624,19 @@ export class TimelineManager extends VirtualScrollManager {
       (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
       (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id))
     );
+  }
+
+  canInsertAssetFromLiveEvent(asset: TimelineAsset) {
+    if (this.isExcluded(asset)) {
+      return false;
+    }
+    if (this.#options.albumId || this.#options.personId || this.#options.timelineAlbumId) {
+      return false;
+    }
+    if (this.#options.userId && !this.#options.withPartners && asset.ownerId !== this.#options.userId) {
+      return false;
+    }
+    return true;
   }
 
   getAssetOrder() {
