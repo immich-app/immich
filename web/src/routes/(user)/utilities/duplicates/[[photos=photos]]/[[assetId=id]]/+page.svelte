@@ -12,7 +12,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
+  import { createStack, deleteDuplicates, resolveAllDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -133,7 +133,7 @@
   };
 
   const handleDeduplicateAll = async () => {
-    // Use server-provided suggestedKeepAssetIds from each group
+    // Drives the confirmation count and the toast only; the response is per-group, not per-asset.
     const idsToDelete = duplicates.flatMap((group) => {
       const keepIds = new Set(group.suggestedKeepAssetIds);
       return group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id));
@@ -150,19 +150,7 @@
 
     return withConfirmation(
       async () => {
-        // Resolve all groups in a single batch request
-        const response = await resolveDuplicates({
-          duplicateResolveDto: {
-            groups: duplicates.map((group) => {
-              const keepIds = new Set(group.suggestedKeepAssetIds);
-              return {
-                duplicateId: group.duplicateId,
-                keepAssetIds: group.suggestedKeepAssetIds,
-                trashAssetIds: group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id)),
-              };
-            }),
-          },
-        });
+        const response = await resolveAllDuplicates();
 
         // Count failures and show appropriate message
         const failedCount = response.filter(({ success }) => !success).length;
