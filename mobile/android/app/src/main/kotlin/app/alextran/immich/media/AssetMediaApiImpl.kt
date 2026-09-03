@@ -79,7 +79,7 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
 
   override fun trash(ids: List<String>, callback: (Result<List<AssetMediaActionResult>>) -> Unit) {
     if (!supportsMediaRequest) {
-      return respond(callback, "MEDIA_ACTION_ERROR") { removeAssets(ids) }
+      return respond(callback, MediaAction.TRASH.name) { removeAssets(ids) }
     }
 
     return runMediaTrashRequest(ids, MediaAction.TRASH, callback)
@@ -90,7 +90,7 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
     callback: (Result<List<AssetMediaActionResult>>) -> Unit
   ) {
     if (!supportsMediaRequest) {
-      return respond(callback, "MEDIA_ACTION_ERROR") {
+      return respond(callback, MediaAction.RESTORE.name) {
         val items = queryMediaItems(ids)
         ids.map {
           AssetMediaActionResult(
@@ -113,7 +113,7 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
     ids: List<String>,
     action: MediaAction,
     callback: (Result<List<AssetMediaActionResult>>) -> Unit,
-  ) = respond(callback, "MEDIA_ACTION_ERROR") {
+  ) = respond(callback, action.name) {
     if (ids.isEmpty()) return@respond emptyList()
     val items = queryMediaItems(ids)
 
@@ -143,7 +143,7 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
   }
 
   override fun delete(ids: List<String>, callback: (Result<List<AssetMediaActionResult>>) -> Unit) =
-    respond(callback, "MEDIA_ACTION_ERROR") { removeAssets(ids) }
+    respond(callback, "DELETE") { removeAssets(ids) }
 
   private suspend fun removeAssets(ids: List<String>): List<AssetMediaActionResult> {
     if (ids.isEmpty()) return emptyList()
@@ -197,14 +197,19 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
       targets.keys - remaining
     }
 
-  private fun <T> respond(callback: (Result<T>) -> Unit, errorCode: String, work: suspend () -> T) {
+  private fun <T> respond(callback: (Result<T>) -> Unit, action: String, work: suspend () -> T) {
     scope.launch {
       try {
         completeWhenActive(callback, Result.success(work()))
       } catch (e: CancellationException) {
         throw e
       } catch (e: Exception) {
-        completeWhenActive(callback, Result.failure(FlutterError(errorCode, e.message, null)))
+        val error = FlutterError(
+          "${action.uppercase()}_FAILED",
+          "Failed to ${action.lowercase()} assets",
+          e.toString(),
+        )
+        completeWhenActive(callback, Result.failure(error))
       }
     }
   }
