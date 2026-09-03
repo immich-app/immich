@@ -13,10 +13,12 @@
     const events: EventMap<Events> = {};
 
     for (const [name, listener] of Object.entries(props)) {
-      if (listener) {
-        const event = name.slice(2) as keyof Events;
-        events[event] = listener as EventCallback<Events, typeof event>;
+      if (!listener) {
+        continue;
       }
+
+      const event = name.slice(2) as keyof Events;
+      events[event] = listener as EventCallback<Events, typeof event>;
     }
 
     return eventManager.on(events);

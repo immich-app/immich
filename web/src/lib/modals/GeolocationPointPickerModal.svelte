@@ -85,8 +85,8 @@
       // Try to parse coordinate pair from search input in the format `LATITUDE, LONGITUDE` as floats
       const coordinateParts = searchWord.split(',').map((part) => part.trim());
       if (coordinateParts.length === 2) {
-        const coordinateLat = Number.parseFloat(coordinateParts[0]);
-        const coordinateLng = Number.parseFloat(coordinateParts[1]);
+        const coordinateLat = Number(coordinateParts[0]);
+        const coordinateLng = Number(coordinateParts[1]);
 
         if (
           !Number.isNaN(coordinateLat) &&
@@ -106,18 +106,22 @@
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening
-          if (latestSearchTimeout === searchTimeout) {
-            places = searchResult;
-            showLoadingSpinner = false;
+          if (latestSearchTimeout !== searchTimeout) {
+            return;
           }
+
+          places = searchResult;
+          showLoadingSpinner = false;
         })
         .catch((error) => {
           // skip error when a newer search is happening
-          if (latestSearchTimeout === searchTimeout) {
-            places = [];
-            handleError(error, $t('errors.cant_search_places'));
-            showLoadingSpinner = false;
+          if (latestSearchTimeout !== searchTimeout) {
+            return;
           }
+
+          places = [];
+          handleError(error, $t('errors.cant_search_places'));
+          showLoadingSpinner = false;
         });
     }, timeDebounceOnSearch);
     latestSearchTimeout = searchTimeout;

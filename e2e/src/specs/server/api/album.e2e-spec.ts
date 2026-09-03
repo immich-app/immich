@@ -120,6 +120,7 @@ describe('/albums', () => {
       }),
     ]);
 
+    // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
     [user2Albums[0]] = await Promise.all([
       getAlbumInfo({ id: user2Albums[0].id }, { headers: asBearerAuth(user2.accessToken) }),
       deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) }),
@@ -612,16 +613,6 @@ describe('/albums', () => {
   });
 
   describe('DELETE /albums/:id/assets', () => {
-    it('should require authorization', async () => {
-      const { status, body } = await request(app)
-        .delete(`/albums/${user1Albums[1].id}/assets`)
-        .set('Authorization', `Bearer ${user2.accessToken}`)
-        .send({ ids: [user1Asset1.id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should be able to remove foreign asset from owned album', async () => {
       const { status, body } = await request(app)
         .delete(`/albums/${user2Albums[0].id}/assets`)

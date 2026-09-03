@@ -27,7 +27,8 @@ import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { downloadBlob, downloadRequest, withError } from '$lib/utils';
+import { locale } from '$lib/stores/preferences.store';
+import { downloadUrlPost, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -92,35 +93,34 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
-    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
+    const archiveName = `${fileName}${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}`;
     const queryParams = asQueryString(authManager.params);
 
-    let downloadKey = `${archiveName} `;
-    if (downloadInfo.archives.length > 1) {
-      downloadKey = `${archiveName} (${index + 1}/${downloadInfo.archives.length})`;
-    }
+    const downloadKey =
+      downloadInfo.archives.length > 1
+        ? `${archiveName} (${index + 1}/${downloadInfo.archives.length})`
+        : `${archiveName} `;
 
-    const abort = new AbortController();
-    downloadManager.add(downloadKey, archive.size, abort);
+    const url = getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : '');
 
     try {
-      // TODO use sdk once it supports progress events
-      const { data } = await downloadRequest({
-        method: 'POST',
-        url: getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : ''),
-        data: { assetIds: archive.assetIds, edited: true },
-        signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-      });
-
-      downloadBlob(data, archiveName);
+      if (downloadInfo.archives.length > 1) {
+        downloadManager.add(downloadKey, url, archive.assetIds, archiveName, archive.size);
+      } else {
+        downloadUrlPost(url, archive.assetIds, archiveName);
+        const $t = await getFormatter();
+        const $locale = get(locale);
+        toastManager.primary(
+          $t('downloading_archive_filename_size', {
+            values: { size: getByteUnitString(archive.size, $locale), filename: archiveName },
+          }),
+          { timeout: 10_000 },
+        );
+      }
     } catch (error) {
       const $t = get(t);
       handleError(error, $t('errors.unable_to_download_files'));
-      downloadManager.clear(downloadKey);
       return;
-    } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };
@@ -131,7 +131,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
  */
 export function getFilenameExtension(filename: string): string {
   const lastIndex = Math.max(0, filename.lastIndexOf('.'));
-  const startIndex = (lastIndex || Number.POSITIVE_INFINITY) + 1;
+  const startIndex = (lastIndex || Infinity) + 1;
   return filename.slice(startIndex).toLowerCase();
 }
 
@@ -144,11 +144,11 @@ export function getAssetFilename(asset: AssetResponseDto): string {
 }
 
 function isRotated90CW(orientation: number) {
-  return orientation === 5 || orientation === 6 || orientation === 90;
+  return [5, 6, 90].includes(orientation);
 }
 
 function isRotated270CW(orientation: number) {
-  return orientation === 7 || orientation === 8 || orientation === -90;
+  return [7, 8, -90].includes(orientation);
 }
 
 export function isFlipped(orientation?: string | null) {
@@ -245,6 +245,7 @@ async function addSupportedMimeTypes(): Promise<void> {
   heicImg.src =
     'data:image/heic;base64,AAAAGGZ0eXBoZWljAAAAAG1pZjFoZWljAAABrW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAIAAAAQaWRhdAAAAAAAAQABAAAAOGlsb2MBAAAAREAAAgABAAAAAAAAAc0AAQAAAAAAAAAsAAIAAQAAAAAAAAABAAAAAAAAAAgAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAQABAABodmMxAAAAABVpbmZlAgAAAAACAABncmlkAAAAANhpcHJwAAAAtmlwY28AAAB2aHZjQwEDcAAAAAAAAAAAAB7wAPz9+PgAAA8DIAABABhAAQwB//8DcAAAAwCQAAADAAADAB66AkAhAAEAKkIBAQNwAAADAJAAAAMAAAMAHqAggQWW6q6a5uBAQMCAAAADAIAAAAMAhCIAAQAGRAHBc8GJAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAaaXBtYQAAAAAAAAACAAECgQMAAgIChAAAABppcmVmAAAAAAAAAA5kaW1nAAIAAQABAAAANG1kYXQAAAAoKAGvCchMZYA50NoPIfzz81Qfsm577GJt3lf8kLAr+NbNIoeRR7JeYA=='; // Small valid HEIC/HEIF image
 }
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 void addSupportedMimeTypes();
 
 /**

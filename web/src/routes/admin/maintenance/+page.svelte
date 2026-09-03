@@ -98,10 +98,12 @@
   });
 
   const onJobCreate = ({ dto }: { dto: JobCreateDto }) => {
-    if ((Object.values(jobNames).includes(dto.name) || Object.values(refreshJobNames).includes(dto.name)) && jobs) {
-      activeJobs.add(dto.name);
-      jobs.integrityCheck.queueStatus.isActive = true;
+    if (!((Object.values(jobNames).includes(dto.name) || Object.values(refreshJobNames).includes(dto.name)) && jobs)) {
+      return;
     }
+
+    activeJobs.add(dto.name);
+    jobs.integrityCheck.queueStatus.isActive = true;
   };
 </script>
 
@@ -165,12 +167,7 @@
                     disabled={activeJobs.has(refreshJobNames[reportType])}>{$t('refresh')}</Button
                   >
                 </HStack>
-                <Button
-                  href={`${Route.systemMaintenanceIntegrityReport({
-                    reportType,
-                  })}`}
-                  size="tiny">{$t('view')}</Button
-                >
+                <Button href={Route.systemMaintenanceIntegrityReport({ reportType })} size="tiny">{$t('view')}</Button>
               </HStack>
             {/snippet}
           </ServerStatisticsCard>

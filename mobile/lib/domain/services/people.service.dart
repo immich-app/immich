@@ -1,25 +1,26 @@
 import 'dart:async';
 
+import 'package:immich_mobile/data/db/main/dao/person.dart';
+import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
-import 'package:immich_mobile/repositories/person_api.repository.dart';
 
-class DriftPeopleService {
-  final DriftPeopleRepository _repository;
+/// Accesses People; entities mapped to assets for presence and face detection
+class PeopleService {
+  final PeopleRepository _repository;
   final PersonApiRepository _personApiRepository;
 
-  const DriftPeopleService(this._repository, this._personApiRepository);
+  const PeopleService(this._repository, this._personApiRepository);
 
-  Future<DriftPerson?> get(String personId) {
+  Future<Person?> get(String personId) {
     return _repository.get(personId);
   }
 
-  Future<List<DriftPerson>> getAssetPeople(String assetId) {
+  Future<List<Person>> getAssetPeople(String assetId) {
     return _repository.getAssetPeople(assetId);
   }
 
-  Future<List<DriftPerson>> getAllPeople({int minFaces = 3}) {
-    return _repository.getAllPeople(minFaces: minFaces);
+  Stream<List<Person>> watch({int minFaces = 3}) {
+    return _repository.watch(minFaces: minFaces);
   }
 
   Future<int> updateName(String personId, String name) async {
@@ -27,7 +28,7 @@ class DriftPeopleService {
     return _repository.updateName(personId, name);
   }
 
-  Future<int> updateBrithday(String personId, DateTime birthday) async {
+  Future<int> updateBirthday(String personId, DateTime birthday) async {
     await _personApiRepository.update(personId, birthday: birthday);
     return _repository.updateBirthday(personId, birthday);
   }

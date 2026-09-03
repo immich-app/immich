@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -8,45 +10,19 @@ import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
-class TimelineArgs {
-  final double maxWidth;
-  final double maxHeight;
-  final double spacing;
-  final int columnCount;
-  final bool showStorageIndicator;
-  final bool withStack;
-  final GroupAssetsBy? groupBy;
+part 'timeline.state.freezed.dart';
 
-  const TimelineArgs({
-    required this.maxWidth,
-    required this.maxHeight,
-    this.spacing = kTimelineSpacing,
-    this.columnCount = kTimelineColumnCount,
-    this.showStorageIndicator = false,
-    this.withStack = false,
-    this.groupBy,
-  });
-
-  @override
-  bool operator ==(covariant TimelineArgs other) {
-    return spacing == other.spacing &&
-        maxWidth == other.maxWidth &&
-        maxHeight == other.maxHeight &&
-        columnCount == other.columnCount &&
-        showStorageIndicator == other.showStorageIndicator &&
-        withStack == other.withStack &&
-        groupBy == other.groupBy;
-  }
-
-  @override
-  int get hashCode =>
-      maxWidth.hashCode ^
-      maxHeight.hashCode ^
-      spacing.hashCode ^
-      columnCount.hashCode ^
-      showStorageIndicator.hashCode ^
-      withStack.hashCode ^
-      groupBy.hashCode;
+@freezed
+abstract class TimelineArgs with _$TimelineArgs {
+  const factory TimelineArgs({
+    required double maxWidth,
+    required double maxHeight,
+    @Default(kTimelineSpacing) double spacing,
+    @Default(kTimelineColumnCount) int columnCount,
+    @Default(false) bool showStorageIndicator,
+    @Default(false) bool withStack,
+    GroupAssetsBy? groupBy,
+  }) = _TimelineArgs;
 }
 
 class TimelineState {

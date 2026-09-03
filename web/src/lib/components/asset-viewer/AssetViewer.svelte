@@ -99,6 +99,7 @@
     slideshowNavigation,
     slideshowState,
     slideshowRepeat,
+    slideshowAutoplay,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -173,10 +174,12 @@
     });
 
     const slideshowNavigationUnsubscribe = slideshowNavigation.subscribe((value) => {
-      if (value === SlideshowNavigation.Shuffle) {
-        slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
+      if (value !== SlideshowNavigation.Shuffle) {
+        return;
       }
+
+      slideshowHistory.reset();
+      slideshowHistory.queue(toTimelineAsset(asset));
     });
 
     return () => {
@@ -294,6 +297,9 @@
 
   const handlePlaySlideshow = async () => {
     slideshowStartAssetId = asset.id;
+    if (!$slideshowAutoplay) {
+      $slideshowState = SlideshowState.PauseSlideshow;
+    }
     try {
       await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
@@ -477,9 +483,7 @@
 
     if (event.detail.direction === 'left') {
       navigateAsset('next');
-    }
-
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       navigateAsset('previous');
     }
   };
@@ -521,7 +525,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState != SlideshowState.None}
+  {#if $slideshowState !== SlideshowState.None}
     <div class="absolute inset-s-0 top-0 flex w-full justify-start">
       <SlideshowBar
         {isFullScreen}

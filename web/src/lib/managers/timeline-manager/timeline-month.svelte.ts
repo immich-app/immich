@@ -145,21 +145,23 @@ export class TimelineMonth {
     const combinedMoveAssets: MoveAsset[][] = [];
     let index = timelineDays.length;
     while (index--) {
-      if (idsToProcess.size > 0) {
-        const group = timelineDays[index];
-        const { moveAssets, processedIds, changedGeometry } = group.runAssetCallback(ids, callback);
-        if (moveAssets.length > 0) {
-          combinedMoveAssets.push(moveAssets);
-        }
-        idsToProcess = setDifference(idsToProcess, processedIds);
-        for (const id of processedIds) {
-          idsProcessed.add(id);
-        }
-        combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
-        if (group.viewerAssets.length === 0) {
-          timelineDays.splice(index, 1);
-          combinedChangedGeometry = true;
-        }
+      if (idsToProcess.size === 0) {
+        continue;
+      }
+
+      const group = timelineDays[index];
+      const { moveAssets, processedIds, changedGeometry } = group.runAssetCallback(ids, callback);
+      if (moveAssets.length > 0) {
+        combinedMoveAssets.push(moveAssets);
+      }
+      idsToProcess = setDifference(idsToProcess, processedIds);
+      for (const id of processedIds) {
+        idsProcessed.add(id);
+      }
+      combinedChangedGeometry ||= changedGeometry;
+      if (group.viewerAssets.length === 0) {
+        timelineDays.splice(index, 1);
+        combinedChangedGeometry = true;
       }
     }
     return {
@@ -195,7 +197,7 @@ export class TimelineMonth {
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],
-        stack: bucketAssets.stack?.[i]
+        stack: bucketAssets.stack?.at(i)
           ? {
               id: bucketAssets.stack[i]![0],
               primaryAssetId: bucketAssets.id[i],
@@ -206,7 +208,7 @@ export class TimelineMonth {
         people: null, // People are not included in the bucket assets
       };
 
-      if (bucketAssets.latitude?.[i] && bucketAssets.longitude?.[i]) {
+      if (bucketAssets.latitude?.at(i) && bucketAssets.longitude?.at(i)) {
         timelineAsset.latitude = bucketAssets.latitude?.[i];
         timelineAsset.longitude = bucketAssets.longitude?.[i];
       }

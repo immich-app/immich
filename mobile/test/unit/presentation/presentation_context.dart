@@ -5,20 +5,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/services/cleanup.service.dart';
+import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../infrastructure/repository.mock.dart';
 import '../../test_utils.dart';
 import '../factories/user_factory.dart';
 import '../mocks.dart';
@@ -40,19 +51,40 @@ class PresentationContext {
   final RepositoryMocks repository;
 
   List<Override> get overrides => [
+    driftProvider.overrideWithValue(_mockDrift()),
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
+    userServiceProvider.overrideWithValue(service.user.service),
     assetServiceProvider.overrideWithValue(service.asset.service),
+    cleanupServiceProvider.overrideWithValue(service.cleanup.service),
+    remoteAlbumServiceProvider.overrideWithValue(service.album.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
+    gCastServiceProvider.overrideWithValue(service.cast),
+    serverInfoServiceProvider.overrideWithValue(service.serverInfo),
+    inLockedViewProvider.overrideWithValue(false),
+    assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
+  ];
+
+  Drift _mockDrift() {
+    final drift = MockDrift();
+    when(() => drift.remoteAssetRepository).thenReturn(repository.remoteAsset.repo);
+    return drift;
+  }
+
+  List<Override> selected(Set<BaseAsset> assets) => [
+    multiSelectProvider.overrideWith(
+      () => MultiSelectNotifier(MultiSelectState(selectedAssets: assets, lockedSelectionAssets: const {})),
+    ),
   ];
 
   static Future<PresentationContext> create() async {
     TestUtils.init();
     if (_db == null) {
       final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-      await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
+      await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
       await StoreService.I.put(StoreKey.serverEndpoint, serverEndpoint);
       _db = db;
     }
+    await SettingsRepository.ensureInitialized(_db!);
     return PresentationContext._(user: UserFactory.createDto());
   }
 
@@ -60,10 +92,9 @@ class PresentationContext {
     when(service.user.tryGetMyUser).thenReturn(currentUser);
   }
 
-  void dispose() {
-    addTearDown(() {
-      service.resetAll();
-    });
+  Future<void> dispose() async {
+    await SettingsRepository.reset();
+    service.resetAll();
   }
 }
 
@@ -79,15 +110,18 @@ extension PumpPresentationWidget on WidgetTester {
         useFallbackTranslations: true,
         assetLoader: const CodegenLoader(),
         child: ProviderScope(
-          overrides: [...context.overrides, ...overrides],
+          overrides: context.overrides,
           child: Builder(
-            builder: (context) => MaterialApp(
-              debugShowCheckedModeBanner: false,
-              scaffoldMessengerKey: scaffoldMessengerKey,
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              home: Scaffold(body: widget),
+            builder: (context) => ProviderScope(
+              overrides: overrides,
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                scaffoldMessengerKey: scaffoldMessengerKey,
+                localizationsDelegates: context.localizationDelegates,
+                supportedLocales: context.supportedLocales,
+                locale: context.locale,
+                home: Scaffold(body: widget),
+              ),
             ),
           ),
         ),
@@ -98,10 +132,10 @@ extension PumpPresentationWidget on WidgetTester {
 
   Future<void> pumpTestAction(
     PresentationContext context,
-    BaseAction action, {
+    ActionBuilder action, {
     List<Override> overrides = const [],
   }) async {
-    await pumpTestWidget(context, ActionIconButtonWidget(action: action), overrides: overrides);
+    await pumpTestWidget(context, ActionIconButton(action: action), overrides: overrides);
     await tap(find.byType(ImmichIconButton));
     await pump();
   }

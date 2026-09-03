@@ -46,7 +46,7 @@ describe('uploadFiles', () => {
   const testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-'));
   const testFilePath = path.join(testDir, 'test.png');
   const testFileData = 'test';
-  const baseUrl = 'http://example.com';
+  const baseUrl = 'https://example.com';
   const apiKey = 'key';
   const retry = 3;
 

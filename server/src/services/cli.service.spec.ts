@@ -37,7 +37,7 @@ describe(CliService.name, () => {
       mocks.user.getAdmin.mockResolvedValue(admin);
       mocks.user.update.mockResolvedValue(UserFactory.create({ isAdmin: true }));
 
-      const ask = vitest.fn().mockImplementation(() => {});
+      const ask = vitest.fn().mockResolvedValue({ newPassword: undefined, invalidateSessions: false });
 
       const response = await sut.resetAdminPassword(ask);
 
@@ -47,6 +47,7 @@ describe(CliService.name, () => {
       expect(ask).toHaveBeenCalled();
       expect(id).toEqual(admin.id);
       expect(update.password).toBeDefined();
+      expect(mocks.session.invalidateAll).not.toHaveBeenCalled();
     });
 
     it('should use the supplied password', async () => {
@@ -55,7 +56,7 @@ describe(CliService.name, () => {
       mocks.user.getAdmin.mockResolvedValue(admin);
       mocks.user.update.mockResolvedValue(admin);
 
-      const ask = vitest.fn().mockResolvedValue('new-password');
+      const ask = vitest.fn().mockResolvedValue({ newPassword: 'new-password', invalidateSessions: false });
 
       const response = await sut.resetAdminPassword(ask);
 
@@ -65,6 +66,20 @@ describe(CliService.name, () => {
       expect(ask).toHaveBeenCalled();
       expect(id).toEqual(admin.id);
       expect(update.password).toBeDefined();
+    });
+
+    it('should invalidate existing sessions when requested', async () => {
+      const admin = UserFactory.create({ isAdmin: true });
+
+      mocks.user.getAdmin.mockResolvedValue(admin);
+      mocks.user.update.mockResolvedValue(admin);
+      mocks.session.invalidateAll.mockResolvedValue(void 0);
+
+      const ask = vitest.fn().mockResolvedValue({ newPassword: 'new-password', invalidateSessions: true });
+
+      await sut.resetAdminPassword(ask);
+
+      expect(mocks.session.invalidateAll).toHaveBeenCalledWith({ userId: admin.id });
     });
   });
 

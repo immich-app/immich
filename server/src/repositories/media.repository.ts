@@ -43,9 +43,6 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
-sharp.concurrency(0);
-sharp.cache({ files: 0 });
-
 const pascalCase = (str: string) => _.upperFirst(_.camelCase(str.toLowerCase()));
 
 type ProgressEvent = {
@@ -66,6 +63,8 @@ export type ExtractResult = {
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
+    sharp.concurrency(0);
+    sharp.cache({ files: 0 });
   }
 
   /**
@@ -82,6 +81,7 @@ export class MediaRepository {
     ]) {
       try {
         const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        this.logger.debug(`Successfully extracted ${tag} buffer from image`);
         return { buffer, format };
       } catch (error: any) {
         this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
@@ -187,6 +187,7 @@ export class MediaRepository {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
+      limitInputChannels: false,
       limitInputPixels: false,
       raw: options.raw,
       unlimited: true,
@@ -314,7 +315,7 @@ export class MediaRepository {
       if (!line) {
         return;
       }
-      const [ptsStr, durationStr, flags] = line.split(',');
+      const [ptsStr, durationStr, flags] = line.split(',', 3);
       const pts = Number.parseInt(ptsStr);
       const duration = Number.parseInt(durationStr);
       if (Number.isNaN(pts) || Number.isNaN(duration) || !flags) {
@@ -451,6 +452,7 @@ export class MediaRepository {
   }
 
   private parseFloat(value: string | number | undefined): number {
+    // eslint-disable-next-line unicorn/prefer-number-coercion
     return Number.parseFloat(value as string) || 0;
   }
 

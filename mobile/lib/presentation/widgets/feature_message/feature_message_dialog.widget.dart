@@ -1,13 +1,13 @@
+import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
-import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_placeholder.widget.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_placeholder.widget.dart';
 
 Future<void> showFeatureMessageDialog(BuildContext context) {
   return showGeneralDialog<void>(
@@ -17,8 +17,8 @@ Future<void> showFeatureMessageDialog(BuildContext context) {
     barrierLabel: context.t.whats_new,
     barrierColor: Colors.black.withValues(alpha: 0.55),
     transitionDuration: const Duration(milliseconds: 280),
-    pageBuilder: (_, __, ___) => const _FeatureMessageDialog(),
-    transitionBuilder: (_, animation, __, child) {
+    pageBuilder: (_, _, _) => const _FeatureMessageDialog(),
+    transitionBuilder: (_, animation, _, child) {
       final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
       return FadeTransition(
         opacity: animation,
@@ -60,7 +60,7 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
       Navigator.of(context).pop();
       return;
     }
-    _controller.nextPage(duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
+    unawaited(_controller.nextPage(duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic));
   }
 
   List<Color> _borderColors(BuildContext context) {
@@ -249,7 +249,7 @@ class _FeaturePage extends StatelessWidget {
                       : Image.asset(
                           highlight.image!,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, _, __) => const FeatureMessagePlaceholder(),
+                          errorBuilder: (context, _, _) => const FeatureMessagePlaceholder(),
                         ),
                 ),
               ),
@@ -262,12 +262,12 @@ class _FeaturePage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  highlight.titleKey.tr(),
+                  highlight.title(context.t),
                   style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 24),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  highlight.bodyKey.tr(),
+                  highlight.body(context.t),
                   style: context.textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
                 ),
               ],

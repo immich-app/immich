@@ -20,12 +20,12 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
+import { DateTime } from 'luxon';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
+import { alwaysLoadOriginalFile, lang, locale } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { convertBCP47, langs } from '$lib/utils/i18n';
@@ -109,11 +109,10 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     });
 
     xhr.addEventListener('load', () => {
+      unsubscribe();
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-        unsubscribe();
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
-        unsubscribe();
         reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
       }
     });
@@ -294,15 +293,38 @@ export const downloadUrl = (url: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+export const downloadUrlPost = (url: string, assetIds: string[], archiveName: string) => {
+  const form = document.createElement('form');
+  form.method = 'post';
+  form.action = url;
+  form.target = '_blank';
+
+  function mkInput(name: string, value: string) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.append(input);
+  }
+
+  mkInput('assetIds', assetIds.join(','));
+  mkInput('archiveName', archiveName);
+  mkInput('edited', 'true');
+
+  document.body.append(form);
+  form.submit();
+  form.remove();
+};
+
 export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
 
 export const downloadJson = (data: unknown, filename: string) => {
   const blob = new Blob([JSON.stringify(data, jsonReplacer, 2)], { type: 'application/json' });
   const downloadKey = filename;
-  downloadManager.add(downloadKey, blob.size);
-  downloadManager.update(downloadKey, blob.size);
   downloadBlob(blob, downloadKey);
-  setTimeout(() => downloadManager.clear(downloadKey), 5000);
+
+  const $t = get(t);
+  toastManager.info($t('downloading_filename', { values: { filename } }));
 };
 
 export const oauth = {
@@ -326,9 +348,9 @@ export const oauth = {
   authorize: async (location: Location) => {
     const $t = get(t);
     try {
-      const redirectUri = location.href.split('?')[0];
+      const redirectUri = location.href.split('?', 1)[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      globalThis.location.href = url;
+      globalThis.location.assign(url);
       return true;
     } catch (error) {
       handleError(error, $t('errors.unable_to_login_with_oauth'));
@@ -366,9 +388,13 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 
 export const memoryLaneTitle = derived(t, ($t) => {
   return (memory: MemoryResponseDto) => {
-    const now = new Date();
     if (memory.type === MemoryType.OnThisDay) {
-      return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
+      const now = new Date();
+      const memoryDate = new Date(memory.memoryAt);
+
+      return memoryDate.getUTCDate() === now.getDate() && memoryDate.getUTCMonth() === now.getMonth()
+        ? $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } })
+        : DateTime.fromJSDate(memoryDate).toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
     }
 
     return $t('unknown');
@@ -430,7 +456,8 @@ export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
 export const transformToTitleCase = (text: string) => {
   if (text.length === 0) {
     return text;
-  } else if (text.length === 1) {
+  }
+  if (text.length === 1) {
     return text.charAt(0).toUpperCase();
   }
 

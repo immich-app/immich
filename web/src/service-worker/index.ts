@@ -24,7 +24,7 @@ const handleFetch = (event: FetchEvent): void => {
 
   // Cache requests for thumbnails
   const url = new URL(event.request.url);
-  if (url.origin === self.location.origin && ASSET_REQUEST_REGEX.test(url.pathname)) {
+  if (url.origin === globalThis.location.origin && ASSET_REQUEST_REGEX.test(url.pathname)) {
     event.respondWith(handleAssetFetch(event.request));
     return;
   }

@@ -70,7 +70,7 @@ class PhotoViewScaleStateController {
 
   /// Closes streams and removes eventual listeners
   void dispose() {
-    _outputScaleStateCtrl.close();
+    unawaited(_outputScaleStateCtrl.close());
     _scaleStateNotifier.dispose();
   }
 

@@ -22,6 +22,7 @@ export class OAuthController {
   constructor(private service: AuthService) {}
 
   @Get('mobile-redirect')
+  @Authenticated({ public: true })
   @Redirect()
   @Endpoint({
     summary: 'Redirect OAuth to mobile',
@@ -37,6 +38,7 @@ export class OAuthController {
   }
 
   @Post('authorize')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Start OAuth',
     description: 'Initiate the OAuth authorization process.',
@@ -62,6 +64,7 @@ export class OAuthController {
   }
 
   @Post('callback')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Finish OAuth',
     description: 'Complete the OAuth authorization process by exchanging the authorization code for a session token.',
@@ -115,6 +118,7 @@ export class OAuthController {
   }
 
   @Post('backchannel-logout')
+  @Authenticated({ public: true })
   @HttpCode(HttpStatus.OK)
   @ApiConsumes('application/x-www-form-urlencoded')
   @Endpoint({

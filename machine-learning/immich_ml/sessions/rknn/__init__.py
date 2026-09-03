@@ -54,22 +54,24 @@ class RknnSession:
     def get_outputs(self) -> list[SessionNode]:
         return [RknnNode(name=k, shape=v) for k, v in input_output_mapping[self.model_type]["output"].items()]
 
+    def get_metadata(self) -> dict[str, str]:
+        return {}
+
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]] | dict[str, NDArray[np.uint8]],
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
         input_data: list[NDArray[np.float32]] = [np.ascontiguousarray(v) for v in input_feed.values()]
-        self.rknnpool.put(input_data)
-        res = self.rknnpool.get()
+        res = self.rknnpool.run(input_data)
         if res is None:
             raise RuntimeError("RKNN inference failed!")
         return res
 
 
 class RknnNode(NamedTuple):
-    name: str | None
+    name: str
     shape: tuple[int, ...]
 
 

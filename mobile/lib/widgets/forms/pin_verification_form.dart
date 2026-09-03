@@ -1,8 +1,8 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/forms/pin_input.dart';
 
@@ -29,7 +29,7 @@ class PinVerificationForm extends HookConsumerWidget {
     final hasError = useState(false);
     final isVerified = useState(false);
 
-    verifyPin(String pinCode) async {
+    Future<void> verifyPin(String pinCode) async {
       final isUnlocked = await ref.read(authProvider.notifier).unlockPinCode(pinCode);
 
       if (isUnlocked) {
@@ -60,7 +60,7 @@ class PinVerificationForm extends HookConsumerWidget {
           SizedBox(
             width: context.width * 0.7,
             child: Text(
-              description ?? 'enter_your_pin_code_subtitle'.tr(),
+              description ?? context.t.enter_your_pin_code_subtitle,
               style: context.textTheme.labelLarge!.copyWith(fontSize: 18),
               textAlign: TextAlign.center,
             ),

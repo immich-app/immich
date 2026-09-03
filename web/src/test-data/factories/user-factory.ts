@@ -1,18 +1,10 @@
 import { faker } from '@faker-js/faker';
-import { UserAvatarColor, UserStatus, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
+import { UserAvatarColor, UserStatus, type UserAdminResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
-
-export const userFactory = Sync.makeFactory<UserResponseDto>({
-  id: Sync.each(() => faker.string.uuid()),
-  email: Sync.each(() => faker.internet.email()),
-  name: Sync.each(() => faker.person.fullName()),
-  profileImagePath: '',
-  avatarColor: UserAvatarColor.Primary,
-  profileChangedAt: Sync.each(() => faker.date.recent().toISOString()),
-});
 
 export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
   id: Sync.each(() => faker.string.uuid()),
+  clusterGroupId: Sync.each(() => faker.string.uuid()),
   email: Sync.each(() => faker.internet.email()),
   name: Sync.each(() => faker.person.fullName()),
   profileImagePath: '',
