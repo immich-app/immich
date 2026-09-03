@@ -330,7 +330,7 @@ void main() {
       await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: selectedDuplicate.localId);
       await markAsset(assetId: marked.localId, checksum: marked.checksum, status: .pending);
 
-      await sut.markReviewAssetsApproved([selectedDuplicate.localId]);
+      await sut.markReviewAssetsApproved({selectedDuplicate.localId});
       await (ctx.db.delete(ctx.db.localAssetEntity)..where((asset) => asset.id.equals(selectedDuplicate.localId))).go();
 
       expect(await trashStatusOf(marked.localId), TrashSyncStatus.pending);
@@ -345,7 +345,7 @@ void main() {
       );
       await sut.recordSoftDeleteReviewAssets();
 
-      await sut.markReviewAssetsApproved([first.localId, second.localId]);
+      await sut.markReviewAssetsApproved({first.localId, second.localId});
       await (ctx.db.delete(
         ctx.db.localAssetEntity,
       )..where((asset) => asset.id.isIn([first.localId, second.localId]))).go();
@@ -358,7 +358,7 @@ void main() {
       final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
       await sut.recordSoftDeleteReviewAssets();
 
-      await sut.markReviewAssetsApproved([asset.localId]);
+      await sut.markReviewAssetsApproved({asset.localId});
 
       final marker = await (ctx.db.select(
         ctx.db.trashSyncEntity,
@@ -377,7 +377,7 @@ void main() {
       await sut.recordSoftDeleteReviewAssets();
       expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
 
-      await sut.markReviewAssetsApproved([asset.localId]);
+      await sut.markReviewAssetsApproved({asset.localId});
       await (ctx.db.delete(ctx.db.localAssetEntity)..where((row) => row.id.equals(asset.localId))).go();
       expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewApproved);
 
@@ -386,7 +386,7 @@ void main() {
       )..where((row) => row.id.equals(asset.remoteId))).write(const RemoteAssetEntityCompanion(deletedAt: Value(null)));
       expect(await sut.getRestorableAssetIds(), [asset.localId]);
 
-      await sut.markRestored([asset.localId]);
+      await sut.markRestored({asset.localId});
       await ctx.newLocalAsset(id: asset.localId, checksumOption: const .none(), updatedAt: assetUpdatedAt);
       await sut.restoreChecksums();
 
@@ -402,13 +402,13 @@ void main() {
       );
       await sut.recordSoftDeleteReviewAssets();
 
-      await sut.markReviewAssetsApproved([first.localId]);
+      await sut.markReviewAssetsApproved({first.localId});
       await (ctx.db.delete(ctx.db.localAssetEntity)..where((asset) => asset.id.equals(first.localId))).go();
 
       expect(await trashStatusOf(first.localId), TrashSyncStatus.reviewApproved);
       expect(await trashStatusOf(second.localId), TrashSyncStatus.pending);
 
-      await sut.markReviewAssetsApproved([second.localId]);
+      await sut.markReviewAssetsApproved({second.localId});
       await (ctx.db.delete(ctx.db.localAssetEntity)..where((asset) => asset.id.equals(second.localId))).go();
 
       expect(await trashStatusOf(first.localId), TrashSyncStatus.reviewApproved);
@@ -520,7 +520,7 @@ void main() {
       final approved = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
       await sut.recordSoftDeleteReviewAssets();
       await sut.rejectReviewAssets([rejected.localId]);
-      await sut.markReviewAssetsApproved([approved.localId]);
+      await sut.markReviewAssetsApproved({approved.localId});
       await (ctx.db.update(ctx.db.remoteAssetEntity)..where((t) => t.id.isIn([rejected.remoteId, approved.remoteId])))
           .write(const RemoteAssetEntityCompanion(deletedAt: Value(null)));
 
@@ -529,7 +529,7 @@ void main() {
       expect(await trashStatusOf(rejected.localId), isNull);
       expect(await trashStatusOf(approved.localId), TrashSyncStatus.reviewApproved);
 
-      await sut.markRestored([approved.localId]);
+      await sut.markRestored({approved.localId});
       await sut.restoreChecksums();
 
       expect(await trashStatusOf(approved.localId), isNull);
@@ -722,7 +722,7 @@ void main() {
       final local = await ctx.newLocalAsset();
       await markAsset(assetId: local.id, checksum: 'checksum', status: .trashed);
 
-      await sut.reconcileTrashed([local.id]);
+      await sut.reconcileTrashed({local.id});
 
       expect(await trashStatusOf(local.id), TrashSyncStatus.dismissed);
     });
@@ -730,7 +730,7 @@ void main() {
     test('removes a trashed marker whose local asset was deleted', () async {
       await markAsset(assetId: 'asset', checksum: 'checksum', status: .trashed);
 
-      await sut.reconcileTrashed(['asset']);
+      await sut.reconcileTrashed({'asset'});
 
       expect(await trashStatusOf('asset'), isNull);
     });
@@ -740,7 +740,7 @@ void main() {
       await markAsset(assetId: live.id, checksum: 'checksum-1', status: .trashed);
       await markAsset(assetId: 'asset', checksum: 'checksum-2', status: .trashed);
 
-      await sut.reconcileTrashed([live.id, 'asset']);
+      await sut.reconcileTrashed({live.id, 'asset'});
 
       expect(await trashStatusOf(live.id), TrashSyncStatus.dismissed);
       expect(await trashStatusOf('asset'), isNull);
@@ -802,7 +802,7 @@ void main() {
       final local = await ctx.newLocalAsset();
       await markAsset(assetId: local.id, checksum: 'checksum', status: .pending);
 
-      await sut.markTrashed([local.id]);
+      await sut.markTrashed({local.id});
 
       expect(await trashStatusOf(local.id), TrashSyncStatus.trashed);
       final locals = await ctx.db.select(ctx.db.localAssetEntity).get();
@@ -814,7 +814,7 @@ void main() {
     test('marks as restored, leaving the rows in place', () async {
       await markAsset(assetId: 'asset', checksum: 'checksum', status: .trashed);
 
-      await sut.markRestored(['asset']);
+      await sut.markRestored({'asset'});
 
       expect(await trashStatusOf('asset'), TrashSyncStatus.restored);
     });

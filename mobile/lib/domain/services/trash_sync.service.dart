@@ -4,49 +4,27 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/platform/asset_media_api.g.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:logging/logging.dart';
 
 class TrashSyncService {
   final TrashSyncRepository _repo;
-  final LocalAssetRepository localAssets;
+  final LocalAssetRepository _localAssets;
   final AssetMediaApi _assetMediaApi;
+  final AssetMediaRepository _assetMediaRepository;
   final DevicePermissionRepository _permission;
   final SettingsRepository _settings;
   final Logger _log = Logger('TrashSyncService');
 
   TrashSyncService({
     required this._repo,
-    required this.localAssets,
+    required this._localAssets,
     required this._assetMediaApi,
+    required this._assetMediaRepository,
     required this._permission,
     required this._settings,
   });
-
-  Future<int> keepReviewAssets(Iterable<String> assetIds) => _repo.rejectReviewAssets(assetIds);
-
-  Future<int> trashReviewAssets(Iterable<String> assetIds) async {
-    final reviewableAssetIds = await _repo.getReviewableAssetIds(assetIds);
-    if (reviewableAssetIds.isEmpty) {
-      return 0;
-    }
-
-    final results = await _assetMediaApi.trash(reviewableAssetIds);
-    final trashedAssetIds = results.whereStatusIn(const {.done, .alreadyInState});
-    final missingAssetIds = results.whereStatusIn(const {.notFound});
-
-    if (trashedAssetIds.isNotEmpty) {
-      final ids = trashedAssetIds.toList(growable: false);
-      await _repo.markReviewAssetsApproved(ids);
-      await localAssets.deleteAssets(ids);
-    }
-
-    if (missingAssetIds.isNotEmpty) {
-      await _repo.deleteMarkers(missingAssetIds);
-    }
-
-    return trashedAssetIds.length;
-  }
 
   Future<void> reconcile() async {
     try {
@@ -73,20 +51,38 @@ class TrashSyncService {
     }
   }
 
+  Future<int> keepReviewAssets(Iterable<String> assetIds) => _repo.rejectReviewAssets(assetIds);
+
+  Future<int> trashReviewAssets(Iterable<String> assetIds) async {
+    final reviewableAssetIds = await _repo.getReviewableAssetIds(assetIds);
+    if (reviewableAssetIds.isEmpty) {
+      return 0;
+    }
+
+    final Set<String> trashedAssetIds;
+    if (CurrentPlatform.isAndroid) {
+      final results = await _assetMediaApi.trash(reviewableAssetIds);
+      trashedAssetIds = results.whereStatusIn(const {.done, .alreadyInState});
+      final missingAssetIds = results.whereStatusIn(const {.notFound});
+      if (missingAssetIds.isNotEmpty) {
+        await _repo.deleteMarkers(missingAssetIds);
+      }
+    } else {
+      trashedAssetIds = (await _assetMediaRepository.deleteAll(reviewableAssetIds)).toSet();
+    }
+
+    if (trashedAssetIds.isNotEmpty) {
+      await _repo.markReviewAssetsApproved(trashedAssetIds);
+      await _localAssets.deleteAssets(trashedAssetIds.toList(growable: false));
+    }
+
+    return trashedAssetIds.length;
+  }
+
   Future<void> _prune() async {
     await _repo.pruneStaleMarkers();
     await _repo.pruneDismissedMarkers();
     await _repo.prunePendingMarkers();
-  }
-
-  Future<void> _recordAuto() async {
-    await _repo.recordSoftDeleteAssets();
-    await _repo.recordHardDeletedAssets();
-  }
-
-  Future<void> _recordReview() async {
-    await _repo.recordSoftDeleteReviewAssets();
-    await _repo.recordHardDeletedReviewAssets();
   }
 
   Future<void> _act() async {
@@ -159,6 +155,16 @@ class TrashSyncService {
     }
 
     return hasPermission;
+  }
+
+  Future<void> _recordAuto() async {
+    await _repo.recordSoftDeleteAssets();
+    await _repo.recordHardDeletedAssets();
+  }
+
+  Future<void> _recordReview() async {
+    await _repo.recordSoftDeleteReviewAssets();
+    await _repo.recordHardDeletedReviewAssets();
   }
 }
 

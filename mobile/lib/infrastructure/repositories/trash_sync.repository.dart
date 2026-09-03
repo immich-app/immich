@@ -190,14 +190,13 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
         );
   }
 
-  Future<void> markReviewAssetsApproved(Iterable<String> assetIds) async {
-    final set = assetIds.toSet();
-    if (set.isEmpty) {
+  Future<void> markReviewAssetsApproved(Set<String> assetIds) async {
+    if (assetIds.isEmpty) {
       return;
     }
 
     await _db.transaction(() async {
-      for (final slice in set.slices(kDriftMaxChunk)) {
+      for (final slice in assetIds.slices(kDriftMaxChunk)) {
         await (_db.update(_db.trashSyncEntity)
               ..where((row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending)))
             .write(const TrashSyncEntityCompanion(status: .new(.reviewApproved), remoteDeletedAt: .new(null)));
@@ -307,13 +306,12 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
         );
   }
 
-  Future<void> markTrashed(Iterable<String> assetIds) async {
-    final set = assetIds.toSet();
-    if (set.isEmpty) {
+  Future<void> markTrashed(Set<String> assetIds) async {
+    if (assetIds.isEmpty) {
       return;
     }
     await _db.transaction(() async {
-      for (final slice in set.slices(kDriftMaxChunk)) {
+      for (final slice in assetIds.slices(kDriftMaxChunk)) {
         await (_db.update(
           _db.trashSyncEntity,
         )..where((t) => t.assetId.isIn(slice))).write(const TrashSyncEntityCompanion(status: .new(.trashed)));
@@ -322,12 +320,11 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     });
   }
 
-  Future<void> markRestored(Iterable<String> assetIds) async {
-    final set = assetIds.toSet();
-    if (set.isEmpty) {
+  Future<void> markRestored(Set<String> assetIds) async {
+    if (assetIds.isEmpty) {
       return;
     }
-    for (final slice in set.slices(kDriftMaxChunk)) {
+    for (final slice in assetIds.slices(kDriftMaxChunk)) {
       await (_db.update(
         _db.trashSyncEntity,
       )..where((t) => t.assetId.isIn(slice))).write(const TrashSyncEntityCompanion(status: .new(.restored)));
@@ -381,12 +378,11 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     });
   }
 
-  Future<void> deleteMarkers(Iterable<String> assetIds) async {
-    final set = assetIds.toSet();
-    if (set.isEmpty) {
+  Future<void> deleteMarkers(Set<String> assetIds) async {
+    if (assetIds.isEmpty) {
       return;
     }
-    for (final slice in set.slices(kDriftMaxChunk)) {
+    for (final slice in assetIds.slices(kDriftMaxChunk)) {
       await (_db.delete(_db.trashSyncEntity)..where((t) => t.assetId.isIn(slice))).go();
     }
   }

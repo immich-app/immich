@@ -7,10 +7,12 @@ import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.da
 import 'package:immich_mobile/platform/asset_media_api.g.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../repository.mocks.dart';
 import '../service_context.dart';
 
 void main() {
   late MediumServiceContext ctx;
+  late MockAssetMediaRepository assetMediaRepository;
   late TrashSyncService sut;
   late String userId;
 
@@ -19,10 +21,12 @@ void main() {
 
   setUp(() async {
     ctx = await MediumServiceContext.init();
+    assetMediaRepository = MockAssetMediaRepository();
     sut = TrashSyncService(
       repo: ctx.trashSyncRepository,
       localAssets: ctx.db.localAssetRepository,
       assetMediaApi: ctx.assetMediaApi,
+      assetMediaRepository: assetMediaRepository,
       permission: ctx.permissionRepository,
       settings: ctx.settings,
     );
@@ -272,6 +276,23 @@ void main() {
     verifyNever(() => ctx.assetMediaApi.trash(any()));
     verifyNever(() => ctx.assetMediaApi.restore(any()));
     verifyNever(() => ctx.assetMediaApi.trashedAmong(any()));
+  });
+
+  test('iOS review trash uses the media repository instead of the Android Pigeon API', () async {
+    debugDefaultTargetPlatformOverride = .iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = .android);
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+    when(() => assetMediaRepository.deleteAll([asset.localId])).thenAnswer((_) async => [asset.localId]);
+
+    final count = await sut.trashReviewAssets([asset.localId]);
+
+    expect(count, 1);
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewApproved);
+    expect(await localAssetExists(asset.localId), isFalse);
+    verify(() => assetMediaRepository.deleteAll([asset.localId])).called(1);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
   });
 
   test('auto mode keeps existing #29922 permission gate', () async {

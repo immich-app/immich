@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 
 final trashSyncRepositoryProvider = Provider<TrashSyncRepository>(
@@ -28,6 +29,7 @@ final trashSyncServiceProvider = Provider<TrashSyncService>(
     repo: ref.watch(driftProvider.select((db) => db.trashSyncRepository)),
     localAssets: ref.watch(driftProvider.select((db) => db.localAssetRepository)),
     assetMediaApi: ref.watch(assetMediaApiProvider),
+    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permission: ref.watch(permissionRepositoryProvider),
     settings: ref.watch(settingsProvider),
   ),
