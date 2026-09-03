@@ -9,7 +9,6 @@
   import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
-  import { observeVideoOrientation } from '$lib/utils/video-orientation';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
@@ -47,11 +46,11 @@
   import 'media-chrome/menu/media-settings-menu';
   import 'media-chrome/menu/media-settings-menu-button';
   import 'media-chrome/menu/media-settings-menu-item';
+  import './immich-rendition-menu';
   import { onDestroy, onMount } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import './immich-rendition-menu';
   import './immich-time-range';
 
   interface Props {
@@ -85,7 +84,6 @@
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
   let hasLoadedMetadata = $state(false);
-  let originalRenditionId = $state<string>();
   let assetFileUrl = $derived.by(() => {
     if (featureFlagsManager.value.realtimeTranscoding) {
       return getAssetHlsUrl(assetId);
@@ -99,12 +97,15 @@
   });
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   let showVideo = $state(false);
+  let originalRendition = $state<string>();
   let hasFocused = $state(false);
   let activeSession: { assetId: string; id: string } | undefined;
   let rebuildCount = 0;
 
   const MAX_REBUILDS = 1;
   const SESSION_ID_REGEX = /\/video\/stream\/([0-9a-f-]{36})\//;
+
+  const isOriginalLevel = (level?: Level) => level?.attrs['STABLE-VARIANT-ID'] === 'original';
 
   // hls.js can abandon fetching an in-flight fragment if it thinks it'll take too long, in which case
   // it emergency switches to a different variant. This extends the delay even further due to
@@ -116,6 +117,22 @@
   // Hold the committed level until its first fragment lands, then resume normal ABR.
   class NoAbandonAbrController extends AbrController {
     private switchTarget = -1;
+
+    // The Original rendition streams the source bitrate, so it is only ever picked by hand
+    private encodedLevel(level: number) {
+      const levels = this.hls.levels;
+      if (!isOriginalLevel(levels[level])) {
+        return level;
+      }
+      const encoded = levels
+        .map((candidate, index) => (isOriginalLevel(candidate) ? -1 : index))
+        .filter((index) => index !== -1);
+      return encoded.findLast((index) => index < level) ?? encoded[0] ?? level;
+    }
+
+    override get firstAutoLevel(): number {
+      return this.encodedLevel(super.firstAutoLevel);
+    }
 
     protected override onFragLoading(_event: Events.FRAG_LOADING, data: FragLoadingData) {
       if (data.frag.sn === 'initSegment') {
@@ -131,7 +148,7 @@
     }
 
     override get nextAutoLevel(): number {
-      const level = super.nextAutoLevel;
+      const level = this.encodedLevel(super.nextAutoLevel);
       const target = this.hls.levels[this.switchTarget];
       // Hold the committed level, but only while hls.js still considers it healthy.
       if (target && level < this.switchTarget && target.loadError === 0 && target.fragmentError === 0) {
@@ -186,35 +203,6 @@
     return el?.tagName === 'HLS-VIDEO';
   };
 
-  const isOriginalLevel = (level?: Level) => level?.attrs['STABLE-VARIANT-ID'] === 'original';
-  const isOriginalH264Level = (level?: Level) => isOriginalLevel(level) && level?.videoCodec?.startsWith('avc1.');
-
-  type RenditionList = Iterable<{ id?: string; src?: string }>;
-
-  const findOriginalRenditionId = (el: HlsVideoElement, level?: Level) => {
-    const source = level?.url[0];
-    const renditions = (el as HlsVideoElement & { videoRenditions?: RenditionList }).videoRenditions;
-    return source ? [...(renditions ?? [])].find((rendition) => rendition.src === source)?.id : undefined;
-  };
-
-  let stopOrientationCorrection: (() => void) | undefined;
-
-  const clearOrientationCorrection = () => {
-    stopOrientationCorrection?.();
-    stopOrientationCorrection = undefined;
-  };
-
-  const updateOrientationCorrection = (el: HlsVideoElement, level?: Level) => {
-    clearOrientationCorrection();
-    if (isOriginalH264Level(level)) {
-      stopOrientationCorrection = observeVideoOrientation({
-        container: el,
-        orientation: asset.exifInfo?.orientation,
-        video: el.nativeEl,
-      });
-    }
-  };
-
   const wireHlsListeners = (el: HlsVideoElement, assetId: string, resumeTime?: number) => {
     const api = el.api;
     if (!api) {
@@ -228,20 +216,6 @@
       configurable: true,
       get: () => api.currentLevel,
       set: (level: number) => {
-        const current = api.levels[api.currentLevel];
-        const next = api.levels[level];
-        if (current && isOriginalH264Level(current) !== isOriginalH264Level(next)) {
-          // H.264 Original uses MPEG-TS, whose SourceBuffer layout is incompatible with the encoded fMP4 renditions.
-          const media = api.media;
-          if (media && !media.paused) {
-            api.once(Hls.Events.MEDIA_ATTACHED, () => {
-              void media.play().catch(() => console.warn('Failed to resume video after changing quality'));
-            });
-          }
-          api.loadLevel = level;
-          api.recoverMediaError();
-          return;
-        }
         api.currentLevel = level;
       },
     });
@@ -250,29 +224,23 @@
     api.on(Hls.Events.MANIFEST_PARSED, async () => {
       // Defer hls.js's first fragment load until we filter out suboptimal variants
       api.stopLoad();
-      originalRenditionId = findOriginalRenditionId(
-        el,
-        api.levels.find((level) => isOriginalLevel(level)),
-      );
       const id = api.levels[0]?.url[0]?.match(SESSION_ID_REGEX)?.[1];
       if (id) {
         activeSession = { assetId, id };
       }
 
+      // Rendition ids are the level indexes before any level is removed
+      const originalLevel = api.levels.findIndex((level) => isOriginalLevel(level));
+      originalRendition = originalLevel === -1 ? undefined : String(originalLevel);
+
       const keep = await mediaCapabilitiesManager.efficientLevels(api.levels);
       for (let i = api.levels.length - 1; i >= 0; i--) {
-        if (!keep.has(i)) {
+        if (!keep.has(i) && !isOriginalLevel(api.levels[i])) {
           api.removeLevel(i);
         }
       }
 
       api.startLoad(resumeTime);
-    });
-
-    api.on(Hls.Events.LEVEL_SWITCHING, (_, data) => {
-      if (el.api === api) {
-        updateOrientationCorrection(el, api.levels[data.level]);
-      }
     });
 
     api.on(Hls.Events.FRAG_LOADED, () => (rebuildCount = 0));
@@ -305,8 +273,6 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     hasLoadedMetadata = false;
-    originalRenditionId = undefined;
-    clearOrientationCorrection();
     if (videoPlayer && assetFileUrl) {
       hasFocused = false;
       rebuildCount = 0;
@@ -320,10 +286,7 @@
         videoPlayer.load();
       }
     }
-    return () => {
-      clearOrientationCorrection();
-      releaseSession();
-    };
+    return releaseSession;
   });
 
   const onPagehide = (event: PageTransitionEvent) => {
@@ -338,7 +301,6 @@
   });
 
   onDestroy(() => {
-    clearOrientationCorrection();
     if (videoPlayer) {
       videoPlayer.src = '';
     }
@@ -515,9 +477,8 @@
                 <immich-rendition-menu
                   slot="submenu"
                   hidden
-                  auto-label={$t('media_chrome.auto')}
+                  original-rendition={originalRendition}
                   original-label={$t('video_quality_original')}
-                  original-rendition-id={originalRenditionId}
                 >
                   <Icon slot="back-icon" icon={mdiChevronLeft} class="m-2" />
                   <span slot="title">{$t('video_quality')}</span>
