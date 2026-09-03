@@ -465,7 +465,7 @@ select
   ) as "faces",
   (
     select
-      coalesce(json_agg(agg), '[]')
+      to_json(obj)
     from
       (
         select
@@ -477,14 +477,18 @@ select
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
-          and "asset_file"."type" = $1
-      ) as agg
-  ) as "files"
+          and "asset_file"."type" = 'preview'
+        order by
+          "asset_file"."isEdited" desc
+        limit
+          1
+      ) as obj
+  ) as "previewFile"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."id" = $2
+  "asset"."id" = $1
 
 -- AssetJobRepository.getForOcr
 select
