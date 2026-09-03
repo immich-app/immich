@@ -1,6 +1,7 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
+import { AssetFileType } from 'src/enum';
 import { FaceSearchResult } from 'src/repositories/search.repository';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -188,7 +189,10 @@ export const getForDetectedFaces = (asset: ReturnType<AssetFactory['build']>) =>
   visibility: asset.visibility,
   exifInfo: getDehydrated(asset.exifInfo),
   faces: asset.faces.map((face) => getDehydrated(face)),
-  files: asset.files.map((file) => getDehydrated(file)),
+  previewFile: asset.files
+    .filter((file) => file.type === AssetFileType.Preview)
+    .toSorted((a) => (a.isEdited ? -1 : 1))
+    .map((file) => getDehydrated(file))[0],
 });
 
 export const getForSidecarWrite = (asset: ReturnType<AssetFactory['build']>) => ({
