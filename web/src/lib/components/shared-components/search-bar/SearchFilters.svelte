@@ -185,8 +185,8 @@
   }
 
   const margin = 8;
-  let windowInnerHeight: number = $state(0),
-    mainView: HTMLDivElement | undefined = $state();
+  let windowInnerHeight: number = $state(0);
+  let mainView: HTMLDivElement | undefined = $state();
 
   const maxHeight = $derived.by(() => {
     if (!mainView) {
