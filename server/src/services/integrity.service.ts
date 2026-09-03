@@ -190,7 +190,10 @@ export class IntegrityService extends BaseService {
     } else if (fileAssetId) {
       await this.assetRepository.deleteFiles([{ id: fileAssetId }]);
     } else {
-      await this.storageRepository.unlink(path);
+      const trackedPaths = await this.integrityRepository.getTrackedPaths([path]);
+      if (trackedPaths.length === 0) {
+        await this.storageRepository.unlink(path);
+      }
       await this.integrityRepository.deleteById(id);
     }
   }
@@ -311,8 +314,17 @@ export class IntegrityService extends BaseService {
   async handleUntrackedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
+    const tracked =
+      items.length > 0 ? await this.integrityRepository.getTrackedPaths(items.map(({ path }) => path)) : [];
+    const trackedPaths = new Set(tracked.map(({ path }) => path));
+
     const results = await Promise.all(
       items.map(async ({ reportId, path }) => {
+        // The path was untracked when the report was written; an asset may reference it now.
+        if (trackedPaths.has(path)) {
+          return reportId;
+        }
+
         try {
           await this.storageRepository.stat(path);
           return;
@@ -697,7 +709,13 @@ export class IntegrityService extends BaseService {
     }
 
     if (byPath.length > 0) {
-      await Promise.all(byPath.map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)));
+      const tracked = await this.integrityRepository.getTrackedPaths(byPath.map(({ path }) => path));
+      const trackedPaths = new Set(tracked.map(({ path }) => path));
+      await Promise.all(
+        byPath
+          .filter(({ path }) => !trackedPaths.has(path))
+          .map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)),
+      );
       await this.integrityRepository.deleteByIds(byPath.map(({ id }) => id));
     }
 

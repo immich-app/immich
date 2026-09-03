@@ -1,5 +1,4 @@
-import { defaults, SystemConfig } from 'src/config';
-import { SystemConfigDto } from 'src/dtos/system-config.dto';
+import { AdminConfigDto, defaults, SystemConfig } from 'src/dtos/config.dto';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { NotificationService } from 'src/services/notification.service';
 import { AlbumFactory } from 'test/factories/album.factory';
@@ -100,7 +99,7 @@ describe(NotificationService.name, () => {
 
     it('skips smtp validation with DTO when there are no changes', async () => {
       const oldConfig = { ...configs.smtpEnabled };
-      const newConfig = configs.smtpEnabled as SystemConfigDto;
+      const newConfig = configs.smtpEnabled as AdminConfigDto;
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(mocks.email.verifySmtp).not.toHaveBeenCalled();

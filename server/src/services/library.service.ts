@@ -110,7 +110,7 @@ export class LibraryService extends BaseService {
 
     const handler = async (event: string, path: string) => {
       if (matcher(path)) {
-        this.logger.debug(`File ${event} event received for ${path} in library ${library.id}}`);
+        this.logger.debug(`File ${event} event received for ${path} in library ${library.id}`);
         await this.jobRepository.queue({
           name: JobName.LibrarySyncFiles,
           data: { libraryId: library.id, paths: [path] },
@@ -121,7 +121,7 @@ export class LibraryService extends BaseService {
     };
 
     const deletionHandler = async (path: string) => {
-      this.logger.debug(`File unlink event received for ${path} in library ${library.id}}`);
+      this.logger.debug(`File unlink event received for ${path} in library ${library.id}`);
       await this.jobRepository.queue({
         name: JobName.LibraryRemoveAsset,
         data: { libraryId: library.id, paths: [path] },
@@ -442,10 +442,6 @@ export class LibraryService extends BaseService {
     });
 
     await this.jobRepository.queue({ name: JobName.LibrarySyncAssetsQueueAll, data: { id } });
-  }
-
-  async queueScanAll() {
-    await this.jobRepository.queue({ name: JobName.LibraryScanQueueAll, data: {} });
   }
 
   @OnJob({ name: JobName.LibraryScanQueueAll, queue: QueueName.Library })

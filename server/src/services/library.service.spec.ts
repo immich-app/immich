@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
-import { defaults, SystemConfig } from 'src/config';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
+import { defaults, SystemConfig } from 'src/dtos/config.dto';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';

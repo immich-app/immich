@@ -13,14 +13,25 @@ class ToastService {
   const ToastService();
 
   FutureOr<void> success(String message, {ToastOption? toast}) {
-    snackbar.success(message, duration: toast?.timeout);
+    snackbar.success(message, duration: toast?.timeout, action: toast?.action);
   }
 
   FutureOr<void> info(String message, {ToastOption? toast}) {
-    snackbar.info(message, duration: toast?.timeout);
+    snackbar.info(message, duration: toast?.timeout, action: toast?.action);
   }
 
   FutureOr<void> error(String message, {ToastOption? toast}) {
-    snackbar.error(message, duration: toast?.timeout);
+    snackbar.error(message, duration: toast?.timeout, action: toast?.action);
+  }
+}
+
+extension on ToastOption {
+  SnackbarAction? get action {
+    final onUndo = this.onUndo;
+    if (onUndo == null) {
+      return null;
+    }
+
+    return SnackbarAction(onPressed: onUndo);
   }
 }

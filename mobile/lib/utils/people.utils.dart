@@ -34,22 +34,22 @@ int _calculateAgeInMonths(DateTime birthDate, DateTime referenceDate) {
       (referenceDate.day < birthDate.day ? 1 : 0);
 }
 
-Future<String?> showNameEditModal(BuildContext context, DriftPerson person) {
+Future<String?> showNameEditModal(BuildContext context, Person person) {
   return showDialog<String?>(
     context: context,
     useRootNavigator: false,
     builder: (BuildContext context) {
-      return DriftPersonNameEditForm(person: person);
+      return PersonNameEditForm(person: person);
     },
   );
 }
 
-Future<DateTime?> showBirthdayEditModal(BuildContext context, DriftPerson person) {
+Future<DateTime?> showBirthdayEditModal(BuildContext context, Person person) {
   return showDialog<DateTime?>(
     context: context,
     useRootNavigator: false,
     builder: (BuildContext context) {
-      return DriftPersonBirthdayEditForm(person: person);
+      return PersonBirthdayEditForm(person: person);
     },
   );
 }

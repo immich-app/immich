@@ -4,10 +4,10 @@ import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
@@ -24,7 +24,7 @@ void main() {
   late ForegroundUploadService sut;
   late MockUploadRepository mockUploadRepository;
   late MockStorageRepository mockStorageRepository;
-  late MockDriftBackupRepository mockBackupRepository;
+  late MockBackupRepository mockBackupRepository;
   late MockConnectivityApi mockConnectivityApi;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late Drift db;
@@ -36,7 +36,7 @@ void main() {
       (MethodCall methodCall) async => 'test',
     );
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
     await SettingsRepository.ensureInitialized(db);
 
     await Store.put(StoreKey.serverEndpoint, 'http://demo.immich.app');
@@ -49,7 +49,7 @@ void main() {
   setUp(() {
     mockUploadRepository = MockUploadRepository();
     mockStorageRepository = MockStorageRepository();
-    mockBackupRepository = MockDriftBackupRepository();
+    mockBackupRepository = MockBackupRepository();
     mockConnectivityApi = MockConnectivityApi();
     mockAssetMediaRepository = MockAssetMediaRepository();
 

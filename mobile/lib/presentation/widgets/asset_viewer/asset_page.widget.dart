@@ -363,7 +363,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         onDragCancel: _onDragCancel,
         onTapUp: _onTapUp,
         onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
-        errorBuilder: (_, __, ___) => SizedBox(
+        errorBuilder: (_, _, _) => SizedBox(
           width: size.width,
           height: size.height,
           child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),

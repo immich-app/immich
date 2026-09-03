@@ -1,5 +1,4 @@
 import { createZodDto } from 'nestjs-zod';
-import { AssetIdsSchema } from 'src/dtos/asset.dto';
 import z from 'zod';
 
 const DownloadInfoSchema = z
@@ -25,9 +24,30 @@ const DownloadResponseSchema = z
   })
   .meta({ id: 'DownloadResponseDto' });
 
-const DownloadArchiveSchema = AssetIdsSchema.extend({
-  edited: z.boolean().optional().describe('Download edited asset if available'),
-}).meta({ id: 'DownloadArchiveDto' });
+const DownloadArchiveSchema = z
+  .object({
+    // Support receiving assetIds as a comma-separated string due to POST form submission.
+    // While we can send arrays, the total request parameter count is limited to 1000 fields,
+    // which would limit this DTO to a maximum of 1000 assets.
+    assetIds: z
+      .preprocess((val) => (typeof val === 'string' ? val.split(',') : val), z.array(z.uuidv4()))
+      .nonoptional()
+      .describe('Asset IDs'),
+    edited: z
+      .preprocess((val) => {
+        if (val === 'true') {
+          return true;
+        }
+        if (val === 'false') {
+          return false;
+        }
+        return val;
+      }, z.boolean())
+      .optional()
+      .describe('Download edited asset if available'),
+    archiveName: z.string().optional().describe('The name of the archive to download, without extension'),
+  })
+  .meta({ id: 'DownloadArchiveDto' });
 
 export class DownloadInfoDto extends createZodDto(DownloadInfoSchema) {}
 export class DownloadResponseDto extends createZodDto(DownloadResponseSchema) {}

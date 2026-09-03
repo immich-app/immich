@@ -39,6 +39,7 @@
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -85,11 +86,13 @@
     memoryManager.memories.map((memory) => ({
       id: memory.id,
       title: $memoryLaneTitle(memory),
-      href: Route.memories({ id: memory.assets[0].id }),
+      href: Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }),
       alt: $t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } }),
       src: getAssetMediaUrl({ id: memory.assets[0].id }),
     })),
   );
+
+  memoryManager.setFilters({ $for: DateTime.now().toISODate() });
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>

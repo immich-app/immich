@@ -354,9 +354,11 @@ select
           "asset_file"."assetId" = "asset"."id"
           and "asset_file"."type" = $2
       ) as agg
-  ) as "files"
+  ) as "files",
+  "user"."clusterGroupId"
 from
   "asset"
+  inner join "user" on "user"."id" = "asset"."ownerId"
 where
   "asset"."id" = $3
 
@@ -463,7 +465,7 @@ select
   ) as "faces",
   (
     select
-      coalesce(json_agg(agg), '[]')
+      to_json(obj)
     from
       (
         select
@@ -475,14 +477,18 @@ select
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
-          and "asset_file"."type" = $1
-      ) as agg
-  ) as "files"
+          and "asset_file"."type" = 'preview'
+        order by
+          "asset_file"."isEdited" desc
+        limit
+          1
+      ) as obj
+  ) as "previewFile"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."id" = $2
+  "asset"."id" = $1
 
 -- AssetJobRepository.getForOcr
 select

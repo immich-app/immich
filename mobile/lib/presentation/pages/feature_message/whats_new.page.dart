@@ -17,7 +17,7 @@ class WhatsNewPage extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.only(top: 16, bottom: 64),
         itemCount: highlights.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 24),
+        separatorBuilder: (_, _) => const SizedBox(height: 24),
         itemBuilder: (_, index) => _HighlightCard(highlight: highlights[index]),
       ),
     );
@@ -53,7 +53,7 @@ class _HighlightCard extends StatelessWidget {
                     : Image.asset(
                         highlight.image!,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, _, __) => const FeatureMessagePlaceholder(),
+                        errorBuilder: (context, _, _) => const FeatureMessagePlaceholder(),
                       ),
               ),
             ),

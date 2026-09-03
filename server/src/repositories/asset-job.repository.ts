@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -151,6 +151,8 @@ export class AssetJobRepository {
       .select(columns.asset)
       .select(withFaces)
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .innerJoin('user', 'user.id', 'asset.ownerId')
+      .select(['user.clusterGroupId'])
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -234,7 +236,17 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.visibility'])
       .$call(withExifInner)
       .select((eb) => withFaces(eb, true, true))
-      .select((eb) => withFiles(eb, AssetFileType.Preview))
+      .select((eb) =>
+        jsonObjectFrom(
+          eb
+            .selectFrom('asset_file')
+            .select(columns.assetFiles)
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
+            .orderBy('asset_file.isEdited', 'desc')
+            .limit(sql.lit(1)),
+        ).as('previewFile'),
+      )
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

@@ -28,7 +28,7 @@ class PersonSliverAppBar extends ConsumerStatefulWidget {
     required this.onBirthdayTap,
   });
 
-  final DriftPerson person;
+  final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
   final VoidCallback onShowOptions;
@@ -137,7 +137,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
 
 class _ExpandedBackground extends ConsumerStatefulWidget {
   final double scrollProgress;
-  final DriftPerson person;
+  final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
 

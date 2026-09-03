@@ -7,21 +7,20 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
-import 'package:immich_mobile/utils/semver.dart';
-
-const _minimumServerVersion = SemVer(major: 2, minor: 6, patch: 0);
 
 final _stateProvider = Provider.family.autoDispose<RemoteAsset?, ActionSource>((ref, source) {
-  final isSupported = ref.watch(serverInfoProvider.select((state) => state.serverVersion >= _minimumServerVersion));
+  final isSupported = ref.watch(serverInfoProvider.select((state) => state.serverVersion.supports(.assetEdits)));
   if (!isSupported) {
     return null;
   }
@@ -50,7 +49,7 @@ class EditAssetAction extends AssetActionBuilder {
 
     try {
       // TODO(shenlong): Move all EXIF and Apply Edits logic onto the Route
-      final repository = ref.read(remoteAssetRepositoryProvider);
+      final repository = ref.read(driftProvider).remoteAssetRepository;
       final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.getExif(asset.id)).wait;
       if (exif == null || !context.mounted) {
         return;
@@ -59,7 +58,7 @@ class EditAssetAction extends AssetActionBuilder {
       ref.read(editorStateProvider.notifier).init(edits, exif);
       unawaited(
         context.pushRoute(
-          DriftEditImageRoute(
+          EditImageRoute(
             image: Image(image: getFullImageProvider(asset, edited: false)),
             applyEdits: (newEdits) => applyEdits(ref, asset.id, newEdits),
           ),

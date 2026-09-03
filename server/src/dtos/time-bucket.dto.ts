@@ -75,7 +75,9 @@ const TimeBucketAssetResponseSchema = z
   .object({
     id: z.array(z.string()).describe('Array of asset IDs in the time bucket'),
     ownerId: z.array(z.string()).describe('Array of owner IDs for each asset'),
-    ratio: z.array(z.number()).describe('Array of aspect ratios (width/height) for each asset'),
+    ratio: z
+      .array(z.number().meta({ format: 'double' }))
+      .describe('Array of aspect ratios (width/height) for each asset'),
     isFavorite: z.array(z.boolean()).describe('Array indicating whether each asset is favorited'),
     visibility: z
       .array(AssetVisibilitySchema)
@@ -90,7 +92,7 @@ const TimeBucketAssetResponseSchema = z
       .describe('Array of UTC timestamps when each asset was originally uploaded to Immich'),
     fileCreatedAt: z.array(z.string()).describe('Array of file creation timestamps in UTC'),
     localOffsetHours: z
-      .array(z.number())
+      .array(z.number().meta({ format: 'double' }))
       .describe(
         "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
       ),
@@ -110,11 +112,11 @@ const TimeBucketAssetResponseSchema = z
     city: z.array(z.string().nullable()).optional().describe('Array of city names extracted from EXIF GPS data'),
     country: z.array(z.string().nullable()).optional().describe('Array of country names extracted from EXIF GPS data'),
     latitude: z
-      .array(z.number().nullable())
+      .array(z.number().meta({ format: 'double' }).nullable())
       .optional()
       .describe('Array of latitude coordinates extracted from EXIF GPS data'),
     longitude: z
-      .array(z.number().nullable())
+      .array(z.number().meta({ format: 'double' }).nullable())
       .optional()
       .describe('Array of longitude coordinates extracted from EXIF GPS data'),
   })

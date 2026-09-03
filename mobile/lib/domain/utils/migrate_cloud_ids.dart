@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -31,12 +32,12 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   await _populateCloudIds(db);
 
   final serverInfo = await ref.read(serverInfoProvider.notifier).getServerInfo();
-  final canUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 4);
+  final canUpdateMetadata = serverInfo.serverVersion.supports(.cloudIdMetadata);
   if (!canUpdateMetadata) {
     logger.fine('Server version does not support asset metadata updates. Skipping cloudId migration.');
     return;
   }
-  final canBulkUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 5);
+  final canBulkUpdateMetadata = serverInfo.serverVersion.supports(.bulkCloudIdMetadata);
 
   // Wait for remote sync to complete, so we have up-to-date asset metadata entries
   try {
@@ -171,7 +172,7 @@ Future<void> _populateCloudIds(Drift drift) async {
       );
     }
   }
-  await DriftLocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
+  await LocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
 }
 
 typedef _CloudIdMapping = ({String remoteAssetId, LocalAsset localAsset});

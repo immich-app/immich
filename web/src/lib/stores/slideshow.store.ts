@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 
 export enum SlideshowState {
   PlaySlideshow = 'play-slideshow',
+  PauseSlideshow = 'pause-slideshow',
   StopSlideshow = 'stop-slideshow',
   None = 'none',
 }
@@ -23,12 +24,6 @@ export enum SlideshowMetadataOverlayMode {
   DescriptionOnly = 'description-only',
   Full = 'full',
 }
-
-export const slideshowLookCssMapping: Record<SlideshowLook, string> = {
-  [SlideshowLook.Contain]: 'object-contain',
-  [SlideshowLook.Cover]: 'object-cover',
-  [SlideshowLook.BlurredBackground]: 'object-contain',
-};
 
 function createSlideshowStore() {
   const restartState = writable<boolean>(false);

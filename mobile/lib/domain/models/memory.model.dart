@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -31,11 +30,11 @@ abstract class MemoryData with _$MemoryData {
   factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
 }
 
-// Model for a memory stored in the server
+/// A specialized collection of assets with some novel display mechanism
 // TODO(agg23): DriftMemoryRepository currently mutates `assets`
 @Freezed(makeCollectionsUnmodifiable: false)
-abstract class DriftMemory with _$DriftMemory {
-  const factory DriftMemory({
+abstract class Memory with _$Memory {
+  const factory Memory({
     required String id,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -49,5 +48,5 @@ abstract class DriftMemory with _$DriftMemory {
     DateTime? showAt,
     DateTime? hideAt,
     required List<RemoteAsset> assets,
-  }) = _DriftMemory;
+  }) = _Memory;
 }
