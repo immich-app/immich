@@ -538,6 +538,30 @@ describe('TimelineManager', () => {
 
       expect(timelineManager.assetCount).toEqual(0);
     });
+
+    it('updates existing live event assets in scoped timelines', async () => {
+      await timelineManager.updateOptions({ albumId: 'album-id' });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          isFavorite: false,
+        }),
+      );
+
+      timelineManager.upsertAssets([asset]);
+      expect(timelineManager.assetCount).toEqual(1);
+      expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(false);
+
+      timelineManager.upsertAssetsFromLiveEvent([
+        {
+          ...asset,
+          isFavorite: true,
+        },
+      ]);
+
+      expect(timelineManager.assetCount).toEqual(1);
+      expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
+    });
   });
 
   describe('removeAssets', () => {
