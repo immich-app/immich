@@ -389,6 +389,34 @@ const SyncUserMetadataDeleteV1Schema = z
   })
   .meta({ id: 'SyncUserMetadataDeleteV1' });
 
+const SyncTagV1Schema = z
+  .object({
+    id: z.uuidv4().describe('Tag ID'),
+    ownerId: z.uuidv4().describe('Owner ID'),
+    parentId: z.string().nullable().describe('Parent tag ID'),
+    value: z.string().describe('Tag value (full path)'),
+    color: z.string().nullable().describe('Tag color (hex)'),
+    createdAt: isoDatetimeToDate.describe('Created at'),
+    updatedAt: isoDatetimeToDate.describe('Updated at'),
+  })
+  .meta({ id: 'SyncTagV1' });
+
+const SyncTagDeleteV1Schema = z.object({ tagId: z.uuidv4().describe('Tag ID') }).meta({ id: 'SyncTagDeleteV1' });
+
+const SyncTagToAssetV1Schema = z
+  .object({
+    tagId: z.uuidv4().describe('Tag ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
+  })
+  .meta({ id: 'SyncTagToAssetV1' });
+
+const SyncTagToAssetDeleteV1Schema = z
+  .object({
+    tagId: z.uuidv4().describe('Tag ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
+  })
+  .meta({ id: 'SyncTagToAssetDeleteV1' });
+
 const SyncAckV1Schema = z.object({}).meta({ id: 'SyncAckV1' });
 const SyncResetV1Schema = z.object({}).meta({ id: 'SyncResetV1' });
 const SyncCompleteV1Schema = z.object({}).meta({ id: 'SyncCompleteV1' });
@@ -455,6 +483,14 @@ class SyncUserMetadataV1 extends createZodDto(SyncUserMetadataV1Schema) {}
 @ExtraModel()
 class SyncUserMetadataDeleteV1 extends createZodDto(SyncUserMetadataDeleteV1Schema) {}
 @ExtraModel()
+class SyncTagV1 extends createZodDto(SyncTagV1Schema) {}
+@ExtraModel()
+class SyncTagDeleteV1 extends createZodDto(SyncTagDeleteV1Schema) {}
+@ExtraModel()
+class SyncTagToAssetV1 extends createZodDto(SyncTagToAssetV1Schema) {}
+@ExtraModel()
+class SyncTagToAssetDeleteV1 extends createZodDto(SyncTagToAssetDeleteV1Schema) {}
+@ExtraModel()
 class SyncAckV1 extends createZodDto(SyncAckV1Schema) {}
 @ExtraModel()
 class SyncResetV1 extends createZodDto(SyncResetV1Schema) {}
@@ -510,6 +546,10 @@ export type SyncItem = {
   [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
   [SyncEntityType.AssetFaceV2]: SyncAssetFaceV2;
   [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
+  [SyncEntityType.TagV1]: SyncTagV1;
+  [SyncEntityType.TagDeleteV1]: SyncTagDeleteV1;
+  [SyncEntityType.TagToAssetV1]: SyncTagToAssetV1;
+  [SyncEntityType.TagToAssetDeleteV1]: SyncTagToAssetDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;

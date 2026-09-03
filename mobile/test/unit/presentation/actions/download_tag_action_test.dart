@@ -133,14 +133,16 @@ void main() {
 
     testWidgets('creates new tags first and applies them alongside the picked ones', (tester) async {
       final asset = owned();
-      when(() => tagService.upsertTags(any())).thenAnswer((_) async => [const Tag(id: 'made-1', value: 'brand new')]);
+      when(
+        () => tagService.upsertTags(any(), ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => [const Tag(id: 'made-1', value: 'brand new')]);
       when(() => tagService.bulkTagAssets(any(), any())).thenAnswer((_) async => 1);
 
       await pumpTag(tester, {asset});
       await applyTags([asset.id], selected: {'tag-1'}, created: {'brand new'});
       await tester.pumpAndSettle();
 
-      verify(() => tagService.upsertTags(['brand new'])).called(1);
+      verify(() => tagService.upsertTags(['brand new'], ownerId: any(named: 'ownerId'))).called(1);
       final tagIds = verify(() => tagService.bulkTagAssets([asset.id], captureAny())).captured.single as List<String>;
       expect(tagIds, containsAll(['tag-1', 'made-1']));
     });

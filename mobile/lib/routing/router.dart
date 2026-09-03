@@ -67,6 +67,8 @@ import 'package:immich_mobile/presentation/pages/recently_taken.page.dart';
 import 'package:immich_mobile/presentation/pages/remote_album.page.dart';
 import 'package:immich_mobile/presentation/pages/search/search.page.dart';
 import 'package:immich_mobile/presentation/pages/slideshow.page.dart';
+import 'package:immich_mobile/presentation/pages/tag_timeline.page.dart';
+import 'package:immich_mobile/presentation/pages/tags.page.dart';
 import 'package:immich_mobile/presentation/pages/trash.page.dart';
 import 'package:immich_mobile/presentation/pages/user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/video.page.dart';
@@ -182,6 +184,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SyncStatusRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: PeopleCollectionRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: PersonRoute.page, guards: [_authGuard]),
+    AutoRoute(page: TagsRoute.page, guards: [_authGuard]),
+    AutoRoute(page: TagTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: BackupOptionsRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AlbumOptionsRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MapRoute.page, guards: [_authGuard, _duplicateGuard]),

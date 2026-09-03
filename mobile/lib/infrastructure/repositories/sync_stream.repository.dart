@@ -18,6 +18,8 @@ import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/cloud_id.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/stack.drift.dart';
+import 'package:immich_mobile/data/db/main/table/tag/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/tag/tag.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
@@ -74,6 +76,8 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             await _db.remoteAssetCloudIdEntity.deleteAll();
             await _db.assetEditEntity.deleteAll();
             await _db.assetOcrEntity.deleteAll();
+            await _db.tagAssetEntity.deleteAll();
+            await _db.tagEntity.deleteAll();
           });
         } finally {
           // re-enable FK even if the transaction throws, otherwise the connection
@@ -736,6 +740,72 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
       });
     } catch (error, stack) {
       _logger.severe('Error: deleteUserMetadatasV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateTagsV1(Iterable<SyncTagV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final tag in data) {
+          final companion = TagEntityCompanion(
+            createdAt: Value(tag.createdAt),
+            updatedAt: Value(tag.updatedAt),
+            ownerId: Value(tag.ownerId),
+            parentId: Value(tag.parentId),
+            value: Value(tag.value),
+            color: Value(tag.color),
+          );
+
+          batch.insert(_db.tagEntity, companion.copyWith(id: Value(tag.id)), onConflict: DoUpdate((_) => companion));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateTagsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteTagsV1(Iterable<SyncTagDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final tag in data) {
+          batch.deleteWhere(_db.tagEntity, (row) => row.id.equals(tag.tagId));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteTagsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateTagToAssetsV1(Iterable<SyncTagToAssetV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final tagAsset in data) {
+          final companion = TagAssetEntityCompanion(tagId: Value(tagAsset.tagId), assetId: Value(tagAsset.assetId));
+
+          batch.insert(_db.tagAssetEntity, companion, onConflict: DoNothing());
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateTagToAssetsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteTagToAssetsV1(Iterable<SyncTagToAssetDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final tagAsset in data) {
+          batch.delete(
+            _db.tagAssetEntity,
+            TagAssetEntityCompanion(tagId: Value(tagAsset.tagId), assetId: Value(tagAsset.assetId)),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteTagToAssetsV1', error, stack);
       rethrow;
     }
   }

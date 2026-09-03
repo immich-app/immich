@@ -373,6 +373,12 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.person,
   );
 
+  TimelineQuery tag(String userId, String tagId, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchTagBucket(userId, tagId, groupBy: groupBy),
+    assetSource: (offset, count) => _getTagBucketAssets(userId, tagId, groupBy: groupBy, offset: offset, count: count),
+    origin: TimelineOrigin.tag,
+  );
+
   Stream<List<Bucket>> _watchPlaceBucket(String place, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       // TODO: implement GroupAssetBy for place
@@ -490,6 +496,73 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
             _db.assetFaceEntity.isVisible.equals(true) &
             _db.assetFaceEntity.deletedAt.isNull(),
       );
+
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            row.id.isInQuery(idQuery) &
+            row.deletedAt.isNull() &
+            row.ownerId.equals(userId) &
+            row.visibility.equalsValue(AssetVisibility.timeline),
+      )
+      ..orderBy(_assetDateOrder(groupBy))
+      ..limit(count, offset: offset);
+
+    return query.map((row) => row.toDto()).get();
+  }
+
+  Stream<List<Bucket>> _watchTagBucket(String userId, String tagId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+    final idQuery = _db.tagAssetEntity.selectOnly()
+      ..addColumns([_db.tagAssetEntity.assetId])
+      ..where(_db.tagAssetEntity.tagId.equals(tagId));
+
+    if (groupBy == GroupAssetsBy.none) {
+      final query = _db.remoteAssetEntity.selectOnly()
+        ..addColumns([_db.remoteAssetEntity.id.count()])
+        ..where(
+          _db.remoteAssetEntity.id.isInQuery(idQuery) &
+              _db.remoteAssetEntity.deletedAt.isNull() &
+              _db.remoteAssetEntity.ownerId.equals(userId) &
+              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
+        );
+
+      return query.map((row) {
+        final count = row.read(_db.remoteAssetEntity.id.count())!;
+        return _generateBuckets(count);
+      }).watchSingle();
+    }
+
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+    final dateExp = _db.remoteAssetEntity.effectiveCreatedAt(groupBy);
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(
+        _db.remoteAssetEntity.id.isInQuery(idQuery) &
+            _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+            _db.remoteAssetEntity.deletedAt.isNull(),
+      )
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> _getTagBucketAssets(
+    String userId,
+    String tagId, {
+    required int offset,
+    required int count,
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+    final idQuery = _db.tagAssetEntity.selectOnly()
+      ..addColumns([_db.tagAssetEntity.assetId])
+      ..where(_db.tagAssetEntity.tagId.equals(tagId));
 
     final query = _db.remoteAssetEntity.select()
       ..where(

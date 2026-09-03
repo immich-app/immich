@@ -7,6 +7,7 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/tag_picker.dart';
 
@@ -71,7 +72,8 @@ Future<void> tagAssets(
   final tagIds = {...selected};
 
   if (created.isNotEmpty) {
-    final tags = await tagService.upsertTags(created.toList());
+    final ownerId = ref.read(currentUserProvider)?.id;
+    final tags = await tagService.upsertTags(created.toList(), ownerId: ownerId);
     tagIds.addAll(tags.map((tag) => tag.id));
   }
   if (tagIds.isEmpty) {
@@ -80,6 +82,7 @@ Future<void> tagAssets(
 
   final count = await tagService.bulkTagAssets(assetIds, tagIds.toList());
   ref.invalidate(tagProvider);
+  ref.invalidate(assetTagsProvider);
   if (context.mounted) {
     toastService.success(context.t.tagged_assets(count: count));
   }
