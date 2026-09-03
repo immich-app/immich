@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { LRUMap } from 'mnemonist';
-import { AssetMapOptions, AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { SystemConfig } from 'src/dtos/config.dto';
-import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
+import { AssetMapOptions, AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto.js';
 import {
   isFullyAlbumConfined,
   isNewShapeRequest,
@@ -21,15 +21,15 @@ import {
   SearchSuggestionType,
   SmartSearchDto,
   StatisticsSearchDto,
-} from 'src/dtos/search.dto';
-import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
-import { AssetSearchScope } from 'src/repositories/search.repository';
-import { BaseService } from 'src/services/base.service';
-import { requireElevatedPermission } from 'src/utils/access';
-import { getMyPartnerIds } from 'src/utils/asset.util';
-import { isSmartSearchEnabled } from 'src/utils/misc';
-import { decodeSearchCursor, encodeSearchCursor } from 'src/utils/search-cursor';
-import { applyLockedVisibilityPolicy, collectFilterIds } from 'src/utils/search-filter';
+} from 'src/dtos/search.dto.js';
+import { AssetOrder, AssetVisibility, Permission } from 'src/enum.js';
+import { AssetSearchScope } from 'src/repositories/search.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { requireElevatedPermission } from 'src/utils/access.js';
+import { getMyPartnerIds } from 'src/utils/asset.util.js';
+import { isSmartSearchEnabled } from 'src/utils/misc.js';
+import { decodeSearchCursor, encodeSearchCursor } from 'src/utils/search-cursor.js';
+import { applyLockedVisibilityPolicy, collectFilterIds } from 'src/utils/search-filter.js';
 
 @Injectable()
 export class SearchService extends BaseService {

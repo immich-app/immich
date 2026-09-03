@@ -1,10 +1,10 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Authenticated, AuthGuard } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { AuthService } from 'src/services/auth.service';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { Authenticated, AuthGuard } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { AuthService } from 'src/services/auth.service.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 class TestController {
   @Authenticated({ public: true, setup: true })

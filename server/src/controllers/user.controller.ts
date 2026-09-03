@@ -16,22 +16,22 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
-import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
-import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
-import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { UserService } from 'src/services/user.service';
-import { sendFile } from 'src/utils/file';
-import { UUIDParamDto } from 'src/validation';
+import type { NextFunction, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto.js';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
+import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto.js';
+import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto.js';
+import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto.js';
+import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto.js';
+import { ApiTag, Permission, RouteKey } from 'src/enum.js';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
+import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { UserService } from 'src/services/user.service.js';
+import { sendFile } from 'src/utils/file.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Users)
 @Controller(RouteKey.User)

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   QueueDeleteDto,
   QueueJobResponseDto,
@@ -9,10 +9,10 @@ import {
   QueueNameParamDto,
   QueueResponseDto,
   QueueUpdateDto,
-} from 'src/dtos/queue.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { QueueService } from 'src/services/queue.service';
+} from 'src/dtos/queue.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { QueueService } from 'src/services/queue.service.js';
 
 @ApiTags(ApiTag.Queues)
 @Controller('queues')

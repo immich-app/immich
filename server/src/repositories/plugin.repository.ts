@@ -1,17 +1,17 @@
 import { CallContext, Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { Injectable } from '@nestjs/common';
 import { createPool, Pool } from 'generic-pool';
-import { Insertable, Kysely } from 'kysely';
+import type { Insertable, Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { PluginMethodSearchDto, PluginSearchDto } from 'src/dtos/plugin.dto';
-import { LogLevel, WorkflowType } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { DB } from 'src/schema';
-import { PluginMethodTable } from 'src/schema/tables/plugin-method.table';
-import { PluginTable } from 'src/schema/tables/plugin.table';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { PluginMethodSearchDto, PluginSearchDto } from 'src/dtos/plugin.dto.js';
+import { LogLevel, WorkflowType } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { DB } from 'src/schema/index.js';
+import { PluginMethodTable } from 'src/schema/tables/plugin-method.table.js';
+import { PluginTable } from 'src/schema/tables/plugin.table.js';
 
 type PluginMethod = { pluginKey: string; methodName: string };
 type PluginLoad = { key: string; label: string; wasmBytes: Buffer };

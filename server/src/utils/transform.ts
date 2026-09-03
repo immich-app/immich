@@ -1,6 +1,6 @@
-import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { ImageDimensions } from 'src/types';
+import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
+import type { ImageDimensions } from 'src/types.js';
 import { applyToPoint, compose, flipX, flipY, identity, Matrix, rotate, scale, translate } from 'transformation-matrix';
 
 export const getOutputDimensions = (

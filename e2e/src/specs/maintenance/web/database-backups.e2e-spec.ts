@@ -1,6 +1,6 @@
 import { LoginResponseDto } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
-import { utils } from 'src/utils';
+import { utils } from 'src/utils.js';
 
 test.describe.configure({ mode: 'serial' });
 

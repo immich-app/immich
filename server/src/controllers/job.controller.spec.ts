@@ -1,8 +1,8 @@
-import { JobController } from 'src/controllers/job.controller';
-import { JobService } from 'src/services/job.service';
-import { QueueService } from 'src/services/queue.service';
+import { JobController } from 'src/controllers/job.controller.js';
+import { JobService } from 'src/services/job.service.js';
+import { QueueService } from 'src/services/queue.service.js';
 import request from 'supertest';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(JobController.name, () => {
   let ctx: ControllerContext;

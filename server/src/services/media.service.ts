@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { FACE_THUMBNAIL_SIZE } from 'src/constants';
-import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
-import { AssetFile } from 'src/database';
-import { OnEvent, OnJob } from 'src/decorators';
-import { ConfigFFmpegDto, SystemConfig } from 'src/dtos/config.dto';
-import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
+import { FACE_THUMBNAIL_SIZE } from 'src/constants.js';
+import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core.js';
+import { AssetFile } from 'src/database.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { ConfigFFmpegDto, SystemConfig } from 'src/dtos/config.dto.js';
+import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto.js';
 import {
   AssetFileType,
   AssetType,
@@ -23,11 +23,11 @@ import {
   TranscodeTarget,
   VideoCodec,
   VideoContainer,
-} from 'src/enum';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { BoundingBox } from 'src/repositories/machine-learning.repository';
-import { BaseService } from 'src/services/base.service';
-import {
+} from 'src/enum.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type {
   AudioStreamInfo,
   DecodeToBufferOptions,
   GenerateThumbnailOptions,
@@ -37,13 +37,13 @@ import {
   VideoFormat,
   VideoInterfaces,
   VideoStreamInfo,
-} from 'src/types';
-import { getAssetFile, getDimensions } from 'src/utils/asset.util';
-import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
-import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
-import { mimeTypes } from 'src/utils/mime-types';
-import { batched, clamp } from 'src/utils/misc';
-import { getOutputDimensions } from 'src/utils/transform';
+} from 'src/types.js';
+import { getAssetFile, getDimensions } from 'src/utils/asset.util.js';
+import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor.js';
+import { BaseConfig, ThumbnailConfig } from 'src/utils/media.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { batched, clamp } from 'src/utils/misc.js';
+import { getOutputDimensions } from 'src/utils/transform.js';
 
 interface UpsertFileOptions {
   assetId: string;

@@ -1,8 +1,8 @@
-import { ActivityController } from 'src/controllers/activity.controller';
-import { ActivityService } from 'src/services/activity.service';
+import { ActivityController } from 'src/controllers/activity.controller.js';
+import { ActivityService } from 'src/services/activity.service.js';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(ActivityController.name, () => {
   let ctx: ControllerContext;

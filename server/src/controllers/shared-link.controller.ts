@@ -14,25 +14,25 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetIdsDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { Request, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AssetIdsDto } from 'src/dtos/asset.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkLoginDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
-} from 'src/dtos/shared-link.dto';
-import { ApiTag, ImmichCookie, Permission } from 'src/enum';
-import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { LoginDetails } from 'src/services/auth.service';
-import { SharedLinkService } from 'src/services/shared-link.service';
-import { respondWithCookie } from 'src/utils/response';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/shared-link.dto.js';
+import { ApiTag, ImmichCookie, Permission } from 'src/enum.js';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
+import { respondWithCookie } from 'src/utils/response.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 const getAuthTokens = (cookies: Record<string, string> | undefined) => {
   return cookies?.[ImmichCookie.SharedLinkToken]?.split(',') || [];

@@ -1,16 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility, SharedLinkType } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
-import { DB } from 'src/schema';
-import { TimelineService } from 'src/services/timeline.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetVisibility, SharedLinkType } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { DB } from 'src/schema/index.js';
+import { TimelineService } from 'src/services/timeline.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

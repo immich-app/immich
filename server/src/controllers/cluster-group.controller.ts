@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ClusterGroupRequestCreateDto, ClusterGroupRequestResponseDto } from 'src/dtos/cluster-group.dto';
-import { UserResponseDto } from 'src/dtos/user.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { ClusterGroupService } from 'src/services/cluster-group.service';
-import { UUIDParamDto } from 'src/validation';
+import type { Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { ClusterGroupRequestCreateDto, ClusterGroupRequestResponseDto } from 'src/dtos/cluster-group.dto.js';
+import { UserResponseDto } from 'src/dtos/user.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { ClusterGroupService } from 'src/services/cluster-group.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.ClusterGroups)
 @Controller('cluster-groups')

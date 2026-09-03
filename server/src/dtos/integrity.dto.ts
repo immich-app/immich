@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { IntegrityReport, IntegrityReportSchema } from 'src/enum';
+import { IntegrityReport, IntegrityReportSchema } from 'src/enum.js';
 import z from 'zod';
 
 const IntegrityReportSummaryResponseSchema = z

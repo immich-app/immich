@@ -1,5 +1,5 @@
 import { Kysely, sql } from 'kysely';
-import { tokenizeForSearch } from 'src/utils/database';
+import { tokenizeForSearch } from 'src/utils/database.js';
 
 export async function up(db: Kysely<any>): Promise<void> {
   await sql`truncate ${sql.table('ocr_search')}`.execute(db);

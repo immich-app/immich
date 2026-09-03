@@ -1,9 +1,9 @@
-import { NotificationController } from 'src/controllers/notification.controller';
-import { NotificationService } from 'src/services/notification.service';
+import { NotificationController } from 'src/controllers/notification.controller.js';
+import { NotificationService } from 'src/services/notification.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(NotificationController.name, () => {
   let ctx: ControllerContext;

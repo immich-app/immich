@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { MaintenanceAction, MaintenanceActionSchema, StorageFolderSchema } from 'src/enum';
+import { MaintenanceAction, MaintenanceActionSchema, StorageFolderSchema } from 'src/enum.js';
 import z from 'zod';
 
 const SetMaintenanceModeSchema = z

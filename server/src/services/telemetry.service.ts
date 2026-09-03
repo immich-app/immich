@@ -1,8 +1,8 @@
-import { snakeCase } from 'lodash';
-import { OnEvent } from 'src/decorators';
-import { ImmichWorker, JobStatus } from 'src/enum';
-import { ArgOf, ArgsOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
+import { snakeCase } from 'lodash-es';
+import { OnEvent } from 'src/decorators.js';
+import { ImmichWorker, JobStatus } from 'src/enum.js';
+import type { ArgOf, ArgsOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
 
 export class TelemetryService extends BaseService {
   @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.Api] })

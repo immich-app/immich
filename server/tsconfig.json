@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "node20",
+    "module": "nodenext",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -8,13 +8,15 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
+    "resolvePackageJsonExports": true,
     "target": "es2024",
-    "moduleResolution": "node16",
+    "moduleResolution": "nodenext",
     "lib": ["dom", "esnext"],
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
     "preserveWatchOutput": true,
     "paths": {

@@ -1,13 +1,13 @@
 import { Kysely } from 'kysely';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerDirection, PartnerRepository } from 'src/repositories/partner.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { PartnerService } from 'src/services/partner.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory, newUuid } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerDirection, PartnerRepository } from 'src/repositories/partner.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { PartnerService } from 'src/services/partner.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory, newUuid } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

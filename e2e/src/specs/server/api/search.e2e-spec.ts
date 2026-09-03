@@ -11,7 +11,7 @@ import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Socket } from 'socket.io-client';
-import { app, asBearerAuth, TEN_TIMES, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, TEN_TIMES, testAssetDir, utils } from 'src/utils.js';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 const today = DateTime.now();

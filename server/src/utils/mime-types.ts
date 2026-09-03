@@ -1,5 +1,5 @@
-import { AssetType } from 'src/enum';
-import { getFilenameExtension } from 'src/utils/file';
+import { AssetType } from 'src/enum.js';
+import { getFilenameExtension } from 'src/utils/file.js';
 
 const raw = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],

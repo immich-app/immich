@@ -3,14 +3,14 @@ import { createHash } from 'node:crypto';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
 import {
   IntegrityGetReportDto,
   IntegrityReportResponseDto,
   IntegrityReportSummaryResponseDto,
-} from 'src/dtos/integrity.dto';
+} from 'src/dtos/integrity.dto.js';
 import {
   AssetStatus,
   CacheControl,
@@ -22,10 +22,10 @@ import {
   QueueName,
   StorageFolder,
   SystemMetadataKey,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import {
+} from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type {
   IIntegrityDeleteReportsJob,
   IIntegrityDeleteReportTypeJob,
   IIntegrityJob,
@@ -33,9 +33,9 @@ import {
   IIntegrityPathWithChecksumJob,
   IIntegrityPathWithReportJob,
   IIntegrityUntrackedFilesJob,
-} from 'src/types';
-import { ImmichFileResponse } from 'src/utils/file';
-import { batched, handlePromiseError } from 'src/utils/misc';
+} from 'src/types.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { batched, handlePromiseError } from 'src/utils/misc.js';
 
 /**
  * Untracked Files:

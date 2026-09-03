@@ -1,4 +1,4 @@
-import { getKeysDeep, globToPostgresRegex, unsetDeep } from 'src/utils/misc';
+import { getKeysDeep, globToPostgresRegex, unsetDeep } from 'src/utils/misc.js';
 import { describe, expect, it } from 'vitest';
 
 describe('getKeysDeep', () => {

@@ -1,13 +1,13 @@
 import { Selectable } from 'kysely';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { StackTable } from 'src/schema/tables/stack.table';
-import { AssetEditFactory } from 'test/factories/asset-edit.factory';
-import { AssetExifFactory } from 'test/factories/asset-exif.factory';
-import { AssetFaceFactory } from 'test/factories/asset-face.factory';
-import { AssetFileFactory } from 'test/factories/asset-file.factory';
-import { build } from 'test/factories/builder.factory';
-import { StackFactory } from 'test/factories/stack.factory';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { StackTable } from 'src/schema/tables/stack.table.js';
+import { AssetEditFactory } from 'test/factories/asset-edit.factory.js';
+import { AssetExifFactory } from 'test/factories/asset-exif.factory.js';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
+import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
+import { build } from 'test/factories/builder.factory.js';
+import { StackFactory } from 'test/factories/stack.factory.js';
 import {
   AssetEditLike,
   AssetExifLike,
@@ -17,9 +17,9 @@ import {
   FactoryBuilder,
   StackLike,
   UserLike,
-} from 'test/factories/types';
-import { UserFactory } from 'test/factories/user.factory';
-import { newSha1, newUuid, newUuidV7 } from 'test/small.factory';
+} from 'test/factories/types.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { newSha1, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class AssetFactory {
   #owner!: UserFactory;

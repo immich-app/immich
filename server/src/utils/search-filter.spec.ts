@@ -1,8 +1,8 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { isAlbumConfined, isFullyAlbumConfined, SearchFilter } from 'src/dtos/search.dto';
-import { AssetVisibility } from 'src/enum';
-import { applyLockedVisibilityPolicy, collectFilterIds } from 'src/utils/search-filter';
-import { AuthFactory } from 'test/factories/auth.factory';
+import { isAlbumConfined, isFullyAlbumConfined, SearchFilter } from 'src/dtos/search.dto.js';
+import { AssetVisibility } from 'src/enum.js';
+import { applyLockedVisibilityPolicy, collectFilterIds } from 'src/utils/search-filter.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
 import { describe, expect, it } from 'vitest';
 
 const elevatedAuth = () => AuthFactory.from().session({ hasElevatedPermission: true }).build();

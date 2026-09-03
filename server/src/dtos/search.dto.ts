@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { Place } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
-import { AlbumResponseSchema } from 'src/dtos/album.dto';
-import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
+import { Place } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { AlbumResponseSchema } from 'src/dtos/album.dto.js';
+import { AssetResponseSchema } from 'src/dtos/asset-response.dto.js';
 import {
   AssetOrder,
   AssetOrderSchema,
@@ -10,8 +10,8 @@ import {
   AssetVisibilitySchema,
   SearchOrderField,
   SearchOrderFieldSchema,
-} from 'src/enum';
-import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation';
+} from 'src/enum.js';
+import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation.js';
 import z from 'zod';
 
 const ADDED_V3_2 = new HistoryBuilder().added('v3.2.0').getExtensions();

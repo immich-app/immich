@@ -7,7 +7,7 @@ import {
   createAlbum,
 } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
-import { asBearerAuth, utils } from 'src/utils';
+import { asBearerAuth, utils } from 'src/utils.js';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;

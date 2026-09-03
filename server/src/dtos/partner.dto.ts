@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
-import { UserResponseSchema } from 'src/dtos/user.dto';
-import { PartnerDirection } from 'src/repositories/partner.repository';
+import { UserResponseSchema } from 'src/dtos/user.dto.js';
+import { PartnerDirection } from 'src/repositories/partner.repository.js';
 import z from 'zod';
 
 const PartnerDirectionSchema = z.enum(PartnerDirection).describe('Partner direction').meta({ id: 'PartnerDirection' });

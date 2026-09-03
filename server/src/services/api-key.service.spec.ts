@@ -1,11 +1,11 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { Permission } from 'src/enum';
-import { ApiKeyService } from 'src/services/api-key.service';
-import { ApiKeyFactory } from 'test/factories/api-key.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { SessionFactory } from 'test/factories/session.factory';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { Permission } from 'src/enum.js';
+import { ApiKeyService } from 'src/services/api-key.service.js';
+import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { SessionFactory } from 'test/factories/session.factory.js';
+import { newUuid } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(ApiKeyService.name, () => {
   let sut: ApiKeyService;

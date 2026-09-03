@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
-import { Permission } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { findOrFail } from 'src/utils/misc';
-import { UUIDAssetIDParamDto } from 'src/validation';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto.js';
+import { Permission } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { findOrFail } from 'src/utils/misc.js';
+import { UUIDAssetIDParamDto } from 'src/validation.js';
 
 @Injectable()
 export class StackService extends BaseService {

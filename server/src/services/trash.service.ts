@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { OnEvent, OnJob } from 'src/decorators';
-import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { TrashResponseDto } from 'src/dtos/trash.dto';
-import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { batched } from 'src/utils/misc';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { TrashResponseDto } from 'src/dtos/trash.dto.js';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { batched } from 'src/utils/misc.js';
 
 @Injectable()
 export class TrashService extends BaseService {

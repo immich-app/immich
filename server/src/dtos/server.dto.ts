@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import type { SemVer } from 'semver';
-import { ExtraModel, HistoryBuilder } from 'src/decorators';
-import { isoDatetimeToDate } from 'src/validation';
+import { ExtraModel, HistoryBuilder } from 'src/decorators.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 import z from 'zod';
 
 const ServerPingResponseSchema = z

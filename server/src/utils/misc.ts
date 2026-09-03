@@ -7,16 +7,16 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import _ from 'lodash';
+import { get, isArray, isDate, isEmpty, isObject, orderBy, unset } from 'lodash-es';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
-import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
-import { extraModels } from 'src/decorators';
-import { SystemConfig } from 'src/dtos/config.dto';
-import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants.js';
+import { extraModels } from 'src/decorators.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
 type ReferenceOrSchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
@@ -69,7 +69,7 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
       continue;
     }
 
-    if (_.isObject(value) && !_.isArray(value) && !_.isDate(value)) {
+    if (isObject(value) && !isArray(value) && !isDate(value)) {
       properties.push(...getKeysDeep(value, [...path, key]));
       continue;
     }
@@ -83,14 +83,14 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
 export const unsetDeep = (object: unknown, key: string) => {
   const parts = key.split('.');
   while (parts.length > 0) {
-    _.unset(object, parts);
+    unset(object, parts);
     parts.pop();
-    if (!_.isEmpty(_.get(object, parts))) {
+    if (!isEmpty(get(object, parts))) {
       break;
     }
   }
 
-  return _.isEmpty(object) ? undefined : object;
+  return isEmpty(object) ? undefined : object;
 };
 
 const isMachineLearningEnabled = (machineLearning: SystemConfig['machineLearning']) => machineLearning.enabled;
@@ -307,7 +307,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       }
 
       if (operation.parameters) {
-        operation.parameters = _.orderBy(operation.parameters, 'name');
+        operation.parameters = orderBy(operation.parameters, 'name');
       }
     }
   }

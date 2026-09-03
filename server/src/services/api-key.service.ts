@@ -1,11 +1,11 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { ApiKey } from 'src/database';
-import { ApiKeyCreateDto, ApiKeyCreateResponseDto, ApiKeyResponseDto, ApiKeyUpdateDto } from 'src/dtos/api-key.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { Permission } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { isGranted } from 'src/utils/access';
-import { findOrFail } from 'src/utils/misc';
+import { ApiKey } from 'src/database.js';
+import { ApiKeyCreateDto, ApiKeyCreateResponseDto, ApiKeyResponseDto, ApiKeyUpdateDto } from 'src/dtos/api-key.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { Permission } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { isGranted } from 'src/utils/access.js';
+import { findOrFail } from 'src/utils/misc.js';
 
 @Injectable()
 export class ApiKeyService extends BaseService {

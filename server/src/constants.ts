@@ -9,7 +9,7 @@ import {
   TranscodeHardwareAcceleration,
   VectorIndex,
   VideoCodec,
-} from 'src/enum';
+} from 'src/enum.js';
 
 export const IMMICH_SERVER_START = 'Immich Server is listening';
 
@@ -49,8 +49,7 @@ export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQR
 
 export const IWorker = 'IWorker';
 
-// eslint-disable-next-line unicorn/prefer-module
-const basePath = dirname(__filename);
+const basePath = dirname(import.meta.filename);
 const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);

@@ -1,24 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import {
-  ExpressionBuilder,
-  Insertable,
-  Kysely,
-  NotNull,
-  Selectable,
-  ShallowDehydrateObject,
+  type ExpressionBuilder,
+  type Insertable,
+  type Kysely,
+  type NotNull,
+  type Selectable,
+  type ShallowDehydrateObject,
   sql,
-  Updateable,
+  type Updateable,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto';
-import { AlbumUserRole } from 'src/enum';
-import { DB } from 'src/schema';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { asUuid, dummy, withDefaultVisibility } from 'src/utils/database';
+import { columns } from 'src/database.js';
+import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
+import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto.js';
+import { AlbumUserRole } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { asUuid, dummy, withDefaultVisibility } from 'src/utils/database.js';
 
 export interface AlbumAssetCount {
   albumId: string;

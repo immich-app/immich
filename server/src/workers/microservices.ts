@@ -1,13 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { isMainThread } from 'node:worker_threads';
-import { MicroservicesModule } from 'src/app.module';
-import { serverVersion } from 'src/constants';
-import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
-import { AppRepository } from 'src/repositories/app.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
-import { isStartUpError } from 'src/utils/misc';
+import { MicroservicesModule } from 'src/app.module.js';
+import { serverVersion } from 'src/constants.js';
+import { WebSocketAdapter } from 'src/middleware/websocket.adapter.js';
+import { AppRepository } from 'src/repositories/app.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { bootstrapTelemetry } from 'src/repositories/telemetry.repository.js';
+import { isStartUpError } from 'src/utils/misc.js';
 
 export async function bootstrap() {
   const { telemetry } = new ConfigRepository().getEnv();

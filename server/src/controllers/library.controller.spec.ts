@@ -1,8 +1,8 @@
-import { LibraryController } from 'src/controllers/library.controller';
-import { LibraryService } from 'src/services/library.service';
+import { LibraryController } from 'src/controllers/library.controller.js';
+import { LibraryService } from 'src/services/library.service.js';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(LibraryController.name, () => {
   let ctx: ControllerContext;

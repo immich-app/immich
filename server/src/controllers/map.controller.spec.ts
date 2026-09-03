@@ -1,8 +1,8 @@
-import { MapController } from 'src/controllers/map.controller';
-import { MapService } from 'src/services/map.service';
+import { MapController } from 'src/controllers/map.controller.js';
+import { MapService } from 'src/services/map.service.js';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(MapController.name, () => {
   let ctx: ControllerContext;

@@ -1,4 +1,4 @@
-import { Column, Generated, PrimaryGeneratedColumn, Table } from '@immich/sql-tools';
+import { Column, type Generated, PrimaryGeneratedColumn, Table } from '@immich/sql-tools';
 
 @Table({ name: 'naturalearth_countries', primaryConstraintName: 'naturalearth_countries_pkey' })
 export class NaturalEarthCountriesTable {

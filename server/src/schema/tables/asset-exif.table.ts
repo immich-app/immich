@@ -1,16 +1,16 @@
 import {
   Column,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   Index,
   Int8,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { LockableProperty } from 'src/database';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetTable } from 'src/schema/tables/asset.table';
+import { LockableProperty } from 'src/database.js';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('asset_exif')
 @Index({

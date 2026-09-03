@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { AuthController } from 'src/controllers/auth.controller';
-import { LoginResponseDto } from 'src/dtos/auth.dto';
-import { AuthService } from 'src/services/auth.service';
+import { AuthController } from 'src/controllers/auth.controller.js';
+import { LoginResponseDto } from 'src/dtos/auth.dto.js';
+import { AuthService } from 'src/services/auth.service.js';
 import request from 'supertest';
-import { mediumFactory } from 'test/medium.factory';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { mediumFactory } from 'test/medium.factory.js';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(AuthController.name, () => {
   let ctx: ControllerContext;

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
-import { IMMICH_SERVER_START } from 'src/constants';
+import { IMMICH_SERVER_START } from 'src/constants.js';
 
 @Injectable()
 export class MaintenanceHealthRepository {

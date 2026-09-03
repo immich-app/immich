@@ -1,8 +1,7 @@
 import { WorkflowStepConfig } from '@immich/plugin-sdk';
-import { Column, ForeignKeyColumn, PrimaryGeneratedColumn, Table } from '@immich/sql-tools';
-import { Generated } from 'kysely';
-import { PluginMethodTable } from 'src/schema/tables/plugin-method.table';
-import { WorkflowTable } from 'src/schema/tables/workflow.table';
+import { Column, ForeignKeyColumn, PrimaryGeneratedColumn, Table, type Generated } from '@immich/sql-tools';
+import { PluginMethodTable } from 'src/schema/tables/plugin-method.table.js';
+import { WorkflowTable } from 'src/schema/tables/workflow.table.js';
 
 @Table('workflow_step')
 export class WorkflowStepTable {

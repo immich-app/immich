@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { SystemConfigSmtpDto } from 'src/dtos/config.dto';
-import { mapNotification, NotificationCreateDto } from 'src/dtos/notification.dto';
-import { NotificationLevel, NotificationType } from 'src/enum';
-import { EmailTemplate } from 'src/repositories/email.repository';
-import { BaseService } from 'src/services/base.service';
-import { getExternalDomain } from 'src/utils/misc';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
+import { mapNotification, NotificationCreateDto } from 'src/dtos/notification.dto.js';
+import { NotificationLevel, NotificationType } from 'src/enum.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getExternalDomain } from 'src/utils/misc.js';
 
 @Injectable()
 export class NotificationAdminService extends BaseService {

@@ -1,6 +1,6 @@
 import { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   mapWorkflow,
   mapWorkflowShare,
@@ -12,12 +12,12 @@ import {
   WorkflowShareResponseDto,
   WorkflowTriggerResponseDto,
   WorkflowUpdateDto,
-} from 'src/dtos/workflow.dto';
-import { Permission } from 'src/enum';
-import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
-import { BaseService } from 'src/services/base.service';
-import { findOrFail } from 'src/utils/misc';
-import { getWorkflowTriggers, isMethodCompatible, resolveMethod } from 'src/utils/workflow';
+} from 'src/dtos/workflow.dto.js';
+import { Permission } from 'src/enum.js';
+import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { findOrFail } from 'src/utils/misc.js';
+import { getWorkflowTriggers, isMethodCompatible, resolveMethod } from 'src/utils/workflow.js';
 
 @Injectable()
 export class WorkflowService extends BaseService {

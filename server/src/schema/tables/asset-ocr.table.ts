@@ -2,15 +2,15 @@ import {
   AfterDeleteTrigger,
   Column,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { asset_ocr_delete_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { asset_ocr_delete_audit } from 'src/schema/functions.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('asset_ocr')
 @UpdatedAtTrigger('asset_ocr_updatedAt')

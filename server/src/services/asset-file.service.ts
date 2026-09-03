@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AssetFileResponseDto, AssetFileSearchDto, mapAssetFile } from 'src/dtos/asset-file.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, CacheControl, JobName, Permission } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
-import { findOrFail } from 'src/utils/misc';
+import { AssetFileResponseDto, AssetFileSearchDto, mapAssetFile } from 'src/dtos/asset-file.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AssetFileType, CacheControl, JobName, Permission } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { findOrFail } from 'src/utils/misc.js';
 
 @Injectable()
 export class AssetFileService extends BaseService {

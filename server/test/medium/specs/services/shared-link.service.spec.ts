@@ -1,17 +1,17 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
-import { SharedLinkType } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
-import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { DB } from 'src/schema';
-import { SharedLinkService } from 'src/services/shared-link.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { SharedLinkType } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { DB } from 'src/schema/index.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
