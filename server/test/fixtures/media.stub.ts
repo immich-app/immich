@@ -493,12 +493,12 @@ export const eiffelTower = {
   },
   audioStream: { codecName: 'aac', bitrate: 125_629, index: 1, profile: AacProfile.Lc },
   packets: {
-    totalDuration: 2_012_606,
+    totalDuration: 2_012_441,
     packetCount: 557,
     outputFrames: 557,
     keyframePts: [0, 462_502, 925_004, 1_210_454, 1_387_506, 1_542_878, 1_850_008],
-    keyframeAccDuration: [3613, 466_115, 928_617, 1_214_067, 1_391_119, 1_546_491, 1_853_621],
-    keyframeOwnDuration: [3613, 3613, 3613, 3613, 3613, 3614, 3613],
+    keyframeAccDuration: [3613, 466_077, 928_541, 1_213_968, 1_391_005, 1_546_364, 1_853_469],
+    keyframeOwnDuration: [3613, 3613, 3613, 3613, 3613, 3613, 3613],
   },
   format: {
     formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
@@ -573,18 +573,18 @@ export const train = {
   },
   audioStream: { codecName: 'aac', bitrate: 175_477, index: 1, profile: AacProfile.Lc },
   packets: {
-    totalDuration: 13_043,
+    totalDuration: 12_290,
     packetCount: 1229,
-    outputFrames: 1229,
+    outputFrames: 1304,
     keyframePts: [
       0, 601, 1201, 1802, 2402, 3003, 3604, 4204, 4805, 5405, 6006, 6607, 7207, 7808, 8408, 9009, 9609, 10_210, 10_811,
       11_411, 12_062, 12_703,
     ],
     keyframeAccDuration: [
-      10, 581, 1181, 1782, 2382, 2983, 3584, 4184, 4785, 5385, 5986, 6587, 7187, 7788, 8388, 8989, 9589, 10_190, 10_791,
-      11_391, 12_022, 12_662,
+      10, 580, 1180, 1780, 2380, 2980, 3580, 4180, 4780, 5380, 5980, 6580, 7180, 7780, 8380, 8980, 9580, 10_180, 10_780,
+      11_380, 11_780, 12_100,
     ],
-    keyframeOwnDuration: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 20, 20],
+    keyframeOwnDuration: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
   },
   format: {
     formatName: 'mov,mp4,m4a,3gp,3g2,mj2',

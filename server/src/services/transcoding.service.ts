@@ -15,13 +15,20 @@ import {
 } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum';
+import {
+  AudioCodec,
+  DatabaseLock,
+  ImmichWorker,
+  JobName,
+  QueueName,
+  TranscodeHardwareAcceleration,
+  TranscodeTarget,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
-import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
 import { BaseService } from 'src/services/base.service';
 import { VideoInterfaces } from 'src/types';
 import { isVideoStreamSessionPkConstraint } from 'src/utils/database';
-import { getHlsOriginalCommand, getHlsOriginalStream } from 'src/utils/hls';
+import { getHlsOriginalStream } from 'src/utils/hls';
 import { BaseConfig } from 'src/utils/media';
 
 type Session = {
@@ -139,15 +146,20 @@ export class TranscodingService extends BaseService {
       return;
     }
 
+    // Original segments follow the source keyframes and stream copy can't seek to them reliably, so Original
+    // always runs from the start and a running process is left to reach whichever segment is requested.
+    const isOriginal = variantIndex === HLS_ORIGINAL_VARIANT_INDEX;
+    const startSegment = isOriginal ? 0 : segmentIndex;
     session.variantIndex ??= variantIndex;
-    session.startSegment ??= segmentIndex;
+    session.startSegment ??= startSegment;
     const curSegment = session.lastCompletedSegment === null ? session.startSegment : session.lastCompletedSegment + 1;
     const isNeedsRestart =
-      session.variantIndex !== variantIndex || segmentIndex < session.startSegment || segmentIndex > curSegment + 1;
+      session.variantIndex !== variantIndex ||
+      (!isOriginal && (segmentIndex < session.startSegment || segmentIndex > curSegment + 1));
     if (isNeedsRestart) {
       this.stopTranscode(session);
       session.variantIndex = variantIndex;
-      session.startSegment = segmentIndex;
+      session.startSegment = startSegment;
     } else if (session.process) {
       this.resumeTranscode(session);
       return;
@@ -158,7 +170,7 @@ export class TranscodingService extends BaseService {
 
     session.starting = true;
     try {
-      const process = await this.startTranscode(session, variantIndex, segmentIndex);
+      const process = await this.startTranscode(session, variantIndex, startSegment);
       if (process) {
         session.process = process;
       }
@@ -193,12 +205,16 @@ export class TranscodingService extends BaseService {
       return;
     }
 
-    if (variantIndex === HLS_ORIGINAL_VARIANT_INDEX) {
-      return this.startOriginalStream(session, asset);
+    const isOriginal = variantIndex === HLS_ORIGINAL_VARIANT_INDEX;
+    const original = isOriginal ? getHlsOriginalStream(asset.videoStream, asset.audioStream, asset.packets) : null;
+    if (isOriginal && !original) {
+      this.logger.error(`Original stream is not available for asset ${session.assetId}`);
+      await this.failSession(session, 'Original stream is not available for this asset');
+      return;
     }
 
     const variant = HLS_VARIANTS[variantIndex];
-    if (!variant) {
+    if (!isOriginal && !variant) {
       this.logger.error(`Variant ${variantIndex} out of range for asset ${session.assetId}`);
       await this.failSession(session, `Invalid variant index ${variantIndex}`);
       return;
@@ -219,18 +235,29 @@ export class TranscodingService extends BaseService {
     const fps = (asset.packets.packetCount * asset.videoStream.timeBase) / asset.packets.totalDuration;
     const gop = Math.ceil(HLS_SEGMENT_DURATION * fps);
     const seekSeconds = startSegment > 0 ? (startSegment * gop - 0.5) / fps : 0;
+    const target = variant
+      ? TranscodeTarget.All
+      : asset.audioStream && asset.audioStream.codecName !== AudioCodec.Aac
+        ? TranscodeTarget.Audio
+        : TranscodeTarget.None;
 
     let config;
     try {
       config = BaseConfig.create(
-        {
-          ...ffmpeg,
-          targetVideoCodec: variant.codec,
-          targetResolution: String(variant.resolution),
-          maxBitrate: `${Math.round(variant.bitrate / 1000)}k`,
-          gopSize: gop,
-          crf: HLS_CRF[variant.codec],
-        },
+        variant
+          ? {
+              ...ffmpeg,
+              targetVideoCodec: variant.codec,
+              targetResolution: String(variant.resolution),
+              maxBitrate: `${Math.round(variant.bitrate / 1000)}k`,
+              gopSize: gop,
+              crf: HLS_CRF[variant.codec],
+            }
+          : {
+              ...ffmpeg,
+              accel: TranscodeHardwareAcceleration.Disabled,
+              targetAudioCodec: AudioCodec.Aac,
+            },
         this.videoInterfaces,
         { strictGop: true, lowLatency: true },
       );
@@ -248,10 +275,10 @@ export class TranscodingService extends BaseService {
         packetCount: asset.packets.packetCount,
         playlistFilename: join(variantDir, 'playlist.m3u8'),
         seekSeconds,
-        segmentDuration: HLS_SEGMENT_DURATION,
+        segmentDuration: variant ? HLS_SEGMENT_DURATION : 0,
         segmentFilename: join(variantDir, 'seg_%d.m4s'),
         startSegment,
-        target: TranscodeTarget.All,
+        target,
         timeBase: asset.videoStream.timeBase,
         totalDuration: asset.packets.totalDuration,
       },
@@ -263,40 +290,6 @@ export class TranscodingService extends BaseService {
     );
     const process = this.processRepository.spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
     this.attachProcessHandlers(process, session, variantIndex);
-    return process;
-  }
-
-  private async startOriginalStream(
-    session: Session,
-    asset: NonNullable<Awaited<ReturnType<VideoStreamRepository['getForTranscoding']>>>,
-  ) {
-    const original = getHlsOriginalStream(asset.videoStream, asset.audioStream, asset.packets);
-    if (!original) {
-      this.logger.error(`Original stream is not available for asset ${session.assetId}`);
-      await this.failSession(session, 'Original stream is not available for this asset');
-      return;
-    }
-
-    const variantDir = StorageCore.getHlsVariantFolder({
-      ownerId: session.ownerId,
-      sessionId: session.id,
-      variantIndex: HLS_ORIGINAL_VARIANT_INDEX,
-    });
-    this.storageRepository.mkdirSync(variantDir);
-    // A full run keeps FFmpeg's segment numbering and durations aligned with the server playlist.
-    const args = getHlsOriginalCommand(
-      {
-        initFilename: 'init.mp4',
-        inputPath: asset.originalPath,
-        playlistFilename: join(variantDir, 'playlist.m3u8'),
-        segmentFilename: join(variantDir, `seg_%d.${original.extension}`),
-      },
-      asset.videoStream,
-      asset.audioStream,
-    );
-    this.logger.log(`Starting HLS original stream for asset ${session.assetId} with command: ffmpeg ${args.join(' ')}`);
-    const process = this.processRepository.spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
-    this.attachProcessHandlers(process, session, HLS_ORIGINAL_VARIANT_INDEX);
     return process;
   }
 
@@ -313,9 +306,10 @@ export class TranscodingService extends BaseService {
       variantIndex,
     });
 
-    // hlsenc writes each segment to a temporary file then renames it. The rename
-    // event fires when the segment is observable — the only signal we need to
-    // tell the API worker it is ready to serve.
+    // hlsenc writes each segment as `seg_K.m4s.tmp` then renames to
+    // `seg_K.m4s`. The rename event fires the moment the renamed file is
+    // observable — the only signal we need to tell the API worker the
+    // segment is ready to serve.
     const watcher = this.storageRepository.watchDir(variantDir, (eventType, filename) => {
       if (eventType !== 'rename' || !filename || session.process !== process) {
         return;

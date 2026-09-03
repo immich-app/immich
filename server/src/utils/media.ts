@@ -21,11 +21,24 @@ import {
   VideoStreamInfo,
   VideoTuning,
 } from 'src/types';
+import { isDolbyVisionCompatible } from 'src/utils/hls';
 
 export const isVideoRotated = (videoStream: VideoStreamInfo): boolean => Math.abs(videoStream.rotation) === 90;
 
 export const isVideoVertical = (videoStream: VideoStreamInfo): boolean =>
   videoStream.height > videoStream.width || isVideoRotated(videoStream);
+
+// Browsers need the hvc1 sample entry for HEVC. FFmpeg only writes the Dolby Vision box behind -strict unofficial,
+// and only Dolby Vision without a compatible base layer moves to the dvh1 sample entry
+const getStreamCopyTags = (video: VideoStreamInfo) => {
+  if (video.codecName !== VideoCodec.Hevc) {
+    return [];
+  }
+  if (video.dvProfile === null) {
+    return ['-tag:v', 'hvc1'];
+  }
+  return ['-strict', 'unofficial', '-tag:v', isDolbyVisionCompatible(video) ? 'hvc1' : 'dvh1'];
+};
 
 export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) => {
   const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
@@ -163,22 +176,24 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   getHlsCommand(options: HlsCommandOptions, video: VideoStreamInfo, audio?: AudioStreamInfo) {
-    const args: string[] = this.getBaseInputOptions(video);
+    const transcodesVideo = [TranscodeTarget.All, TranscodeTarget.Video].includes(options.target);
+    const args: string[] = transcodesVideo ? this.getBaseInputOptions(video) : [];
     if (options.seekSeconds) {
       args.push('-ss', String(options.seekSeconds));
     }
+    const outputOptions = transcodesVideo
+      ? [
+          ...this.getBaseOutputOptions(options.target, video, audio),
+          ...this.getPresetOptions(),
+          ...this.getBitrateOptions(),
+          ...this.getEncoderOptions(),
+        ]
+      : [...this.getStreamMappingOptions(options.target, video, audio), ...getStreamCopyTags(video)];
+    args.push('-nostdin', '-nostats', '-i', options.inputPath, ...outputOptions, '-copyts');
+    if (transcodesVideo) {
+      args.push('-r', `${options.packetCount * options.timeBase}/${options.totalDuration}`);
+    }
     args.push(
-      '-nostdin',
-      '-nostats',
-      '-i',
-      options.inputPath,
-      ...this.getBaseOutputOptions(options.target, video, audio),
-      ...this.getPresetOptions(),
-      ...this.getBitrateOptions(),
-      ...this.getEncoderOptions(),
-      '-copyts',
-      '-r',
-      `${options.packetCount * options.timeBase}/${options.totalDuration}`,
       '-avoid_negative_ts',
       'disabled',
       '-f',
@@ -201,7 +216,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       String(options.startSegment),
     );
 
-    if ([TranscodeTarget.All, TranscodeTarget.Video].includes(options.target)) {
+    if (transcodesVideo) {
       const filters = this.getFilterOptions(video);
       if (filters.length > 0) {
         args.push('-vf', filters.join(','));
@@ -217,18 +232,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
-    const videoCodec = [TranscodeTarget.All, TranscodeTarget.Video].includes(target) ? this.getVideoCodec() : 'copy';
-    const audioCodec = [TranscodeTarget.All, TranscodeTarget.Audio].includes(target) ? this.getAudioEncoder() : 'copy';
-
-    const options = ['-c:v', videoCodec, '-c:a', audioCodec, '-map', `0:${videoStream.index}`, '-map_metadata', '-1'];
-    if (audioStream) {
-      options.push('-map', `0:${audioStream.index}`);
-      // If there are more than 2 channels sometimes the channel config is broken when re-encoded
-      // TODO: Store the number of channels in the db and then set it during the transcoding: -channel_layout 5.1
-      if ([TranscodeTarget.All, TranscodeTarget.Audio].includes(target)) {
-        options.push('-ac', '2');
-      }
-    }
+    const options = this.getStreamMappingOptions(target, videoStream, audioStream);
     if (this.getBFrames() > -1) {
       options.push('-bf', String(this.getBFrames()));
     }
@@ -242,9 +246,27 @@ export class BaseConfig implements VideoCodecSWConfig {
       }
     }
     const isHvc =
-      this.config.targetVideoCodec === VideoCodec.Hevc && (videoCodec !== 'copy' || videoStream.codecName === 'hevc');
+      this.config.targetVideoCodec === VideoCodec.Hevc &&
+      ([TranscodeTarget.All, TranscodeTarget.Video].includes(target) || videoStream.codecName === 'hevc');
     if (isHvc) {
       options.push('-tag:v', 'hvc1');
+    }
+
+    return options;
+  }
+
+  getStreamMappingOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const videoCodec = [TranscodeTarget.All, TranscodeTarget.Video].includes(target) ? this.getVideoCodec() : 'copy';
+    const audioCodec = [TranscodeTarget.All, TranscodeTarget.Audio].includes(target) ? this.getAudioEncoder() : 'copy';
+
+    const options = ['-c:v', videoCodec, '-c:a', audioCodec, '-map', `0:${videoStream.index}`, '-map_metadata', '-1'];
+    if (audioStream) {
+      options.push('-map', `0:${audioStream.index}`);
+      // If there are more than 2 channels sometimes the channel config is broken when re-encoded
+      // TODO: Store the number of channels in the db and then set it during the transcoding: -channel_layout 5.1
+      if ([TranscodeTarget.All, TranscodeTarget.Audio].includes(target)) {
+        options.push('-ac', '2');
+      }
     }
 
     return options;

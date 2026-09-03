@@ -1,48 +1,81 @@
-import { AUDIO_ENCODER } from 'src/constants';
-import { AacProfile, AudioCodec, VideoCodec } from 'src/enum';
+import { AacProfile, AudioCodec, ColorTransfer, DvSignalCompatibility, HevcProfile, VideoCodec } from 'src/enum';
 import { AudioStreamInfo, VideoPacketInfo, VideoStreamInfo } from 'src/types';
 
-type HlsOriginalExtension = 'm4s' | 'ts';
+type VideoRange = 'SDR' | 'PQ' | 'HLG';
 
 export type HlsOriginalStream = {
   bitrate: number;
   codecs: string;
   durations: number[];
-  extension: HlsOriginalExtension;
+  supplementalCodecs?: string;
   targetDuration: number;
+  videoRange: VideoRange;
 };
 
-type HlsOriginalCommandOptions = {
-  initFilename: string;
-  inputPath: string;
-  playlistFilename: string;
-  segmentFilename: string;
+// Backward-compatible Dolby Vision advertises its base layer in CODECS and its own profile in SUPPLEMENTAL-CODECS
+const DV_COMPATIBILITY: Partial<Record<DvSignalCompatibility, { brand?: string; videoRange: VideoRange }>> = {
+  [DvSignalCompatibility.Hdr10]: { brand: 'db1p', videoRange: 'PQ' },
+  [DvSignalCompatibility.Sdr709]: { brand: 'db2g', videoRange: 'SDR' },
+  [DvSignalCompatibility.Hlg]: { brand: 'db4h', videoRange: 'HLG' },
+  [DvSignalCompatibility.Sdr2020]: { videoRange: 'SDR' },
 };
 
-const getVideoCodecString = (video: VideoStreamInfo) => {
+const pad2 = (value: number) => value.toString().padStart(2, '0');
+
+const getDolbyVisionCompatibility = (video: VideoStreamInfo) =>
+  video.dvBlSignalCompatibilityId === null ? undefined : DV_COMPATIBILITY[video.dvBlSignalCompatibilityId];
+
+// Backward-compatible Dolby Vision keeps the hvc1 sample entry of its base layer and announces itself in SUPPLEMENTAL-CODECS
+export const isDolbyVisionCompatible = (video: VideoStreamInfo) =>
+  getDolbyVisionCompatibility(video)?.brand !== undefined;
+
+const getBaseCodecString = (video: VideoStreamInfo) => {
   if (video.profile === null || video.level === null) {
     return;
   }
-  if (video.codecName === VideoCodec.H264) {
-    const profile = video.profile.toString(16).padStart(2, '0');
-    const level = video.level.toString(16).padStart(2, '0');
-    return `avc1.${profile}00${level}`;
+  switch (video.codecName) {
+    case VideoCodec.H264: {
+      return `avc1.${video.profile.toString(16).padStart(2, '0')}00${video.level.toString(16).padStart(2, '0')}`;
+    }
+    case VideoCodec.Hevc: {
+      // Profile compatibility flags are written in reverse bit order; Main streams also satisfy Main 10 decoders
+      const compatibility = video.profile === HevcProfile.Main ? 6 : 1 << video.profile;
+      return `hvc1.${video.profile}.${compatibility.toString(16)}.L${video.level}.B0`;
+    }
+    case VideoCodec.Av1: {
+      const bitDepth = video.pixelFormat.includes('12') ? 12 : video.pixelFormat.includes('10') ? 10 : 8;
+      return `av01.${video.profile}.${pad2(video.level)}M.${pad2(bitDepth)}`;
+    }
+    default: {
+      return;
+    }
   }
-  if (video.codecName === VideoCodec.Hevc) {
-    return `hvc1.${video.profile}.0.L${video.level}`;
+};
+
+const getVideoCodecStrings = (video: VideoStreamInfo) => {
+  const codecs = getBaseCodecString(video);
+  // Dolby Vision is only described for HEVC, which is what phones record; other Dolby Vision streams play as their base layer
+  if (video.codecName !== VideoCodec.Hevc || video.dvProfile === null || video.dvLevel === null) {
+    return codecs ? { codecs } : undefined;
   }
+  const dolbyVision = `dvh1.${pad2(video.dvProfile)}.${pad2(video.dvLevel)}`;
+  const brand = getDolbyVisionCompatibility(video)?.brand;
+  return codecs && brand ? { codecs, supplementalCodecs: `${dolbyVision}/${brand}` } : { codecs: dolbyVision };
 };
 
 const getAudioCodecString = (audio: AudioStreamInfo | null) =>
   audio ? `mp4a.40.${audio.codecName === AudioCodec.Aac ? (audio.profile ?? AacProfile.Lc) : AacProfile.Lc}` : '';
 
-const getOriginalExtension = (video: VideoStreamInfo): HlsOriginalExtension =>
-  video.codecName === VideoCodec.H264 ? 'ts' : 'm4s';
-
-const roundToNearestEven = (value: number) => {
-  const lower = Math.floor(value);
-  const fraction = value - lower;
-  return fraction === 0.5 ? (lower % 2 === 0 ? lower : lower + 1) : Math.round(value);
+const getVideoRange = (video: VideoStreamInfo): VideoRange => {
+  const dolbyVisionRange = getDolbyVisionCompatibility(video)?.videoRange;
+  if (dolbyVisionRange) {
+    return dolbyVisionRange;
+  }
+  if (video.colorTransfer === ColorTransfer.AribStdB67) {
+    return 'HLG';
+  }
+  // Dolby Vision without a compatible base layer is PQ-based
+  return video.colorTransfer === ColorTransfer.Smpte2084 || video.dvProfile !== null ? 'PQ' : 'SDR';
 };
 
 export const getHlsOriginalStream = (
@@ -50,93 +83,36 @@ export const getHlsOriginalStream = (
   audio: AudioStreamInfo | null,
   packets: VideoPacketInfo,
 ): HlsOriginalStream | null => {
-  const videoCodec = getVideoCodecString(video);
-  const count = packets.keyframePts.length;
+  const videoCodecs = getVideoCodecStrings(video);
+  const bitrate = video.bitrate + (audio?.bitrate ?? 0);
+  const { keyframePts, keyframeAccDuration, keyframeOwnDuration, totalDuration } = packets;
+  const timeBase = video.timeBase;
+  // hlsenc takes the first packet as the first keyframe, so the stream has to start with one
   if (
-    !videoCodec ||
-    count === 0 ||
-    packets.keyframeAccDuration.length !== count ||
-    packets.keyframeOwnDuration.length !== count ||
-    packets.keyframeAccDuration[0] !== packets.keyframeOwnDuration[0] ||
-    !video.timeBase ||
-    video.timeBase <= 0
+    !videoCodecs ||
+    bitrate <= 0 ||
+    !timeBase ||
+    keyframePts.length === 0 ||
+    keyframeAccDuration[0] !== keyframeOwnDuration[0]
   ) {
     return null;
   }
 
-  const boundaryPts = packets.keyframePts;
-  if (boundaryPts.some((pts, index) => !Number.isFinite(pts) || (index > 0 && pts <= boundaryPts[index - 1]))) {
-    return null;
-  }
-
-  const durations = boundaryPts.slice(1).map((pts, index) => (pts - boundaryPts[index]) / video.timeBase!);
-  const lastIndex = count - 1;
-  durations.push(
-    (packets.keyframeOwnDuration[0] + packets.totalDuration - packets.keyframeAccDuration[lastIndex]) / video.timeBase,
-  );
-  if (durations.some((duration) => !Number.isFinite(duration) || duration <= 0)) {
-    return null;
-  }
-
-  const bitrate = video.bitrate + (audio?.bitrate ?? 0);
-  if (!Number.isFinite(bitrate) || bitrate <= 0) {
+  // hlsenc closes a segment at the PTS of the next keyframe. The last segment is the durations of the packets
+  // following the last keyframe plus the duration of the first packet it ever muxed, which stands in for the keyframe.
+  const durations = keyframePts.slice(1).map((pts, index) => (pts - keyframePts[index]) / timeBase);
+  durations.push((keyframeOwnDuration[0] + totalDuration - keyframeAccDuration[keyframePts.length - 1]) / timeBase);
+  if (durations.some((duration) => duration <= 0)) {
     return null;
   }
 
   const audioCodec = getAudioCodecString(audio);
   return {
     bitrate,
-    codecs: audioCodec ? `${videoCodec},${audioCodec}` : videoCodec,
+    codecs: audioCodec ? `${videoCodecs.codecs},${audioCodec}` : videoCodecs.codecs,
     durations,
-    extension: getOriginalExtension(video),
-    targetDuration: roundToNearestEven(Math.max(...durations)),
+    supplementalCodecs: videoCodecs.supplementalCodecs,
+    targetDuration: Math.round(Math.max(...durations)),
+    videoRange: getVideoRange(video),
   };
-};
-
-export const getHlsOriginalCommand = (
-  options: HlsOriginalCommandOptions,
-  video: VideoStreamInfo,
-  audio: AudioStreamInfo | null,
-) => {
-  const args = ['-nostdin', '-nostats', '-i', options.inputPath, '-map', `0:${video.index}`, '-c:v', 'copy'];
-  if (audio) {
-    const copyAudio = audio.codecName === AudioCodec.Aac;
-    args.push('-map', `0:${audio.index}`, '-c:a', copyAudio ? 'copy' : AUDIO_ENCODER[AudioCodec.Aac]);
-    if (!copyAudio) {
-      args.push('-ac', '2');
-    }
-  }
-  if (video.codecName === VideoCodec.Hevc) {
-    args.push('-tag:v', 'hvc1');
-  }
-
-  const extension = getOriginalExtension(video);
-  args.push(
-    '-copyts',
-    '-avoid_negative_ts',
-    'disabled',
-    '-f',
-    'hls',
-    '-hls_time',
-    '0',
-    '-hls_list_size',
-    '0',
-    '-hls_playlist_type',
-    'vod',
-    '-hls_segment_type',
-    extension === 'ts' ? 'mpegts' : 'fmp4',
-  );
-  if (extension === 'm4s') {
-    args.push('-hls_fmp4_init_filename', options.initFilename);
-  }
-  args.push(
-    '-hls_flags',
-    'temp_file',
-    '-hls_segment_filename',
-    options.segmentFilename,
-    '-start_number',
-    '0',
-    options.playlistFilename,
-  );
-  return args;
 };
