@@ -88,7 +88,9 @@ class PeoplePicker extends HookConsumerWidget {
                       ),
                       onTap: () {
                         final newSelected = {...selectedPeople.value};
-                        if (!newSelected.remove(person)) {
+                        if (isSelected) {
+                          newSelected.remove(person);
+                        } else {
                           newSelected.add(person);
                         }
 
