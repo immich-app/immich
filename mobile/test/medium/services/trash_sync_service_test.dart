@@ -100,7 +100,7 @@ void main() {
     final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
     await sut.reconcile();
 
-    final count = await sut.keepReviewAssets([asset.localId]);
+    final count = await sut.rejectReviewAssets([asset.localId]);
 
     expect(count, 1);
     expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
@@ -121,7 +121,7 @@ void main() {
       ],
     );
 
-    final count = await sut.trashReviewAssets([moved.localId, failed.localId]);
+    final count = await sut.approveReviewAssets([moved.localId, failed.localId]);
 
     expect(count, 1);
     expect(await trashStatusOf(moved.localId), TrashSyncStatus.reviewApproved);
@@ -139,7 +139,7 @@ void main() {
       () => ctx.assetMediaApi.trash(any()),
     ).thenAnswer((_) async => [AssetMediaActionResult(id: asset.localId, status: .notFound)]);
 
-    final count = await sut.trashReviewAssets([asset.localId]);
+    final count = await sut.approveReviewAssets([asset.localId]);
 
     expect(count, 0);
     expect(await trashStatusOf(asset.localId), isNull);
@@ -209,7 +209,7 @@ void main() {
     final asset = await backedUpAsset(remoteDeletedAt: DateTime(2026, 1, 1));
 
     await sut.reconcile();
-    await ctx.trashSyncRepository.rejectReviewAssets([asset.localId]);
+    await ctx.trashSyncRepository.markReviewAssetsRejected([asset.localId]);
     expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
 
     await sut.reconcile();
@@ -228,7 +228,7 @@ void main() {
     final asset = await backedUpAsset(remoteDeletedAt: DateTime(2026, 1, 1));
 
     await sut.reconcile();
-    await ctx.trashSyncRepository.rejectReviewAssets([asset.localId]);
+    await ctx.trashSyncRepository.markReviewAssetsRejected([asset.localId]);
     expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
 
     await (ctx.db.update(
@@ -286,7 +286,7 @@ void main() {
     await sut.reconcile();
     when(() => assetMediaRepository.deleteAll([asset.localId])).thenAnswer((_) async => [asset.localId]);
 
-    final count = await sut.trashReviewAssets([asset.localId]);
+    final count = await sut.approveReviewAssets([asset.localId]);
 
     expect(count, 1);
     expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewApproved);

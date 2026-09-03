@@ -98,7 +98,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     }
   }
 
-  Future<void> recordSoftDeleteAssets() {
+  Future<void> recordSoftDeletedAssets() {
     final deletedRemoteAsset = _db.selectOnly(_db.remoteAssetEntity)
       ..addColumns([_db.remoteAssetEntity.id])
       ..where(
@@ -116,7 +116,8 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     return _recordAssets(existsQuery(deletedChecksum));
   }
 
-  Future<void> recordSoftDeleteReviewAssets() {
+  /// Records review candidates for local assets soft-deleted on the server.
+  Future<void> recordSoftDeletedReviewAssets() {
     final latestRemoteDeletedAt = _db.remoteAssetEntity.deletedAt.max();
     final deletedRemoteAssets = _db.selectOnly(_db.remoteAssetEntity)
       ..addColumns([latestRemoteDeletedAt])
@@ -129,6 +130,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     return _recordReviewAssets(remoteDeletedAt.isNotNull(), remoteDeletedAt: remoteDeletedAt);
   }
 
+  /// Records review candidates for local assets permanently deleted from the server.
   Future<void> recordHardDeletedReviewAssets() {
     final deletedChecksum = _db.selectOnly(_db.serverDeletedChecksumEntity)
       ..addColumns([_db.serverDeletedChecksumEntity.checksum])
@@ -136,6 +138,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     return _recordReviewAssets(existsQuery(deletedChecksum));
   }
 
+  /// Records or refreshes pending review markers for matching selected local assets.
   Future<void> _recordReviewAssets(Expression<bool> contentExists, {Expression<DateTime>? remoteDeletedAt}) async {
     final pending = Constant(TrashSyncStatus.pending.index);
     final selectedAssetsQuery = _selectedAssetsQuery();
@@ -190,20 +193,20 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
         );
   }
 
+  /// Marks pending review assets as approved after they are moved to the device trash.
   Future<void> markReviewAssetsApproved(Set<String> assetIds) async {
     if (assetIds.isEmpty) {
       return;
     }
 
-    await _db.transaction(() async {
-      for (final slice in assetIds.slices(kDriftMaxChunk)) {
-        await (_db.update(_db.trashSyncEntity)
-              ..where((row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending)))
-            .write(const TrashSyncEntityCompanion(status: .new(.reviewApproved), remoteDeletedAt: .new(null)));
-      }
-    });
+    for (final slice in assetIds.slices(kDriftMaxChunk)) {
+      await (_db.update(_db.trashSyncEntity)
+            ..where((row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending)))
+          .write(const TrashSyncEntityCompanion(status: .new(.reviewApproved), remoteDeletedAt: .new(null)));
+    }
   }
 
+  /// Returns selected local asset IDs that are currently pending trash review.
   Future<List<String>> getReviewableAssetIds(Iterable<String> assetIds) async {
     final set = assetIds.toSet();
     if (set.isEmpty) {
@@ -231,16 +234,17 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     return reviewableAssetIds;
   }
 
-  Future<int> rejectReviewAssets(Iterable<String> assetIds) async {
+  /// Marks selected pending review assets as rejected and returns the number updated.
+  Future<int> markReviewAssetsRejected(Iterable<String> assetIds) async {
     final set = assetIds.toSet();
     if (set.isEmpty) {
       return 0;
     }
 
-    var rejectedCount = 0;
     final selectedLocalAsset = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([_db.localAssetEntity.id])
       ..where(_db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId) & existsQuery(_selectedAssetsQuery()));
+    var rejectedCount = 0;
     for (final slice in set.slices(kDriftMaxChunk)) {
       rejectedCount +=
           await (_db.update(_db.trashSyncEntity)..where(
@@ -251,6 +255,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     return rejectedCount;
   }
 
+  /// Builds a query for assets contained in backup-selected albums.
   JoinedSelectStatement _selectedAssetsQuery() => _db.selectOnly(_db.localAlbumAssetEntity)
     ..addColumns([_db.localAlbumAssetEntity.assetId])
     ..where(
@@ -320,11 +325,12 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     });
   }
 
-  Future<void> markRestored(Set<String> assetIds) async {
-    if (assetIds.isEmpty) {
+  Future<void> markRestored(Iterable<String> assetIds) async {
+    final set = assetIds.toSet();
+    if (set.isEmpty) {
       return;
     }
-    for (final slice in assetIds.slices(kDriftMaxChunk)) {
+    for (final slice in set.slices(kDriftMaxChunk)) {
       await (_db.update(
         _db.trashSyncEntity,
       )..where((t) => t.assetId.isIn(slice))).write(const TrashSyncEntityCompanion(status: .new(.restored)));
@@ -378,11 +384,12 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     });
   }
 
-  Future<void> deleteMarkers(Set<String> assetIds) async {
-    if (assetIds.isEmpty) {
+  Future<void> deleteMarkers(Iterable<String> assetIds) async {
+    final set = assetIds.toSet();
+    if (set.isEmpty) {
       return;
     }
-    for (final slice in assetIds.slices(kDriftMaxChunk)) {
+    for (final slice in set.slices(kDriftMaxChunk)) {
       await (_db.delete(_db.trashSyncEntity)..where((t) => t.assetId.isIn(slice))).go();
     }
   }
@@ -393,6 +400,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
   Future<List<String>> getTrashedAssetIds() =>
       _trashSyncAssetIdsWhere(_db.trashSyncEntity.status.equalsValue(.trashed));
 
+  /// Watches the number of selected local assets pending trash review.
   Stream<int> watchPendingReviewCount() {
     final selectedLocalAsset = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([_db.localAssetEntity.id])
@@ -424,7 +432,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
             ),
           ])
           ..where(
-            _db.trashSyncEntity.status.isIn([TrashSyncStatus.trashed.index, TrashSyncStatus.reviewApproved.index]) &
+            _db.trashSyncEntity.status.isInValues([TrashSyncStatus.trashed, TrashSyncStatus.reviewApproved]) &
                 _db.remoteAssetEntity.deletedAt.isNull() &
                 _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
           ))

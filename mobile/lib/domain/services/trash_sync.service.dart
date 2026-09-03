@@ -51,9 +51,9 @@ class TrashSyncService {
     }
   }
 
-  Future<int> keepReviewAssets(Iterable<String> assetIds) => _repo.rejectReviewAssets(assetIds);
+  Future<int> rejectReviewAssets(Iterable<String> assetIds) => _repo.markReviewAssetsRejected(assetIds);
 
-  Future<int> trashReviewAssets(Iterable<String> assetIds) async {
+  Future<int> approveReviewAssets(Iterable<String> assetIds) async {
     final reviewableAssetIds = await _repo.getReviewableAssetIds(assetIds);
     if (reviewableAssetIds.isEmpty) {
       return 0;
@@ -158,12 +158,12 @@ class TrashSyncService {
   }
 
   Future<void> _recordAuto() async {
-    await _repo.recordSoftDeleteAssets();
+    await _repo.recordSoftDeletedAssets();
     await _repo.recordHardDeletedAssets();
   }
 
   Future<void> _recordReview() async {
-    await _repo.recordSoftDeleteReviewAssets();
+    await _repo.recordSoftDeletedReviewAssets();
     await _repo.recordHardDeletedReviewAssets();
   }
 }

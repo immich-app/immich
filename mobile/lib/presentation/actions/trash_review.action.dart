@@ -111,7 +111,7 @@ class KeepOnDeviceAction extends _TrashReviewAction {
 
     hideViewerControls(ref);
     try {
-      final count = await ref.read(trashSyncServiceProvider).keepReviewAssets(ids);
+      final count = await ref.read(trashSyncServiceProvider).rejectReviewAssets(ids);
       if (count == 0) {
         ref.read(toastServiceProvider).error(errorMessage);
         return;
@@ -181,7 +181,7 @@ class MoveToTrashAction extends _TrashReviewAction {
     }
 
     try {
-      final count = await ref.read(trashSyncServiceProvider).trashReviewAssets(ids);
+      final count = await ref.read(trashSyncServiceProvider).approveReviewAssets(ids);
       if (count == 0) {
         ref.read(toastServiceProvider).error(errorMessage);
         return;
