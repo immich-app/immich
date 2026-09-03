@@ -26,31 +26,10 @@ class AssetMediaApiImpl: ImmichPlugin, AssetMediaApi, FlutterPlugin {
 
   // Trash and delete are the same on iOS
   func trash(ids: [String], completion: @escaping (Result<[AssetMediaActionResult], Error>) -> Void) {
-    deleteAssets(ids: ids, completion: completion)
+    delete(ids: ids, completion: completion)
   }
 
   func delete(ids: [String], completion: @escaping (Result<[AssetMediaActionResult], Error>) -> Void) {
-    deleteAssets(ids: ids, completion: completion)
-  }
-
-
-  func restore(ids: [String], completion: @escaping (Result<[AssetMediaActionResult], Error>) -> Void) {
-    completeWhenActive(
-      for: completion,
-      with: .failure(
-        PigeonError(
-          code: kUnsupportedOs,
-          message: "PhotoKit cannot restore assets from Recently Deleted",
-          details: nil
-        )
-      )
-    )
-  }
-
-  private func deleteAssets(
-    ids: [String],
-    completion: @escaping (Result<[AssetMediaActionResult], Error>) -> Void
-  ) {
     guard !ids.isEmpty else {
       completeWhenActive(for: completion, with: .success([]))
       return
@@ -84,5 +63,19 @@ class AssetMediaApiImpl: ImmichPlugin, AssetMediaApi, FlutterPlugin {
         self.completeWhenActive(for: completion, with: .success(results))
       }
     }
+  }
+
+
+  func restore(ids: [String], completion: @escaping (Result<[AssetMediaActionResult], Error>) -> Void) {
+    completeWhenActive(
+      for: completion,
+      with: .failure(
+        PigeonError(
+          code: kUnsupportedOs,
+          message: "PhotoKit cannot restore assets from Recently Deleted",
+          details: nil
+        )
+      )
+    )
   }
 }
