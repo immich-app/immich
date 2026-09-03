@@ -1,5 +1,5 @@
 import { ImmichTelemetry } from 'src/enum';
-import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
+import { applyCspHashes, clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
 
 const getEnv = () => {
   clearEnvCache();
@@ -323,5 +323,37 @@ describe('getEnv', () => {
       const { telemetry } = getEnv();
       expect(telemetry.metrics).toEqual(new Set([ImmichTelemetry.Api, ImmichTelemetry.Host, ImmichTelemetry.Io]));
     });
+  });
+});
+
+describe('applyCspHashes', () => {
+  const manifest = { 'script-src': [`'sha256-script'`], 'style-src': [`'sha256-style'`] };
+
+  it('should append the hashes of the inline content', () => {
+    const directives = applyCspHashes({ 'script-src': [`'self'`], 'style-src': [`'self'`] }, manifest);
+
+    expect(directives).toEqual({
+      'script-src': [`'self'`, `'sha256-script'`],
+      'style-src': [`'self'`, `'sha256-style'`],
+    });
+  });
+
+  it('should skip a directive that allows unsafe-inline, which a hash would disable', () => {
+    const directives = applyCspHashes({ 'script-src': [`'self'`, `'unsafe-inline'`] }, manifest);
+
+    expect(directives['script-src']).toEqual([`'self'`, `'unsafe-inline'`]);
+  });
+
+  it('should skip a directive the policy does not declare', () => {
+    const directives = applyCspHashes({ 'script-src': [`'self'`] }, manifest);
+
+    expect(directives).not.toHaveProperty('style-src');
+  });
+
+  it('should not mutate the directives it is given', () => {
+    const directives = { 'script-src': [`'self'`] };
+    applyCspHashes(directives, manifest);
+
+    expect(directives).toEqual({ 'script-src': [`'self'`] });
   });
 });
