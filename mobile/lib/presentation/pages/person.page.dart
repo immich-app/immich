@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -7,74 +5,53 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
 @RoutePage()
-class PersonPage extends ConsumerStatefulWidget {
+class PersonPage extends ConsumerWidget {
   final Person person;
 
   const PersonPage({super.key, required this.person});
 
-  @override
-  ConsumerState<PersonPage> createState() => _PersonPageState();
-}
-
-class _PersonPageState extends ConsumerState<PersonPage> {
-  late Person _person;
-
-  @override
-  void initState() {
-    super.initState();
-    _person = widget.person;
-  }
-
-  Future<void> handleEditName(BuildContext context) async {
-    final newName = await showNameEditModal(context, _person);
-
-    if (newName != null && newName.isNotEmpty) {
-      setState(() {
-        _person = _person.copyWith(name: newName);
-      });
+  Future<void> handleEditName(BuildContext context, Person person) async {
+    final mergedInto = await showNameEditModal(context, person);
+    if (mergedInto != null && context.mounted) {
+      await context.replaceRoute(PersonRoute(person: mergedInto));
     }
   }
 
-  Future<void> handleEditBirthday(BuildContext context) async {
-    final birthday = await showBirthdayEditModal(context, _person);
-
-    if (birthday != null) {
-      setState(() {
-        _person = _person.copyWith(birthDate: birthday);
-      });
-    }
-  }
-
-  Future<void> showOptionSheet(BuildContext context) {
+  Future<void> showOptionSheet(BuildContext context, Person person) {
     return showModalBottomSheet(
       context: context,
       backgroundColor: context.colorScheme.surface,
       isScrollControlled: false,
-      builder: (context) {
+      builder: (sheetContext) {
         return PersonOptionSheet(
           onEditName: () async {
-            await handleEditName(context);
-            ContextHelper(context).pop();
+            ContextHelper(sheetContext).pop();
+            await handleEditName(context, person);
           },
           onEditBirthday: () async {
-            await handleEditBirthday(context);
-            ContextHelper(context).pop();
+            ContextHelper(sheetContext).pop();
+            await showBirthdayEditModal(context, person);
           },
-          birthdayExists: _person.birthDate != null,
+          birthdayExists: person.birthDate != null,
         );
       },
     );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final person = ref.watch(getPersonByIdProvider(this.person.id)).valueOrNull ?? this.person;
+
     return ProviderScope(
+      key: ValueKey(person.id),
       overrides: [
         timelineServiceProvider.overrideWith((ref) {
           final user = ref.watch(currentUserProvider);
@@ -82,17 +59,17 @@ class _PersonPageState extends ConsumerState<PersonPage> {
             throw Exception('User must be logged in to view person timeline');
           }
 
-          final timelineService = ref.watch(timelineFactoryProvider).person(user.id, _person.id);
+          final timelineService = ref.read(timelineFactoryProvider).person(user.id, person.id);
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),
       ],
       child: Timeline(
         appBar: PersonSliverAppBar(
-          person: _person,
-          onNameTap: () => handleEditName(context),
-          onBirthdayTap: () => handleEditBirthday(context),
-          onShowOptions: () => showOptionSheet(context),
+          person: person,
+          onNameTap: () => handleEditName(context, person),
+          onBirthdayTap: () => showBirthdayEditModal(context, person),
+          onShowOptions: () => showOptionSheet(context, person),
         ),
       ),
     );

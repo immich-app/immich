@@ -6,10 +6,8 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/pages/common/large_leading_tile.dart';
-import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/people/person_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class PeoplePicker extends HookConsumerWidget {
@@ -21,7 +19,7 @@ class PeoplePicker extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
-    const imageSize = 60.0;
+
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
     final selectedPeople = useState<Set<Person>>(filter ?? {});
@@ -60,46 +58,19 @@ class PeoplePicker extends HookConsumerWidget {
                   final person = filtered[index];
                   final isSelected = selectedPeople.value.contains(person);
 
-                  return Padding(
+                  return PersonTile(
                     key: ValueKey(person.id),
-                    padding: const EdgeInsets.only(bottom: 2.0),
-                    child: LargeLeadingTile(
-                      title: Text(
-                        person.name.nullIfEmpty ?? context.t.no_name,
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
-                        ),
-                      ),
-                      leading: SizedBox(
-                        height: imageSize,
-                        child: Material(
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 3,
-                          child: CircleAvatar(
-                            key: ValueKey(person.id),
-                            maxRadius: imageSize / 2,
-                            backgroundImage: RemoteImageProvider(
-                              url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
-                            ),
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        if (selectedPeople.value.contains(person)) {
-                          selectedPeople.value.remove(person);
-                        } else {
-                          selectedPeople.value.add(person);
-                        }
-
-                        selectedPeople.value = {...selectedPeople.value};
-                        onSelect(selectedPeople.value);
-                      },
-                      selected: isSelected,
-                      selectedTileColor: context.primaryColor,
-                      tileColor: context.primaryColor.withAlpha(25),
-                    ),
+                    isSelected: isSelected,
+                    person: person,
+                    onTap: () {
+                      if (selectedPeople.value.contains(person)) {
+                        selectedPeople.value.remove(person);
+                      } else {
+                        selectedPeople.value.add(person);
+                      }
+                      selectedPeople.value = {...selectedPeople.value};
+                      onSelect(selectedPeople.value);
+                    },
                   );
                 },
               );

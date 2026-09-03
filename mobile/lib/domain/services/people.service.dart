@@ -19,6 +19,10 @@ class PeopleService {
     return _repository.getAssetPeople(assetId);
   }
 
+  Stream<Person?> watchPersonById(String personId) {
+    return _repository.watchPersonById(personId);
+  }
+
   Stream<List<Person>> watch({int minFaces = 3}) {
     return _repository.watch(minFaces: minFaces);
   }
@@ -26,6 +30,15 @@ class PeopleService {
   Future<int> updateName(String personId, String name) async {
     await _personApiRepository.update(personId, name: name);
     return _repository.updateName(personId, name);
+  }
+
+  Future<List<String>> merge({required String targetPersonId, required List<String> mergePersonIds}) async {
+    final mergedIds = await _personApiRepository.merge(targetPersonId, mergePersonIds);
+    if (mergedIds.isNotEmpty) {
+      await _repository.merge(targetPersonId, mergedIds);
+    }
+
+    return mergedIds;
   }
 
   Future<int> updateBirthday(String personId, DateTime birthday) async {

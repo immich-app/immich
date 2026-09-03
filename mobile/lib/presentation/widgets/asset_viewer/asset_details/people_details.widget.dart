@@ -9,7 +9,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -29,18 +28,6 @@ class PeopleDetails extends ConsumerWidget {
     }
 
     final peopleFuture = ref.watch(peopleAssetProvider(asset.id));
-
-    Future<void> showNameEditModal(Person person) async {
-      await showDialog(
-        context: context,
-        useRootNavigator: false,
-        builder: (BuildContext context) {
-          return PersonNameEditForm(person: person);
-        },
-      );
-
-      ref.invalidate(peopleAssetProvider(asset.id));
-    }
 
     return peopleFuture.when(
       data: (people) {
@@ -67,18 +54,32 @@ class PeopleDetails extends ConsumerWidget {
                         person: person,
                         assetFileCreatedAt: asset.createdAt,
                         onTap: () {
-                          final previousRouteData = ref.read(previousRouteDataProvider);
-                          final previousRouteArgs = previousRouteData?.arguments;
-
                           // Prevent circular navigation
-                          if (previousRouteArgs is PersonRouteArgs && previousRouteArgs.person.id == person.id) {
+                          if (ref.read(timelinePersonProvider)?.id == person.id) {
                             context.back();
                             return;
                           }
                           ContextHelper(context).pop();
                           unawaited(context.pushRoute(PersonRoute(person: person)));
                         },
-                        onNameTap: () => showNameEditModal(person),
+                        onNameTap: () async {
+                          final isFromTheSamePersonTimeline = ref.read(timelinePersonProvider)?.id == person.id;
+                          final mergedInto = await showNameEditModal(context, person);
+
+                          // Pop the current route if the person was merged into another person
+                          // and we are on the person's timeline
+                          if (mergedInto != null && isFromTheSamePersonTimeline && context.mounted) {
+                            await context.router.maybePop();
+
+                            if (context.mounted) {
+                              await context.router.replace(PersonRoute(person: mergedInto));
+                            }
+                          }
+
+                          if (context.mounted) {
+                            ref.invalidate(peopleAssetProvider(asset.id));
+                          }
+                        },
                       ),
                   ],
                 ),

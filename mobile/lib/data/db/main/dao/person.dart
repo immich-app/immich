@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/dao/person.drift.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
 import 'package:immich_mobile/data/db/main/table/people/person.drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
@@ -65,6 +66,12 @@ class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMix
     }).watch();
   }
 
+  Stream<Person?> watchPersonById(String personId) {
+    return (_db.select(
+      _db.personEntity,
+    )..where((tbl) => tbl.id.equals(personId))).watchSingleOrNull().map((entity) => entity?.toDto());
+  }
+
   Future<int> updateName(String personId, String name) {
     final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
 
@@ -76,6 +83,14 @@ class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMix
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
   }
+
+  Future<void> merge(String targetPersonId, List<String> mergePersonIds) => _db.transaction(() async {
+    final updateQuery = _db.update(_db.assetFaceEntity)..where((row) => row.personId.isIn(mergePersonIds));
+    await updateQuery.write(AssetFaceEntityCompanion(personId: Value(targetPersonId)));
+
+    final deleteQuery = _db.delete(_db.personEntity)..where((row) => row.id.isIn(mergePersonIds));
+    await deleteQuery.go();
+  });
 }
 
 extension on PersonEntityData {

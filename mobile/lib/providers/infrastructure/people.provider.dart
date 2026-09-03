@@ -19,3 +19,7 @@ final getAllPeopleProvider = StreamProvider<List<Person>>((ref) async* {
   final prefs = await ref.watch(userMetadataPreferencesProvider.future);
   yield* service.watch(minFaces: prefs?.minimumFaces ?? 3);
 });
+
+final getPersonByIdProvider = StreamProvider.autoDispose.family<Person?, String>((ref, personId) {
+  return ref.watch(peopleServiceProvider).watchPersonById(personId);
+});

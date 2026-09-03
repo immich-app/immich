@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_birthday_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
+import 'package:immich_mobile/presentation/widgets/people/person_merge_modal.widget.dart';
 
 String formatAge(DateTime birthDate, DateTime referenceDate) {
   final int ageInYears = _calculateAge(birthDate, referenceDate);
@@ -34,8 +35,8 @@ int _calculateAgeInMonths(DateTime birthDate, DateTime referenceDate) {
       (referenceDate.day < birthDate.day ? 1 : 0);
 }
 
-Future<String?> showNameEditModal(BuildContext context, Person person) {
-  return showDialog<String?>(
+Future<Person?> showNameEditModal(BuildContext context, Person person) {
+  return showDialog<Person?>(
     context: context,
     useRootNavigator: false,
     builder: (BuildContext context) {
@@ -50,6 +51,16 @@ Future<DateTime?> showBirthdayEditModal(BuildContext context, Person person) {
     useRootNavigator: false,
     builder: (BuildContext context) {
       return PersonBirthdayEditForm(person: person);
+    },
+  );
+}
+
+Future<Person?> showMergeModal(BuildContext context, Person person, Person mergeTarget) {
+  return showDialog<Person?>(
+    context: context,
+    useRootNavigator: false,
+    builder: (BuildContext context) {
+      return PersonMergeForm(person: person, mergeTarget: mergeTarget);
     },
   );
 }

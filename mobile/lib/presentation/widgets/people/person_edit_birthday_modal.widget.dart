@@ -16,10 +16,10 @@ class PersonBirthdayEditForm extends ConsumerStatefulWidget {
   const PersonBirthdayEditForm({super.key, required this.person});
 
   @override
-  ConsumerState<PersonBirthdayEditForm> createState() => _PersonNameEditFormState();
+  ConsumerState<PersonBirthdayEditForm> createState() => _PersonBirthdayEditFormState();
 }
 
-class _PersonNameEditFormState extends ConsumerState<PersonBirthdayEditForm> {
+class _PersonBirthdayEditFormState extends ConsumerState<PersonBirthdayEditForm> {
   late DateTime _selectedDate;
 
   @override
