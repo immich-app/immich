@@ -30,13 +30,8 @@ class AssetMediaApiImpl: ImmichPlugin, AssetMediaApi, FlutterPlugin {
   }
 
   func delete(ids: [String], completion: @escaping (Result<[AssetMediaActionResult], Error>) -> Void) {
-    guard !ids.isEmpty else {
-      completeWhenActive(for: completion, with: .success([]))
-      return
-    }
-
     DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-      guard let self, !self.detached else { return }
+      guard let self else { return }
 
       let assets = PHAsset.fetchAssets(withLocalIdentifiers: ids, options: nil)
 
