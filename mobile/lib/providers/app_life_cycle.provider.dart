@@ -37,6 +37,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
+    _log.info("App resumed");
 
     // Prevent overlapping resume operations
     if (_resumeOperation != null && !_resumeOperation!.isCompleted) {
@@ -66,6 +67,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> _performResume() async {
     // no need to resume because app was never really paused
     if (!_wasPaused) {
+      _log.info("Resume skipped, app was never paused");
       return;
     }
     _wasPaused = false;
@@ -178,6 +180,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> handleAppPause() async {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
+    _log.info("App paused");
 
     // Prevent overlapping pause operations
     if (_pauseOperation != null && !_pauseOperation!.isCompleted) {
