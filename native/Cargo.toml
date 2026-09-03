@@ -1,0 +1,20 @@
+[workspace]
+resolver = "3"
+members = ["crates/immich_core", "crates/immich_core_ffi"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-only"
+
+[workspace.dependencies]
+cbindgen = { version = "0.29", default-features = false }
+
+[workspace.lints.clippy]
+undocumented_unsafe_blocks = "deny"
+
+# catch_unwind at the FFI boundary needs unwinding, so no panic = "abort" here.
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
