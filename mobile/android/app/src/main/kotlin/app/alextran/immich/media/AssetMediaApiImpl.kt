@@ -250,11 +250,6 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
 
   private suspend fun queryMediaItems(ids: List<String>): Map<String, MediaItem> =
     withContext(Dispatchers.IO) {
-      val numeric = ids.filter { it.toLongOrNull() != null }
-      if (numeric.isEmpty()) {
-        return@withContext emptyMap()
-      }
-
       val columns = buildList {
         add(MediaStore.Files.FileColumns._ID)
         add(MediaStore.Files.FileColumns.MEDIA_TYPE)
@@ -262,7 +257,7 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
       }.toTypedArray()
 
       buildMap {
-        for (chunk in numeric.chunked(MAX_QUERY_ARGS)) {
+        for (chunk in ids.chunked(MAX_QUERY_ARGS)) {
           ensureActive()
           val placeholders = chunk.joinToString(",") { "?" }
           val args = Bundle().apply {
