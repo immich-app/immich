@@ -130,6 +130,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           syncSuccess = await backgroundManager.syncRemote();
         }, "syncRemote"),
       ]);
+      _ref.invalidate(memoryLaneProvider);
       _ref.invalidate(allMemoriesProvider);
       if (syncSuccess) {
         await Future.wait([
