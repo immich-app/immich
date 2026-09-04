@@ -101,15 +101,17 @@ void main() {
   });
 
   test('uses the decode size in the provider cache key', () {
-    final small = RemoteImageProvider(url: 'https://example.test/thumbnail', decodeSize: const ui.Size.square(160));
-    final large = RemoteImageProvider(url: 'https://example.test/thumbnail', decodeSize: const ui.Size.square(320));
+    const small = RemoteImageProvider(url: 'https://example.test/thumbnail', decodeSize: ui.Size.square(160));
+    const large = RemoteImageProvider(url: 'https://example.test/thumbnail', decodeSize: ui.Size.square(320));
 
     expect(small, isNot(large));
   });
 
+  RemoteImageProvider providerFor(String url) => RemoteImageProvider(url: url);
+
   test('shares the cache key when no decode size is set', () {
-    final first = RemoteImageProvider(url: 'https://example.test/thumbnail');
-    final second = RemoteImageProvider(url: 'https://example.test/thumbnail');
+    final first = providerFor('https://example.test/thumbnail');
+    final second = providerFor('https://example.test/thumbnail');
 
     expect(first, second);
     expect(first.hashCode, second.hashCode);

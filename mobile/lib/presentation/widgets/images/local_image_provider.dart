@@ -13,8 +13,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 // iOS GPU textures max out at 16384px; larger images squish.
 const _kMaxPixelSize = 16384;
 
-class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
-    with CancellableImageProviderMixin<LocalThumbProvider> {
+class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   final String id;
   final Size size;
   final AssetType assetType;
@@ -22,7 +21,12 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   // an edit on the device keeps the id and changes the bytes, so the checksum is what separates two renders
   final String? checksum;
 
-  LocalThumbProvider({required this.id, required this.assetType, this.checksum, this.size = kThumbnailResolution});
+  const LocalThumbProvider({
+    required this.id,
+    required this.assetType,
+    this.checksum,
+    this.size = kThumbnailResolution,
+  });
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -31,19 +35,20 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
 
   @override
   ImageStreamCompleter loadImage(LocalThumbProvider key, ImageDecoderCallback decode) {
+    final loader = ImageLoader(key);
     return OneFramePlaceholderImageStreamCompleter(
-      _codec(key, decode),
+      _codec(loader, key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
-      onLastListenerRemoved: cancel,
+      onLastListenerRemoved: loader.cancel,
     );
   }
 
-  Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
-    final request = this.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
-    return loadRequest(request, decode, isFinal: true);
+  Stream<ImageInfo> _codec(ImageLoader loader, LocalThumbProvider key, ImageDecoderCallback decode) {
+    final request = loader.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
+    return loader.loadRequest(request, decode, isFinal: true);
   }
 
   @override
@@ -61,8 +66,7 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   int get hashCode => Object.hash(id, checksum);
 }
 
-class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
-    with CancellableImageProviderMixin<LocalFullImageProvider> {
+class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   final String id;
   final Size size;
   final AssetType assetType;
@@ -71,7 +75,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final int? height;
   final String? checksum;
 
-  LocalFullImageProvider({
+  const LocalFullImageProvider({
     required this.id,
     required this.assetType,
     required this.size,
@@ -107,87 +111,96 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   @override
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
+    final loader = ImageLoader(key);
     if (key.isAnimated) {
       return AnimatedImageStreamCompleter(
-        stream: _animatedCodec(key, decode),
+        stream: _animatedCodec(loader, key, decode),
         scale: 1.0,
-        initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
+        initialImage: loader.getInitialImage(
+          LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum),
+        ),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
           DiagnosticsProperty<String>('Id', key.id),
           DiagnosticsProperty<Size>('Size', key.size),
           DiagnosticsProperty<bool>('isAnimated', key.isAnimated),
         ],
-        onLastListenerRemoved: cancel,
+        onLastListenerRemoved: loader.cancel,
       );
     }
 
     return OneFramePlaceholderImageStreamCompleter(
-      _codec(key, decode),
-      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
+      _codec(loader, key, decode),
+      initialImage: loader.getInitialImage(
+        LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum),
+      ),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
         DiagnosticsProperty<bool>('isAnimated', key.isAnimated),
       ],
-      onLastListenerRemoved: cancel,
+      onLastListenerRemoved: loader.cancel,
     );
   }
 
-  Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
-    yield* initialImageStream();
+  Stream<ImageInfo> _codec(ImageLoader loader, LocalFullImageProvider key, ImageDecoderCallback decode) async* {
+    yield* loader.initialImageStream();
 
-    if (isCancelled) {
+    if (loader.isCancelled) {
       return;
     }
 
     final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    var request = this.request = LocalImageRequest(
+    var request = loader.request = LocalImageRequest(
       localId: key.id,
       size: _previewTarget(devicePixelRatio, !loadOriginal),
       assetType: key.assetType,
     );
-    yield* loadRequest(request, decode, isFinal: !loadOriginal);
+    yield* loader.loadRequest(request, decode, isFinal: !loadOriginal);
 
     if (!loadOriginal) {
       return;
     }
 
-    if (isCancelled) {
+    if (loader.isCancelled) {
       return;
     }
 
-    request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
+    request = loader.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
 
-    yield* loadRequest(request, decode, isFinal: true);
+    yield* loader.loadRequest(request, decode, isFinal: true);
   }
 
-  Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
-    yield* initialImageStream();
+  Stream<Object> _animatedCodec(ImageLoader loader, LocalFullImageProvider key, ImageDecoderCallback decode) async* {
+    yield* loader.initialImageStream();
 
-    if (isCancelled) {
+    if (loader.isCancelled) {
       return;
     }
 
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    final previewRequest = request = LocalImageRequest(
+    final previewRequest = loader.request = LocalImageRequest(
       localId: key.id,
       size: _previewTarget(devicePixelRatio, false),
       assetType: key.assetType,
     );
-    yield* loadRequest(previewRequest, decode, isFinal: false);
+    yield* loader.loadRequest(previewRequest, decode, isFinal: false);
 
-    if (isCancelled) {
+    if (loader.isCancelled) {
       return;
     }
 
     // always try original for animated, since previews don't support animation
-    final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
-    final codec = await loadCodecRequest(originalRequest, isFinal: true);
+    final originalRequest = loader.request = LocalImageRequest(
+      localId: key.id,
+      size: Size.zero,
+      assetType: key.assetType,
+    );
+    final codec = await loader.loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
-      if (isCancelled) {
+      if (loader.isCancelled) {
         return;
       }
       throw StateError('Failed to load animated codec for local asset ${key.id}');
