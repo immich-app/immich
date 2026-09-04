@@ -11,7 +11,7 @@ import {
   randomThumbnail,
   TimelineData,
 } from 'src/ui/generators/timeline';
-import { sleep } from 'src/ui/specs/timeline/utils';
+import { sleep } from 'src/ui/specs/timeline/utils.js';
 import { MINIMAL_MP4_BUFFER } from './face-editor-network';
 
 export class TimelineTestContext {

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
-import { ErrorMessages } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
+import { ErrorMessages } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
 import {
   BootstrapEventPriority,
   DatabaseLock,
@@ -11,10 +11,10 @@ import {
   QueueName,
   StorageFolder,
   SystemMetadataKey,
-} from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { JobOf, SystemFlags } from 'src/types';
-import { ImmichStartupError } from 'src/utils/misc';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { JobOf, SystemFlags } from 'src/types.js';
+import { ImmichStartupError } from 'src/utils/misc.js';
 
 const docsMessage = `Please see https://docs.immich.app/administration/system-integrity#folder-checks for more information.`;
 

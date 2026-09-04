@@ -1,6 +1,6 @@
 import { AssetMediaResponseDto, LoginResponseDto } from '@immich/sdk';
 import { expect, type Page, test } from '@playwright/test';
-import { utils } from 'src/utils';
+import { utils } from 'src/utils.js';
 
 test.describe('Slideshow', () => {
   let admin: LoginResponseDto;

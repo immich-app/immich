@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { type Insertable, type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, IntegrityReport } from 'src/enum';
-import { DB } from 'src/schema';
-import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetFileType, IntegrityReport } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table.js';
 
 export type ReportPaginationOptions = {
   cursor?: string;

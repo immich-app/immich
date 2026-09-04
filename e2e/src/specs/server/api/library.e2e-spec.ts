@@ -1,7 +1,7 @@
 import { LoginResponseDto } from '@immich/sdk';
 import { cpSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
-import { testAssetDir, testAssetDirInternal, utils } from 'src/utils';
+import { testAssetDir, testAssetDirInternal, utils } from 'src/utils.js';
 import { utimes } from 'utimes';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 

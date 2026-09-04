@@ -1,9 +1,9 @@
 import { Selectable } from 'kysely';
-import { UserStatus } from 'src/enum';
-import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
-import { UserTable } from 'src/schema/tables/user.table';
-import { UserLike } from 'test/factories/types';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { UserStatus } from 'src/enum.js';
+import { UserMetadataTable } from 'src/schema/tables/user-metadata.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
+import { UserLike } from 'test/factories/types.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class UserFactory {
   #metadata: Selectable<UserMetadataTable>[] = [];

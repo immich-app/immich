@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { toAssetResponseDto } from 'src/ui/generators/timeline';
+import { toAssetResponseDto } from 'src/ui/generators/timeline.js';
 import {
   createMockStack,
   createMockStackAsset,

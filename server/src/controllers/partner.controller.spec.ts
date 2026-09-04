@@ -1,9 +1,9 @@
-import { PartnerController } from 'src/controllers/partner.controller';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerService } from 'src/services/partner.service';
+import { PartnerController } from 'src/controllers/partner.controller.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerService } from 'src/services/partner.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(PartnerController.name, () => {
   let ctx: ControllerContext;

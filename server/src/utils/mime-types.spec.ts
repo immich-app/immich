@@ -1,4 +1,4 @@
-import { mimeTypes } from 'src/utils/mime-types';
+import { mimeTypes } from 'src/utils/mime-types.js';
 
 describe('mimeTypes', () => {
   for (const { mimetype, extension } of [

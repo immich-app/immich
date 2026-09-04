@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
-import { ImmichCookie, UserMetadataKey } from 'src/enum';
-import { UserMetadataItem } from 'src/types';
-import { toEmail } from 'src/validation';
+import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
+import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
+import type { UserMetadataItem } from 'src/types.js';
+import { toEmail } from 'src/validation.js';
 import z from 'zod';
 
 export type CookieResponse = {

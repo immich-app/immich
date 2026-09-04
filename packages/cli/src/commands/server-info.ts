@@ -1,5 +1,5 @@
 import { getAssetStatistics, getMyUser, getServerVersion, getSupportedMediaTypes, Permission } from '@immich/sdk';
-import { authenticate, BaseOptions, requirePermissions } from 'src/utils';
+import { authenticate, BaseOptions, requirePermissions } from 'src/utils.js';
 
 export const serverInfo = async (options: BaseOptions) => {
   const { url } = await authenticate(options);

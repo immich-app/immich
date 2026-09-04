@@ -1,9 +1,9 @@
 import { createZodDto } from 'nestjs-zod';
-import { HistoryBuilder } from 'src/decorators';
-import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto';
-import { AssetType, AssetVisibilitySchema } from 'src/enum';
-import { AssetStats } from 'src/repositories/asset.repository';
-import { IsNotSiblingOf, isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation';
+import { HistoryBuilder } from 'src/decorators.js';
+import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
+import { AssetType, AssetVisibilitySchema } from 'src/enum.js';
+import { AssetStats } from 'src/repositories/asset.repository.js';
+import { IsNotSiblingOf, isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation.js';
 import z from 'zod';
 
 const UpdateAssetBaseSchema = z

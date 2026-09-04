@@ -15,30 +15,30 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NextFunction, Request, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import { type NextFunction, type Request, type Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
   AssetMediaStatus,
-} from 'src/dtos/asset-media-response.dto';
+} from 'src/dtos/asset-media-response.dto.js';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
   AssetMediaSize,
-} from 'src/dtos/asset-media.dto';
-import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
-import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
-import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { AssetMediaService } from 'src/services/asset-media.service';
-import { UploadFiles } from 'src/types';
-import { ImmichFileResponse, sendFile } from 'src/utils/file';
-import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
+} from 'src/dtos/asset-media.dto.js';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto.js';
+import { type AuthDto } from 'src/dtos/auth.dto.js';
+import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum.js';
+import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor.js';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
+import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { AssetMediaService } from 'src/services/asset-media.service.js';
+import type { UploadFiles } from 'src/types.js';
+import { ImmichFileResponse, sendFile } from 'src/utils/file.js';
+import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)

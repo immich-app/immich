@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
-import { escapePath, glob, globStream } from 'fast-glob';
+import fastGlob from 'fast-glob';
 import {
   constants,
   createReadStream,
@@ -16,9 +16,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
-import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { mimeTypes } from 'src/utils/mime-types';
+import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 
 export interface WatchEvents {
   onReady(): void;
@@ -227,7 +227,7 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
-    return glob(globbedPaths, {
+    return fastGlob.glob(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -245,7 +245,7 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
-    const stream = globStream(globbedPaths, {
+    const stream = fastGlob.globStream(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -282,7 +282,11 @@ export class StorageRepository {
   watchDir = watch; // Native fs.watch without chokidar overhead
 
   private asGlob(pathToCrawl: string): string {
-    const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
+    const escapedPath = fastGlob
+      .escapePath(pathToCrawl)
+      .replaceAll('"', '["]')
+      .replaceAll("'", "[']")
+      .replaceAll('`', '[`]');
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
     return `${escapedPath}/**/${extensions}`;
   }

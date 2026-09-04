@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import type { Socket } from 'socket.io-client';
-import { testAssetDir, utils } from 'src/utils';
+import { testAssetDir, utils } from 'src/utils.js';
 
 test.describe('Detail Panel', () => {
   let admin: LoginResponseDto;

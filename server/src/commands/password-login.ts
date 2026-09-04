@@ -1,5 +1,5 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { CliService } from 'src/services/cli.service';
+import { CliService } from 'src/services/cli.service.js';
 
 @Command({
   name: 'enable-password-login',

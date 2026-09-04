@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely } from 'kysely';
+import type { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
 import {
   VideoStreamSegmentTable,
   VideoStreamSessionTable,
   VideoStreamVariantTable,
-} from 'src/schema/tables/video-stream.table';
-import { withAudioStream, withVideoFormat, withVideoPackets, withVideoStream } from 'src/utils/database';
+} from 'src/schema/tables/video-stream.table.js';
+import { withAudioStream, withVideoFormat, withVideoPackets, withVideoStream } from 'src/utils/database.js';
 
 @Injectable()
 export class VideoStreamRepository {

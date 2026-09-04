@@ -1,13 +1,13 @@
 import {
   Column,
   CreateDateColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
 
 @Table('cluster_group')
 @UpdatedAtTrigger('cluster_group_updatedAt')

@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { Tag } from 'src/database';
-import { MaybeDehydrated } from 'src/types';
-import { asDateTimeString } from 'src/utils/date';
-import { hexColor } from 'src/validation';
+import { Tag } from 'src/database.js';
+import type { MaybeDehydrated } from 'src/types.js';
+import { asDateTimeString } from 'src/utils/date.js';
+import { hexColor } from 'src/validation.js';
 import z from 'zod';
 
 const TagCreateSchema = z

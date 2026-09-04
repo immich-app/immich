@@ -4,34 +4,34 @@ import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
-import { serverVersion } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
+import { serverVersion } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
-} from 'src/dtos/maintenance.dto';
-import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
-import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
-import { AppRepository } from 'src/repositories/app.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { ProcessRepository } from 'src/repositories/process.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { type ApiService as _ApiService } from 'src/services/api.service';
-import { type BaseService as _BaseService } from 'src/services/base.service';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { type ServerService as _ServerService } from 'src/services/server.service';
-import { type VersionService as _VersionService } from 'src/services/version.service';
-import { MaintenanceModeState } from 'src/types';
-import { getConfig } from 'src/utils/config';
-import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
-import { getExternalDomain } from 'src/utils/misc';
+} from 'src/dtos/maintenance.dto.js';
+import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
+import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
+import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
+import { AppRepository } from 'src/repositories/app.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { type ApiService as _ApiService } from 'src/services/api.service.js';
+import { type BaseService as _BaseService } from 'src/services/base.service.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { type ServerService as _ServerService } from 'src/services/server.service.js';
+import { type VersionService as _VersionService } from 'src/services/version.service.js';
+import type { MaintenanceModeState } from 'src/types.js';
+import { getConfig } from 'src/utils/config.js';
+import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance.js';
+import { getExternalDomain } from 'src/utils/misc.js';
 
 /**
  * This service is available inside of maintenance mode to manage maintenance mode

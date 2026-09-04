@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
-import { serverVersion } from 'src/constants';
-import { OnEvent, OnJob } from 'src/decorators';
-import { ReleaseEventV1, ReleaseType, ServerVersionResponseDto } from 'src/dtos/server.dto';
+import { serverVersion } from 'src/constants.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { ReleaseEventV1, ReleaseType, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
 import {
   CronJob,
   DatabaseLock,
@@ -13,11 +13,11 @@ import {
   QueueName,
   ReleaseChannel,
   SystemMetadataKey,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { VersionCheckMetadata } from 'src/types';
-import { handlePromiseError } from 'src/utils/misc';
+} from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { VersionCheckMetadata } from 'src/types.js';
+import { handlePromiseError } from 'src/utils/misc.js';
 
 const asNotification = (
   channel: ReleaseChannel,

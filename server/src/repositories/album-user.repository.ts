@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import type { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole } from 'src/enum';
-import { DB } from 'src/schema';
-import { AlbumUserTable } from 'src/schema/tables/album-user.table';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AlbumUserRole } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { AlbumUserTable } from 'src/schema/tables/album-user.table.js';
 
 export type AlbumPermissionId = {
   albumId: string;

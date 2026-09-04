@@ -3,17 +3,17 @@ import {
   AfterInsertTrigger,
   Column,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   Unique,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetEditAction, AssetEditParameters } from 'src/dtos/editing.dto';
-import { asset_edit_audit, asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { AssetEditAction, type AssetEditParameters } from 'src/dtos/editing.dto.js';
+import { asset_edit_audit, asset_edit_delete, asset_edit_insert } from 'src/schema/functions.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('asset_edit')
 @UpdatedAtTrigger('asset_edit_updatedAt')

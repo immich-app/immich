@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { MemoryType, type MemoryResponseDto, type OnThisDayDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { toAssetResponseDto } from 'src/ui/generators/timeline/rest-response';
-import type { MockTimelineAsset } from 'src/ui/generators/timeline/timeline-config';
-import { SeededRandom, selectRandomMultiple } from 'src/ui/generators/timeline/utils';
+import { toAssetResponseDto } from 'src/ui/generators/timeline/rest-response.js';
+import type { MockTimelineAsset } from 'src/ui/generators/timeline/timeline-config.js';
+import { SeededRandom, selectRandomMultiple } from 'src/ui/generators/timeline/utils.js';
 
 export type MemoryConfig = {
   id?: string;

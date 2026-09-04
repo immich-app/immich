@@ -1,5 +1,5 @@
-import { JobRepository } from 'src/repositories/job.repository';
-import { RepositoryInterface } from 'src/types';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 import { Mocked, vitest } from 'vitest';
 
 export const newJobRepositoryMock = (): Mocked<RepositoryInterface<JobRepository>> => {

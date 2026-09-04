@@ -4,11 +4,11 @@ import {
   HLS_CLEANUP_INTERVAL_MS,
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
-} from 'src/constants';
-import { TranscodingService } from 'src/services/transcoding.service';
-import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database';
-import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
-import { mockSpawn, newTestService, ServiceMocks } from 'test/utils';
+} from 'src/constants.js';
+import { TranscodingService } from 'src/services/transcoding.service.js';
+import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database.js';
+import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub.js';
+import { mockSpawn, newTestService, ServiceMocks } from 'test/utils.js';
 import { vi } from 'vitest';
 
 describe(TranscodingService.name, () => {

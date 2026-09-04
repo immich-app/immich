@@ -2,15 +2,15 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { Permission } from 'src/enum';
-import { UserTable } from 'src/schema/tables/user.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { Permission } from 'src/enum.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('api_key')
 @UpdatedAtTrigger('api_key_updatedAt')

@@ -14,10 +14,10 @@ import { randomBytes } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
-import { createUserDto, uuidDto } from 'src/fixtures';
-import { makeRandomImage } from 'src/generators';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils';
+import { createUserDto, uuidDto } from 'src/fixtures.js';
+import { makeRandomImage } from 'src/generators.js';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils.js';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 

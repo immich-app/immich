@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, OrderByDirection, sql, Updateable } from 'kysely';
+import { type Insertable, type Kysely, type OrderByDirection, sql, type Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { MemorySearchDto } from 'src/dtos/memory.dto';
-import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
-import { MemoryTable } from 'src/schema/tables/memory.table';
-import { IBulkAsset } from 'src/types';
+import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
+import { MemorySearchDto } from 'src/dtos/memory.dto.js';
+import { AssetOrderWithRandom, AssetVisibility } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import type { IBulkAsset } from 'src/types.js';
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {

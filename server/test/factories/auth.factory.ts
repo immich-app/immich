@@ -1,10 +1,10 @@
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiKeyFactory } from 'test/factories/api-key.factory';
-import { build } from 'test/factories/builder.factory';
-import { SharedLinkFactory } from 'test/factories/shared-link.factory';
-import { ApiKeyLike, FactoryBuilder, SharedLinkLike, UserLike } from 'test/factories/types';
-import { UserFactory } from 'test/factories/user.factory';
-import { newUuid } from 'test/small.factory';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
+import { build } from 'test/factories/builder.factory.js';
+import { SharedLinkFactory } from 'test/factories/shared-link.factory.js';
+import { ApiKeyLike, FactoryBuilder, SharedLinkLike, UserLike } from 'test/factories/types.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { newUuid } from 'test/small.factory.js';
 
 export class AuthFactory {
   #user: UserFactory;

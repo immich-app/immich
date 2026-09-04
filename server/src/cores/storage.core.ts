@@ -1,5 +1,5 @@
 import { dirname, join, resolve } from 'node:path';
-import { StorageAsset } from 'src/database';
+import { StorageAsset } from 'src/database.js';
 import {
   AssetFileType,
   AssetPathType,
@@ -9,18 +9,18 @@ import {
   RawExtractedFormat,
   StorageFolder,
   UserPathType,
-} from 'src/enum';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { CryptoRepository } from 'src/repositories/crypto.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MoveRepository } from 'src/repositories/move.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { VideoInterfaces } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
-import { getConfig } from 'src/utils/config';
+} from 'src/enum.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MoveRepository } from 'src/repositories/move.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import type { VideoInterfaces } from 'src/types.js';
+import { getAssetFile } from 'src/utils/asset.util.js';
+import { getConfig } from 'src/utils/config.js';
 
 export interface MoveRequest {
   entityId: string;

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import type { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { WorkflowGetLogsDto, WorkflowSearchDto } from 'src/dtos/workflow.dto';
-import { DB } from 'src/schema';
-import { WorkflowLogTable } from 'src/schema/tables/workflow-log.table';
-import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
-import { WorkflowTable } from 'src/schema/tables/workflow.table';
-import { withTags } from 'src/utils/database';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { WorkflowGetLogsDto, WorkflowSearchDto } from 'src/dtos/workflow.dto.js';
+import { DB } from 'src/schema/index.js';
+import { WorkflowLogTable } from 'src/schema/tables/workflow-log.table.js';
+import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table.js';
+import { WorkflowTable } from 'src/schema/tables/workflow.table.js';
+import { withTags } from 'src/utils/database.js';
 
 export type WorkflowStepUpsert = Omit<Insertable<WorkflowStepTable>, 'workflowId' | 'order'>;
 
