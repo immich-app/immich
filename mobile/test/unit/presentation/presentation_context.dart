@@ -23,6 +23,7 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
@@ -62,6 +63,7 @@ class PresentationContext {
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
     assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
+    permissionRepositoryProvider.overrideWithValue(repository.permission.repo),
   ];
 
   Drift _mockDrift() {
