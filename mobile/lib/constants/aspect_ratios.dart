@@ -20,11 +20,10 @@ enum CropAspectRatio {
 
   const CropAspectRatio({this.numerator, this.denominator, this.customLabel, this.icon});
 
-  String get label => customLabel ?? (numerator != null && denominator != null ? '$numerator:$denominator' : 'Free');
-  bool get hasFlippedVariant => numerator != denominator;
+  String get label => customLabel ?? '$numerator:$denominator';
   double? get ratio => (numerator != null && denominator != null) ? numerator! / denominator! : null;
   CropAspectRatio get flipped {
-    if (!hasFlippedVariant) {
+    if (numerator == denominator) {
       return this;
     }
     for (final value in CropAspectRatio.values) {
