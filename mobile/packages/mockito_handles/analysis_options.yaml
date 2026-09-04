@@ -1,0 +1,6 @@
+# A standalone build-time tool, so it takes the plain Dart lint set rather than a
+# host app's Flutter-oriented one.
+include: package:lints/recommended.yaml
+
+formatter:
+  page_width: 120
