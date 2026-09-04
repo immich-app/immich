@@ -326,7 +326,7 @@ export class MetadataService extends BaseService {
             assetId: asset.id,
             bitrate: video.bitrate,
             frameCount: video.frameCount,
-            timeBase: video.timeBase,
+            timeBase: packets?.timeBase ?? video.timeBase,
             index: video.index,
             profile: video.profile,
             level: video.level,
@@ -1101,7 +1101,7 @@ export class MetadataService extends BaseService {
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(originalPath);
     const video = videoStreams[0];
     const audio = audioStreams[0];
-    const packets = video?.timeBase ? await this.mediaRepository.probePackets(originalPath, video.index) : null;
+    const packets = video?.timeBase ? await this.mediaRepository.probePackets(originalPath, video.index, video.timeBase) : null;
 
     const tags: Pick<ImmichTags, 'Duration' | 'Orientation' | 'ImageWidth' | 'ImageHeight'> = {};
 
