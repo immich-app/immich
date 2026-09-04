@@ -10,7 +10,6 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 part 'map.state.freezed.dart';
@@ -96,17 +95,6 @@ class MapStateNotifier extends Notifier<MapState> {
     unawaited(ref.read(settingsProvider).write(.mapCustomTo, range.to));
     state = state.copyWith(timeRange: range);
     EventStream.shared.emit(const MapMarkerReloadEvent());
-  }
-
-  Option<DateTime> parseDateOption(String s) {
-    try {
-      if (s.trim().isEmpty) {
-        return const Option.none();
-      }
-      return Option.some(DateTime.parse(s));
-    } catch (_) {
-      return const Option.none();
-    }
   }
 
   @override

@@ -1,26 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 
 part 'sync_status.provider.freezed.dart';
 
-enum SyncStatus {
-  idle,
-  syncing,
-  success,
-  error;
-
-  String localized() {
-    final t = StaticTranslations.instance;
-    return switch (this) {
-      SyncStatus.idle => t.idle,
-      SyncStatus.syncing => t.running,
-      SyncStatus.success => t.success,
-      SyncStatus.error => t.error,
-    };
-  }
-}
+enum SyncStatus { idle, syncing, success, error }
 
 @freezed
 abstract class SyncStatusState with _$SyncStatusState {
