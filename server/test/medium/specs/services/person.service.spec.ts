@@ -2,14 +2,19 @@ import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetFaceCreateDto } from 'src/dtos/person.dto';
+import { AssetFileType, JobName } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { DB } from 'src/schema';
 import { PersonService } from 'src/services/person.service';
 import { newMediumService } from 'test/medium.factory';
@@ -21,8 +26,17 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PersonService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
-    mock: [JobRepository, LoggingRepository, StorageRepository],
+    real: [
+      AccessRepository,
+      AssetJobRepository,
+      ConfigRepository,
+      DatabaseRepository,
+      PersonRepository,
+      AssetRepository,
+      AssetEditRepository,
+      SystemMetadataRepository,
+    ],
+    mock: [JobRepository, LoggingRepository, StorageRepository, MachineLearningRepository],
   });
 };
 
@@ -88,6 +102,105 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('handleDetectFaces', () => {
+    it('should prefer an edited preview file', async () => {
+      const { sut, ctx } = setup();
+      const config = await ctx.getConfig();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+      await ctx.newAssetFile({
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        isEdited: true,
+        path: 'edited_file.jpg',
+      });
+      await ctx.newAssetFile({
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        isEdited: false,
+        path: 'unedited_file.jpg',
+      });
+      ctx
+        .getMock(MachineLearningRepository)
+        .detectFaces.mockResolvedValue({ imageHeight: 42, imageWidth: 69, faces: [] });
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(ctx.getMock(MachineLearningRepository).detectFaces).toHaveBeenCalledWith(
+        'edited_file.jpg',
+        config.machineLearning.facialRecognition,
+      );
+    });
+  });
+
+  describe('handleQueueRecognizeFaces', () => {
+    it('should delete all people and queue faces for recognition', async () => {
+      const { sut, ctx } = setup();
+      const jobRepo = ctx.getMock(JobRepository);
+      ctx.getMock(StorageRepository).unlink.mockResolvedValue();
+      jobRepo.waitForQueueCompletion.mockResolvedValue();
+      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0, paused: 0 });
+      jobRepo.queueAll.mockResolvedValue();
+
+      const { user } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: assetUser1 } = await ctx.newAsset({ ownerId: user1.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person: personUser1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
+      const { assetFace: assetFaceUser1 } = await ctx.newAssetFace({
+        assetId: assetUser1.id,
+        personGroupId: personUser1.personGroupId,
+      });
+
+      await sut.handleQueueRecognizeFaces({ force: true });
+
+      await expect(ctx.database.selectFrom('person').selectAll().execute()).resolves.toHaveLength(0);
+      expect(jobRepo.queueAll).toHaveBeenCalledWith(
+        expect.objectContaining([
+          { name: JobName.FacialRecognition, data: { id: assetFace.id, deferred: false } },
+          { name: JobName.FacialRecognition, data: { id: assetFaceUser1.id, deferred: false } },
+        ]),
+      );
+    });
+
+    it('should only delete all people of a specified cluster group and queue their faces for recognition', async () => {
+      const { sut, ctx } = setup();
+      const jobRepo = ctx.getMock(JobRepository);
+      ctx.getMock(StorageRepository).unlink.mockResolvedValue();
+      jobRepo.waitForQueueCompletion.mockResolvedValue();
+      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0, paused: 0 });
+      jobRepo.queueAll.mockResolvedValue();
+
+      const { user } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: assetUser1 } = await ctx.newAsset({ ownerId: user1.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person: personUser1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
+      const { assetFace: assetFaceUser1 } = await ctx.newAssetFace({
+        assetId: assetUser1.id,
+        personGroupId: personUser1.personGroupId,
+      });
+
+      await sut.handleQueueRecognizeFaces({ force: true, clusterGroupId: user.clusterGroupId });
+
+      await expect(ctx.database.selectFrom('person').selectAll().execute()).resolves.toHaveLength(1);
+      expect(jobRepo.queueAll).toHaveBeenCalledWith(
+        expect.objectContaining([{ name: JobName.FacialRecognition, data: { id: assetFace.id, deferred: false } }]),
+      );
+      expect(jobRepo.queueAll).not.toHaveBeenCalledWith(
+        expect.objectContaining([
+          { name: JobName.FacialRecognition, data: { id: assetFace.id, deferred: false } },
+          { name: JobName.FacialRecognition, data: { id: assetFaceUser1.id, deferred: false } },
+        ]),
+      );
+    });
+  });
+
   describe('mergePerson', () => {
     it('should merge people of multiple users', async () => {
       const { sut, ctx } = setup();
@@ -104,6 +217,8 @@ describe(PersonService.name, () => {
         ownerId: user2.id,
         personGroupId: person2.personGroupId,
       });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: person2.personGroupId });
       storageMock.unlink.mockResolvedValue();
 
       const auth = factory.auth({ user: user1 });
@@ -113,6 +228,9 @@ describe(PersonService.name, () => {
       const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
       expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
       expect(user2People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      await expect(ctx.get(PersonRepository).getFaces(asset.id, { viewingUserId: asset.ownerId })).resolves.toEqual([
+        expect.objectContaining({ personGroupId: person1.personGroupId }),
+      ]);
     });
 
     it('should skip people with a different name', async () => {
@@ -179,6 +297,33 @@ describe(PersonService.name, () => {
           expect.objectContaining({ personGroupId: person2.personGroupId }),
         ]),
       );
+    });
+
+    it('should not merge into person another user does not have', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person2.personGroupId,
+      });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: person2.personGroupId });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user: user1 });
+
+      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
+      const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
+      expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      expect(user2People).toEqual([expect.objectContaining({ personGroupId: person2.personGroupId })]);
+      await expect(ctx.get(PersonRepository).getFaces(asset.id, { viewingUserId: asset.ownerId })).resolves.toEqual([
+        expect.objectContaining({ personGroupId: person2.personGroupId }),
+      ]);
     });
   });
 

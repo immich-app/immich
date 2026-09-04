@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
@@ -85,8 +86,12 @@ class TimelineFactory {
   TimelineService fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssetsWithBuckets(assets, type));
 
-  TimelineService map(List<String> userIds, TimelineMapOptions options) =>
-      TimelineService(_timelineRepository.map(userIds, options, groupBy));
+  /// Creates a TimelineService for serving geographical map queries, such assets within bounded locations
+  TimelineService geographicMap(
+    List<String> userIds,
+    TimelineMapOptions Function() currentOptions,
+    Stream<TimelineMapOptions> optionsStream,
+  ) => TimelineService(_timelineRepository.geographicMap(userIds, currentOptions, optionsStream, groupBy));
 }
 
 class TimelineService {

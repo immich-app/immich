@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { debounce } from 'lodash';
 import { DateTime } from 'luxon';
 import path, { basename } from 'node:path';
-import { PassThrough, Readable, Writable } from 'node:stream';
+import { Duplex, PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import semver from 'semver';
 import { serverVersion } from 'src/constants';
@@ -236,21 +236,26 @@ export class DatabaseBackupService {
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     const temporaryFilePath = `${backupFilePath}.tmp`;
 
+    let pgdump: Duplex | undefined;
+    let gzip: Duplex | undefined;
+
     try {
-      const pgdump = this.processRepository.spawnDuplexStream(bin, args, {
+      pgdump = this.processRepository.spawnDuplexStream(bin, args, {
         env: {
           PATH: process.env.PATH,
           PGPASSWORD: databasePassword,
         },
       });
 
-      const gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
+      gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
       const fileStream = this.storageRepository.createWriteStream(temporaryFilePath);
 
       await pipeline(pgdump, gzip, fileStream);
       await this.storageRepository.rename(temporaryFilePath, backupFilePath);
     } catch (error) {
       this.logger.error(`Database Backup Failure: ${error}`);
+      pgdump?.destroy();
+      gzip?.destroy();
       await this.storageRepository
         .unlink(temporaryFilePath)
 

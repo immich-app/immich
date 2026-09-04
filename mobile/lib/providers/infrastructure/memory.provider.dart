@@ -6,7 +6,7 @@ import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
-final driftMemoryLaneProvider = FutureProvider.autoDispose<List<DriftMemory>>((ref) {
+final memoryLaneProvider = FutureProvider.autoDispose<List<Memory>>((ref) {
   final (userId, enabled) = ref.watch(currentUserProvider.select((user) => (user?.id, user?.memoryEnabled ?? true)));
   if (userId == null || !enabled) {
     return const [];
@@ -17,16 +17,16 @@ final driftMemoryLaneProvider = FutureProvider.autoDispose<List<DriftMemory>>((r
   final timer = Timer(nextMidnight.difference(now) + const Duration(seconds: 5), ref.invalidateSelf);
   ref.onDispose(timer.cancel);
 
-  final service = DriftMemoryService(ref.watch(driftProvider).memoryRepository);
+  final service = MemoryService(ref.watch(driftProvider).memoryRepository);
   return service.getMemoryLane(userId);
 });
 
-final driftAllMemoriesProvider = FutureProvider.autoDispose.family<List<DriftMemory>, bool>((ref, onlyFavorites) {
+final allMemoriesProvider = FutureProvider.autoDispose.family<List<Memory>, bool>((ref, onlyFavorites) {
   final (userId, enabled) = ref.watch(currentUserProvider.select((user) => (user?.id, user?.memoryEnabled ?? true)));
   if (userId == null || !enabled) {
     return const [];
   }
 
-  final service = DriftMemoryService(ref.watch(driftProvider).memoryRepository);
+  final service = MemoryService(ref.watch(driftProvider).memoryRepository);
   return service.getAll(userId, onlyFavorites: onlyFavorites);
 });

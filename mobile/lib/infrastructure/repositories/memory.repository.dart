@@ -12,7 +12,7 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 
   Drift get _db => attachedDatabase;
 
-  Future<List<DriftMemory>> getAll(String ownerId, {bool onlyToday = true, bool onlyFavorites = false}) async {
+  Future<List<Memory>> getAll(String ownerId, {bool onlyToday = true, bool onlyFavorites = false}) async {
     final query =
         _db.select(_db.memoryEntity).join([
             innerJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
@@ -45,25 +45,20 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
       return const [];
     }
 
-    final Map<String, DriftMemory> memoriesMap = {};
+    final memories = <String, ({MemoryEntityData memory, List<RemoteAsset> assets})>{};
 
     for (final row in rows) {
       final memory = row.readTable(_db.memoryEntity);
       final asset = row.readTable(_db.remoteAssetEntity);
 
-      final existingMemory = memoriesMap[memory.id];
-      if (existingMemory != null) {
-        existingMemory.assets.add(asset.toDto());
-      } else {
-        final assets = [asset.toDto()];
-        memoriesMap[memory.id] = memory.toDto().copyWith(assets: assets);
-      }
+      final entry = memories.putIfAbsent(memory.id, () => (memory: memory, assets: []));
+      entry.assets.add(asset.toDto());
     }
 
-    return memoriesMap.values.toList(growable: false);
+    return memories.values.map((e) => e.memory.toDto().copyWith(assets: e.assets)).toList(growable: false);
   }
 
-  Future<DriftMemory?> get(String memoryId) async {
+  Future<Memory?> get(String memoryId) async {
     final query =
         _db.select(_db.memoryEntity).join([
             leftOuterJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
@@ -101,8 +96,8 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 }
 
 extension on MemoryEntityData {
-  DriftMemory toDto() {
-    return DriftMemory(
+  Memory toDto() {
+    return Memory(
       id: id,
       createdAt: createdAt,
       updatedAt: updatedAt,
