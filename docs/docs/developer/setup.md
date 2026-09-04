@@ -97,7 +97,8 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 1. Run `mise //mobile:install` to install Flutter dependencies.
 2. Run `mise //mobile:translation` to generate the translation file.
-3. Change to the `mobile/` directory and run `flutter run` to start the app.
+3. Run `mise //mobile:checkout` to update the environment and codegen artifacts.
+4. Change to the `mobile/` directory and run `flutter run` to start the app.
 
 ##### iOS Code Signing
 
