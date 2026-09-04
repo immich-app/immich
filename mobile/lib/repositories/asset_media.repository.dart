@@ -55,7 +55,7 @@ class AssetMediaRepository {
 
     final useTrash = trash && CurrentPlatform.isAndroid && await _androidSupportsTrash();
     try {
-      return await _deleteAll(ids, useTrash);
+      return await _runDelete(ids, useTrash);
     } on PlatformException catch (error, stack) {
       // photo_manager rejects whole batch as soon as one id can't be resolved in MediaStore, see #30133
       final existingIds = await _filterExistingIds(ids);
@@ -71,11 +71,11 @@ class AssetMediaRepository {
       if (existingIds.isEmpty) {
         return [];
       }
-      return _deleteAll(existingIds, useTrash);
+      return _runDelete(existingIds, useTrash);
     }
   }
 
-  Future<List<String>> _deleteAll(List<String> ids, bool trash) {
+  Future<List<String>> _runDelete(List<String> ids, bool trash) {
     if (trash) {
       return PhotoManager.editor.android.moveToTrash(
         ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
