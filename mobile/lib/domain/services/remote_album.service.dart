@@ -173,18 +173,22 @@ class RemoteAlbumService {
     return _repository.getAssets(albumId);
   }
 
-  Future<({int added, int failed})> addAssets({required String albumId, required List<String> assetIds}) async {
+  Future<({int added, Map<AlbumAddFailureReason, int> failureReasons})> addAssets({
+    required String albumId,
+    required List<String> assetIds,
+  }) async {
     final album = await _albumApiRepository.addAssets(albumId, assetIds);
 
     await _repository.addAssets(albumId, album.added);
 
-    return (added: album.added.length, failed: album.failed.length);
+    return (added: album.added.length, failureReasons: album.failureReasons);
   }
 
   /// !TODO The name here is not clear as we have addAssets method above,
   /// which is only add remote assets to album, for the next PR, we will allow
   /// adding local assets from album from the timeline as well with this flow.
-  /// So saving that for the next refactor
+  /// So saving that for the next refactor. The timeline flow currently lives in
+  /// add_to_album.action.dart with its own upload+link pass; fold both into this method then.
   Future<int> addAssetsToAlbum({
     required String albumId,
     required UserDto uploader,
