@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_ui/extensions/build_context_extensions.dart';
+import 'package:immich_ui/extensions/theme_extensions.dart';
 
 class SettingsSwitchListTile extends StatelessWidget {
   final ValueNotifier<bool> valueNotifier;

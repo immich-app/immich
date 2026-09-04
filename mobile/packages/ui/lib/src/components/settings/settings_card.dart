@@ -1,20 +1,13 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_ui/extensions/build_context_extensions.dart';
 
 class SettingsCard extends StatelessWidget {
-  const SettingsCard({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.settingRoute,
-  });
+  const SettingsCard({super.key, required this.icon, required this.title, required this.subtitle, required this.onTap});
 
   final IconData icon;
   final String title;
   final String subtitle;
-  final PageRouteInfo settingRoute;
+  final Function() onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +31,7 @@ class SettingsCard extends StatelessWidget {
           ),
           title: Text(title, style: context.textTheme.titleMedium!.copyWith(color: context.primaryColor)),
           subtitle: Text(subtitle, style: context.textTheme.bodyMedium),
-          onTap: () => context.pushRoute(settingRoute),
+          onTap: onTap,
         ),
       ),
     );
