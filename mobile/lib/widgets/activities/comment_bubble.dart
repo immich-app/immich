@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -6,10 +5,10 @@ import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
+import 'package:immich_mobile/widgets/activities/open_asset_viewer.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class CommentBubble extends ConsumerWidget {
@@ -32,18 +31,6 @@ class CommentBubble extends ConsumerWidget {
       albumActivityProvider((album.id, isAssetActivity ? activity.assetId : null)).notifier,
     );
 
-    Future<void> openAssetViewer() async {
-      final activityService = ref.read(activityServiceProvider);
-      final route = await activityService.buildAssetViewerRoute(activity.assetId!, ref);
-      if (!context.mounted) {
-        return;
-      }
-
-      if (route != null) {
-        await context.pushRoute(route);
-      }
-    }
-
     // avatar (hidden for own messages)
     Widget avatar = const SizedBox.shrink();
     if (!isOwn) {
@@ -58,7 +45,7 @@ class CommentBubble extends ConsumerWidget {
         child: Stack(
           children: [
             GestureDetector(
-              onTap: openAssetViewer,
+              onTap: () => openActivityAssetViewer(context, ref, activity.assetId!),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image(

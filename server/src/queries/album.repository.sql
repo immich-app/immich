@@ -311,10 +311,11 @@ where
 
 -- AlbumRepository.addAssetIds
 insert into
-  "album_asset"
+  "album_asset" ("albumId", "assetId", "createdById")
 select
   $1::uuid as "albumId",
-  unnest($2::uuid[]) as "assetId"
+  unnest($2::uuid[]) as "assetId",
+  $3::uuid as "createdById"
 from
   (
     select
@@ -348,10 +349,11 @@ with
   ),
   "album_asset" as (
     insert into
-      "album_asset"
+      "album_asset" ("albumId", "assetId", "createdById")
     select
       "album"."id" as "albumId",
-      unnest($4::uuid[]) as "assetId"
+      unnest($4::uuid[]) as "assetId",
+      $5::uuid as "createdById"
     from
       "album"
     on conflict do nothing
@@ -437,10 +439,12 @@ order by
 
 -- AlbumRepository.copyAlbums
 insert into
-  "album_asset"
+  "album_asset" ("albumId", "assetId", "createdById", "createdAt")
 select
   "album_asset"."albumId",
-  $1 as "assetId"
+  $1 as "assetId",
+  "album_asset"."createdById",
+  "album_asset"."createdAt"
 from
   "album_asset"
 where

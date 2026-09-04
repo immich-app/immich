@@ -7,10 +7,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/activity_text_field.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/widgets/activities/asset_added_bubble.dart';
 import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 
 @RoutePage()
@@ -56,12 +58,16 @@ class ActivitiesPage extends HookConsumerWidget {
         ),
         body: activities.widgetWhen(
           onData: (data) {
+            final groups = groupActivities(data);
             final List<Widget> activityWidgets = [];
-            for (final activity in data.reversed) {
+            for (final group in groups.reversed) {
               activityWidgets.add(
                 Padding(
+                  key: ValueKey(group.first.id),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: CommentBubble(activity: activity, isAssetActivity: assetId != null),
+                  child: group.first.type == ActivityType.assetAdded
+                      ? AssetAddedBubble(activities: group)
+                      : CommentBubble(activity: group.first, isAssetActivity: assetId != null),
                 ),
               );
             }

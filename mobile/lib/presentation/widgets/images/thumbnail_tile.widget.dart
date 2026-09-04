@@ -166,21 +166,21 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                         alignment: Alignment.bottomRight,
                         child: Padding(
                           padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                          child: TileOverlayIcon(Icons.cloud_off_outlined),
                         ),
                       ),
                       AssetState.remote => const Align(
                         alignment: Alignment.bottomRight,
                         child: Padding(
                           padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.cloud_outlined),
+                          child: TileOverlayIcon(Icons.cloud_outlined),
                         ),
                       ),
                       AssetState.merged => const Align(
                         alignment: Alignment.bottomRight,
                         child: Padding(
                           padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                          child: TileOverlayIcon(Icons.cloud_done_outlined),
                         ),
                       ),
                     },
@@ -194,7 +194,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                       alignment: Alignment.bottomLeft,
                       child: Padding(
                         padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.favorite_rounded),
+                        child: TileOverlayIcon(Icons.favorite_rounded),
                       ),
                     ),
                   ),
@@ -272,16 +272,16 @@ class _VideoIndicator extends StatelessWidget {
             shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6))],
           ),
         ),
-        const _TileOverlayIcon(Icons.play_circle_outline_rounded),
+        const TileOverlayIcon(Icons.play_circle_outline_rounded),
       ],
     );
   }
 }
 
-class _TileOverlayIcon extends StatelessWidget {
+class TileOverlayIcon extends StatelessWidget {
   final IconData icon;
 
-  const _TileOverlayIcon(this.icon);
+  const TileOverlayIcon(this.icon, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -312,10 +312,10 @@ class _AssetTypeIcons extends StatelessWidget {
         if (isLivePhoto)
           const Padding(
             padding: EdgeInsets.only(right: 10.0, top: 6.0),
-            child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
+            child: TileOverlayIcon(Icons.motion_photos_on_rounded),
           ),
         if (asset.isAnimatedImage)
-          const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
+          const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: TileOverlayIcon(Icons.gif_rounded)),
       ],
     );
   }
@@ -334,7 +334,7 @@ class _StackIndicator extends StatelessWidget {
 
     return const Padding(
       padding: EdgeInsets.only(right: 10.0, top: 6.0),
-      child: _TileOverlayIcon(Icons.burst_mode_rounded),
+      child: TileOverlayIcon(Icons.burst_mode_rounded),
     );
   }
 }

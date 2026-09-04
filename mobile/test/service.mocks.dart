@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/services/activity.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
@@ -19,6 +20,8 @@ import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:mocktail/mocktail.dart';
+
+class MockActivityService extends Mock implements ActivityService {}
 
 class MockApiService extends Mock implements ApiService {}
 

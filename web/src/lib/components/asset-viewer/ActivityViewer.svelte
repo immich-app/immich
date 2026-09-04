@@ -9,15 +9,17 @@
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
+  import { getGroupMediaType, groupActivities } from '$lib/utils/activity';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { ReactionType, type ActivityResponseDto, type AlbumUserResponseDto, type AssetTypeEnum } from '@immich/sdk';
+  import { AssetTypeEnum, ReactionType, type ActivityResponseDto, type AlbumUserResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
-  import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
+  import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiPlayCircleOutline, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
+  import { SvelteSet } from 'svelte/reactivity';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -67,15 +69,18 @@
     hour12: false,
   };
 
-  const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
+  const handleDeleteReaction = async (reaction: ActivityResponseDto) => {
     try {
-      await activityManager.deleteActivity(reaction, index);
+      await activityManager.deleteActivity(reaction);
 
-      const deleteMessages: Record<ReactionType, string> = {
+      const deleteMessages: Partial<Record<ReactionType, string>> = {
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
       };
-      toastManager.primary(deleteMessages[reaction.type]);
+      const deletedMessage = deleteMessages[reaction.type];
+      if (deletedMessage) {
+        toastManager.primary(deletedMessage);
+      }
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_reaction'));
     }
@@ -108,7 +113,37 @@
     event.preventDefault();
     await handleSendComment();
   };
+
+  const MAX_GROUP_THUMBNAILS = 10;
+  const expandedGroups = new SvelteSet<string>();
+  const groups = $derived(groupActivities(activityManager.activities));
+  const showTimestamp = (index: number, apart: (current: string, next: string) => boolean): boolean =>
+    index === groups.length - 1 || apart(groups[index][0].createdAt, groups[index + 1][0].createdAt);
 </script>
+
+{#snippet timestampFooter(createdAt: string, show: boolean)}
+  {#if show}
+    <div
+      class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
+      title={new Date(createdAt).toLocaleDateString($locale, timeOptions)}
+    >
+      {timeSince(luxon.DateTime.fromISO(createdAt, { locale: $locale }))}
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet groupThumbnail(assetId: string, assetType: AssetTypeEnum | null | undefined, name: string)}
+  <img
+    class="size-full rounded-lg object-cover"
+    src={getAssetMediaUrl({ id: assetId })}
+    alt={$t('asset_added_by', { values: { user: name } })}
+  />
+  {#if assetType === AssetTypeEnum.Video}
+    <div class="absolute inset-e-0 top-0 pe-1 pt-1 text-white drop-shadow-[1px_1px_6px_rgb(0_0_0)]">
+      <Icon icon={mdiPlayCircleOutline} size="20" />
+    </div>
+  {/if}
+{/snippet}
 
 <div class="relative h-full overflow-y-hidden border-l border-subtle bg-subtle" bind:offsetHeight={innerHeight}>
   <div class="size-full">
@@ -131,24 +166,25 @@
         class="relative w-full immich-scrollbar overflow-y-auto px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
-        {#each activityManager.activities as reaction, index (reaction.id)}
-          {#if reaction.type === ReactionType.Comment}
+        {#each groups as group, index (group[0].id)}
+          {@const item = group[0]}
+          {#if item.type === ReactionType.Comment}
             <div class="mt-3 flex justify-start gap-4 rounded-lg bg-gray-200 py-3 ps-3 dark:bg-gray-800">
               <div class="flex items-center">
-                <UserAvatar user={reaction.user} size="sm" />
+                <UserAvatar user={item.user} size="sm" />
               </div>
 
-              <div class="w-full self-center overflow-hidden text-sm/4 wrap-break-word">{reaction.comment}</div>
-              {#if assetId === undefined && reaction.assetId}
-                <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
+              <div class="w-full self-center overflow-hidden text-sm/4 wrap-break-word">{item.comment}</div>
+              {#if assetId === undefined && item.assetId}
+                <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: item.assetId })}>
                   <img
                     class="size-19 rounded-lg object-cover"
-                    src={getAssetMediaUrl({ id: reaction.assetId })}
-                    alt="Profile picture of {reaction.user.name}, who commented on this asset"
+                    src={getAssetMediaUrl({ id: item.assetId })}
+                    alt="Profile picture of {item.user.name}, who commented on this asset"
                   />
                 </a>
               {/if}
-              {#if reaction.user.id === authManager.user.id || isAlbumOwner}
+              {#if item.user.id === authManager.user.id || isAlbumOwner}
                 <div class="me-4">
                   <ButtonContextMenu
                     icon={mdiDotsVertical}
@@ -161,44 +197,40 @@
                       activeColor="bg-red-200"
                       icon={mdiDeleteOutline}
                       text={$t('remove')}
-                      onClick={() => handleDeleteReaction(reaction, index)}
+                      onClick={() => handleDeleteReaction(item)}
                     />
                   </ButtonContextMenu>
                 </div>
               {/if}
             </div>
 
-            {#if (index !== activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
-              <div
-                class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
-                title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
-              >
-                {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
-              </div>
-            {/if}
-          {:else if reaction.type === ReactionType.Like}
+            {@render timestampFooter(
+              item.createdAt,
+              showTimestamp(index, (current, next) => !shouldGroup(current, next)),
+            )}
+          {:else if item.type === ReactionType.Like}
             <div class="relative">
               <div class="mt-3 flex items-center gap-4 py-3 ps-3 text-sm">
                 <div class="text-primary"><Icon icon={mdiThumbUp} size="20" /></div>
 
-                <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
+                <div class="w-full" title={`${item.user.name} (${item.user.email})`}>
                   {$t('user_liked', {
                     values: {
-                      user: reaction.user.name,
+                      user: item.user.name,
                       type: assetType ? getAssetType(assetType).toLowerCase() : null,
                     },
                   })}
                 </div>
-                {#if assetId === undefined && reaction.assetId}
-                  <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
+                {#if assetId === undefined && item.assetId}
+                  <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: item.assetId })}>
                     <img
                       class="size-19 rounded-lg object-cover"
-                      src={getAssetMediaUrl({ id: reaction.assetId })}
-                      alt="Profile picture of {reaction.user.name}, who liked this asset"
+                      src={getAssetMediaUrl({ id: item.assetId })}
+                      alt="Profile picture of {item.user.name}, who liked this asset"
                     />
                   </a>
                 {/if}
-                {#if reaction.user.id === authManager.user.id || isAlbumOwner}
+                {#if item.user.id === authManager.user.id || isAlbumOwner}
                   <div class="me-4">
                     <ButtonContextMenu
                       icon={mdiDotsVertical}
@@ -211,20 +243,62 @@
                         activeColor="bg-red-200"
                         icon={mdiDeleteOutline}
                         text={$t('remove')}
-                        onClick={() => handleDeleteReaction(reaction, index)}
+                        onClick={() => handleDeleteReaction(item)}
                       />
                     </ButtonContextMenu>
                   </div>
                 {/if}
               </div>
-              {#if (index !== activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
-                <div
-                  class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
-                  title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
-                >
-                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
+              {@render timestampFooter(item.createdAt, showTimestamp(index, isTenMinutesApart))}
+            </div>
+          {:else if item.type === ReactionType.AssetAdded}
+            {@const addedBy = item.user}
+            <div class="relative">
+              <div class="mt-3 flex items-center gap-4 py-3 ps-3 text-sm">
+                <div class="flex items-center">
+                  <UserAvatar user={addedBy} size="sm" />
+                </div>
+                <div class="w-full" title={`${addedBy.name} (${addedBy.email})`}>
+                  {$t('user_added_assets', {
+                    values: { user: addedBy.name, count: group.length, type: getGroupMediaType(group) },
+                  })}
+                </div>
+              </div>
+              {#if assetId === undefined}
+                <!-- the +N overlay covers the last visible tile, so that asset counts as hidden too -->
+                {@const isExpanded = expandedGroups.has(item.id)}
+                {@const hasMore = !isExpanded && group.length > MAX_GROUP_THUMBNAILS}
+                {@const visibleAssets = isExpanded ? group : group.slice(0, MAX_GROUP_THUMBNAILS)}
+                {@const hiddenCount = group.length - (MAX_GROUP_THUMBNAILS - 1)}
+                <div class="flex flex-wrap gap-1 ps-3 pb-2">
+                  {#each visibleAssets as activity, i (activity.id)}
+                    {#if activity.assetId}
+                      {#if hasMore && i === MAX_GROUP_THUMBNAILS - 1}
+                        <button
+                          type="button"
+                          class="relative aspect-square size-19 cursor-pointer"
+                          onclick={() => expandedGroups.add(item.id)}
+                        >
+                          {@render groupThumbnail(activity.assetId, activity.assetType, addedBy.name)}
+                          <div
+                            class="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-semibold text-white"
+                          >
+                            +{hiddenCount}
+                          </div>
+                        </button>
+                      {:else}
+                        <a
+                          class="relative aspect-square size-19"
+                          href={Route.viewAlbumAsset({ albumId, assetId: activity.assetId })}
+                        >
+                          {@render groupThumbnail(activity.assetId, activity.assetType, addedBy.name)}
+                        </a>
+                      {/if}
+                    {/if}
+                  {/each}
                 </div>
               {/if}
+              {@render timestampFooter(item.createdAt, showTimestamp(index, isTenMinutesApart))}
             </div>
           {/if}
         {/each}
