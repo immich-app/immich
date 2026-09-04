@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -16,6 +15,7 @@ class TimelineDragRegion extends StatefulWidget {
   final void Function()? onEnd;
   final void Function()? onScrollStart;
   final void Function(ScrollDirection direction)? onScroll;
+  final TimelineAssetIndex? Function(Offset position)? assetAt;
 
   const TimelineDragRegion({
     super.key,
@@ -25,6 +25,7 @@ class TimelineDragRegion extends StatefulWidget {
     this.onEnd,
     this.onScrollStart,
     this.onScroll,
+    this.assetAt,
   });
 
   @override
@@ -39,6 +40,7 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
   static const double scrollOffset = 0.10;
   double? topScrollOffset;
   double? bottomScrollOffset;
+  late Offset pointerPosition;
   Timer? scrollTimer;
   late bool scrollNotified;
 
@@ -82,23 +84,6 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
     recognizer.onLongPressUp = _onLongPressEnd;
   }
 
-  TimelineAssetIndex? _getValueKeyAtPosition(Offset position) {
-    final box = context.findAncestorRenderObjectOfType<RenderBox>();
-    if (box == null) {
-      return null;
-    }
-
-    final hitTestResult = BoxHitTestResult();
-    final local = box.globalToLocal(position);
-    if (!box.hitTest(hitTestResult, position: local)) {
-      return null;
-    }
-
-    return (hitTestResult.path.firstWhereOrNull((hit) => hit.target is _TimelineAssetIndexProxy)?.target
-            as _TimelineAssetIndexProxy?)
-        ?.index;
-  }
-
   void _onLongPressStart(LongPressStartDetails event) {
     /// Calculate widget height and scroll offset when long press starting instead of in [initState]
     /// or [didChangeDependencies] as the grid might still be rendering into view to get the actual size
@@ -108,7 +93,7 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
       bottomScrollOffset = height - topScrollOffset!;
     }
 
-    final initialHit = _getValueKeyAtPosition(event.globalPosition);
+    final initialHit = widget.assetAt?.call(event.globalPosition);
     anchorAsset = initialHit;
     if (initialHit == null) {
       return;
@@ -134,23 +119,30 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
     }
 
     final currentDy = event.localPosition.dy;
+    pointerPosition = event.globalPosition;
 
     if (currentDy > bottomScrollOffset!) {
-      scrollTimer ??= Timer.periodic(
-        const Duration(milliseconds: 50),
-        (_) => widget.onScroll?.call(ScrollDirection.forward),
-      );
+      scrollTimer ??= _startAutoScroll(ScrollDirection.forward);
     } else if (currentDy < topScrollOffset!) {
-      scrollTimer ??= Timer.periodic(
-        const Duration(milliseconds: 50),
-        (_) => widget.onScroll?.call(ScrollDirection.reverse),
-      );
+      scrollTimer ??= _startAutoScroll(ScrollDirection.reverse);
     } else {
       scrollTimer?.cancel();
       scrollTimer = null;
     }
 
-    final currentlyTouchingAsset = _getValueKeyAtPosition(event.globalPosition);
+    _enterAssetUnderPointer();
+  }
+
+  Timer _startAutoScroll(ScrollDirection direction) {
+    return Timer.periodic(const Duration(milliseconds: 50), (_) {
+      widget.onScroll?.call(direction);
+      // the rows move under a finger that is holding still, so the selection has to follow them
+      _enterAssetUnderPointer();
+    });
+  }
+
+  void _enterAssetUnderPointer() {
+    final currentlyTouchingAsset = widget.assetAt?.call(pointerPosition);
     if (currentlyTouchingAsset == null) {
       return;
     }
@@ -172,41 +164,6 @@ class _CustomLongPressGestureRecognizer extends LongPressGestureRecognizer {
   void rejectGesture(int pointer) {
     acceptGesture(pointer);
   }
-}
-
-class TimelineAssetIndexWrapper extends SingleChildRenderObjectWidget {
-  final int assetIndex;
-  final int segmentIndex;
-
-  const TimelineAssetIndexWrapper({
-    required Widget super.child,
-    required this.assetIndex,
-    required this.segmentIndex,
-    super.key,
-  });
-
-  @override
-  // ignore: library_private_types_in_public_api
-  _TimelineAssetIndexProxy createRenderObject(BuildContext context) {
-    return _TimelineAssetIndexProxy(
-      index: TimelineAssetIndex(assetIndex: assetIndex, segmentIndex: segmentIndex),
-    );
-  }
-
-  @override
-  void updateRenderObject(
-    BuildContext context,
-    // ignore: library_private_types_in_public_api
-    _TimelineAssetIndexProxy renderObject,
-  ) {
-    renderObject.index = TimelineAssetIndex(assetIndex: assetIndex, segmentIndex: segmentIndex);
-  }
-}
-
-class _TimelineAssetIndexProxy extends RenderProxyBox {
-  TimelineAssetIndex index;
-
-  _TimelineAssetIndexProxy({required this.index});
 }
 
 @freezed

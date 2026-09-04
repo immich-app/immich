@@ -175,15 +175,11 @@ class _FixedSegmentRow extends ConsumerWidget {
 
     final children = [
       for (int i = 0; i < assets.length; i++)
-        TimelineAssetIndexWrapper(
+        _AssetTileWidget(
+          key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+          asset: assets[i],
           assetIndex: assetIndex + i,
-          segmentIndex: 0, // For simplicity, using 0 for now
-          child: _AssetTileWidget(
-            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-            asset: assets[i],
-            assetIndex: assetIndex + i,
-            size: Size(widths[i], tileHeight),
-          ),
+          size: Size(widths[i], tileHeight),
         ),
     ];
 
