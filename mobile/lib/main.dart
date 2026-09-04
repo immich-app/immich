@@ -34,6 +34,7 @@ import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
+import 'package:immich_mobile/theme/immich_ui_scope.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
@@ -271,14 +272,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         themeMode: ref.watch(appConfigProvider.select((config) => config.theme.mode)),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
-        builder: (context, child) => ImmichTranslationProvider(
-          translations: ImmichTranslations(
-            submit: context.t.submit,
-            password: context.t.password,
-            undo: context.t.undo,
-          ),
-          child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
-        ),
+        builder: (context, child) => ImmichUiScope(child: child!),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
           navigatorObservers: () => [AppNavigationObserver(ref: ref), TransitioningRouteObserver()],

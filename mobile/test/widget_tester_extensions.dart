@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,7 +22,46 @@ extension PumpConsumerWidget on WidgetTester {
     EnginePhase phase = EnginePhase.sendSemanticsUpdate,
     List<Override> overrides = const [],
   }) async {
-    await pumpWidget(
+    await _wrapper(
+      (context) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
+        home: Material(child: widget),
+      ),
+      overrides: overrides,
+      duration: duration,
+      phase: phase,
+    );
+    await pumpAndSettle();
+  }
+
+  /// Like [pumpConsumerWidget], but mounts [widget] as the initial route of a real router
+  Future<void> pumpConsumerRouterWidget(Widget widget, {List<Override> overrides = const []}) {
+    final router = RootStackRouter.build(
+      routes: [AutoRoute(initial: true, page: PageInfo('Snapshot', builder: (_) => widget))],
+    );
+
+    return _wrapper(
+      (context) => MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
+        routerConfig: router.config(),
+      ),
+      overrides: overrides,
+    );
+  }
+
+  Future<void> _wrapper(
+    Function(BuildContext) build, {
+    List<Override> overrides = const [],
+    Duration? duration,
+    EnginePhase phase = EnginePhase.sendSemanticsUpdate,
+  }) {
+    return pumpWidget(
       EasyLocalization(
         supportedLocales: locales.values.toList(),
         path: translationsPath,
@@ -32,20 +72,11 @@ extension PumpConsumerWidget on WidgetTester {
         assetLoader: const CodegenLoader(),
         child: ProviderScope(
           overrides: overrides,
-          child: Builder(
-            builder: (context) => MaterialApp(
-              debugShowCheckedModeBanner: false,
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              home: Material(child: widget),
-            ),
-          ),
+          child: Builder(builder: (context) => build(context)),
         ),
       ),
       duration: duration,
       phase: phase,
     );
-    await pumpAndSettle();
   }
 }
