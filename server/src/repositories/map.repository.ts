@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { getName } from 'i18n-iso-countries';
 import { Expression, Insertable, Kysely, NotNull, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
@@ -38,8 +37,15 @@ interface MapDB extends DB {
   naturalearth_countries_tmp: NaturalEarthCountriesTable;
 }
 
+interface CountryNames {
+  byAlpha2: Map<string, string>;
+  byAlpha3: Map<string, string>;
+}
+
 @Injectable()
 export class MapRepository {
+  private countryNames?: Promise<CountryNames>;
+
   constructor(
     private configRepository: ConfigRepository,
     private metadataRepository: SystemMetadataRepository,
@@ -148,6 +154,8 @@ export class MapRepository {
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
+    const countryNames = await this.loadCountryNames();
+
     const response = await this.db
       .selectFrom('geodata_places')
       .selectAll()
@@ -166,7 +174,7 @@ export class MapRepository {
       this.logger.verboseFn(() => `Raw: ${JSON.stringify(response, null, 2)}`);
 
       const { countryCode, name: city, admin1Name } = response;
-      const country = getName(countryCode, 'en') ?? null;
+      const country = countryNames.byAlpha2.get(countryCode) ?? null;
       const state = admin1Name;
 
       return { country, state, city };
@@ -194,11 +202,57 @@ export class MapRepository {
     this.logger.verboseFn(() => `Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
 
     const { admin_a3 } = ne_response;
-    const country = getName(admin_a3, 'en') ?? null;
+    const country = countryNames.byAlpha3.get(admin_a3) ?? null;
     const state = null;
     const city = null;
 
     return { country, state, city };
+  }
+
+  // init() skips the geodata import when it is up to date, so load the names on demand
+  private async loadCountryNames(): Promise<CountryNames> {
+    this.countryNames ??= this.readCountryNames();
+    try {
+      return await this.countryNames;
+    } catch (error) {
+      this.countryNames = undefined;
+      throw error;
+    }
+  }
+
+  private async readCountryNames(): Promise<CountryNames> {
+    const byAlpha2 = new Map<string, string>();
+    const byAlpha3 = new Map<string, string>();
+
+    const { resourcePaths } = this.configRepository.getEnv();
+    const filePath = resourcePaths.geodata.countryInfo;
+    if (!existsSync(filePath)) {
+      throw new Error(`Geodata file ${filePath} not found`);
+    }
+
+    const lineReader = readLine.createInterface({ input: createReadStream(filePath) });
+    for await (const line of lineReader) {
+      if (line.startsWith('#')) {
+        continue;
+      }
+      // Columns: ISO alpha-2, ISO alpha-3, ISO numeric, fips, Country, ...
+      const fields = line.split('\t', 5);
+      const alpha2 = fields[0];
+      const alpha3 = fields[1];
+      const name = fields[4]?.trim();
+      if (!name) {
+        continue;
+      }
+      if (alpha2) {
+        byAlpha2.set(alpha2, name);
+      }
+      if (alpha3) {
+        byAlpha3.set(alpha3, name);
+      }
+    }
+
+    this.logger.log(`Loaded ${byAlpha2.size} country names from ${filePath}`);
+    return { byAlpha2, byAlpha3 };
   }
 
   private async importNaturalEarthCountries() {
