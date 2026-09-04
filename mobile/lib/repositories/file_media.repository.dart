@@ -1,41 +1,24 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:photo_manager/photo_manager.dart' hide AssetType;
+import 'package:immich_mobile/platform/asset_media_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:path/path.dart' as p;
 
-final fileMediaRepositoryProvider = Provider((ref) => const FileMediaRepository());
+final fileMediaRepositoryProvider = Provider((ref) => FileMediaRepository(ref.watch(assetMediaApiProvider)));
 
 class FileMediaRepository {
-  const FileMediaRepository();
+  final AssetMediaApi _assetMediaApi;
 
-  Future<LocalAsset?> saveLocalAsset(Uint8List data, {required String title, String? relativePath}) async {
-    final entity = await PhotoManager.editor.saveImage(data, filename: title, title: title, relativePath: relativePath);
+  const FileMediaRepository(this._assetMediaApi);
 
-    return LocalAsset(
-      id: entity.id,
-      name: title,
-      type: AssetType.image,
-      createdAt: entity.createDateTime,
-      updatedAt: entity.modifiedDateTime,
-      playbackStyle: AssetPlaybackStyle.image,
-      isEdited: false,
-    );
+  Future<bool> saveFile(String path, {String? title, String? relativePath, bool isVideo = false}) async {
+    await _assetMediaApi.saveFile(path, title ?? p.basename(path), isVideo, relativePath);
+    return true;
   }
 
-  Future<AssetEntity?> saveImageWithFile(String filePath, {String? title, String? relativePath}) async {
-    final entity = await PhotoManager.editor.saveImageWithPath(filePath, title: title, relativePath: relativePath);
-    return entity;
-  }
-
-  Future<AssetEntity?> saveLivePhoto({required File image, required File video, required String title}) async {
-    final entity = await PhotoManager.editor.darwin.saveLivePhoto(imageFile: image, videoFile: video, title: title);
-    return entity;
-  }
-
-  Future<AssetEntity?> saveVideo(File file, {required String title, String? relativePath}) async {
-    final entity = await PhotoManager.editor.saveVideo(file, title: title, relativePath: relativePath);
-    return entity;
+  Future<bool> saveLivePhoto({required File image, required File video, required String title}) async {
+    await _assetMediaApi.saveLivePhoto(image.path, video.path, title);
+    return true;
   }
 }
