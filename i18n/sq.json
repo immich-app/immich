@@ -1,5 +1,6 @@
 {
   "about": "Rreth",
+  "accept": "Prano",
   "account": "Llogari",
   "account_settings": "Cilësimet e Llogarisë",
   "acknowledge": "Prano",
@@ -36,6 +37,7 @@
   "add_to_bottom_bar": "Shto në",
   "add_upload_to_stack": "Shto ngarkimin në stivë",
   "add_url": "Shto URL",
+  "add_user": "Shto përdorues",
   "added_to_archive": "Shtuar në arkiv",
   "added_to_favorites": "Shtuar tek të preferuarat",
   "added_to_favorites_count": "Shtuar {count, number} në të preferuarat",
