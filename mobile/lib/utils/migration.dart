@@ -264,16 +264,6 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateString(StoreKey<String> legacyKey, SettingsKey<String> newKey) async {
-    final value = await readLegacyStoreString(legacyKey.id);
-    if (value == null) {
-      return;
-    }
-
-    _cache[newKey] = value;
-    _migratedStoreIds.add(legacyKey.id);
-  }
-
   void stage<T, U extends T>(StoreKey legacyKey, SettingsKey<T> newKey, U value) {
     _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);

@@ -31,28 +31,4 @@ class MapStateNotifier extends Notifier<MapState> {
     unawaited(ref.read(settingsProvider).write(.mapThemeMode, mode));
     state = state.copyWith(themeMode: mode);
   }
-
-  void switchFavoriteOnly(bool isFavoriteOnly) {
-    unawaited(ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly));
-    state = state.copyWith(showFavoriteOnly: isFavoriteOnly, shouldRefetchMarkers: true);
-  }
-
-  void setRefetchMarkers(bool shouldRefetch) {
-    state = state.copyWith(shouldRefetchMarkers: shouldRefetch);
-  }
-
-  void switchIncludeArchived(bool isIncludeArchived) {
-    unawaited(ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived));
-    state = state.copyWith(includeArchived: isIncludeArchived, shouldRefetchMarkers: true);
-  }
-
-  void switchWithPartners(bool isWithPartners) {
-    unawaited(ref.read(settingsProvider).write(.mapWithPartners, isWithPartners));
-    state = state.copyWith(withPartners: isWithPartners, shouldRefetchMarkers: true);
-  }
-
-  void setRelativeTime(int relativeTime) {
-    unawaited(ref.read(settingsProvider).write(.mapRelativeDate, relativeTime));
-    state = state.copyWith(relativeTime: relativeTime, shouldRefetchMarkers: true);
-  }
 }

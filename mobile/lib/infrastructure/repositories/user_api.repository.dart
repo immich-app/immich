@@ -23,9 +23,4 @@ class UserApiRepository extends ApiRepository {
     final res = await checkNull(_api.createProfileImage(MultipartFile.fromBytes('file', data, filename: name)));
     return res.profileImagePath;
   }
-
-  Future<List<UserDto>> getAll() async {
-    final dto = await checkNull(_api.searchUsers());
-    return dto.map(UserConverter.fromSimpleUserDto).toList();
-  }
 }
