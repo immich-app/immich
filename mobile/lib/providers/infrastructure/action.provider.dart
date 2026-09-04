@@ -12,13 +12,17 @@ import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
 
-final actionProvider = NotifierProvider<ActionNotifier, void>(ActionNotifier.new, dependencies: [multiSelectProvider]);
+final actionProvider = NotifierProvider<ActionNotifier, void>(
+  ActionNotifier.new,
+  dependencies: [multiSelectProvider, actionServiceProvider, foregroundUploadServiceProvider],
+);
 
 class ActionResult {
   final int count;
@@ -156,6 +160,7 @@ class ActionNotifier extends Notifier<void> {
 
     try {
       final isUpdated = await _service.updateDescription(ids.first, description);
+      ref.invalidate(assetExifProvider);
       return ActionResult(count: 1, success: isUpdated);
     } catch (error, stack) {
       _logger.severe('Failed to update description for asset', error, stack);
@@ -172,6 +177,7 @@ class ActionNotifier extends Notifier<void> {
 
     try {
       final isUpdated = await _service.updateRating(ids.first, rating);
+      ref.invalidate(assetExifProvider);
       return ActionResult(count: 1, success: isUpdated);
     } catch (error, stack) {
       _logger.severe('Failed to update rating for asset', error, stack);

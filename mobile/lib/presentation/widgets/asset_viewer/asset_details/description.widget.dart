@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -27,32 +29,67 @@ class _SheetAssetDescriptionState extends ConsumerState<SheetAssetDescription> {
     super.initState();
 
     _controller = TextEditingController(text: widget.exifInfo?.description ?? '');
+    _descriptionFocus.addListener(_onFocusChange);
   }
 
+  @override
+  void didUpdateWidget(SheetAssetDescription oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.asset.id != widget.asset.id ||
+        (oldWidget.exifInfo?.description != widget.exifInfo?.description && !_descriptionFocus.hasFocus)) {
+      _controller.text = widget.exifInfo?.description ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _descriptionFocus.removeListener(_onFocusChange);
+    _controller.dispose();
+    _descriptionFocus.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (!_descriptionFocus.hasFocus) {
+      unawaited(saveDescription(widget.exifInfo?.description));
+    }
+  }
+
+  bool _isSaving = false;
+
   Future<void> saveDescription(String? previousDescription) async {
+    if (_isSaving) {
+      return;
+    }
+
     final newDescription = _controller.text.trim();
 
-    if (newDescription == previousDescription) {
+    if (newDescription == (previousDescription ?? '')) {
       _descriptionFocus.unfocus();
       return;
     }
 
-    final editAction = await ref.read(actionProvider.notifier).updateDescription(ActionSource.viewer, newDescription);
+    _isSaving = true;
+    try {
+      final editAction = await ref.read(actionProvider.notifier).updateDescription(ActionSource.viewer, newDescription);
 
-    if (!editAction.success) {
-      _controller.text = previousDescription ?? '';
-      if (!mounted) {
-        return;
+      if (!editAction.success) {
+        _controller.text = previousDescription ?? '';
+        if (!mounted) {
+          return;
+        }
+
+        ImmichToast.show(
+          context: context,
+          msg: context.t.exif_bottom_sheet_description_error,
+          toastType: ToastType.error,
+        );
       }
-
-      ImmichToast.show(
-        context: context,
-        msg: context.t.exif_bottom_sheet_description_error,
-        toastType: ToastType.error,
-      );
+    } finally {
+      _isSaving = false;
+      _descriptionFocus.unfocus();
     }
-
-    _descriptionFocus.unfocus();
   }
 
   @override
@@ -60,11 +97,7 @@ class _SheetAssetDescriptionState extends ConsumerState<SheetAssetDescription> {
     final asset = widget.asset;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
 
-    final currentDescription = widget.exifInfo?.description ?? '';
     final hintText = isOwner ? context.t.exif_bottom_sheet_description : context.t.exif_bottom_sheet_no_description;
-    if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
-      _controller.text = currentDescription;
-    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
@@ -84,7 +117,10 @@ class _SheetAssetDescriptionState extends ConsumerState<SheetAssetDescription> {
             errorBorder: InputBorder.none,
             focusedErrorBorder: InputBorder.none,
           ),
-          onTapOutside: (_) => saveDescription(widget.exifInfo?.description),
+          onTapOutside: (_) {
+            _descriptionFocus.unfocus();
+            unawaited(saveDescription(widget.exifInfo?.description));
+          },
         ),
       ),
     );
