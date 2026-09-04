@@ -551,7 +551,7 @@
       assetViewerManager.gridScrollTarget = { at: asset.id };
       await navigate(
         { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
-        { replaceState: true },
+        { replaceState: true, noScroll: true, keepFocus: true },
       );
       await navigate({ targetRoute: 'current', assetId: asset.id });
     })();
