@@ -8,8 +8,9 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { AssetVisibility } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
+  import { handleError } from '$lib/utils/handle-error';
+  import { AssetVisibility, updatePartner } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Field, Switch, Text } from '@immich/ui';
   import { mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -19,6 +20,8 @@
   }
 
   let { data }: Props = $props();
+
+  let inTimeline = $derived(data.inTimeline);
 
   const options = $derived({
     userId: data.partner.id,
@@ -33,6 +36,15 @@
 
     assetMultiSelectManager.clear();
     return;
+  };
+
+  const handleToggleInTimeline = async (status: boolean) => {
+    try {
+      await updatePartner({ id: data.partner.id, partnerUpdateDto: { inTimeline: status } });
+      inTimeline = status;
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_timeline_display_status'));
+    }
   };
 </script>
 
@@ -54,6 +66,14 @@
       <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
         {$t('partner_list_user_photos', { values: { user: data.partner.name } })}
       </p>
+    {/snippet}
+    {#snippet trailing()}
+      <Field class="flex w-full place-content-center place-items-center gap-2">
+        <Text size="small">
+          {$t('show_in_timeline')}
+        </Text>
+        <Switch bind:checked={inTimeline} onCheckedChange={handleToggleInTimeline} />
+      </Field>
     {/snippet}
   </ControlAppBar>
 {/if}
