@@ -22,11 +22,12 @@
   let selectedRowIndex: number = $state(-1);
 
   type Props = {
+    remove?: boolean;
     onClose: (albums?: AlbumResponseDto[]) => void;
     selectedItemsCount?: number;
   };
 
-  let { onClose, selectedItemsCount }: Props = $props();
+  let { remove, onClose, selectedItemsCount }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({});
@@ -39,7 +40,7 @@
 
   const rowConverter = new AlbumModalRowConverter($albumViewSettings.sortBy, $albumViewSettings.sortOrder);
   const albumModalRows = $derived(
-    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds),
+    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds, !remove),
   );
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
@@ -150,9 +151,11 @@
   };
 
   const title = $derived(
-    selectedItemsCount === undefined
-      ? $t('select_albums')
-      : $t('add_to_album_item_count', { values: { count: selectedItemsCount } }),
+    remove
+      ? 'remove_from_album'
+      : selectedItemsCount === undefined
+        ? $t('select_albums')
+        : $t('add_to_album_item_count', { values: { count: selectedItemsCount } }),
   );
 </script>
 
