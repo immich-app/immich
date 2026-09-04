@@ -1,21 +1,14 @@
-This is a client app for the self-hostable Immich Server (which can be found with the app's source repo). You will need to run/manage the server on your own in order to use the app.
+Note: this is the client app for the self-hostable Immich Server. You will need to run/manage the server on your own in order to use the app.
 
-Once set up, this app can be used as photo and video backup solution directly from your mobile phone.
+Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.
 
 <b>Features:</b>
 
-* Upload and view assets(videos/images).
-* Multi-user supported.
-* Quick navigation with drag scroll bar.
-* Auto Backup.
-* Support HEIC/HEIF Backup.
-* Extract and display EXIF info.
-* Real-time render from multi-device upload event.
-* Image Tagging/Classification based on ImageNet dataset
-* Object detection based on COCO SSD.
-* Search assets based on tags and exif data (lens, make, model, orientation)
-* Upload assets from your local computer/server using <a href='https://www.npmjs.com/package/immich' target='_blank' rel='nofollow'>immich cli tools</a>
-* Reverse geocoding from image exif data
-* Show asset's location information on map (OpenStreetMap).
-* Show curated places on the search page
-* Show curated objects on the search page
+* Upload and view photos and videos
+* Automatically backup assets on your device
+* Supports almost all image formats, including raw and live/motion photos
+* Extract and display exif metadata (lens, make, model, tags, location, etc.)
+* Search by metadata, objects, faces, and CLIP
+* Extensive sharing functionality
+* Find people using facial recognition
+* And much more

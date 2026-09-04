@@ -1,2 +1,0 @@
-* Improve data usage on loading asset
-* Add background backup delay

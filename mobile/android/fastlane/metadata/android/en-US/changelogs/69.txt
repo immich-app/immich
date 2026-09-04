@@ -1,6 +1,0 @@
-* Library page rework (album sorting, favorites).
-* Tap to enter immersive mode on the gallery viewer.
-* Removed stay logged in the checkbox and made it enabled by default.
-* Multiselect add to favorites from the timeline.
-* Responsive layout improvements with a navigation rail and album grid.
-* Home screen customization options.

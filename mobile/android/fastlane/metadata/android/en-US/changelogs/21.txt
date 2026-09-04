@@ -1,3 +1,0 @@
-* Fixed app does not resume back up when reopening a closed app
-* Fixed wrong asset count on the upload page
-* Added mechanism to change the password of new user on the first login (except Admin)

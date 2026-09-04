@@ -1,3 +1,0 @@
-* Feature - [Android] Background backup.
-* Fixed - [iOS] Dark mode not auto switch.
-* Fixed - WebSocket not getting correct data on mobile.
