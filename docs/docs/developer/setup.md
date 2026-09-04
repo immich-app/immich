@@ -100,6 +100,10 @@ To see local changes to `@immich/ui` in Immich, do the following:
 3. Run `mise //mobile:checkout` to update the environment and codegen artifacts.
 4. Change to the `mobile/` directory and run `flutter run` to start the app.
 
+:::important Workflow
+Always run `mise //mobile:checkout` after switching branches.
+:::
+
 ##### iOS Code Signing
 
 The Immich Apple Team ID and bundle IDs are specified in `mobile/ios/Signing.xcconfig`. For local development, we provide an override mechanism.
