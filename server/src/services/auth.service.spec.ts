@@ -110,6 +110,22 @@ describe(AuthService.name, () => {
       });
     });
 
+    it('should clear shouldChangePassword', async () => {
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePassword(auth, dto);
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        password: 'new-password (hashed)',
+        shouldChangePassword: false,
+      });
+    });
+
     it('should throw when password does not match existing password', async () => {
       const user = UserFactory.create();
       const auth = AuthFactory.create(user);
