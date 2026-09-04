@@ -28,6 +28,8 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().withDefault(const Constant(0))();
 
+  TextColumn get priorChecksum => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

@@ -243,4 +243,17 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
       updateKind: UpdateKind.update,
     );
   }
+
+  Future<String?> getPriorRemoteId(String id) {
+    final query = _db.selectOnly(_db.localAssetEntity)
+      ..join([
+        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.priorChecksum)),
+        innerJoin(_db.authUserEntity, _db.authUserEntity.id.equalsExp(_db.remoteAssetEntity.ownerId)),
+      ])
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..where(_db.localAssetEntity.id.equals(id))
+      ..limit(1);
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.id)).getSingleOrNull();
+  }
 }
