@@ -139,7 +139,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   @override
-  Future<void> onAndroidUpload(int? maxMinutes) async {
+  Future<bool> onAndroidUpload(int? maxMinutes) async {
     final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
     await _optimizeDB();
@@ -197,7 +197,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _backgroundLoop({
+  Future<bool> _backgroundLoop({
     required Duration hashTimeout,
     required Duration? backupTimeout,
     required String debugLabel,
@@ -209,7 +209,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     try {
       if (!await _syncAssets(hashTimeout: hashTimeout)) {
         _logger.warning("Remote sync did not complete successfully, skipping backup");
-        return;
+        return true;
       }
 
       final backupFuture = _handleBackup();
@@ -223,12 +223,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         });
       }
       try {
-        await backupFuture;
+        return await backupFuture;
       } finally {
         cancelTimer?.cancel();
       }
     } catch (error, stack) {
       _logger.severe("Failed to complete $debugLabel", error, stack);
+      return true;
     } finally {
       sw.stop();
       _logger.info("$debugLabel completed in ${sw.elapsed.inSeconds}s");
@@ -289,36 +290,41 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _handleBackup() async {
-    await runZonedGuarded(
-      () async {
-        if (_isCleanedUp) {
-          return;
-        }
+  Future<bool> _handleBackup() async {
+    final needsRetry = await runZonedGuarded(() async {
+      if (_isCleanedUp) {
+        return false;
+      }
 
-        if (!_isBackupEnabled) {
-          _logger.info("Backup is disabled. Skipping backup routine");
-          return;
-        }
+      if (!_isBackupEnabled) {
+        _logger.info("Backup is disabled. Skipping backup routine");
+        return false;
+      }
 
-        final currentUser = _ref?.read(currentUserProvider);
-        if (currentUser == null) {
-          _logger.warning("No current user found. Skipping backup from background");
-          return;
-        }
+      final currentUser = _ref?.read(currentUserProvider);
+      if (currentUser == null) {
+        _logger.warning("No current user found. Skipping backup from background");
+        return false;
+      }
 
-        if (Platform.isIOS) {
-          return _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id);
-        }
+      if (Platform.isIOS) {
+        await _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id);
+        return false;
+      }
 
-        return _ref
-            ?.read(foregroundUploadServiceProvider)
-            .uploadCandidates(currentUser.id, _cancellationToken, useSequentialUpload: true);
-      },
-      (error, stack) {
-        dPrint(() => "Error in backup zone $error, $stack");
-      },
-    );
+      final uploadService = _ref?.read(foregroundUploadServiceProvider);
+      var failed = 0;
+      await uploadService?.uploadCandidates(
+        currentUser.id,
+        _cancellationToken,
+        callbacks: UploadCallbacks(onError: (_, _) => failed++),
+        useSequentialUpload: true,
+      );
+      _logger.info("Background backup finished, $failed uploads failed");
+      // Retry when at least one upload failed
+      return failed > 0;
+    }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
+    return needsRetry ?? true;
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {
