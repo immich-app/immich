@@ -17,6 +17,7 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
     [ImmichCookie.AccessToken]: defaults,
     [ImmichCookie.MaintenanceToken]: { ...defaults, maxAge: Duration.fromObject({ days: 1 }).toMillis() },
     [ImmichCookie.OAuthState]: defaults,
+    [ImmichCookie.OAuthNonce]: defaults,
     [ImmichCookie.OAuthCodeVerifier]: defaults,
     // no httpOnly so that the client can know the auth state
     [ImmichCookie.IsAuthenticated]: { ...defaults, httpOnly: false },

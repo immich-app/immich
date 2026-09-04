@@ -36,11 +36,12 @@ const generateCodeChallenge = async (codeVerifier: string): Promise<string> => {
 
 const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => {
   const state = randomBytes(16).toString('base64url');
+  const nonce = randomBytes(16).toString('base64url');
   const codeVerifier = randomBytes(64).toString('base64url');
   const codeChallenge = await generateCodeChallenge(codeVerifier);
 
   const { url } = await startOAuth({
-    oAuthConfigDto: { redirectUri: redirectUri ?? `${baseUrl}/auth/login`, state, codeChallenge },
+    oAuthConfigDto: { redirectUri: redirectUri ?? `${baseUrl}/auth/login`, state, nonce, codeChallenge },
   });
 
   // login
@@ -67,7 +68,7 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   expect(params.get('code')).toBeDefined();
   expect(params.get('state')).toBe(state);
 
-  return { url: redirectUrl, state, codeVerifier };
+  return { url: redirectUrl, state, nonce, codeVerifier };
 };
 
 const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
@@ -202,10 +203,14 @@ describe(`/oauth`, () => {
     });
 
     it('should allow passing state and codeVerifier via cookies', async () => {
-      const { url, state, codeVerifier } = await loginWithOAuth('oauth-auto-register');
+      const { url, state, nonce, codeVerifier } = await loginWithOAuth('oauth-auto-register');
       const { status, body } = await request(app)
         .post('/oauth/callback')
-        .set('Cookie', [`immich_oauth_state=${state}`, `immich_oauth_code_verifier=${codeVerifier}`])
+        .set('Cookie', [
+          `immich_oauth_state=${state}`,
+          `immich_oauth_nonce=${nonce}`,
+          `immich_oauth_code_verifier=${codeVerifier}`,
+        ])
         .send({ url });
       expect(status).toBe(201);
       expect(body).toMatchObject({

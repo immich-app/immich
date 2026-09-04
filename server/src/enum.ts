@@ -14,6 +14,7 @@ export enum ImmichCookie {
   SharedLinkToken = 'immich_shared_link_token',
   OAuthState = 'immich_oauth_state',
   OAuthCodeVerifier = 'immich_oauth_code_verifier',
+  OAuthNonce = 'immich_oauth_nonce',
 }
 
 export enum ImmichHeader {

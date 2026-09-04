@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
+  CookieResponse,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
   OAuthBackchannelLogoutDto,
@@ -49,18 +50,15 @@ export class OAuthController {
     @Res({ passthrough: true }) res: Response,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<OAuthAuthorizeResponseDto> {
-    const { url, state, codeVerifier } = await this.service.authorize(dto);
-    return respondWithCookie(
-      res,
-      { url },
-      {
-        isSecure: loginDetails.isSecure,
-        values: [
-          { key: ImmichCookie.OAuthState, value: state },
-          { key: ImmichCookie.OAuthCodeVerifier, value: codeVerifier },
-        ],
-      },
-    );
+    const { url, state, nonce, codeVerifier } = await this.service.authorize(dto);
+    const values: CookieResponse['values'] = [
+      { key: ImmichCookie.OAuthState, value: state },
+      { key: ImmichCookie.OAuthCodeVerifier, value: codeVerifier },
+    ];
+    if (nonce) {
+      values.push({ key: ImmichCookie.OAuthNonce, value: nonce });
+    }
+    return respondWithCookie(res, { url }, { isSecure: loginDetails.isSecure, values });
   }
 
   @Post('callback')
@@ -78,6 +76,7 @@ export class OAuthController {
   ): Promise<LoginResponseDto> {
     const body = await this.service.callback(dto, request.headers, loginDetails);
     res.clearCookie(ImmichCookie.OAuthState);
+    res.clearCookie(ImmichCookie.OAuthNonce);
     res.clearCookie(ImmichCookie.OAuthCodeVerifier);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,

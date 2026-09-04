@@ -11,7 +11,7 @@ class OAuthService {
   final log = Logger('OAuthService');
   OAuthService(this._apiService);
 
-  Future<String?> getOAuthServerUrl(String serverUrl, String state, String codeChallenge) async {
+  Future<String?> getOAuthServerUrl(String serverUrl, String state, String codeChallenge, String nonce) async {
     // Resolve API server endpoint from user provided serverUrl
     await _apiService.resolveAndSetEndpoint(serverUrl);
     final redirectUri = '$callbackUrlScheme:///oauth-callback';
@@ -22,6 +22,7 @@ class OAuthService {
         redirectUri: redirectUri,
         state: Optional.present(state),
         codeChallenge: Optional.present(codeChallenge),
+        nonce: Optional.present(nonce),
       ),
     );
 
@@ -31,7 +32,7 @@ class OAuthService {
     return authUrl;
   }
 
-  Future<LoginResponseDto?> oAuthLogin(String oauthUrl, String state, String codeVerifier) async {
+  Future<LoginResponseDto?> oAuthLogin(String oauthUrl, String state, String codeVerifier, String nonce) async {
     String result = await FlutterWebAuth2.authenticate(url: oauthUrl, callbackUrlScheme: callbackUrlScheme);
 
     log.info('Received OAuth callback: $result');
@@ -41,7 +42,12 @@ class OAuthService {
     }
 
     return await _apiService.oAuthApi.finishOAuth(
-      OAuthCallbackDto(url: result, state: Optional.present(state), codeVerifier: Optional.present(codeVerifier)),
+      OAuthCallbackDto(
+        url: result,
+        state: Optional.present(state),
+        codeVerifier: Optional.present(codeVerifier),
+        nonce: Optional.present(nonce),
+      ),
     );
   }
 }

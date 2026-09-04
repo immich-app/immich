@@ -1916,6 +1916,8 @@ export type NotificationUpdateDto = {
 export type OAuthConfigDto = {
     /** OAuth code challenge (PKCE) */
     codeChallenge?: string;
+    /** OAuth nonce parameter */
+    nonce?: string;
     /** OAuth redirect URI */
     redirectUri: string;
     /** OAuth state parameter */
@@ -1932,6 +1934,8 @@ export type OAuthBackchannelLogoutDto = {
 export type OAuthCallbackDto = {
     /** OAuth code verifier (PKCE) */
     codeVerifier?: string;
+    /** OAuth nonce parameter */
+    nonce?: string;
     /** OAuth state parameter */
     state?: string;
     /** OAuth callback URL */
