@@ -144,12 +144,14 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
       return;
     }
 
-    await _db.transaction(() async {
+    await _db.batch((batch) {
       for (final slice in assetIds.slices(kDriftMaxChunk)) {
-        await (_db.update(_db.trashSyncEntity)..where((row) => row.assetId.isIn(slice))).write(
+        batch.update(
+          _db.trashSyncEntity,
           const TrashSyncEntityCompanion(status: .new(.reviewApproved), remoteDeletedAt: .new(null)),
+          where: (row) => row.assetId.isIn(slice),
         );
-        await (_db.delete(_db.localAssetEntity)..where((row) => row.id.isIn(slice))).go();
+        batch.deleteWhere(_db.localAssetEntity, (row) => row.id.isIn(slice));
       }
     });
   }
@@ -160,10 +162,10 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
       return;
     }
 
-    await _db.transaction(() async {
+    await _db.batch((batch) {
       for (final slice in assetIds.slices(kDriftMaxChunk)) {
-        await (_db.delete(_db.trashSyncEntity)..where((row) => row.assetId.isIn(slice))).go();
-        await (_db.delete(_db.localAssetEntity)..where((row) => row.id.isIn(slice))).go();
+        batch.deleteWhere(_db.trashSyncEntity, (row) => row.assetId.isIn(slice));
+        batch.deleteWhere(_db.localAssetEntity, (row) => row.id.isIn(slice));
       }
     });
   }
