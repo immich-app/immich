@@ -99,6 +99,8 @@ To see local changes to `@immich/ui` in Immich, do the following:
 2. Run `mise //mobile:translation` to generate the translation file.
 3. Change to the `mobile/` directory and run `flutter run` to start the app.
 
+The app includes a small Rust core (`native/`) that is compiled from source during the build. With mise the Rust toolchain is installed for you; with your own Flutter install, install [rustup](https://rustup.rs) once and the build fetches the pinned toolchain itself. The first build takes a little longer because of this.
+
 ##### iOS Code Signing
 
 The Immich Apple Team ID and bundle IDs are specified in `mobile/ios/Signing.xcconfig`. For local development, we provide an override mechanism.
