@@ -481,7 +481,10 @@
         <ArchiveAction
           menuItem
           unarchive={assetMultiSelectManager.isAllArchived}
-          onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
+          onArchive={(ids, visibility) =>
+            timelineManager.update(ids, (asset) => {
+              asset.visibility = visibility;
+            })}
         />
         {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
