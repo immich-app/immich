@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -48,12 +49,47 @@ class AssetMediaRepository {
   }
 
   Future<List<String>> deleteAll(List<String> ids, {bool trash = true}) async {
-    if (trash && CurrentPlatform.isAndroid && await _androidSupportsTrash()) {
+    if (ids.isEmpty) {
+      return [];
+    }
+
+    final useTrash = trash && CurrentPlatform.isAndroid && await _androidSupportsTrash();
+    try {
+      return await _deleteAll(ids, useTrash);
+    } on PlatformException catch (error, stack) {
+      // photo_manager rejects whole batch as soon as one id can't be resolved in MediaStore, see #30133
+      final existingIds = await _filterExistingIds(ids);
+      if (existingIds.length == ids.length) {
+        rethrow;
+      }
+
+      _log.warning(
+        "Skipping ${ids.length - existingIds.length} assets that no longer exist on the device",
+        error,
+        stack,
+      );
+      if (existingIds.isEmpty) {
+        return [];
+      }
+      return _deleteAll(existingIds, useTrash);
+    }
+  }
+
+  Future<List<String>> _deleteAll(List<String> ids, bool trash) {
+    if (trash) {
       return PhotoManager.editor.android.moveToTrash(
         ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
       );
     }
     return PhotoManager.editor.deleteWithIds(ids);
+  }
+
+  Future<List<String>> _filterExistingIds(List<String> ids) async {
+    final entities = await Future.wait(ids.map(AssetEntity.fromId));
+    return [
+      for (final (index, entity) in entities.indexed)
+        if (entity != null) ids[index],
+    ];
   }
 
   Future<bool> _restoreFromTrashById(String mediaId, int type) async {
