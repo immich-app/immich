@@ -205,6 +205,8 @@ void main() {
 
     group('prompt handling', () {
       testWidgets('permanent delete shows a single app dialog', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
         final asset = owned(localId: 'local');
 
         await pumpDelete(tester, {asset}, trashEnabled: false);
@@ -214,9 +216,10 @@ void main() {
         await tester.tap(find.byType(TextButton).at(1));
         await tester.pumpAndSettle();
 
-        expect(find.text(StaticTranslations.instance.move_to_device_trash), findsNothing);
+        expect(find.byType(ConfirmDialog), findsNothing);
         verify(() => assetService.delete([asset.id])).called(1);
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
+        debugDefaultTargetPlatformOverride = null;
       });
 
       testWidgets('local only delete on Android with MANAGE_MEDIA shows the prompt', (tester) async {
@@ -248,9 +251,9 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
 
-      testWidgets('local only delete on Android below API 30 asks before deleting', (tester) async {
+      testWidgets('local only delete on Android 30 warns even though the OS asks', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
         final asset = LocalAssetFactory.create();
 
         await pumpDelete(tester, {asset});
@@ -259,17 +262,6 @@ void main() {
         await respondToDialog(tester, confirm: true);
 
         verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
-        debugDefaultTargetPlatformOverride = null;
-      });
-
-      testWidgets('local only delete on Android below API 30 deletes nothing when cancelled', (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
-
-        await pumpDelete(tester, {LocalAssetFactory.create()});
-        await respondToDialog(tester, confirm: false);
-
-        verifyNever(() => cleanupService.deleteLocalAssets(any()));
         debugDefaultTargetPlatformOverride = null;
       });
 
@@ -286,17 +278,33 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
 
-      testWidgets('mixed delete on Android below API 30 keeps the trash flow', (tester) async {
+      testWidgets('backed up device copy below API 30 asks instead of warning', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
-        final asset = owned(localId: 'local');
+        final asset = LocalAssetFactory.create(remoteId: 'remote');
 
         await pumpDelete(tester, {asset});
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text(StaticTranslations.instance.delete_dialog_alert_local), findsOneWidget);
+        await respondToDialog(tester, confirm: true);
 
-        expect(find.byType(ConfirmDialog), findsNothing);
-        verify(() => assetService.trash([asset.id])).called(1);
-        verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
+        verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('mixed selection below API 30 warns about the local only asset', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        final backedUp = owned(localId: 'local');
+        final localOnly = LocalAssetFactory.create();
+
+        await pumpDelete(tester, {backedUp, localOnly});
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text(StaticTranslations.instance.delete_dialog_alert_local_non_backed_up), findsOneWidget);
+        await respondToDialog(tester, confirm: true);
+
+        verify(() => assetService.trash([backedUp.id])).called(1);
+        verify(() => cleanupService.deleteLocalAssets(['local', localOnly.id])).called(1);
         debugDefaultTargetPlatformOverride = null;
       });
     });
@@ -335,6 +343,42 @@ void main() {
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
+    });
+
+    testWidgets('asks before deleting on Android below API 30', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+      final asset = LocalAssetFactory.create(remoteId: 'remote');
+
+      await tester.pumpTestAction(
+        context,
+        const CleanupLocalAction(source: .timeline),
+        overrides: context.selected({asset}),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text(StaticTranslations.instance.delete_dialog_alert_local), findsOneWidget);
+      await respondToDialog(tester, confirm: true);
+
+      verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('asks before deleting on Android 30 as well', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
+      final asset = LocalAssetFactory.create(remoteId: 'remote');
+
+      await tester.pumpTestAction(
+        context,
+        const CleanupLocalAction(source: .timeline),
+        overrides: context.selected({asset}),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text(StaticTranslations.instance.delete_dialog_alert_local), findsOneWidget);
+      await respondToDialog(tester, confirm: true);
+
+      verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+      debugDefaultTargetPlatformOverride = null;
     });
   });
 }
