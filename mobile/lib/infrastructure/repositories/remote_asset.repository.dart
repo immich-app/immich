@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/asset/edit.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/exif.dart';
@@ -53,12 +54,44 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     });
   }
 
-  Stream<RemoteAsset?> watch(String id) {
-    return _assetSelectable(id).watchSingleOrNull();
-  }
-
   Future<RemoteAsset?> get(String id) {
     return _assetSelectable(id).getSingleOrNull();
+  }
+
+  /// Watches an asset, including transitions between local and remote representations.
+  /// Exactly one of [remoteId] or [localId] anchors the asset; [checksum] finds
+  /// its counterpart. Prefers remote and emits `null` when neither exists.
+  Stream<BaseAsset?> watchMergedAsset({String? remoteId, String? localId, String? checksum}) {
+    assert((localId == null) != (remoteId == null), 'exactly one of localId / remoteId must be set');
+
+    final rae = _db.remoteAssetEntity;
+    final lae = _db.localAssetEntity;
+    final currentUser = _db.authUserEntity;
+
+    final Expression<bool> remoteMatch;
+    final Expression<bool> localMatch;
+    if (remoteId != null) {
+      remoteMatch = rae.id.equals(remoteId);
+      localMatch = checksum == null ? const Constant(false) : lae.checksum.equals(checksum);
+    } else {
+      localMatch = lae.id.equalsNullable(localId);
+      remoteMatch = checksum == null
+          ? const Constant(false)
+          : rae.checksum.equals(checksum) & rae.ownerId.equalsExp(currentUser.id);
+    }
+
+    // Anchored on the current user so a row is returned even when one side is absent.
+    final query = currentUser.select().join([leftOuterJoin(rae, remoteMatch), leftOuterJoin(lae, localMatch)])
+      ..orderBy([OrderingTerm.asc(lae.id)])
+      ..limit(1);
+
+    return query.watchSingleOrNull().map((row) {
+      final remote = row?.readTableOrNull(rae);
+      if (remote != null) {
+        return remote.toDto(localId: row?.readTableOrNull(lae)?.id);
+      }
+      return row?.readTableOrNull(lae)?.toDto();
+    });
   }
 
   Future<List<RemoteAsset>> getAllDebugForChecksum(String checksum) {
