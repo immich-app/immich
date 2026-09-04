@@ -7,10 +7,12 @@ import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.da
 import 'package:immich_mobile/platform/asset_media_api.g.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../repository.mocks.dart';
 import '../service_context.dart';
 
 void main() {
   late MediumServiceContext ctx;
+  late MockAssetMediaRepository assetMediaRepository;
   late TrashSyncService sut;
   late String userId;
 
@@ -19,15 +21,17 @@ void main() {
 
   setUp(() async {
     ctx = await MediumServiceContext.init();
+    assetMediaRepository = MockAssetMediaRepository();
     sut = TrashSyncService(
       repo: ctx.trashSyncRepository,
       assetMediaApi: ctx.assetMediaApi,
+      assetMediaRepository: assetMediaRepository,
       permission: ctx.permissionRepository,
       settings: ctx.settings,
     );
     userId = (await ctx.newUser()).id;
     await ctx.newAuthUser(id: userId);
-    await ctx.settings.write(.trashSyncEnabled, true);
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.autoSync);
 
     when(() => ctx.assetMediaApi.trash(any())).thenAnswer(_mapStatus(.done));
     when(() => ctx.assetMediaApi.restore(any())).thenAnswer(_mapStatus(.done));
@@ -68,13 +72,236 @@ void main() {
   });
 
   test('trash sync disabled: trashed asset is left untouched', () async {
-    await ctx.settings.write(.trashSyncEnabled, false);
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.off);
     final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
 
     await sut.reconcile();
 
     expect(await trashStatusOf(asset.localId), isNull);
     expect(await localAssetExists(asset.localId), isTrue);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('review mode records candidates without MANAGE_MEDIA and does not trash', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+
+    await sut.reconcile();
+
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('keeps selected review assets on device', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+
+    final count = await sut.rejectReviewAssets([asset.localId]);
+
+    expect(count, 1);
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
+    expect(await localAssetExists(asset.localId), isTrue);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('moves only successfully handled review assets to trash', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final moved = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    final failed = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+    when(() => ctx.assetMediaApi.trash(any())).thenAnswer(
+      (_) async => [
+        AssetMediaActionResult(id: moved.localId, status: .done),
+        AssetMediaActionResult(id: failed.localId, status: .failed),
+      ],
+    );
+
+    final count = await sut.approveReviewAssets([moved.localId, failed.localId]);
+
+    expect(count, 1);
+    expect(await trashStatusOf(moved.localId), TrashSyncStatus.reviewApproved);
+    expect(await localAssetExists(moved.localId), isFalse);
+    expect(await trashStatusOf(failed.localId), TrashSyncStatus.pending);
+    expect(await localAssetExists(failed.localId), isTrue);
+  });
+
+  test('drops review marker when the platform no longer has the asset', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+    when(
+      () => ctx.assetMediaApi.trash(any()),
+    ).thenAnswer((_) async => [AssetMediaActionResult(id: asset.localId, status: .notFound)]);
+
+    final count = await sut.approveReviewAssets([asset.localId]);
+
+    expect(count, 0);
+    expect(await trashStatusOf(asset.localId), isNull);
+    expect(await localAssetExists(asset.localId), isTrue);
+  });
+
+  test('candidate recorded in review mode is processed after switching to auto', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    final localAsset = await (ctx.db.select(
+      ctx.db.localAssetEntity,
+    )..where((row) => row.id.equals(asset.localId))).getSingle();
+
+    await sut.reconcile();
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.autoSync);
+    await sut.reconcile();
+
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.trashed);
+    expect(await localAssetExists(asset.localId), isFalse);
+
+    await (ctx.db.update(
+      ctx.db.remoteAssetEntity,
+    )..where((row) => row.id.equals(asset.remoteId))).write(const RemoteAssetEntityCompanion(deletedAt: .new(null)));
+    await sut.reconcile();
+    await ctx.newLocalAsset(id: asset.localId, checksumOption: const .none(), updatedAt: localAsset.updatedAt);
+    await ctx.trashSyncRepository.restoreChecksums();
+
+    final restored = await (ctx.db.select(
+      ctx.db.localAssetEntity,
+    )..where((row) => row.id.equals(asset.localId))).getSingle();
+    expect(restored.checksum, asset.checksum);
+  });
+
+  test('candidate left pending in auto mode is visible after switching to review', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.autoSync);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    when(() => ctx.assetMediaApi.trash(any())).thenAnswer(_mapStatus(.failed));
+
+    await sut.reconcile();
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    await sut.reconcile();
+
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+    expect(await ctx.trashSyncRepository.watchPendingReviewCount().first, 1);
+    expect(await localAssetExists(asset.localId), isTrue);
+  });
+
+  test('review mode records hard-deleted local match from server_deleted_checksum', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    final asset = await backedUpAsset(remoteDeletedAt: null);
+    await ctx.trashSyncRepository.recordHardDeletedChecksums([asset.remoteId]);
+    await (ctx.db.delete(ctx.db.remoteAssetEntity)..where((t) => t.id.equals(asset.remoteId))).go();
+
+    await sut.reconcile();
+
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+    expect(await localAssetExists(asset.localId), isTrue);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('rejected review is not reopened by soft or permanent delete until remote restore', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    final asset = await backedUpAsset(remoteDeletedAt: DateTime(2026, 1, 1));
+
+    await sut.reconcile();
+    await ctx.trashSyncRepository.markReviewAssetsRejected([asset.localId]);
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
+
+    await sut.reconcile();
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
+
+    await ctx.trashSyncRepository.recordHardDeletedChecksums([asset.remoteId]);
+    await (ctx.db.delete(ctx.db.remoteAssetEntity)..where((t) => t.id.equals(asset.remoteId))).go();
+
+    await sut.reconcile();
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('remote restore removes rejected review so later trash can create a new pending item', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    final asset = await backedUpAsset(remoteDeletedAt: DateTime(2026, 1, 1));
+
+    await sut.reconcile();
+    await ctx.trashSyncRepository.markReviewAssetsRejected([asset.localId]);
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
+
+    await (ctx.db.update(
+      ctx.db.remoteAssetEntity,
+    )..where((t) => t.id.equals(asset.remoteId))).write(const RemoteAssetEntityCompanion(deletedAt: .new(null)));
+    await sut.reconcile();
+    expect(await trashStatusOf(asset.localId), isNull);
+
+    await (ctx.db.update(ctx.db.remoteAssetEntity)..where((t) => t.id.equals(asset.remoteId))).write(
+      RemoteAssetEntityCompanion(deletedAt: .new(DateTime(2026, 2, 1))),
+    );
+    await sut.reconcile();
+
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+  });
+
+  test('review mode with MANAGE_MEDIA records candidates and reconciles Android OS trash without trashing', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
+    final reviewCandidate = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    final restoredRemote = await ctx.newRemoteAsset(ownerId: userId, deletedAt: null);
+    await markAsset(localId: 'restore', checksum: restoredRemote.checksum, status: .trashed);
+    await markAsset(localId: 'still-trashed', checksum: 'still-trashed', status: .trashed);
+
+    await sut.reconcile();
+
+    expect(await trashStatusOf(reviewCandidate.localId), TrashSyncStatus.pending);
+    expect(await trashStatusOf('restore'), TrashSyncStatus.restored);
+    verify(() => ctx.assetMediaApi.restore(['restore'])).called(1);
+    verify(() => ctx.assetMediaApi.trashedAmong(['still-trashed'])).called(1);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('iOS review mode records candidates and skips Android OS trash calls', () async {
+    debugDefaultTargetPlatformOverride = .iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = .android);
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+
+    await sut.reconcile();
+
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+    expect(await localAssetExists(asset.localId), isTrue);
+    verifyNever(() => ctx.permissionRepository.hasManageMediaPermission());
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+    verifyNever(() => ctx.assetMediaApi.restore(any()));
+    verifyNever(() => ctx.assetMediaApi.trashedAmong(any()));
+  });
+
+  test('iOS review trash uses the media repository instead of the Android Pigeon API', () async {
+    debugDefaultTargetPlatformOverride = .iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = .android);
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    await sut.reconcile();
+    when(() => assetMediaRepository.deleteAll([asset.localId])).thenAnswer((_) async => [asset.localId]);
+
+    final count = await sut.approveReviewAssets([asset.localId]);
+
+    expect(count, 1);
+    expect(await trashStatusOf(asset.localId), isNull);
+    expect(await localAssetExists(asset.localId), isFalse);
+    verify(() => assetMediaRepository.deleteAll([asset.localId])).called(1);
+    verifyNever(() => ctx.assetMediaApi.trash(any()));
+  });
+
+  test('auto mode records candidates without MANAGE_MEDIA but does not trash', () async {
+    await ctx.settings.write(.trashSyncMode, TrashSyncMode.autoSync);
+    when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+
+    await sut.reconcile();
+
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
     verifyNever(() => ctx.assetMediaApi.trash(any()));
   });
 

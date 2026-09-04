@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -200,7 +201,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     Future<void> promptManageMediaIfNeeded() async {
-      if (!CurrentPlatform.isAndroid || !ref.read(appConfigProvider).trashSyncEnabled) {
+      if (!CurrentPlatform.isAndroid || ref.read(appConfigProvider).trashSyncMode != TrashSyncMode.autoSync) {
         return;
       }
 
