@@ -1,5 +1,7 @@
 [tools]
 java = "21.0.2"
+# FCast casting (https://docs.immich.app/features/casting): fcast_sender_sdk builds its Rust core from source
+rust = "1.93.1"
 
 [tools."aqua:flutter/flutter"]
 version = "3.47.1"

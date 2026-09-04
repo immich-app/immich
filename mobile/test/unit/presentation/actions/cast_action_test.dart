@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/cast.action.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,8 +18,9 @@ void main() {
     await context.dispose();
   });
 
-  void Function(bool) captureConnectionListener() =>
-      verify(() => context.service.cast.onConnectionState = captureAny()).captured.single as void Function(bool);
+  void Function(CastConnection) captureConnectionListener() =>
+      verify(() => context.service.cast.onConnectionState = captureAny()).captured.single
+          as void Function(CastConnection);
 
   group('CastAction', () {
     testWidgets('offers to cast when nothing is connected', (tester) async {
@@ -30,7 +32,7 @@ void main() {
     testWidgets('switches to the connected icon once casting starts', (tester) async {
       await tester.pumpTestWidget(context, const ActionIconButton(action: CastAction()));
 
-      captureConnectionListener()(true);
+      captureConnectionListener()(CastConnection.connected);
       await tester.pump();
 
       expect(find.byIcon(Icons.cast_connected_rounded), findsOneWidget);
@@ -41,9 +43,9 @@ void main() {
       await tester.pumpTestWidget(context, const ActionIconButton(action: CastAction()));
 
       final onConnectionState = captureConnectionListener();
-      onConnectionState(true);
+      onConnectionState(CastConnection.connected);
       await tester.pump();
-      onConnectionState(false);
+      onConnectionState(CastConnection.idle);
       await tester.pump();
 
       expect(find.byIcon(Icons.cast_rounded), findsOneWidget);

@@ -3,37 +3,48 @@ import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
-import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:immich_mobile/services/cast.service.dart';
 
 final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
-  (ref) => CastNotifier(ref.watch(gCastServiceProvider)),
+  (ref) => CastNotifier(ref.watch(castServiceProvider)),
 );
 
 class CastNotifier extends StateNotifier<CastManagerState> {
-  // more cast providers can be added here (ie Fcast)
-  final GCastService _gCastService;
+  final CastService _castService;
+  StreamSubscription<CastDiscoveryUpdate>? _discovery;
 
-  List<(String, CastDestinationType, dynamic)> discovered = List.empty();
-
-  CastNotifier(this._gCastService)
+  CastNotifier(this._castService)
     : super(
         const CastManagerState(
-          isCasting: false,
+          connection: CastConnection.idle,
           currentTime: Duration.zero,
           duration: Duration.zero,
-          receiverName: '',
+          receiverName: null,
           castState: CastState.idle,
+          discoveryStatus: CastDiscoveryStatus.starting,
+          devices: [],
         ),
       ) {
-    _gCastService.onConnectionState = _onConnectionState;
-    _gCastService.onCurrentTime = _onCurrentTime;
-    _gCastService.onDuration = _onDuration;
-    _gCastService.onReceiverName = _onReceiverName;
-    _gCastService.onCastState = _onCastState;
+    _castService.onConnectionState = _onConnectionState;
+    _castService.onCurrentTime = _onCurrentTime;
+    _castService.onDuration = _onDuration;
+    _castService.onReceiverName = _onReceiverName;
+    _castService.onCastState = _onCastState;
+    _discovery = _castService.discovery.listen(_onDiscovery);
   }
 
-  void _onConnectionState(bool isCasting) {
-    state = state.copyWith(isCasting: isCasting);
+  void _onDiscovery(CastDiscoveryUpdate update) {
+    state = state.copyWith(discoveryStatus: update.status, devices: update.devices);
+  }
+
+  @override
+  void dispose() {
+    unawaited(_discovery?.cancel());
+    super.dispose();
+  }
+
+  void _onConnectionState(CastConnection connection) {
+    state = state.copyWith(connection: connection);
   }
 
   void _onCurrentTime(Duration currentTime) {
@@ -44,7 +55,7 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     state = state.copyWith(duration: duration);
   }
 
-  void _onReceiverName(String receiverName) {
+  void _onReceiverName(String? receiverName) {
     state = state.copyWith(receiverName: receiverName);
   }
 
@@ -53,22 +64,11 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   void loadMedia(RemoteAsset asset, bool reload) {
-    unawaited(_gCastService.loadMedia(asset, reload));
+    unawaited(_castService.loadMedia(asset, reload));
   }
 
-  Future<void> connect(CastDestinationType type, dynamic device) async {
-    switch (type) {
-      case CastDestinationType.googleCast:
-        await _gCastService.connect(device);
-    }
-  }
-
-  Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
-    if (discovered.isEmpty) {
-      discovered = await _gCastService.getDevices();
-    }
-
-    return discovered;
+  Future<void> connect(dynamic device) async {
+    await _castService.connect(device);
   }
 
   void toggle() {
@@ -82,22 +82,22 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   void play() {
-    _gCastService.play();
+    _castService.play();
   }
 
   void pause() {
-    _gCastService.pause();
+    _castService.pause();
   }
 
   void seekTo(Duration position) {
-    _gCastService.seekTo(position);
+    _castService.seekTo(position);
   }
 
   void stop() {
-    _gCastService.stop();
+    _castService.stop();
   }
 
   Future<void> disconnect() async {
-    await _gCastService.disconnect();
+    await _castService.disconnect();
   }
 }
