@@ -100,6 +100,22 @@ test.describe('Timeline', () => {
       const scrollTopAfter = await timelineUtils.getScrollTop(page);
       expect(scrollTopAfter).toBe(scrollTopBefore);
     });
+    test('Open /photos, scroll to another asset, open asset-viewer, browser back', async ({ page }) => {
+      const firstAsset = assets[0];
+      const targetAsset = assets[20];
+
+      await pageUtils.deepLinkPhotosPage(page, firstAsset.id);
+      await pageUtils.goToAsset(page, targetAsset.fileCreatedAt);
+      await thumbnailUtils.expectInViewport(page, targetAsset.id);
+
+      await thumbnailUtils.clickAssetId(page, targetAsset.id);
+      await assetViewerUtils.waitForViewerLoad(page, targetAsset);
+
+      await page.goBack();
+      await page.waitForURL(`**/photos?at=${targetAsset.id}`);
+
+      await thumbnailUtils.expectInViewport(page, targetAsset.id);
+    });
     test('Open /photos, open asset-viewer, next photo, browser back, back', async ({ page }) => {
       const rng = new SeededRandom(49);
       const asset = selectRandom(assets, rng);
@@ -439,6 +455,23 @@ test.describe('Timeline', () => {
       await pageUtils.goToAsset(page, asset.fileCreatedAt);
       await thumbnailUtils.expectInViewport(page, asset.id);
       await thumbnailUtils.expectSelectedDisabled(page, asset.id);
+    });
+    test('Open album, scroll to another asset, open asset-viewer, browser back', async ({ page }) => {
+      const album = timelineRestData.album;
+      const firstAsset = assets.find((asset) => asset.id === album.assetIds[0])!;
+      const targetAsset = assets.find((asset) => asset.id === album.assetIds[20])!;
+
+      await pageUtils.deepLinkAlbumPage(page, album.id, firstAsset.id);
+      await pageUtils.goToAsset(page, targetAsset.fileCreatedAt);
+      await thumbnailUtils.expectInViewport(page, targetAsset.id);
+
+      await thumbnailUtils.clickAssetId(page, targetAsset.id);
+      await assetViewerUtils.waitForViewerLoad(page, targetAsset);
+
+      await page.goBack();
+      await page.waitForURL(`**/albums/${album.id}?at=${targetAsset.id}`);
+
+      await thumbnailUtils.expectInViewport(page, targetAsset.id);
     });
     test.skip('Add photos to album', async ({ page }) => {
       const album = timelineRestData.album;
