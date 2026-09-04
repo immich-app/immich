@@ -169,6 +169,15 @@ export class MediaRepository {
       ]);
     }
 
+    const color = edits.find((edit) => edit.action === 'color');
+    if (color) {
+      const brightness = 1 + color.parameters.brightness / 100;
+      const contrast = 1 + color.parameters.contrast / 100;
+
+      // Keep the contrast midpoint at middle gray, matching CSS brightness() and contrast().
+      pipeline = pipeline.linear(brightness * contrast, 128 * (1 - contrast));
+    }
+
     return pipeline;
   }
 
