@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as p;
 
 class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 
@@ -105,8 +106,8 @@ void main() {
   });
 
   test('cleanupStaleTempFiles skips paths with active uploads', () async {
-    final stale = File('${cacheDir.path}/view_intent_stale.jpg')..writeAsStringSync('stale');
-    final active = File('${cacheDir.path}/view_intent_active.jpg')..writeAsStringSync('active');
+    final stale = File(p.join(cacheDir.path, 'view_intent_stale.jpg'))..writeAsStringSync('stale');
+    final active = File(p.join(cacheDir.path, 'view_intent_active.jpg'))..writeAsStringSync('active');
     service.markUploadActive(active.path);
 
     await service.cleanupStaleTempFiles();
