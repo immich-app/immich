@@ -86,10 +86,7 @@ class AssetMediaRepository {
 
   Future<List<String>> _filterExistingIds(List<String> ids) async {
     final entities = await Future.wait(ids.map(AssetEntity.fromId));
-    return [
-      for (final (index, entity) in entities.indexed)
-        if (entity != null) ids[index],
-    ];
+    return entities.nonNulls.map((e) => e.id).toList();
   }
 
   Future<bool> _restoreFromTrashById(String mediaId, int type) async {
