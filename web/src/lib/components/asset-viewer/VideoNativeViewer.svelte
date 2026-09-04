@@ -26,7 +26,14 @@
   } from '@mdi/js';
   import 'hls-video-element';
   import type HlsVideoElement from 'hls-video-element';
-  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
+  import Hls, {
+    AbrController,
+    Events,
+    type FragLoadedData,
+    type FragLoadingData,
+    type HlsConfig,
+    type Level,
+  } from 'hls.js';
   import 'media-chrome/media-control-bar';
   import 'media-chrome/media-controller';
   import 'media-chrome/media-fullscreen-button';
@@ -36,10 +43,10 @@
   import 'media-chrome/media-time-display';
   import 'media-chrome/media-volume-range';
   import 'media-chrome/menu/media-playback-rate-menu';
-  import 'media-chrome/menu/media-rendition-menu';
   import 'media-chrome/menu/media-settings-menu';
   import 'media-chrome/menu/media-settings-menu-button';
   import 'media-chrome/menu/media-settings-menu-item';
+  import './immich-rendition-menu';
   import { onDestroy, onMount } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
@@ -90,12 +97,15 @@
   });
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   let showVideo = $state(false);
+  let originalRendition = $state<string>();
   let hasFocused = $state(false);
   let activeSession: { assetId: string; id: string } | undefined;
   let rebuildCount = 0;
 
   const MAX_REBUILDS = 1;
   const SESSION_ID_REGEX = /\/video\/stream\/([0-9a-f-]{36})\//;
+
+  const isOriginalLevel = (level?: Level) => level?.attrs['STABLE-VARIANT-ID'] === 'original';
 
   // hls.js can abandon fetching an in-flight fragment if it thinks it'll take too long, in which case
   // it emergency switches to a different variant. This extends the delay even further due to
@@ -107,6 +117,22 @@
   // Hold the committed level until its first fragment lands, then resume normal ABR.
   class NoAbandonAbrController extends AbrController {
     private switchTarget = -1;
+
+    // The Original rendition streams the source bitrate, so it is only ever picked by hand
+    private encodedLevel(level: number) {
+      const levels = this.hls.levels;
+      if (!isOriginalLevel(levels[level])) {
+        return level;
+      }
+      const encoded = levels
+        .map((candidate, index) => (isOriginalLevel(candidate) ? -1 : index))
+        .filter((index) => index !== -1);
+      return encoded.findLast((index) => index < level) ?? encoded[0] ?? level;
+    }
+
+    override get firstAutoLevel(): number {
+      return this.encodedLevel(super.firstAutoLevel);
+    }
 
     protected override onFragLoading(_event: Events.FRAG_LOADING, data: FragLoadingData) {
       if (data.frag.sn === 'initSegment') {
@@ -122,7 +148,7 @@
     }
 
     override get nextAutoLevel(): number {
-      const level = super.nextAutoLevel;
+      const level = this.encodedLevel(super.nextAutoLevel);
       const target = this.hls.levels[this.switchTarget];
       // Hold the committed level, but only while hls.js still considers it healthy.
       if (target && level < this.switchTarget && target.loadError === 0 && target.fragmentError === 0) {
@@ -203,9 +229,13 @@
         activeSession = { assetId, id };
       }
 
+      // Rendition ids are the level indexes before any level is removed
+      const originalLevel = api.levels.findIndex((level) => isOriginalLevel(level));
+      originalRendition = originalLevel === -1 ? undefined : String(originalLevel);
+
       const keep = await mediaCapabilitiesManager.efficientLevels(api.levels);
       for (let i = api.levels.length - 1; i >= 0; i--) {
-        if (!keep.has(i)) {
+        if (!keep.has(i) && !isOriginalLevel(api.levels[i])) {
           api.removeLevel(i);
         }
       }
@@ -444,10 +474,15 @@
               <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
                 {$t('video_quality')}
                 <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />
-                <media-rendition-menu slot="submenu" hidden>
+                <immich-rendition-menu
+                  slot="submenu"
+                  hidden
+                  original-rendition={originalRendition}
+                  original-label={$t('video_quality_original')}
+                >
                   <Icon slot="back-icon" icon={mdiChevronLeft} class="m-2" />
                   <span slot="title">{$t('video_quality')}</span>
-                </media-rendition-menu>
+                </immich-rendition-menu>
               </media-settings-menu-item>
             {/if}
           </media-settings-menu>

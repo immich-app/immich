@@ -4,7 +4,9 @@ import {
   HLS_CLEANUP_INTERVAL_MS,
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
+  HLS_ORIGINAL_VARIANT_INDEX,
 } from 'src/constants';
+import { DvProfile, DvSignalCompatibility } from 'src/enum';
 import { TranscodingService } from 'src/services/transcoding.service';
 import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database';
 import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
@@ -485,6 +487,79 @@ describe(TranscodingService.name, () => {
       await sut.onSegmentRequest({ sessionId, assetId, variantIndex, segmentIndex: 0 });
 
       expect(mocks.process.spawn.mock.calls[0][1].toSorted()).toEqual(expected);
+    });
+
+    it('copies H.264 and AAC into keyframe-aligned fMP4 segments for the original variant', async () => {
+      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', ''));
+
+      await sut.onSessionRequest({ sessionId, assetId, ownerId });
+      await sut.onSegmentRequest({
+        sessionId,
+        assetId,
+        variantIndex: HLS_ORIGINAL_VARIANT_INDEX,
+        segmentIndex: 0,
+      });
+
+      const args = mocks.process.spawn.mock.calls[0][1];
+      expect(args).toEqual(
+        expect.arrayContaining([
+          '-i',
+          'eiffel-tower.mp4',
+          '-c:v',
+          'copy',
+          '-c:a',
+          'copy',
+          '-hls_time',
+          '0',
+          '-hls_segment_type',
+          'fmp4',
+          '-hls_fmp4_init_filename',
+          'init.mp4',
+          '-hls_segment_filename',
+          `/data/encoded-video/user-1/se/ss/session-1/${HLS_ORIGINAL_VARIANT_INDEX}/seg_%d.m4s`,
+        ]),
+      );
+      expect(args).not.toContain('-ss');
+      expect(args).not.toContain('-r');
+      expect(args).not.toContain('-ac');
+    });
+
+    it('lets a running Original stream reach a later segment instead of restarting it', async () => {
+      const process = mockSpawn(0, '', '');
+      mocks.process.spawn.mockReturnValue(process);
+
+      await sut.onSessionRequest({ sessionId, assetId, ownerId });
+      await sut.onSegmentRequest({ sessionId, assetId, variantIndex: HLS_ORIGINAL_VARIANT_INDEX, segmentIndex: 0 });
+      completeSegment(0);
+      await sut.onSegmentRequest({ sessionId, assetId, variantIndex: HLS_ORIGINAL_VARIANT_INDEX, segmentIndex: 6 });
+
+      expect(mocks.process.spawn).toHaveBeenCalledTimes(1);
+      expect(process.kill).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { name: 'HEVC', asset: waterfall, tags: ['-tag:v', 'hvc1'] },
+      { name: 'Dolby Vision', asset: train, tags: ['-strict', 'unofficial', '-tag:v', 'hvc1'] },
+      {
+        name: 'Dolby Vision without a compatible base layer',
+        asset: {
+          ...train,
+          videoStream: {
+            ...train.videoStream,
+            dvProfile: DvProfile.Dvhe05,
+            dvBlSignalCompatibilityId: DvSignalCompatibility.None,
+          },
+        },
+        tags: ['-strict', 'unofficial', '-tag:v', 'dvh1'],
+      },
+    ])('tags $name so browsers can decode the original variant', async ({ asset, tags }) => {
+      mocks.videoStream.getForTranscoding.mockResolvedValue(asset);
+      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', ''));
+
+      await sut.onSessionRequest({ sessionId, assetId, ownerId });
+      await sut.onSegmentRequest({ sessionId, assetId, variantIndex: HLS_ORIGINAL_VARIANT_INDEX, segmentIndex: 0 });
+
+      expect(mocks.process.spawn.mock.calls[0][1].join(' ')).toContain(tags.join(' '));
     });
   });
 
