@@ -102,11 +102,13 @@ test.describe('Timeline', () => {
     });
     test('Open /photos, scroll to another asset, open asset-viewer, browser back', async ({ page }) => {
       const firstAsset = assets[0];
-      const targetAsset = assets[20];
 
       await pageUtils.deepLinkPhotosPage(page, firstAsset.id);
-      await pageUtils.goToAsset(page, targetAsset.fileCreatedAt);
-      await thumbnailUtils.expectInViewport(page, targetAsset.id);
+      await timelineUtils.locator(page).hover();
+      await page.mouse.wheel(0, 3000);
+
+      const [targetAssetId] = (await thumbnailUtils.getFirstInViewport(page))!;
+      const targetAsset = assets.find((asset) => asset.id === targetAssetId)!;
 
       await thumbnailUtils.clickAssetId(page, targetAsset.id);
       await assetViewerUtils.waitForViewerLoad(page, targetAsset);
@@ -459,11 +461,13 @@ test.describe('Timeline', () => {
     test('Open album, scroll to another asset, open asset-viewer, browser back', async ({ page }) => {
       const album = timelineRestData.album;
       const firstAsset = assets.find((asset) => asset.id === album.assetIds[0])!;
-      const targetAsset = assets.find((asset) => asset.id === album.assetIds[20])!;
 
       await pageUtils.deepLinkAlbumPage(page, album.id, firstAsset.id);
-      await pageUtils.goToAsset(page, targetAsset.fileCreatedAt);
-      await thumbnailUtils.expectInViewport(page, targetAsset.id);
+      await timelineUtils.locator(page).hover();
+      await page.mouse.wheel(0, 3000);
+
+      const [targetAssetId] = (await thumbnailUtils.getFirstInViewport(page))!;
+      const targetAsset = assets.find((asset) => asset.id === targetAssetId)!;
 
       await thumbnailUtils.clickAssetId(page, targetAsset.id);
       await assetViewerUtils.waitForViewerLoad(page, targetAsset);
