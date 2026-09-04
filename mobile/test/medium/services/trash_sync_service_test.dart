@@ -295,14 +295,14 @@ void main() {
     verifyNever(() => ctx.assetMediaApi.trash(any()));
   });
 
-  test('auto mode keeps existing #29922 permission gate', () async {
+  test('auto mode records candidates without MANAGE_MEDIA but does not trash', () async {
     await ctx.settings.write(.trashSyncMode, TrashSyncMode.autoSync);
     when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
     final asset = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
 
     await sut.reconcile();
 
-    expect(await trashStatusOf(asset.localId), isNull);
+    expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
     verifyNever(() => ctx.assetMediaApi.trash(any()));
   });
 

@@ -30,22 +30,26 @@ class TrashSyncService {
     try {
       await _prune();
 
-      switch (_settings.appConfig.trashSyncMode) {
+      final mode = _settings.appConfig.trashSyncMode;
+      switch (mode) {
         case TrashSyncMode.off:
           return;
         case TrashSyncMode.autoSync:
-          if (!await _canApplyToOsTrash()) {
-            return;
-          }
           await _recordAuto();
-          await _act();
         case TrashSyncMode.review:
           await _recordReview();
-          if (CurrentPlatform.isAndroid && await _canApplyToOsTrash()) {
-            await _restoreAssets();
-            await _reconcileWithOSTrash();
-          }
       }
+
+      if (!await _canApplyToOsTrash()) {
+        return;
+      }
+
+      if (mode == TrashSyncMode.autoSync) {
+        await _trashAssets();
+      }
+
+      await _restoreAssets();
+      await _reconcileWithOSTrash();
     } catch (error, stack) {
       _log.severe("Trash reconcile failed", error, stack);
     }
@@ -83,12 +87,6 @@ class TrashSyncService {
     await _repo.pruneStaleMarkers();
     await _repo.pruneDismissedMarkers();
     await _repo.prunePendingMarkers();
-  }
-
-  Future<void> _act() async {
-    await _trashAssets();
-    await _restoreAssets();
-    await _reconcileWithOSTrash();
   }
 
   Future<void> _trashAssets() async {
