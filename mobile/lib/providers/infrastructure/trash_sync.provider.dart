@@ -27,7 +27,6 @@ final pendingTrashReviewCountProvider = StreamProvider.autoDispose<int>((ref) {
 final trashSyncServiceProvider = Provider<TrashSyncService>(
   (ref) => TrashSyncService(
     repo: ref.watch(driftProvider.select((db) => db.trashSyncRepository)),
-    localAssets: ref.watch(driftProvider.select((db) => db.localAssetRepository)),
     assetMediaApi: ref.watch(assetMediaApiProvider),
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permission: ref.watch(permissionRepositoryProvider),

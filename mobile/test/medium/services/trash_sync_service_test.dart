@@ -24,7 +24,6 @@ void main() {
     assetMediaRepository = MockAssetMediaRepository();
     sut = TrashSyncService(
       repo: ctx.trashSyncRepository,
-      localAssets: ctx.db.localAssetRepository,
       assetMediaApi: ctx.assetMediaApi,
       assetMediaRepository: assetMediaRepository,
       permission: ctx.permissionRepository,
@@ -289,7 +288,7 @@ void main() {
     final count = await sut.approveReviewAssets([asset.localId]);
 
     expect(count, 1);
-    expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewApproved);
+    expect(await trashStatusOf(asset.localId), isNull);
     expect(await localAssetExists(asset.localId), isFalse);
     verify(() => assetMediaRepository.deleteAll([asset.localId])).called(1);
     verifyNever(() => ctx.assetMediaApi.trash(any()));

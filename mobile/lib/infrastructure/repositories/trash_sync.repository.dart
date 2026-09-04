@@ -138,17 +138,34 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     return _recordReviewAssets(existsQuery(deletedChecksum));
   }
 
-  /// Marks pending review assets as approved after they are moved to the device trash.
+  /// Marks review assets as approved and removes their local rows after they are moved to the device trash.
   Future<void> markReviewAssetsApproved(Set<String> assetIds) async {
     if (assetIds.isEmpty) {
       return;
     }
 
-    for (final slice in assetIds.slices(kDriftMaxChunk)) {
-      await (_db.update(_db.trashSyncEntity)
-            ..where((row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending)))
-          .write(const TrashSyncEntityCompanion(status: .new(.reviewApproved), remoteDeletedAt: .new(null)));
+    await _db.transaction(() async {
+      for (final slice in assetIds.slices(kDriftMaxChunk)) {
+        await (_db.update(_db.trashSyncEntity)..where((row) => row.assetId.isIn(slice))).write(
+          const TrashSyncEntityCompanion(status: .new(.reviewApproved), remoteDeletedAt: .new(null)),
+        );
+        await (_db.delete(_db.localAssetEntity)..where((row) => row.id.isIn(slice))).go();
+      }
+    });
+  }
+
+  /// Removes review markers and local rows after assets are permanently deleted from the device.
+  Future<void> deleteReviewAssets(Set<String> assetIds) async {
+    if (assetIds.isEmpty) {
+      return;
     }
+
+    await _db.transaction(() async {
+      for (final slice in assetIds.slices(kDriftMaxChunk)) {
+        await (_db.delete(_db.trashSyncEntity)..where((row) => row.assetId.isIn(slice))).go();
+        await (_db.delete(_db.localAssetEntity)..where((row) => row.id.isIn(slice))).go();
+      }
+    });
   }
 
   /// Returns selected local asset IDs that are currently pending trash review.
@@ -354,24 +371,24 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
       ..addColumns([_db.trashSyncEntity.assetId])
       ..where(
         _db.trashSyncEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-        _db.trashSyncEntity.status.equalsValue(.pending).not(),
+            _db.trashSyncEntity.status.equalsValue(.pending).not(),
       );
     final source = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum, pending, _db.localAssetEntity.updatedAt])
       ..where(
         _db.localAssetEntity.checksum.isNotNull() &
-        contentExists &
-        existsQuery(selectedAssetsQuery) &
-        notExistsQuery(nonPendingMarkerQuery),
+            contentExists &
+            existsQuery(selectedAssetsQuery) &
+            notExistsQuery(nonPendingMarkerQuery),
       );
     if (remoteDeletedAt != null) {
       final newerOrEqualPendingMarkerQuery = _db.selectOnly(_db.trashSyncEntity)
         ..addColumns([_db.trashSyncEntity.assetId])
         ..where(
           _db.trashSyncEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-          _db.trashSyncEntity.status.equalsValue(.pending) &
-          _db.trashSyncEntity.remoteDeletedAt.isNotNull() &
-          _db.trashSyncEntity.remoteDeletedAt.isBiggerOrEqual(remoteDeletedAt),
+              _db.trashSyncEntity.status.equalsValue(.pending) &
+              _db.trashSyncEntity.remoteDeletedAt.isNotNull() &
+              _db.trashSyncEntity.remoteDeletedAt.isBiggerOrEqual(remoteDeletedAt),
         );
       source
         ..addColumns([remoteDeletedAt])
@@ -381,24 +398,24 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     await _db
         .into(_db.trashSyncEntity)
         .insertFromSelect(
-      source,
-      columns: {
-        _db.trashSyncEntity.assetId: _db.localAssetEntity.id,
-        _db.trashSyncEntity.checksum: _db.localAssetEntity.checksum,
-        _db.trashSyncEntity.status: pending,
-        _db.trashSyncEntity.assetUpdatedAt: _db.localAssetEntity.updatedAt,
-        _db.trashSyncEntity.remoteDeletedAt: ?remoteDeletedAt,
-      },
-      onConflict: DoUpdate.withExcluded(
+          source,
+          columns: {
+            _db.trashSyncEntity.assetId: _db.localAssetEntity.id,
+            _db.trashSyncEntity.checksum: _db.localAssetEntity.checksum,
+            _db.trashSyncEntity.status: pending,
+            _db.trashSyncEntity.assetUpdatedAt: _db.localAssetEntity.updatedAt,
+            _db.trashSyncEntity.remoteDeletedAt: ?remoteDeletedAt,
+          },
+          onConflict: DoUpdate.withExcluded(
             (old, excluded) => remoteDeletedAt != null
-            ? TrashSyncEntityCompanion.custom(
-          status: excluded.status,
-          assetUpdatedAt: excluded.assetUpdatedAt,
-          remoteDeletedAt: excluded.remoteDeletedAt,
-        )
-            : TrashSyncEntityCompanion.custom(status: excluded.status, assetUpdatedAt: excluded.assetUpdatedAt),
-      ),
-    );
+                ? TrashSyncEntityCompanion.custom(
+                    status: excluded.status,
+                    assetUpdatedAt: excluded.assetUpdatedAt,
+                    remoteDeletedAt: excluded.remoteDeletedAt,
+                  )
+                : TrashSyncEntityCompanion.custom(status: excluded.status, assetUpdatedAt: excluded.assetUpdatedAt),
+          ),
+        );
   }
 
   /// Builds a query for assets contained in backup-selected albums.
@@ -406,11 +423,11 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     ..addColumns([_db.localAlbumAssetEntity.assetId])
     ..where(
       _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-      _db.localAlbumAssetEntity.albumId.isInQuery(
-        _db.selectOnly(_db.localAlbumEntity)
-          ..addColumns([_db.localAlbumEntity.id])
-          ..where(_db.localAlbumEntity.backupSelection.equalsValue(.selected)),
-      ),
+          _db.localAlbumAssetEntity.albumId.isInQuery(
+            _db.selectOnly(_db.localAlbumEntity)
+              ..addColumns([_db.localAlbumEntity.id])
+              ..where(_db.localAlbumEntity.backupSelection.equalsValue(.selected)),
+          ),
     );
 
   Future<List<String>> _trashSyncAssetIdsWhere(Expression<bool> filter) {

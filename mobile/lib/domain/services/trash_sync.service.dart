@@ -1,6 +1,5 @@
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/platform/asset_media_api.g.dart';
@@ -10,7 +9,6 @@ import 'package:logging/logging.dart';
 
 class TrashSyncService {
   final TrashSyncRepository _repo;
-  final LocalAssetRepository _localAssets;
   final AssetMediaApi _assetMediaApi;
   final AssetMediaRepository _assetMediaRepository;
   final DevicePermissionRepository _permission;
@@ -19,7 +17,6 @@ class TrashSyncService {
 
   TrashSyncService({
     required this._repo,
-    required this._localAssets,
     required this._assetMediaApi,
     required this._assetMediaRepository,
     required this._permission,
@@ -63,24 +60,25 @@ class TrashSyncService {
       return 0;
     }
 
-    final Set<String> trashedAssetIds;
+    final Set<String> approvedAssetIds;
     if (CurrentPlatform.isAndroid) {
       final results = await _assetMediaApi.trash(reviewableAssetIds);
-      trashedAssetIds = results.whereStatusIn(const {.done, .alreadyInState});
+      approvedAssetIds = results.whereStatusIn(const {.done, .alreadyInState});
       final missingAssetIds = results.whereStatusIn(const {.notFound});
       if (missingAssetIds.isNotEmpty) {
         await _repo.deleteMarkers(missingAssetIds);
       }
     } else {
-      trashedAssetIds = (await _assetMediaRepository.deleteAll(reviewableAssetIds)).toSet();
+      approvedAssetIds = (await _assetMediaRepository.deleteAll(reviewableAssetIds)).toSet();
     }
 
-    if (trashedAssetIds.isNotEmpty) {
-      await _repo.markReviewAssetsApproved(trashedAssetIds);
-      await _localAssets.deleteAssets(trashedAssetIds.toList(growable: false));
+    if (CurrentPlatform.isAndroid) {
+      await _repo.markReviewAssetsApproved(approvedAssetIds);
+    } else {
+      await _repo.deleteReviewAssets(approvedAssetIds);
     }
 
-    return trashedAssetIds.length;
+    return approvedAssetIds.length;
   }
 
   Future<void> _prune() async {

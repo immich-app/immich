@@ -346,17 +346,23 @@ void main() {
       await sut.recordSoftDeletedReviewAssets();
 
       await sut.markReviewAssetsApproved({first.localId, second.localId});
-      await (ctx.db.delete(
-        ctx.db.localAssetEntity,
-      )..where((asset) => asset.id.isIn([first.localId, second.localId]))).go();
 
       expect(await trashStatusOf(first.localId), TrashSyncStatus.reviewApproved);
       expect(await trashStatusOf(second.localId), TrashSyncStatus.reviewApproved);
+      expect(
+        await (ctx.db.select(
+          ctx.db.localAssetEntity,
+        )..where((asset) => asset.id.isIn([first.localId, second.localId]))).get(),
+        isEmpty,
+      );
     });
 
-    test('does not carry the review deletion date into an approved marker', () async {
+    test('successful approval replaces the current review status and deletion date', () async {
       final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
       await sut.recordSoftDeletedReviewAssets();
+      await (ctx.db.update(ctx.db.trashSyncEntity)..where((row) => row.assetId.equals(asset.localId))).write(
+        const TrashSyncEntityCompanion(status: Value(TrashSyncStatus.reviewRejected)),
+      );
 
       await sut.markReviewAssetsApproved({asset.localId});
 
@@ -530,6 +536,9 @@ void main() {
       expect(await trashStatusOf(approved.localId), TrashSyncStatus.reviewApproved);
 
       await sut.markRestored({approved.localId});
+      await ctx.newLocalAsset(id: approved.localId, checksum: approved.checksum);
+      final restoredAlbum = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: restoredAlbum.id, assetId: approved.localId);
       await sut.restoreChecksums();
 
       expect(await trashStatusOf(approved.localId), isNull);
