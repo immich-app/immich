@@ -3045,8 +3045,32 @@ export type TagBulkAssetsDto = {
     tagIds: string[];
 };
 export type TagBulkAssetsResponseDto = {
-    /** Number of assets tagged */
+    /** Number of assets tagged/untagged */
     count: number;
+};
+export type TagBulkAddRemoveAssetsDto = {
+    /** Asset IDs to tag/untag */
+    assetIds: string[];
+    /** Tag IDs to add to assets */
+    tagIdsToAdd: string[];
+    /** Tag IDs to remove from assets */
+    tagIdsToRemove: string[];
+};
+export type TagBulkAddRemoveAssetsResponseDto = {
+    /** Number of assets tagged */
+    addedCount: number;
+    /** Number of assets untagged */
+    removedCount: number;
+};
+export type TagsForAssetsDto = {
+    /** Asset IDs to retrieve tags for */
+    assetIds: string[];
+};
+export type TagsForAssetsResponseDto = {
+    /** Asset IDs associated with the tag */
+    assetIds?: string[];
+    /** Tag ID */
+    tagId: string;
 };
 export type TagUpdateDto = {
     /** Tag color (hex) */
@@ -7180,6 +7204,36 @@ export function upsertTags({ tagUpsertDto }: {
     })));
 }
 /**
+ * Untag assets
+ */
+export function bulkUntagAssets({ tagBulkAssetsDto }: {
+    tagBulkAssetsDto: TagBulkAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TagBulkAssetsResponseDto;
+    }>("/tags/assets", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: tagBulkAssetsDto
+    })));
+}
+/**
+ * Tag/Untag assets
+ */
+export function bulkTagUntagAssets({ tagBulkAddRemoveAssetsDto }: {
+    tagBulkAddRemoveAssetsDto: TagBulkAddRemoveAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: TagBulkAddRemoveAssetsResponseDto;
+    }>("/tags/assets", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: tagBulkAddRemoveAssetsDto
+    })));
+}
+/**
  * Tag assets
  */
 export function bulkTagAssets({ tagBulkAssetsDto }: {
@@ -7192,6 +7246,21 @@ export function bulkTagAssets({ tagBulkAssetsDto }: {
         ...opts,
         method: "PUT",
         body: tagBulkAssetsDto
+    })));
+}
+/**
+ * Retrieve tags for assets
+ */
+export function queryTagsForAssets({ tagsForAssetsDto }: {
+    tagsForAssetsDto: TagsForAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TagsForAssetsResponseDto[];
+    }>("/tags/assets/queryTags", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: tagsForAssetsDto
     })));
 }
 /**

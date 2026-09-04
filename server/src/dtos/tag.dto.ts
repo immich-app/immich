@@ -40,11 +40,38 @@ const TagBulkAssetsSchema = z
   })
   .meta({ id: 'TagBulkAssetsDto' });
 
+export const TagBulkAddRemoveAssetsSchema = z
+  .object({
+    tagIdsToAdd: z.array(z.uuidv4()).describe('Tag IDs to add to assets'),
+    tagIdsToRemove: z.array(z.uuidv4()).describe('Tag IDs to remove from assets'),
+    assetIds: z.array(z.uuidv4()).min(1).describe('Asset IDs to tag/untag'),
+  })
+  .meta({ id: 'TagBulkAddRemoveAssetsDto' });
+
 const TagBulkAssetsResponseSchema = z
   .object({
-    count: z.int().describe('Number of assets tagged'),
+    count: z.int().describe('Number of assets tagged/untagged'),
   })
   .meta({ id: 'TagBulkAssetsResponseDto' });
+const TagBulkAddRemoveAssetsResponseSchema = z
+  .object({
+    addedCount: z.int().describe('Number of assets tagged'),
+    removedCount: z.int().describe('Number of assets untagged'),
+  })
+  .meta({ id: 'TagBulkAddRemoveAssetsResponseDto' });
+
+export const TagsForAssetsSchema = z
+  .object({
+    assetIds: z.array(z.uuidv4()).min(1).max(10_000).describe('Asset IDs to retrieve tags for'),
+  })
+  .meta({ id: 'TagsForAssetsDto' });
+
+export const TagsForAssetsResponseSchema = z
+  .object({
+    tagId: z.uuidv4().describe('Tag ID'),
+    assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs associated with the tag'),
+  })
+  .meta({ id: 'TagsForAssetsResponseDto' });
 
 export const TagResponseSchema = z
   .object({
@@ -64,8 +91,12 @@ export class TagCreateDto extends createZodDto(TagCreateSchema) {}
 export class TagUpdateDto extends createZodDto(TagUpdateSchema) {}
 export class TagUpsertDto extends createZodDto(TagUpsertSchema) {}
 export class TagBulkAssetsDto extends createZodDto(TagBulkAssetsSchema) {}
+export class TagBulkAddRemoveAssetsDto extends createZodDto(TagBulkAddRemoveAssetsSchema) {}
 export class TagBulkAssetsResponseDto extends createZodDto(TagBulkAssetsResponseSchema) {}
+export class TagBulkAddRemoveAssetsResponseDto extends createZodDto(TagBulkAddRemoveAssetsResponseSchema) {}
 export class TagResponseDto extends createZodDto(TagResponseSchema) {}
+export class TagsForAssetsDto extends createZodDto(TagsForAssetsSchema) {}
+export class TagsForAssetsResponseDto extends createZodDto(TagsForAssetsResponseSchema) {}
 
 export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
   return {
