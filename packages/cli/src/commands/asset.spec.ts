@@ -72,12 +72,34 @@ describe('uploadFiles', () => {
       };
     });
 
-    await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual([
-      {
-        filepath: testFilePath,
-        id: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
-      },
-    ]);
+    await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      newAssets: [
+        {
+          filepath: testFilePath,
+          id: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+        },
+      ],
+      duplicateAssets: [],
+    });
+  });
+
+  it('returns duplicate assets when the server rejects the upload as a duplicate', async () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
+      return {
+        status: 200,
+        body: JSON.stringify({ id: 'fc5621b1-86f6-44a1-9905-403e607df9f5', status: 'duplicate' }),
+      };
+    });
+
+    await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      newAssets: [],
+      duplicateAssets: [
+        {
+          filepath: testFilePath,
+          id: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+        },
+      ],
+    });
   });
 
   it('returns new assets when upload file retry is successful', async () => {
@@ -94,12 +116,15 @@ describe('uploadFiles', () => {
       };
     });
 
-    await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual([
-      {
-        filepath: testFilePath,
-        id: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
-      },
-    ]);
+    await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      newAssets: [
+        {
+          filepath: testFilePath,
+          id: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+        },
+      ],
+      duplicateAssets: [],
+    });
   });
 
   it('returns new assets when upload file retry is failed', async () => {
@@ -107,7 +132,10 @@ describe('uploadFiles', () => {
       throw new Error('Network error');
     });
 
-    await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual([]);
+    await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      newAssets: [],
+      duplicateAssets: [],
+    });
   });
 
   it('uploads assets with the specified visibility', async () => {
