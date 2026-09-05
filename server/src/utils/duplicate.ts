@@ -1,4 +1,5 @@
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { isCameraRaw, isRenderedImage } from 'src/utils/duplicate-detection';
 
 /**
  * Counts all truthy values in the exifInfo object.
@@ -55,6 +56,13 @@ export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto |
  * @returns Array of suggested asset IDs to keep (0 or 1 element)
  */
 export const suggestDuplicateKeepAssetIds = (assets: AssetResponseDto[]): string[] => {
+  if (
+    assets.some((asset) => isCameraRaw(asset.originalFileName)) &&
+    assets.some((asset) => isRenderedImage(asset.originalFileName))
+  ) {
+    return assets.map((asset) => asset.id);
+  }
+
   const suggested = suggestDuplicate(assets);
   return suggested ? [suggested.id] : [];
 };

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, NotNull, Selectable, ShallowDehydrateObject, sql } from 'kysely';
+import { Kysely, NotNull, Selectable, ShallowDehydrateObject, SqlBool, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
@@ -27,6 +27,17 @@ interface DuplicateMergeOptions {
   assetIds: string[];
   sourceIds: string[];
 }
+
+const duplicateMetadataColumns = [
+  'asset.id as assetId',
+  'asset.duplicateId',
+  'asset.originalFileName',
+  'asset.originalPath',
+  'asset_exif.dateTimeOriginal',
+  'asset_exif.make',
+  'asset_exif.model',
+  'asset_exif.autoStackId',
+] as const;
 
 @Injectable()
 export class DuplicateRepository {
@@ -217,6 +228,41 @@ export class DuplicateRepository {
         .where('cte.distance', '<=', maxDistance as number)
         .execute();
     });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.STRING] })
+  searchMetadataByAutoStackId(assetId: string, ownerId: string, autoStackId: string) {
+    return this.db
+      .selectFrom('asset')
+      .$call(withDefaultVisibility)
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(duplicateMetadataColumns)
+      .where('asset.ownerId', '=', asUuid(ownerId))
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.type', '=', AssetType.Image)
+      .where('asset.id', '!=', asUuid(assetId))
+      .where('asset.stackId', 'is', null)
+      .where('asset_exif.autoStackId', '=', autoStackId)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.STRING] })
+  searchMetadataByFilenamePrefix(assetId: string, ownerId: string, filenamePrefix: string) {
+    const escapedFilenamePrefix = filenamePrefix.replaceAll(/[!%_]/g, '!$&');
+    return this.db
+      .selectFrom('asset')
+      .$call(withDefaultVisibility)
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(duplicateMetadataColumns)
+      .where('asset.ownerId', '=', asUuid(ownerId))
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.type', '=', AssetType.Image)
+      .where('asset.id', '!=', asUuid(assetId))
+      .where('asset.stackId', 'is', null)
+      .where(
+        sql<SqlBool>`f_unaccent(asset."originalFileName") ilike (f_unaccent(${escapedFilenamePrefix}) || '.%') escape '!'`,
+      )
+      .execute();
   }
 
   @GenerateSql({

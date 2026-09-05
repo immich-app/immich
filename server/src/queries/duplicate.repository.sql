@@ -176,6 +176,50 @@ where
   "cte"."distance" <= $6
 commit
 
+-- DuplicateRepository.searchMetadataByAutoStackId
+select
+  "asset"."id" as "assetId",
+  "asset"."duplicateId",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."autoStackId"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."visibility" in ('archive', 'timeline')
+  and "asset"."ownerId" = $1::uuid
+  and "asset"."deletedAt" is null
+  and "asset"."type" = $2
+  and "asset"."id" != $3::uuid
+  and "asset"."stackId" is null
+  and "asset_exif"."autoStackId" = $4
+
+-- DuplicateRepository.searchMetadataByFilenamePrefix
+select
+  "asset"."id" as "assetId",
+  "asset"."duplicateId",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."autoStackId"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."visibility" in ('archive', 'timeline')
+  and "asset"."ownerId" = $1::uuid
+  and "asset"."deletedAt" is null
+  and "asset"."type" = $2
+  and "asset"."id" != $3::uuid
+  and "asset"."stackId" is null
+  and f_unaccent (asset."originalFileName") ilike (f_unaccent ($4) || '.%') escape '!'
+
 -- DuplicateRepository.merge
 update "asset"
 set

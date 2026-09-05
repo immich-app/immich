@@ -75,7 +75,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.SmartSearch, data: { id: 'asset-1' } },
-        jobs: [],
+        jobs: [JobName.AssetDetectDuplicates],
       },
       {
         item: { name: JobName.AssetDetectFaces, data: { id: 'asset-1' } },

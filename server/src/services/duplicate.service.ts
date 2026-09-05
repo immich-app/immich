@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { OnJob } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResolveDto, DuplicateResolveGroupDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
-import { AssetDuplicateResult } from 'src/repositories/search.repository';
+import { AssetStatus, AssetType, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate';
-import { batched, isDuplicateDetectionEnabled } from 'src/utils/misc';
+import { getMetadataCandidatePrefixes, isMetadataDuplicate } from 'src/utils/duplicate-detection';
+import { batched, isDuplicateDetectionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 type ResolveRequest = {
   assetUpdate: {
@@ -299,6 +300,16 @@ export class DuplicateService extends BaseService {
     return response;
   }
 
+  @OnEvent({ name: 'AssetMetadataExtracted' })
+  async onAssetMetadataExtracted({ assetId }: ArgOf<'AssetMetadataExtracted'>) {
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    if (!isDuplicateDetectionEnabled(machineLearning)) {
+      return;
+    }
+
+    await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: { id: assetId } });
+  }
+
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
   async handleQueueSearchDuplicates({ force }: JobOf<JobName.AssetDetectDuplicatesQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
@@ -343,26 +354,48 @@ export class DuplicateService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    if (!asset.embedding) {
-      this.logger.debug(`Asset ${id} is missing embedding`);
-      return JobStatus.Failed;
+    const metadataCandidates = new Map<string, string | null>();
+    if (asset.type === AssetType.Image) {
+      const candidateSearches = getMetadataCandidatePrefixes(asset).map((prefix) =>
+        this.duplicateRepository.searchMetadataByFilenamePrefix(asset.id, asset.ownerId, prefix),
+      );
+      if (asset.autoStackId?.trim()) {
+        candidateSearches.push(
+          this.duplicateRepository.searchMetadataByAutoStackId(asset.id, asset.ownerId, asset.autoStackId),
+        );
+      }
+
+      const candidateGroups = await Promise.all(candidateSearches);
+      for (const candidate of candidateGroups.flat()) {
+        if (isMetadataDuplicate(asset, candidate)) {
+          metadataCandidates.set(candidate.assetId, candidate.duplicateId);
+        }
+      }
     }
 
-    const duplicateAssets = await this.duplicateRepository.search({
-      assetId: asset.id,
-      embedding: asset.embedding,
-      maxDistance: machineLearning.duplicateDetection.maxDistance,
-      type: asset.type,
-      userIds: [asset.ownerId],
-    });
+    const embedding = isSmartSearchEnabled(machineLearning) ? asset.embedding : null;
+    const canSearchEmbeddings = !!embedding;
+    const duplicateAssets = new Map(metadataCandidates);
+    if (embedding) {
+      const embeddingCandidates = await this.duplicateRepository.search({
+        assetId: asset.id,
+        embedding,
+        maxDistance: machineLearning.duplicateDetection.maxDistance,
+        type: asset.type,
+        userIds: [asset.ownerId],
+      });
+      for (const candidate of embeddingCandidates) {
+        duplicateAssets.set(candidate.assetId, candidate.duplicateId);
+      }
+    }
 
     let assetIds = [asset.id];
-    if (duplicateAssets.length > 0) {
+    if (duplicateAssets.size > 0) {
       this.logger.debug(
-        `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
+        `Found ${duplicateAssets.size} duplicate${duplicateAssets.size === 1 ? '' : 's'} for asset ${asset.id}`,
       );
       assetIds = await this.updateDuplicates(asset, duplicateAssets);
-    } else if (asset.duplicateId) {
+    } else if (canSearchEmbeddings && asset.duplicateId) {
       this.logger.debug(`No duplicates found for asset ${asset.id}, removing duplicateId`);
       await this.assetRepository.update({ id: asset.id, duplicateId: null });
     }
@@ -375,20 +408,16 @@ export class DuplicateService extends BaseService {
 
   private async updateDuplicates(
     asset: { id: string; duplicateId: string | null },
-    duplicateAssets: AssetDuplicateResult[],
+    duplicateAssets: Map<string, string | null>,
   ): Promise<string[]> {
-    const duplicateIds = [
-      ...new Set(
-        duplicateAssets
-          .filter((asset): asset is AssetDuplicateResult & { duplicateId: string } => !!asset.duplicateId)
-          .map((duplicate) => duplicate.duplicateId),
-      ),
-    ];
+    const duplicateIds = [...new Set(duplicateAssets.values().filter((duplicateId) => duplicateId !== null))];
 
     const targetDuplicateId = asset.duplicateId ?? duplicateIds.shift() ?? this.cryptoRepository.randomUUID();
     const assetIdsToUpdate = duplicateAssets
-      .filter((asset) => asset.duplicateId !== targetDuplicateId)
-      .map((duplicate) => duplicate.assetId);
+      .entries()
+      .filter(([, duplicateId]) => duplicateId !== targetDuplicateId)
+      .map(([assetId]) => assetId)
+      .toArray();
     assetIdsToUpdate.push(asset.id);
 
     await this.duplicateRepository.merge({

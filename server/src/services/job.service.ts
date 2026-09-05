@@ -249,9 +249,7 @@ export class JobService extends BaseService {
       }
 
       case JobName.SmartSearch: {
-        if (item.data.source === 'upload') {
-          await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
-        }
+        await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
         break;
       }
 
