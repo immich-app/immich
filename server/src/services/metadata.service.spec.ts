@@ -72,6 +72,29 @@ const emptyPackets = {
   keyframeOwnDuration: [],
 };
 
+const makeBox = (type: string, ...payload: Buffer[]) => {
+  const body = Buffer.concat(payload);
+  const header = Buffer.alloc(8);
+  header.writeUInt32BE(body.length + 8);
+  header.write(type, 4, 'latin1');
+  return Buffer.concat([header, body]);
+};
+
+const makeFullBox = (type: string, ...payload: Buffer[]) => makeBox(type, Buffer.alloc(4), ...payload);
+
+const makeSpatialHeic = () => {
+  const value = (number: number) => {
+    const buffer = Buffer.alloc(4);
+    buffer.writeUInt32BE(number);
+    return buffer;
+  };
+  const stereoGroup = makeFullBox('ster', value(1), value(2), value(1), value(2));
+  return Buffer.concat([
+    makeBox('ftyp', Buffer.from('heic'), value(0)),
+    makeFullBox('meta', makeBox('grpl', stereoGroup)),
+  ]);
+};
+
 describe(MetadataService.name, () => {
   let sut: MetadataService;
   let mocks: ServiceMocks;
@@ -165,6 +188,68 @@ describe(MetadataService.name, () => {
     });
   });
 
+  describe('handleQueueSpatialMetadataExtraction', () => {
+    it('should queue HEIF images and videos', async () => {
+      const heic = AssetFactory.create({ originalPath: '/data/library/image.heic' });
+      const video = AssetFactory.create({ originalPath: '/data/library/video.mov', type: AssetType.Video });
+      const jpeg = AssetFactory.create({ originalPath: '/data/library/image.jpg' });
+      mocks.assetJob.streamForSpatialMetadataExtraction.mockReturnValue(makeStream([heic, video, jpeg]));
+
+      await expect(sut.handleQueueSpatialMetadataExtraction()).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetDetectSpatialMetadata, data: { id: heic.id } },
+        { name: JobName.AssetDetectSpatialMetadata, data: { id: video.id } },
+      ]);
+    });
+  });
+
+  describe('handleSpatialMetadataExtraction', () => {
+    it('should update spatial metadata without re-extracting all metadata', async () => {
+      const asset = AssetFactory.create({
+        originalFileName: 'spatial.heic',
+        originalPath: '/data/library/spatial.heic',
+      });
+      const file = makeSpatialHeic();
+      const time = new Date('2022-01-01T00:00:00.000Z');
+      mocks.assetJob.getForSpatialMetadataExtraction.mockResolvedValue(asset);
+      mocks.storage.stat.mockResolvedValue({ size: file.length, mtime: time, mtimeMs: time.valueOf() } as Stats);
+      mocks.storage.readFile.mockImplementation((_path, options) => {
+        const position = Number(options?.position ?? 0);
+        const length = options?.length ?? file.length;
+        return Promise.resolve(file.subarray(position, position + length));
+      });
+
+      await expect(sut.handleSpatialMetadataExtraction({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.updateSpatialMetadata).toHaveBeenCalledWith(asset.id, true);
+      expect(mocks.metadata.readTags).not.toHaveBeenCalled();
+    });
+
+    it('should skip an asset that no longer exists', async () => {
+      mocks.assetJob.getForSpatialMetadataExtraction.mockResolvedValue(undefined);
+
+      await expect(sut.handleSpatialMetadataExtraction({ id: 'missing' })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.asset.updateSpatialMetadata).not.toHaveBeenCalled();
+    });
+
+    it('should leave the stored value alone when the file cannot be read', async () => {
+      const asset = AssetFactory.create({
+        originalFileName: 'spatial.heic',
+        originalPath: '/data/library/spatial.heic',
+      });
+      const time = new Date('2022-01-01T00:00:00.000Z');
+      mocks.assetJob.getForSpatialMetadataExtraction.mockResolvedValue(asset);
+      mocks.storage.stat.mockResolvedValue({ size: 123_456, mtime: time, mtimeMs: time.valueOf() } as Stats);
+      mocks.storage.readFile.mockRejectedValue(new Error('EIO: i/o error'));
+
+      await expect(sut.handleSpatialMetadataExtraction({ id: asset.id })).resolves.toBe(JobStatus.Failed);
+
+      expect(mocks.asset.updateSpatialMetadata).not.toHaveBeenCalled();
+    });
+  });
+
   describe('handleMetadataExtraction', () => {
     beforeEach(() => {
       const time = new Date('2022-01-01T00:00:00.000Z');
@@ -175,6 +260,43 @@ describe(MetadataService.name, () => {
         mtimeMs: timeMs,
         birthtimeMs: timeMs,
       } as Stats);
+    });
+
+    it('should detect spatial metadata in a HEIC file', async () => {
+      const asset = AssetFactory.create({
+        originalFileName: 'spatial.heic',
+        originalPath: '/data/library/spatial.heic',
+      });
+      const file = makeSpatialHeic();
+      const time = new Date('2022-01-01T00:00:00.000Z');
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.storage.stat.mockResolvedValue({ size: file.length, mtime: time, mtimeMs: time.valueOf() } as Stats);
+      mocks.storage.readFile.mockImplementation((_path, options) => {
+        const position = Number(options?.position ?? 0);
+        const length = options?.length ?? file.length;
+        return Promise.resolve(file.subarray(position, position + length));
+      });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ exif: expect.objectContaining({ isSpatial: true }) }),
+      );
+    });
+
+    it('should not clear spatial metadata when the file cannot be read', async () => {
+      const asset = AssetFactory.create({
+        originalFileName: 'spatial.heic',
+        originalPath: '/data/library/spatial.heic',
+      });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.storage.readFile.mockRejectedValue(new Error('EIO: i/o error'));
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ exif: expect.objectContaining({ isSpatial: undefined }) }),
+      );
     });
 
     it('should handle an asset that could not be found', async () => {
@@ -1095,6 +1217,7 @@ describe(MetadataService.name, () => {
             orientation: tags.Orientation?.toString(),
             profileDescription: tags.ProfileDescription,
             projectionType: 'EQUIRECTANGULAR',
+            isSpatial: false,
             timeZone: tags.zone,
             rating: tags.Rating,
             country: null,

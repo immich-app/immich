@@ -18,6 +18,11 @@ import { AssetTable } from 'src/schema/tables/asset.table';
   using: 'gist',
   expression: 'll_to_earth_public(latitude, longitude)',
 })
+@Index({
+  name: 'asset_exif_assetId_isSpatial_idx',
+  columns: ['assetId'],
+  where: '"isSpatial" IS TRUE',
+})
 @UpdatedAtTrigger('asset_exif_updatedAt')
 export class AssetExifTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', primary: true })
@@ -91,6 +96,10 @@ export class AssetExifTable {
 
   @Column({ type: 'character varying', nullable: true })
   projectionType!: string | null;
+
+  /** true when the file carries stereoscopic/spatial metadata (Apple spatial photo or video) */
+  @Column({ type: 'boolean', default: false })
+  isSpatial!: Generated<boolean>;
 
   @Column({ type: 'character varying', nullable: true })
   profileDescription!: string | null;

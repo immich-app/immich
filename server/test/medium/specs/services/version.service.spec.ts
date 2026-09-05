@@ -67,5 +67,28 @@ describe(VersionService.name, () => {
 
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
+
+    it('should queue spatial metadata detection when upgrading from 3.1.0', async () => {
+      const { sut, ctx } = setup();
+      const jobMock = ctx.getMock(JobRepository);
+      const versionHistoryRepo = ctx.get(VersionHistoryRepository);
+      jobMock.queue.mockResolvedValue(void 0);
+
+      await versionHistoryRepo.create({ version: 'v3.1.0' });
+      await sut.onBootstrap();
+
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.AssetDetectSpatialMetadataQueueAll });
+    });
+
+    it('should not queue spatial metadata detection when already on 3.2.0-rc.0', async () => {
+      const { sut, ctx } = setup();
+      const jobMock = ctx.getMock(JobRepository);
+      const versionHistoryRepo = ctx.get(VersionHistoryRepository);
+
+      await versionHistoryRepo.create({ version: 'v3.2.0-rc.0' });
+      await sut.onBootstrap();
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
   });
 });

@@ -539,6 +539,7 @@ export const columns = {
     'asset_exif.focalLength',
     'asset_exif.fps',
     'asset_exif.iso',
+    'asset_exif.isSpatial',
     'asset_exif.latitude',
     'asset_exif.lensModel',
     'asset_exif.livePhotoCID',

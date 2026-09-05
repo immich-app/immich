@@ -366,6 +366,8 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.AssetExtractMetadataQueueAll; data: IBaseJob }
   | { name: JobName.AssetExtractMetadata; data: IEntityJob }
+  | { name: JobName.AssetDetectSpatialMetadataQueueAll; data?: IBaseJob }
+  | { name: JobName.AssetDetectSpatialMetadata; data: IEntityJob }
 
   // Notifications
   | { name: JobName.NotificationsCleanup; data?: IBaseJob }

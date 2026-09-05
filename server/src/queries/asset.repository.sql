@@ -30,6 +30,13 @@ set
 where
   "assetId" in ($3)
 
+-- AssetRepository.updateSpatialMetadata
+update "asset_exif"
+set
+  "isSpatial" = $1
+where
+  "assetId" = $2
+
 -- AssetRepository.updateDateTimeOriginal
 update "asset_exif"
 set

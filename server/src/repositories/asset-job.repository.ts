@@ -158,6 +158,17 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getForSpatialMetadataExtraction(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select(['asset.id', 'asset.originalPath'])
+      .where('asset.id', '=', asUuid(id))
+      .where('asset.deletedAt', 'is', null)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getLockedPropertiesForMetadataExtraction(assetId: string) {
     return this.db
       .selectFrom('asset_exif')
@@ -376,6 +387,16 @@ export class AssetJobRepository {
             eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
           ),
       )
+      .where('asset.deletedAt', 'is', null)
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForSpatialMetadataExtraction() {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select(['asset.id', 'asset.originalPath'])
       .where('asset.deletedAt', 'is', null)
       .stream();
   }
