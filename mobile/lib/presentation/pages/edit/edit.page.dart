@@ -183,7 +183,10 @@ class _AspectRatioButton extends StatelessWidget {
               : Icon(ratio.icon, color: color),
           onPressed: onPressed,
         ),
-        Text(ratio.label, style: context.textTheme.displayMedium),
+        Text(
+          ratio.label == null ? '${ratio.numerator}:${ratio.denominator}' : context.tr(ratio.label!),
+          style: context.textTheme.displayMedium,
+        ),
       ],
     );
   }
