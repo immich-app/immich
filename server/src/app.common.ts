@@ -91,5 +91,15 @@ export async function configureExpress(
   const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 24 * 60 * 60 * 1000;
 
+  // A socket with no 'error' listener throws on error instead of emitting it,
+  // crashing the process - this hits idle keep-alive sockets and sockets handed
+  // off to the websocket upgrade handler when a peer resets the connection.
+  // Attach one at accept time so every socket has one for its whole lifetime.
+  server.on('connection', (socket) => {
+    socket.on('error', (error) => {
+      logger.debug(`Socket error: ${error.message}`);
+    });
+  });
+
   logger.log(`${IMMICH_SERVER_START} on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }
