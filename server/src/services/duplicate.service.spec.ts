@@ -20,6 +20,12 @@ const hasEmbedding = {
   duplicateId: null,
   embedding: '[1, 2, 3, 4]',
   visibility: AssetVisibility.Timeline,
+  originalFileName: 'IMG_0001.jpg',
+  originalPath: '/library/IMG_0001.jpg',
+  dateTimeOriginal: new Date('2026-01-20T12:00:00.000Z'),
+  make: 'Google',
+  model: 'Pixel 10 Pro',
+  autoStackId: null,
 };
 
 const hasDupe = {
@@ -34,6 +40,8 @@ describe(DuplicateService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(DuplicateService));
+    mocks.duplicateRepository.searchMetadataByAutoStackId.mockResolvedValue([]);
+    mocks.duplicateRepository.searchMetadataByFilenamePrefix.mockResolvedValue([]);
   });
 
   it('should work', () => {
@@ -87,7 +95,7 @@ describe(DuplicateService.name, () => {
       });
     });
 
-    it('should skip if machine learning is disabled', async () => {
+    it('should queue assets if machine learning is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
         machineLearning: {
           enabled: false,
@@ -96,8 +104,9 @@ describe(DuplicateService.name, () => {
           },
         },
       });
+      mocks.assetJob.streamForSearchDuplicates.mockReturnValue(makeStream([]));
 
-      await expect(sut.handleQueueSearchDuplicates({})).resolves.toBe(JobStatus.Skipped);
+      await expect(sut.handleQueueSearchDuplicates({})).resolves.toBe(JobStatus.Success);
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
@@ -147,6 +156,24 @@ describe(DuplicateService.name, () => {
           data: { id: asset.id },
         },
       ]);
+    });
+  });
+
+  describe('onAssetMetadataExtracted', () => {
+    it('should queue duplicate detection when enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { duplicateDetection: { enabled: true } } });
+
+      await sut.onAssetMetadataExtracted({ assetId: 'asset-1', userId: 'user-1' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetDetectDuplicates, data: { id: 'asset-1' } });
+    });
+
+    it('should not queue duplicate detection when disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { duplicateDetection: { enabled: false } } });
+
+      await sut.onAssetMetadataExtracted({ assetId: 'asset-1', userId: 'user-1' });
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
 
@@ -406,7 +433,7 @@ describe(DuplicateService.name, () => {
       });
     });
 
-    it('should skip if machine learning is disabled', async () => {
+    it('should detect metadata duplicates if machine learning is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
         machineLearning: {
           enabled: false,
@@ -415,10 +442,35 @@ describe(DuplicateService.name, () => {
           },
         },
       });
-      const result = await sut.handleSearchDuplicates({ id: newUuid() });
+      const rawAsset = {
+        ...hasEmbedding,
+        embedding: null,
+        originalFileName: 'IMG_0001.dng',
+        originalPath: '/library/RAW/IMG_0001.dng',
+      };
+      const renderedAsset = {
+        assetId: 'asset-2',
+        duplicateId: null,
+        originalFileName: 'IMG_0001.jpg',
+        originalPath: '/library/IMG_0001.jpg',
+        dateTimeOriginal: rawAsset.dateTimeOriginal,
+        make: rawAsset.make,
+        model: rawAsset.model,
+        autoStackId: null,
+      };
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(rawAsset);
+      mocks.duplicateRepository.searchMetadataByFilenamePrefix.mockResolvedValue([renderedAsset]);
+      mocks.duplicateRepository.merge.mockResolvedValue();
 
-      expect(result).toBe(JobStatus.Skipped);
-      expect(mocks.assetJob.getForSearchDuplicatesJob).not.toHaveBeenCalled();
+      const result = await sut.handleSearchDuplicates({ id: rawAsset.id });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.duplicateRepository.search).not.toHaveBeenCalled();
+      expect(mocks.duplicateRepository.merge).toHaveBeenCalledWith({
+        assetIds: [renderedAsset.assetId, rawAsset.id],
+        targetId: expect.any(String),
+        sourceIds: [],
+      });
     });
 
     it('should skip if duplicate detection is disabled', async () => {
@@ -466,14 +518,30 @@ describe(DuplicateService.name, () => {
       expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${asset.id} is not visible, skipping`);
     });
 
-    it('should fail if asset is missing embedding', async () => {
+    it('should complete if asset is missing embedding', async () => {
       mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, embedding: null });
 
       const asset = AssetFactory.create();
       const result = await sut.handleSearchDuplicates({ id: asset.id });
 
-      expect(result).toBe(JobStatus.Failed);
-      expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${asset.id} is missing embedding`);
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.duplicateRepository.search).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: hasEmbedding.id,
+        duplicatesDetectedAt: expect.any(Date),
+      });
+    });
+
+    it('should preserve an existing duplicate ID when embedding search is unavailable', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { enabled: false, duplicateDetection: { enabled: true } },
+      });
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasDupe, embedding: null });
+
+      const result = await sut.handleSearchDuplicates({ id: hasDupe.id });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
     it('should search for duplicates and update asset with duplicateId', async () => {

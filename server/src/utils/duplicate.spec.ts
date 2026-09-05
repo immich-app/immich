@@ -178,5 +178,14 @@ describe('duplicate utils', () => {
 
       expect(suggestDuplicateKeepAssetIds([small, large])).toEqual(['large']);
     });
+
+    it('should keep every asset in a RAW and rendered image group', () => {
+      const raw = createAsset('raw', 5000);
+      raw.originalFileName = 'IMG_0001.dng';
+      const rendered = createAsset('rendered', 1000);
+      rendered.originalFileName = 'IMG_0001.jpg';
+
+      expect(suggestDuplicateKeepAssetIds([raw, rendered])).toEqual(['raw', 'rendered']);
+    });
   });
 });

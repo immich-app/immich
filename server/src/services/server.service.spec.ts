@@ -153,6 +153,17 @@ describe(ServerService.name, () => {
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
     });
+
+    it('should expose duplicate detection when machine learning is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { enabled: false, duplicateDetection: { enabled: true } },
+      });
+
+      await expect(sut.getFeatures()).resolves.toMatchObject({
+        smartSearch: false,
+        duplicateDetection: true,
+      });
+    });
   });
 
   describe('getSystemConfig', () => {
