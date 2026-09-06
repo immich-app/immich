@@ -122,6 +122,7 @@ export const Route = {
 
   // system
   systemSettings: (params?: { isOpen?: OpenQueryParam }) => '/admin/system-settings' + asQueryString(params),
+  systemInfrastructure: () => '/admin/infrastructure',
   systemStatistics: () => '/admin/server-status',
   systemMaintenance: (params?: { continue?: string }) => '/admin/maintenance' + asQueryString(params),
   systemMaintenanceIntegrityReport: ({ reportType }: { reportType: IntegrityReport }) =>

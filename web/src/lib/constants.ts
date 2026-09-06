@@ -73,6 +73,7 @@ export enum OpenQueryParam {
   OAUTH = 'oauth',
   JOB = 'job',
   STORAGE_TEMPLATE = 'storage-template',
+  MACHINE_LEARNING = 'machine-learning',
   NOTIFICATIONS = 'notifications',
   PURCHASE_SETTINGS = 'user-purchase-settings',
   SHARING = 'sharing',

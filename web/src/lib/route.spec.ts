@@ -62,6 +62,21 @@ describe('Route', () => {
     });
   });
 
+  describe(Route.systemInfrastructure.name, () => {
+    it('should route to the admin infrastructure page', () => {
+      expect(Route.systemInfrastructure()).toBe('/admin/infrastructure');
+    });
+  });
+
+  describe('OpenQueryParam.MACHINE_LEARNING', () => {
+    it('should deep-link to the machine learning settings section', () => {
+      expect(OpenQueryParam.MACHINE_LEARNING).toBe('machine-learning');
+      expect(Route.systemSettings({ isOpen: OpenQueryParam.MACHINE_LEARNING })).toBe(
+        '/admin/system-settings?isOpen=machine-learning',
+      );
+    });
+  });
+
   describe(Route.continue.name, () => {
     beforeEach(() => {
       // @ts-expect-error - override location for testing
