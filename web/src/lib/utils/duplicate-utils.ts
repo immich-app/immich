@@ -59,6 +59,14 @@ type MetadataFieldDefinition = {
   titleKey: string;
   keys: readonly string[];
   render: (asset: AssetResponseDto, $t: MessageFormatter, locale: string | undefined) => string;
+  /**
+   * The full value, for fields whose `render` shortens it to fit the row.
+   *
+   * Without this a truncated value is simply unreachable: the row's own `title` is the field LABEL,
+   * so hovering a shortened path shows the word "Path" rather than the path. Deciding between two
+   * duplicates is often exactly the part of the path that was cut.
+   */
+  tooltip?: (asset: AssetResponseDto) => string | undefined;
 };
 
 const metadataFields = [
@@ -73,6 +81,7 @@ const metadataFields = [
     titleKey: 'path',
     keys: ['originalPath'],
     render: (asset, $t) => truncateMiddle(asset.originalPath) || $t('unknown'),
+    tooltip: (asset) => asset.originalPath || undefined,
   },
   {
     icon: mdiWeightKilogram,
@@ -233,10 +242,11 @@ export const countDifferingMetadataItems = (differing: DifferingMetadataFields):
   metadataFields.filter(({ keys }) => keys.some((k) => differing[k as MetadataFieldKey])).length;
 
 export const getAllMetadataItems = (asset: AssetResponseDto, $t: MessageFormatter, locale: string | undefined) =>
-  metadataFields.map(({ icon, titleKey, keys, render }) => ({
+  metadataFields.map(({ icon, titleKey, keys, render, tooltip }) => ({
     icon,
     title: $t(titleKey),
     render: render(asset, $t, locale),
+    tooltip: tooltip?.(asset),
     keys,
   }));
 

@@ -106,9 +106,10 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    {#each visibleMetadataItems as { icon, title, render, keys } (keys[0])}
+    {#each visibleMetadataItems as { icon, title, render, tooltip, keys } (keys[0])}
       <InfoRow {icon} {title}>
-        {render}
+        <!-- The row's own `title` is the field label, so a shortened value needs its own. -->
+        <span title={tooltip}>{render}</span>
       </InfoRow>
     {/each}
 
