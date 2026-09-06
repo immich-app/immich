@@ -1,4 +1,5 @@
 <script module lang="ts">
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAlbumInfo, getTagById } from '@immich/sdk';
 
@@ -14,6 +15,24 @@
     }
     return albumName;
   };
+
+  // This cache lives at module scope, so without these it is never invalidated: a renamed album
+  // kept its old name in every workflow step for the life of the page, and re-picking the same
+  // album hit the cached entry rather than the name the picker had just shown. Only a full reload
+  // fixed it, which is what clearing module state does.
+  //
+  // `AlbumUpdate` already carries the updated album, so the new name is taken from the event
+  // rather than refetched. Only ids already cached are refreshed — an album this page has never
+  // displayed is fetched on first use anyway, and adding it here would grow the map with entries
+  // no step refers to.
+  eventManager.on({
+    AlbumUpdate: (album) => {
+      if (albumNameCache.has(album.id)) {
+        albumNameCache.set(album.id, Promise.resolve(album.albumName));
+      }
+    },
+    AlbumDelete: (album) => albumNameCache.delete(album.id),
+  });
 </script>
 
 <script lang="ts">
