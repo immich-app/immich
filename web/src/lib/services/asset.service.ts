@@ -381,6 +381,14 @@ const handleFavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
+    // The Favorite/Unfavorite buttons choose their icon from `asset.isFavorite`, so the heart only
+    // changes when this object does. Emitting `AssetUpdate` is not enough on its own: the cache
+    // manager answers it by invalidating the entry rather than updating the asset the open viewer is
+    // rendering, which left the filled heart in place until some later round trip replaced it. The
+    // bulk action in the timeline already writes the field back for the same reason. Taking the
+    // value from the response rather than from the request keeps the icon showing what the server
+    // holds, not what the click asked for.
+    asset.isFavorite = response.isFavorite;
     toastManager.primary($t('added_to_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
@@ -393,6 +401,8 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
+    // See handleFavorite: the icon follows this field, so it has to follow the server's answer.
+    asset.isFavorite = response.isFavorite;
     toastManager.primary($t('removed_from_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {

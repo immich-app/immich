@@ -1,4 +1,4 @@
-import { getAssetInfo } from '@immich/sdk';
+import { getAssetInfo, updateAsset } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { vitest } from 'vitest';
 import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -68,6 +68,59 @@ describe('AssetService', () => {
       setSharedLink(sharedLinkFactory.build({ allowDownload: true }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
+    });
+  });
+
+  describe('favorite actions', () => {
+    beforeEach(() => {
+      authManager.setPreferences(preferencesFactory.build());
+      vitest.mocked(getFormatter).mockResolvedValue(vitest.fn().mockReturnValue('formatter'));
+    });
+
+    it('flips the heart as soon as the server has answered, rather than on a later round trip', async () => {
+      // The icon is chosen by `$if: () => isOwner && asset.isFavorite`, and the handler used to
+      // leave that field untouched — so the server was updated, the toast fired, the asset left the
+      // Favorites view, and the filled heart stayed until something else replaced the object.
+      const ownerId = 'owner';
+      authManager.setUser(userAdminFactory.build({ id: ownerId }));
+      const asset = assetFactory.build({ ownerId, isFavorite: true });
+      vitest.mocked(updateAsset).mockResolvedValue({ ...asset, isFavorite: false });
+
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.Unfavorite.$if?.()).toBe(true);
+
+      await assetActions.Unfavorite.onAction?.();
+
+      expect(asset.isFavorite).toBe(false);
+      expect(assetActions.Unfavorite.$if?.()).toBe(false);
+      expect(assetActions.Favorite.$if?.()).toBe(true);
+    });
+
+    it('flips the heart the other way when favoriting', async () => {
+      const ownerId = 'owner';
+      authManager.setUser(userAdminFactory.build({ id: ownerId }));
+      const asset = assetFactory.build({ ownerId, isFavorite: false });
+      vitest.mocked(updateAsset).mockResolvedValue({ ...asset, isFavorite: true });
+
+      const assetActions = getAssetActions(() => '', asset);
+      await assetActions.Favorite.onAction?.();
+
+      expect(asset.isFavorite).toBe(true);
+      expect(assetActions.Favorite.$if?.()).toBe(false);
+    });
+
+    it("takes the server's answer rather than assuming the toggle succeeded", async () => {
+      // If the server declines the change, the icon must keep showing what the server holds. The
+      // point of this fix is that the icon follows the response, not that it follows the click.
+      const ownerId = 'owner';
+      authManager.setUser(userAdminFactory.build({ id: ownerId }));
+      const asset = assetFactory.build({ ownerId, isFavorite: true });
+      vitest.mocked(updateAsset).mockResolvedValue({ ...asset, isFavorite: true });
+
+      const assetActions = getAssetActions(() => '', asset);
+      await assetActions.Unfavorite.onAction?.();
+
+      expect(asset.isFavorite).toBe(true);
     });
   });
 
