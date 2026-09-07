@@ -35,7 +35,12 @@ enum TimelineOrigin {
   albumActivities,
   folder,
   recentlyAdded,
-  syncTrash,
+  syncTrash;
+
+  bool get supportsAssetStack => switch (this) {
+    trash || syncTrash => false,
+    _ => true,
+  };
 }
 
 class TimelineFactory {

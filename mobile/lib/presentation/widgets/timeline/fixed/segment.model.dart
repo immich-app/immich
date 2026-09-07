@@ -272,7 +272,9 @@ class _AssetTileWidget extends ConsumerWidget {
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
-    final showStackIndicator = ref.watch(timelineServiceProvider).origin != TimelineOrigin.trash;
+    final showStackIndicator = ref.watch(
+      timelineServiceProvider.select((service) => service.origin.supportsAssetStack),
+    );
 
     return RepaintBoundary(
       child: GestureDetector(

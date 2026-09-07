@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -17,7 +16,7 @@ class AssetStackRow extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final hideAssetStack = ref.watch(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final hideAssetStack = ref.watch(timelineServiceProvider.select((service) => !service.origin.supportsAssetStack));
     if (hideAssetStack) {
       return const SizedBox.shrink();
     }
