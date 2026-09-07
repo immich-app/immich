@@ -595,7 +595,6 @@ where
       "asset_file"."assetId" = "asset"."id"
       and "asset_file"."type" = 'encoded_video'
   )
-  and "asset"."visibility" != 'hidden'
   and "asset"."deletedAt" is null
 
 -- AssetJobRepository.getForVideoConversion
