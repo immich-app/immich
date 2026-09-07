@@ -448,7 +448,8 @@
 
     <!-- Favorite asset star -->
     {#if !authManager.isSharedLink}
-        <div class="absolute inset-s-2 bottom-2 z-2">
+      <div class="absolute inset-s-2 bottom-2 z-2">
+        {#if asset.isFavorite}
           <button
             type="button"
             onclick={(e) => {
@@ -456,17 +457,18 @@
               e.preventDefault();
               toggleFavorite?.(e);
             }}
-            class="focus:outline-none"
-            aria-label={asset.isFavorite ? 'unfavorite' : 'to_favorite'}
+            class="focus:outline-none z-20"
+            aria-label='unfavorite'
             tabindex={-1}
           >
             <Icon 
               data-icon-favorite 
-              icon={asset.isFavorite ? mdiHeart : mdiHeartOutline} 
+              icon={mdiHeart} 
               size="24" 
               class="text-white" 
             />
           </button>
+          {/if}
         </div>
     {/if}
 
