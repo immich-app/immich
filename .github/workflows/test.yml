@@ -59,6 +59,7 @@ jobs:
               - 'mise.toml'
             mobile:
               - 'mobile/**'
+              - 'open-api/**'
               - 'mise.toml'
             machine-learning:
               - 'machine-learning/**'
