@@ -15,12 +15,16 @@
     mdiCameraBurst,
     mdiCheckCircle,
     mdiFileGifBox,
-    mdiHeart,
+    mdiHeart, 
+    mdiHeartOutline,
     mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
   } from '@mdi/js';
+  import { toggleFavoriteAsset } from '$lib/services/asset.service';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
@@ -92,6 +96,23 @@
       onSelect?.($state.snapshot(asset));
     }
   };
+
+  async function toggleFavorite(e?: MouseEvent){
+    e?.stopPropagation();
+    e?.preventDefault();
+
+    const previous = asset.isFavorite;
+    const desired = !previous;
+
+    asset = { ...asset, isFavorite: desired };
+
+    try{
+      const response = await toggleFavoriteAsset(asset, desired);
+      asset = response;
+    } catch (err) {
+      asset = { ...asset, isFavorite:previous };
+    }
+  }
 
   const callClickHandlers = () => {
     if (selected) {
@@ -332,12 +353,7 @@
           ></div>
         {/if}
 
-        <!-- Favorite asset star -->
-        {#if !authManager.isSharedLink && asset.isFavorite}
-          <div class="absolute inset-s-2 bottom-2 z-2">
-            <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
-          </div>
-        {/if}
+
 
         {#if !!assetOwner}
           <div class="absolute inset-e-2 bottom-1 z-2 max-w-[50%]">
@@ -428,6 +444,30 @@
           <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
       </button>
+    {/if}
+
+    <!-- Favorite asset star -->
+    {#if !authManager.isSharedLink}
+        <div class="absolute inset-s-2 bottom-2 z-2">
+          <button
+            type="button"
+            onclick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              toggleFavorite?.(e);
+            }}
+            class="focus:outline-none"
+            aria-label={asset.isFavorite ? 'unfavorite' : 'to_favorite'}
+            tabindex={-1}
+          >
+            <Icon 
+              data-icon-favorite 
+              icon={asset.isFavorite ? mdiHeart : mdiHeartOutline} 
+              size="24" 
+              class="text-white" 
+            />
+          </button>
+        </div>
     {/if}
 
     <!-- Preview asset button (visible on hover when any asset is selected) -->

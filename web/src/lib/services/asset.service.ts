@@ -400,6 +400,22 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
   }
 };
 
+export const toggleFavoriteAsset = async (asset: AssetResponseDto, desired?: boolean) => {
+  const $t = await getFormatter();
+  const target = desired ?? !asset.isFavorite;
+
+  try {
+    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: target } });
+    toastManager.primary(target ? $t('added_to_favorites') : $t('removed_from_favorites'));
+    eventManager.emit('AssetUpdate', response);
+    return response;
+  }catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+    throw error;
+  }
+};
+
+
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
   const messages: Record<AssetJobName, string> = {
     [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
