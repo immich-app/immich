@@ -163,6 +163,61 @@ void main() {
       expect(rows.single.remoteDeletedAt, newerDeletedAt.toUtc());
     });
 
+    test('reopens a rejected review marker for a newer remote deletion', () async {
+      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
+      final newerDeletedAt = DateTime(2026, 2, 1);
+
+      await sut.recordSoftDeletedReviewAssets();
+      await sut.markReviewAssetsRejected([asset.localId]);
+      await (ctx.db.update(
+        ctx.db.remoteAssetEntity,
+      )..where((t) => t.id.equals(asset.remoteId))).write(RemoteAssetEntityCompanion(deletedAt: Value(newerDeletedAt)));
+      await sut.recordSoftDeletedReviewAssets();
+
+      final rows = await ctx.db.select(ctx.db.trashSyncEntity).get();
+      expect(rows.single.status, TrashSyncStatus.pending);
+      expect(rows.single.remoteDeletedAt, newerDeletedAt.toUtc());
+    });
+
+    test('keeps a rejected review marker for the same or an older remote deletion', () async {
+      final rejectedDeletedAt = DateTime(2026, 2, 1);
+      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: rejectedDeletedAt);
+
+      await sut.recordSoftDeletedReviewAssets();
+      await sut.markReviewAssetsRejected([asset.localId]);
+
+      for (final deletedAt in [DateTime(2026, 1, 1), rejectedDeletedAt]) {
+        await (ctx.db.update(
+          ctx.db.remoteAssetEntity,
+        )..where((t) => t.id.equals(asset.remoteId))).write(RemoteAssetEntityCompanion(deletedAt: Value(deletedAt)));
+        await sut.recordSoftDeletedReviewAssets();
+
+        final marker = await (ctx.db.select(
+          ctx.db.trashSyncEntity,
+        )..where((row) => row.assetId.equals(asset.localId))).getSingle();
+        expect(marker.status, TrashSyncStatus.reviewRejected);
+        expect(marker.remoteDeletedAt, rejectedDeletedAt.toUtc());
+      }
+    });
+
+    test('adds the remote deletion time to a pending hard-delete marker', () async {
+      final deletedAt = DateTime(2026, 1, 1);
+      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: null);
+      await sut.recordHardDeletedChecksums([asset.remoteId]);
+      await sut.recordHardDeletedReviewAssets();
+
+      await (ctx.db.update(
+        ctx.db.remoteAssetEntity,
+      )..where((t) => t.id.equals(asset.remoteId))).write(RemoteAssetEntityCompanion(deletedAt: Value(deletedAt)));
+      await sut.recordSoftDeletedReviewAssets();
+
+      final marker = await (ctx.db.select(
+        ctx.db.trashSyncEntity,
+      )..where((row) => row.assetId.equals(asset.localId))).getSingle();
+      expect(marker.status, TrashSyncStatus.pending);
+      expect(marker.remoteDeletedAt, deletedAt.toUtc());
+    });
+
     test('keeps a pending review marker when the remote deletion time is older', () async {
       final existingDeletedAt = DateTime(2026, 2, 1);
       final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: existingDeletedAt);

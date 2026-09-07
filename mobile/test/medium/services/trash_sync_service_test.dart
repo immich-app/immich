@@ -203,7 +203,7 @@ void main() {
     verifyNever(() => ctx.assetMediaApi.trash(any()));
   });
 
-  test('rejected review is not reopened by soft or permanent delete until remote restore', () async {
+  test('rejected review is not reopened by the same soft delete or its permanent deletion', () async {
     await ctx.settings.write(.trashSyncMode, TrashSyncMode.review);
     final asset = await backedUpAsset(remoteDeletedAt: DateTime(2026, 1, 1));
 
