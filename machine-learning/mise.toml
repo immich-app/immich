@@ -14,6 +14,9 @@ run = "uv run pytest --cov=immich_ml --cov-report term-missing"
 [tasks.format]
 run = "uv run ruff format immich_ml"
 
+[tasks.test-hardware]
+run = "uv run pytest -m gpu test_hardware.py"
+
 [tasks.check]
 run = "uv run mypy --strict immich_ml/"
 
