@@ -14,7 +14,6 @@
   import UnstackAction from '$lib/components/asset-viewer/actions/UnstackAction.svelte';
   import LoadingDots from '$lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import RemoveFromAlbumAction from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
@@ -38,34 +37,31 @@
 
   interface Props {
     asset: AssetResponseDto;
-    album?: AlbumResponseDto | null;
+    album?: AlbumResponseDto;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
     onClose?: () => void;
-    onRemoveFromAlbum?: (assetIds: string[]) => void;
     isPlayingOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
   }
 
   let {
     asset,
-    album = null,
+    album,
     person = null,
     stack = null,
     preAction,
     onAction,
     onUndoDelete = undefined,
     onClose,
-    onRemoveFromAlbum,
     isPlayingOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
 
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
-  const isAlbumOwner = $derived(authManager.authenticated && album?.albumUsers[0].user.id === authManager.user.id);
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
 
   const { Cast } = $derived(getGlobalActions($t));
@@ -85,7 +81,7 @@
     onAction: () => setPlayOriginalVideo(!isPlayingOriginalVideo),
   });
 
-  const Actions = $derived(getAssetActions($t, { ...asset, stackPrimaryAssetId: stack?.primaryAssetId }));
+  const Actions = $derived(getAssetActions($t, { ...asset, stackPrimaryAssetId: stack?.primaryAssetId }, album));
   const sharedLink = getSharedLink();
 </script>
 
@@ -146,9 +142,7 @@
         {/if}
 
         <ActionMenuItem action={Actions.AddToAlbum} />
-        {#if album && (isOwner || isAlbumOwner)}
-          <RemoveFromAlbumAction {album} onRemove={onRemoveFromAlbum} assetIds={[asset.id]} menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.RemoveFromAlbum} />
 
         {#if isOwner}
           <AddToStackAction {asset} {stack} {onAction} />

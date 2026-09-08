@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { AssetAction } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
@@ -106,7 +107,11 @@
     });
   };
 
-  const handleRemoveFromAlbum = async (assetIds: string[]) => {
+  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
+    if (!album || !albumIds.includes(album.id)) {
+      return;
+    }
+
     timelineManager.removeAssets(assetIds);
 
     if (!assetIds.includes(assetCursor.current.id)) {
@@ -234,6 +239,8 @@
   });
 </script>
 
+<OnEvents {onAlbumRemoveAssets} />
+
 {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
     {withStacked}
@@ -251,7 +258,6 @@
     }}
     onUndoDelete={handleUndoDelete}
     onRandom={handleRandom}
-    onRemoveFromAlbum={handleRemoveFromAlbum}
     onClose={handleClose}
   />
 {/await}
