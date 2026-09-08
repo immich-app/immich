@@ -80,6 +80,8 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * starts the engine, and sets up a timeout timer if specified.
    */
   func run() {
+    NativeCore.log(level: ImmichCoreLogLevel_Info, logger: "BackgroundWorker", message: "Background worker started")
+
     // Start the Flutter engine with the specified callback as the entry point
     let isRunning = engine.run(
       withEntrypoint: "backgroundSyncNativeEntrypoint",
@@ -88,6 +90,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     
     // Verify that the Flutter engine started successfully
     if !isRunning {
+      NativeCore.log(level: ImmichCoreLogLevel_Severe, logger: "BackgroundWorker", message: "Background engine failed to start")
       complete(success: false)
       return
     }
@@ -103,6 +106,9 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     if maxSeconds != nil {
         // Schedule a timer to cancel the task after the specified timeout period
         Timer.scheduledTimer(withTimeInterval: TimeInterval(maxSeconds!), repeats: false) { _ in
+          if !self.isComplete {
+            NativeCore.log(level: ImmichCoreLogLevel_Warning, logger: "BackgroundWorker", message: "Background worker timed out")
+          }
           self.close()
         }
     }
@@ -161,6 +167,12 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       return
     }
     
+    if success {
+      NativeCore.log(level: ImmichCoreLogLevel_Info, logger: "BackgroundWorker", message: "Background worker finished: success")
+    } else {
+      NativeCore.log(level: ImmichCoreLogLevel_Warning, logger: "BackgroundWorker", message: "Background worker finished: failure")
+    }
+
     isComplete = true
     AppDelegate.cancelPlugins(with: engine)
     engine.destroyContext()

@@ -10,7 +10,9 @@ const _crate = '../crates/immich_core_ffi';
 const _manifests = [
   '../Cargo.toml',
   '../Cargo.lock',
+  '../.cargo/config.toml',
   '../crates/immich_core/Cargo.toml',
+  '../crates/immich_db/Cargo.toml',
   '$_crate/Cargo.toml',
   '$_crate/rust-toolchain.toml',
 ];

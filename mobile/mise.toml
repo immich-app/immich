@@ -27,6 +27,7 @@ depends = [
   "codegen:dart",
   "codegen:drift:migration",
   "codegen:drift:schema",
+  "codegen:native:schema",
   "codegen:pigeon",
   "codegen:translation",
 ]
@@ -80,6 +81,19 @@ run = [
   "flutter pub get",
   "dart run ffigen --config ffigen.yaml",
 ]
+
+[tasks."codegen:native:schema"]
+description = "Generate the sqlite schema for the native core"
+sources = [
+  "tool/generate_native_schema.dart",
+  "lib/data/db/**/*.dart",
+  "lib/domain/models/log.model.dart",
+  "lib/domain/models/settings_key.dart",
+]
+outputs = ["../native/crates/immich_db/src/schema.g.rs"]
+run = "flutter test tool/generate_native_schema.dart"
+depends = ["//:open-api-dart"]
+wait_for = ["codegen:dart", "codegen:drift:migration", "codegen:pigeon", "codegen:translation"]
 
 [tasks."codegen:pigeon"]
 alias = "pigeon"
