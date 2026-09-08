@@ -19,22 +19,25 @@
     <LoadingSpinner />
   {:then album}
     <div class="flex gap-2">
-      <AlbumCover {album} class="size-24" />
-      <p
-        class="line-clamp-2 grow text-lg/6 font-semibold text-black group-hover:text-primary dark:text-white"
-        data-testid="album-name"
-        title={album.albumName}
-      >
-        {album.albumName}
-      </p>
-      {#if album.description}
+      <AlbumCover {album} class="size-24 shrink-0" />
+      <div class="flex min-w-0 grow flex-col gap-1">
         <p
-          class="line-clamp-2 grow text-lg/6 font-semibold text-black group-hover:text-primary dark:text-white"
+          class="line-clamp-2 text-lg/6 font-semibold text-black dark:text-white"
           data-testid="album-name"
+          title={album.albumName}
         >
-          {album.description}
+          {album.albumName}
         </p>
-      {/if}
+        {#if album.description}
+          <p
+            class="line-clamp-2 text-sm text-gray-600 dark:text-gray-300"
+            data-testid="album-description"
+            title={album.description}
+          >
+            {album.description}
+          </p>
+        {/if}
+      </div>
       <div class="">
         <IconButton
           icon={mdiTrashCanOutline}
