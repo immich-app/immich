@@ -1034,6 +1034,4 @@ void main() {
       }
     });
   });
-
-  group('ActionButtonBuilder', () {});
 }
