@@ -80,5 +80,5 @@ class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMix
 }
 
 extension on PersonEntityData {
-  Person toDto() => Person(id: id, updatedAt: updatedAt, name: name, birthDate: birthDate);
+  Person toDto() => Person(id: id, updatedAt: updatedAt, name: name, birthDate: birthDate, isFavorite: isFavorite);
 }
