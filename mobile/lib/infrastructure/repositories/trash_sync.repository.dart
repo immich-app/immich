@@ -92,7 +92,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
           batch.insert(
             _db.serverDeletedChecksumEntity,
             ServerDeletedChecksumEntityCompanion.insert(checksum: checksum),
-            mode: .insertOrIgnore,
+            onConflict: DoNothing(),
           );
         }
       });
