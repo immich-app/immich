@@ -183,89 +183,108 @@
       searchHistory.selectActiveOption();
     }
   }
+
+  const margin = 8;
+  let windowInnerHeight: number = $state(0);
+  let mainView: HTMLDivElement | undefined = $state();
+
+  const maxHeight = $derived.by(() => {
+    if (!mainView) {
+      return 0;
+    }
+    const rect = mainView.parentElement!.getBoundingClientRect();
+    return windowInnerHeight - rect.y - margin;
+  });
 </script>
+
+<svelte:window bind:innerHeight={windowInnerHeight} />
 
 <div role="listbox" {id}>
   {#if isOpen}
     <div
       transition:fly={{ y: 25, duration: 250 }}
-      class="absolute z-1 w-full rounded-b-3xl bg-white shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-all dark:bg-immich-dark-gray dark:text-gray-300"
+      bind:this={mainView}
+      class="absolute z-1 w-full overflow-hidden rounded-b-3xl bg-white shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-all dark:bg-immich-dark-gray dark:text-gray-300"
     >
-      <SearchHistorySection
-        bind:this={searchHistory}
-        {onSelectSearchTerm}
-        {onClearSearchTerm}
-        {onClearAllSearchTerms}
-        {onActiveSelectionChange}
-      />
-      <div class="px-5">
-        <Text class="py-5" fontWeight="medium" aria-hidden={true}>{$t('filter_by')}</Text>
-        <div class="flex flex-wrap gap-2">
-          {#each filters as item (item.name)}
-            <SearchButton
-              active={activeFilter === item.name || Boolean(item.activeTitle())}
-              leadingIcon={item.icon}
-              class={activeFilter === item.name ? 'border-2' : undefined}
-              onclick={() => (activeFilter = item.name)}
-            >
-              {item.activeTitle() ?? item.title}
-            </SearchButton>
-          {/each}
-        </div>
-      </div>
-      {#if activeFilter}
-        <div class="px-5 pt-5">
-          {#if activeFilter === 'type'}
-            <SearchTextSection />
-          {:else if activeFilter === 'people'}
-            <SearchPeopleSection bind:title={peopleTitle} parentPromise={peoplePromise} />
-          {:else if activeFilter === 'date'}
-            <SearchDateSection />
-          {:else if activeFilter === 'places'}
-            <SearchLocationSection />
-          {:else if activeFilter === 'tags'}
-            <SearchTagsSection bind:title={tagsTitle} parentPromise={tagsPromise} />
-          {:else if activeFilter === 'media'}
-            <SearchMediaSection />
-          {/if}
-        </div>
-      {/if}
-      <div
-        class="grid transition-[grid-template-rows] duration-200 ease-in-out {showAdvanced
-          ? 'grid-rows-[1fr]'
-          : 'grid-rows-[0fr]'}"
-        inert={!showAdvanced}
-      >
-        <div class="overflow-hidden">
-          <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
-          <div class="px-5">
-            <SearchCameraSection />
-            {#if authManager.authenticated && authManager.preferences.ratings.enabled}
-              <SearchRatingsSection />
-            {/if}
-            <SearchDisplaySection />
+      <div class="immich-scrollbar overflow-auto" style:max-height={`${maxHeight}px`}>
+        <SearchHistorySection
+          bind:this={searchHistory}
+          {onSelectSearchTerm}
+          {onClearSearchTerm}
+          {onClearAllSearchTerms}
+          {onActiveSelectionChange}
+        />
+        <div class="px-5">
+          <Text class="py-5" fontWeight="medium" aria-hidden={true}>{$t('filter_by')}</Text>
+          <div class="flex flex-wrap gap-2">
+            {#each filters as item (item.name)}
+              <SearchButton
+                active={activeFilter === item.name || Boolean(item.activeTitle())}
+                leadingIcon={item.icon}
+                class={activeFilter === item.name ? 'border-2' : undefined}
+                onclick={() => (activeFilter = item.name)}
+              >
+                {item.activeTitle() ?? item.title}
+              </SearchButton>
+            {/each}
           </div>
         </div>
-      </div>
-      <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
-      <div class="flex gap-2 px-5 pb-5">
-        <Button
-          size="small"
-          variant={advancedFiltersSet ? 'outline' : 'ghost'}
-          leadingIcon={mdiTune}
-          trailingIcon={showAdvanced ? mdiChevronUp : mdiChevronDown}
-          onclick={() => (showAdvanced = !showAdvanced)}>{$t('advanced_filters')}</Button
+        {#if activeFilter}
+          <div class="px-5 pt-5">
+            {#if activeFilter === 'type'}
+              <SearchTextSection />
+            {:else if activeFilter === 'people'}
+              <SearchPeopleSection bind:title={peopleTitle} parentPromise={peoplePromise} />
+            {:else if activeFilter === 'date'}
+              <SearchDateSection />
+            {:else if activeFilter === 'places'}
+              <SearchLocationSection />
+            {:else if activeFilter === 'tags'}
+              <SearchTagsSection bind:title={tagsTitle} parentPromise={tagsPromise} />
+            {:else if activeFilter === 'media'}
+              <SearchMediaSection />
+            {/if}
+          </div>
+        {/if}
+        <div
+          class="grid transition-[grid-template-rows] duration-200 ease-in-out {showAdvanced
+            ? 'grid-rows-[1fr]'
+            : 'grid-rows-[0fr]'}"
+          inert={!showAdvanced}
         >
-        <div class="flex-1"></div>
-        <Button
-          size="small"
-          shape="round"
-          variant="outline"
-          color="secondary"
-          class="bg-transparent"
-          onclick={() => clear()}>{$t('clear_all')}</Button
-        >
-        <Button size="small" shape="round" onclick={() => onSearch()}>{$t('search')}</Button>
+          <div class="overflow-hidden">
+            <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
+            <div class="px-5">
+              <SearchCameraSection />
+              {#if authManager.authenticated && authManager.preferences.ratings.enabled}
+                <SearchRatingsSection />
+              {/if}
+              <SearchDisplaySection />
+            </div>
+          </div>
+        </div>
+        <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
+        <div class="flex gap-2 px-5 pb-5">
+          <Button
+            size="small"
+            variant={advancedFiltersSet ? 'outline' : 'ghost'}
+            leadingIcon={mdiTune}
+            trailingIcon={showAdvanced ? mdiChevronUp : mdiChevronDown}
+            onclick={() => (showAdvanced = !showAdvanced)}
+          >
+            <div class="hidden sm:block">{$t('advanced_filters')}</div>
+          </Button>
+          <div class="flex-1"></div>
+          <Button
+            size="small"
+            shape="round"
+            variant="outline"
+            color="secondary"
+            class="bg-transparent"
+            onclick={() => clear()}>{$t('clear_all')}</Button
+          >
+          <Button size="small" shape="round" onclick={() => onSearch()}>{$t('search')}</Button>
+        </div>
       </div>
     </div>
   {/if}
