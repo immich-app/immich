@@ -55,6 +55,7 @@ class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMix
           )
           ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(minFaces) | people.name.equals('').not())
           ..orderBy([
+            OrderingTerm(expression: people.isFavorite, mode: OrderingMode.desc),
             OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
