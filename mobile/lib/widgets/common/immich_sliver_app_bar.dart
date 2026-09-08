@@ -113,7 +113,9 @@ class _ProfileIndicator extends ConsumerWidget {
     // TODO: remove this when update Flutter version newer than 3.35.7
     final isIpad = defaultTargetPlatform == TargetPlatform.iOS && !context.isMobile;
 
-    final pendingTrashReviewCount = ref.watch(pendingTrashReviewCountProvider).value ?? 0;
+    final hasPendingTrashReview = ref.watch(
+      pendingTrashReviewCountProvider.select((value) => (value.value ?? 0) > 0),
+    );
     void toggleReadonlyMode() {
       final isReadonlyModeEnabled = ref.read(readonlyModeProvider);
       ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
@@ -150,7 +152,7 @@ class _ProfileIndicator extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible: versionWarningPresent || pendingTrashReviewCount > 0,
+        isLabelVisible: versionWarningPresent || hasPendingTrashReview,
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)

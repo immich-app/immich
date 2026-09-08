@@ -163,24 +163,46 @@ final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
   return ref.watch(permissionRepositoryProvider).hasManageMediaPermission();
 });
 
-class _TrashSyncModeSelector extends HookConsumerWidget {
+class _TrashSyncModeSelector extends ConsumerStatefulWidget {
   const _TrashSyncModeSelector();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedTrashSyncMode = ref.watch(appConfigProvider.select((config) => config.trashSyncMode));
+  ConsumerState<_TrashSyncModeSelector> createState() => _TrashSyncModeSelectorState();
+}
+
+class _TrashSyncModeSelectorState extends ConsumerState<_TrashSyncModeSelector> {
+  late TrashSyncMode _selectedTrashSyncMode;
+  late final ValueNotifier<bool> _reviewRemoteDeletionsEnabled;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTrashSyncMode = ref.read(appConfigProvider).trashSyncMode;
+    _reviewRemoteDeletionsEnabled = ValueNotifier(_selectedTrashSyncMode != TrashSyncMode.off);
+    ref.listenManual(appConfigProvider.select((config) => config.trashSyncMode), (_, mode) {
+      if (!mounted || mode == _selectedTrashSyncMode) {
+        return;
+      }
+
+      _reviewRemoteDeletionsEnabled.value = mode != TrashSyncMode.off;
+      setState(() => _selectedTrashSyncMode = mode);
+    });
+  }
+
+  @override
+  void dispose() {
+    _reviewRemoteDeletionsEnabled.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
     final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
-    final isTrashSyncEnabled = selectedTrashSyncMode != TrashSyncMode.off;
+    final isTrashSyncEnabled = _selectedTrashSyncMode != TrashSyncMode.off;
     final reviewRemoteDeletionsSubtitle = Platform.isAndroid
         ? context.t.advanced_settings_review_remote_deletions_subtitle_android
         : context.t.advanced_settings_review_remote_deletions_subtitle;
-    final reviewRemoteDeletionsEnabled = useState(isTrashSyncEnabled);
-
-    useValueChanged<bool, bool>(isTrashSyncEnabled, (_, _) {
-      reviewRemoteDeletionsEnabled.value = isTrashSyncEnabled;
-      return isTrashSyncEnabled;
-    });
 
     void showManageMediaRequiredSnackBar() {
       if (!context.mounted) {
@@ -223,7 +245,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
     }
 
     Future<void> handleTrashSyncModeChange(TrashSyncMode? mode) async {
-      if (mode == null || mode == selectedTrashSyncMode) {
+      if (mode == null || mode == _selectedTrashSyncMode) {
         return;
       }
 
@@ -237,11 +259,13 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
 
     if (Platform.isIOS) {
       return SettingsSwitchListTile(
-        valueNotifier: reviewRemoteDeletionsEnabled,
+        valueNotifier: _reviewRemoteDeletionsEnabled,
         title: context.t.advanced_settings_review_remote_deletions_title,
         subtitle: reviewRemoteDeletionsSubtitle,
         onChanged: (enabled) async {
-          await setTrashSyncMode(trashSyncModeFromReviewRemoteDeletionsToggle(enabled));
+          final mode = trashSyncModeFromReviewRemoteDeletionsToggle(enabled);
+          setState(() => _selectedTrashSyncMode = mode);
+          await setTrashSyncMode(mode);
         },
       );
     }
@@ -265,39 +289,37 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
                 subtitle: context.t.advanced_settings_sync_remote_deletions_off_subtitle,
                 value: TrashSyncMode.off,
               ),
-              if (!Platform.isIOS)
-                SettingsRadioGroup(
-                  title: context.t.advanced_settings_sync_remote_deletions_title,
-                  subtitle: context.t.advanced_settings_sync_remote_deletions_subtitle,
-                  value: TrashSyncMode.autoSync,
-                ),
+              SettingsRadioGroup(
+                title: context.t.advanced_settings_sync_remote_deletions_title,
+                subtitle: context.t.advanced_settings_sync_remote_deletions_subtitle,
+                value: TrashSyncMode.autoSync,
+              ),
               SettingsRadioGroup(
                 title: context.t.advanced_settings_review_remote_deletions_title,
                 subtitle: reviewRemoteDeletionsSubtitle,
                 value: TrashSyncMode.review,
               ),
             ],
-            groupBy: selectedTrashSyncMode,
+            groupBy: _selectedTrashSyncMode,
             onRadioChanged: handleTrashSyncModeChange,
           ),
         ),
-        if (Platform.isAndroid)
-          SettingsActionTile(
-            title: context.t.manage_media_access_title,
-            statusText: manageMediaAndroidPermissionValue == null
-                ? null
-                : manageMediaAndroidPermissionValue == true
-                ? context.t.allowed
-                : context.t.not_allowed,
-            subtitle: context.t.manage_media_access_rationale,
-            statusColor: manageMediaAndroidPermissionValue == false && isTrashSyncEnabled
-                ? const Color.fromARGB(255, 243, 188, 106)
-                : null,
-            onActionTap: () async {
-              await ref.read(permissionRepositoryProvider).manageMediaPermission();
-              ref.invalidate(_manageMediaPermissionProvider);
-            },
-          ),
+        SettingsActionTile(
+          title: context.t.manage_media_access_title,
+          statusText: manageMediaAndroidPermissionValue == null
+              ? null
+              : manageMediaAndroidPermissionValue == true
+              ? context.t.allowed
+              : context.t.not_allowed,
+          subtitle: context.t.manage_media_access_rationale,
+          statusColor: manageMediaAndroidPermissionValue == false && isTrashSyncEnabled
+              ? const Color.fromARGB(255, 243, 188, 106)
+              : null,
+          onActionTap: () async {
+            await ref.read(permissionRepositoryProvider).manageMediaPermission();
+            ref.invalidate(_manageMediaPermissionProvider);
+          },
+        ),
       ],
     );
   }
