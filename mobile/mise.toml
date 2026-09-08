@@ -122,6 +122,7 @@ depends = ["//:open-api-dart"]
 run = [
   # This receives passed `--enforce-lockfile` args
   "flutter pub get",
+  "dart pub get --directory=packages/mockito_handles",
   { task = "install:ios" },
 ]
 

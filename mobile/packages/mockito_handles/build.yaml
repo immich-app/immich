@@ -1,0 +1,13 @@
+builders:
+  mockito_handles:
+    import: "package:mockito_handles/mockito_handles.dart"
+    builder_factories: ["mockHandlesBuilder"]
+    build_extensions: {".mocks.dart": [".handles.dart"]}
+    build_to: source
+    auto_apply: dependents
+    # Declares the dependency on mockito's output. build_runner will not start
+    # this builder until every builder capable of emitting a `.mocks.dart` has
+    # finished, so handles can never be generated from a stale set of mocks.
+    required_inputs: [".mocks.dart"]
+    defaults:
+      generate_for: ["test/**"]

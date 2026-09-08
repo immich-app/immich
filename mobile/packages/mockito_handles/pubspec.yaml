@@ -1,0 +1,35 @@
+name: mockito_handles
+description: >-
+  Generates typed stub and verify handles over mockito's mocks, so a test reads
+  repo.getUser.mockResolvedValue(user) and needs no argument matchers.
+version: 0.1.0
+repository: https://github.com/shenlong-tanwen/mockito_handles
+issue_tracker: https://github.com/shenlong-tanwen/mockito_handles/issues
+
+topics:
+  - testing
+  - mocking
+  - codegen
+  - build-runner
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  # Only for the element-model types that appear in signatures; the resolved
+  # model itself comes from build_runner's Resolver, so there is no analysis
+  # session to set up. The range is wide because this package only reads the
+  # element API, which has been stable across these majors.
+  analyzer: '>=10.2.0 <15.0.0'
+  build: ^4.0.0
+  # The emitted source is formatted before it is written, so a project with a
+  # repo-wide `dart format --set-exit-if-changed` check stays green.
+  dart_style: ^3.0.0
+
+dev_dependencies:
+  build_test: ^3.0.0
+  lints: ^6.0.0
+  # Not used by the builder, which only reads mockito's *output*. The tests need
+  # it to resolve the generated source and prove it compiles.
+  mockito: ^5.6.0
+  test: ^1.25.0

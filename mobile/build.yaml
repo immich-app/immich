@@ -1,6 +1,17 @@
 targets:
    $default:
      builders:
+       # `immich_mobile` is owned automatically as the package being built. Only
+       # the extra one needs saying: `openapi` is a generated client we own, and
+       # its members would otherwise be dropped as foreign — which is the same
+       # rule that correctly keeps `dart:async`, auto_route and riverpod out.
+       mockito_handles:
+         options:
+           additional_owned_packages:
+             - openapi
+           # Match analysis_options' `formatter: page_width`, or `dart format`
+           # would want to rewrap every generated file.
+           page_width: 120
        #drift @DriftDatabase()
        drift_dev:
          # Disable default builder to use modular builder instead
