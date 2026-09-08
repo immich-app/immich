@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/server_deleted_checksum.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
@@ -136,11 +137,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
         _db.localAssetEntity.updatedAt,
         remoteDeletedAt,
       ])
-      ..where(
-        _db.localAssetEntity.checksum.isNotNull() &
-            remoteDeletedAt.isNotNull() &
-            existsQuery(_selectedBackupAssetsQuery()),
-      );
+      ..where(_db.localAssetEntity.checksum.isNotNull() & remoteDeletedAt.isNotNull());
 
     await _db
         .into(_db.trashSyncEntity)
@@ -169,11 +166,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     final pending = Constant(TrashSyncStatus.pending.index);
     final source = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum, pending, _db.localAssetEntity.updatedAt])
-      ..where(
-        _db.localAssetEntity.checksum.isNotNull() &
-            _hardDeletedContentExists() &
-            existsQuery(_selectedBackupAssetsQuery()),
-      );
+      ..where(_db.localAssetEntity.checksum.isNotNull() & _hardDeletedContentExists());
 
     await _db
         .into(_db.trashSyncEntity)
@@ -233,7 +226,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     }
 
     final reviewableAssetIds = <String>[];
-    final selectedLocalAsset = _selectedLocalAssetForMarkerQuery();
+    final actionableLocalAsset = _actionableLocalAssetForMarkerQuery();
     for (final slice in set.slices(kDriftMaxChunk)) {
       reviewableAssetIds.addAll(
         await (_db.selectOnly(_db.trashSyncEntity)
@@ -241,7 +234,7 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
               ..where(
                 _db.trashSyncEntity.assetId.isIn(slice) &
                     _db.trashSyncEntity.status.equalsValue(.pending) &
-                    existsQuery(selectedLocalAsset),
+                    existsQuery(actionableLocalAsset),
               ))
             .map((row) => row.read(_db.trashSyncEntity.assetId)!)
             .get(),
@@ -257,12 +250,12 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
       return 0;
     }
 
-    final selectedLocalAsset = _selectedLocalAssetForMarkerQuery();
+    final actionableLocalAsset = _actionableLocalAssetForMarkerQuery();
     var rejectedCount = 0;
     for (final slice in set.slices(kDriftMaxChunk)) {
       rejectedCount +=
           await (_db.update(_db.trashSyncEntity)..where(
-                (row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending) & existsQuery(selectedLocalAsset),
+                (row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending) & existsQuery(actionableLocalAsset),
               ))
               .write(const TrashSyncEntityCompanion(status: .new(.reviewRejected)));
     }
@@ -270,35 +263,16 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
   }
 
   Future<void> _recordAssets(Expression<bool> contentExists) async {
-    final excludedAssetIds = _db.selectOnly(_db.localAlbumAssetEntity)
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
-      ..join([
-        innerJoin(
-          _db.localAlbumEntity,
-          _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
-          useColumns: false,
-        ),
-      ])
-      ..where(_db.localAlbumEntity.backupSelection.equalsValue(.excluded));
-
-    final selectedAssetsQuery = _selectedBackupAssetsQuery();
-
     final dismissedAssetsQuery = _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([_db.trashSyncEntity.assetId])
       ..where(
-        _db.trashSyncEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+        _db.trashSyncEntity.assetId.equalsExp(_db.localAssetEntity.id) &
             _db.trashSyncEntity.status.equalsValue(.dismissed),
       );
 
     final source = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum, _db.localAssetEntity.updatedAt])
-      ..where(
-        _db.localAssetEntity.checksum.isNotNull() &
-            contentExists &
-            existsQuery(selectedAssetsQuery) &
-            _db.localAssetEntity.id.isNotInQuery(excludedAssetIds) &
-            notExistsQuery(dismissedAssetsQuery),
-      );
+      ..where(_db.localAssetEntity.checksum.isNotNull() & contentExists & notExistsQuery(dismissedAssetsQuery));
 
     await _db
         .into(_db.trashSyncEntity)
@@ -396,39 +370,48 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
     }
   }
 
-  Future<List<String>> getPendingAssetIds() =>
-      _trashSyncAssetIdsWhere(_db.trashSyncEntity.status.equalsValue(.pending));
+  Future<List<String>> getPendingAssetIds() => _trashSyncAssetIdsWhere(
+    _db.trashSyncEntity.status.equalsValue(.pending) & existsQuery(_actionableLocalAssetForMarkerQuery()),
+  );
 
   Future<List<String>> getTrashedAssetIds() =>
       _trashSyncAssetIdsWhere(_db.trashSyncEntity.status.equalsValue(.trashed));
 
   /// Watches the number of selected local assets pending trash review.
   Stream<int> watchPendingReviewCount() {
-    final selectedLocalAsset = _selectedLocalAssetForMarkerQuery();
+    final actionableLocalAsset = _actionableLocalAssetForMarkerQuery();
     final pendingAssetCount = _db.trashSyncEntity.assetId.count();
     return (_db.selectOnly(_db.trashSyncEntity)
           ..addColumns([pendingAssetCount])
-          ..where(_db.trashSyncEntity.status.equalsValue(.pending) & existsQuery(selectedLocalAsset)))
+          ..where(_db.trashSyncEntity.status.equalsValue(.pending) & existsQuery(actionableLocalAsset)))
         .map((row) => row.read(pendingAssetCount) ?? 0)
         .watchSingle();
   }
 
-  /// Builds a query for assets contained in backup-selected albums.
-  JoinedSelectStatement _selectedBackupAssetsQuery() => _db.selectOnly(_db.localAlbumAssetEntity)
-    ..addColumns([_db.localAlbumAssetEntity.assetId])
-    ..where(
-      _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-          _db.localAlbumAssetEntity.albumId.isInQuery(
-            _db.selectOnly(_db.localAlbumEntity)
-              ..addColumns([_db.localAlbumEntity.id])
-              ..where(_db.localAlbumEntity.backupSelection.equalsValue(.selected)),
-          ),
-    );
+  /// Builds a query for actionable local assets referenced by trash markers.
+  JoinedSelectStatement _actionableLocalAssetForMarkerQuery() {
+    JoinedSelectStatement albumMembership(BackupSelection selection) => _db.selectOnly(_db.localAlbumAssetEntity)
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
+        ),
+      ])
+      ..where(
+        _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+            _db.localAlbumEntity.backupSelection.equalsValue(selection),
+      );
 
-  /// Builds a query for selected local assets referenced by trash markers.
-  JoinedSelectStatement _selectedLocalAssetForMarkerQuery() => _db.selectOnly(_db.localAssetEntity)
-    ..addColumns([_db.localAssetEntity.id])
-    ..where(_db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId) & existsQuery(_selectedBackupAssetsQuery()));
+    return _db.selectOnly(_db.localAssetEntity)
+      ..addColumns([_db.localAssetEntity.id])
+      ..where(
+        _db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId) &
+            existsQuery(albumMembership(.selected)) &
+            notExistsQuery(albumMembership(.excluded)),
+      );
+  }
 
   /// Returns whether an existing marker should be refreshed for an incoming soft deletion.
   Expression<bool> _shouldRefreshSoftDeletedReviewMarker($TrashSyncEntityTable old, $TrashSyncEntityTable incoming) {

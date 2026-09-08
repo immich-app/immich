@@ -196,6 +196,17 @@ void main() {
       expect(assets, isEmpty);
     });
 
+    test('sync trash timeline hides assets that are also in an excluded album', () async {
+      final asset = await createPendingReviewAssetInSelectedAlbum();
+      final excludedAlbum = await ctx.newLocalAlbum(backupSelection: .excluded);
+      await ctx.newLocalAlbumAsset(albumId: excludedAlbum.id, assetId: asset.localId);
+
+      final timeline = sut.syncTrash(.day);
+
+      expect(await timeline.bucketSource().first, isEmpty);
+      expect(await timeline.assetSource(0, 10), isEmpty);
+    });
+
     test('sync trash timeline does not show a selected duplicate through another copy marker', () async {
       final markedAsset = await createPendingReviewAssetInSelectedAlbum();
       final selectedDuplicate = await ctx.newLocalAsset(checksum: 'pending-review-checksum');

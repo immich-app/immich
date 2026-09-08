@@ -83,11 +83,12 @@ void main() {
       expect(await sut.getPendingAssetIds(), isEmpty);
     });
 
-    test('ignores assets that are not in a backup selected album', () async {
-      await backedUpAsset(ownerId: userId, remoteDeletedAt: .new(2026, 1, 1), album: .none);
+    test('records an unselected conflict without making it actionable', () async {
+      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: .new(2026, 1, 1), album: .none);
 
       await sut.recordSoftDeletedAssets();
 
+      expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
       expect(await sut.getPendingAssetIds(), isEmpty);
     });
 
@@ -123,8 +124,8 @@ void main() {
       expect(rows.single.status, TrashSyncStatus.pending);
     });
 
-    test('records hard-deleted assets as review pending from server_deleted_checksum', () async {
-      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: null);
+    test('records unselected hard-deleted assets as review pending from server_deleted_checksum', () async {
+      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: null, album: .none);
       await sut.recordHardDeletedChecksums([asset.remoteId]);
       await (ctx.db.delete(ctx.db.remoteAssetEntity)..where((t) => t.id.equals(asset.remoteId))).go();
 
@@ -134,6 +135,15 @@ void main() {
       expect(rows.single.assetId, asset.localId);
       expect(rows.single.checksum, asset.checksum);
       expect(rows.single.status, TrashSyncStatus.pending);
+    });
+
+    test('records an unselected soft-deleted review conflict without making it actionable', () async {
+      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1), album: .none);
+
+      await sut.recordSoftDeletedReviewAssets();
+
+      expect(await trashStatusOf(asset.localId), TrashSyncStatus.pending);
+      expect(await sut.getReviewableAssetIds([asset.localId]), isEmpty);
     });
 
     test('rejected local asset suppresses its hard-deleted review candidate until remote restore', () async {
@@ -278,9 +288,8 @@ void main() {
   group('review status', () {
     test('watches the count of pending review markers for selected local assets', () async {
       await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
-      final unselected = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1), album: .none);
+      await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1), album: .none);
       await sut.recordSoftDeletedReviewAssets();
-      await markAsset(assetId: unselected.localId, checksum: unselected.checksum, status: .pending);
 
       expect(await sut.watchPendingReviewCount().first, 1);
     });
@@ -608,7 +617,7 @@ void main() {
   });
 
   group('excluded album handling', () {
-    test('recordSoftDeletedAssets ignores an asset also in an excluded album', () async {
+    test('recordSoftDeletedAssets records but does not action an asset also in an excluded album', () async {
       final remote = await ctx.newRemoteAsset(ownerId: userId, deletedAt: .new(2026, 1, 1));
       final local = await ctx.newLocalAsset(checksum: remote.checksum);
       final selected = await ctx.newLocalAlbum(backupSelection: .selected);
@@ -618,10 +627,11 @@ void main() {
 
       await sut.recordSoftDeletedAssets();
 
+      expect(await trashStatusOf(local.id), TrashSyncStatus.pending);
       expect(await sut.getPendingAssetIds(), isEmpty);
     });
 
-    test('recordSoftDeletedReviewAssets records an asset also in an excluded album', () async {
+    test('recordSoftDeletedReviewAssets records but does not action an asset also in an excluded album', () async {
       final remote = await ctx.newRemoteAsset(ownerId: userId, deletedAt: .new(2026, 1, 1));
       final local = await ctx.newLocalAsset(checksum: remote.checksum);
       final selected = await ctx.newLocalAlbum(backupSelection: .selected);
@@ -631,12 +641,14 @@ void main() {
 
       await sut.recordSoftDeletedReviewAssets();
 
+      expect(await sut.getReviewableAssetIds([local.id]), isEmpty);
+      expect(await sut.markReviewAssetsRejected([local.id]), 0);
       expect(await trashStatusOf(local.id), TrashSyncStatus.pending);
     });
   });
 
   group('duplicate assets', () {
-    test('recordSoftDeletedAssets skips duplicate asset when previous asset is dismissed', () async {
+    test('recordSoftDeletedAssets records another copy when the previous asset is dismissed', () async {
       final remote = await ctx.newRemoteAsset(ownerId: userId, deletedAt: .new(2026, 1, 1));
       final album = await ctx.newLocalAlbum(backupSelection: .selected);
       final reimport = await ctx.newLocalAsset(checksum: remote.checksum);
@@ -645,7 +657,8 @@ void main() {
 
       await sut.recordSoftDeletedAssets();
 
-      expect(await sut.getPendingAssetIds(), isEmpty);
+      expect(await trashStatusOf(reimport.id), TrashSyncStatus.pending);
+      expect(await sut.getPendingAssetIds(), [reimport.id]);
     });
   });
 
@@ -704,27 +717,15 @@ void main() {
         expect(await deletedChecksums(), isEmpty);
       });
 
-      test('only marks local assets from backup selected album', () async {
-        final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      test('records an unselected local asset without making it actionable', () async {
+        final album = await ctx.newLocalAlbum(backupSelection: .none);
         final local = await ctx.newLocalAsset(checksum: 'checksum');
         await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
         await insertDeletedChecksum('checksum');
 
         await sut.recordHardDeletedAssets();
 
-        expect(await sut.getPendingAssetIds(), [local.id]);
-      });
-
-      test('ignores an excluded album asset', () async {
-        final selected = await ctx.newLocalAlbum(backupSelection: .selected);
-        final excluded = await ctx.newLocalAlbum(backupSelection: .excluded);
-        final local = await ctx.newLocalAsset(checksum: 'checksum');
-        await ctx.newLocalAlbumAsset(albumId: selected.id, assetId: local.id);
-        await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: local.id);
-        await insertDeletedChecksum('checksum');
-
-        await sut.recordHardDeletedAssets();
-
+        expect(await trashStatusOf(local.id), TrashSyncStatus.pending);
         expect(await sut.getPendingAssetIds(), isEmpty);
       });
     });

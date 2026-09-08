@@ -444,18 +444,18 @@ void main() {
   });
 
   test('backlog handled when MANAGE_MEDIA was off and handled when on', () async {
-    await markAsset(localId: 'asset1', checksum: 'checksum1');
-    await markAsset(localId: 'asset2', checksum: 'checksum2');
+    final asset1 = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
+    final asset2 = await backedUpAsset(remoteDeletedAt: .new(2026, 1, 1));
 
     when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
     await sut.reconcile();
-    expect(await trashStatusOf('asset1'), TrashSyncStatus.pending);
+    expect(await trashStatusOf(asset1.localId), TrashSyncStatus.pending);
     verifyNever(() => ctx.assetMediaApi.trash(any()));
 
     when(() => ctx.permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
     await sut.reconcile();
-    expect(await trashStatusOf('asset1'), TrashSyncStatus.trashed);
-    expect(await trashStatusOf('asset2'), TrashSyncStatus.trashed);
+    expect(await trashStatusOf(asset1.localId), TrashSyncStatus.trashed);
+    expect(await trashStatusOf(asset2.localId), TrashSyncStatus.trashed);
   });
 
   test('iOS: reconcile maintains the list but never trashes', () async {

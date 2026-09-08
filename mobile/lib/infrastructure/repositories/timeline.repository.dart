@@ -171,17 +171,23 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   }
 
   Expression<bool> _syncTrashAssetFilter() {
-    final selectedBackupAsset = _db.selectOnly(_db.localAlbumAssetEntity)
+    JoinedSelectStatement albumMembership(BackupSelection selection) => _db.selectOnly(_db.localAlbumAssetEntity)
       ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
+        ),
+      ])
       ..where(
         _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-            _db.localAlbumAssetEntity.albumId.isInQuery(
-              _db.selectOnly(_db.localAlbumEntity)
-                ..addColumns([_db.localAlbumEntity.id])
-                ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected)),
-            ),
+            _db.localAlbumEntity.backupSelection.equalsValue(selection),
       );
-    return _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.pending) & existsQuery(selectedBackupAsset);
+
+    return _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.pending) &
+        existsQuery(albumMembership(.selected)) &
+        notExistsQuery(albumMembership(.excluded));
   }
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
