@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
@@ -18,6 +17,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
@@ -145,12 +145,16 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBindingObserver {
   late final ScrollController _scrollController;
+  final _listKey = GlobalKey();
   StreamSubscription? _eventSubscription;
 
   // Drag selection state
   bool _dragging = false;
   TimelineAssetIndex? _dragAnchorIndex;
-  final Set<BaseAsset> _draggedAssets = HashSet();
+  final List<BaseAsset> _draggedAssets = [];
+  int? _dragRangeStart;
+  // bumped by every tick and by lift, so a slow range load can only land while it is still the newest
+  int _dragGeneration = 0;
   ScrollPhysics? _scrollPhysics;
 
   int _perRow = 4;
@@ -354,9 +358,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         });
       }
     });
+    _dragGeneration++;
     setState(() {
       _dragging = false;
       _draggedAssets.clear();
+      _dragRangeStart = null;
     });
     final timelineState = ref.read(timelineStateProvider.notifier);
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -372,35 +378,83 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     );
   }
 
+  TimelineAssetIndex? _assetIndexAt(Offset position) {
+    final list = _listKey.currentContext?.findRenderObject() as _RenderSliverTimelineBoxAdaptor?;
+    if (list == null || list.segments.isEmpty) {
+      return null;
+    }
+
+    final segments = list.segments;
+    final offset = list.scrollOffsetAt(position).clamp(0.0, segments.last.endOffset);
+    final segment = segments.findByOffset(offset)!;
+    final segmentIndex = segments.indexOf(segment);
+    final rowIndex = segment.getMinChildIndexForScrollOffset(offset);
+    if (rowIndex == segment.firstIndex) {
+      // a long press on a header starts nothing; a drag reaching one takes that day's first photo
+      return _dragging ? TimelineAssetIndex(assetIndex: segment.firstAssetIndex, segmentIndex: segmentIndex) : null;
+    }
+
+    final column = list.columnAt(rowIndex, position);
+    if (column == null) {
+      return null;
+    }
+    final columnCount = ref.read(timelineArgsProvider).columnCount;
+    return TimelineAssetIndex(
+      assetIndex: segment.firstAssetIndex + (rowIndex - segment.gridIndex) * columnCount + column,
+      segmentIndex: segmentIndex,
+    );
+  }
+
   void _handleDragAssetEnter(TimelineAssetIndex index) {
     if (_dragAnchorIndex == null || !_dragging) {
       return;
     }
 
-    final timelineService = ref.read(timelineServiceProvider);
-    final dragAnchorIndex = _dragAnchorIndex!;
+    final anchorIndex = _dragAnchorIndex!.assetIndex;
+    unawaited(_selectDragRange(math.min(anchorIndex, index.assetIndex), math.max(anchorIndex, index.assetIndex)));
+  }
 
-    // Calculate the range of assets to select
-    final startIndex = math.min(dragAnchorIndex.assetIndex, index.assetIndex);
-    final endIndex = math.max(dragAnchorIndex.assetIndex, index.assetIndex);
-    final count = endIndex - startIndex + 1;
+  // old and new ranges both end at the anchor, so each tick loads at most one chunk and drops one
+  Future<void> _selectDragRange(int start, int end) async {
+    final generation = ++_dragGeneration;
+    final rangeStart = _dragRangeStart;
+    final rangeEnd = rangeStart == null ? null : rangeStart + _draggedAssets.length - 1;
 
-    // Load the assets in the range
-    if (timelineService.hasRange(startIndex, count)) {
-      final selectedAssets = timelineService.getAssets(startIndex, count);
-
-      // Clear previous drag selection and add new range
-      final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
-      for (final asset in _draggedAssets) {
-        multiSelectNotifier.deselectAsset(asset);
-      }
-      _draggedAssets.clear();
-
-      for (final asset in selectedAssets) {
-        multiSelectNotifier.selectAsset(asset);
-        _draggedAssets.add(asset);
-      }
+    final prepend = rangeStart != null && start < rangeStart;
+    final int loadStart;
+    final int loadCount;
+    if (rangeStart == null) {
+      loadStart = start;
+      loadCount = end - start + 1;
+    } else if (prepend) {
+      loadStart = start;
+      loadCount = rangeStart - start;
+    } else {
+      loadStart = rangeEnd! + 1;
+      loadCount = end - rangeEnd;
     }
+
+    final added = loadCount > 0
+        ? await ref.read(timelineServiceProvider).loadAssets(loadStart, loadCount)
+        : const <BaseAsset>[];
+    // the finger moved on (or lifted) while the assets were loading
+    if (!mounted || generation != _dragGeneration) {
+      return;
+    }
+
+    // the slice of _draggedAssets that survives this tick
+    final keepFrom = rangeStart == null ? 0 : math.max(start, rangeStart) - rangeStart;
+    final keepTo = rangeStart == null ? 0 : math.min(end, rangeEnd!) - rangeStart + 1;
+    final kept = _draggedAssets.skip(keepFrom).take(keepTo - keepFrom).toList();
+
+    ref
+        .read(multiSelectProvider.notifier)
+        .updateSelection(added: added, removed: [..._draggedAssets.take(keepFrom), ..._draggedAssets.skip(keepTo)]);
+
+    _draggedAssets
+      ..clear()
+      ..addAll(prepend ? [...added, ...kept] : [...kept, ...added]);
+    _dragRangeStart = start;
   }
 
   @override
@@ -459,6 +513,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                     if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
                     if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
+                      key: _listKey,
                       segments: segments,
                       delegate: SliverChildBuilderDelegate(
                         (ctx, index) {
@@ -523,6 +578,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                     ),
                   },
                   child: TimelineDragRegion(
+                    assetAt: _assetIndexAt,
                     onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
                     onAssetEnter: _handleDragAssetEnter,
                     onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
@@ -564,7 +620,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 class _SliverSegmentedList extends SliverMultiBoxAdaptorWidget {
   final List<Segment> _segments;
 
-  const _SliverSegmentedList({required this._segments, required super.delegate});
+  const _SliverSegmentedList({super.key, required this._segments, required super.delegate});
 
   @override
   _RenderSliverTimelineBoxAdaptor createRenderObject(BuildContext context) =>
@@ -579,6 +635,8 @@ class _SliverSegmentedList extends SliverMultiBoxAdaptorWidget {
 /// Modified version of [RenderSliverFixedExtentBoxAdaptor] to use precomputed offsets
 class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
   List<Segment> _segments;
+
+  List<Segment> get segments => _segments;
 
   set segments(List<Segment> updatedSegments) {
     if (_segments.equals(updatedSegments)) {
@@ -762,6 +820,44 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     }
 
     childManager.didFinishLayout();
+  }
+
+  // scroll coordinate of a point on screen; the slivers before the list shift where it paints, so the
+  // controller's offset alone would be off by their extent
+  double scrollOffsetAt(Offset position) {
+    final paintOffset = (parentData! as SliverPhysicalParentData).paintOffset;
+    return constraints.scrollOffset + (parent! as RenderBox).globalToLocal(position).dy - paintOffset.dy;
+  }
+
+  // the tile of a laid out row a point on screen is over, or nearest to; the row layout already
+  // mirrored rtl and sized the tiles, so this also holds for the dynamic layout. rows sit behind proxy boxes only
+  int? columnAt(int index, Offset position) {
+    RenderBox? child = firstChild;
+    while (child != null && indexOf(child) != index) {
+      child = childAfter(child);
+    }
+    RenderObject? node = child;
+    while (node is RenderProxyBox) {
+      node = node.child;
+    }
+    if (node is! RenderFixedRow) {
+      return null;
+    }
+
+    final dx = node.globalToLocal(position).dx;
+    var column = 0;
+    var nearest = 0;
+    var nearestDistance = double.infinity;
+    for (var tile = node.firstChild; tile != null; tile = node.childAfter(tile)) {
+      final start = (tile.parentData! as BoxParentData).offset.dx;
+      final distance = math.max(0.0, math.max(start - dx, dx - start - tile.size.width));
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearest = column;
+      }
+      column++;
+    }
+    return nearest;
   }
 }
 
