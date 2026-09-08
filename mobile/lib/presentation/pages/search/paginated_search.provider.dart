@@ -44,6 +44,8 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
 
   StreamSubscription<Set<String>>? _matchingIdsSubscription;
   AssetVisibility _visibility = AssetVisibility.timeline;
+  List<BaseAsset> _allAssets = const [];
+  Set<String> _matchingIds = const {};
   final Set<String> _knownMatchingIds = {};
 
   PaginatedSearchNotifier(this._searchService, this._remoteAssetRepository) : super(const SearchState());
@@ -66,16 +68,16 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
       return;
     }
 
-    final assets = [...state.assets, ...result.assets];
-    state = SearchState(assets: assets, nextPage: result.nextPage);
-
-    _assetCountController.add(assets.length);
+    _allAssets = [..._allAssets, ...result.assets];
+    _applyFilter(nextPage: result.nextPage);
     _watchMatchingIds();
   }
 
   void clear() {
     unawaited(_matchingIdsSubscription?.cancel());
     _matchingIdsSubscription = null;
+    _allAssets = const [];
+    _matchingIds = const {};
     _knownMatchingIds.clear();
     state = const SearchState();
     _assetCountController.add(0);
@@ -84,7 +86,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   void _watchMatchingIds() {
     unawaited(_matchingIdsSubscription?.cancel());
 
-    final ids = state.assets.whereType<RemoteAsset>().map((asset) => asset.id).toList(growable: false);
+    final ids = _allAssets.whereType<RemoteAsset>().map((asset) => asset.id).toList(growable: false);
     if (ids.isEmpty) {
       _matchingIdsSubscription = null;
       return;
@@ -94,23 +96,24 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   }
 
   void _onMatchingIds(Set<String> matchingIds) {
+    _matchingIds = matchingIds;
     _knownMatchingIds.addAll(matchingIds);
+    _applyFilter(nextPage: state.nextPage);
+  }
 
-    final survivors = state.assets
-        .where((asset) {
-          if (asset is! RemoteAsset || matchingIds.contains(asset.id)) {
-            return true;
-          }
-          return !_knownMatchingIds.contains(asset.id);
-        })
-        .toList(growable: false);
+  void _applyFilter({required int? nextPage}) {
+    final visible = _allAssets.where((asset) {
+      if (asset is! RemoteAsset || _matchingIds.contains(asset.id)) {
+        return true;
+      }
+      return !_knownMatchingIds.contains(asset.id);
+    }).toList(growable: false);
 
-    if (survivors.length == state.assets.length) {
-      return;
+    final changed = visible.length != state.assets.length;
+    state = SearchState(assets: visible, nextPage: nextPage);
+    if (changed) {
+      _assetCountController.add(visible.length);
     }
-
-    state = SearchState(assets: survivors, nextPage: state.nextPage, isLoading: state.isLoading);
-    _assetCountController.add(survivors.length);
   }
 
   @override
