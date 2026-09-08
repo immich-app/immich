@@ -128,12 +128,10 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
             _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
       );
     final remoteDeletedAt = subqueryExpression<DateTime>(deletedRemoteAssets);
-    final pending = Constant(TrashSyncStatus.pending.index);
     final source = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([
         _db.localAssetEntity.id,
         _db.localAssetEntity.checksum,
-        pending,
         _db.localAssetEntity.updatedAt,
         remoteDeletedAt,
       ])
@@ -146,7 +144,6 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
           columns: {
             _db.trashSyncEntity.assetId: _db.localAssetEntity.id,
             _db.trashSyncEntity.checksum: _db.localAssetEntity.checksum,
-            _db.trashSyncEntity.status: pending,
             _db.trashSyncEntity.assetUpdatedAt: _db.localAssetEntity.updatedAt,
             _db.trashSyncEntity.remoteDeletedAt: remoteDeletedAt,
           },
@@ -163,9 +160,8 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
 
   /// Records review candidates for local assets permanently deleted from the server.
   Future<void> recordHardDeletedReviewAssets() async {
-    final pending = Constant(TrashSyncStatus.pending.index);
     final source = _db.selectOnly(_db.localAssetEntity)
-      ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum, pending, _db.localAssetEntity.updatedAt])
+      ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum, _db.localAssetEntity.updatedAt])
       ..where(_db.localAssetEntity.checksum.isNotNull() & _hardDeletedContentExists());
 
     await _db
@@ -175,7 +171,6 @@ class TrashSyncRepository extends DatabaseAccessor<Drift> with $TrashSyncReposit
           columns: {
             _db.trashSyncEntity.assetId: _db.localAssetEntity.id,
             _db.trashSyncEntity.checksum: _db.localAssetEntity.checksum,
-            _db.trashSyncEntity.status: pending,
             _db.trashSyncEntity.assetUpdatedAt: _db.localAssetEntity.updatedAt,
           },
           onConflict: DoUpdate.withExcluded(
