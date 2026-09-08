@@ -31,10 +31,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
 
-  AppLifeCycleEnum getAppState() {
-    return state;
-  }
-
   Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
     _log.info("App resumed");
@@ -130,6 +126,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           syncSuccess = await backgroundManager.syncRemote();
         }, "syncRemote"),
       ]);
+      _ref.invalidate(memoryLaneProvider);
       _ref.invalidate(allMemoriesProvider);
       if (syncSuccess) {
         await Future.wait([
