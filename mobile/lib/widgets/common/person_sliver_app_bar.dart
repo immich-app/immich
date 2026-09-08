@@ -26,11 +26,13 @@ class PersonSliverAppBar extends ConsumerStatefulWidget {
     required this.onNameTap,
     required this.onShowOptions,
     required this.onBirthdayTap,
+    required this.onToggleFavorite,
   });
 
   final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
+  final VoidCallback onToggleFavorite;
   final VoidCallback onShowOptions;
 
   @override
@@ -92,6 +94,10 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
               },
             ),
             actions: [
+              IconButton(
+                icon: Icon(widget.person.isFavorite == true ? Icons.favorite_rounded : Icons.favorite_border_rounded, color: actionIconColor, shadows: actionIconShadows),
+                onPressed: widget.onToggleFavorite,
+              ),
               IconButton(
                 icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
                 onPressed: widget.onShowOptions,
