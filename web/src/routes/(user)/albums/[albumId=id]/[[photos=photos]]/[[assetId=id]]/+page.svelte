@@ -213,7 +213,7 @@
   let album = $derived(data.album);
   let albumId = $derived(album.id);
   let draftAlbumName = $state(album.albumName);
-  const isTemporaryAlbum = $derived(album.assetCount === 0  && !draftAlbumName.trim());
+  const isTemporaryAlbum = $derived(album.assetCount === 0 && !draftAlbumName.trim());
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
   const albumUsers = $derived(showAlbumUsers && containsEditors ? album.albumUsers.map(({ user }) => user) : []);
 
@@ -375,7 +375,7 @@
                 {isOwned}
                 onNameInput={(albumName) => (draftAlbumName = albumName)}
                 onUpdate={(albumName) => (album = { ...album, albumName })}
-                draftAlbumName = albumName;
+                draftAlbumName="albumName;"
               />
 
               {#if album.assetCount > 0}
