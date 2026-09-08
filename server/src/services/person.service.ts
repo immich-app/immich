@@ -320,8 +320,8 @@ export class PersonService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
-    const previewFile = asset?.files[0];
-    if (!asset || asset.files.length !== 1 || !previewFile) {
+    const previewFile = asset?.previewFile;
+    if (!asset || !previewFile) {
       return JobStatus.Failed;
     }
 
