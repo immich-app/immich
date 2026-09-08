@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
+import 'package:immich_mobile/platform/asset_media_api.g.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -29,6 +30,8 @@ class MockAppSettingService extends Mock implements AppSettingsService {}
 class MockStoreService extends Mock implements StoreService {}
 
 class MockNativeSyncApi extends Mock implements NativeSyncApi {}
+
+class MockAssetMediaApi extends Mock implements AssetMediaApi {}
 
 class MockAppSettingsService extends Mock implements AppSettingsService {}
 

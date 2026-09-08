@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -11,7 +10,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/asset_media_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -27,59 +26,41 @@ import 'package:share_plus/share_plus.dart';
 typedef _ShareFile = ({File file, FileSystemEntity? tempEntity, String displayName});
 
 final assetMediaRepositoryProvider = Provider(
-  (ref) => AssetMediaRepository(ref.watch(nativeSyncApiProvider), ref.watch(storageRepositoryProvider)),
+  (ref) => AssetMediaRepository(ref.watch(assetMediaApiProvider), ref.watch(storageRepositoryProvider)),
 );
 
 class AssetMediaRepository {
-  final NativeSyncApi _nativeSyncApi;
+  final AssetMediaApi _assetMediaApi;
   final StorageRepository _storageRepository;
   static final Logger _log = Logger("AssetMediaRepository");
 
-  const AssetMediaRepository(this._nativeSyncApi, this._storageRepository);
+  const AssetMediaRepository(this._assetMediaApi, this._storageRepository);
 
-  Future<bool> _androidSupportsTrash() async {
-    if (Platform.isAndroid) {
-      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      final int sdkVersion = androidInfo.version.sdkInt;
-      return sdkVersion >= 31;
-    }
-    return false;
-  }
+  List<String> _idsWithStatus(List<AssetMediaActionResult> results, Set<AssetMediaActionStatus> statuses) =>
+      results.where((result) => statuses.contains(result.status)).map((result) => result.id).toList();
 
   Future<List<String>> deleteAll(List<String> ids, {bool trash = true}) async {
-    if (trash && CurrentPlatform.isAndroid && await _androidSupportsTrash()) {
-      return PhotoManager.editor.android.moveToTrash(
-        ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
-      );
-    }
-    return PhotoManager.editor.deleteWithIds(ids);
-  }
-
-  Future<bool> _restoreFromTrashById(String mediaId, int type) async {
-    try {
-      return await _nativeSyncApi.restoreFromTrashById(mediaId, type);
-    } catch (e, s) {
-      _log.warning('Error restore file from trash by Id', e, s);
-      return false;
-    }
+    final results = trash ? await _assetMediaApi.trash(ids) : await _assetMediaApi.delete(ids);
+    return _idsWithStatus(results, const {.done, .alreadyInState, .notFound});
   }
 
   Future<List<String>> restoreAssetsFromTrash(Iterable<LocalAsset> assets) async {
-    final restoredIds = <String>[];
-    for (final asset in assets) {
-      _log.info("Restoring from trash, localId: ${asset.id}, checksum: ${asset.checksum}");
-      final result = await _restoreFromTrashById(asset.id, asset.type.index);
-      if (result) {
-        restoredIds.add(asset.id);
-      }
+    if (!CurrentPlatform.isAndroid) {
+      return const [];
     }
-    return restoredIds;
-  }
 
-  Future<AssetEntity?> get(String id) async {
-    final entity = await AssetEntity.fromId(id);
-    return entity;
+    if (assets.isEmpty) {
+      return const [];
+    }
+
+    final ids = assets.map((asset) => asset.id).toList();
+    _log.info("Restoring ${ids.length} assets from trash");
+    try {
+      return _idsWithStatus(await _assetMediaApi.restore(ids), const {.done, .alreadyInState});
+    } catch (e, s) {
+      _log.warning('Error restoring assets from trash', e, s);
+      return const [];
+    }
   }
 
   Future<String?> getOriginalFilename(String id) async {
