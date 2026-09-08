@@ -146,6 +146,7 @@
       selectedPersonToCreate[editedFace.id] = newFeaturePhoto;
     }
     showSelectedFaces = false;
+    assetViewerManager.clearHighlightedFaces();
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
@@ -153,11 +154,13 @@
       selectedPersonToReassign[editedFace.id] = person;
     }
     showSelectedFaces = false;
+    assetViewerManager.clearHighlightedFaces();
   };
 
   const handleFacePicker = (face: AssetFaceResponseDto) => {
     editedFace = face;
     showSelectedFaces = true;
+    assetViewerManager.setHighlightedFaces([face]);
   };
 
   const deleteAssetFace = async (face: AssetFaceResponseDto) => {
@@ -247,7 +250,11 @@
               class="absolute inset-s-0 top-0 size-22.5 cursor-default"
               onfocus={() => assetViewerManager.setHighlightedFaces([peopleWithFaces[index]])}
               onpointerenter={() => assetViewerManager.setHighlightedFaces([peopleWithFaces[index]])}
-              onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
+              onpointerleave={() => {
+                if (!showSelectedFaces) {
+                  assetViewerManager.clearHighlightedFaces();
+                }
+              }}
             >
               <div class="relative">
                 {#if selectedPersonToCreate[face.id]}
@@ -375,7 +382,10 @@
     {editedFace}
     {assetId}
     {assetType}
-    onClose={() => (showSelectedFaces = false)}
+    onClose={() => {
+      showSelectedFaces = false;
+      assetViewerManager.clearHighlightedFaces();
+    }}
     onCreatePerson={handleCreatePerson}
     onReassign={handleReassignFace}
   />
