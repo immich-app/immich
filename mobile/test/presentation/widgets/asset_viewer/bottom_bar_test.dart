@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -16,16 +15,12 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:native_video_player/native_video_player.dart';
+import 'package:mockito/mockito.dart';
 
-import '../../../service.mocks.dart';
+import '../../../mockito_targets.handles.dart';
+import '../../../mocks.dart';
 import '../../../unit/factories/remote_asset_factory.dart';
 import '../../../widget_tester_extensions.dart';
-
-class MockNativeVideoPlayerController extends Mock implements NativeVideoPlayerController {}
-
-class MockTimelineService extends Mock implements TimelineService {}
 
 class TestReadOnlyModeNotifier extends ReadOnlyModeNotifier {
   @override
@@ -36,14 +31,13 @@ void main() {
   testWidgets('player stays bound after local id arrives', (tester) async {
     final searchCopy = RemoteAssetFactory.create(type: .video);
     final mergedCopy = searchCopy.copyWith(localId: 'local-1', isFavorite: true);
-    final assetService = MockAssetService();
-    final controller = MockNativeVideoPlayerController();
-    final timeline = MockTimelineService();
+    final services = ServiceMocks();
+    final controller = NativeVideoPlayerControllerMock();
     final updates = StreamController<BaseAsset?>(sync: true);
-    when(() => assetService.watchAsset(searchCopy)).thenAnswer((_) => updates.stream);
-    when(controller.play).thenAnswer((_) async {});
-    when(controller.pause).thenAnswer((_) async {});
-    when(() => timeline.origin).thenReturn(.search);
+    services.asset.watchAsset.mockReturnValue(updates.stream);
+    when(controller.mock.play()).thenAnswer((_) async {});
+    when(controller.mock.pause()).thenAnswer((_) async {});
+    services.timeline.origin.mockReturnValue(.search);
 
     late WidgetRef ref;
 
@@ -55,13 +49,13 @@ void main() {
         },
       ),
       overrides: [
-        assetServiceProvider.overrideWithValue(assetService),
+        assetServiceProvider.overrideWithValue(services.asset),
         assetsActionProvider(ActionSource.viewer).overrideWithValue(const AssetFilter<BaseAsset>({})),
-        gCastServiceProvider.overrideWithValue(MockGCastService()),
+        gCastServiceProvider.overrideWithValue(services.cast),
         inLockedViewProvider.overrideWithValue(true),
         ownedAssetsActionProvider(ActionSource.viewer).overrideWithValue(const AssetFilter<RemoteAsset>({})),
         readonlyModeProvider.overrideWith(TestReadOnlyModeNotifier.new),
-        timelineServiceProvider.overrideWithValue(timeline),
+        timelineServiceProvider.overrideWithValue(services.timeline),
       ],
     );
 
@@ -74,10 +68,10 @@ void main() {
     await tester.tap(find.byType(IconButton));
     await tester.pump();
 
-    verify(controller.play).called(1);
+    verify(controller.mock.play()).called(1);
     viewer.setShowingDetails(true);
     await tester.pump();
-    verify(controller.pause).called(1);
+    verify(controller.mock.pause()).called(1);
 
     await tester.pumpWidget(const SizedBox.shrink());
     unawaited(updates.close());
