@@ -1,7 +1,6 @@
-import { authManager } from '$lib/managers/auth-manager.svelte';
+import { licenseManager } from '$lib/managers/license-manager.svelte';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
@@ -9,24 +8,16 @@ export const load = (async ({ url }) => {
 
   const $t = await getFormatter();
   const licenseKey = url.searchParams.get('licenseKey');
-  let activationKey = url.searchParams.get('activationKey');
-  let isActivated: boolean | undefined = undefined;
+  let isActivated: boolean | undefined;
 
-  try {
-    if (licenseKey && !activationKey) {
-      activationKey = await getActivationKey(licenseKey);
+  if (licenseKey) {
+    try {
+      const { activatedAt } = await licenseManager.activate(licenseKey, url.searchParams.get('activationKey'));
+      isActivated = activatedAt !== '';
+    } catch (error) {
+      isActivated = false;
+      console.error(`Failed to activate license key: ${error}`, error);
     }
-
-    if (licenseKey && activationKey) {
-      const response = await activateProduct(licenseKey, activationKey);
-      if (response.activatedAt !== '') {
-        isActivated = true;
-        authManager.isPurchased = true;
-      }
-    }
-  } catch (error) {
-    isActivated = false;
-    console.log('error navigating to /buy', error);
   }
 
   return {

@@ -1,10 +1,11 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/PurchaseActivationSuccess.svelte';
   import LicenseContent from '$lib/components/shared-components/purchasing/PurchaseContent.svelte';
   import SupporterBadge from './SupporterBadge.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { licenseManager } from '$lib/managers/license-manager.svelte';
   import { Route } from '$lib/route';
   import { Alert, Container, Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
@@ -19,6 +20,8 @@
   let showLicenseActivated = $state(false);
 </script>
 
+<OnEvents onLicenseActivated={() => (showLicenseActivated = true)} />
+
 <UserPageLayout title={data.meta.title}>
   <Container size="medium" center>
     <Stack gap={4} class="mt-4">
@@ -26,18 +29,14 @@
         <Alert icon={mdiAlertCircleOutline} color="danger" title={$t('purchase_failed_activation')} />
       {/if}
 
-      {#if authManager.isPurchased}
+      {#if licenseManager.license}
         <SupporterBadge logoSize="lg" centered />
       {/if}
 
       {#if showLicenseActivated || data.isActivated === true}
         <LicenseActivationSuccess onDone={() => goto(Route.photos(), { replaceState: false })} />
       {:else}
-        <LicenseContent
-          onActivate={() => {
-            showLicenseActivated = true;
-          }}
-        />
+        <LicenseContent />
       {/if}
     </Stack>
   </Container>

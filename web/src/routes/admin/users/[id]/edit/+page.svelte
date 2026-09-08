@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { serverManager } from '$lib/managers/server-manager.svelte';
   import { Route } from '$lib/route';
   import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
-  import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, Input, Link, NumberInput, Switch, Text } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
@@ -15,6 +15,8 @@
   };
 
   let { data }: Props = $props();
+
+  $effect.pre(() => void serverManager.load());
 
   const user = $derived(data.user);
   let { isAdmin, name, email } = $derived(user);
@@ -30,8 +32,8 @@
   let quotaSizeWarning = $derived(
     previousQuota !== quotaSizeBytes &&
       !!quotaSizeBytes &&
-      userInteraction.serverInfo &&
-      quotaSizeBytes > userInteraction.serverInfo.diskSizeRaw,
+      serverManager.storage &&
+      quotaSizeBytes > serverManager.storage.diskSizeRaw,
   );
 
   const onClose = async () => {
