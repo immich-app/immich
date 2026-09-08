@@ -1,4 +1,6 @@
+import 'package:async/async.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 
 import '../repository_context.dart';
@@ -62,6 +64,49 @@ void main() {
 
       expect(result.length, 1);
       expect(result[0].id, remote.id);
+    });
+  });
+
+  group('watchMatchingIds', () {
+    late String userId;
+
+    setUp(() async {
+      final user = await ctx.newUser();
+      userId = user.id;
+      await ctx.newAuthUser(id: userId);
+    });
+
+    test('excludes trashed, deleted and archived assets', () async {
+      final timeline = await ctx.newRemoteAsset(ownerId: userId);
+      final trashed = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2020));
+      final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
+
+      final result = await sut
+          .watchMatchingIds([timeline.id, trashed.id, archived.id, 'never-synced'], AssetVisibility.timeline)
+          .first;
+
+      expect(result, {timeline.id});
+    });
+
+    test('matches the requested visibility for archive searches', () async {
+      final timeline = await ctx.newRemoteAsset(ownerId: userId);
+      final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
+
+      final result = await sut.watchMatchingIds([timeline.id, archived.id], AssetVisibility.archive).first;
+
+      expect(result, {archived.id});
+    });
+
+    test('emits again when a matching asset is trashed', () async {
+      final asset = await ctx.newRemoteAsset(ownerId: userId);
+      final queue = StreamQueue(sut.watchMatchingIds([asset.id], AssetVisibility.timeline));
+
+      expect(await queue.next, {asset.id});
+
+      await sut.trash([asset.id]);
+
+      expect(await queue.next, isEmpty);
+      await queue.cancel();
     });
   });
 }
