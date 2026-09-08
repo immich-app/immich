@@ -58,4 +58,43 @@ describe('Queue detail page', () => {
     expect(screen.getByText(/metadata failed/)).toBeInTheDocument();
     expect(screen.getByText(/admin.job_attempts: 1/)).toBeInTheDocument();
   });
+  it('renders failed queue jobs when optional failure details are missing', () => {
+    render(QueuePage, {
+      data: {
+        queue,
+        failedJobs: [
+          {
+            name: JobName.AssetExtractMetadata,
+            data: {},
+            timestamp: 1_700_000_000_000,
+            attemptsMade: 1,
+          },
+        ],
+        meta: { title: 'Queue details' },
+      },
+    });
+
+    expect(screen.getByText('admin.jobs_failed_details')).toBeInTheDocument();
+    expect(screen.getByText(JobName.AssetExtractMetadata)).toBeInTheDocument();
+    expect(screen.queryByText(/admin.job_failed_reason/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/admin.job_processed/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/admin.job_finished/)).not.toBeInTheDocument();
+  });
+  it('does not render failed queue jobs when there are no failed jobs', () => {
+    render(QueuePage, {
+      data: {
+        queue: {
+          ...queue,
+          statistics: {
+            ...queue.statistics,
+            failed: 0,
+          },
+        },
+        failedJobs: [],
+        meta: { title: 'Queue details' },
+      },
+    });
+
+    expect(screen.queryByText('admin.jobs_failed_details')).not.toBeInTheDocument();
+  });
 });

@@ -94,7 +94,7 @@
                     </div>
 
                     {#if job.failedReason}
-                      <div class="mt-3 text-sm text-red-600 dark:text-red-400">
+                      <div class="mt-3 break-words text-sm text-red-600 dark:text-red-400">
                         {$t('admin.job_failed_reason')}: {job.failedReason}
                       </div>
                     {/if}
