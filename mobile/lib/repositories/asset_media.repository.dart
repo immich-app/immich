@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/share_mime_type.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -401,7 +402,12 @@ class AssetMediaRepository {
       await cleanupTempFiles(tempFiles);
       return 0;
     }
-    final downloadedXFiles = shareFiles.map((shareFile) => XFile(shareFile.file.path)).toList();
+    // Pass the MIME type explicitly for RAW/HEIF originals: share_plus would
+    // otherwise send application/octet-stream and image editors would be
+    // missing from the share sheet (immich-app/immich#31198).
+    final downloadedXFiles = shareFiles
+        .map((shareFile) => XFile(shareFile.file.path, mimeType: shareMimeTypeForPath(shareFile.file.path)))
+        .toList();
 
     // we dont want to await the share result since the
     // "preparing" dialog will not disappear until
