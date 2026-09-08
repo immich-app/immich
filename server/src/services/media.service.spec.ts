@@ -57,6 +57,7 @@ describe(MediaService.name, () => {
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
 
       mocks.person.getAll.mockReturnValue(makeStream([person]));
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue({});
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -74,6 +75,27 @@ describe(MediaService.name, () => {
           name: JobName.PersonGenerateThumbnail,
           data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
         },
+      ]);
+    });
+
+    it('should recover a person with an invalid feature face', async () => {
+      const person = PersonFactory.create({ faceAssetId: newUuid() });
+      const replacement = AssetFaceFactory.create();
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream());
+      mocks.person.getAll.mockReturnValue(makeStream([person]));
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(undefined);
+      mocks.person.getRandomFace.mockResolvedValue(replacement);
+
+      await sut.handleQueueGenerateThumbnails({ force: true });
+
+      expect(mocks.person.getRandomFace).toHaveBeenCalledWith(person.personGroupId);
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        faceAssetId: replacement.id,
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.PersonGenerateThumbnail, data: { ownerId: person.ownerId, personGroupId: person.personGroupId } },
       ]);
     });
 

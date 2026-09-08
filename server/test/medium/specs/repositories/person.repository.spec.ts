@@ -228,4 +228,31 @@ describe(PersonRepository.name, () => {
       );
     });
   });
+
+  describe('getForFeatureFaceUpdate', () => {
+    it('should ignore soft-deleted faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { assetFace: deletedFace } = await ctx.newAssetFace({
+        assetId: asset.id,
+        personGroupId: person.personGroupId,
+      });
+      const { assetFace: liveFace } = await ctx.newAssetFace({
+        assetId: asset.id,
+        personGroupId: person.personGroupId,
+      });
+
+      await ctx.database
+        .updateTable('asset_face')
+        .set({ deletedAt: new Date() })
+        .where('asset_face.id', '=', deletedFace.id)
+        .execute();
+
+      await expect(
+        sut.getForFeatureFaceUpdate({ assetId: asset.id, personGroupId: person.personGroupId }),
+      ).resolves.toEqual({ id: liveFace.id });
+    });
+  });
 });

@@ -91,9 +91,15 @@ export class MediaService extends BaseService {
       const jobs: JobItem[] = [];
       for (const person of people) {
         const { ownerId, personGroupId } = person;
-        if (!person.faceAssetId) {
+        const faceData = person.faceAssetId
+          ? await this.personRepository.getDataForThumbnailGenerationJob({ ownerId, personGroupId })
+          : undefined;
+        if (!faceData) {
           const face = await this.personRepository.getRandomFace(personGroupId);
           if (!face) {
+            if (person.faceAssetId) {
+              await this.personRepository.update({ ownerId, personGroupId, faceAssetId: null });
+            }
             continue;
           }
 

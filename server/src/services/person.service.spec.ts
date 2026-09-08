@@ -533,6 +533,42 @@ describe(PersonService.name, () => {
         },
       ]);
     });
+
+    it('should clear the feature photo when no live face remains', async () => {
+      const person = PersonFactory.create();
+
+      mocks.person.getRandomFace.mockResolvedValue(undefined);
+      await sut.createNewFeaturePhoto([person]);
+
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        faceAssetId: null,
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe('deleteFace', () => {
+    it('should select a replacement when deleting the featured face', async () => {
+      const auth = AuthFactory.create();
+      const face = AssetFaceFactory.create();
+      const person = PersonFactory.create({ faceAssetId: face.id });
+      const replacementFace = { ...face, id: newUuid() };
+
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue({ ...getForAssetFace(face), person });
+      mocks.person.getRandomFace.mockResolvedValue(replacementFace);
+
+      await sut.deleteFace(auth, face.id, { force: false });
+
+      expect(mocks.person.softDeleteAssetFaces).toHaveBeenCalledWith(face.id);
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        faceAssetId: replacementFace.id,
+      });
+    });
   });
 
   describe('reassignFacesById', () => {

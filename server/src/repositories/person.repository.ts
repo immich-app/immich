@@ -776,6 +776,7 @@ export class PersonRepository {
       .select('asset_face.id')
       .where('asset_face.assetId', '=', assetId)
       .where('asset_face.personGroupId', '=', personGroupId)
+      .where('asset_face.deletedAt', 'is', null)
       .innerJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.isOffline', '=', false))
       .executeTakeFirst();
   }
