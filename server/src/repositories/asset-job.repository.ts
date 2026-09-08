@@ -224,7 +224,17 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id', 'asset.visibility'])
-      .select((eb) => withFiles(eb, AssetFileType.Preview))
+      .select((eb) =>
+        jsonObjectFrom(
+          eb
+            .selectFrom('asset_file')
+            .select(columns.assetFiles)
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
+            .orderBy('asset_file.isEdited', 'desc')
+            .limit(sql.lit(1)),
+        ).as('previewFile'),
+      )
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

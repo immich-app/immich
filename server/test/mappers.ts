@@ -195,6 +195,15 @@ export const getForDetectedFaces = (asset: ReturnType<AssetFactory['build']>) =>
     .map((file) => getDehydrated(file))[0],
 });
 
+export const getForClipEncoding = (asset: ReturnType<AssetFactory['build']>) => ({
+  id: asset.id,
+  visibility: asset.visibility,
+  previewFile: asset.files
+    .filter((file) => file.type === AssetFileType.Preview)
+    .toSorted((a, b) => Number(b.isEdited) - Number(a.isEdited))
+    .map((file) => getDehydrated(file))[0],
+});
+
 export const getForSidecarWrite = (asset: ReturnType<AssetFactory['build']>) => ({
   id: asset.id,
   originalPath: asset.originalPath,
