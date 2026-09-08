@@ -249,8 +249,8 @@ export class JobRepository {
   async searchJobs(name: QueueName, dto: QueueJobSearchDto): Promise<QueueJobResponseDto[]> {
     const jobs = await this.getQueue(name).getJobs(dto.status ?? Object.values(QueueJobStatus), 0, 1000);
     return jobs.map((job) => {
-      const { id, name, timestamp, data } = job;
-      return { id, name: name as JobName, timestamp, data };
+      const { id, name, timestamp, data, failedReason, attemptsMade, processedOn, finishedOn } = job;
+      return { id, name: name as JobName, timestamp, data, failedReason, attemptsMade, processedOn, finishedOn };
     });
   }
 
