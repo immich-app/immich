@@ -491,6 +491,7 @@ describe('/search', () => {
         .get('/search/suggestions?type=country&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
+        'China',
         'Cuba',
         'France',
         'Georgia',
@@ -498,12 +499,11 @@ describe('/search', () => {
         'Ghana',
         'Japan',
         'Morocco',
-        "People's Republic of China",
-        'Russian Federation',
+        'Russia',
         'Singapore',
         'Spain',
         'Switzerland',
-        'United States of America',
+        'United States',
         null,
       ]);
       expect(status).toBe(200);
@@ -514,6 +514,7 @@ describe('/search', () => {
         .get('/search/suggestions?type=country')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
+        'China',
         'Cuba',
         'France',
         'Georgia',
@@ -521,12 +522,11 @@ describe('/search', () => {
         'Ghana',
         'Japan',
         'Morocco',
-        "People's Republic of China",
-        'Russian Federation',
+        'Russia',
         'Singapore',
         'Spain',
         'Switzerland',
-        'United States of America',
+        'United States',
       ]);
       expect(status).toBe(200);
     });
