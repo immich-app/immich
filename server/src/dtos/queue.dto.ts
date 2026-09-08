@@ -34,7 +34,11 @@ const QueueDeleteSchema = z
 
 const QueueJobSearchSchema = z
   .object({
-    status: z.array(QueueJobStatusSchema).optional().describe('Filter jobs by status'),
+    status: z
+      .union([QueueJobStatusSchema, z.array(QueueJobStatusSchema)])
+      .transform((status) => (Array.isArray(status) ? status : [status]))
+      .optional()
+      .describe('Filter jobs by status'),
   })
   .meta({ id: 'QueueJobSearchDto' });
 

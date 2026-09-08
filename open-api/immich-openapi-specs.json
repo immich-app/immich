@@ -11076,10 +11076,17 @@
             "in": "query",
             "description": "Filter jobs by status",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/QueueJobStatus"
-              }
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/QueueJobStatus"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QueueJobStatus"
+                  }
+                }
+              ]
             }
           }
         ],

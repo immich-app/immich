@@ -6307,7 +6307,7 @@ export function emptyQueue({ name, queueDeleteDto }: {
  */
 export function getQueueJobs({ name, status }: {
     name: QueueName;
-    status?: QueueJobStatus[];
+    status?: QueueJobStatus | QueueJobStatus[];
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
