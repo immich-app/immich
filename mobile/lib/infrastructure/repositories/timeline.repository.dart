@@ -10,7 +10,6 @@ import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -132,43 +131,26 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.syncTrash,
   );
 
-  JoinedSelectStatement _selectedBackupAssetsQuery([$LocalAssetEntityTable? asset]) {
-    asset ??= _db.localAssetEntity;
-    return _db.selectOnly(_db.localAlbumAssetEntity)
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
-      ..where(
-        _db.localAlbumAssetEntity.assetId.equalsExp(asset.id) &
-            _db.localAlbumAssetEntity.albumId.isInQuery(
-              _db.selectOnly(_db.localAlbumEntity)
-                ..addColumns([_db.localAlbumEntity.id])
-                ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected)),
-            ),
-      );
-  }
-
-  JoinedSelectStatement _pendingReviewMarkersQuery([$LocalAssetEntityTable? asset]) {
-    asset ??= _db.localAssetEntity;
-    return _db.selectOnly(_db.trashSyncEntity)
-      ..addColumns([_db.trashSyncEntity.assetId])
-      ..where(
-        _db.trashSyncEntity.assetId.equalsExp(asset.id) &
-            _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.pending),
-      );
-  }
-
-  Expression<bool> _syncTrashAssetFilter($LocalAssetEntityTable asset) =>
-      existsQuery(_selectedBackupAssetsQuery(asset)) & existsQuery(_pendingReviewMarkersQuery(asset));
-
   Stream<List<Bucket>> _watchSyncTrashBuckets({required GroupAssetsBy groupBy}) {
+    final assetCount = _db.trashSyncEntity.assetId.count();
+    final query = _db.trashSyncEntity.selectOnly()
+      ..join([
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId),
+          useColumns: false,
+        ),
+      ])
+      ..where(_syncTrashAssetFilter());
+
     if (groupBy == GroupAssetsBy.none) {
-      return _db.localAssetEntity.count(where: _syncTrashAssetFilter).map(_generateBuckets).watchSingle();
+      query.addColumns([assetCount]);
+      return query.map((row) => _generateBuckets(row.read(assetCount) ?? 0)).watchSingle();
     }
 
-    final assetCount = _db.localAssetEntity.id.count();
     final date = _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true);
-    final query = _db.localAssetEntity.selectOnly()
+    query
       ..addColumns([assetCount, date])
-      ..where(_syncTrashAssetFilter(_db.localAssetEntity))
       ..groupBy([date])
       ..orderBy([OrderingTerm.desc(date)]);
 
@@ -178,11 +160,28 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   }
 
   Future<List<BaseAsset>> _getSyncTrashAssets({required int offset, required int count}) {
-    final query = _db.localAssetEntity.select()
-      ..where((asset) => _syncTrashAssetFilter(asset))
-      ..orderBy([(asset) => OrderingTerm.desc(asset.createdAt), (asset) => OrderingTerm.desc(asset.id)])
-      ..limit(count, offset: offset);
-    return query.map((row) => row.toDto()).get();
+    final query =
+        _db.trashSyncEntity.select().join([
+            innerJoin(_db.localAssetEntity, _db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId)),
+          ])
+          ..where(_syncTrashAssetFilter())
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt), OrderingTerm.desc(_db.localAssetEntity.id)])
+          ..limit(count, offset: offset);
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+  }
+
+  Expression<bool> _syncTrashAssetFilter() {
+    final selectedBackupAsset = _db.selectOnly(_db.localAlbumAssetEntity)
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..where(
+        _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+            _db.localAlbumAssetEntity.albumId.isInQuery(
+              _db.selectOnly(_db.localAlbumEntity)
+                ..addColumns([_db.localAlbumEntity.id])
+                ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected)),
+            ),
+      );
+    return _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.pending) & existsQuery(selectedBackupAsset);
   }
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
