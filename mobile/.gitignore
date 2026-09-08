@@ -36,6 +36,7 @@ lib/**/*.steps.dart
 lib/**/*.freezed.dart
 lib/routing/router.gr.dart
 test/drift/main/generated/
+packages/**/*.g.dart
 
 # Pigeon related
 /lib/platform/*.g.dart
@@ -70,3 +71,6 @@ lib/generated/
 
 # Flutter widget previews cache
 .widget_preview/
+
+# Snapshot test mismatch output
+**/failures/

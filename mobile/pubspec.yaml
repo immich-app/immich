@@ -111,6 +111,8 @@ dev_dependencies:
   mocktail: ^1.0.5
   # Type safe platform code
   pigeon: ^26.3.4
+  snapshot_test:
+    path: './packages/snapshot_test'
 
 # cast 2.1.0 declares a loose bonsoir range but its code targets the 5.x API.
 # Pin bonsoir to 5.x until cast releases a version compatible with bonsoir 6.x.

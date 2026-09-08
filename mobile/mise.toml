@@ -26,6 +26,7 @@ depends = [
   "codegen:drift:migration",
   "codegen:drift:schema",
   "codegen:pigeon",
+  "codegen:test",
   "codegen:translation",
 ]
 
@@ -80,6 +81,16 @@ run = [
 ]
 depends = ["//:open-api-dart"]
 
+[tasks."codegen:test"]
+description = "Generate registry of widget previews"
+dir = "packages/ui"
+sources = ["lib/src/previews/*.dart", "bin/generate_previews.dart"]
+outputs = ["test/snapshot/previews.g.dart"]
+run = [
+  "dart run bin/generate_previews.dart",
+  "dart format test/snapshot/previews.g.dart",
+]
+
 [tasks."codegen:translation"]
 alias = "translation"
 description = "Generate translations from i18n JSONs"
@@ -95,7 +106,15 @@ run = "flutter pub run flutter_native_splash:create"
 
 [tasks.test]
 description = "Run mobile tests"
-run = "flutter test"
+depends = ["test:app", "test:ui"]
+
+[tasks."test:snapshot"]
+description = "Run snapshot tests only"
+depends = ["test:snapshot:app", "test:snapshot:ui"]
+
+[tasks."test:snapshot:update"]
+description = "Regenerate every snapshot image"
+depends = ["test:snapshot:update:app", "test:snapshot:update:ui"]
 
 [tasks.analyze]
 alias = "lint"
@@ -180,6 +199,39 @@ if [ "$(uname)" != "Darwin" ]; then
 fi
 cd ios && pod install
 '''
+
+[tasks."test:app"]
+description = "Run the app package's tests"
+hide = true
+run = "flutter test -r failures-only"
+
+[tasks."test:ui"]
+description = "Run the UI package's tests"
+hide = true
+dir = "packages/ui"
+run = "flutter test -r failures-only"
+
+[tasks."test:snapshot:app"]
+description = "Run the app package's snapshot tests"
+hide = true
+run = "flutter test test/snapshot -r failures-only"
+
+[tasks."test:snapshot:ui"]
+description = "Run the UI package's snapshot tests"
+hide = true
+dir = "packages/ui"
+run = "flutter test test/snapshot -r failures-only"
+
+[tasks."test:snapshot:update:app"]
+description = "Regenerate the app package's snapshot images"
+hide = true
+run = "flutter test test/snapshot --update-goldens -r failures-only"
+
+[tasks."test:snapshot:update:ui"]
+description = "Regenerate the UI package's snapshot images"
+hide = true
+dir = "packages/ui"
+run = "flutter test test/snapshot --update-goldens -r failures-only"
 
 [tasks."analyze:dart"]
 description = "Run Dart analysis"
