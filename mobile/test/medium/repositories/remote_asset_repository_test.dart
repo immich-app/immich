@@ -81,9 +81,12 @@ void main() {
       final trashed = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2020));
       final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
 
-      final result = await sut
-          .watchMatchingIds([timeline.id, trashed.id, archived.id, 'never-synced'], AssetVisibility.timeline)
-          .first;
+      final result = await sut.watchMatchingIds([
+        timeline.id,
+        trashed.id,
+        archived.id,
+        'never-synced',
+      ], AssetVisibility.timeline).first;
 
       expect(result, {timeline.id});
     });

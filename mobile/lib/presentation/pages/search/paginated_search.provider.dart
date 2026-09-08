@@ -102,12 +102,14 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   }
 
   void _applyFilter({required int? nextPage}) {
-    final visible = _allAssets.where((asset) {
-      if (asset is! RemoteAsset || _matchingIds.contains(asset.id)) {
-        return true;
-      }
-      return !_knownMatchingIds.contains(asset.id);
-    }).toList(growable: false);
+    final visible = _allAssets
+        .where((asset) {
+          if (asset is! RemoteAsset || _matchingIds.contains(asset.id)) {
+            return true;
+          }
+          return !_knownMatchingIds.contains(asset.id);
+        })
+        .toList(growable: false);
 
     final changed = visible.length != state.assets.length;
     state = SearchState(assets: visible, nextPage: nextPage);
