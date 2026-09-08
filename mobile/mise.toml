@@ -4,7 +4,7 @@ java = "21.0.2"
 rust = { version = "1.98.0", targets = "aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" }
 
 [tools."aqua:flutter/flutter"]
-version = "3.47.1"
+version = "3.47.2"
 postinstall = "bash {{config_root}}/ios/scripts/xcode_flutter_patch.sh"
 
 [tools."github:CQLabs/homebrew-dcm"]
