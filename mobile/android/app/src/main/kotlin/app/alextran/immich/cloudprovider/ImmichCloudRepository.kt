@@ -226,7 +226,7 @@ object ImmichCloudRepository {
       val cursor = db.rawQuery(
         """
         SELECT DISTINCT r.id, r.type, r.created_at, r.width, r.height,
-               r.duration_in_seconds, r.is_favorite, r.name,
+               (r.duration_ms / 1000) AS duration_in_seconds, r.is_favorite, r.name,
                e.file_size,
                COALESCE(e.orientation, '0') AS orientation
         FROM remote_asset_entity r
@@ -349,7 +349,7 @@ object ImmichCloudRepository {
       val cursor = db.rawQuery(
         """
         SELECT r.id, r.type, r.created_at, r.width, r.height,
-               r.duration_in_seconds, r.is_favorite, r.name,
+               (r.duration_ms / 1000) AS duration_in_seconds, r.is_favorite, r.name,
                e.file_size,
                COALESCE(e.orientation, '0') AS orientation
         FROM remote_asset_entity r
@@ -679,7 +679,7 @@ object ImmichCloudRepository {
       val cursor = db.rawQuery(
         """
         SELECT r.id, r.type, r.created_at, r.width, r.height,
-               r.duration_in_seconds, r.is_favorite, r.name,
+               (r.duration_ms / 1000) AS duration_in_seconds, r.is_favorite, r.name,
                e.file_size,
                COALESCE(e.orientation, '0') AS orientation
         FROM remote_asset_entity r
