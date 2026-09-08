@@ -29,7 +29,12 @@ void main(List<String> args) async {
     await RustBuilder(
       assetName: 'src/bindings.g.dart',
       cratePath: _crate,
-      extraCargoEnvironmentVariables: {if (code.targetOS == OS.android) 'RUSTFLAGS': _androidRustFlags(code)},
+      extraCargoEnvironmentVariables: {
+        if (code.targetOS == OS.android) 'RUSTFLAGS': _androidRustFlags(code),
+        // rustc links iOS for 10.0 by default, where libSystem hides the ___chkstk_darwin that clang's
+        // stack probes in the bundled sqlite call.
+        if (code.targetOS == OS.iOS) 'IPHONEOS_DEPLOYMENT_TARGET': '${code.iOS.targetVersion}.0',
+      },
     ).run(input: input, output: output);
   });
 }
