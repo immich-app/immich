@@ -7,7 +7,7 @@ import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { citiesFile, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
@@ -170,6 +170,44 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) =>
   }
 };
 
+type CspOptions = Exclude<NonNullable<HelmetOptions['contentSecurityPolicy']>, boolean>;
+type CspDirectives = NonNullable<CspOptions['directives']>;
+
+export const applyCspHashes = (directives: CspDirectives, manifest: Record<string, string[]>): CspDirectives => {
+  const merged = { ...directives };
+  for (const [directive, hashes] of Object.entries(manifest)) {
+    const sources = merged[directive];
+    if (Array.isArray(sources) && !sources.includes(`'unsafe-inline'`)) {
+      merged[directive] = [...sources, ...hashes];
+    }
+  }
+
+  return merged;
+};
+
+const resolveWebCsp = (config: HelmetOptions | undefined, webRoot: string) => {
+  const contentSecurityPolicy = config?.contentSecurityPolicy;
+  if (!contentSecurityPolicy || typeof contentSecurityPolicy === 'boolean' || !contentSecurityPolicy.directives) {
+    return config;
+  }
+
+  if (!existsSync(join(webRoot, 'index.html'))) {
+    return config;
+  }
+
+  const manifestFile = join(webRoot, '.csp.json');
+  let manifest: Record<string, string[]>;
+  try {
+    manifest = JSON.parse(readFileSync(manifestFile).toString()) as Record<string, string[]>;
+  } catch (error) {
+    throw new Error(`Failed to read CSP manifest: ${manifestFile}`, { cause: error });
+  }
+
+  const directives = applyCspHashes(contentSecurityPolicy.directives, manifest);
+
+  return { ...config, contentSecurityPolicy: { ...contentSecurityPolicy, directives } };
+};
+
 const getEnv = (): EnvData => {
   const parseResult = EnvSchema.safeParse(process.env);
   if (!parseResult.success) {
@@ -314,7 +352,7 @@ const getEnv = (): EnvData => {
     },
 
     helmet: {
-      config: resolveHelmetFile(dto.IMMICH_HELMET_FILE),
+      config: resolveWebCsp(resolveHelmetFile(dto.IMMICH_HELMET_FILE), folders.web),
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,
