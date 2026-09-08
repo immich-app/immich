@@ -329,6 +329,7 @@
     "password_settings_description": "Manage password login settings",
     "paths_validated_successfully": "All paths validated successfully",
     "person_cleanup_job": "Person cleanup",
+    "person_thumbnail_regenerate_job": "Regenerate person thumbnails",
     "queue_details": "Queue Details",
     "queues": "Job Queues",
     "queues_page_description": "Admin job queues page",

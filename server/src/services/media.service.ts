@@ -26,6 +26,7 @@ import {
 } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
+import { GetAllPeopleOptions } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
@@ -87,7 +88,20 @@ export class MediaService extends BaseService {
       await this.jobRepository.queueAll(jobs);
     }
 
-    for await (const people of batched(this.personRepository.getAll(force ? undefined : { thumbnailPath: '' }))) {
+    await this.queueGeneratePersonThumbnails(force ? undefined : { thumbnailPath: '' });
+
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.PersonGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
+  async handleQueueGeneratePersonThumbnails(): Promise<JobStatus> {
+    await this.queueGeneratePersonThumbnails();
+
+    return JobStatus.Success;
+  }
+
+  private async queueGeneratePersonThumbnails(options?: GetAllPeopleOptions) {
+    for await (const people of batched(this.personRepository.getAll(options))) {
       const jobs: JobItem[] = [];
       for (const person of people) {
         const { ownerId, personGroupId } = person;
@@ -105,8 +119,6 @@ export class MediaService extends BaseService {
 
       await this.jobRepository.queueAll(jobs);
     }
-
-    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.FileMigrationQueueAll, queue: QueueName.Migration })
