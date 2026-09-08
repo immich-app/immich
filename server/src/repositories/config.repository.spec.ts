@@ -30,6 +30,9 @@ const resetEnv = () => {
     'DB_SKIP_MIGRATIONS',
     'DB_VECTOR_EXTENSION',
 
+    'OAUTH_CLIENT_ID',
+    'OAUTH_CLIENT_SECRET',
+
     'REDIS_HOSTNAME',
     'REDIS_PORT',
     'REDIS_DBINDEX',
@@ -184,6 +187,27 @@ describe('getEnv', () => {
     it('should reject invalid json', () => {
       process.env.REDIS_URL = `ioredis://${Buffer.from('{ "invalid json"').toString('base64')}`;
       expect(() => getEnv()).toThrowError('Failed to decode redis options');
+    });
+  });
+
+  describe('oauth', () => {
+    it('should use defaults', () => {
+      const { oauth } = getEnv();
+      expect(oauth).toEqual({
+        clientId: undefined,
+        clientSecret: undefined,
+      });
+    });
+
+    it('should read OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET', () => {
+      process.env.OAUTH_CLIENT_ID = 'oauth-client-id';
+      process.env.OAUTH_CLIENT_SECRET = 'oauth-client-secret';
+
+      const { oauth } = getEnv();
+      expect(oauth).toEqual({
+        clientId: 'oauth-client-id',
+        clientSecret: 'oauth-client-secret',
+      });
     });
   });
 

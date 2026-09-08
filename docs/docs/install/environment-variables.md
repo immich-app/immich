@@ -152,6 +152,13 @@ Redis (Sentinel) URL example JSON before encoding:
 
 </details>
 
+## OAuth
+
+| Variable                | Description         | Default | Containers |
+| :---------------------- | :------------------ | :-----: | :--------- |
+| `OAUTH_CLIENT_ID`       | OAuth client ID     |         | server     |
+| `OAUTH_CLIENT_SECRET`   | OAuth client secret |         | server     |
+
 ## Machine Learning
 
 | Variable                                                    | Description                                                                                                                                                  |           Default            | Containers       |
@@ -213,14 +220,16 @@ The following variables support reading from files, either via [Systemd Credenti
 
 To use any of these, either set `CREDENTIALS_DIRECTORY` to a directory that contains files whose name is the “regular variable” name, and whose content is the secret. If using Docker Secrets, setting `CREDENTIALS_DIRECTORY=/run/secrets` will cause all secrets present to be used. Alternatively, replace the regular variable with the equivalent `_FILE` environment variable as below. The value of the `_FILE` variable should be set to the path of a file containing the variable value.
 
-| Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
-| :----------------- | :------------------------------------------ |
-| `DB_HOSTNAME`      | `DB_HOSTNAME_FILE`<sup>\*1</sup>            |
-| `DB_DATABASE_NAME` | `DB_DATABASE_NAME_FILE`<sup>\*1</sup>       |
-| `DB_USERNAME`      | `DB_USERNAME_FILE`<sup>\*1</sup>            |
-| `DB_PASSWORD`      | `DB_PASSWORD_FILE`<sup>\*1</sup>            |
-| `DB_URL`           | `DB_URL_FILE`<sup>\*1</sup>                 |
-| `REDIS_PASSWORD`   | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
+| Regular Variable      | Equivalent Docker Secrets '\_FILE' Variable |
+| :-------------------- | :------------------------------------------ |
+| `DB_HOSTNAME`         | `DB_HOSTNAME_FILE`<sup>\*1</sup>            |
+| `DB_DATABASE_NAME`    | `DB_DATABASE_NAME_FILE`<sup>\*1</sup>       |
+| `DB_USERNAME`         | `DB_USERNAME_FILE`<sup>\*1</sup>            |
+| `DB_PASSWORD`         | `DB_PASSWORD_FILE`<sup>\*1</sup>            |
+| `DB_URL`              | `DB_URL_FILE`<sup>\*1</sup>                 |
+| `REDIS_PASSWORD`      | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
+| `OAUTH_CLIENT_ID`     | `OAUTH_CLIENT_ID_FILE`                      |
+| `OAUTH_CLIENT_SECRET` | `OAUTH_CLIENT_SECRET_FILE`                  |
 
 \*1: See the [official documentation][docker-secrets-docs] for
 details on how to use Docker Secrets in the Postgres image.

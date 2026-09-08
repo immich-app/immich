@@ -101,6 +101,11 @@ export interface EnvData {
 
   redis: RedisOptions;
 
+  oauth: {
+    clientId?: string;
+    clientSecret?: string;
+  };
+
   setup: {
     allow: boolean;
   };
@@ -334,6 +339,10 @@ const getEnv = (): EnvData => {
     },
 
     redis: redisConfig,
+    oauth: {
+      clientId: dto.OAUTH_CLIENT_ID,
+      clientSecret: dto.OAUTH_CLIENT_SECRET,
+    },
 
     resourcePaths: {
       lockFile: join(buildFolder, 'build-lock.json'),

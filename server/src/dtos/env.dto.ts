@@ -78,6 +78,8 @@ export const EnvSchema = z
     DB_URL: z.string().optional(),
     DB_USERNAME: z.string().optional(),
     DB_VECTOR_EXTENSION: z.enum(['pgvector', 'vectorchord']).optional(),
+    OAUTH_CLIENT_ID: z.string().optional(),
+    OAUTH_CLIENT_SECRET: z.string().optional(),
     NO_COLOR: z.string().optional(),
     REDIS_HOSTNAME: z.string().optional(),
     REDIS_PORT: z.coerce.number().int().optional(),

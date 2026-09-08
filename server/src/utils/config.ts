@@ -75,7 +75,7 @@ const loadFromFile = async ({ metadataRepo, logger }: RepoDeps, filepath: string
 
 const buildConfig = async (repos: RepoDeps) => {
   const { configRepo, metadataRepo, logger } = repos;
-  const { configFile } = configRepo.getEnv();
+  const { configFile, oauth } = configRepo.getEnv();
 
   // load partial
   const partial = configFile
@@ -86,6 +86,13 @@ const buildConfig = async (repos: RepoDeps) => {
   const rawConfig = _.cloneDeep(defaults);
   for (const property of getKeysDeep(partial)) {
     _.set(rawConfig, property, _.get(partial, property));
+  }
+
+  if (oauth.clientId !== undefined) {
+    rawConfig.oauth.clientId = oauth.clientId;
+  }
+  if (oauth.clientSecret !== undefined) {
+    rawConfig.oauth.clientSecret = oauth.clientSecret;
   }
 
   // check for extra properties

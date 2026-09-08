@@ -63,6 +63,11 @@ export const envData: EnvData = {
     db: 0,
   },
 
+  oauth: {
+    clientId: undefined,
+    clientSecret: undefined,
+  },
+
   resourcePaths: {
     lockFile: 'build-lock.json',
     geodata: {

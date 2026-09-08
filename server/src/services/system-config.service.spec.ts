@@ -293,6 +293,37 @@ describe(SystemConfigService.name, () => {
       await expect(sut.getAdminConfig()).resolves.toEqual(updatedConfig);
     });
 
+    it('should override oauth client credentials from environment variables', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: {
+          clientId: 'config-client-id',
+          clientSecret: 'config-client-secret',
+        },
+      });
+      mocks.config.getEnv.mockReturnValue(
+        mockEnvData({
+          oauth: { clientId: 'env-client-id', clientSecret: 'env-client-secret' },
+        }),
+      );
+
+      const config = await sut.getAdminConfig();
+      expect(config.oauth.clientId).toBe('env-client-id');
+      expect(config.oauth.clientSecret).toBe('env-client-secret');
+    });
+
+    it('should keep oauth client credentials from system config when environment variables are not set', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: {
+          clientId: 'config-client-id',
+          clientSecret: 'config-client-secret',
+        },
+      });
+
+      const config = await sut.getAdminConfig();
+      expect(config.oauth.clientId).toBe('config-client-id');
+      expect(config.oauth.clientSecret).toBe('config-client-secret');
+    });
+
     it('should load the config from a json file', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify(partialConfig));
