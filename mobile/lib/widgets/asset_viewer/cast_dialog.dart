@@ -19,7 +19,11 @@ class CastDialog extends ConsumerWidget {
     }
 
     bool isDeviceConnecting(String deviceName) {
-      return castManager.receiverName == deviceName && !castManager.isCasting;
+      return castManager.receiverName == deviceName && castManager.connection == CastConnection.connecting;
+    }
+
+    bool isDeviceFailed(String deviceName) {
+      return castManager.receiverName == deviceName && castManager.connection == CastConnection.failed;
     }
 
     return AlertDialog(
@@ -27,20 +31,16 @@ class CastDialog extends ConsumerWidget {
       content: SizedBox(
         width: 250,
         height: 250,
-        child: FutureBuilder<List<(String, CastDestinationType, dynamic)>>(
-          future: ref.watch(castProvider.notifier).getDevices(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text(context.t.error_saving_image(error: snapshot.error.toString()));
-            } else if (!snapshot.hasData) {
-              return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
+        child: Builder(
+          builder: (context) {
+            final devices = castManager.devices;
+
+            if (devices.isEmpty) {
+              return castManager.discoveryStatus == CastDiscoveryStatus.starting
+                  ? const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()))
+                  : Text(context.t.no_cast_devices_found);
             }
 
-            if (snapshot.data!.isEmpty) {
-              return Text(context.t.no_cast_devices_found);
-            }
-
-            final devices = snapshot.data!;
             final connected = devices.where((d) => isCurrentDevice(d.$1)).toList();
             final others = devices.where((d) => !isCurrentDevice(d.$1)).toList();
 
@@ -69,7 +69,7 @@ class CastDialog extends ConsumerWidget {
                     child: Text(item, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   );
                 } else {
-                  final (deviceName, type, deviceObj) = item as (String, CastDestinationType, dynamic);
+                  final (deviceName, _, deviceObj) = item as CastDestination;
 
                   return ListTile(
                     title: Text(
@@ -77,13 +77,15 @@ class CastDialog extends ConsumerWidget {
                       style: TextStyle(color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null),
                     ),
                     leading: Icon(
-                      type == CastDestinationType.googleCast ? Icons.cast : Icons.cast_connected,
+                      isCurrentDevice(deviceName) ? Icons.cast_connected : Icons.cast,
                       color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null,
                     ),
                     trailing: isCurrentDevice(deviceName)
                         ? Icon(Icons.check, color: context.colorScheme.primary)
                         : isDeviceConnecting(deviceName)
                         ? const CircularProgressIndicator()
+                        : isDeviceFailed(deviceName)
+                        ? Icon(Icons.error_outline, color: context.colorScheme.error)
                         : null,
                     onTap: () async {
                       if (isDeviceConnecting(deviceName)) {
@@ -95,7 +97,7 @@ class CastDialog extends ConsumerWidget {
                       }
 
                       if (!isCurrentDevice(deviceName)) {
-                        unawaited(ref.read(castProvider.notifier).connect(type, deviceObj));
+                        unawaited(ref.read(castProvider.notifier).connect(deviceObj));
                       }
                     },
                   );
