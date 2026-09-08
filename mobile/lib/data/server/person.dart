@@ -22,6 +22,11 @@ class PersonApiRepository extends ApiRepository {
     return _toPerson(response);
   }
 
-  static Person _toPerson(PersonResponseDto dto) =>
-      .new(birthDate: dto.birthDate, id: dto.id, name: dto.name, isFavorite: dto.isFavorite.orElse(false), updatedAt: dto.updatedAt.orElse(null));
+  static Person _toPerson(PersonResponseDto dto) => .new(
+    birthDate: dto.birthDate,
+    id: dto.id,
+    name: dto.name,
+    isFavorite: dto.isFavorite.orElse(false),
+    updatedAt: dto.updatedAt.orElse(null),
+  );
 }

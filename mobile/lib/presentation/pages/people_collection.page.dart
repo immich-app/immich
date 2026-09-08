@@ -108,11 +108,7 @@ class _PeopleCollectionPageState extends ConsumerState<PeopleCollectionPage> {
                                 ),
                               ),
                               if (person.isFavorite ?? false)
-                                const Positioned(
-                                  left: 6,
-                                  top: 6,
-                                  child: _AvatarOverlayIcon(Icons.favorite_rounded),
-                                ),
+                                const Positioned(left: 6, top: 6, child: _AvatarOverlayIcon(Icons.favorite_rounded)),
                             ],
                           ),
                         ),

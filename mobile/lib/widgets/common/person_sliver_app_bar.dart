@@ -95,7 +95,11 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
             ),
             actions: [
               IconButton(
-                icon: Icon(widget.person.isFavorite == true ? Icons.favorite_rounded : Icons.favorite_border_rounded, color: actionIconColor, shadows: actionIconShadows),
+                icon: Icon(
+                  widget.person.isFavorite == true ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: actionIconColor,
+                  shadows: actionIconShadows,
+                ),
                 onPressed: widget.onToggleFavorite,
               ),
               IconButton(
