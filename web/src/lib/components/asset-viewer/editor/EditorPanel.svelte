@@ -54,7 +54,7 @@
   ]}
 />
 
-<section class="dark relative flex h-full flex-col p-2 pt-3 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="dark relative flex min-h-full flex-col p-2 pt-3 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <HStack class="me-4 justify-between">
     <HStack>
       <IconButton

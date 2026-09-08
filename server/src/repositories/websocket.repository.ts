@@ -11,7 +11,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseEventV1, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { SyncAssetEditV1, SyncAssetExifV1, SyncAssetV2 } from 'src/dtos/sync.dto';
+import { SyncAssetEditV2, SyncAssetExifV1, SyncAssetV2 } from 'src/dtos/sync.dto';
 import { AppRestartEvent, ArgsOf, EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { handlePromiseError } from 'src/utils/misc';
@@ -47,7 +47,7 @@ export interface ClientEventMap {
 
   AssetUploadReadyV2: [{ asset: SyncAssetV2; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];
-  AssetEditReadyV2: [{ asset: SyncAssetV2; edit: SyncAssetEditV1[] }];
+  AssetEditReadyV2: [{ asset: SyncAssetV2; edit: SyncAssetEditV2[] }];
 }
 
 export type AuthFn = (client: Socket) => Promise<AuthDto>;

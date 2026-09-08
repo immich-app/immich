@@ -5,7 +5,7 @@ import {
   type NotificationDto,
   type ReleaseEventV1,
   type ServerVersionResponseDto,
-  type SyncAssetEditV1,
+  type SyncAssetEditV2,
   type SyncAssetV2,
 } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
@@ -41,7 +41,7 @@ export interface Events {
   AppRestartV1: (event: AppRestartEvent) => void;
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
-  AssetEditReadyV2: (data: { asset: SyncAssetV2; edit: SyncAssetEditV1[] }) => void;
+  AssetEditReadyV2: (data: { asset: SyncAssetV2; edit: SyncAssetEditV2[] }) => void;
 }
 
 const websocket: Socket<Events> = io({

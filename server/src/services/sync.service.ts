@@ -9,6 +9,7 @@ import {
   SyncAckDeleteDto,
   SyncAckSetDto,
   syncAlbumV2ToV1,
+  SyncAssetEditV1,
   SyncAssetV2,
   SyncItem,
   SyncStreamDto,
@@ -84,6 +85,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.UserMetadataV1,
   SyncRequestType.AssetMetadataV1,
   SyncRequestType.AssetEditsV1,
+  SyncRequestType.AssetEditsV2,
 ];
 
 const throwSessionRequired = () => {
@@ -177,6 +179,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.AssetsV2]: () => this.syncAssetsV2(options, response, checkpointMap),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(options, response, checkpointMap),
       [SyncRequestType.AssetEditsV1]: () => this.syncAssetEditsV1(options, response, checkpointMap),
+      [SyncRequestType.AssetEditsV2]: () => this.syncAssetEditsV2(options, response, checkpointMap),
       [SyncRequestType.PartnerAssetsV2]: () => this.syncPartnerAssetsV2(options, response, checkpointMap, session.id),
       [SyncRequestType.AssetMetadataV1]: () => this.syncAssetMetadataV1(options, response, checkpointMap, auth),
       [SyncRequestType.PartnerAssetExifsV1]: () =>
@@ -388,6 +391,22 @@ export class SyncService extends BaseService {
       await send(response, { type: deleteType, ids: [id], data });
     }
     const upsertType = SyncEntityType.AssetEditV1;
+    const upserts = this.syncRepository.assetEdit.getUpsertsV1({ ...options, ack: checkpointMap[upsertType] });
+
+    for await (const { updateId, ...data } of upserts) {
+      await send(response, { type: upsertType, ids: [updateId], data: data as SyncAssetEditV1 });
+    }
+  }
+
+  private async syncAssetEditsV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.AssetEditDeleteV1;
+    const deletes = this.syncRepository.assetEdit.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+
+    for await (const { id, ...data } of deletes) {
+      await send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AssetEditV2;
     const upserts = this.syncRepository.assetEdit.getUpserts({ ...options, ack: checkpointMap[upsertType] });
 
     for await (const { updateId, ...data } of upserts) {

@@ -3,6 +3,7 @@ import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { AssetEditAction } from 'src/dtos/editing.dto';
 import { DB } from 'src/schema';
 import { SyncAck } from 'src/types';
 
@@ -521,6 +522,16 @@ class AssetEditSync extends BaseSync {
 
   cleanupAuditTable(daysAgo: number) {
     return this.auditCleanup('asset_edit_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpsertsV1(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_edit', options)
+      .select([...columns.syncAssetEdit, 'asset_edit.updateId'])
+      .innerJoin('asset', 'asset.id', 'asset_edit.assetId')
+      .where('asset.ownerId', '=', options.userId)
+      .where('asset_edit.action', 'in', [AssetEditAction.Crop, AssetEditAction.Rotate, AssetEditAction.Mirror])
+      .stream();
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
