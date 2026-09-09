@@ -613,16 +613,13 @@ export class PersonService extends BaseService {
       const changes: Updateable<Person> = {};
       if (!primaryPerson.name && mergePerson.name) {
         changes.name = mergePerson.name;
+      } else if (mergePerson.name && mergePerson.name !== primaryPerson.name) {
+        continue;
       }
 
       if (!primaryPerson.birthDate && mergePerson.birthDate) {
         changes.birthDate = mergePerson.birthDate;
-      }
-
-      if (
-        (mergePerson.name && mergePerson.name !== primaryPerson.name) ||
-        (mergePerson.birthDate && mergePerson.birthDate !== primaryPerson.birthDate)
-      ) {
+      } else if (mergePerson.birthDate && mergePerson.birthDate !== primaryPerson.birthDate) {
         continue;
       }
 
