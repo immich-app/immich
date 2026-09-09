@@ -4,7 +4,11 @@ use std::ptr;
 
 #[cfg(target_os = "android")]
 mod android;
+/// cbindgen:ignore
+#[cfg(target_os = "android")]
+mod bitmap;
 mod log;
+mod rotate;
 
 pub use log::ImmichCoreLogLevel;
 
