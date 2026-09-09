@@ -86,7 +86,36 @@ class SyncStatusAndActions extends HookConsumerWidget {
     }
 
     Future<void> clearFileCache() async {
-      await ref.read(storageRepositoryProvider).clearCache();
+      try {
+        await ref.read(storageRepositoryProvider).clearCache();
+        if (!context.mounted) {
+          return;
+        }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              context.t.clear_file_cache_success(size: 0),
+              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              context.t.clear_file_cache_error,
+              style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.error),
+            ),
+          ),
+        );
+      }
     }
 
     Future<void> resetSqliteDb(BuildContext context) {
