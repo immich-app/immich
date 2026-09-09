@@ -1,5 +1,5 @@
 import type { AssetResponseDto } from '@immich/sdk';
-import { canCopyImageToClipboard, getAssetFilename, getFilenameExtension } from './asset-utils';
+import { canCopyImageToClipboard, getAssetFilename, getFilenameExtension, orderStackAssets } from './asset-utils';
 
 describe('get file extension from filename', () => {
   it('returns the extension without including the dot', () => {
@@ -61,5 +61,17 @@ describe('copy image to clipboard', () => {
   // This test is dubious, as it totally on the environment where the test is run which is mocked.
   it('should allow copy image to clipboard', () => {
     expect(canCopyImageToClipboard()).toEqual(true);
+  });
+});
+
+describe('order stack assets', () => {
+  it('orders assets from newest to oldest independently of the primary asset', () => {
+    const assets = [
+      { id: 'primary', fileCreatedAt: '2026-01-02T00:00:00.000Z' },
+      { id: 'before-primary', fileCreatedAt: '2026-01-01T00:00:00.000Z' },
+      { id: 'after-primary', fileCreatedAt: '2026-01-03T00:00:00.000Z' },
+    ] as AssetResponseDto[];
+
+    expect(orderStackAssets(assets).map(({ id }) => id)).toEqual(['after-primary', 'primary', 'before-primary']);
   });
 });

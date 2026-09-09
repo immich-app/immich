@@ -12,6 +12,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
+import '../factories/remote_asset_factory.dart';
 import '../mocks.dart';
 
 void main() {
@@ -53,6 +54,28 @@ void main() {
 
   tearDown(() async {
     await Store.delete(StoreKey.manageLocalMediaAndroid);
+  });
+
+  group('AssetService.getStack', () {
+    test('sorts all stack assets from newest to oldest', () async {
+      final primary = RemoteAssetFactory.create(
+        id: 'primary',
+        stackId: 'stack',
+      ).copyWith(createdAt: DateTime(2026, 1, 2));
+      final beforePrimary = RemoteAssetFactory.create(
+        id: 'before-primary',
+        stackId: 'stack',
+      ).copyWith(createdAt: DateTime(2026, 1, 1));
+      final afterPrimary = RemoteAssetFactory.create(
+        id: 'after-primary',
+        stackId: 'stack',
+      ).copyWith(createdAt: DateTime(2026, 1, 3));
+      when(() => remoteRepository.getStackChildren(primary)).thenAnswer((_) async => [beforePrimary, afterPrimary]);
+
+      final stack = await sut.getStack(primary);
+
+      expect(stack.map((asset) => asset.id), ['after-primary', 'primary', 'before-primary']);
+    });
   });
 
   group('AssetService.updateDateTime', () {

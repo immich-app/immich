@@ -58,9 +58,10 @@ class AssetService {
       return const [];
     }
 
-    final stack = await _remoteRepository.getStackChildren(asset);
-    // Include the primary asset in the stack as the first item
-    return [asset, ...stack];
+    // Sort by creation time
+    final stack = [asset, ...await _remoteRepository.getStackChildren(asset)];
+    stack.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return stack;
   }
 
   Future<ExifInfo?> getExif(BaseAsset asset) async {

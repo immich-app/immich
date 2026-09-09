@@ -273,6 +273,9 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
+export const orderStackAssets = (assets: AssetResponseDto[]) =>
+  [...assets].sort((a, b) => b.fileCreatedAt.localeCompare(a.fileCreatedAt));
+
 export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
