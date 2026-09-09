@@ -82,7 +82,7 @@
 
   interface Props {
     data: PageData;
-  }
+  } 
 
   let { data = $bindable() }: Props = $props();
   let { slideshowState, slideshowNavigation } = slideshowStore;
@@ -375,7 +375,6 @@
                 {isOwned}
                 onNameInput={(albumName) => (draftAlbumName = albumName)}
                 onUpdate={(albumName) => (album = { ...album, albumName })}
-                draftAlbumName="albumName;"
               />
 
               {#if album.assetCount > 0}
