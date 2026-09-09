@@ -34,6 +34,12 @@ export const dateFormats = {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
+  } satisfies Intl.DateTimeFormatOptions,
+  albumShort: {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
   } satisfies Intl.DateTimeFormatOptions,
   settings: {
     month: 'short',

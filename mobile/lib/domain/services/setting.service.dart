@@ -12,8 +12,4 @@ class SettingsService {
   const SettingsService({required this._storeService});
 
   T get<T>(Setting<T> setting) => _storeService.get(setting.storeKey, setting.defaultValue);
-
-  Future<void> set<T>(Setting<T> setting, T value) => _storeService.put(setting.storeKey, value);
-
-  Stream<T> watch<T>(Setting<T> setting) => _storeService.watch(setting.storeKey).map((v) => v ?? setting.defaultValue);
 }

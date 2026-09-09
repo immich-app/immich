@@ -94,6 +94,24 @@ export class IntegrityRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getTrackedPaths(paths: string[]) {
+    return this.db
+      .selectFrom('asset')
+      .select('asset.originalPath as path')
+      .where('asset.originalPath', 'in', paths)
+      .union((eb) =>
+        eb.selectFrom('asset_file').select('asset_file.path as path').where('asset_file.path', 'in', paths),
+      )
+      .union((eb) =>
+        eb
+          .selectFrom('person')
+          .select((eb) => eb.ref('person.thumbnailPath').$castTo<string>().as('path'))
+          .where('person.thumbnailPath', 'in', paths),
+      )
+      .execute();
+  }
+
   @GenerateSql({ params: [] })
   getAssetCount() {
     return this.db

@@ -106,6 +106,8 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final birthDate = person.birthDate;
+    final formattedAge = birthDate != null ? formatAge(birthDate, assetFileCreatedAt) : null;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 96),
       child: Padding(
@@ -153,11 +155,11 @@ class _Avatar extends StatelessWidget {
                     style: context.textTheme.labelLarge,
                     maxLines: 1,
                   ),
-                  if (person.birthDate != null)
+                  if (formattedAge != null)
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        formatAge(person.birthDate!, assetFileCreatedAt),
+                        formattedAge,
                         textAlign: TextAlign.center,
                         style: context.textTheme.bodyMedium?.copyWith(
                           color: context.textTheme.bodyMedium?.color?.withAlpha(175),
