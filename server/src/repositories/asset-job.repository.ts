@@ -329,19 +329,17 @@ export class AssetJobRepository {
       .select(['asset.id'])
       .where('asset.type', '=', sql.lit(AssetType.Video))
       .$if(!force, (qb) =>
-        qb
-          .where((eb) =>
-            eb.not(
-              eb.exists(
-                eb
-                  .selectFrom('asset_file')
-                  .select('asset_file.id')
-                  .whereRef('asset_file.assetId', '=', 'asset.id')
-                  .where('asset_file.type', '=', sql.lit(AssetFileType.EncodedVideo)),
-              ),
+        qb.where((eb) =>
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom('asset_file')
+                .select('asset_file.id')
+                .whereRef('asset_file.assetId', '=', 'asset.id')
+                .where('asset_file.type', '=', sql.lit(AssetFileType.EncodedVideo)),
             ),
-          )
-          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
+          ),
+        ),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
