@@ -37,6 +37,7 @@ class DriftMemoryPage extends HookConsumerWidget {
     final currentMemory = useState(memories[memoryIndex]);
     final currentAssetPage = useState(0);
     final currentMemoryIndex = useState(memoryIndex);
+    final targetAssetPage = useRef(0);
     final assetProgress = useState("${currentAssetPage.value + 1}|${currentMemory.value.assets.length}");
     const bgColor = Colors.black;
     final currentAsset = useState<RemoteAsset?>(null);
@@ -57,17 +58,20 @@ class DriftMemoryPage extends HookConsumerWidget {
     });
 
     void toNextMemory() {
+      targetAssetPage.value = 0;
       unawaited(memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
     }
 
     void toPreviousMemory() {
       if (currentMemoryIndex.value > 0) {
+        final previousIndex = currentMemoryIndex.value - 1;
+        targetAssetPage.value = memories[previousIndex].assets.length - 1;
+
         // Move to the previous memory page
         unawaited(memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
 
         // Wait for the next frame to ensure the page is built
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          final previousIndex = currentMemoryIndex.value - 1;
           final previousMemoryController = memoryAssetPageControllers[previousIndex];
 
           // Ensure the controller is attached
@@ -85,24 +89,40 @@ class DriftMemoryPage extends HookConsumerWidget {
       }
     }
 
-    void toNextAsset(int currentAssetIndex) {
-      if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
-        // Go to the next asset
-        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+    void toNextAsset() {
+      final controller = memoryAssetPageControllers[currentMemoryIndex.value];
+      if (!controller.hasClients) return;
 
-        unawaited(controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
+      final nextPage = targetAssetPage.value + 1;
+      if (nextPage < currentMemory.value.assets.length) {
+        targetAssetPage.value = nextPage;
+        unawaited(
+          controller.animateToPage(
+            nextPage,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          ),
+        );
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
       }
     }
 
-    void toPreviousAsset(int currentAssetIndex) {
-      if (currentAssetIndex > 0) {
-        // Go to the previous asset
-        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+    void toPreviousAsset() {
+      final controller = memoryAssetPageControllers[currentMemoryIndex.value];
+      if (!controller.hasClients) return;
 
-        unawaited(controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
+      final prevPage = targetAssetPage.value - 1;
+      if (prevPage >= 0) {
+        targetAssetPage.value = prevPage;
+        unawaited(
+          controller.animateToPage(
+            prevPage,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          ),
+        );
       } else {
         // Go to the previous memory since we are at the end of our assets
         toPreviousMemory();
@@ -161,6 +181,7 @@ class DriftMemoryPage extends HookConsumerWidget {
     Future<void> onAssetChanged(int otherIndex) async {
       ref.read(hapticFeedbackProvider.notifier).selectionClick();
       currentAssetPage.value = otherIndex;
+      targetAssetPage.value = otherIndex;
       updateProgressText();
 
       final activeMemory = currentMemory.value;
@@ -231,6 +252,7 @@ class DriftMemoryPage extends HookConsumerWidget {
               }
 
               currentAssetPage.value = 0;
+              targetAssetPage.value = 0;
 
               updateProgressText();
             },
@@ -299,9 +321,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                                       Expanded(
                                         child: GestureDetector(
                                           behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toPreviousAsset(index);
-                                          },
+                                          onTap: toPreviousAsset,
                                         ),
                                       ),
 
@@ -309,9 +329,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                                       Expanded(
                                         child: GestureDetector(
                                           behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toNextAsset(index);
-                                          },
+                                          onTap: toNextAsset,
                                         ),
                                       ),
                                     ],
