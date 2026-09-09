@@ -62,20 +62,31 @@ export type RawImageInfo = {
   channels: 1 | 2 | 3 | 4;
 };
 
-type DecodeImageOptions = {
-  colorspace: string;
-  processInvalidImages: boolean;
-  raw?: RawImageInfo;
-  edits?: AssetEditActionItem[];
+export type Bitmap = {
+  data: Buffer;
+  info: RawImageInfo;
 };
 
-export interface DecodeToBufferOptions extends DecodeImageOptions {
+type ImageColorOptions = {
+  colorspace: string;
+  processInvalidImages: boolean;
+};
+
+export interface DecodeToBufferOptions extends ImageColorOptions {
   size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
-export type GenerateThumbhashOptions = DecodeImageOptions;
+export type TransformOptions = {
+  size?: number;
+  fit?: 'inside' | 'outside';
+  edits?: AssetEditActionItem[];
+};
+
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> &
+  ImageColorOptions &
+  TransformOptions;
+export type GenerateThumbhashOptions = ImageColorOptions & Pick<TransformOptions, 'edits'>;
 
 export interface VideoStreamInfo {
   index: number;

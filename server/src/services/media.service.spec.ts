@@ -445,7 +445,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -453,13 +453,12 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
@@ -467,19 +466,20 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
-      expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(rawBuffer, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
-        raw: rawInfo,
-        edits: [],
-      });
+      expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(
+        { data: rawBuffer, info: rawInfo },
+        {
+          colorspace: Colorspace.P3,
+          processInvalidImages: false,
+          edits: [],
+        },
+      );
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         {
@@ -717,7 +717,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.Srgb,
           format,
@@ -725,13 +725,12 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         previewPath,
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.Srgb,
           format: ImageFormat.Webp,
@@ -739,7 +738,6 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         thumbnailPath,
@@ -767,7 +765,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.Srgb,
           format: ImageFormat.Jpeg,
@@ -775,13 +773,12 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         previewPath,
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.Srgb,
           format,
@@ -789,7 +786,6 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         thumbnailPath,
@@ -806,7 +802,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
@@ -814,7 +810,7 @@ describe(MediaService.name, () => {
         expect.stringContaining('preview.jpeg'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({
           format: ImageFormat.Webp,
           progressive: false,
@@ -845,7 +841,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: false,
@@ -853,7 +849,7 @@ describe(MediaService.name, () => {
         expect.stringContaining('preview.jpeg'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
@@ -1032,19 +1028,19 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({ processInvalidImages: false }),
         expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({ processInvalidImages: false }),
         expect.any(String),
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
       expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({ processInvalidImages: false }),
       );
 
@@ -1074,7 +1070,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        fullsizeBuffer,
+        { data: fullsizeBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1082,7 +1078,6 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
@@ -1111,20 +1106,19 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        fullsizeBuffer,
+        { data: fullsizeBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        fullsizeBuffer,
+        { data: fullsizeBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1132,7 +1126,6 @@ describe(MediaService.name, () => {
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
@@ -1159,20 +1152,19 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1180,7 +1172,6 @@ describe(MediaService.name, () => {
           progressive: false,
           size: 1440,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
@@ -1211,14 +1202,13 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
@@ -1276,14 +1266,13 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.Srgb,
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
@@ -1319,14 +1308,13 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 90,
           progressive: false,
           processInvalidImages: false,
-          raw: rawInfo,
           edits: [],
         },
         expect.any(String),
@@ -1352,7 +1340,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
@@ -1426,7 +1414,7 @@ describe(MediaService.name, () => {
 
       await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.objectContaining({
           edits: [
             expect.objectContaining({
@@ -1474,17 +1462,17 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.anything(),
         expect.stringContaining('preview_edited.jpeg'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.anything(),
         expect.stringContaining('thumbnail_edited.webp'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        rawBuffer,
+        { data: rawBuffer, info: rawInfo },
         expect.anything(),
         expect.stringContaining('fullsize_edited.jpeg'),
       );
@@ -1570,7 +1558,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        data,
+        { data, info },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1587,7 +1575,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          raw: info,
           processInvalidImages: false,
           size: 250,
         },
@@ -1624,7 +1611,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        data,
+        { data, info },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1641,7 +1628,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          raw: info,
           processInvalidImages: false,
           size: 250,
         },
@@ -1673,7 +1659,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        data,
+        { data, info },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1690,7 +1676,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          raw: info,
           processInvalidImages: false,
           size: 250,
         },
@@ -1718,7 +1703,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        data,
+        { data, info },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1735,7 +1720,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          raw: info,
           processInvalidImages: false,
           size: 250,
         },
@@ -1763,7 +1747,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        data,
+        { data, info },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1780,7 +1764,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          raw: info,
           processInvalidImages: false,
           size: 250,
         },
@@ -1808,7 +1791,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        data,
+        { data, info },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1825,7 +1808,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          raw: info,
           processInvalidImages: false,
           size: 250,
         },
@@ -1858,7 +1840,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        data,
+        { data, info },
         {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
@@ -1875,7 +1857,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          raw: info,
           processInvalidImages: false,
           size: 250,
         },

@@ -1010,8 +1010,12 @@ describe(AuthService.name, () => {
         profileChangedAt: expect.any(Date),
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(profile.picture);
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(
         Buffer.from(pictureBytes.buffer, pictureBytes.byteOffset, pictureBytes.byteLength),
+        expect.objectContaining({ processInvalidImages: false }),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.anything(),
         expect.objectContaining({ format: 'webp', processInvalidImages: false }),
         expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
       );
