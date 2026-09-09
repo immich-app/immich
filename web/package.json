@@ -53,7 +53,7 @@
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.4",
-    "maplibre-gl": "^5.6.2",
+    "maplibre-gl": "^6.0.0",
     "media-chrome": "^4.19.0",
     "pmtiles": "^4.3.0",
     "qrcode": "^1.5.4",
