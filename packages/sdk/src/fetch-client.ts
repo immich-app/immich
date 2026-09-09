@@ -621,6 +621,8 @@ export type UserAdminUpdateDto = {
     isAdmin?: boolean;
     /** User name */
     name?: string;
+    /** Send a welcome email with the new password when resetting it */
+    notify?: boolean;
     /** User password */
     password?: string;
     /** PIN code */

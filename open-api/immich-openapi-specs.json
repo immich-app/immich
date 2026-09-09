@@ -32174,6 +32174,16 @@
             "description": "User name",
             "type": "string"
           },
+          "notify": {
+            "description": "Send a welcome email with the new password when resetting it",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v3.3.0",
+                "state": "Added"
+              }
+            ]
+          },
           "password": {
             "description": "User password",
             "type": "string"

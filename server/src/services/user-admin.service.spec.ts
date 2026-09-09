@@ -113,6 +113,42 @@ describe(UserAdminService.name, () => {
         sut.update(authStub.admin, userStub.user1.id, { shouldChangePassword: true }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('should not allow notify without a new password', async () => {
+      await expect(sut.update(authStub.admin, userStub.user1.id, { notify: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it('should emit a UserSignup event when resetting the password with notify', async () => {
+      mocks.user.update.mockResolvedValue(userStub.user1);
+
+      await sut.update(authStub.admin, userStub.user1.id, {
+        password: 'new-password',
+        shouldChangePassword: true,
+        notify: true,
+      });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('UserSignup', {
+        notify: true,
+        id: userStub.user1.id,
+        password: 'new-password',
+      });
+    });
+
+    it('should not emit a UserSignup event when resetting the password without notify', async () => {
+      mocks.user.update.mockResolvedValue(userStub.user1);
+
+      await sut.update(authStub.admin, userStub.user1.id, {
+        password: 'new-password',
+        shouldChangePassword: true,
+      });
+
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
   });
 
   describe('delete', () => {
