@@ -1,5 +1,6 @@
 {
   "about": "متعلق",
+  "accept": "قبول کریں",
   "account": "اکاؤنٹ",
   "account_settings": "اکاؤنٹ کی ترتیبات",
   "acknowledge": "تسلیم کرنا",
@@ -35,6 +36,7 @@
   "add_to_bottom_bar": "اس میں شامل کریں",
   "add_upload_to_stack": "اپ لوڈ کو اسٹیک میں شامل کریں",
   "add_url": "URL شامل کریں",
+  "add_user": "صارف شامل کریں",
   "added_to_archive": "آرکائیو میں شامل کر دیا گیا",
   "added_to_favorites": "پسندیدہ میں شامل کردیا گیا",
   "added_to_favorites_count": "پسندیدہ میں {count, number} شامل کیے گئے",
