@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { HlsVideoResolution, VideoCodec } from 'src/enum';
+import { HLS_ORIGINAL_VARIANT_INDEX } from 'src/constants';
+import { Av1Profile, ColorTransfer, HlsVideoResolution, VideoCodec } from 'src/enum';
 import { HlsService } from 'src/services/hls.service';
 import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
 import { factory } from 'test/small.factory';
@@ -171,6 +172,71 @@ ${sessionId}/13/playlist.m3u8
 ${sessionId}/14/playlist.m3u8
 `;
 
+const eiffelOriginalStream = `#EXT-X-STREAM-INF:BANDWIDTH=5779676,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910,STABLE-VARIANT-ID="original"
+${sessionId}/${HLS_ORIGINAL_VARIANT_INDEX}/playlist.m3u8
+`;
+
+const waterfallOriginalStream = `#EXT-X-STREAM-INF:BANDWIDTH=47910915,RESOLUTION=2160x3840,CODECS="hvc1.1.6.L156.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830,STABLE-VARIANT-ID="original"
+${sessionId}/${HLS_ORIGINAL_VARIANT_INDEX}/playlist.m3u8
+`;
+
+// EXTINF values come from FFmpeg's playlist for the corresponding test assets to enforce an exact match
+const eiffelExpectedOriginalPlaylist = `#EXTM3U
+#EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
+#EXT-X-TARGETDURATION:5
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-PLAYLIST-TYPE:VOD
+#EXT-X-MAP:URI="init.mp4"
+#EXTINF:5.138911,
+seg_0.m4s
+#EXTINF:5.138911,
+seg_1.m4s
+#EXTINF:3.171667,
+seg_2.m4s
+#EXTINF:1.967244,
+seg_3.m4s
+#EXTINF:1.726356,
+seg_4.m4s
+#EXTINF:3.412556,
+seg_5.m4s
+#EXTINF:1.806500,
+seg_6.m4s
+#EXT-X-ENDLIST
+`;
+
+const waterfallExpectedOriginalPlaylist = `#EXTM3U
+#EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
+#EXT-X-TARGETDURATION:1
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-PLAYLIST-TYPE:VOD
+#EXT-X-MAP:URI="init.mp4"
+#EXTINF:0.999856,
+seg_0.m4s
+#EXTINF:0.999856,
+seg_1.m4s
+#EXTINF:0.999856,
+seg_2.m4s
+#EXTINF:0.999856,
+seg_3.m4s
+#EXTINF:0.999867,
+seg_4.m4s
+#EXTINF:0.999856,
+seg_5.m4s
+#EXTINF:0.999856,
+seg_6.m4s
+#EXTINF:1.058400,
+seg_7.m4s
+#EXTINF:1.001189,
+seg_8.m4s
+#EXTINF:1.000244,
+seg_9.m4s
+#EXTINF:0.299878,
+seg_10.m4s
+#EXT-X-ENDLIST
+`;
+
 describe(HlsService.name, () => {
   let sut: HlsService;
   let mocks: ServiceMocks;
@@ -193,7 +259,7 @@ describe(HlsService.name, () => {
     ];
 
     const setup = (
-      asset: typeof eiffelTower | typeof waterfall,
+      asset: NonNullable<Awaited<ReturnType<typeof mocks.videoStream.getForMainPlaylist>>>,
       videoCodecs?: VideoCodec[],
       resolutions?: HlsVideoResolution[],
     ) => {
@@ -215,17 +281,79 @@ describe(HlsService.name, () => {
 
     it('offers AV1, HEVC, and H.264 when AV1 is configured and the accelerator supports it', async () => {
       setup(eiffelTower, allCodecs);
-      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterAv1);
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterAv1 + eiffelOriginalStream);
     });
 
     it('omits AV1 when it is not in the configured codecs', async () => {
       setup(eiffelTower);
-      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterNoAv1);
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterNoAv1 + eiffelOriginalStream);
     });
 
     it('offers every resolution up to the source and derives 4K codec levels (waterfall, 4K, 29.83fps)', async () => {
       setup(waterfall, allCodecs, allResolutions);
-      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(waterfallExpectedMasterAv1);
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(
+        waterfallExpectedMasterAv1 + waterfallOriginalStream,
+      );
+    });
+
+    it('offers Original when no encoded rendition is configured', async () => {
+      setup(eiffelTower, [], []);
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(`#EXTM3U
+#EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
+${eiffelOriginalStream}`);
+    });
+
+    it('describes HDR10 Original', async () => {
+      setup({
+        ...waterfall,
+        videoStream: { ...waterfall.videoStream, colorTransfer: ColorTransfer.Smpte2084 },
+      });
+
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toContain('VIDEO-RANGE=PQ');
+    });
+
+    it('describes AV1 Original', async () => {
+      setup({
+        ...eiffelTower,
+        videoStream: {
+          ...eiffelTower.videoStream,
+          codecName: VideoCodec.Av1,
+          profile: Av1Profile.Main,
+          level: 8,
+          pixelFormat: 'yuv420p10le',
+        },
+      });
+
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toContain(
+        'CODECS="av01.0.08M.10,mp4a.40.2",VIDEO-RANGE=SDR',
+      );
+    });
+
+    it('describes Dolby Vision Original', async () => {
+      setup(train);
+
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toContain(
+        'CODECS="hvc1.2.4.L123.B0,mp4a.40.2",SUPPLEMENTAL-CODECS="dvh1.08.05/db4h",VIDEO-RANGE=HLG',
+      );
+    });
+
+    it('omits Original when the stream does not start with a keyframe', async () => {
+      const asset = {
+        ...eiffelTower,
+        packets: {
+          ...eiffelTower.packets,
+          keyframeAccDuration: [
+            eiffelTower.packets.keyframeAccDuration[0] + 1,
+            ...eiffelTower.packets.keyframeAccDuration.slice(1),
+          ],
+        },
+      };
+      setup(asset, allCodecs, allResolutions);
+
+      const playlist = await sut.getMainPlaylist(auth, assetId);
+      expect(playlist).toContain('#EXT-X-INDEPENDENT-SEGMENTS');
+      expect(playlist).not.toContain('STABLE-VARIANT-ID="original"');
     });
 
     it('throws BadRequestException when realtime transcoding is disabled', async () => {
@@ -254,6 +382,47 @@ describe(HlsService.name, () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
       mocks.videoStream.getForMediaPlaylist.mockResolvedValue(data);
       await expect(sut.getMediaPlaylist(auth, assetId, sessionId, 0)).resolves.toBe(playlist);
+    });
+
+    const originalFixtures = [
+      { data: eiffelTower, playlist: eiffelExpectedOriginalPlaylist },
+      { data: waterfall, playlist: waterfallExpectedOriginalPlaylist },
+    ];
+
+    it.each(originalFixtures)(
+      'matches FFmpeg for the Original stream from $data.originalPath',
+      async ({ data, playlist }) => {
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+        mocks.videoStream.getForMediaPlaylist.mockResolvedValue(data);
+        await expect(sut.getMediaPlaylist(auth, assetId, sessionId, HLS_ORIGINAL_VARIANT_INDEX)).resolves.toBe(
+          playlist,
+        );
+      },
+    );
+
+    it('prewarms Original at the keyframe segment containing the hinted position', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.videoStream.getForMediaPlaylist.mockResolvedValue(eiffelTower);
+      await sut.getMediaPlaylist(auth, assetId, sessionId, HLS_ORIGINAL_VARIANT_INDEX, 10.5);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsSegmentRequest', {
+        sessionId,
+        assetId,
+        variantIndex: HLS_ORIGINAL_VARIANT_INDEX,
+        segmentIndex: 2,
+      });
+    });
+
+    it('does not carry segment numbers over between Original and encoded variants', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.videoStream.getSession.mockResolvedValue({ id: sessionId, assetId } as never);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+      await sut.getSegment(auth, assetId, sessionId, 1, 'seg_5.m4s');
+      await sut.getSegment(auth, assetId, sessionId, HLS_ORIGINAL_VARIANT_INDEX, 'init.mp4');
+      expect(mocks.websocket.serverSend).toHaveBeenLastCalledWith('HlsHeartbeat', {
+        sessionId,
+        variantIndex: HLS_ORIGINAL_VARIANT_INDEX,
+        segmentIndex: 0,
+      });
     });
 
     it('throws NotFoundException when the session/asset cannot be loaded', async () => {

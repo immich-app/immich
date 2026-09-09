@@ -77,8 +77,10 @@ export class VideoStreamRepository {
       .selectFrom('asset')
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .where('asset.id', '=', id)
+      .leftJoin('asset_audio', 'asset.id', 'asset_audio.assetId')
       .innerJoin('asset_video', 'asset.id', 'asset_video.assetId')
       .innerJoin('asset_keyframe', 'asset.id', 'asset_keyframe.assetId')
+      .select((eb) => withAudioStream(eb).as('audioStream'))
       .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))
       .select((eb) => withVideoPackets(eb).$notNull().as('packets'))
       .executeTakeFirst();
@@ -93,8 +95,10 @@ export class VideoStreamRepository {
       .where('asset.id', '=', id)
       .where('video_stream_session.id', '=', sessionId)
       .where('video_stream_session.expiresAt', '>', new Date())
+      .leftJoin('asset_audio', 'asset.id', 'asset_audio.assetId')
       .innerJoin('asset_video', 'asset.id', 'asset_video.assetId')
       .innerJoin('asset_keyframe', 'asset.id', 'asset_keyframe.assetId')
+      .select((eb) => withAudioStream(eb).as('audioStream'))
       .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))
       .select((eb) => withVideoPackets(eb).$notNull().as('packets'))
       .executeTakeFirst();

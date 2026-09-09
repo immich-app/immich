@@ -56,6 +56,25 @@ select
     from
       (
         select
+          "asset_audio"."index",
+          "asset_audio"."codecName",
+          "asset_audio"."profile",
+          "asset_audio"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_audio"."assetId" is not null
+      ) as obj
+  ) as "audioStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
           "asset_video"."index",
           "asset_video"."codecName",
           "asset_video"."profile",
@@ -112,6 +131,7 @@ select
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_audio" on "asset"."id" = "asset_audio"."assetId"
   inner join "asset_video" on "asset"."id" = "asset_video"."assetId"
   inner join "asset_keyframe" on "asset"."id" = "asset_keyframe"."assetId"
 where
@@ -119,6 +139,25 @@ where
 
 -- VideoStreamRepository.getForMediaPlaylist
 select
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_audio"."index",
+          "asset_audio"."codecName",
+          "asset_audio"."profile",
+          "asset_audio"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_audio"."assetId" is not null
+      ) as obj
+  ) as "audioStream",
   (
     select
       to_json(obj)
@@ -182,6 +221,7 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "video_stream_session" on "asset"."id" = "video_stream_session"."assetId"
+  left join "asset_audio" on "asset"."id" = "asset_audio"."assetId"
   inner join "asset_video" on "asset"."id" = "asset_video"."assetId"
   inner join "asset_keyframe" on "asset"."id" = "asset_keyframe"."assetId"
 where

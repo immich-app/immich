@@ -257,6 +257,7 @@ export const HLS_VARIANTS = [
   { resolution: 2160, codec: VideoCodec.Hevc, bitrate: 14_000_000 },
   { resolution: 2160, codec: VideoCodec.H264, bitrate: 25_000_000 },
 ];
+export const HLS_ORIGINAL_VARIANT_INDEX = HLS_VARIANTS.length;
 export const HLS_VERSION = 7;
 
 export type CodecLevel = { maxFrame: number; maxRate: number; token: string };
