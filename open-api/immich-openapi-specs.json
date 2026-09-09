@@ -11504,6 +11504,31 @@
             }
           },
           {
+            "name": "isSpatial",
+            "required": false,
+            "in": "query",
+            "description": "Filter by spatial (stereoscopic) photo/video status",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "lensModel",
             "required": false,
             "in": "query",
@@ -22152,6 +22177,11 @@
             "nullable": true,
             "type": "number"
           },
+          "isSpatial": {
+            "default": false,
+            "description": "Whether the asset is a spatial (stereoscopic) photo or video",
+            "type": "boolean"
+          },
           "iso": {
             "default": null,
             "description": "ISO sensitivity",
@@ -22448,6 +22478,8 @@
         "enum": [
           "AssetDelete",
           "AssetDeleteCheck",
+          "AssetDetectSpatialMetadataQueueAll",
+          "AssetDetectSpatialMetadata",
           "AssetDetectFacesQueueAll",
           "AssetDetectFaces",
           "AssetDetectDuplicatesQueueAll",
@@ -23520,6 +23552,26 @@
           "isOffline": {
             "deprecated": true,
             "description": "Filter by offline status",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "isSpatial": {
+            "deprecated": true,
+            "description": "Filter by spatial (stereoscopic) photo/video status",
             "type": "boolean",
             "x-immich-history": [
               {
@@ -25952,6 +26004,26 @@
             ],
             "x-immich-state": "Deprecated"
           },
+          "isSpatial": {
+            "deprecated": true,
+            "description": "Filter by spatial (stereoscopic) photo/video status",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
           "lensModel": {
             "deprecated": true,
             "description": "Filter by lens model",
@@ -26758,6 +26830,9 @@
           "isOffline": {
             "$ref": "#/components/schemas/BoolFilter"
           },
+          "isSpatial": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
           "lensModel": {
             "$ref": "#/components/schemas/StringFilterNullable"
           },
@@ -26865,6 +26940,9 @@
             "$ref": "#/components/schemas/BoolFilter"
           },
           "isOffline": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "isSpatial": {
             "$ref": "#/components/schemas/BoolFilter"
           },
           "lensModel": {
@@ -28146,6 +28224,26 @@
             ],
             "x-immich-state": "Deprecated"
           },
+          "isSpatial": {
+            "deprecated": true,
+            "description": "Filter by spatial (stereoscopic) photo/video status",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
           "language": {
             "description": "Search language code",
             "type": "string"
@@ -28897,6 +28995,26 @@
           "isOffline": {
             "deprecated": true,
             "description": "Filter by offline status",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "isSpatial": {
+            "deprecated": true,
+            "description": "Filter by spatial (stereoscopic) photo/video status",
             "type": "boolean",
             "x-immich-history": [
               {

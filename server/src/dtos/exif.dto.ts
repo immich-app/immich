@@ -29,6 +29,7 @@ export const ExifResponseSchema = z
     country: z.string().nullish().default(null).describe('Country name'),
     description: z.string().nullish().default(null).describe('Image description'),
     projectionType: z.string().nullish().default(null).describe('Projection type'),
+    isSpatial: z.boolean().default(false).describe('Whether the asset is a spatial (stereoscopic) photo or video'),
     rating: z.int().min(1).max(5).nullish().default(null).describe('Rating'),
   })
   .describe('EXIF response')
@@ -59,6 +60,7 @@ export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
     country: entity.country,
     description: entity.description,
     projectionType: entity.projectionType,
+    isSpatial: entity.isSpatial,
     rating: entity.rating,
   };
 }

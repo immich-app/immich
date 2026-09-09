@@ -271,6 +271,12 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { deduplication: { id: JobName.FacialRecognitionQueueAll } };
       }
+      case JobName.AssetDetectSpatialMetadataQueueAll: {
+        return { deduplication: { id: JobName.AssetDetectSpatialMetadataQueueAll } };
+      }
+      case JobName.AssetDetectSpatialMetadata: {
+        return { jobId: `spatial-metadata/${item.data.id}` };
+      }
       case JobName.VersionCheck: {
         return { deduplication: { id: JobName.VersionCheck } };
       }

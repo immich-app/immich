@@ -53,6 +53,7 @@ export type SearchDisplayFilters = {
   isNotInAlbum: boolean;
   isArchive: boolean;
   isFavorite: boolean;
+  isSpatial: boolean;
 };
 
 export type SearchLocationFilter = {

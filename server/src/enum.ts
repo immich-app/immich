@@ -847,6 +847,8 @@ export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job s
 export enum JobName {
   AssetDelete = 'AssetDelete',
   AssetDeleteCheck = 'AssetDeleteCheck',
+  AssetDetectSpatialMetadataQueueAll = 'AssetDetectSpatialMetadataQueueAll',
+  AssetDetectSpatialMetadata = 'AssetDetectSpatialMetadata',
   AssetDetectFacesQueueAll = 'AssetDetectFacesQueueAll',
   AssetDetectFaces = 'AssetDetectFaces',
   AssetDetectDuplicatesQueueAll = 'AssetDetectDuplicatesQueueAll',

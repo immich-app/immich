@@ -19,6 +19,8 @@ import { BaseService } from 'src/services/base.service';
 import { VersionCheckMetadata } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
+const SPATIAL_METADATA_VERSION = '3.2.0-rc.0';
+
 const asNotification = (
   channel: ReleaseChannel,
   { checkedAt, releaseVersion }: VersionCheckMetadata,
@@ -71,6 +73,11 @@ export class VersionService extends BaseService {
         const isNeedsNewMemories = semver.lt(previousVersion, '1.129.0');
         if (isNeedsNewMemories) {
           await this.jobRepository.queue({ name: JobName.MemoryGenerate });
+        }
+
+        const needsSpatialMetadata = semver.lt(previousVersion, SPATIAL_METADATA_VERSION);
+        if (needsSpatialMetadata) {
+          await this.jobRepository.queue({ name: JobName.AssetDetectSpatialMetadataQueueAll });
         }
       }
     });
