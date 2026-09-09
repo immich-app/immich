@@ -906,13 +906,8 @@ importers:
         specifier: ^3.10.0
         version: 3.13.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       svelte-maplibre:
-<<<<<<< HEAD
-        specifier: ^1.2.5
-        version: 1.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
-=======
         specifier: ^2.0.0
-        version: 2.0.0(svelte@5.56.10(@typescript-eslint/types@8.68.0))
->>>>>>> 68e3409 (fix(deps): update dependency maplibre-gl to v6 [security] (#31355))
+        version: 2.0.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       svelte-persisted-store:
         specifier: ^0.12.0
         version: 0.12.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
@@ -25868,11 +25863,7 @@ snapshots:
       svelte-select: 5.8.3
       vanilla-picker: 2.12.3
 
-<<<<<<< HEAD
-  svelte-maplibre@1.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0)):
-=======
-  svelte-maplibre@2.0.0(svelte@5.56.10(@typescript-eslint/types@8.68.0)):
->>>>>>> 68e3409 (fix(deps): update dependency maplibre-gl to v6 [security] (#31355))
+  svelte-maplibre@2.0.0(svelte@5.56.9(@typescript-eslint/types@8.67.0)):
     dependencies:
       d3-geo: 3.1.1
       dequal: 2.0.3
