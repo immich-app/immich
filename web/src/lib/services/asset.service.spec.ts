@@ -11,6 +11,7 @@ import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 import { handleFavorite, handleUnfavorite } from '$lib/services/asset.service';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { handleError } from '$lib/utils/handle-error'
 
 
 vi.mock('@immich/ui', () => ({
@@ -49,6 +50,10 @@ vi.mock(import('$lib/managers/feature-flags-manager.svelte'), function () {
 });
 
 vi.mock('$lib/managers/event-manager.svelte');
+
+vi.mock('$lib/utils/handle-error', () => ({
+  handleError: vi.fn(),
+}));
 
 describe('AssetService', () => {
   describe('getAssetActions', () => {
@@ -137,7 +142,7 @@ describe('AssetService', () => {
       expect(toastManager.primary).toHaveBeenCalledWith('added_to_favorites');
     });
 
-    it('should revert optimistic update on favorite update', async () => {
+    it('should revert optimistic update on favorite failure', async () => {
       const asset = assetFactory.build({ isFavorite: false });
 
       const $t = vitest.fn().mockReturnValue('error');
@@ -156,6 +161,11 @@ describe('AssetService', () => {
         2,
         'AssetUpdate',
         asset,
+      );
+
+      expect(handleError).toHaveBeenCalledWith(
+        expect.any(Error),
+        'error',
       );
     });
 
@@ -196,16 +206,18 @@ describe('AssetService', () => {
       expect(eventManager.emit).toHaveBeenNthCalledWith(
         1,
         'AssetUpdate',
-        expect.objectContaining({
-          id: asset.id,
-          isFavorite: false,
-        }),
+        { ...asset, isFavorite: false },
       );
 
       expect(eventManager.emit).toHaveBeenNthCalledWith(
         2,
         'AssetUpdate',
         asset,
+      );
+
+      expect(handleError).toHaveBeenCalledWith(
+        expect.any(Error),
+        'error',
       );
     });
   });
