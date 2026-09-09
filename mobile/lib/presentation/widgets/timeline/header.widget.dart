@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class TimelineHeader extends HookWidget {
   final Bucket bucket;
@@ -51,35 +52,38 @@ class TimelineHeader extends HookWidget {
 
     return Padding(
       padding: EdgeInsets.only(top: isMonthHeader ? 8.0 : 0.0, left: 12.0, right: 12.0),
-      child: SizedBox(
-        height: height,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            if (isMonthHeader)
-              Row(
-                children: [
-                  Text(
-                    toBeginningOfSentenceCase(_formatMonth(context, date)),
-                    style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
-                  ),
-                  const Spacer(),
-                  if (header != HeaderType.monthAndDay) _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
-                ],
-              ),
-            if (isDayHeader)
-              Row(
-                children: [
-                  Text(
-                    toBeginningOfSentenceCase(_formatDay(context, date)),
-                    style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
-                  ),
-                  const Spacer(),
-                  _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
-                ],
-              ),
-          ],
+      child: ImmichHorizontalSafeArea(
+        child: SizedBox(
+          height: height,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (isMonthHeader)
+                Row(
+                  children: [
+                    Text(
+                      toBeginningOfSentenceCase(_formatMonth(context, date)),
+                      style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
+                    ),
+                    const Spacer(),
+                    if (header != HeaderType.monthAndDay)
+                      _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
+                  ],
+                ),
+              if (isDayHeader)
+                Row(
+                  children: [
+                    Text(
+                      toBeginningOfSentenceCase(_formatDay(context, date)),
+                      style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
+                    ),
+                    const Spacer(),
+                    _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );

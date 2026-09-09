@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/local_album_sliver_app_bar.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
 class LocalAlbumsPage extends StatelessWidget {
@@ -16,7 +17,14 @@ class LocalAlbumsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: CustomScrollView(slivers: [LocalAlbumsSliverAppBar(), _AlbumList()]));
+    return const Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          LocalAlbumsSliverAppBar(),
+          ImmichSliverHorizontalSafeArea(sliver: _AlbumList()),
+        ],
+      ),
+    );
   }
 }
 

@@ -19,6 +19,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
@@ -31,9 +32,9 @@ class LibraryPage extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           ImmichSliverAppBar(snap: false, floating: false, pinned: true, showUploadButton: false),
-          _ActionButtonGrid(),
-          _CollectionCards(),
-          _QuickAccessButtonList(),
+          ImmichSliverHorizontalSafeArea(
+            sliver: SliverMainAxisGroup(slivers: [_ActionButtonGrid(), _CollectionCards(), _QuickAccessButtonList()]),
+          ),
         ],
       ),
     );

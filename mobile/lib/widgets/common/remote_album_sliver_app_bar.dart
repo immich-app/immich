@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/remote_album_shared_user_icons.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
   const RemoteAlbumSliverAppBar({
@@ -226,61 +227,63 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
           bottom: 16,
           left: 16,
           right: 16,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    if (dateRange.hasValue)
-                      Text(
-                        DateRangeFormatting.formatDateRange(
-                          dateRange.value!.$1.toLocal(),
-                          dateRange.value!.$2.toLocal(),
+          child: ImmichHorizontalSafeArea(
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      if (dateRange.hasValue)
+                        Text(
+                          DateRangeFormatting.formatDateRange(
+                            dateRange.value!.$1.toLocal(),
+                            dateRange.value!.$2.toLocal(),
+                          ),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black87)],
+                          ),
                         ),
-                        style: const TextStyle(
+                      const Text(
+                        " • ",
+                        style: TextStyle(
                           color: Colors.white,
                           shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black87)],
                         ),
                       ),
-                    const Text(
-                      " • ",
-                      style: TextStyle(
-                        color: Colors.white,
-                        shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black87)],
-                      ),
-                    ),
-                    AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: widget.onEditTitle,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) =>
-                        _DynamicText(text: currentAlbum.name, maxWidth: constraints.maxWidth),
+                      AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
+                    ],
                   ),
-                ),
-                if (currentAlbum.description.isNotEmpty)
                   GestureDetector(
                     onTap: widget.onEditTitle,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 80),
-                      child: SingleChildScrollView(
-                        child: Text(
-                          currentAlbum.description,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            shadows: [Shadow(offset: Offset(0, 2), blurRadius: 8, color: Colors.black54)],
+                    child: LayoutBuilder(
+                      builder: (context, constraints) =>
+                          _DynamicText(text: currentAlbum.name, maxWidth: constraints.maxWidth),
+                    ),
+                  ),
+                  if (currentAlbum.description.isNotEmpty)
+                    GestureDetector(
+                      onTap: widget.onEditTitle,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 80),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            currentAlbum.description,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              shadows: [Shadow(offset: Offset(0, 2), blurRadius: 8, color: Colors.black54)],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                const Padding(padding: EdgeInsets.only(top: 8.0), child: RemoteAlbumSharedUserIcons()),
-              ],
+                  const Padding(padding: EdgeInsets.only(top: 8.0), child: RemoteAlbumSharedUserIcons()),
+                ],
+              ),
             ),
           ),
         ),

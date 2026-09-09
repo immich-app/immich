@@ -8,6 +8,7 @@ import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.d
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
 class AlbumsPage extends ConsumerStatefulWidget {
@@ -51,10 +52,12 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
           ],
           showUploadButton: false,
         ),
-        AlbumSelector(
-          onAlbumSelected: (album) {
-            unawaited(context.router.push(RemoteAlbumRoute(album: album)));
-          },
+        ImmichSliverHorizontalSafeArea(
+          sliver: AlbumSelector(
+            onAlbumSelected: (album) {
+              unawaited(context.router.push(RemoteAlbumRoute(album: album)));
+            },
+          ),
         ),
       ],
     );

@@ -6,6 +6,7 @@ import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dar
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
 class MainTimelinePage extends ConsumerStatefulWidget {
@@ -41,7 +42,7 @@ class _MainTimelinePageState extends ConsumerState<MainTimelinePage> {
   Widget build(BuildContext context) {
     final hasMemories = ref.watch(memoryLaneProvider.select((state) => state.value?.isNotEmpty ?? false));
     return Timeline(
-      topSliverWidget: const SliverToBoxAdapter(child: MemoryLane()),
+      topSliverWidget: const SliverToBoxAdapter(child: ImmichHorizontalSafeArea(child: MemoryLane())),
       topSliverWidgetHeight: hasMemories ? 200 : 0,
       showStorageIndicator: true,
     );

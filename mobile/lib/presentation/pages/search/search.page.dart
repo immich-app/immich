@@ -35,6 +35,7 @@ import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/widgets/search/search_filter/star_rating_picker.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
 class SearchPage extends HookConsumerWidget {
@@ -655,7 +656,9 @@ class SearchPage extends HookConsumerWidget {
                   key: const Key('search_filter_chip_list'),
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  // Results take up the full area, so we have to separately pad the search filters
+                  // Since this scrolls horizontally, we cannot use [ImmichSliverHorizontalSafeArea], which clips
+                  padding: const EdgeInsets.symmetric(horizontal: 16) + context.padding.copyWith(top: 0, bottom: 0),
                   children: [
                     SearchFilterChip(
                       icon: Icons.people_alt_outlined,
@@ -713,8 +716,10 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
           ),
+          // Suggestions are text, so they inset; the result grid is photos and
+          // stays full bleed like the timeline.
           if (filter.value.isEmpty)
-            const _SearchSuggestions()
+            const ImmichSliverHorizontalSafeArea(sliver: _SearchSuggestions())
           else
             _SearchResultGrid(onScrollEnd: () => loadMoreSearchResults()),
         ],
