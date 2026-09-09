@@ -32,7 +32,22 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
       .leftJoin('smart_search', 'asset.id', 'smart_search.assetId')
-      .select(['id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select([
+        'asset.id',
+        'asset.type',
+        'asset.ownerId',
+        'asset.duplicateId',
+        'asset.stackId',
+        'asset.visibility',
+        'asset.originalFileName',
+        'asset.originalPath',
+        'smart_search.embedding',
+        'asset_exif.dateTimeOriginal',
+        'asset_exif.make',
+        'asset_exif.model',
+        'asset_exif.autoStackId',
+      ])
       .limit(1)
       .executeTakeFirst();
   }
@@ -199,7 +214,6 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id'])
       .where('asset.deletedAt', 'is', null)
-      .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
       .$call(withDefaultVisibility)
       .$if(!force, (qb) =>
         qb

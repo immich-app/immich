@@ -155,7 +155,7 @@
             title={$t('admin.machine_learning_duplicate_detection_enabled')}
             subtitle={$t('admin.machine_learning_duplicate_detection_enabled_description')}
             bind:checked={configToEdit.machineLearning.duplicateDetection.enabled}
-            disabled={disabled || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.clip.enabled}
+            {disabled}
           />
 
           <hr />
@@ -168,7 +168,10 @@
             min={0.001}
             max={0.1}
             description={$t('admin.machine_learning_max_detection_distance_description')}
-            disabled={disabled || !featureFlagsManager.value.duplicateDetection}
+            disabled={disabled ||
+              !featureFlagsManager.value.duplicateDetection ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.clip.enabled}
             isEdited={configToEdit.machineLearning.duplicateDetection.maxDistance !==
               config.machineLearning.duplicateDetection.maxDistance}
           />

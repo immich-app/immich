@@ -2,16 +2,23 @@
 
 -- AssetJobRepository.getForSearchDuplicatesJob
 select
-  "id",
-  "type",
-  "ownerId",
-  "duplicateId",
-  "stackId",
-  "visibility",
-  "smart_search"."embedding"
+  "asset"."id",
+  "asset"."type",
+  "asset"."ownerId",
+  "asset"."duplicateId",
+  "asset"."stackId",
+  "asset"."visibility",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "smart_search"."embedding",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."autoStackId"
 from
   "asset"
   left join "smart_search" on "asset"."id" = "smart_search"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = $1::uuid
 limit
@@ -387,7 +394,6 @@ select
   "asset"."id"
 from
   "asset"
-  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
   inner join "asset_job_status" as "job_status" on "job_status"."assetId" = "asset"."id"
 where
   "asset"."deletedAt" is null

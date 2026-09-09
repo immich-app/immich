@@ -72,6 +72,38 @@ beforeEach(() => {
 });
 
 describe(DuplicateService.name, () => {
+  describe('metadata candidate queries', () => {
+    it('should find candidates with the same auto stack ID', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const source = await ctx.newAsset({ ownerId: user.id, originalFileName: 'IMG_0001.jpg' });
+      const candidate = await ctx.newAsset({ ownerId: user.id, originalFileName: 'IMG_0002.jpg' });
+      await ctx.newExif({ assetId: source.asset.id, autoStackId: 'burst-id' });
+      await ctx.newExif({ assetId: candidate.asset.id, autoStackId: 'burst-id' });
+
+      const results = await ctx
+        .get(DuplicateRepository)
+        .searchMetadataByAutoStackId(source.asset.id, user.id, 'burst-id');
+
+      expect(results.map(({ assetId }) => assetId)).toEqual([candidate.asset.id]);
+    });
+
+    it('should find case-insensitive filename prefix candidates', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const source = await ctx.newAsset({ ownerId: user.id, originalFileName: 'IMG_0001.dng' });
+      const candidate = await ctx.newAsset({ ownerId: user.id, originalFileName: 'img_0001.JPG' });
+      await ctx.newExif({ assetId: source.asset.id });
+      await ctx.newExif({ assetId: candidate.asset.id });
+
+      const results = await ctx
+        .get(DuplicateRepository)
+        .searchMetadataByFilenamePrefix(source.asset.id, user.id, 'IMG_0001');
+
+      expect(results.map(({ assetId }) => assetId)).toEqual([candidate.asset.id]);
+    });
+  });
+
   describe('getDuplicates', () => {
     it('should return an empty list when the user has no duplicates', async () => {
       const { sut, ctx } = setup();
