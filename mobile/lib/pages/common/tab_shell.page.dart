@@ -17,6 +17,12 @@ import 'package:immich_mobile/providers/search/search_input_focus.provider.dart'
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
+// [NavigationBar] crops contents and has a fixed 32px element, so we choose a size that's close to the min it will allow
+const double _kLandscapeNavigationBarHeight = 40;
+
+// We cannot dynamically size the pills due to the Flutter API, so this size is selected to align the icon + text inside the pill as well as possible
+const double _kLandscapeIndicatorWidth = 92;
+
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
   const TabShellPage({super.key});
@@ -28,7 +34,6 @@ class TabShellPage extends ConsumerStatefulWidget {
 class _TabShellPageState extends ConsumerState<TabShellPage> {
   @override
   Widget build(BuildContext context) {
-    final isScreenLandscape = context.orientation == Orientation.landscape;
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final navigationDestinations = [
@@ -57,25 +62,6 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       ),
     ];
 
-    Widget navigationRail(TabsRouter tabsRouter) {
-      return NavigationRail(
-        destinations: navigationDestinations
-            .map(
-              (e) => NavigationRailDestination(
-                icon: e.icon,
-                label: Text(e.label),
-                selectedIcon: e.selectedIcon,
-                disabled: !e.enabled,
-              ),
-            )
-            .toList(),
-        onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
-        selectedIndex: tabsRouter.activeIndex,
-        labelType: NavigationRailLabelType.all,
-        groupAlignment: 0.0,
-      );
-    }
-
     return AutoTabsRouter(
       routes: const [MainTimelineRoute(), SearchRoute(), AlbumsRoute(), LibraryRoute()],
       duration: const Duration(milliseconds: 600),
@@ -87,15 +73,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
           onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
-            body: isScreenLandscape
-                ? Row(
-                    children: [
-                      navigationRail(tabsRouter),
-                      const VerticalDivider(),
-                      Expanded(child: child),
-                    ],
-                  )
-                : child,
+            body: child,
             bottomNavigationBar: _BottomNavigationBar(tabsRouter: tabsRouter, destinations: navigationDestinations),
           ),
         );
@@ -141,7 +119,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
 class _BottomNavigationBar extends ConsumerStatefulWidget {
   const _BottomNavigationBar({required this.tabsRouter, required this.destinations});
 
-  final List<Widget> destinations;
+  final List<NavigationDestination> destinations;
   final TabsRouter tabsRouter;
 
   @override
@@ -174,14 +152,107 @@ class _BottomNavigationBarState extends ConsumerState<_BottomNavigationBar> {
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
 
-    if (isScreenLandscape || hideNavigationBar) {
+    if (hideNavigationBar) {
       return const SizedBox.shrink();
     }
 
+    void onDestinationSelected(int index) => _onNavigationSelected(widget.tabsRouter, index, ref);
+
+    if (!isScreenLandscape) {
+      return NavigationBar(
+        selectedIndex: widget.tabsRouter.activeIndex,
+        onDestinationSelected: onDestinationSelected,
+        destinations: widget.destinations,
+      );
+    }
+
+    final destinations = widget.destinations
+        .map(
+          (destination) => NavigationDestination(
+            icon: _InlineDestination(icon: destination.icon, label: destination.label, selected: false),
+            selectedIcon: _InlineDestination(
+              icon: destination.selectedIcon ?? destination.icon,
+              label: destination.label,
+              selected: true,
+            ),
+            label: destination.label,
+            enabled: destination.enabled,
+          ),
+        )
+        .toList();
+
     return NavigationBar(
       selectedIndex: widget.tabsRouter.activeIndex,
-      onDestinationSelected: (index) => _onNavigationSelected(widget.tabsRouter, index, ref),
-      destinations: widget.destinations,
+      onDestinationSelected: onDestinationSelected,
+      destinations: destinations,
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+      height: _kLandscapeNavigationBarHeight,
+      indicatorShape: const _FixedWidthStadiumBorder(width: _kLandscapeIndicatorWidth),
     );
   }
+}
+
+/// A side by side icon and destination label
+class _InlineDestination extends StatelessWidget {
+  const _InlineDestination({required this.icon, required this.label, required this.selected});
+
+  final Widget icon;
+  final String label;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: _kLandscapeIndicatorWidth,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconTheme.merge(data: const IconThemeData(size: 20), child: icon),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.labelMedium?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: selected ? context.primaryColor : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A [NavigationBar] selection indicator drawn as a pill with a fixed width
+class _FixedWidthStadiumBorder extends StadiumBorder {
+  const _FixedWidthStadiumBorder({required this.width});
+
+  final double width;
+
+  Rect _limitedWidthRect(Rect rect) => Rect.fromCenter(center: rect.center, width: width, height: rect.height);
+
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
+      super.getOuterPath(_limitedWidthRect(rect), textDirection: textDirection);
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
+      super.getInnerPath(_limitedWidthRect(rect), textDirection: textDirection);
+
+  @override
+  void paintInterior(Canvas canvas, Rect rect, Paint paint, {TextDirection? textDirection}) =>
+      super.paintInterior(canvas, _limitedWidthRect(rect), paint, textDirection: textDirection);
+
+  @override
+  _FixedWidthStadiumBorder scale(double t) => _FixedWidthStadiumBorder(width: width * t);
+
+  @override
+  bool operator ==(Object other) => other is _FixedWidthStadiumBorder && other.side == side && other.width == width;
+
+  @override
+  int get hashCode => Object.hash(side, width);
 }
