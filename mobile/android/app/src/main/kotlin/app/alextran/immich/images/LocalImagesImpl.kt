@@ -117,12 +117,16 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     threadPool.execute {
       try {
         val bytes = Base64.getDecoder().decode(thumbhash)
-        val image = ThumbHash.thumbHashToRGBA(bytes)
+        val info = IntArray(3)
+        val pointer = ThumbHash.decode(bytes, info)
+        if (pointer == 0L) {
+          throw IllegalArgumentException("invalid thumbhash")
+        }
         val res = mapOf(
-          "pointer" to image.pointer,
-          "width" to image.width.toLong(),
-          "height" to image.height.toLong(),
-          "rowBytes" to (image.width * 4).toLong()
+          "pointer" to pointer,
+          "width" to info[0].toLong(),
+          "height" to info[1].toLong(),
+          "rowBytes" to info[2].toLong()
         )
         callback(Result.success(res))
       } catch (e: Exception) {

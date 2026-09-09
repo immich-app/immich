@@ -10,6 +10,18 @@ enum NativeCore {
   }
 
   private static let coreLog = symbol("immich_core_log", as: ImmichCoreLogFn.self)
+  private static let coreThumbhash = symbol("immich_core_thumbhash", as: ImmichCoreThumbhashFn.self)
+
+  static func thumbhash(_ hash: Data) -> (width: Int, height: Int, pointer: UnsafeMutableRawPointer)? {
+    guard let coreThumbhash else { return nil }
+    var width: Int32 = 0
+    var height: Int32 = 0
+    return hash.withUnsafeBytes { bytes in
+      guard let pointer = coreThumbhash(bytes.bindMemory(to: UInt8.self).baseAddress, bytes.count, &width, &height)
+      else { return nil }
+      return (Int(width), Int(height), UnsafeMutableRawPointer(pointer))
+    }
+  }
 
   static func log(level: ImmichCoreLevel, logger: String, message: String) {
     NSLog("%@: %@", logger, message)

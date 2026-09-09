@@ -1,13 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
 
 class MemoryCard extends StatelessWidget {
   final RemoteAsset asset;
@@ -87,19 +86,21 @@ class MemoryCard extends StatelessWidget {
   }
 }
 
-class _BlurredBackdrop extends HookWidget {
+class _BlurredBackdrop extends StatelessWidget {
   final RemoteAsset asset;
 
   const _BlurredBackdrop({required this.asset});
 
   @override
   Widget build(BuildContext context) {
-    final blurhash = useDriftBlurHashRef(asset).value;
-    if (blurhash != null) {
+    if (asset.thumbHash != null) {
       // Use a nice cheap blur hash image decoration
       return DecoratedBox(
         decoration: BoxDecoration(
-          image: DecorationImage(image: MemoryImage(blurhash), fit: BoxFit.cover),
+          image: DecorationImage(
+            image: ThumbHashProvider(thumbHash: asset.thumbHash!),
+            fit: BoxFit.cover,
+          ),
         ),
         child: Container(color: Colors.black.withValues(alpha: 0.2)),
       );
