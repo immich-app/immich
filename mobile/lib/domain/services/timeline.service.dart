@@ -194,15 +194,6 @@ class TimelineService {
 
   BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
 
-  BaseAsset getAsset(int index) {
-    if (!hasRange(index, 1)) {
-      throw RangeError(
-        'TimelineService::getAsset Index $index not in buffer range [$_bufferOffset, ${_bufferOffset + _buffer.length})',
-      );
-    }
-    return _buffer.elementAt(index - _bufferOffset);
-  }
-
   /// Gets an asset at the given index, automatically loading the buffer if needed.
   /// This is an async version that can handle out-of-range indices by loading the appropriate buffer.
   Future<BaseAsset?> getAssetAsync(int index) async {

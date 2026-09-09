@@ -1981,6 +1981,20 @@ describe(MediaService.name, () => {
         },
       ]);
     });
+
+    it('should queue hidden assets when force is not set', async () => {
+      const asset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      mocks.assetJob.streamForVideoConversion.mockReturnValue(makeStream([asset]));
+
+      await sut.handleQueueVideoConversion({});
+      expect(mocks.assetJob.streamForVideoConversion).toHaveBeenCalledWith(void 0);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.AssetEncodeVideo,
+          data: { id: asset.id },
+        },
+      ]);
+    });
   });
 
   describe('handleVideoConversion', () => {

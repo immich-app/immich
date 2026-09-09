@@ -77,11 +77,6 @@ class AssetMediaRepository {
     return restoredIds;
   }
 
-  Future<AssetEntity?> get(String id) async {
-    final entity = await AssetEntity.fromId(id);
-    return entity;
-  }
-
   Future<String?> getOriginalFilename(String id) async {
     final entity = await AssetEntity.fromId(id);
     if (entity == null) {
