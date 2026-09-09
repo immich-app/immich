@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 
 object NativeImage {
   init {
-    // rotate() is compiled into the native_buffer shared lib (which already links jnigraphics).
     System.loadLibrary("native_buffer")
     System.loadLibrary("immich_core_ffi")
   }

@@ -9,6 +9,7 @@ mod android;
 mod bitmap;
 mod convert;
 mod log;
+mod rotate;
 
 pub use log::ImmichCoreLogLevel;
 
