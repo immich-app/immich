@@ -183,10 +183,11 @@ class _AspectRatioButton extends StatelessWidget {
               : Icon(ratio.icon, color: color),
           onPressed: onPressed,
         ),
-        Text(
-          ratio.label == null ? '${ratio.numerator}:${ratio.denominator}' : context.tr(ratio.label!),
-          style: context.textTheme.displayMedium,
-        ),
+        Text(switch (ratio) {
+          CropAspectRatio.free => context.t.crop_aspect_ratio_free,
+          CropAspectRatio.original => context.t.crop_aspect_ratio_original,
+          _ => '${ratio.numerator}:${ratio.denominator}',
+        }, style: context.textTheme.displayMedium),
       ],
     );
   }

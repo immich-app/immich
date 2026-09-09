@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 enum CropAspectRatio {
-  free(label: 'crop_aspect_ratio_free', icon: Icons.crop_free),
-  original(label: 'crop_aspect_ratio_original', icon: Icons.crop_original),
+  free(icon: Icons.crop_free),
+  original(icon: Icons.crop_original),
   ratio1x1(numerator: 1, denominator: 1),
   ratio16x9(numerator: 16, denominator: 9),
   ratio3x2(numerator: 3, denominator: 2),
@@ -15,10 +15,9 @@ enum CropAspectRatio {
 
   final int? numerator;
   final int? denominator;
-  final String? label;
   final IconData? icon;
 
-  const CropAspectRatio({this.numerator, this.denominator, this.label, this.icon});
+  const CropAspectRatio({this.numerator, this.denominator, this.icon});
 
   double? get ratio => (numerator != null && denominator != null) ? numerator! / denominator! : null;
   CropAspectRatio get flipped {
