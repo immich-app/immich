@@ -6,7 +6,7 @@ const val INITIAL_BUFFER_SIZE = 32 * 1024
 
 object NativeBuffer {
   init {
-    System.loadLibrary("native_buffer")
+    System.loadLibrary("immich_core_ffi")
   }
 
   @JvmStatic
