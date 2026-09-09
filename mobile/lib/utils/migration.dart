@@ -151,7 +151,14 @@ Future<void> _migrateTo26(Drift drift) async {
 
 Future<void> _migrateTo27(Drift drift) async {
   final migrator = _StoreMigrator(drift);
-  await migrator.migrateBool(.legacyManageLocalMediaAndroid, .trashSyncEnabled);
+  final enabled = await migrator.readLegacyStoreInt(StoreKey.legacyManageLocalMediaAndroid.id);
+  if (enabled != null) {
+    migrator.stage(
+      .legacyManageLocalMediaAndroid,
+      .trashSyncMode,
+      enabled != 0 ? TrashSyncMode.autoSync : TrashSyncMode.off,
+    );
+  }
   await migrator.complete();
 }
 

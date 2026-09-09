@@ -37,7 +37,6 @@ void main() {
   setUp(() {
     assetApiRepository = MockAssetApiRepository();
     remoteAssetRepository = MockRemoteAssetRepository();
-
     sut = ActionService(assetApiRepository, remoteAssetRepository);
   });
 

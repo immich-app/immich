@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class SettingsRadioGroup<T> {
   final String title;
+  final String? subtitle;
   final T value;
 
-  const SettingsRadioGroup({required this.title, required this.value});
+  const SettingsRadioGroup({required this.title, this.subtitle, required this.value});
 }
 
 class SettingsRadioListTile<T> extends StatelessWidget {
@@ -28,6 +30,12 @@ class SettingsRadioListTile<T> extends StatelessWidget {
                 dense: true,
                 activeColor: context.primaryColor,
                 title: Text(g.title, style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),
+                subtitle: g.subtitle != null
+                    ? Text(
+                        g.subtitle!,
+                        style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                      )
+                    : null,
                 value: g.value,
                 controlAffinity: ListTileControlAffinity.trailing,
               ),

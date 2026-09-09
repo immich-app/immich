@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -122,6 +124,71 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     assetSource: (offset, count) => _getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
     origin: TimelineOrigin.localAlbum,
   );
+
+  TimelineQuery syncTrash(GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchSyncTrashBuckets(groupBy: groupBy),
+    assetSource: (offset, count) => _getSyncTrashAssets(offset: offset, count: count),
+    origin: TimelineOrigin.syncTrash,
+  );
+
+  Stream<List<Bucket>> _watchSyncTrashBuckets({required GroupAssetsBy groupBy}) {
+    final assetCount = _db.trashSyncEntity.assetId.count();
+    final query = _db.trashSyncEntity.selectOnly()
+      ..join([
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId),
+          useColumns: false,
+        ),
+      ])
+      ..where(_syncTrashAssetFilter());
+
+    if (groupBy == GroupAssetsBy.none) {
+      query.addColumns([assetCount]);
+      return query.map((row) => _generateBuckets(row.read(assetCount) ?? 0)).watchSingle();
+    }
+
+    final date = _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true);
+    query
+      ..addColumns([assetCount, date])
+      ..groupBy([date])
+      ..orderBy([OrderingTerm.desc(date)]);
+
+    return query
+        .map((row) => TimeBucket(date: row.read(date)!.truncateDate(groupBy), assetCount: row.read(assetCount)!))
+        .watch();
+  }
+
+  Future<List<BaseAsset>> _getSyncTrashAssets({required int offset, required int count}) {
+    final query =
+        _db.trashSyncEntity.select().join([
+            innerJoin(_db.localAssetEntity, _db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId)),
+          ])
+          ..where(_syncTrashAssetFilter())
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt), OrderingTerm.desc(_db.localAssetEntity.id)])
+          ..limit(count, offset: offset);
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+  }
+
+  Expression<bool> _syncTrashAssetFilter() {
+    JoinedSelectStatement albumMembership(BackupSelection selection) => _db.selectOnly(_db.localAlbumAssetEntity)
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
+        ),
+      ])
+      ..where(
+        _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+            _db.localAlbumEntity.backupSelection.equalsValue(selection),
+      );
+
+    return _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.pending) &
+        existsQuery(albumMembership(.selected)) &
+        notExistsQuery(albumMembership(.excluded));
+  }
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {

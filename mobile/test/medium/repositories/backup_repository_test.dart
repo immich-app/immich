@@ -129,6 +129,26 @@ void main() {
       expect(result.remainder, 0);
     });
 
+    test('excludes a rejected review asset from counts', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset(checksum: 'review-rejected');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              assetId: asset.id,
+              checksum: 'review-rejected',
+              status: const .new(.reviewRejected),
+            ),
+          );
+
+      final result = await sut.getAllCounts(userId);
+
+      expect(result.total, 0);
+      expect(result.remainder, 0);
+    });
+
     test('excludes an asset whose content the server permanently deleted', () async {
       final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
       final asset = await ctx.newLocalAsset(checksum: 'deleted');
@@ -266,6 +286,25 @@ void main() {
           .insert(TrashSyncEntityCompanion.insert(assetId: asset.id, checksum: 'trashed'));
 
       final result = await sut.getCandidates(userId);
+      expect(result, isEmpty);
+    });
+
+    test('excludes a rejected review asset from candidates', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset(checksum: 'review-rejected');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              assetId: asset.id,
+              checksum: 'review-rejected',
+              status: const .new(.reviewRejected),
+            ),
+          );
+
+      final result = await sut.getCandidates(userId);
+
       expect(result, isEmpty);
     });
 
