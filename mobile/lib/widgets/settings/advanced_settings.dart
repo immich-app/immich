@@ -71,9 +71,10 @@ class AdvancedSettings extends HookConsumerWidget {
         title: context.t.advanced_settings_troubleshooting_title,
         subtitle: context.t.advanced_settings_troubleshooting_subtitle,
       ),
-      // Android 12+: full selector (Off / Auto sync / Review) + MANAGE_MEDIA tile.
       // iOS: reduced selector (Off / Review); auto-sync is not offered there.
-      if (isManageMediaSupported.value || Platform.isIOS) const _TrashSyncModeSelector(),
+      if (Platform.isIOS) const _IosTrashSyncModeSelector(),
+      // Android 12+: full selector (Off / Auto sync / Review) + MANAGE_MEDIA tile.
+      if (isManageMediaSupported.value) const _AndroidTrashSyncModeSelector(),
       SettingsSliderListTile(
         text: context.t.advanced_settings_log_level_title(level: logLevel),
         valueNotifier: levelId,
@@ -155,37 +156,22 @@ class AdvancedSettings extends HookConsumerWidget {
   }
 }
 
-TrashSyncMode trashSyncModeFromReviewRemoteDeletionsToggle(bool enabled) {
-  return enabled ? TrashSyncMode.review : TrashSyncMode.off;
-}
-
-final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
-  return ref.watch(permissionRepositoryProvider).hasManageMediaPermission();
-});
-
-class _TrashSyncModeSelector extends ConsumerStatefulWidget {
-  const _TrashSyncModeSelector();
+class _IosTrashSyncModeSelector extends ConsumerStatefulWidget {
+  const _IosTrashSyncModeSelector();
 
   @override
-  ConsumerState<_TrashSyncModeSelector> createState() => _TrashSyncModeSelectorState();
+  ConsumerState<_IosTrashSyncModeSelector> createState() => _IosTrashSyncModeSelectorState();
 }
 
-class _TrashSyncModeSelectorState extends ConsumerState<_TrashSyncModeSelector> {
-  late TrashSyncMode _selectedTrashSyncMode;
+class _IosTrashSyncModeSelectorState extends ConsumerState<_IosTrashSyncModeSelector> {
   late final ValueNotifier<bool> _reviewRemoteDeletionsEnabled;
 
   @override
   void initState() {
     super.initState();
-    _selectedTrashSyncMode = ref.read(appConfigProvider).trashSyncMode;
-    _reviewRemoteDeletionsEnabled = ValueNotifier(_selectedTrashSyncMode != TrashSyncMode.off);
+    _reviewRemoteDeletionsEnabled = ValueNotifier(ref.read(appConfigProvider).trashSyncMode != TrashSyncMode.off);
     ref.listenManual(appConfigProvider.select((config) => config.trashSyncMode), (_, mode) {
-      if (!mounted || mode == _selectedTrashSyncMode) {
-        return;
-      }
-
       _reviewRemoteDeletionsEnabled.value = mode != TrashSyncMode.off;
-      setState(() => _selectedTrashSyncMode = mode);
     });
   }
 
@@ -197,12 +183,54 @@ class _TrashSyncModeSelectorState extends ConsumerState<_TrashSyncModeSelector> 
 
   @override
   Widget build(BuildContext context) {
-    final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
-    final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
-    final isTrashSyncEnabled = _selectedTrashSyncMode != TrashSyncMode.off;
-    final reviewRemoteDeletionsSubtitle = Platform.isAndroid
-        ? context.t.advanced_settings_review_remote_deletions_subtitle_android
-        : context.t.advanced_settings_review_remote_deletions_subtitle;
+    return ValueListenableBuilder(
+      valueListenable: _reviewRemoteDeletionsEnabled,
+      builder: (context, _, _) => SettingsSwitchListTile(
+        valueNotifier: _reviewRemoteDeletionsEnabled,
+        title: context.t.advanced_settings_review_remote_deletions_title,
+        subtitle: context.t.advanced_settings_review_remote_deletions_subtitle,
+        onChanged: (enabled) =>
+            ref.read(settingsProvider).write(.trashSyncMode, enabled ? TrashSyncMode.review : TrashSyncMode.off),
+      ),
+    );
+  }
+}
+
+class _AndroidTrashSyncModeSelector extends ConsumerStatefulWidget {
+  const _AndroidTrashSyncModeSelector();
+
+  @override
+  ConsumerState<_AndroidTrashSyncModeSelector> createState() => _AndroidTrashSyncModeSelectorState();
+}
+
+class _AndroidTrashSyncModeSelectorState extends ConsumerState<_AndroidTrashSyncModeSelector> {
+  late final AppLifecycleListener _appLifecycleListener;
+  bool? _hasManageMediaPermission;
+
+  @override
+  void initState() {
+    super.initState();
+    _appLifecycleListener = AppLifecycleListener(onResume: () => unawaited(_refreshManageMediaPermission()));
+    unawaited(_refreshManageMediaPermission());
+  }
+
+  Future<void> _refreshManageMediaPermission() async {
+    final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
+    if (mounted) {
+      setState(() => _hasManageMediaPermission = hasPermission);
+    }
+  }
+
+  @override
+  void dispose() {
+    _appLifecycleListener.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedTrashSyncMode = ref.watch(appConfigProvider.select((config) => config.trashSyncMode));
+    final isTrashSyncEnabled = selectedTrashSyncMode != TrashSyncMode.off;
 
     void showManageMediaRequiredSnackBar() {
       if (!context.mounted) {
@@ -223,15 +251,10 @@ class _TrashSyncModeSelectorState extends ConsumerState<_TrashSyncModeSelector> 
     }
 
     Future<void> attemptToEnableSetting(TrashSyncMode mode) async {
-      if (Platform.isIOS) {
-        if (mode == TrashSyncMode.review) {
-          await setTrashSyncMode(TrashSyncMode.review);
-        }
-        return;
-      }
-
       final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
-      ref.invalidate(_manageMediaPermissionProvider);
+      if (mounted) {
+        setState(() => _hasManageMediaPermission = result);
+      }
 
       if (mode == TrashSyncMode.autoSync && result) {
         await setTrashSyncMode(TrashSyncMode.autoSync);
@@ -245,7 +268,7 @@ class _TrashSyncModeSelectorState extends ConsumerState<_TrashSyncModeSelector> 
     }
 
     Future<void> handleTrashSyncModeChange(TrashSyncMode? mode) async {
-      if (mode == null || mode == _selectedTrashSyncMode) {
+      if (mode == null || mode == selectedTrashSyncMode) {
         return;
       }
 
@@ -255,19 +278,6 @@ class _TrashSyncModeSelectorState extends ConsumerState<_TrashSyncModeSelector> 
       }
 
       await attemptToEnableSetting(mode);
-    }
-
-    if (Platform.isIOS) {
-      return SettingsSwitchListTile(
-        valueNotifier: _reviewRemoteDeletionsEnabled,
-        title: context.t.advanced_settings_review_remote_deletions_title,
-        subtitle: reviewRemoteDeletionsSubtitle,
-        onChanged: (enabled) async {
-          final mode = trashSyncModeFromReviewRemoteDeletionsToggle(enabled);
-          setState(() => _selectedTrashSyncMode = mode);
-          await setTrashSyncMode(mode);
-        },
-      );
     }
 
     return Column(
@@ -296,28 +306,30 @@ class _TrashSyncModeSelectorState extends ConsumerState<_TrashSyncModeSelector> 
               ),
               SettingsRadioGroup(
                 title: context.t.advanced_settings_review_remote_deletions_title,
-                subtitle: reviewRemoteDeletionsSubtitle,
+                subtitle: context.t.advanced_settings_review_remote_deletions_subtitle_android,
                 value: TrashSyncMode.review,
               ),
             ],
-            groupBy: _selectedTrashSyncMode,
+            groupBy: selectedTrashSyncMode,
             onRadioChanged: handleTrashSyncModeChange,
           ),
         ),
         SettingsActionTile(
           title: context.t.manage_media_access_title,
-          statusText: manageMediaAndroidPermissionValue == null
+          statusText: _hasManageMediaPermission == null
               ? null
-              : manageMediaAndroidPermissionValue == true
+              : _hasManageMediaPermission == true
               ? context.t.allowed
               : context.t.not_allowed,
           subtitle: context.t.manage_media_access_rationale,
-          statusColor: manageMediaAndroidPermissionValue == false && isTrashSyncEnabled
+          statusColor: _hasManageMediaPermission == false && isTrashSyncEnabled
               ? const Color.fromARGB(255, 243, 188, 106)
               : null,
           onActionTap: () async {
-            await ref.read(permissionRepositoryProvider).manageMediaPermission();
-            ref.invalidate(_manageMediaPermissionProvider);
+            final hasPermission = await ref.read(permissionRepositoryProvider).manageMediaPermission();
+            if (mounted) {
+              setState(() => _hasManageMediaPermission = hasPermission);
+            }
           },
         ),
       ],
