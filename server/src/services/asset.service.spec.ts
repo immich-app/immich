@@ -1,16 +1,24 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
-import { AssetStats } from 'src/repositories/asset.repository';
-import { AssetService } from 'src/services/asset.service';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { getForAsset, getForAssetDeletion } from 'test/mappers';
-import { factory, newUuid } from 'test/small.factory';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto.js';
+import { AssetEditAction } from 'src/dtos/editing.dto.js';
+import {
+  AssetFileType,
+  AssetMetadataKey,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+} from 'src/enum.js';
+import { AssetStats } from 'src/repositories/asset.repository.js';
+import { AssetService } from 'src/services/asset.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { getForAsset, getForAssetDeletion } from 'test/mappers.js';
+import { factory, newUuid } from 'test/small.factory.js';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
 
 const stats: AssetStats = {
   [AssetType.Image]: 10,

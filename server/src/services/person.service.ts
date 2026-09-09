@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Insertable, Selectable, Updateable } from 'kysely';
-import { Person } from 'src/database';
-import { Chunked, OnJob } from 'src/decorators';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { Person } from 'src/database.js';
+import { Chunked, OnJob } from 'src/decorators.js';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetFaceCreateDto,
   AssetFaceDeleteDto,
@@ -20,7 +20,7 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-} from 'src/dtos/person.dto';
+} from 'src/dtos/person.dto.js';
 import {
   AssetVisibility,
   CacheControl,
@@ -32,19 +32,19 @@ import {
   SourceType,
   SystemMetadataKey,
   VectorIndex,
-} from 'src/enum';
-import { BoundingBox } from 'src/repositories/machine-learning.repository';
-import { PersonId, UpdateFacesData } from 'src/repositories/person.repository';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { FaceSearchTable } from 'src/schema/tables/face-search.table';
-import { PersonTable } from 'src/schema/tables/person.table';
-import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
-import { getDimensions } from 'src/utils/asset.util';
-import { ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
-import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc';
-import { Point, transformPoints } from 'src/utils/transform';
+} from 'src/enum.js';
+import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
+import { PersonId, UpdateFacesData } from 'src/repositories/person.repository.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
+import { PersonTable } from 'src/schema/tables/person.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { JobItem, JobOf } from 'src/types.js';
+import { getDimensions } from 'src/utils/asset.util.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc.js';
+import { Point, transformPoints } from 'src/utils/transform.js';
 
 const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${personGroupId}`;
 

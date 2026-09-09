@@ -1,8 +1,8 @@
-import { TrashController } from 'src/controllers/trash.controller';
-import { TrashService } from 'src/services/trash.service';
+import { TrashController } from 'src/controllers/trash.controller.js';
+import { TrashService } from 'src/services/trash.service.js';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(TrashController.name, () => {
   let ctx: ControllerContext;

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
+import { type ExpressionBuilder, type Insertable, type Kysely, sql, type Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetType, AssetVisibility, UserStatus } from 'src/enum';
-import { DB } from 'src/schema';
-import { UserTable } from 'src/schema/tables/user.table';
-import { UserMetadata, UserMetadataItem } from 'src/types';
-import { asUuid } from 'src/utils/database';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetType, AssetVisibility, UserStatus } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
+import type { UserMetadata, UserMetadataItem } from 'src/types.js';
+import { asUuid } from 'src/utils/database.js';
 
 export interface UserListFilter {
   id?: string;

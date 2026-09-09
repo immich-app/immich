@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OnEvent, OnJob } from 'src/decorators';
-import { MapAlbumDto } from 'src/dtos/album.dto';
-import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { SystemConfigSmtpDto } from 'src/dtos/config.dto';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { MapAlbumDto } from 'src/dtos/album.dto.js';
+import { mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import {
   mapNotification,
   NotificationDeleteAllDto,
@@ -11,7 +11,7 @@ import {
   NotificationSearchDto,
   NotificationUpdateAllDto,
   NotificationUpdateDto,
-} from 'src/dtos/notification.dto';
+} from 'src/dtos/notification.dto.js';
 import {
   AssetFileType,
   JobName,
@@ -20,15 +20,15 @@ import {
   NotificationType,
   Permission,
   QueueName,
-} from 'src/enum';
-import { EmailTemplate } from 'src/repositories/email.repository';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { EmailImageAttachment, JobOf } from 'src/types';
-import { getFilenameExtension } from 'src/utils/file';
-import { getExternalDomain } from 'src/utils/misc';
-import { isEqualObject } from 'src/utils/object';
-import { getPreferences } from 'src/utils/preferences';
+} from 'src/enum.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { EmailImageAttachment, JobOf } from 'src/types.js';
+import { getFilenameExtension } from 'src/utils/file.js';
+import { getExternalDomain } from 'src/utils/misc.js';
+import { isEqualObject } from 'src/utils/object.js';
+import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
 export class NotificationService extends BaseService {

@@ -4,25 +4,25 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AssetFile } from 'src/database';
-import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
-import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
-import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
-import { AuthRequest } from 'src/middleware/auth.guard';
-import { AssetMediaService } from 'src/services/asset-media.service';
-import { UploadBody } from 'src/types';
-import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
-import { ImmichFileResponse } from 'src/utils/file';
-import { AssetFileFactory } from 'test/factories/asset-file.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { fileStub } from 'test/fixtures/file.stub';
-import { userStub } from 'test/fixtures/user.stub';
-import { getForAsset } from 'test/mappers';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { AssetFile } from 'src/database.js';
+import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto.js';
+import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto.js';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { AssetEditAction } from 'src/dtos/editing.dto.js';
+import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum.js';
+import { AuthRequest } from 'src/middleware/auth.guard.js';
+import { AssetMediaService } from 'src/services/asset-media.service.js';
+import type { UploadBody } from 'src/types.js';
+import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { fileStub } from 'test/fixtures/file.stub.js';
+import { userStub } from 'test/fixtures/user.stub.js';
+import { getForAsset } from 'test/mappers.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
 
