@@ -233,6 +233,26 @@ describe(PersonService.name, () => {
       ]);
     });
 
+    it('should copy the name and birth date from the merged person when the primary person has none', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user } = await ctx.newUser();
+      const birthDate = DateTime.now().minus({ years: 1 }).startOf('day').toJSDate();
+      const { person: unnamedPerson } = await ctx.newPerson({ ownerId: user.id, name: '' });
+      const { person: namedPerson } = await ctx.newPerson({ ownerId: user.id, name: 'John', birthDate });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user });
+
+      const results = await sut.mergePerson(auth, unnamedPerson.personGroupId, { ids: [namedPerson.personGroupId] });
+      expect(results).toEqual([{ id: namedPerson.personGroupId, success: true }]);
+
+      const people = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user.id }));
+      expect(people).toEqual([
+        expect.objectContaining({ personGroupId: unnamedPerson.personGroupId, name: 'John', birthDate }),
+      ]);
+    });
+
     it('should skip people with a different name', async () => {
       const { sut, ctx } = setup();
       const storageMock = ctx.getMock(StorageRepository);
