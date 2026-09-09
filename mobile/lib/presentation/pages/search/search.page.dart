@@ -716,8 +716,6 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          // Suggestions are text, so they inset; the result grid is photos and
-          // stays full bleed like the timeline.
           if (filter.value.isEmpty)
             const ImmichSliverHorizontalSafeArea(sliver: _SearchSuggestions())
           else
