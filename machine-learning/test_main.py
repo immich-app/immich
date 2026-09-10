@@ -564,7 +564,7 @@ class TestRknnSession:
 
         session.run(None, input_feed)
 
-        rknn_session.return_value.put.assert_called_once_with([input1, input2])
+        rknn_session.return_value.run.assert_called_once_with([input1, input2])
         assert np_spy.call_count == 2
         np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
 

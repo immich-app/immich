@@ -1,9 +1,9 @@
 import { Kysely } from 'kysely';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { DB } from 'src/schema';
-import { getKyselyConfig } from 'src/utils/database';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { DB } from 'src/schema/index.js';
+import { getKyselyConfig } from 'src/utils/database.js';
 import { GenericContainer, Wait } from 'testcontainers';
 
 const globalSetup = async () => {

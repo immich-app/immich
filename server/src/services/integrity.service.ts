@@ -3,14 +3,14 @@ import { createHash } from 'node:crypto';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
 import {
   IntegrityGetReportDto,
   IntegrityReportResponseDto,
   IntegrityReportSummaryResponseDto,
-} from 'src/dtos/integrity.dto';
+} from 'src/dtos/integrity.dto.js';
 import {
   AssetStatus,
   CacheControl,
@@ -22,10 +22,10 @@ import {
   QueueName,
   StorageFolder,
   SystemMetadataKey,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import {
+} from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type {
   IIntegrityDeleteReportsJob,
   IIntegrityDeleteReportTypeJob,
   IIntegrityJob,
@@ -33,9 +33,9 @@ import {
   IIntegrityPathWithChecksumJob,
   IIntegrityPathWithReportJob,
   IIntegrityUntrackedFilesJob,
-} from 'src/types';
-import { ImmichFileResponse } from 'src/utils/file';
-import { batched, handlePromiseError } from 'src/utils/misc';
+} from 'src/types.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { batched, handlePromiseError } from 'src/utils/misc.js';
 
 /**
  * Untracked Files:
@@ -190,7 +190,10 @@ export class IntegrityService extends BaseService {
     } else if (fileAssetId) {
       await this.assetRepository.deleteFiles([{ id: fileAssetId }]);
     } else {
-      await this.storageRepository.unlink(path);
+      const trackedPaths = await this.integrityRepository.getTrackedPaths([path]);
+      if (trackedPaths.length === 0) {
+        await this.storageRepository.unlink(path);
+      }
       await this.integrityRepository.deleteById(id);
     }
   }
@@ -311,8 +314,17 @@ export class IntegrityService extends BaseService {
   async handleUntrackedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
+    const tracked =
+      items.length > 0 ? await this.integrityRepository.getTrackedPaths(items.map(({ path }) => path)) : [];
+    const trackedPaths = new Set(tracked.map(({ path }) => path));
+
     const results = await Promise.all(
       items.map(async ({ reportId, path }) => {
+        // The path was untracked when the report was written; an asset may reference it now.
+        if (trackedPaths.has(path)) {
+          return reportId;
+        }
+
         try {
           await this.storageRepository.stat(path);
           return;
@@ -697,7 +709,13 @@ export class IntegrityService extends BaseService {
     }
 
     if (byPath.length > 0) {
-      await Promise.all(byPath.map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)));
+      const tracked = await this.integrityRepository.getTrackedPaths(byPath.map(({ path }) => path));
+      const trackedPaths = new Set(tracked.map(({ path }) => path));
+      await Promise.all(
+        byPath
+          .filter(({ path }) => !trackedPaths.has(path))
+          .map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)),
+      );
       await this.integrityRepository.deleteByIds(byPath.map(({ id }) => id));
     }
 

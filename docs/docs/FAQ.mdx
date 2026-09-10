@@ -543,4 +543,22 @@ The damaged database dump can be used to manually recover any changes made since
 
 The causes of possible corruption are many, but can include unexpected poweroffs or unmounts, use of a network share for Postgres data, or a poor storage medium such an SD card or failing HDD/SSD.
 
+### Should I upgrade the database to a newer major version?
+
+We recommend using the same version of PostgreSQL as in our default docker-compose.yml, however newer versions are also supported. Do note that the major upgrade process is not as simple as just changing the version of the container image. See [the PostgreSQL documentation](https://www.postgresql.org/docs/current/upgrading.html) for more detail.
+
+## Other
+
+### Will Immich save me money?
+
+Probably not. At first glance, it seems like it might: compared to cloud-hosted commercial services, Immich has a one time purchase for the [product key](https://buy.immich.app/), but there are no monthly fees to run Immich on your own server. However, there are many other costs like hardware, storage for backups, and your own time. There are many good reasons for self-hosting, but saving money is rarely one of them.
+
+### I really want a particular feature. Can I sponsor development of it?
+
+No, we have no feature sponsorship scheme. The Immich team [works on Immich full-time](https://immich.app/blog/immich-joins-futo), which is supported by users paying for [a product key](https://buy.immich.app/). We'd rather not let money influence the roadmap. If features could be bought, we'd end up building Immich for the highest bidder instead of for all of our users.
+
+A common alternative suggestion is to offer bounties that can be collected by anyone who submits a pull request, but we don't want those either; the Zig project has [explained the reason well](https://ziglang.org/news/bounties-damage-open-source-projects/).
+
+If you really want to pay someone to build a feature you like, you're welcome to hire somebody directly and pay them for their time, but please note that we provide no guarantee that we'll merge the resulting work so we recommend that you check in with us first.
+
 [huggingface]: https://huggingface.co/immich-app

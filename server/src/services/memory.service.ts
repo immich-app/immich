@@ -1,14 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Memory } from 'src/database';
-import { OnJob } from 'src/decorators';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
-import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { findOrFail } from 'src/utils/misc';
+import { Memory } from 'src/database.js';
+import { OnJob } from 'src/decorators.js';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import {
+  MemoryCreateDto,
+  MemoryResponseDto,
+  MemorySearchDto,
+  MemoryUpdateDto,
+  mapMemory,
+} from 'src/dtos/memory.dto.js';
+import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { addAssets, removeAssets } from 'src/utils/asset.util.js';
+import { findOrFail } from 'src/utils/misc.js';
 
 const DAYS = 3;
 

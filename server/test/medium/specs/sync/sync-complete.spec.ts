@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { SyncEntityType, SyncRequestType } from 'src/enum';
-import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
-import { DB } from 'src/schema';
-import { toAck } from 'src/utils/sync';
-import { SyncTestContext } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository.js';
+import { DB } from 'src/schema/index.js';
+import { toAck } from 'src/utils/sync.js';
+import { SyncTestContext } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 import { v7 } from 'uuid';
 
 let defaultDatabase: Kysely<DB>;

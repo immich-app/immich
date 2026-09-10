@@ -1,9 +1,9 @@
-import { PluginController } from 'src/controllers/plugin.controller';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PluginService } from 'src/services/plugin.service';
+import { PluginController } from 'src/controllers/plugin.controller.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PluginService } from 'src/services/plugin.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(PluginController.name, () => {
   let ctx: ControllerContext;

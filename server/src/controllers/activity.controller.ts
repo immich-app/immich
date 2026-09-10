@@ -1,19 +1,19 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import type { Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   ActivityCreateDto,
   ActivityDto,
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
-} from 'src/dtos/activity.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { ActivityService } from 'src/services/activity.service';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/activity.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { ActivityService } from 'src/services/activity.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Activities)
 @Controller('activities')

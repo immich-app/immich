@@ -11,8 +11,7 @@ import 'package:immich_mobile/providers/network.provider.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/external_network_preference.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/local_network_preference.dart';
-import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class NetworkingSettings extends HookConsumerWidget {
   const NetworkingSettings({super.key});

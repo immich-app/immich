@@ -1,13 +1,13 @@
 import AsyncLock from 'async-lock';
 import { load as loadYaml } from 'js-yaml';
-import * as _ from 'lodash';
-import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto';
-import { DatabaseLock, SystemMetadataKey } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DeepPartial } from 'src/types';
-import { getKeysDeep, unsetDeep } from 'src/utils/misc';
+import { cloneDeep, get, isEmpty, isEqual, set } from 'lodash-es';
+import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { DatabaseLock, SystemMetadataKey } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import type { DeepPartial } from 'src/types.js';
+import { getKeysDeep, unsetDeep } from 'src/utils/misc.js';
 
 type RepoDeps = {
   configRepo: ConfigRepository;
@@ -45,16 +45,16 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
   // get the difference between the new config and the default config
   const partialConfig: DeepPartial<SystemConfig> = {};
   for (const property of getKeysDeep(defaults)) {
-    const newValue = _.get(newConfig, property);
+    const newValue = get(newConfig, property);
     const isEmpty = [undefined, null, ''].includes(newValue);
-    const defaultValue = _.get(defaults, property);
-    const isEqual = newValue === defaultValue || _.isEqual(newValue, defaultValue);
+    const defaultValue = get(defaults, property);
+    const equal = newValue === defaultValue || isEqual(newValue, defaultValue);
 
-    if (isEmpty || isEqual) {
+    if (isEmpty || equal) {
       continue;
     }
 
-    _.set(partialConfig, property, newValue);
+    set(partialConfig, property, newValue);
   }
 
   await metadataRepo.set(SystemMetadataKey.SystemConfig, partialConfig);
@@ -83,18 +83,18 @@ const buildConfig = async (repos: RepoDeps) => {
     : await metadataRepo.get(SystemMetadataKey.SystemConfig);
 
   // merge with defaults
-  const rawConfig = _.cloneDeep(defaults);
+  const rawConfig = cloneDeep(defaults);
   for (const property of getKeysDeep(partial)) {
-    _.set(rawConfig, property, _.get(partial, property));
+    set(rawConfig, property, get(partial, property));
   }
 
   // check for extra properties
-  const unknownKeys = _.cloneDeep(rawConfig);
+  const unknownKeys = cloneDeep(rawConfig);
   for (const property of getKeysDeep(defaults)) {
     unsetDeep(unknownKeys, property);
   }
 
-  if (!_.isEmpty(unknownKeys)) {
+  if (!isEmpty(unknownKeys)) {
     logger.warn(`Unknown keys found: ${JSON.stringify(unknownKeys, null, 2)}`);
   }
 

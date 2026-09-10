@@ -1,5 +1,12 @@
-import { AUDIO_ENCODER, AV1_LEVELS, CodecLevel, H264_LEVELS, HEVC_LEVELS, SUPPORTED_HWA_CODECS } from 'src/constants';
-import { ConfigFFmpegDto } from 'src/dtos/config.dto';
+import {
+  AUDIO_ENCODER,
+  AV1_LEVELS,
+  CodecLevel,
+  H264_LEVELS,
+  HEVC_LEVELS,
+  SUPPORTED_HWA_CODECS,
+} from 'src/constants.js';
+import { ConfigFFmpegDto } from 'src/dtos/config.dto.js';
 import {
   ColorMatrix,
   ColorPrimaries,
@@ -9,8 +16,8 @@ import {
   TranscodeHardwareAcceleration,
   TranscodeTarget,
   VideoCodec,
-} from 'src/enum';
-import {
+} from 'src/enum.js';
+import type {
   AudioStreamInfo,
   BitrateDistribution,
   HlsCommandOptions,
@@ -20,7 +27,7 @@ import {
   VideoInterfaces,
   VideoStreamInfo,
   VideoTuning,
-} from 'src/types';
+} from 'src/types.js';
 
 export const isVideoRotated = (videoStream: VideoStreamInfo): boolean => Math.abs(videoStream.rotation) === 90;
 

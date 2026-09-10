@@ -1,6 +1,6 @@
-import { Column, CreateDateColumn, ForeignKeyColumn, Generated, Table, Timestamp } from '@immich/sql-tools';
-import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
-import { MemoryTable } from 'src/schema/tables/memory.table';
+import { Column, CreateDateColumn, ForeignKeyColumn, type Generated, Table, Timestamp } from '@immich/sql-tools';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
+import { MemoryTable } from 'src/schema/tables/memory.table.js';
 
 @Table('memory_asset_audit')
 export class MemoryAssetAuditTable {
