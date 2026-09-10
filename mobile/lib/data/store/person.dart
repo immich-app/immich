@@ -29,7 +29,7 @@ extension type const PersonStore._(Provider<PersonMutations> _provider) implemen
   AutoDisposeStreamProvider<List<Person>> all() => _allProvider;
 }
 
-final _peopleDb = driftProvider.select((db) => db.peopleDbRepository);
+final _peopleDb = driftProvider.select((db) => db.peopleDatabaseRepository);
 
 // We have to map from non-reactive existing Drift queries to Riverpod reactivity, so we wrap each call in a provider family
 // Note that the only reactivity here is in going from no data (fetch start) to data (fetch completed), and the DB swapping (basically never)

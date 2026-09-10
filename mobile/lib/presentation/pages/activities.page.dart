@@ -35,7 +35,12 @@ class ActivitiesPage extends HookConsumerWidget {
     }
 
     Future<void> onAddComment(String comment) async {
-      await ref.read(Store.activity).addComment(album.id, comment, assetId: assetId);
+      try {
+        await ref.read(Store.activity).addComment(album.id, comment, assetId: assetId);
+      } catch (e) {
+        // TODO(rewrite): Actually handle this
+      }
+
       unawaited(scrollToBottom());
     }
 

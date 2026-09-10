@@ -48,6 +48,14 @@ class CommentBubble extends ConsumerWidget {
       );
     }
 
+    Future<void> delete() async {
+      try {
+        await ref.read(Store.activity).remove(activity);
+      } catch (e) {
+        // TODO(rewrite): Actually handle this
+      }
+    }
+
     // avatar (hidden for own messages)
     Widget avatar = const SizedBox.shrink();
     if (!isOwn) {
@@ -116,7 +124,7 @@ class CommentBubble extends ConsumerWidget {
     final List<Widget> contentChildren = [thumbnail, likes, commentBubble].whereType<Widget>().toList();
 
     return DismissibleActivity(
-      onDismiss: canDelete ? (id) async => await ref.read(Store.activity).remove(activity) : null,
+      onDismiss: canDelete ? (id) => delete() : null,
       activity.id,
       Align(
         alignment: isOwn ? Alignment.centerRight : Alignment.centerLeft,

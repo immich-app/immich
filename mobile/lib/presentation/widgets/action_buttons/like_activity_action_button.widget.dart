@@ -29,10 +29,14 @@ class LikeActivityActionButton extends ConsumerWidget {
         return;
       }
 
-      if (liked != null) {
-        await ref.read(Store.activity).remove(liked);
-      } else {
-        await ref.read(Store.activity).addLike(album?.id ?? "", assetId: asset?.id);
+      try {
+        if (liked != null) {
+          await ref.read(Store.activity).remove(liked);
+        } else {
+          await ref.read(Store.activity).addLike(album?.id ?? "", assetId: asset?.id);
+        }
+      } catch (e) {
+        // TODO(rewrite): Actually handle this
       }
     }
 
