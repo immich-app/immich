@@ -34,11 +34,6 @@ class ActivityApiRepository extends ApiRepository {
     return checkNull(_api.deleteActivity(id));
   }
 
-  Future<ActivityStats> getStats(String albumId, {String? assetId}) async {
-    final response = await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));
-    return ActivityStats(comments: response.comments);
-  }
-
   static Activity _toActivity(ActivityResponseDto dto) => Activity(
     id: dto.id,
     createdAt: dto.createdAt,

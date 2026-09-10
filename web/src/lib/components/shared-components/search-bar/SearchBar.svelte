@@ -11,7 +11,7 @@
   import { t } from 'svelte-i18n';
   import SearchFilters from './SearchFilters.svelte';
   import { searchManager } from '$lib/managers/search-manager.svelte';
-  import { getSearchTypePlaceholder } from './search-bar-utils';
+  import { getSearchTypePlaceholder, isPopoverContent } from './search-bar-utils';
 
   type Props = {
     grayTheme: boolean;
@@ -67,8 +67,20 @@
     searchStore.isSearchEnabled = true;
   };
 
-  const onFocusOut = () => {
+  const onFocusOut = (event: FocusEvent) => {
+    if (isPopoverContent(event)) {
+      return;
+    }
+
     searchStore.isSearchEnabled = false;
+  };
+
+  const onDropdownFocusOut = (event: FocusEvent) => {
+    if (isPopoverContent(event)) {
+      return;
+    }
+
+    closeDropdown();
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
@@ -138,7 +150,7 @@
     onfocusin={onFocusIn}
     role="search"
   >
-    <div use:focusOutside={{ onFocusOut: closeDropdown }} tabindex="-1">
+    <div use:focusOutside={{ onFocusOut: onDropdownFocusOut }} tabindex="-1">
       <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
       <input
         type="text"

@@ -14,13 +14,6 @@ class PartnerApiRepository extends ApiRepository {
 
   PartnerApiRepository(this._api);
 
-  Future<List<UserDto>> getAll(Direction direction) async {
-    final response = await checkNull(
-      _api.getPartners(direction == Direction.sharedByMe ? PartnerDirection.sharedBy : PartnerDirection.sharedWith),
-    );
-    return response.map(UserConverter.fromPartnerDto).toList();
-  }
-
   Future<UserDto> create(String sharedWithId) async {
     final dto = await checkNull(_api.createPartner(PartnerCreateDto(sharedWithId: sharedWithId)));
     return UserConverter.fromPartnerDto(dto);

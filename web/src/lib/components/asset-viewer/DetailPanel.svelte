@@ -200,7 +200,7 @@
                   </p>
                 {/if}
                 {@const { width, height } = getDimensions(asset.exifInfo)}
-                <p>{width} x {height}</p>
+                <p>{width} × {height}</p>
               {/if}
               {#if asset.exifInfo?.fileSizeInByte}
                 <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>

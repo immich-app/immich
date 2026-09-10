@@ -94,8 +94,8 @@ const SearchPeopleSchema = z
 const PlacesResponseSchema = z
   .object({
     name: z.string().describe('Place name'),
-    latitude: z.number().describe('Latitude coordinate'),
-    longitude: z.number().describe('Longitude coordinate'),
+    latitude: z.number().meta({ format: 'double' }).describe('Latitude coordinate'),
+    longitude: z.number().meta({ format: 'double' }).describe('Longitude coordinate'),
     admin1name: z.string().optional().describe('Administrative level 1 name (state/province)'),
     admin2name: z.string().optional().describe('Administrative level 2 name (county/district)'),
   })
@@ -174,23 +174,23 @@ const StringPatternFilterSchema = nonEmptyPartial({
 }).meta({ id: 'StringPatternFilter' });
 
 const numberRangeShape = {
-  lt: z.number(),
-  lte: z.number(),
-  gt: z.number(),
-  gte: z.number(),
-  in: z.array(z.number()).min(1),
-  notIn: z.array(z.number()).min(1),
+  lt: z.number().meta({ format: 'double' }),
+  lte: z.number().meta({ format: 'double' }),
+  gt: z.number().meta({ format: 'double' }),
+  gte: z.number().meta({ format: 'double' }),
+  in: z.array(z.number().meta({ format: 'double' })).min(1),
+  notIn: z.array(z.number().meta({ format: 'double' })).min(1),
 };
 
 const NumberFilterSchema = nonEmptyPartial({
-  eq: z.number(),
-  ne: z.number(),
+  eq: z.number().meta({ format: 'double' }),
+  ne: z.number().meta({ format: 'double' }),
   ...numberRangeShape,
 }).meta({ id: 'NumberFilter' });
 
 const NumberFilterNullableSchema = nonEmptyPartial({
-  eq: z.number().nullable(),
-  ne: z.number().nullable(),
+  eq: z.number().meta({ format: 'double' }).nullable(),
+  ne: z.number().meta({ format: 'double' }).nullable(),
   ...numberRangeShape,
 }).meta({ id: 'NumberFilterNullable' });
 
