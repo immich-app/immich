@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart'
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:path/path.dart' as path;
@@ -87,7 +88,9 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
     Future<void> clearFileCache() async {
       try {
-        await ref.read(storageRepositoryProvider).clearCache();
+        final clearedBytes = await ref.read(storageRepositoryProvider).clearCacheAndGetSize();
+        final clearedMB = clearedBytes < (256 * 1024) ? "0 MiB" : formatHumanReadableBytes(clearedBytes, 2);
+
         if (!context.mounted) {
           return;
         }
@@ -96,7 +99,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           SnackBar(
             duration: const Duration(seconds: 2),
             content: Text(
-              context.t.clear_file_cache_success(size: 0),
+              context.t.clear_file_cache_success(size: clearedMB),
               style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
             ),
           ),

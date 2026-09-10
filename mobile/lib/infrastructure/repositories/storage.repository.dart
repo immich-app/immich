@@ -153,4 +153,37 @@ class StorageRepository {
       log.warning("Error deleting temporary directory", error, stackTrace);
     }
   }
+
+  Future<int> clearCacheAndGetSize() async {
+    final beforeSize = CurrentPlatform.isIOS ? await Directory.systemTemp.size() : 0;
+
+    await clearCache();
+
+    final afterSize = CurrentPlatform.isIOS ? await Directory.systemTemp.size() : 0;
+
+    return beforeSize > afterSize ? beforeSize - afterSize : 0;
+  }
+}
+
+extension on Directory {
+  Future<int> size() async {
+    final log = Logger('StorageRepository');
+    try {
+      if (!await exists()) {
+        return 0;
+      }
+
+      var size = 0;
+      await for (final entity in list(recursive: true, followLinks: false)) {
+        if (entity is File) {
+          size += await entity.length();
+        }
+      }
+
+      return size;
+    } catch (e, stackTrace) {
+      log.warning("Error calculating directory size ", e, stackTrace);
+      return 0;
+    }
+  }
 }
