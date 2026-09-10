@@ -1,7 +1,5 @@
 import 'package:pigeon/pigeon.dart';
 
-const String viewIntentUnavailableErrorCode = 'VIEW_INTENT_UNAVAILABLE';
-
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/platform/view_intent_api.g.dart',
