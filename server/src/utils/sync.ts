@@ -1,6 +1,6 @@
-import { SyncItem } from 'src/dtos/sync.dto';
-import { SyncEntityType } from 'src/enum';
-import { SyncAck } from 'src/types';
+import { SyncItem } from 'src/dtos/sync.dto.js';
+import { SyncEntityType } from 'src/enum.js';
+import type { SyncAck } from 'src/types.js';
 
 type Impossible<K extends keyof any> = {
   [P in K]: never;

@@ -1,4 +1,4 @@
-import { scaleToFit } from '$lib/utils/container-utils';
+import { scaleToCover, scaleToFit } from '$lib/utils/container-utils';
 
 describe('scaleToFit', () => {
   const tests = [
@@ -49,6 +49,19 @@ describe('scaleToFit', () => {
   for (const { name, dimensions, container, expected } of tests) {
     it(`should handle ${name}`, () => {
       expect(scaleToFit(dimensions, container)).toEqual(expected);
+    });
+  }
+
+  const unmeasurable = [
+    { name: 'zero width and height', dimensions: { width: 0, height: 0 } },
+    { name: 'zero width', dimensions: { width: 0, height: 1000 } },
+    { name: 'zero height', dimensions: { width: 1000, height: 0 } },
+  ];
+
+  for (const { name, dimensions } of unmeasurable) {
+    it(`should return an empty size for ${name}`, () => {
+      expect(scaleToFit(dimensions, { width: 500, height: 500 })).toEqual({ width: 0, height: 0 });
+      expect(scaleToCover(dimensions, { width: 500, height: 500 })).toEqual({ width: 0, height: 0 });
     });
   }
 });

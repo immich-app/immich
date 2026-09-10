@@ -3,7 +3,9 @@ run = "pnpm install --filter immich --frozen-lockfile"
 
 [tasks.build]
 env._.path = "./node_modules/.bin"
-run = "nest build"
+# TODO we shouldn't technically need tsc-alias, but the nestjs tsconfig paths resolution is broken right now with ESM
+# remove when https://github.com/nestjs/nest-cli/pull/3545 has been released
+run = "nest build && tsc-alias"
 
 [tasks.test]
 env._.path = "./node_modules/.bin"
@@ -47,10 +49,7 @@ description = "Run database migration commands (create, generate, run, sync-orde
 run = { task = "migrations query 'DROP schema public cascade; CREATE schema public;'" }
 
 [tasks."schema-reset"]
-run = [
-  { task = ":schema-drop" },
-  { task = "migrations run" },
-]
+run = [{ task = ":schema-drop" }, { task = "migrations run" }]
 
 [tasks."email-dev"]
 env._.path = "./node_modules/.bin"
@@ -78,5 +77,7 @@ run = [
 run = [
   { task = ":ci-unit" },
   { task = ":ci-medium" },
-  { task = ":migrations", args = ["verify-order"] },
+  { task = ":migrations", args = [
+    "verify-order",
+  ] },
 ]

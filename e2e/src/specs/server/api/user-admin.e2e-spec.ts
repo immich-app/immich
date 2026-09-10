@@ -9,8 +9,8 @@ import {
   login,
 } from '@immich/sdk';
 import { Socket } from 'socket.io-client';
-import { createUserDto } from 'src/fixtures';
-import { app, asBearerAuth, utils } from 'src/utils';
+import { createUserDto } from 'src/fixtures.js';
+import { app, asBearerAuth, utils } from 'src/utils.js';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 

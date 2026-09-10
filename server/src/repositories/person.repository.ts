@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
+import { type ExpressionBuilder, type Insertable, type Kysely, sql, type Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFace } from 'src/database';
-import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum';
-import { DB } from 'src/schema';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { FaceSearchTable } from 'src/schema/tables/face-search.table';
-import { PersonGroupTable } from 'src/schema/tables/person-group.table';
-import { PersonTable } from 'src/schema/tables/person.table';
-import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database';
-import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
+import { AssetFace } from 'src/database.js';
+import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
+import { PersonTable } from 'src/schema/tables/person.table.js';
+import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database.js';
+import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
 
 export interface PersonSearchOptions {
   withHidden: boolean;
@@ -100,17 +100,15 @@ export class PersonRepository {
   async reassignFaces({ oldPersonGroupId, faceIds, ownerId, newPersonGroupId }: UpdateFacesData): Promise<number> {
     const result = await this.db
       .updateTable('asset_face')
+      .from('asset')
+      .whereRef('asset_face.assetId', '=', 'asset.id')
       .set({ personGroupId: newPersonGroupId })
       .$if(!!oldPersonGroupId, (qb) => qb.where('asset_face.personGroupId', '=', oldPersonGroupId!))
       .$if(!!faceIds, (qb) => qb.where('asset_face.id', 'in', faceIds!))
-      .$if(!!ownerId, (qb) =>
-        qb.where('asset_face.personGroupId', 'in', (eb) =>
-          eb.selectFrom('person').select('person.personGroupId').where('person.ownerId', '=', ownerId!),
-        ),
-      )
+      .$if(!!ownerId, (qb) => qb.where('asset.ownerId', '=', ownerId!))
       .executeTakeFirst();
 
-    return Number(result.numChangedRows ?? 0);
+    return Number(result.numUpdatedRows ?? 0);
   }
 
   @GenerateSql({ params: [{ sourceType: SourceType.MachineLearning, clusterGroupId: DummyValue.UUID }] })

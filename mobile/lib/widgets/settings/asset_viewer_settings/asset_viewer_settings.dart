@@ -3,7 +3,7 @@ import 'package:immich_mobile/widgets/settings/asset_viewer_settings/image_viewe
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/image_viewer_tap_to_navigate_setting.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/slideshow_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/video_viewer_settings.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class AssetViewerSettings extends StatelessWidget {
   const AssetViewerSettings({super.key});

@@ -1,7 +1,8 @@
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { FileMigrationProvider, Kysely, Migrator, sql } from 'kysely';
+import { Kysely, sql } from 'kysely';
+import { FileMigrationProvider, Migrator } from 'kysely/migration';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -15,16 +16,16 @@ import {
   VECTOR_VERSION_RANGE,
   VECTORCHORD_LIST_SLACK_FACTOR,
   VECTORCHORD_VERSION_RANGE,
-} from 'src/constants';
-import { GenerateSql } from 'src/decorators';
-import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import 'src/schema'; // make sure all schema definitions are imported for schemaFromCode
-import { DB } from 'src/schema';
-import { immich_uuid_v7 } from 'src/schema/functions';
-import { ExtensionVersion, VectorExtension } from 'src/types';
-import { vectorIndexQuery } from 'src/utils/database';
+} from 'src/constants.js';
+import { GenerateSql } from 'src/decorators.js';
+import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { immich_uuid_v7 } from 'src/schema/functions.js';
+import 'src/schema/index.js'; // make sure all schema definitions are imported for schemaFromCode
+import { DB } from 'src/schema/index.js';
+import type { ExtensionVersion, VectorExtension } from 'src/types.js';
+import { vectorIndexQuery } from 'src/utils/database.js';
 import z from 'zod';
 
 export let cachedVectorExtension: VectorExtension | undefined;
@@ -492,8 +493,8 @@ export class DatabaseRepository {
       provider: new FileMigrationProvider({
         fs: { readdir },
         path: { join },
-        // eslint-disable-next-line unicorn/prefer-module
-        migrationFolder: join(__dirname, '..', 'schema/migrations'),
+        import: (filePath) => import(filePath),
+        migrationFolder: join(import.meta.dirname, '..', 'schema/migrations'),
       }),
     });
   }

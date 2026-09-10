@@ -52,18 +52,6 @@ class LogRepository {
     return true;
   }
 
-  Future<void> deleteByLogger(String logger) async {
-    await _db.logMessageEntity.deleteWhere((row) => row.logger.equals(logger));
-  }
-
-  Stream<List<LogMessage>> watchMessages(String logger) {
-    final query = _db.logMessageEntity.select()
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
-      ..where((row) => row.logger.equals(logger));
-
-    return query.watch().map((rows) => rows.map((row) => row.toDto()).toList());
-  }
-
   Future<void> truncate({int limit = kLogTruncateLimit}) async {
     final totalCount = await _db.managers.logMessageEntity.count();
     if (totalCount > limit) {

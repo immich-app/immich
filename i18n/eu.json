@@ -1,8 +1,9 @@
 {
   "about": "Honi buruz",
+  "accept": "Onartu",
   "account": "Kontua",
   "account_settings": "Kontuaren Ezarpenak",
-  "acknowledge": "Onartu",
+  "acknowledge": "Baieztatu",
   "action": "Ekintza",
   "action_common_update": "Eguneratu",
   "action_description": "Ekintza multzoa iragazitako aktiboetan aplikatzeko",
@@ -2275,6 +2276,7 @@
   "year": "Urtea",
   "years_ago": "Duela {years, plural, one {urte bat} other {# urte}}",
   "yes": "Bai",
+  "you": "Zu",
   "you_dont_have_any_shared_links": "Ez duzu partekatutako estekarik",
   "your_wifi_name": "Zure Wi-Fi izena",
   "zero_to_clear_rating": "sakatu 0 baliabidearen balorazioa garbitzeko",
