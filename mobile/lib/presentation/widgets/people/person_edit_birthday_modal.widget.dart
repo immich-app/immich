@@ -10,16 +10,16 @@ import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
 
-class DriftPersonBirthdayEditForm extends ConsumerStatefulWidget {
+class PersonBirthdayEditForm extends ConsumerStatefulWidget {
   final Person person;
 
-  const DriftPersonBirthdayEditForm({super.key, required this.person});
+  const PersonBirthdayEditForm({super.key, required this.person});
 
   @override
-  ConsumerState<DriftPersonBirthdayEditForm> createState() => _DriftPersonNameEditFormState();
+  ConsumerState<PersonBirthdayEditForm> createState() => _PersonNameEditFormState();
 }
 
-class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEditForm> {
+class _PersonNameEditFormState extends ConsumerState<PersonBirthdayEditForm> {
   late DateTime _selectedDate;
 
   @override
@@ -30,7 +30,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
 
   Future<void> saveBirthday() async {
     try {
-      final result = await ref.read(driftPeopleServiceProvider).updateBirthday(widget.person.id, _selectedDate);
+      final result = await ref.read(peopleServiceProvider).updateBirthday(widget.person.id, _selectedDate);
 
       if (result != 0 && mounted) {
         context.pop<DateTime>(_selectedDate);

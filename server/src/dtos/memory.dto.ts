@@ -1,19 +1,22 @@
 import { createZodDto } from 'nestjs-zod';
-import { Memory } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
-import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetOrderWithRandomSchema, MemoryType, MemoryTypeSchema } from 'src/enum';
-import { isoDatetimeToDate, isoDateToDate, nonEmptyPartial, stringToBool } from 'src/validation';
+import { Memory } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AssetOrderWithRandomSchema, MemoryType, MemoryTypeSchema } from 'src/enum.js';
+import { isoDatetimeToDate, isoDateToDate, nonEmptyPartial, stringToBool } from 'src/validation.js';
 import z from 'zod';
 
 const MemorySearchSchema = z
   .object({
+    id: z.uuidv4().optional().describe('Memory ID'),
     type: MemoryTypeSchema.optional(),
     for: isoDateToDate.optional().describe('Filter by date'),
     isTrashed: stringToBool.optional().describe('Include trashed memories'),
     isSaved: stringToBool.optional().describe('Filter by saved status'),
+    isUpcoming: stringToBool.optional().describe('Filter by memories that have not been shown yet'),
     size: z.coerce.number().int().min(1).optional().describe('Number of memories to return'),
+    page: z.coerce.number().int().min(1).optional().describe('Page number'),
     order: AssetOrderWithRandomSchema.optional(),
   })
   .meta({ id: 'MemorySearchDto' });

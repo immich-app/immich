@@ -2,9 +2,9 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/co
 import { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { ZodSerializationException, ZodValidationException } from 'nestjs-zod';
-import { ImmichHeader } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { onRequestError } from 'src/utils/logger';
+import { ImmichHeader } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { onRequestError } from 'src/utils/logger.js';
 import { ZodError } from 'zod';
 
 @Catch()

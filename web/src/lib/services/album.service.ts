@@ -133,7 +133,7 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
 const notifyAddToAlbum = ($t: MessageFormatter, albumId: string, assetIds: string[], results: BulkIdResponseDto[]) => {
   const successCount = results.filter(({ success }) => success).length;
   const duplicateCount = results.filter(({ error }) => error === 'duplicate').length;
-  let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
+  let description: string | undefined;
 
   if (duplicateCount === assetIds.length) {
     description = $t('assets_were_part_of_album_count', { values: { count: duplicateCount } });
@@ -143,8 +143,14 @@ const notifyAddToAlbum = ($t: MessageFormatter, albumId: string, assetIds: strin
     description = $t('assets_added_to_album_partial_count', { values: { successCount, totalCount: assetIds.length } });
   }
 
-  toastManager.primary(
-    { description, button: { label: $t('view_album'), onclick: () => goto(Route.viewAlbum({ id: albumId })) } },
+  const button = { label: $t('view_album'), onclick: () => goto(Route.viewAlbum({ id: albumId })) };
+  if (description) {
+    toastManager.primary({ description, button }, { timeout: 5000 });
+    return;
+  }
+
+  toastManager.danger(
+    { description: $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } }), button },
     { timeout: 5000 },
   );
 };

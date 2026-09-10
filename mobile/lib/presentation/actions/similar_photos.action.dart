@@ -37,6 +37,6 @@ class SimilarPhotosAction extends ActionBuilder {
         ),
       );
 
-    unawaited(context.navigateTo(const DriftSearchRoute()));
+    unawaited(context.navigateTo(const SearchRoute()));
   }
 }

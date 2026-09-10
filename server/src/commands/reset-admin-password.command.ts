@@ -1,6 +1,6 @@
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
-import { UserAdminResponseDto } from 'src/dtos/user.dto';
-import { CliService } from 'src/services/cli.service';
+import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
+import { CliService } from 'src/services/cli.service.js';
 
 const prompt = (inquirer: InquirerService) => {
   return (admin: UserAdminResponseDto) => {

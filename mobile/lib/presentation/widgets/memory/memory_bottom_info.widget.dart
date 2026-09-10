@@ -7,10 +7,10 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:intl/intl.dart';
 
-class DriftMemoryBottomInfo extends StatelessWidget {
-  final DriftMemory memory;
+class MemoryBottomInfo extends StatelessWidget {
+  final Memory memory;
   final String title;
-  const DriftMemoryBottomInfo({super.key, required this.memory, required this.title});
+  const MemoryBottomInfo({super.key, required this.memory, required this.title});
 
   @override
   Widget build(BuildContext context) {

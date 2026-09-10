@@ -6,16 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -310,7 +310,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
       final backgroundManager = ref.read(backgroundSyncProvider);
-      final backupProvider = ref.read(driftBackupProvider.notifier);
+      final backupNotifier = ref.read(backupProvider.notifier);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
       unawaited(
@@ -334,9 +334,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                   if (syncSuccess) {
                     await Future.wait([
                       backgroundManager.hashAssets().then((_) {
-                        unawaited(_resumeBackup(backupProvider));
+                        unawaited(_resumeBackup(backupNotifier));
                       }),
-                      _resumeBackup(backupProvider),
+                      _resumeBackup(backupNotifier),
                       // TODO: Bring back when the soft freeze issue is addressed
                       // backgroundManager.syncCloudIds(),
                     ]);
@@ -376,7 +376,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
   }
 
-  Future<void> _resumeBackup(DriftBackupNotifier notifier) async {
+  Future<void> _resumeBackup(BackupNotifier notifier) async {
     final isEnableBackup = SettingsRepository.instance.appConfig.backup.enabled;
 
     if (isEnableBackup) {

@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
-import { AssetOrderSchema, UserAvatarColorSchema } from 'src/enum';
-import { UserPreferences } from 'src/types';
+import { AssetOrderSchema, UserAvatarColorSchema } from 'src/enum.js';
+import type { UserPreferences } from 'src/types.js';
 import z from 'zod';
 
 const AlbumsUpdateSchema = z
@@ -22,6 +22,7 @@ const MemoriesUpdateSchema = z
   .object({
     enabled: z.boolean().optional().describe('Whether memories are enabled'),
     duration: z.int().min(1).optional().describe('Memory duration in seconds'),
+    sidebarWeb: z.boolean().optional().describe('Whether memories appear in web sidebar'),
   })
   .optional()
   .meta({ id: 'MemoriesUpdate' });
@@ -140,6 +141,7 @@ const MemoriesResponseSchema = z
   .object({
     enabled: z.boolean().describe('Whether memories are enabled'),
     duration: z.int().describe('Memory duration in seconds'),
+    sidebarWeb: z.boolean().describe('Whether memories appear in web sidebar'),
   })
   .meta({ id: 'MemoriesResponse' });
 

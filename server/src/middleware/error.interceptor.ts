@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Observable, catchError, throwError } from 'rxjs';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { isHttpException, onRequestError } from 'src/utils/logger';
-import { routeToErrorMessage } from 'src/utils/misc';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { isHttpException, onRequestError } from 'src/utils/logger.js';
+import { routeToErrorMessage } from 'src/utils/misc.js';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {

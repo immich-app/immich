@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
-import { MachineLearningConfig } from 'src/dtos/config.dto';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningConfig } from 'src/dtos/config.dto.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 export interface BoundingBox {
   x1: number;
@@ -178,9 +178,7 @@ export class MachineLearningRepository {
           `Machine learning request to "${url}" failed with status ${response.status}: ${response.statusText}`,
         );
       } catch (error: Error | unknown) {
-        this.logger.warn(
-          `Machine learning request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
-        );
+        this.logger.warn(`Machine learning request to "${url}" failed`, error);
       }
 
       this.setHealthy(url, false);

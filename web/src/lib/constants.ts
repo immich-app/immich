@@ -34,6 +34,12 @@ export const dateFormats = {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
+  } satisfies Intl.DateTimeFormatOptions,
+  albumShort: {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
   } satisfies Intl.DateTimeFormatOptions,
   settings: {
     month: 'short',
@@ -44,8 +50,10 @@ export const dateFormats = {
 
 export enum QueryParameter {
   ACTION = 'action',
+  ASSET_ID = 'assetId',
   ID = 'id',
   IS_OPEN = 'isOpen',
+  IS_SAVED = 'isSaved',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',

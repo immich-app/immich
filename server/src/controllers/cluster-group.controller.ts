@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ClusterGroupRequestCreateDto, ClusterGroupRequestResponseDto } from 'src/dtos/cluster-group.dto';
-import { UserResponseDto } from 'src/dtos/user.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { ClusterGroupService } from 'src/services/cluster-group.service';
-import { UUIDParamDto } from 'src/validation';
+import type { Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { ClusterGroupRequestCreateDto, ClusterGroupRequestResponseDto } from 'src/dtos/cluster-group.dto.js';
+import { UserResponseDto } from 'src/dtos/user.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { ClusterGroupService } from 'src/services/cluster-group.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.ClusterGroups)
 @Controller('cluster-groups')
@@ -91,6 +91,18 @@ export class ClusterGroupController {
     const { duplicate, value } = await this.service.createRequest(auth, id, dto);
     res.status(duplicate ? HttpStatus.OK : HttpStatus.CREATED);
     return value;
+  }
+
+  @Post(':id/regenerate-people')
+  @Authenticated({ permission: Permission.ClusterGroupRead })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Regenerate people of users in cluster group',
+    description: 'Forcefully re-run facial recognition for all faces of users in this group.',
+    history: new HistoryBuilder().added('v3.2.0'),
+  })
+  clusterGroupRegeneratePeople(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.regeneratePeople(auth, id);
   }
 
   @Post(':id/leave')

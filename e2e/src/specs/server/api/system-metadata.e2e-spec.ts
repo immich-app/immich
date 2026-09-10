@@ -1,5 +1,5 @@
 import { LoginResponseDto, getServerConfig } from '@immich/sdk';
-import { app, utils } from 'src/utils';
+import { app, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 

@@ -1,15 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MaybeDuplicate } from 'src/dtos/activity.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { MaybeDuplicate } from 'src/dtos/activity.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   ClusterGroupRequestCreateDto,
   ClusterGroupRequestResponseDto,
   mapClusterGroupRequest,
-} from 'src/dtos/cluster-group.dto';
-import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
-import { Permission } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { findOrFail } from 'src/utils/misc';
+} from 'src/dtos/cluster-group.dto.js';
+import { mapUser, UserResponseDto } from 'src/dtos/user.dto.js';
+import { JobName, Permission } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { findOrFail } from 'src/utils/misc.js';
 
 @Injectable()
 export class ClusterGroupService extends BaseService {
@@ -70,6 +70,15 @@ export class ClusterGroupService extends BaseService {
   async deleteRequest(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ClusterGroupRequestDelete, ids: [id] });
     await this.clusterGroupRepository.deleteRequest(id);
+  }
+
+  async regeneratePeople(auth: AuthDto, id: string) {
+    await this.requireAccess({ auth, permission: Permission.ClusterGroupRead, ids: [id] });
+
+    await this.jobRepository.queue({
+      name: JobName.FacialRecognitionQueueAll,
+      data: { clusterGroupId: id, force: true },
+    });
   }
 
   async leave(auth: AuthDto, clusterGroupId: string): Promise<void> {

@@ -10,6 +10,13 @@ mise //server:migrations generate <migration-name>
 
 2. Check if the migration file makes sense.
 3. Move the migration file to folder `./server/src/schema/migrations` in your code editor.
+4. Run the command
+
+```bash
+mise //server:migrations sync-order
+```
+
+The last step adds the migration to the `ORDER` manifest, which records the order migrations run in. It is committed so that two branches adding a migration conflict in git instead of silently merging out of order, which would stop the server from starting for anyone who ran them in the wrong order.
 
 The server will automatically detect `*.ts` file changes and restart. Part of the server start-up process includes running any new migrations, so it will be applied immediately.
 

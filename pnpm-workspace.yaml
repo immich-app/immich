@@ -66,4 +66,5 @@ injectWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
-  - '@immich/ui@0.83.0'
+  - '@immich/ui@0.86.0'
+  - '@immich/sql-tools@0.6.3'

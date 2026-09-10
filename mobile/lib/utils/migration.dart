@@ -6,6 +6,8 @@ import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/app/settings.drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
@@ -13,8 +15,6 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
@@ -261,16 +261,6 @@ class _StoreMigrator {
     }
 
     _cache[newKey] = intValue;
-    _migratedStoreIds.add(legacyKey.id);
-  }
-
-  Future<void> migrateString(StoreKey<String> legacyKey, SettingsKey<String> newKey) async {
-    final value = await readLegacyStoreString(legacyKey.id);
-    if (value == null) {
-      return;
-    }
-
-    _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
   }
 

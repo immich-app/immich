@@ -210,13 +210,13 @@
     }
     const scrollTarget = assetViewerManager.gridScrollTarget?.at;
     const scrolled = scrollTarget ? await scrollAndLoadAsset(scrollTarget) : false;
-    if (!scrolled) {
-      // if the asset is not found, scroll to the top
-      timelineManager.scrollTo(0);
-    } else if (scrollTarget) {
+    if (scrolled && scrollTarget) {
       await tick();
       focusAsset(scrollTarget);
+    } else {
+      timelineManager.scrollTo(lastVisibleScrollTop);
     }
+
     invisible = false;
   };
 
@@ -224,6 +224,9 @@
   let initialLoadWasAssetViewer: boolean | null = null;
   // only modified in beforeNavigate()
   let hasNavigatedToOrFromAssetViewer: boolean = false;
+  // The layout sets `display: none` on this subtree while the viewer is open.
+  // Browsers drop the scroll offset of a hidden element.
+  let lastVisibleScrollTop = 0;
 
   // beforeNavigate is only called AFTER a svelte route has already been loaded
   // and a new route is being navigated to. It will never be called on direct
@@ -308,6 +311,9 @@
   const handleTimelineScroll = () => {
     if (!scrollableElement) {
       return;
+    }
+    if (!assetViewerManager.isViewing) {
+      lastVisibleScrollTop = scrollableElement.scrollTop;
     }
 
     if (timelineManager.limitedScroll) {

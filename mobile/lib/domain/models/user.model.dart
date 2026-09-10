@@ -118,7 +118,7 @@ class User {
   final String email;
   final DateTime profileChangedAt;
   final bool hasProfileImage;
-  final AvatarColor? avatarColor;
+  final AvatarColor avatarColor;
 
   const User({
     required this.id,
@@ -126,7 +126,7 @@ class User {
     required this.email,
     required this.profileChangedAt,
     required this.hasProfileImage,
-    this.avatarColor = AvatarColor.primary,
+    this.avatarColor = .primary,
   });
 
   @override

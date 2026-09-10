@@ -1,5 +1,5 @@
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
-import { CliService } from 'src/services/cli.service';
+import { CliService } from 'src/services/cli.service.js';
 
 @Command({
   name: 'change-media-location',

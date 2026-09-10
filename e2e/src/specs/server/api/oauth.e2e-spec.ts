@@ -9,8 +9,8 @@ import {
   updateConfig,
 } from '@immich/sdk';
 import { createHash, randomBytes } from 'node:crypto';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, baseUrl, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -284,6 +284,21 @@ describe(`/oauth`, () => {
         userEmail: 'oauth-rs256-token@immich.app',
         userId: expect.any(String),
       });
+    });
+
+    it('should set the profile picture from a picture claim with an embedded image', async () => {
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_EMBEDDED_PROFILE_PICTURE);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        userId: expect.any(String),
+        userEmail: 'oauth-with-embedded-profile-picture@immich.app',
+        profileImagePath: expect.any(String),
+      });
+
+      const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+      expect(user.profileImagePath.length).toBeGreaterThan(0);
     });
 
     it('should work with RS256 signed user profiles', async () => {

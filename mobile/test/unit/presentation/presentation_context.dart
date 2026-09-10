@@ -2,15 +2,16 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -53,6 +54,7 @@ class PresentationContext {
   List<Override> get overrides => [
     driftProvider.overrideWithValue(_mockDrift()),
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
+    userServiceProvider.overrideWithValue(service.user.service),
     assetServiceProvider.overrideWithValue(service.asset.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
     remoteAlbumServiceProvider.overrideWithValue(service.album.service),
@@ -89,6 +91,12 @@ class PresentationContext {
 
   void setup() {
     when(service.user.tryGetMyUser).thenReturn(currentUser);
+
+    // Handle system chrome messages
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async => null,
+    );
   }
 
   Future<void> dispose() async {
@@ -98,7 +106,15 @@ class PresentationContext {
 }
 
 extension PumpPresentationWidget on WidgetTester {
-  Future<void> pumpTestWidget(PresentationContext context, Widget widget, {List<Override> overrides = const []}) async {
+  /// Renders the UI from the given [widget]
+  ///
+  /// Provide [expectSettle] `false` for a component that infinitely animates
+  Future<void> pumpTestWidget(
+    PresentationContext context,
+    Widget widget, {
+    List<Override> overrides = const [],
+    bool expectSettle = true,
+  }) async {
     await pumpWidget(
       EasyLocalization(
         supportedLocales: locales.values.toList(),
@@ -126,7 +142,12 @@ extension PumpPresentationWidget on WidgetTester {
         ),
       ),
     );
-    await pumpAndSettle();
+
+    if (expectSettle) {
+      await pumpAndSettle();
+    } else {
+      await pump();
+    }
   }
 
   Future<void> pumpTestAction(

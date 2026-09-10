@@ -1,19 +1,19 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { SystemConfigSmtpDto } from 'src/dtos/config.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import {
   NotificationCreateDto,
   NotificationDto,
   TemplateDto,
   TemplateResponseDto,
   TestEmailResponseDto,
-} from 'src/dtos/notification.dto';
-import { ApiTag } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { EmailTemplate } from 'src/repositories/email.repository';
-import { NotificationAdminService } from 'src/services/notification-admin.service';
+} from 'src/dtos/notification.dto.js';
+import { ApiTag } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 
 @ApiTags(ApiTag.NotificationsAdmin)
 @Controller('admin/notifications')

@@ -31,7 +31,7 @@ class RepositoryMocks {
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
   final remoteAlbum = MockRemoteAlbumRepository();
-  final albumApi = MockDriftAlbumApiRepository();
+  final albumApi = MockAlbumApiRepository();
   final permission = PermissionRepositoryStub(MockPermissionRepository());
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
@@ -85,7 +85,6 @@ class RepositoryMocks {
   }
 
   void _stubLocalAssetRepository() {
-    when(localAsset.reconcileHashesFromCloudId).thenAnswer((_) async => {});
     when(localAsset.updateHashes).thenAnswer((_) async => {});
     when(localAsset.deleteAssets).thenAnswer((_) async => {});
   }
@@ -165,6 +164,7 @@ class ServiceMocks {
     when(user.watchMyUser).thenAnswer((_) => const Stream.empty());
     when(user.refreshMyUser).thenAnswer((_) async => null);
     when(user.createProfileImage).thenAnswer((_) async => null);
+    when(user.watch).thenAnswer((_) => const Stream.empty());
   }
 
   void _stubPartnerService() {
@@ -177,6 +177,7 @@ class ServiceMocks {
   }
 
   void _stubAssetService() {
+    when(asset.getAsset).thenAnswer((_) async => null);
     when(asset.update).thenAnswer((_) async {});
     when(asset.stack).thenAnswer((_) async {});
     when(asset.unstack).thenAnswer((_) async {});
@@ -254,11 +255,7 @@ extension type const LocalAlbumRepositoryStub(MockLocalAlbumRepository repo) imp
       () => repo.getAssetsToHash(any());
 }
 
-extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo)
-    implements Stub<MockLocalAssetRepository> {
-  Future<void> Function() get reconcileHashesFromCloudId =>
-      () => repo.reconcileHashesFromCloudId();
-
+extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo) implements Stub<MockLocalAssetRepository> {
   Future<void> Function() get updateHashes =>
       () => repo.updateHashes(any());
 
@@ -336,9 +333,15 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 
   Future<String?> Function() get createProfileImage =>
       () => service.createProfileImage(any(), any());
+
+  Stream<User?> Function() get watch =>
+      () => service.watch(any());
 }
 
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
+  Future<BaseAsset?> Function() get getAsset =>
+      () => service.getAsset(any());
+
   Future<void> Function() get update =>
       () => service.update(
         any(),

@@ -3,10 +3,10 @@ import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import { promisify } from 'node:util';
-import { CacheControl } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { ImmichReadStream } from 'src/repositories/storage.repository';
-import { isConnectionAborted } from 'src/utils/misc';
+import { CacheControl } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ImmichReadStream } from 'src/repositories/storage.repository.js';
+import { isConnectionAborted } from 'src/utils/misc.js';
 
 export function getFileNameWithoutExtension(path: string): string {
   return basename(path, getFilenameExtension(path));
