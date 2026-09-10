@@ -228,7 +228,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   void handleAppHidden() {
     state = AppLifeCycleEnum.hidden;
-    // do not stop/clean up anything on inactivity: issued on every orientation change
+    // only issued on the way to or from paused, so the app really was in the background
+    _wasPaused = true;
   }
 }
 
