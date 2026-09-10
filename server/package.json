@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
-    "@futo-org/backups-orchestrator-api": "0.39.0",
+    "@futo-org/backups-orchestrator-api": "0.40.1",
     "@immich/plugin-sdk": "workspace:*",
     "@immich/sql-tools": "^0.6.3",
     "@nestjs/bullmq": "^11.0.1",

@@ -19267,11 +19267,7 @@
             "type": "string"
           },
           "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TaskStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/TaskStatus"
           }
         },
         "required": [
@@ -22418,11 +22414,7 @@
             "type": "boolean"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/BackendType"
-              }
-            ]
+            "$ref": "#/components/schemas/BackendType"
           }
         },
         "required": [
@@ -22724,7 +22716,7 @@
             "type": "array"
           },
           "libraries": {
-            "oneOf": [
+            "anyOf": [
               {
                 "type": "string",
                 "enum": [
@@ -22751,8 +22743,7 @@
                 "$ref": "#/components/schemas/RetentionPolicyDto"
               }
             ],
-            "nullable": true,
-            "type": "object"
+            "nullable": true
           },
           "worm": {
             "type": "boolean"
@@ -23130,21 +23121,13 @@
             "type": "string"
           },
           "reason": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DeviceFlowFailureReason"
-              }
-            ]
+            "$ref": "#/components/schemas/DeviceFlowFailureReason"
           },
           "token": {
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DeviceFlowEventType"
-              }
-            ]
+            "$ref": "#/components/schemas/DeviceFlowEventType"
           },
           "userCode": {
             "type": "string"
@@ -23812,7 +23795,7 @@
             "type": "array"
           },
           "libraries": {
-            "oneOf": [
+            "anyOf": [
               {
                 "type": "string",
                 "enum": [
@@ -23980,7 +23963,6 @@
           "metrics",
           "name",
           "siteCode",
-          "snapshots",
           "storageClusterCode",
           "worm"
         ],
@@ -26222,11 +26204,7 @@
             "type": "boolean"
           },
           "hasTelemetry": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TelemetryLevel"
-              }
-            ]
+            "$ref": "#/components/schemas/TelemetryLevel"
           },
           "isAuthenticated": {
             "type": "boolean"
@@ -26235,11 +26213,7 @@
             "type": "boolean"
           },
           "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/BootstrapStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/BootstrapStatus"
           }
         },
         "required": [
@@ -28261,11 +28235,7 @@
             "type": "boolean"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/BackendType"
-              }
-            ]
+            "$ref": "#/components/schemas/BackendType"
           }
         },
         "required": [
@@ -28318,8 +28288,7 @@
                 "$ref": "#/components/schemas/RetentionPolicyDto"
               }
             ],
-            "nullable": true,
-            "type": "object"
+            "nullable": true
           }
         },
         "required": [
@@ -28394,12 +28363,17 @@
       "RepositoryMeterDto": {
         "properties": {
           "lastUpdated": {
+            "nullable": true,
             "type": "string"
           },
           "objectCount": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "sizeBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           }
         },
@@ -28412,19 +28386,20 @@
       "RepositoryMetricsDto": {
         "properties": {
           "lastBackup": {
+            "nullable": true,
             "type": "string"
           },
           "lastBackupDuration": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "lastBackupStatus": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TaskStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/TaskStatus"
           },
           "sizeBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           }
         },
@@ -28489,8 +28464,7 @@
                 "$ref": "#/components/schemas/RetentionPolicyDto"
               }
             ],
-            "nullable": true,
-            "type": "object"
+            "nullable": true
           },
           "worm": {
             "type": "boolean"
@@ -28512,6 +28486,8 @@
       "RetentionPolicyDto": {
         "properties": {
           "keepLast": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "keepWithin": {
@@ -28586,22 +28562,13 @@
             "type": "string"
           },
           "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RunStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/RunStatus"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RunType"
-              }
-            ]
+            "$ref": "#/components/schemas/RunType"
           }
         },
         "required": [
-          "end",
           "id",
           "logFilePath",
           "repositoryId",
@@ -28669,11 +28636,7 @@
             "type": "array"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TaskType"
-              }
-            ]
+            "$ref": "#/components/schemas/TaskType"
           }
         },
         "required": [
@@ -30937,21 +30900,33 @@
       "SnapshotSummaryDto": {
         "properties": {
           "dataAdded": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "filesChanged": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "filesNew": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "filesUnmodified": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "totalBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "totalFiles": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           }
         },
@@ -33904,14 +33879,12 @@
       "TicketCreateRequestDto": {
         "properties": {
           "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TicketAction"
-              }
-            ]
+            "$ref": "#/components/schemas/TicketAction"
           },
           "repositoryId": {
             "description": "Repository the ticket is bound to",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
           }
         },

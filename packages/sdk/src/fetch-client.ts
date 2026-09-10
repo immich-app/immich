@@ -3336,7 +3336,7 @@ export type ImmichRollbackRequestDto = {
     snapshotId: string;
 };
 export type RunDto = {
-    end: string;
+    end?: string;
     id: string;
     logFilePath: string;
     repositoryId: string;
@@ -3379,12 +3379,12 @@ export type RepositoryConfigurationDto = {
     retentionPolicy?: (RetentionPolicyDto) | null;
 };
 export type RepositoryMeterDto = {
-    lastUpdated?: string;
+    lastUpdated?: string | null;
     objectCount: number;
     sizeBytes: number;
 };
 export type RepositoryMetricsDto = {
-    lastBackup?: string;
+    lastBackup?: string | null;
     lastBackupDuration?: number;
     lastBackupStatus?: TaskStatus;
     sizeBytes: number;
@@ -3436,7 +3436,7 @@ export type InspectedLocalRepositoryDto = {
     metrics: RepositoryMetricsDto;
     name: string;
     siteCode: string | null;
-    snapshots: SnapshotDto[];
+    snapshots?: SnapshotDto[];
     storageClusterCode: string | null;
     worm: boolean;
 };

@@ -301,12 +301,7 @@ describe('/yucca', () => {
         );
 
         const {
-          repositories: [
-            {
-              id: repositoryId,
-              snapshots: [{ id: snapshotId }],
-            },
-          ],
+          repositories: [{ id: repositoryId, snapshots: [{ id: snapshotId }] = [] }],
         } = await sdk.inspectRepositories({}, maintenanceRequestOpts);
 
         socket = io(baseUrl, {
