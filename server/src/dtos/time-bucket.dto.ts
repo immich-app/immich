@@ -66,7 +66,10 @@ const TimeBucketQueryBaseSchema = z
 
 const TimeBucketSchema = TimeBucketQueryBaseSchema;
 const TimeBucketAssetSchema = TimeBucketQueryBaseSchema.extend({
-  timeBucket: z.string().describe('Time bucket identifier in YYYY-MM-DDT00:00:00.000Z format').meta({ example: '2024-01-01T00:00:00.000Z' }),
+  timeBucket: z
+    .string()
+    .describe('Time bucket identifier in YYYY-MM-DDT00:00:00.000Z format')
+    .meta({ example: '2024-01-01T00:00:00.000Z' }),
 }).meta({ id: 'TimeBucketAssetDto' });
 
 const stackTupleSchema = z.array(z.string()).length(2).nullable();
