@@ -251,23 +251,9 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
 
-      testWidgets('local only delete on Android 30 warns even though the OS asks', (tester) async {
+      testWidgets('local only delete on Android 30 shows no prompt', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
-        final asset = LocalAssetFactory.create();
-
-        await pumpDelete(tester, {asset});
-        await tester.pump(const Duration(milliseconds: 300));
-        expect(find.text(StaticTranslations.instance.delete_dialog_alert_local_non_backed_up), findsOneWidget);
-        await respondToDialog(tester, confirm: true);
-
-        verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
-        debugDefaultTargetPlatformOverride = null;
-      });
-
-      testWidgets('local only delete on Android 31 shows no prompt', (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 31);
         final asset = LocalAssetFactory.create();
 
         await pumpDelete(tester, {asset});
@@ -348,24 +334,6 @@ void main() {
     testWidgets('asks before deleting on Android below API 30', (tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
-      final asset = LocalAssetFactory.create(remoteId: 'remote');
-
-      await tester.pumpTestAction(
-        context,
-        const CleanupLocalAction(source: .timeline),
-        overrides: context.selected({asset}),
-      );
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text(StaticTranslations.instance.delete_dialog_alert_local), findsOneWidget);
-      await respondToDialog(tester, confirm: true);
-
-      verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
-      debugDefaultTargetPlatformOverride = null;
-    });
-
-    testWidgets('asks before deleting on Android 30 as well', (tester) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.android;
-      when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
       final asset = LocalAssetFactory.create(remoteId: 'remote');
 
       await tester.pumpTestAction(

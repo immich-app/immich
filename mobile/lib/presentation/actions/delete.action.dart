@@ -211,9 +211,9 @@ class CleanupLocalAction extends AssetActionBuilder {
 
 /// Removes the device copies of [assetIds], returning how many were deleted.
 ///
-/// Android below 31 deletes for good (30 after the OS asks as well); from 31 it trashes
-/// (_androidSupportsTrash), silently with MANAGE_MEDIA. So we ask below 31, warning for [notBackedUp]
-/// assets, and confirm a MANAGE_MEDIA trash, unless [requestCustomPrompt] is false.
+/// Android below 30 deletes for good without asking, so we ask, warning for [notBackedUp] assets. From 30
+/// the OS asks itself; from 31 it trashes (_androidSupportsTrash), silently with MANAGE_MEDIA, so we confirm
+/// that trash ourselves. Never two prompts, none when [requestCustomPrompt] is false.
 Future<int> _cleanupLocalAssets(
   BuildContext context,
   WidgetRef ref,
@@ -230,7 +230,7 @@ Future<int> _cleanupLocalAssets(
   final requiresPrompt =
       requestCustomPrompt &&
       CurrentPlatform.isAndroid &&
-      (manageMedia || await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 31);
+      (manageMedia || await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30);
   if (!context.mounted) {
     return 0;
   }
