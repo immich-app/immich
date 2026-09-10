@@ -326,6 +326,7 @@ class LoginForm extends HookConsumerWidget {
       String? oAuthServerUrl;
 
       final state = generateRandomString(32);
+      final nonce = generateRandomString(32);
 
       final codeVerifier = randomCodeVerifier();
       final codeChallenge = await generatePKCECodeChallenge(codeVerifier);
@@ -335,6 +336,7 @@ class LoginForm extends HookConsumerWidget {
           normalizeServerUrl(serverEndpointController.text),
           state,
           codeChallenge,
+          nonce,
         );
 
         // Invalidate all api repository provider instance to take into account new access token
@@ -357,7 +359,7 @@ class LoginForm extends HookConsumerWidget {
 
       if (oAuthServerUrl != null) {
         try {
-          final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier);
+          final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier, nonce);
 
           if (loginResponseDto == null || !context.mounted) {
             return;

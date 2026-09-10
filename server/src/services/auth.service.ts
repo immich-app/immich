@@ -279,6 +279,7 @@ export class AuthService extends BaseService {
       this.resolveRedirectUri(oauth, dto.redirectUri),
       dto.state,
       dto.codeChallenge,
+      dto.nonce,
     );
   }
 
@@ -298,12 +299,14 @@ export class AuthService extends BaseService {
       throw new BadRequestException('OAuth code verifier is missing');
     }
 
+    const expectedNonce = dto.nonce ?? this.getCookieOauthNonce(headers) ?? undefined;
+
     const url = this.resolveRedirectUri(oauth, dto.url);
     const {
       profile,
       sid: oauthSid,
       idToken: oauthBearerToken,
-    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, url, expectedState, codeVerifier);
+    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, url, expectedState, codeVerifier, expectedNonce);
     const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
@@ -409,12 +412,14 @@ export class AuthService extends BaseService {
       throw new BadRequestException('OAuth code verifier is missing');
     }
 
+    const expectedNonce = dto.nonce ?? this.getCookieOauthNonce(headers) ?? undefined;
+
     const { oauth } = await this.getConfig({ withCache: false });
     const {
       profile: { sub: oauthId },
       sid,
       idToken,
-    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier);
+    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier, expectedNonce);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
@@ -489,6 +494,11 @@ export class AuthService extends BaseService {
   private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
     return cookies[ImmichCookie.OAuthCodeVerifier] || null;
+  }
+
+  private getCookieOauthNonce(headers: IncomingHttpHeaders): string | null {
+    const cookies = parse(headers.cookie || '');
+    return cookies[ImmichCookie.OAuthNonce] || null;
   }
 
   async validateSharedLinkKey(key: string | string[]): Promise<AuthDto> {

@@ -38,7 +38,12 @@ describe(AuthService.name, () => {
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AuthService));
 
-    mocks.oauth.authorize.mockResolvedValue({ url: 'http://test', state: 'state', codeVerifier: 'codeVerifier' });
+    mocks.oauth.authorize.mockResolvedValue({
+      url: 'http://test',
+      state: 'state',
+      nonce: 'nonce',
+      codeVerifier: 'codeVerifier',
+    });
     mocks.oauth.getLogoutEndpoint.mockResolvedValue('http://end-session-endpoint');
   });
 
@@ -853,6 +858,7 @@ describe(AuthService.name, () => {
           'http://mobile-redirect?code=abc123',
           'xyz789',
           'foo',
+          undefined,
         );
       });
     }
