@@ -67,6 +67,8 @@ export class SyncRepository {
   person: PersonSync;
   personGroup: PersonGroupSync;
   stack: StackSync;
+  tag: TagSync;
+  tagToAsset: TagToAssetSync;
   user: UserSync;
   userMetadata: UserMetadataSync;
 
@@ -92,6 +94,8 @@ export class SyncRepository {
     this.person = new PersonSync(this.db);
     this.personGroup = new PersonGroupSync(this.db);
     this.stack = new StackSync(this.db);
+    this.tag = new TagSync(this.db);
+    this.tagToAsset = new TagToAssetSync(this.db);
     this.user = new UserSync(this.db);
     this.userMetadata = new UserMetadataSync(this.db);
   }
@@ -741,6 +745,47 @@ class PartnerStackSync extends BaseSync {
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
       )
+      .stream();
+  }
+}
+
+class TagSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('tag_audit', options).select(['id', 'tagId']).where('userId', '=', options.userId).stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('tag_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('tag', options)
+      .select(['id', 'userId as ownerId', 'parentId', 'value', 'color', 'createdAt', 'updatedAt', 'updateId'])
+      .where('userId', '=', options.userId)
+      .stream();
+  }
+}
+
+class TagToAssetSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('tag_asset_audit', options)
+      .select(['id', 'tagId', 'assetId'])
+      .where('tagId', 'in', (eb) => eb.selectFrom('tag').select('id').where('userId', '=', options.userId))
+      .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('tag_asset_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('tag_asset', options)
+      .select(['tagId', 'assetId', 'updateId'])
+      .where('tagId', 'in', (eb) => eb.selectFrom('tag').select('id').where('userId', '=', options.userId))
       .stream();
   }
 }

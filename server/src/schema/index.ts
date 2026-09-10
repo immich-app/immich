@@ -23,6 +23,8 @@ import {
   person_delete_audit,
   person_group_delete_audit,
   stack_delete_audit,
+  tag_asset_delete_audit,
+  tag_delete_audit,
   updated_at,
   user_delete_audit,
   user_metadata_audit,
@@ -79,7 +81,9 @@ import { StackAuditTable } from 'src/schema/tables/stack-audit.table';
 import { StackTable } from 'src/schema/tables/stack.table';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
+import { TagAssetAuditTable } from 'src/schema/tables/tag-asset-audit.table';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
+import { TagAuditTable } from 'src/schema/tables/tag-audit.table';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table';
 import { TagTable } from 'src/schema/tables/tag.table';
 import { UserAuditTable } from 'src/schema/tables/user-audit.table';
@@ -150,7 +154,9 @@ export class ImmichDatabase {
     SessionSyncCheckpointTable,
     SystemMetadataTable,
     TagTable,
+    TagAuditTable,
     TagAssetTable,
+    TagAssetAuditTable,
     TagClosureTable,
     UserAuditTable,
     UserMetadataTable,
@@ -186,6 +192,8 @@ export class ImmichDatabase {
     asset_metadata_audit,
     asset_face_audit,
     asset_ocr_delete_audit,
+    tag_delete_audit,
+    tag_asset_delete_audit,
     album_user_delete,
   ];
 
@@ -276,7 +284,9 @@ export interface DB {
   system_metadata: SystemMetadataTable;
 
   tag: TagTable;
+  tag_audit: TagAuditTable;
   tag_asset: TagAssetTable;
+  tag_asset_audit: TagAssetAuditTable;
   tag_closure: TagClosureTable;
 
   user: UserTable;

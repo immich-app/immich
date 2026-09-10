@@ -193,6 +193,32 @@ export const memory_asset_delete_audit = registerFunction({
     END`,
 });
 
+export const tag_delete_audit = registerFunction({
+  name: 'tag_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO tag_audit ("tagId", "userId")
+      SELECT "id", "userId" FROM OLD
+      WHERE "userId" IN (SELECT "id" FROM "user" WHERE "id" IN (SELECT "userId" FROM OLD));
+      RETURN NULL;
+    END`,
+});
+
+export const tag_asset_delete_audit = registerFunction({
+  name: 'tag_asset_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO tag_asset_audit ("tagId", "assetId")
+      SELECT "tagId", "assetId" FROM OLD
+      WHERE "tagId" IN (SELECT "id" FROM tag WHERE "id" IN (SELECT "tagId" FROM OLD));
+      RETURN NULL;
+    END`,
+});
+
 export const stack_delete_audit = registerFunction({
   name: 'stack_delete_audit',
   returnType: 'TRIGGER',
