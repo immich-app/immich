@@ -9,8 +9,9 @@ import 'package:photo_manager/photo_manager.dart';
 
 class StorageRepository {
   final log = Logger('StorageRepository');
+  final Directory _tempDirectory;
 
-  StorageRepository();
+  StorageRepository({Directory? tempDirectory}) : _tempDirectory = tempDirectory ?? Directory.systemTemp;
 
   Future<File?> getFileForAsset(String assetId) async {
     File? file;
@@ -146,8 +147,8 @@ class StorageRepository {
     }
 
     try {
-      if (await Directory.systemTemp.exists()) {
-        await Directory.systemTemp.delete(recursive: true);
+      if (await _tempDirectory.exists()) {
+        await _tempDirectory.delete(recursive: true);
       }
     } catch (error, stackTrace) {
       log.warning("Error deleting temporary directory", error, stackTrace);
@@ -155,13 +156,11 @@ class StorageRepository {
   }
 
   Future<int> clearCacheAndGetSize() async {
-    final beforeSize = CurrentPlatform.isIOS ? await Directory.systemTemp.size() : 0;
+    final beforeSize = CurrentPlatform.isIOS ? await _tempDirectory.size() : 0;
 
     await clearCache();
 
-    final afterSize = CurrentPlatform.isIOS ? await Directory.systemTemp.size() : 0;
-
-    return beforeSize > afterSize ? beforeSize - afterSize : 0;
+    return beforeSize;
   }
 }
 
