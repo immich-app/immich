@@ -1,6 +1,6 @@
-import { DatabaseExtension, ImmichEnvironment, ImmichWorker, LogFormat } from 'src/enum';
-import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
-import { RepositoryInterface } from 'src/types';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker, LogFormat } from 'src/enum.js';
+import { ConfigRepository, EnvData } from 'src/repositories/config.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 import { Mocked, vitest } from 'vitest';
 
 export const envData: EnvData = {

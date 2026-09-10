@@ -13,10 +13,10 @@ export class WebsocketSupport {
   #processPendingChanges = throttle(() => {
     const { add, update, remove } = this.#getPendingChangeBatches();
     if (add.length > 0) {
-      this.#timelineManager.upsertAssets(add);
+      this.#timelineManager.upsertAssetsFromLiveEvent(add);
     }
     if (update.length > 0) {
-      this.#timelineManager.upsertAssets(update);
+      this.#timelineManager.upsertAssetsFromLiveEvent(update);
     }
     if (remove.length > 0) {
       this.#timelineManager.removeAssets(remove);

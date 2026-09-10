@@ -2,15 +2,15 @@ import {
   AfterDeleteTrigger,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { memory_asset_delete_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { MemoryTable } from 'src/schema/tables/memory.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { memory_asset_delete_audit } from 'src/schema/functions.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { MemoryTable } from 'src/schema/tables/memory.table.js';
 
 @Table('memory_asset')
 @UpdatedAtTrigger('memory_asset_updatedAt')

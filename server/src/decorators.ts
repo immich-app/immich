@@ -1,11 +1,11 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
-import _ from 'lodash';
-import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
-import { EmitEvent } from 'src/repositories/event.repository';
-import { immich_uuid_v7, updated_at } from 'src/schema/functions';
-import { setUnion } from 'src/utils/set';
+import { chunk, flatten } from 'lodash-es';
+import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
+import { EmitEvent } from 'src/repositories/event.repository.js';
+import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
+import { setUnion } from 'src/utils/set.js';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
@@ -55,7 +55,7 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
     }
     return result;
   }
-  return _.chunk(collection, size);
+  return chunk(collection, size);
 }
 
 /**
@@ -100,7 +100,7 @@ export function Chunked(
 }
 
 export function ChunkedArray(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: _.flatten });
+  return Chunked({ ...options, mergeFn: flatten });
 }
 
 export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {

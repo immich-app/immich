@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from 'src/decorators';
+import { OnEvent } from 'src/decorators.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
-} from 'src/dtos/maintenance.dto';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { MaintenanceModeState } from 'src/types';
+} from 'src/dtos/maintenance.dto.js';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { MaintenanceModeState } from 'src/types.js';
 import {
   createMaintenanceLoginUrl,
   detectPriorInstall,
   generateMaintenanceSecret,
   signMaintenanceJwt,
-} from 'src/utils/maintenance';
-import { getExternalDomain } from 'src/utils/misc';
+} from 'src/utils/maintenance.js';
+import { getExternalDomain } from 'src/utils/misc.js';
 
 /**
  * This service is available outside of maintenance mode to manage maintenance mode

@@ -1,23 +1,25 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
-import { AssetFaceCreateDto } from 'src/dtos/person.dto';
-import { JobName } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DB } from 'src/schema';
-import { PersonService } from 'src/services/person.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { AssetFaceCreateDto } from 'src/dtos/person.dto.js';
+import { AssetFileType, JobName } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { DB } from 'src/schema/index.js';
+import { PersonService } from 'src/services/person.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -26,6 +28,7 @@ const setup = (db?: Kysely<DB>) => {
     database: db || defaultDatabase,
     real: [
       AccessRepository,
+      AssetJobRepository,
       ConfigRepository,
       DatabaseRepository,
       PersonRepository,
@@ -33,7 +36,7 @@ const setup = (db?: Kysely<DB>) => {
       AssetEditRepository,
       SystemMetadataRepository,
     ],
-    mock: [JobRepository, LoggingRepository, StorageRepository],
+    mock: [JobRepository, LoggingRepository, StorageRepository, MachineLearningRepository],
   });
 };
 
@@ -96,6 +99,38 @@ describe(PersonService.name, () => {
       expect(storageMock.unlink).toHaveBeenCalledTimes(2);
       expect(storageMock.unlink).toHaveBeenCalledWith(person1.thumbnailPath);
       expect(storageMock.unlink).toHaveBeenCalledWith(person2.thumbnailPath);
+    });
+  });
+
+  describe('handleDetectFaces', () => {
+    it('should prefer an edited preview file', async () => {
+      const { sut, ctx } = setup();
+      const config = await ctx.getConfig();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+      await ctx.newAssetFile({
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        isEdited: true,
+        path: 'edited_file.jpg',
+      });
+      await ctx.newAssetFile({
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        isEdited: false,
+        path: 'unedited_file.jpg',
+      });
+      ctx
+        .getMock(MachineLearningRepository)
+        .detectFaces.mockResolvedValue({ imageHeight: 42, imageWidth: 69, faces: [] });
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(ctx.getMock(MachineLearningRepository).detectFaces).toHaveBeenCalledWith(
+        'edited_file.jpg',
+        config.machineLearning.facialRecognition,
+      );
     });
   });
 

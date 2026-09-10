@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
-import _ from 'lodash';
+import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
-import sharp from 'sharp';
-import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
-import { Exif } from 'src/database';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
+import sharp, { Sharp } from 'sharp';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
+import { Exif } from 'src/database.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
   AacProfile,
   Av1Profile,
@@ -23,9 +23,9 @@ import {
   HevcProfile,
   LogLevel,
   RawExtractedFormat,
-} from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import {
+} from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import type {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
@@ -34,16 +34,16 @@ import {
   TranscodeCommand,
   VideoInfo,
   VideoPacketInfo,
-} from 'src/types';
-import { handlePromiseError } from 'src/utils/misc';
-import { createAffineMatrix } from 'src/utils/transform';
+} from 'src/types.js';
+import { handlePromiseError } from 'src/utils/misc.js';
+import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
-const pascalCase = (str: string) => _.upperFirst(_.camelCase(str.toLowerCase()));
+const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
 
 type ProgressEvent = {
   frames: number;
@@ -149,7 +149,7 @@ export class MediaRepository {
     return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }
 
-  private applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): sharp.Sharp {
+  private applyEdits(pipeline: Sharp, edits: AssetEditActionItem[]): Sharp {
     const crop = edits.find((edit) => edit.action === 'crop');
     if (crop) {
       pipeline = pipeline.extract({

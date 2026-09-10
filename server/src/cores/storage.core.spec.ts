@@ -1,4 +1,4 @@
-import { StorageCore } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core.js';
 import { vitest } from 'vitest';
 
 vitest.mock('src/constants', () => ({

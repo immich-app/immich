@@ -3,19 +3,19 @@ import {
   Column,
   DeleteDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { SourceType } from 'src/enum';
-import { asset_face_source_type } from 'src/schema/enums';
-import { asset_face_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { PersonGroupTable } from 'src/schema/tables/person-group.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { SourceType } from 'src/enum.js';
+import { asset_face_source_type } from 'src/schema/enums.js';
+import { asset_face_audit } from 'src/schema/functions.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
 
 @Table({ name: 'asset_face' })
 @UpdatedAtTrigger('asset_face_updatedAt')

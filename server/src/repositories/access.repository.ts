@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, NotNull, sql } from 'kysely';
+import { type Kysely, type NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole, AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
-import { asUuid } from 'src/utils/database';
+import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
+import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { asUuid } from 'src/utils/database.js';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}

@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { ImmichHeader } from 'src/enum';
+import { ImmichHeader } from 'src/enum.js';
 import z from 'zod';
 
 const HlsSessionParamSchema = z.object({

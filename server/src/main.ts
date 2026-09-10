@@ -4,12 +4,12 @@ import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { PostgresError } from 'postgres';
-import { ImmichAdminModule } from 'src/app.module';
-import { DatabaseLock, ExitCode, ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { type DB } from 'src/schema';
-import { getKyselyConfig } from 'src/utils/database';
+import { ImmichAdminModule } from 'src/app.module.js';
+import { DatabaseLock, ExitCode, ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { type DB } from 'src/schema/index.js';
+import { getKyselyConfig } from 'src/utils/database.js';
 
 /**
  * Manages worker lifecycle
@@ -97,8 +97,7 @@ class Workers {
   private startWorker(name: ImmichWorker) {
     console.log(`Starting ${name} worker`);
 
-    // eslint-disable-next-line unicorn/prefer-module
-    const basePath = dirname(__filename);
+    const basePath = dirname(import.meta.filename);
     const workerFile = join(basePath, 'workers', `${name}.js`);
 
     let anyWorker: Worker | ChildProcess;

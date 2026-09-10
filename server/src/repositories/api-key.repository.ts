@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import type { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { ApiKeyTable } from 'src/schema/tables/api-key.table';
-import { asUuid } from 'src/utils/database';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import { ApiKeyTable } from 'src/schema/tables/api-key.table.js';
+import { asUuid } from 'src/utils/database.js';
 
 @Injectable()
 export class ApiKeyRepository {

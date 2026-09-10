@@ -1,11 +1,11 @@
-import { Insertable, Kysely, Updateable } from 'kysely';
+import type { Insertable, Kysely, Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { NotificationSearchDto } from 'src/dtos/notification.dto';
-import { DB } from 'src/schema';
-import { NotificationTable } from 'src/schema/tables/notification.table';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { NotificationSearchDto } from 'src/dtos/notification.dto.js';
+import { DB } from 'src/schema/index.js';
+import { NotificationTable } from 'src/schema/tables/notification.table.js';
 
 export class NotificationRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}

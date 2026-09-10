@@ -1,8 +1,8 @@
-import { TimelineController } from 'src/controllers/timeline.controller';
-import { TimelineService } from 'src/services/timeline.service';
+import { TimelineController } from 'src/controllers/timeline.controller.js';
+import { TimelineService } from 'src/services/timeline.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(TimelineController.name, () => {
   let ctx: ControllerContext;
