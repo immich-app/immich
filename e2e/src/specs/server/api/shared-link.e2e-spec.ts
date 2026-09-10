@@ -7,9 +7,9 @@ import {
   createAlbum,
   deleteUserAdmin,
 } from '@immich/sdk';
-import { createUserDto, uuidDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, baseUrl, shareUrl, utils } from 'src/utils';
+import { createUserDto, uuidDto } from 'src/fixtures.js';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, baseUrl, shareUrl, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 

@@ -1,16 +1,16 @@
-import _ from 'lodash';
-import { ConfigAdminController } from 'src/controllers/config-admin.controller';
-import { ConfigPublicController } from 'src/controllers/config-public.controller';
-import { ConfigUserController } from 'src/controllers/config-user.controller';
-import { defaults, mapPublicConfig, mapUserConfig } from 'src/dtos/config.dto';
-import { SystemConfigService } from 'src/services/system-config.service';
+import { cloneDeep } from 'lodash-es';
+import { ConfigAdminController } from 'src/controllers/config-admin.controller.js';
+import { ConfigPublicController } from 'src/controllers/config-public.controller.js';
+import { ConfigUserController } from 'src/controllers/config-user.controller.js';
+import { defaults, mapPublicConfig, mapUserConfig } from 'src/dtos/config.dto.js';
+import { SystemConfigService } from 'src/services/system-config.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 /** Returns a full config that passes Zod validation (required URLs and min lengths). */
 function validConfig() {
-  const config = _.cloneDeep(defaults) as typeof defaults & {
+  const config = cloneDeep(defaults) as typeof defaults & {
     oauth: { mobileRedirectUri: string };
     notifications: { smtp: { from: string; transport: { host: string } } };
     server: { externalDomain: string };

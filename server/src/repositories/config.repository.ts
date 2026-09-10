@@ -6,12 +6,12 @@ import { Request, Response } from 'express';
 import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
-import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
+import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces/index.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { citiesFile, IWorker } from 'src/constants';
-import { Telemetry } from 'src/decorators';
-import { EnvSchema } from 'src/dtos/env.dto';
+import { citiesFile, IWorker } from 'src/constants.js';
+import { Telemetry } from 'src/decorators.js';
+import { EnvSchema } from 'src/dtos/env.dto.js';
 import {
   DatabaseExtension,
   ImmichEnvironment,
@@ -21,9 +21,9 @@ import {
   LogFormat,
   LogLevel,
   QueueName,
-} from 'src/enum';
-import { VectorExtension } from 'src/types';
-import { setDifference } from 'src/utils/set';
+} from 'src/enum.js';
+import type { VectorExtension } from 'src/types.js';
+import { setDifference } from 'src/utils/set.js';
 
 export interface EnvData {
   host?: string;
@@ -157,11 +157,7 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) =>
     return;
   }
 
-  helmetFile =
-    helmetFile === 'true'
-      ? // eslint-disable-next-line unicorn/prefer-module
-        join(__dirname, '..', '..', 'helmet.json')
-      : helmetFile;
+  helmetFile = helmetFile === 'true' ? join(import.meta.dirname, '..', '..', 'helmet.json') : helmetFile;
 
   try {
     return JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;

@@ -1,17 +1,17 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { mapFaces, mapPerson } from 'src/dtos/person.dto';
-import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
-import { PersonService } from 'src/services/person.service';
-import { ImmichFileResponse } from 'src/utils/file';
-import { AssetFaceFactory } from 'test/factories/asset-face.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { PersonGroupFactory } from 'test/factories/person-group.factory';
-import { PersonFactory } from 'test/factories/person.factory';
-import { UserFactory } from 'test/factories/user.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { mapFaces, mapPerson } from 'src/dtos/person.dto.js';
+import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum.js';
+import { PersonService } from 'src/services/person.service.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { PersonGroupFactory } from 'test/factories/person-group.factory.js';
+import { PersonFactory } from 'test/factories/person.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import {
   getAsDetectedFace,
   getForAsset,
@@ -19,9 +19,9 @@ import {
   getForDetectedFaces,
   getForFaceSearch,
   getForFacialRecognitionJob,
-} from 'test/mappers';
-import { newDate, newUuid } from 'test/small.factory';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+} from 'test/mappers.js';
+import { newDate, newUuid } from 'test/small.factory.js';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(PersonService.name, () => {
   let sut: PersonService;

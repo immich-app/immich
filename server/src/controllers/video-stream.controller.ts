@@ -1,23 +1,23 @@
 import { Controller, Delete, Get, Header, Headers, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
+import type { NextFunction, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
-import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   HlsPlaylistHeaderDto,
   HlsSegmentHeaderDto,
   HlsSegmentParamDto,
   HlsSessionParamDto,
   HlsVariantParamDto,
-} from 'src/dtos/streaming.dto';
-import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
-import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { HlsService } from 'src/services/hls.service';
-import { sendFile } from 'src/utils/file';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/streaming.dto.js';
+import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum.js';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { HlsService } from 'src/services/hls.service.js';
+import { sendFile } from 'src/utils/file.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
