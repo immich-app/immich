@@ -320,8 +320,8 @@ export class PersonService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
-    const previewFile = asset?.files[0];
-    if (!asset || asset.files.length !== 1 || !previewFile) {
+    const previewFile = asset?.previewFile;
+    if (!asset || !previewFile) {
       return JobStatus.Failed;
     }
 
@@ -441,7 +441,6 @@ export class PersonService extends BaseService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FacialRecognition);
 
     if (force) {
-      console.log('unassigning faces');
       await this.personRepository.unassignFaces({ clusterGroupId, sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: false });

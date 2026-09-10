@@ -43,7 +43,7 @@ class EditorProvider extends Notifier<EditorState> {
       flipVertical: transform.mirrorVertical,
     );
 
-    _animateRotation(transform.rotation.toInt(), duration: Duration.zero);
+    _animateRotation(transform.rotation, duration: Duration.zero);
   }
 
   void _animateRotation(int angle, {Duration duration = const Duration(milliseconds: 300)}) {

@@ -132,6 +132,7 @@ export const timelineUtils = {
     return page.locator('#asset-grid');
   },
   async waitForTimelineLoad(page: Page) {
+    await expect(timelineUtils.locator(page)).toHaveCount(1);
     await expect(timelineUtils.locator(page)).toBeInViewport();
     await expect.poll(() => thumbnailUtils.locator(page).count()).toBeGreaterThan(0);
   },

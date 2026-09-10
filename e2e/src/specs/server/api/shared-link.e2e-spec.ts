@@ -330,6 +330,16 @@ describe('/shared-links', () => {
         }),
       );
     });
+
+    it('should create an album shared link when the client sends an empty assetIds array', async () => {
+      const { status, body } = await request(app)
+        .post('/shared-links')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ type: SharedLinkType.Album, albumId: album.id, assetIds: [] });
+
+      expect(status).toBe(201);
+      expect(body).toEqual(expect.objectContaining({ type: SharedLinkType.Album, userId: user1.userId }));
+    });
   });
 
   describe('PATCH /shared-links/:id', () => {

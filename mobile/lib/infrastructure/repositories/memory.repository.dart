@@ -45,22 +45,17 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
       return const [];
     }
 
-    final Map<String, Memory> memoriesMap = {};
+    final memories = <String, ({MemoryEntityData memory, List<RemoteAsset> assets})>{};
 
     for (final row in rows) {
       final memory = row.readTable(_db.memoryEntity);
       final asset = row.readTable(_db.remoteAssetEntity);
 
-      final existingMemory = memoriesMap[memory.id];
-      if (existingMemory != null) {
-        existingMemory.assets.add(asset.toDto());
-      } else {
-        final assets = [asset.toDto()];
-        memoriesMap[memory.id] = memory.toDto().copyWith(assets: assets);
-      }
+      final entry = memories.putIfAbsent(memory.id, () => (memory: memory, assets: []));
+      entry.assets.add(asset.toDto());
     }
 
-    return memoriesMap.values.toList(growable: false);
+    return memories.values.map((e) => e.memory.toDto().copyWith(assets: e.assets)).toList(growable: false);
   }
 
   Future<Memory?> get(String memoryId) async {
