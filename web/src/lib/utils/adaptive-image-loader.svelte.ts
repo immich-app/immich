@@ -14,7 +14,7 @@ export type ImageLoaderStatus = {
 
 type ImageLoaderCallbacks = {
   onUrlChange?: (url: string) => void;
-  onImageReady?: () => void;
+  onImageReady?: (quality: ImageQuality) => void;
   onError?: () => void;
 };
 
@@ -99,7 +99,7 @@ export class AdaptiveImageLoader {
     this.highestLoadedQualityIndex = index;
     this.status.quality[quality] = 'success';
     this.callbacks?.onUrlChange?.(this.qualityConfigs[quality].url);
-    this.callbacks?.onImageReady?.();
+    this.callbacks?.onImageReady?.(quality);
 
     config.onAfterLoad?.(this);
   }

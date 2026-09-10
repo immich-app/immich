@@ -23,6 +23,7 @@
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import type { AssetCursor } from './AssetViewer.svelte';
+  import { type ImageQuality } from '$lib/utils/adaptive-image-loader.svelte';
 
   type Props = {
     cursor: AssetCursor;
@@ -35,7 +36,8 @@
 
   let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
 
-  const { slideshowState, slideshowLook } = slideshowStore;
+  const { slideshowState, slideshowLook, slideshowAnimate, slideshowDelay, slideshowAnimateZoomStrength } =
+    slideshowStore;
   const asset = $derived(cursor.current);
 
   let visibleImageReady: boolean = $state(false);
@@ -112,6 +114,25 @@
   };
 
   const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
+
+  const animateSlideshow = () => {
+    let randomDirection = getRandomInt(0, 9);
+    if (randomDirection == 0) {
+      return;
+    }
+    let randomScale1 = (getRandomInt(0, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
+    let duration = $slideshowDelay * 1000 - 600;
+    let randomDuration = Math.round(duration * (getRandomInt(50, 100) / 100));
+    let randomScale2 = (getRandomInt(0, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
+    if (randomDirection <= 2) {
+      assetViewerManager.animatedZoom(randomScale1, randomDuration, true);
+    } else if (randomDirection > 2) {
+      assetViewerManager.animatedZoom(randomScale1, 20);
+      setTimeout(() => {
+        assetViewerManager.animatedZoom(randomScale2, randomDuration - 40, true);
+      }, 40);
+    }
+  };
 
   // TODO move to action + command palette
   const onCopyShortcut = (event: KeyboardEvent) => {
@@ -198,6 +219,12 @@
 
     return result;
   });
+
+  function getRandomInt(min: number, max: number): number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max + 1 - min)) + min;
+  }
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
@@ -227,8 +254,12 @@
     {container}
     objectFit={$slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.Cover ? 'cover' : 'contain'}
     {onUrlChange}
-    onImageReady={() => {
+    onImageReady={(quality: ImageQuality) => {
       visibleImageReady = true;
+
+      if (quality === 'thumbnail' && $slideshowState === SlideshowState.PlaySlideshow && $slideshowAnimate) {
+        animateSlideshow();
+      }
       onReady?.();
     }}
     onError={() => {
