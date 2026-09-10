@@ -44,6 +44,13 @@ class ViewIntentService {
     }
   }
 
+  Future<void> cleanupManagedTempFileIfCurrent(String path) async {
+    if (_managedTempFilePath == path) {
+      _managedTempFilePath = null;
+    }
+    await cleanupTempFile(path);
+  }
+
   Future<void> cleanupTempFile(String path) async {
     if (!_isManagedTempFile(path)) {
       return;
@@ -80,6 +87,19 @@ class ViewIntentService {
       }
     } catch (_) {
       // Best-effort cleanup only.
+    }
+  }
+
+  void markUploadActive(String path) {
+    _activeUploadPaths.add(path);
+  }
+
+  Future<void> markUploadInactive(String path) async {
+    if (!_activeUploadPaths.remove(path)) {
+      return;
+    }
+    if (_managedTempFilePath != path) {
+      await cleanupTempFile(path);
     }
   }
 
