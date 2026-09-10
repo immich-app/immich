@@ -5,6 +5,8 @@ import {
   mapWorkflow,
   mapWorkflowShare,
   WorkflowCreateDto,
+  WorkflowGetLogsDto,
+  WorkflowLogEntryDto,
   WorkflowResponseDto,
   WorkflowSearchDto,
   WorkflowShareResponseDto,
@@ -81,6 +83,23 @@ export class WorkflowService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.WorkflowDelete, ids: [id] });
     await this.workflowRepository.delete(id);
+  }
+
+  async getLogs(auth: AuthDto, id: string, dto: WorkflowGetLogsDto): Promise<WorkflowLogEntryDto[]> {
+    await this.requireAccess({ auth, permission: Permission.WorkflowLogs, ids: [id] });
+    const logs = await this.workflowRepository.getLogs(id, dto);
+    return logs.map((entry) => ({
+      id: entry.id,
+      at: entry.createdAt,
+      result: entry.result,
+      triggerDataId: entry.triggerDataId ?? undefined,
+      lastStep: entry.step
+        ? {
+            index: entry.step.order,
+            method: `${entry.step.pluginId}#${entry.step.methodName}`,
+          }
+        : undefined,
+    }));
   }
 
   private async resolveAndValidateSteps<T extends { method: string }>(steps: T[], trigger: WorkflowTrigger) {

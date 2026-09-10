@@ -17,6 +17,7 @@ const getDefaultPreferences = (): UserPreferences => {
     memories: {
       enabled: true,
       duration: 5,
+      sidebarWeb: false,
     },
     people: {
       enabled: true,

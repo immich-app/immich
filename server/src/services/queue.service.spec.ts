@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { defaults, SystemConfig } from 'src/config';
+import { defaults, SystemConfig } from 'src/dtos/config.dto';
 import { ImmichWorker, JobName, QueueCommand, QueueName } from 'src/enum';
 import { QueueService } from 'src/services/queue.service';
 import { factory } from 'test/small.factory';

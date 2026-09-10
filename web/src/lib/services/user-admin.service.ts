@@ -151,10 +151,6 @@ export const handleRestoreUserAdmin = async (user: UserAdminResponseDto) => {
   }
 };
 
-export const handleNavigateUserAdmin = async (user: UserAdminResponseDto) => {
-  await goto(`/admin/users/${user.id}`);
-};
-
 // TODO move password reset server-side
 const generatePassword = (length: number = 16) => {
   let generatedPassword = '';

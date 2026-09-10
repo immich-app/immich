@@ -1,2 +1,12 @@
 #!/usr/bin/env node
-import '../dist/index.js';
+import { createRequire } from 'node:module';
+import semver from 'semver';
+
+const { engines } = createRequire(import.meta.url)('../package.json');
+
+if (!semver.satisfies(process.version, engines.node, { includePrerelease: true })) {
+  console.error(`The Immich CLI requires Node.js ${engines.node}, but you are running ${process.version}.`);
+  process.exit(1);
+}
+
+await import('../dist/index.js');

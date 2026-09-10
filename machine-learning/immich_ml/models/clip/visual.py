@@ -46,14 +46,14 @@ class BaseCLIPVisualEncoder(InferenceModel):
     @cached_property
     def model_cfg(self) -> dict[str, Any]:
         log.debug(f"Loading model config for CLIP model '{self.model_name}'")
-        model_cfg: dict[str, Any] = json.load(self.model_cfg_path.open())
+        model_cfg: dict[str, Any] = json.load(self.model_cfg_path.open(encoding="utf-8"))
         log.debug(f"Loaded model config for CLIP model '{self.model_name}'")
         return model_cfg
 
     @cached_property
     def preprocess_cfg(self) -> dict[str, Any]:
         log.debug(f"Loading visual preprocessing config for CLIP model '{self.model_name}'")
-        preprocess_cfg: dict[str, Any] = json.load(self.preprocess_cfg_path.open())
+        preprocess_cfg: dict[str, Any] = json.load(self.preprocess_cfg_path.open(encoding="utf-8"))
         log.debug(f"Loaded visual preprocessing config for CLIP model '{self.model_name}'")
         return preprocess_cfg
 

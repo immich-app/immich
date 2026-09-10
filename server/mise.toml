@@ -39,8 +39,9 @@ run = "node ./dist/bin/sync-sql.js"
 run = "node ./dist/bin/sync-open-api.js"
 
 [tasks.migrations]
-run = "node ./dist/bin/migrations.js"
-description = "Run database migration commands (create, generate, run, debug, or query)"
+env._.path = "./node_modules/.bin"
+run = "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations"
+description = "Run database migration commands (create, generate, run, sync-order, verify-order, ...)"
 
 [tasks."schema-drop"]
 run = { task = "migrations query 'DROP schema public cascade; CREATE schema public;'" }
@@ -77,4 +78,5 @@ run = [
 run = [
   { task = ":ci-unit" },
   { task = ":ci-medium" },
+  { task = ":migrations", args = ["verify-order"] },
 ]

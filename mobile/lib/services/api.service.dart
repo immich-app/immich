@@ -113,12 +113,10 @@ class ApiService {
   }
 
   Future<bool> _isEndpointAvailable(String serverUrl) async {
-    if (!serverUrl.endsWith('/api')) {
-      serverUrl += '/api';
-    }
+    final endpoint = serverUrl.endsWith('/api') ? serverUrl : '$serverUrl/api';
 
     try {
-      setEndpoint(serverUrl);
+      setEndpoint(endpoint);
       await serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;

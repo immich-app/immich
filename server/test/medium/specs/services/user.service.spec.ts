@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { ImmichEnvironment, JobName, JobStatus, UserAvatarColor } from 'src/enum';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { EventRepository } from 'src/repositories/event.repository';
@@ -12,7 +13,7 @@ import { DB } from 'src/schema';
 import { UserService } from 'src/services/user.service';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { mediumFactory, newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
+import { factory, newUuid } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 const userLicense = {
@@ -28,7 +29,7 @@ const setup = (db?: Kysely<DB>) => {
 
   return newMediumService(UserService, {
     database: db || defaultDatabase,
-    real: [CryptoRepository, ConfigRepository, SystemMetadataRepository, UserRepository],
+    real: [ClusterGroupRepository, CryptoRepository, ConfigRepository, SystemMetadataRepository, UserRepository],
     mock: [LoggingRepository, JobRepository, EventRepository],
   });
 };
@@ -44,7 +45,7 @@ describe(UserService.name, () => {
     it('should create a user', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
-      const user = mediumFactory.userInsert();
+      const user = mediumFactory.userInsert({ clusterGroupId: newUuid() });
       const created = await sut.createUser({ name: user.name, email: user.email });
       expect(created).toEqual(expect.objectContaining({ name: user.name, email: user.email }));
 
@@ -54,7 +55,7 @@ describe(UserService.name, () => {
     it('should reject user with duplicate email', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
-      const user = mediumFactory.userInsert();
+      const user = mediumFactory.userInsert({ clusterGroupId: newUuid() });
       await expect(sut.createUser({ name: 'Test', email: user.email })).resolves.toMatchObject({ email: user.email });
       await expect(sut.createUser({ name: 'Test', email: user.email })).rejects.toThrow('Email is not available');
     });
@@ -62,7 +63,7 @@ describe(UserService.name, () => {
     it('should not return password', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
-      const dto = mediumFactory.userInsert({ password: 'password' });
+      const dto = mediumFactory.userInsert({ clusterGroupId: newUuid(), password: 'password' });
       const user = await sut.createUser({ name: 'Test', email: dto.email, password: 'password' });
       expect((user as any).password).toBeUndefined();
     });

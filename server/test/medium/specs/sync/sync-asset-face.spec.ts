@@ -23,7 +23,7 @@ describe(SyncEntityType.AssetFaceV2, () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { person } = await ctx.newPerson({ ownerId: auth.user.id });
-    const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+    const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);
     expect(response).toEqual([
@@ -32,7 +32,7 @@ describe(SyncEntityType.AssetFaceV2, () => {
         data: expect.objectContaining({
           id: assetFace.id,
           assetId: asset.id,
-          personId: person.id,
+          personId: person.personGroupId,
           imageWidth: assetFace.imageWidth,
           imageHeight: assetFace.imageHeight,
           boundingBoxX1: assetFace.boundingBoxX1,
@@ -103,7 +103,7 @@ describe(SyncEntityType.AssetFaceV2, () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { person } = await ctx.newPerson({ ownerId: auth.user.id });
-    const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+    const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);
     expect(response).toEqual([
@@ -112,7 +112,7 @@ describe(SyncEntityType.AssetFaceV2, () => {
         data: expect.objectContaining({
           id: assetFace.id,
           assetId: asset.id,
-          personId: person.id,
+          personId: person.personGroupId,
           imageWidth: assetFace.imageWidth,
           imageHeight: assetFace.imageHeight,
           boundingBoxX1: assetFace.boundingBoxX1,
@@ -182,7 +182,7 @@ describe(SyncEntityType.AssetFaceV2, () => {
     const personRepo = ctx.get(PersonRepository);
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { person } = await ctx.newPerson({ ownerId: auth.user.id });
-    const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+    const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
 
     let response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);
     expect(response).toEqual([
@@ -191,7 +191,7 @@ describe(SyncEntityType.AssetFaceV2, () => {
         data: expect.objectContaining({
           id: assetFace.id,
           assetId: asset.id,
-          personId: person.id,
+          personId: person.personGroupId,
           imageWidth: assetFace.imageWidth,
           imageHeight: assetFace.imageHeight,
           boundingBoxX1: assetFace.boundingBoxX1,

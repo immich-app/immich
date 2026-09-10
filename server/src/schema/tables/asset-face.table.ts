@@ -15,7 +15,7 @@ import { SourceType } from 'src/enum';
 import { asset_face_source_type } from 'src/schema/enums';
 import { asset_face_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { PersonTable } from 'src/schema/tables/person.table';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table';
 
 @Table({ name: 'asset_face' })
 @UpdatedAtTrigger('asset_face_updatedAt')
@@ -26,13 +26,13 @@ import { PersonTable } from 'src/schema/tables/person.table';
   when: 'pg_trigger_depth() = 0',
 })
 // schemaFromDatabase does not preserve column order
-@Index({ name: 'asset_face_assetId_personId_idx', columns: ['assetId', 'personId'] })
+@Index({ name: 'asset_face_assetId_personGroupId_idx', columns: ['assetId', 'personGroupId'] })
 @Index({
-  name: 'asset_face_personId_assetId_notDeleted_isVisible_idx',
-  columns: ['personId', 'assetId'],
+  name: 'asset_face_personGroupId_assetId_notDeleted_isVisible_idx',
+  columns: ['personGroupId', 'assetId'],
   where: '"deletedAt" IS NULL AND "isVisible" IS TRUE',
 })
-@Index({ columns: ['personId', 'assetId'] })
+@Index({ columns: ['personGroupId', 'assetId'] })
 export class AssetFaceTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -40,19 +40,19 @@ export class AssetFaceTable {
   @ForeignKeyColumn(() => AssetTable, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    // [assetId, personId] is the PK constraint
+    // [assetId, personGroupId] is the PK constraint
     index: false,
   })
   assetId!: string;
 
-  @ForeignKeyColumn(() => PersonTable, {
+  @ForeignKeyColumn(() => PersonGroupTable, {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
     nullable: true,
-    // [personId, assetId] makes this redundant
+    // [personGroupId, assetId] makes this redundant
     index: false,
   })
-  personId!: string | null;
+  personGroupId!: string | null;
 
   @Column({ default: 0, type: 'integer' })
   imageWidth!: Generated<number>;

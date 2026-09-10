@@ -9,11 +9,14 @@ import z from 'zod';
 
 const MemorySearchSchema = z
   .object({
+    id: z.uuidv4().optional().describe('Memory ID'),
     type: MemoryTypeSchema.optional(),
     for: isoDateToDate.optional().describe('Filter by date'),
     isTrashed: stringToBool.optional().describe('Include trashed memories'),
     isSaved: stringToBool.optional().describe('Filter by saved status'),
+    isUpcoming: stringToBool.optional().describe('Filter by memories that have not been shown yet'),
     size: z.coerce.number().int().min(1).optional().describe('Number of memories to return'),
+    page: z.coerce.number().int().min(1).optional().describe('Page number'),
     order: AssetOrderWithRandomSchema.optional(),
   })
   .meta({ id: 'MemorySearchDto' });

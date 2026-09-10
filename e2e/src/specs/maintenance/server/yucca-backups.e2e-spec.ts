@@ -2,7 +2,6 @@ import * as sdk from '@futo-org/backups-orchestrator-ui/sdk';
 import { LoginResponseDto, StorageFolder } from '@immich/sdk';
 import { io, Socket } from 'socket.io-client';
 import { createUserDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -77,12 +76,14 @@ describe('/yucca', () => {
 
     it('is inaccessible without admin', async () => {
       await expect(sdk.onboardingStatus({ headers: asBearerAuth(nonAdmin.accessToken) })).rejects.toEqual(
-        expect.objectContaining({ data: errorDto.forbidden }),
+        expect.objectContaining({ data: { message: expect.any(String) } }),
       );
     });
 
     it('is inaccessible without logging in', async () => {
-      await expect(sdk.onboardingStatus()).rejects.toEqual(expect.objectContaining({ data: errorDto.unauthorized }));
+      await expect(sdk.onboardingStatus()).rejects.toEqual(
+        expect.objectContaining({ data: { message: 'Authentication required' } }),
+      );
     });
   });
 

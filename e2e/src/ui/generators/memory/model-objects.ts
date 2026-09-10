@@ -80,5 +80,7 @@ export function generateMemoriesFromTimeline(
     );
   }
 
+  memories.sort((a, b) => new Date(b.memoryAt).getMilliseconds() - new Date(a.memoryAt).getMilliseconds());
+
   return memories;
 }

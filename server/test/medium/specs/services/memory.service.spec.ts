@@ -1,5 +1,6 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { AssetFileType, MemoryType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -34,7 +35,150 @@ const setup = (db?: Kysely<DB>) => {
   });
 };
 
+const create = async (ctx: ReturnType<typeof setup>['ctx']) => {
+  const { user } = await ctx.newUser();
+  const { memory } = await ctx.newMemory({ ownerId: user.id });
+  const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+  return { memory, asset, user };
+};
+
 describe(MemoryService.name, () => {
+  describe('get', () => {
+    it('should return the memory', async () => {
+      const { sut, ctx } = setup();
+      const { memory, user } = await create(ctx);
+      const auth = factory.auth({ user });
+
+      await expect(sut.get(auth, memory.id)).resolves.toEqual(expect.objectContaining({ id: memory.id }));
+    });
+
+    it('should not return a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory } = await create(ctx);
+      const { user: otherUser } = await ctx.newUser();
+      const otherAuth = factory.auth({ user: otherUser });
+
+      await expect(sut.get(otherAuth, memory.id)).rejects.toThrow('Not found or no memory.read access');
+    });
+  });
+
+  describe('update', () => {
+    it('should update the memory', async () => {
+      const { sut, ctx } = setup();
+      const { memory, user } = await create(ctx);
+      const auth = factory.auth({ user });
+
+      await expect(sut.get(auth, memory.id)).resolves.toEqual(expect.objectContaining({ isSaved: false }));
+      await expect(sut.update(auth, memory.id, { isSaved: true })).resolves.toEqual(
+        expect.objectContaining({ id: memory.id, isSaved: true }),
+      );
+    });
+
+    it('should not update a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory } = await create(ctx);
+      const { user: otherUser } = await ctx.newUser();
+      const otherAuth = factory.auth({ user: otherUser });
+
+      await expect(sut.update(otherAuth, memory.id, { isSaved: true })).rejects.toThrow(
+        'Not found or no memory.update access',
+      );
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove the memory', async () => {
+      const { sut, ctx } = setup();
+      const { memory, user } = await create(ctx);
+      const auth = factory.auth({ user });
+
+      await expect(sut.remove(auth, memory.id)).resolves.toBeUndefined();
+      await expect(sut.get(auth, memory.id)).rejects.toThrow('Not found or no memory.read access');
+    });
+
+    it('should not remove a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, user } = await create(ctx);
+      const auth = factory.auth({ user });
+      const { user: otherUser } = await ctx.newUser();
+      const otherAuth = factory.auth({ user: otherUser });
+
+      await expect(sut.remove(otherAuth, memory.id)).rejects.toThrow('Not found or no memory.delete access');
+      await expect(sut.get(auth, memory.id)).resolves.toEqual(expect.objectContaining({ id: memory.id }));
+    });
+  });
+
+  describe('addAssets', () => {
+    it('should add assets to the memory', async () => {
+      const { sut, ctx } = setup();
+      const { memory, asset, user } = await create(ctx);
+      const auth = factory.auth({ user });
+
+      await expect(sut.addAssets(auth, memory.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: true },
+      ]);
+    });
+
+    it('should require access to the asset', async () => {
+      const { sut, ctx } = setup();
+      const { memory, user } = await create(ctx);
+      const auth = factory.auth({ user });
+      const { user: other } = await ctx.newUser();
+      const { asset: otherAsset } = await ctx.newAsset({ ownerId: other.id });
+
+      await expect(sut.addAssets(auth, memory.id, { ids: [otherAsset.id] })).resolves.toEqual([
+        { id: otherAsset.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
+    });
+
+    it('should not add assets to a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, asset } = await create(ctx);
+      const { user: otherUser } = await ctx.newUser();
+      const otherAuth = factory.auth({ user: otherUser });
+
+      await expect(sut.addAssets(otherAuth, memory.id, { ids: [asset.id] })).rejects.toThrow(
+        'Not found or no memory.read access',
+      );
+    });
+  });
+
+  describe('removeAssets', () => {
+    it('should remove assets from the memory', async () => {
+      const { sut, ctx } = setup();
+      const { memory, asset, user } = await create(ctx);
+      const auth = factory.auth({ user });
+      await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
+
+      await expect(sut.removeAssets(auth, memory.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: true },
+      ]);
+    });
+
+    it('should only remove assets that are in the memory', async () => {
+      const { sut, ctx } = setup();
+      const { memory, asset, user } = await create(ctx);
+      const auth = factory.auth({ user });
+
+      await expect(sut.removeAssets(auth, memory.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: false, error: BulkIdErrorReason.NOT_FOUND },
+      ]);
+    });
+
+    it('should not remove assets from a memory of another user', async () => {
+      const { sut, ctx } = setup();
+      const { memory, asset } = await create(ctx);
+      const { user: otherUser } = await ctx.newUser();
+      const otherAuth = factory.auth({ user: otherUser });
+      await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
+
+      await expect(sut.removeAssets(otherAuth, memory.id, { ids: [asset.id] })).rejects.toThrow(
+        'Not found or no memory.update access',
+      );
+    });
+  });
+
   beforeEach(async () => {
     defaultDatabase = await getKyselyDB();
   });
@@ -104,6 +248,43 @@ describe(MemoryService.name, () => {
           assets: [expect.objectContaining({ id: asset1.id })],
         }),
       );
+    });
+
+    it('should not link a partner asset', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const auth = factory.auth({ user: owner });
+      const dto = {
+        type: MemoryType.OnThisDay,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+        assetIds: [asset.id],
+      };
+
+      await expect(sut.create(auth, dto)).resolves.toEqual(expect.objectContaining({ assets: [] }));
+    });
+  });
+
+  describe('addAssets', () => {
+    it('should not link a partner asset', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const auth = factory.auth({ user: owner });
+      const memory = await sut.create(auth, {
+        type: MemoryType.OnThisDay,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+      });
+
+      await expect(sut.addAssets(auth, memory.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
     });
   });
 

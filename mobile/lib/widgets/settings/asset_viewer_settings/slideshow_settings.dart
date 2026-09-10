@@ -23,16 +23,16 @@ class SlideshowSettings extends HookConsumerWidget {
     final useLook = useState(slideshow.look);
     final useDirection = useState(slideshow.direction);
 
-    useValueChanged<bool, void>(useRepeat.value, (_, __) {
+    useValueChanged<bool, void>(useRepeat.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.slideshowRepeat, useRepeat.value));
     });
-    useValueChanged<int, void>(useDuration.value, (_, __) {
+    useValueChanged<int, void>(useDuration.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.slideshowDuration, useDuration.value));
     });
-    useValueChanged<SlideshowLook, void>(useLook.value, (_, __) {
+    useValueChanged<SlideshowLook, void>(useLook.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.slideshowLook, useLook.value));
     });
-    useValueChanged<SlideshowDirection, void>(useDirection.value, (_, __) {
+    useValueChanged<SlideshowDirection, void>(useDirection.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.slideshowDirection, useDirection.value));
     });
 

@@ -1,3 +1,5 @@
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:timezone/timezone.dart';
 
 /// Applies timezone conversion to a DateTime using EXIF timezone information.
@@ -34,4 +36,19 @@ import 'package:timezone/timezone.dart';
 
   // If timezone is invalid, return UTC
   return (dt, dt.timeZoneOffset);
+}
+
+/// Resolves the effective local [DateTime] (and its timezone offset) for an asset.
+///
+/// Prefers the EXIF `dateTimeOriginal` with its timezone when available,
+/// otherwise falls back to the asset's [BaseAsset.createdAt] in local time.
+///
+/// Returns a tuple of (resolved DateTime, timezone offset Duration).
+(DateTime, Duration) resolveAssetDateTime(BaseAsset asset, ExifInfo? exifInfo) {
+  if (exifInfo?.dateTimeOriginal == null) {
+    final dateTime = asset.createdAt.toLocal();
+    return (dateTime, dateTime.timeZoneOffset);
+  }
+
+  return applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
 }

@@ -3,7 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 
 class LocalAlbumService {
-  final DriftLocalAlbumRepository _repository;
+  final LocalAlbumRepository _repository;
 
   const LocalAlbumService(this._repository);
 

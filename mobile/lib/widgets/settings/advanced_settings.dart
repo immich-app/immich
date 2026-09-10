@@ -36,7 +36,7 @@ class AdvancedSettings extends HookConsumerWidget {
     final preferRemote = useState(ref.watch(appConfigProvider).image.preferRemote);
     useValueChanged(
       preferRemote.value,
-      (_, __) => unawaited(ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value)),
+      (_, _) => unawaited(ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value)),
     );
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
@@ -44,7 +44,7 @@ class AdvancedSettings extends HookConsumerWidget {
 
     useValueChanged(
       levelId.value,
-      (_, __) => unawaited(LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel())),
+      (_, _) => unawaited(LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel())),
     );
 
     Future<bool> checkAndroidVersion() async {

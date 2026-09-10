@@ -4,7 +4,7 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/search_api.repository.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' hide AssetVisibility;
+import 'package:openapi/api.dart' hide AssetVisibility, SearchFilter;
 
 class SearchService {
   final _log = Logger("SearchService");

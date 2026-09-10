@@ -92,6 +92,28 @@ void main() {
       expect(find.byType(ImmichIconButton), findsNothing);
     });
 
+    testWidgets('offers an undo that puts the archived assets back on the timeline', (tester) async {
+      final asset = owned();
+
+      await pumpArchive(tester, {asset});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+
+      verify(() => assetService.update([asset.id], visibility: const .some(.timeline))).called(1);
+    });
+
+    testWidgets('offers an undo that re-archives the unarchived assets', (tester) async {
+      final asset = owned(visibility: .archive);
+
+      await pumpArchive(tester, {asset});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+
+      verify(() => assetService.update([asset.id], visibility: const .some(.archive))).called(1);
+    });
+
     testWidgets('is hidden inside the locked folder view', (tester) async {
       await tester.pumpTestWidget(
         context,

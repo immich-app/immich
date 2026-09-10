@@ -1,3 +1,4 @@
+import { getPublicConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
@@ -19,11 +20,14 @@ export const load = (async ({ parent, url }) => {
     redirect(307, Route.register());
   }
 
+  const publicConfig = await getPublicConfig();
+
   const $t = await getFormatter();
   return {
     meta: {
       title: $t('login'),
     },
     continueUrl,
+    publicConfig,
   };
 }) satisfies PageLoad;

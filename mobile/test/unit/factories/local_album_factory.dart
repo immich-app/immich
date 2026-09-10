@@ -14,10 +14,10 @@ class LocalAlbumFactory {
     String? linkedRemoteAlbumId,
     int? assetCount,
   }) {
-    id = TestUtils.uuid(id);
+    final albumId = TestUtils.uuid(id);
     return LocalAlbum(
-      id: id,
-      name: name ?? 'local_album_$id',
+      id: albumId,
+      name: name ?? 'local_album_$albumId',
       updatedAt: TestUtils.date(updatedAt),
       backupSelection: backupSelection ?? .none,
       isIosSharedAlbum: isIosSharedAlbum ?? false,

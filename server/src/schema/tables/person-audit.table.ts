@@ -7,7 +7,7 @@ export class PersonAuditTable {
   id!: Generated<string>;
 
   @Column({ type: 'uuid', index: true })
-  personId!: string;
+  personGroupId!: string;
 
   @Column({ type: 'uuid', index: true })
   ownerId!: string;

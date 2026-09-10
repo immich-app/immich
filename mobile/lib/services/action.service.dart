@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 
 final actionServiceProvider = Provider<ActionService>(
-  (ref) => ActionService(ref.watch(assetApiRepositoryProvider), ref.watch(remoteAssetRepositoryProvider)),
+  (ref) => ActionService(ref.watch(assetApiRepositoryProvider), ref.watch(driftProvider).remoteAssetRepository),
 );
 
 class ActionService {

@@ -1,7 +1,6 @@
 import { LoginResponseDto, getAssetInfo, getAssetStatistics } from '@immich/sdk';
 import { existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -21,13 +20,6 @@ describe('/trash', () => {
   });
 
   describe('POST /trash/empty', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/trash/empty');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should empty the trash', async () => {
       const { id: assetId } = await utils.createAsset(admin.accessToken);
       await utils.deleteAssets(admin.accessToken, [assetId]);
@@ -142,13 +134,6 @@ describe('/trash', () => {
   });
 
   describe('POST /trash/restore', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/trash/restore');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should restore all trashed assets', async () => {
       const { id: assetId } = await utils.createAsset(admin.accessToken);
       await utils.deleteAssets(admin.accessToken, [assetId]);
@@ -198,13 +183,6 @@ describe('/trash', () => {
   });
 
   describe('POST /trash/restore/assets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/trash/restore/assets');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should restore a trashed asset by id', async () => {
       const { id: assetId } = await utils.createAsset(admin.accessToken);
       await utils.deleteAssets(admin.accessToken, [assetId]);

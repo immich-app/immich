@@ -3,6 +3,25 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/asset/edit.drift.dart';
+import 'package:immich_mobile/data/db/main/table/asset/ocr.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/person.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/cloud_id.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/stack.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
@@ -10,35 +29,19 @@ import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
 import 'package:openapi/api.dart' hide AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
 
-class SyncStreamRepository extends DriftDatabaseRepository {
-  final Logger _logger = Logger('DriftSyncStreamRepository');
-  final Drift _db;
+@DriftAccessor()
+class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepositoryMixin {
+  final Logger _logger = Logger('SyncStreamRepository');
 
-  SyncStreamRepository(super.db) : _db = db;
+  SyncStreamRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<void> reset() async {
     _logger.fine("SyncResetV1 received. Resetting remote entities");
@@ -224,6 +227,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -263,6 +267,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }

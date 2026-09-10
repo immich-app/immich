@@ -2,17 +2,17 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 
 final cleanupServiceProvider = Provider<CleanupService>((ref) {
-  return CleanupService(ref.watch(localAssetRepository), ref.watch(assetMediaRepositoryProvider));
+  return CleanupService(ref.watch(driftProvider).localAssetRepository, ref.watch(assetMediaRepositoryProvider));
 });
 
 class CleanupService {
   static final int _deleteBatchSize = CurrentPlatform.isAndroid ? 2000 : 10000;
 
-  final DriftLocalAssetRepository _localAssetRepository;
+  final LocalAssetRepository _localAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
 
   const CleanupService(this._localAssetRepository, this._assetMediaRepository);
@@ -46,7 +46,7 @@ class CleanupService {
 
       final deletedIds = await _assetMediaRepository.deleteAll(batch);
       if (deletedIds.isNotEmpty) {
-        await _localAssetRepository.delete(deletedIds);
+        await _localAssetRepository.deleteAssets(deletedIds);
         deletedCount += deletedIds.length;
       }
     }

@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
+import { ConfigFFmpegDto, SystemConfig } from 'src/dtos/config.dto';
 import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
   AssetType,
@@ -91,16 +90,17 @@ export class MediaService extends BaseService {
     for await (const people of batched(this.personRepository.getAll(force ? undefined : { thumbnailPath: '' }))) {
       const jobs: JobItem[] = [];
       for (const person of people) {
+        const { ownerId, personGroupId } = person;
         if (!person.faceAssetId) {
-          const face = await this.personRepository.getRandomFace(person.id);
+          const face = await this.personRepository.getRandomFace(personGroupId);
           if (!face) {
             continue;
           }
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+          await this.personRepository.update({ ownerId, personGroupId, faceAssetId: face.id });
         }
 
-        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
+        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
       }
 
       await this.jobRepository.queueAll(jobs);
@@ -125,7 +125,10 @@ export class MediaService extends BaseService {
 
     for await (const people of batched(this.personRepository.getAll())) {
       await this.jobRepository.queueAll(
-        people.map((person) => ({ name: JobName.PersonFileMigration, data: { id: person.id } })),
+        people.map(({ ownerId, personGroupId }) => ({
+          name: JobName.PersonFileMigration,
+          data: { ownerId, personGroupId },
+        })),
       );
     }
 
@@ -387,19 +390,22 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
-  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
+  async handleGeneratePersonThumbnail({
+    ownerId,
+    personGroupId,
+  }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
     const { image } = await this.getConfig({ withCache: true });
-    const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
+    const data = await this.personRepository.getDataForThumbnailGenerationJob({ ownerId, personGroupId });
     if (!data) {
-      this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
+      this.logger.error(`Could not generate person thumbnail for ${personGroupId}: missing data`);
       return JobStatus.Failed;
     }
 
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
-        this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
+        this.logger.error(`Could not generate person thumbnail for video ${personGroupId}: missing preview path`);
         return JobStatus.Failed;
       }
       inputImage = previewPath;
@@ -417,7 +423,7 @@ export class MediaService extends BaseService {
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
 
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId });
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
@@ -440,7 +446,7 @@ export class MediaService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
+    await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
 
     return JobStatus.Success;
   }
@@ -626,7 +632,7 @@ export class MediaService extends BaseService {
   }
 
   private getTranscodeTarget(
-    config: SystemConfigFFmpegDto,
+    config: ConfigFFmpegDto,
     videoStream: VideoStreamInfo,
     audioStream?: AudioStreamInfo,
   ): TranscodeTarget {
@@ -648,7 +654,7 @@ export class MediaService extends BaseService {
     return TranscodeTarget.None;
   }
 
-  private isAudioTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
+  private isAudioTranscodeRequired(ffmpegConfig: ConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
     if (!stream) {
       return false;
     }
@@ -671,7 +677,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo): boolean {
+  private isVideoTranscodeRequired(ffmpegConfig: ConfigFFmpegDto, stream: VideoStreamInfo): boolean {
     const isScalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = isScalingEnabled && Math.min(stream.height, stream.width) > targetRes;
@@ -703,7 +709,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isRemuxRequired(ffmpegConfig: SystemConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
+  private isRemuxRequired(ffmpegConfig: ConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
     if (ffmpegConfig.transcode === TranscodePolicy.Disabled) {
       return false;
     }
@@ -828,7 +834,7 @@ export class MediaService extends BaseService {
       : undefined;
 
     const originalDimensions = getDimensions(asset.exifInfo!);
-    const assetFaces = await this.personRepository.getFaces(asset.id, {});
+    const assetFaces = await this.personRepository.getFaces(asset.id, { viewingUserId: asset.ownerId });
     const ocrData = await this.ocrRepository.getByAssetId(asset.id, {});
 
     const faceStatuses = checkFaceVisibility(assetFaces, originalDimensions, cropBox);

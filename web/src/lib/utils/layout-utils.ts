@@ -6,8 +6,6 @@ import { getAssetRatio } from '$lib/utils/asset-utils';
 import { isTimelineAsset, isTimelineAssets } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
 
-export type getJustifiedLayoutFromAssetsFunction = typeof getJustifiedLayoutFromAssets;
-
 const useWasm = TUNABLES.LAYOUT.WASM;
 
 export type CommonJustifiedLayout = {
@@ -114,13 +112,6 @@ export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], op
   );
   return new Adapter(result);
 }
-
-export const emptyGeometry = () =>
-  new Adapter({
-    containerHeight: 0,
-    widowCount: 0,
-    boxes: [],
-  });
 
 export type CommonPosition = {
   top: number;

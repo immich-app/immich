@@ -1,11 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  SetMetadata,
-  applyDecorators,
-  createParamDecorator,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, SetMetadata, applyDecorators } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
@@ -21,14 +14,6 @@ export const MaintenanceRoute = (options = {}): MethodDecorator => {
 export interface MaintenanceAuthRequest extends Request {
   auth?: MaintenanceAuthDto;
 }
-
-export interface MaintenanceAuthenticatedRequest extends Request {
-  auth: MaintenanceAuthDto;
-}
-
-export const MaintenanceAuth = createParamDecorator((data, context: ExecutionContext): MaintenanceAuthDto => {
-  return context.switchToHttp().getRequest<MaintenanceAuthenticatedRequest>().auth;
-});
 
 @Injectable()
 export class MaintenanceAuthGuard implements CanActivate {

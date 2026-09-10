@@ -32,7 +32,7 @@ dedupePeerDependents: false
 injectWorkspacePackages: true
 overrides:
   canvas: 3.2.3
-  sharp: ^0.34.5
+  sharp: ^0.35.3
 packageExtensions:
   '@immich/ui':
     dependencies:
@@ -67,5 +67,6 @@ preferWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
-  - '@immich/ui@0.83.0'
+  - '@immich/ui@0.86.0'
+  - '@immich/sql-tools@0.6.3'
   - '@futo-org/*'

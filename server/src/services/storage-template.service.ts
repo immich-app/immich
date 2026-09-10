@@ -5,7 +5,7 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto';
 import {
   AssetFileType,
   AssetPathType,
@@ -129,7 +129,7 @@ export class StorageTemplateService extends BaseService {
     }
   }
 
-  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+  getStorageTemplateOptions(): ConfigTemplateStorageOptionDto {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 

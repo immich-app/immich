@@ -6,7 +6,6 @@ import {
   ForeignKeyColumn,
   Generated,
   Index,
-  PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
@@ -14,6 +13,7 @@ import {
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { person_delete_audit } from 'src/schema/functions';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table';
 import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('person')
@@ -27,21 +27,31 @@ import { UserTable } from 'src/schema/tables/user.table';
   scope: 'statement',
   function: person_delete_audit,
   referencingOldTableAs: 'old',
-  when: 'pg_trigger_depth() = 0',
+  when: 'pg_trigger_depth() <= 1',
 })
 @Check({ name: 'person_birthDate_chk', expression: `"birthDate" <= CURRENT_DATE` })
 export class PersonTable {
-  @PrimaryGeneratedColumn('uuid')
-  id!: Generated<string>;
+  @ForeignKeyColumn(() => UserTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    primary: true,
+    // [ownerId, personGroupId] is the PK constraint
+    index: false,
+  })
+  ownerId!: string;
+
+  @ForeignKeyColumn(() => PersonGroupTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    primary: true,
+  })
+  personGroupId!: string;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
-
-  @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  ownerId!: string;
 
   @Column({ default: '' })
   name!: Generated<string>;

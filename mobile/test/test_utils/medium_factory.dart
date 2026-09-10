@@ -1,7 +1,7 @@
 import 'dart:math';
 
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 
 class MediumFactory {
@@ -31,8 +31,8 @@ class MediumFactory {
 
   T getRepository<T>() {
     switch (T) {
-      case const (DriftLocalAlbumRepository):
-        return DriftLocalAlbumRepository(_db) as T;
+      case const (LocalAlbumRepository):
+        return LocalAlbumRepository(_db) as T;
       default:
         throw Exception('Unknown repository: $T');
     }

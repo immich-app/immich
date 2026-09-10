@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
@@ -55,11 +55,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           onPressed: () {
             unawaited(
               context.router.push(
-                DriftActivitiesRoute(
-                  album: album,
-                  assetId: asset is RemoteAsset ? asset.id : null,
-                  assetName: asset.name,
-                ),
+                ActivitiesRoute(album: album, assetId: asset is RemoteAsset ? asset.id : null, assetName: asset.name),
               ),
             );
           },
@@ -156,17 +152,13 @@ class _AssetInfoTitle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    DateTime dateTime = asset.createdAt.toLocal();
-    final currentYear = DateTime.now().year;
     final exifInfo = ref.watch(assetExifProvider(asset)).valueOrNull;
+    final alwaysUse24HourFormat = MediaQuery.alwaysUse24HourFormatOf(context);
 
-    if (exifInfo?.dateTimeOriginal != null) {
-      (dateTime, _) = applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
-    }
+    final (dateTime, _) = resolveAssetDateTime(asset, exifInfo);
 
-    final isCurrentYear = dateTime.year == currentYear;
-    final dateFormatted = isCurrentYear ? DateFormat.MMMd().format(dateTime) : DateFormat.yMMMd().format(dateTime);
-    final timeFormatted = DateFormat.jm().format(dateTime);
+    final dateFormatted = dateTime.formatDate();
+    final timeFormatted = dateTime.formatTime(alwaysUse24HourFormat: alwaysUse24HourFormat);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

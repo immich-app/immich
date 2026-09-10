@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -8,48 +9,20 @@ import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 
-class CleanupState {
-  final DateTime? selectedDate;
-  final List<LocalAsset> assetsToDelete;
-  final int totalBytes;
-  final bool isScanning;
-  final bool isDeleting;
-  final AssetKeepType keepMediaType;
-  final bool keepFavorites;
-  final Set<String> keepAlbumIds;
+part 'cleanup.provider.freezed.dart';
 
-  const CleanupState({
-    this.selectedDate,
-    this.assetsToDelete = const [],
-    this.totalBytes = 0,
-    this.isScanning = false,
-    this.isDeleting = false,
-    this.keepMediaType = AssetKeepType.none,
-    this.keepFavorites = true,
-    this.keepAlbumIds = const {},
-  });
-
-  CleanupState copyWith({
+@freezed
+abstract class CleanupState with _$CleanupState {
+  const factory CleanupState({
     DateTime? selectedDate,
-    List<LocalAsset>? assetsToDelete,
-    int? totalBytes,
-    bool? isScanning,
-    bool? isDeleting,
-    AssetKeepType? keepMediaType,
-    bool? keepFavorites,
-    Set<String>? keepAlbumIds,
-  }) {
-    return CleanupState(
-      selectedDate: selectedDate ?? this.selectedDate,
-      assetsToDelete: assetsToDelete ?? this.assetsToDelete,
-      totalBytes: totalBytes ?? this.totalBytes,
-      isScanning: isScanning ?? this.isScanning,
-      isDeleting: isDeleting ?? this.isDeleting,
-      keepMediaType: keepMediaType ?? this.keepMediaType,
-      keepFavorites: keepFavorites ?? this.keepFavorites,
-      keepAlbumIds: keepAlbumIds ?? this.keepAlbumIds,
-    );
-  }
+    @Default([]) List<LocalAsset> assetsToDelete,
+    @Default(0) int totalBytes,
+    @Default(false) bool isScanning,
+    @Default(false) bool isDeleting,
+    @Default(AssetKeepType.none) AssetKeepType keepMediaType,
+    @Default(true) bool keepFavorites,
+    @Default({}) Set<String> keepAlbumIds,
+  }) = _CleanupState;
 }
 
 final cleanupProvider = StateNotifierProvider<CleanupNotifier, CleanupState>((ref) {

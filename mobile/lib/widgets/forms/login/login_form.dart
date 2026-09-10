@@ -493,14 +493,12 @@ class LoginForm extends HookConsumerWidget {
                     builder: (context, form) => Column(
                       spacing: ImmichSpacing.md,
                       children: [
-                        ImmichTextInput(
+                        ImmichEmailInput(
                           controller: emailController,
                           label: context.t.email,
                           hintText: context.t.login_form_email_hint,
                           validator: _validateEmail,
                           keyboardAction: TextInputAction.next,
-                          keyboardType: TextInputType.emailAddress,
-                          autofillHints: const [AutofillHints.email],
                           onSubmit: (_) => passwordFocusNode.requestFocus(),
                         ),
                         ImmichPasswordInput(

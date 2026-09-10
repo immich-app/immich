@@ -1,15 +1,18 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/app/store.drift.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 
-class DriftStoreRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin {
   final validStoreKeys = StoreKey.values.map((e) => e.id).toSet();
 
-  DriftStoreRepository(super.db) : _db = db;
+  StoreRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<bool> deleteAll() async {
     await _db.storeEntity.deleteAll();
@@ -27,7 +30,7 @@ class DriftStoreRepository extends DriftDatabaseRepository {
     return query.asyncMap((entity) => _toUpdateEvent(entity)).watch();
   }
 
-  Future<void> delete<T>(StoreKey<T> key) async {
+  Future<void> deleteValue<T>(StoreKey<T> key) async {
     await _db.storeEntity.deleteWhere((entity) => entity.id.equals(key.id));
     return;
   }
@@ -64,7 +67,7 @@ class DriftStoreRepository extends DriftDatabaseRepository {
             const (bool) => entity.intValue == 1,
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
             const (UserDto) =>
-              entity.stringValue == null ? null : await DriftAuthUserRepository(_db).get(entity.stringValue!),
+              entity.stringValue == null ? null : await AuthUserRepository(_db).get(entity.stringValue!),
             _ => null,
           }
           as T?;
@@ -75,7 +78,7 @@ class DriftStoreRepository extends DriftDatabaseRepository {
       const (String) => (null, value as String),
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
-      const (UserDto) => (null, (await DriftAuthUserRepository(_db).upsert(value as UserDto)).id),
+      const (UserDto) => (null, (await AuthUserRepository(_db).upsert(value as UserDto)).id),
       _ => throw UnsupportedError("Unsupported primitive type: ${key.type} for key: ${key.name}"),
     };
     return StoreEntityCompanion(id: Value(key.id), intValue: Value(intValue), stringValue: Value(strValue));

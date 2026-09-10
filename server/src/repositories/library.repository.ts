@@ -92,6 +92,7 @@ export class LibraryRepository {
           .as('videos'),
       )
       .select((eb) => eb.fn.coalesce((eb) => eb.fn.sum('asset_exif.fileSizeInByte'), eb.val(0)).as('usage'))
+      .where('asset.deletedAt', 'is', null)
       .groupBy('library.id')
       .where('library.id', '=', id)
       .executeTakeFirst();

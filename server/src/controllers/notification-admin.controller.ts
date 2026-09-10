@@ -2,6 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/com
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfigSmtpDto } from 'src/dtos/config.dto';
 import {
   NotificationCreateDto,
   NotificationDto,
@@ -9,7 +10,6 @@ import {
   TemplateResponseDto,
   TestEmailResponseDto,
 } from 'src/dtos/notification.dto';
-import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { ApiTag } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { EmailTemplate } from 'src/repositories/email.repository';

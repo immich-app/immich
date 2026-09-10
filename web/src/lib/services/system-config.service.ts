@@ -1,4 +1,4 @@
-import { getConfig, updateConfig, type ServerFeaturesDto, type SystemConfigDto } from '@immich/sdk';
+import { getConfig, updateConfig, type ServerFeaturesDto, type AdminConfigDto } from '@immich/sdk';
 import { toastManager, type ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
 import { isEqual } from 'lodash-es';
@@ -11,7 +11,7 @@ import { getFormatter } from '$lib/utils/i18n';
 export const getSystemConfigActions = (
   $t: MessageFormatter,
   featureFlags: ServerFeaturesDto,
-  config: SystemConfigDto,
+  config: AdminConfigDto,
 ) => {
   const CopyToClipboard: ActionItem = {
     title: $t('copy_to_clipboard'),
@@ -44,17 +44,17 @@ export const getSystemConfigActions = (
   return { CopyToClipboard, Download, Upload };
 };
 
-export const handleSystemConfigSave = async (update: Partial<SystemConfigDto>) => {
+export const handleSystemConfigSave = async (update: Partial<AdminConfigDto>) => {
   const $t = await getFormatter();
   const config = await getConfig();
-  const systemConfigDto = { ...config, ...update };
+  const adminConfigDto = { ...config, ...update };
 
-  if (isEqual(config, systemConfigDto)) {
+  if (isEqual(config, adminConfigDto)) {
     return;
   }
 
   try {
-    const newConfig = await updateConfig({ systemConfigDto });
+    const newConfig = await updateConfig({ adminConfigDto });
 
     eventManager.emit('SystemConfigUpdate', newConfig);
     toastManager.primary($t('settings_saved'));

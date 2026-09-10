@@ -39,7 +39,7 @@
 <div
   class="flex items-center text-sm {roundedBottom
     ? 'rounded-2xl'
-    : 'rounded-t-lg'} h-full place-items-center gap-2 bg-gray-200 p-2 dark:bg-immich-dark-gray"
+    : 'rounded-t-lg'} h-full place-items-center gap-2 bg-gray-200 p-2 dark:bg-gray-800"
 >
   <IconButton
     shape="round"
@@ -51,7 +51,7 @@
     onclick={() => onSearch({ force: true })}
   />
   <input
-    class="w-full gap-2 bg-gray-200 dark:bg-immich-dark-gray dark:text-white"
+    class="w-full gap-2 bg-gray-200 dark:bg-gray-800 dark:text-white"
     type="text"
     {placeholder}
     bind:value={name}

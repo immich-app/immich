@@ -87,6 +87,18 @@ export class ApiKeyController {
     return this.service.update(auth, id, dto);
   }
 
+  @Post(':id/rotate')
+  @Authenticated({ permission: Permission.ApiKeyRotate })
+  @Endpoint({
+    summary: 'Rotate an API key',
+    description:
+      'Generates a new secret for an API key, immediately invalidating the previous one. The current user must own this API key.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  rotateApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ApiKeyCreateResponseDto> {
+    return this.service.rotate(auth, id);
+  }
+
   @Delete(':id')
   @Authenticated({ permission: Permission.ApiKeyDelete })
   @HttpCode(HttpStatus.NO_CONTENT)

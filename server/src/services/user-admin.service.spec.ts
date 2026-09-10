@@ -53,6 +53,7 @@ describe(UserAdminService.name, () => {
         name: userStub.user1.name,
         storageLabel: 'label',
         password: expect.anything(),
+        clusterGroupId: expect.any(String),
       });
     });
   });

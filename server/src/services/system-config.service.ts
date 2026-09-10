@@ -1,8 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
-import { defaults } from 'src/config';
 import { OnEvent } from 'src/decorators';
-import { mapConfig, SystemConfigDto } from 'src/dtos/system-config.dto';
+import {
+  AdminConfigDto,
+  defaults,
+  mapAdminConfig,
+  mapPublicConfig,
+  mapUserConfig,
+  PublicConfigDto,
+  UserConfigDto,
+} from 'src/dtos/config.dto';
 import { BootstrapEventPriority } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
@@ -22,13 +29,31 @@ export class SystemConfigService extends BaseService {
     this.machineLearningRepository.teardown();
   }
 
-  async getSystemConfig(): Promise<SystemConfigDto> {
+  async getAdminConfig(): Promise<AdminConfigDto> {
     const config = await this.getConfig({ withCache: false });
-    return mapConfig(config);
+    return mapAdminConfig(config);
   }
 
-  getDefaults(): SystemConfigDto {
-    return mapConfig(defaults);
+  getAdminConfigDefaults(): AdminConfigDto {
+    return mapAdminConfig(defaults);
+  }
+
+  async getUserConfig(): Promise<UserConfigDto> {
+    const config = await this.getConfig({ withCache: false });
+    return mapUserConfig(config);
+  }
+
+  getUserConfigDefaults(): UserConfigDto {
+    return mapUserConfig(defaults);
+  }
+
+  async getPublicConfig(): Promise<PublicConfigDto> {
+    const config = await this.getConfig({ withCache: false });
+    return mapPublicConfig(config);
+  }
+
+  getPublicConfigDefaults(): PublicConfigDto {
+    return mapPublicConfig(defaults);
   }
 
   @OnEvent({ name: 'ConfigInit', priority: -100 })
@@ -56,7 +81,7 @@ export class SystemConfigService extends BaseService {
     }
   }
 
-  async updateSystemConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
+  async updateAdminConfig(dto: AdminConfigDto): Promise<AdminConfigDto> {
     const { configFile } = this.configRepository.getEnv();
     if (configFile) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
@@ -75,7 +100,7 @@ export class SystemConfigService extends BaseService {
 
     await this.eventRepository.emit('ConfigUpdate', { newConfig, oldConfig });
 
-    return mapConfig(newConfig);
+    return mapAdminConfig(newConfig);
   }
 
   async getCustomCss(): Promise<string> {

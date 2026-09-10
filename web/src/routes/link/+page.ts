@@ -28,7 +28,7 @@ export const load = (async ({ url }) => {
       const config = await getConfig().catch(() => undefined);
       if (config && !config.backup.beta) {
         await updateConfig({
-          systemConfigDto: { ...config, backup: { ...config.backup, beta: true } },
+          adminConfigDto: { ...config, backup: { ...config.backup, beta: true } },
         }).catch(() => undefined);
       }
 

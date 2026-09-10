@@ -17,8 +17,8 @@ import {
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { PersistedLocalStorage } from '$lib/utils/persisted';
 import {
   getOrderingDate,
   isAssetResponseDto,
@@ -94,19 +94,18 @@ export class TimelineManager extends VirtualScrollManager {
   #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
   #updatingViewportProximities = false;
   #scrollableElement: HTMLElement | undefined = $state();
-  #showAssetOwners = new PersistedLocalStorage<boolean>('album-show-asset-owners', false);
   #unsubscribes: Array<() => void> = [];
 
   get showAssetOwners() {
-    return this.#showAssetOwners.current;
+    return userPreferencesManager.showAssetOwners;
   }
 
   setShowAssetOwners(value: boolean) {
-    this.#showAssetOwners.current = value;
+    userPreferencesManager.showAssetOwners = value;
   }
 
   toggleShowAssetOwners() {
-    this.#showAssetOwners.current = !this.#showAssetOwners.current;
+    userPreferencesManager.showAssetOwners = !userPreferencesManager.showAssetOwners;
   }
 
   constructor() {
@@ -382,6 +381,12 @@ export class TimelineManager extends VirtualScrollManager {
     this.addAssetsUpsertSegments([...notExcluded]);
   }
 
+  upsertAssetsFromLiveEvent(assets: TimelineAsset[]) {
+    const notUpdated = this.#updateAssets(assets);
+    const insertable = notUpdated.filter((asset) => this.canInsertAssetFromLiveEvent(asset));
+    this.addAssetsUpsertSegments(insertable);
+  }
+
   async findTimelineMonthForAsset(asset: AssetDescriptor | AssetResponseDto) {
     if (!this.isInitialized) {
       await this.initTask.waitUntilExecution();
@@ -619,6 +624,19 @@ export class TimelineManager extends VirtualScrollManager {
       (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
       (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id))
     );
+  }
+
+  canInsertAssetFromLiveEvent(asset: TimelineAsset) {
+    if (this.isExcluded(asset)) {
+      return false;
+    }
+    if (this.#options.albumId || this.#options.personId || this.#options.timelineAlbumId) {
+      return false;
+    }
+    if (this.#options.userId && !this.#options.withPartners && asset.ownerId !== this.#options.userId) {
+      return false;
+    }
+    return true;
   }
 
   getAssetOrder() {

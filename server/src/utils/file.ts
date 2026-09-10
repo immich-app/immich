@@ -86,6 +86,6 @@ export const sendFile = async (
   }
 };
 
-export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => {
-  return new StreamableFile(stream, { type, length });
+export const asStreamableFile = ({ stream, type, disposition, length }: ImmichReadStream) => {
+  return new StreamableFile(stream, { type, disposition, length });
 };

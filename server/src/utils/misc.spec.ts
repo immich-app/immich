@@ -1,4 +1,4 @@
-import { getKeysDeep, globToSqlPattern, unsetDeep } from 'src/utils/misc';
+import { getKeysDeep, globToPostgresRegex, unsetDeep } from 'src/utils/misc';
 import { describe, expect, it } from 'vitest';
 
 describe('getKeysDeep', () => {
@@ -52,18 +52,26 @@ describe('unsetDeep', () => {
   });
 });
 
-describe('globToSqlPattern', () => {
-  const testCases = [
-    ['**/Raw/**', '%/Raw/%'],
-    ['**/abc/*.tif', '%/abc/%.tif'],
-    ['**/*.tif', '%/%.tif'],
-    ['**/*.jp?', '%/%.jp_'],
-    ['**/@eaDir/**', '%/@eaDir/%'],
-    ['**/._*', `%/._%`],
-    ['/absolute/path/**', `/absolute/path/%`],
+const matches = (glob: string, value: string) => new RegExp(globToPostgresRegex(glob)).test(value);
+
+describe('globToPostgresRegex', () => {
+  const testCases: [string, string, boolean][] = [
+    ['**/Raw/**', '/foo/Raw/bar.jpg', true],
+    ['**/Raw/**', '/foo/bar.jpg', false],
+    ['**/abc/*.tif', '/foo/abc/scan.tif', true],
+    ['**/abc/*.tif', '/foo/abc/sub/scan.tif', false],
+    ['**/*.tif', '/foo/bar.tif', true],
+    ['**/*.jp?', '/foo/bar.jpg', true],
+    ['**/@eaDir/**', '/foo/@eaDir/thumb.jpg', true],
+    ['**/._*', '/foo/._resource', true],
+    ['/absolute/path/**', '/absolute/path/photo.jpg', true],
+    ['/absolute/path/**', '/other/path/photo.jpg', false],
+    // a bare `*` must not cross a path separator, unlike SQL `LIKE`'s `%`
+    ['/path/*.*', '/path/photo.jpg', true],
+    ['/path/*.*', '/path/2020/photo.jpg', false],
   ];
 
-  it.each(testCases)('should convert %s to %s', (input, expected) => {
-    expect(globToSqlPattern(input)).toEqual(expected);
+  it.each(testCases)('should match %s against %s as %s', (glob, value, expected) => {
+    expect(matches(glob, value)).toEqual(expected);
   });
 });

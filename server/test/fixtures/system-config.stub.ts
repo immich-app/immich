@@ -1,4 +1,4 @@
-import { SystemConfig } from 'src/config';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { DeepPartial } from 'src/types';
 
 export const systemConfigStub = {

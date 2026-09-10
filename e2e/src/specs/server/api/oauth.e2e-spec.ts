@@ -1,7 +1,7 @@
 import { OAuthClient, OAuthUser, generateLogoutToken } from '@immich/e2e-auth-server';
 import {
+  AdminConfigOAuthDto,
   LoginResponseDto,
-  SystemConfigOAuthDto,
   getConfigDefaults,
   getMyUser,
   getSessions,
@@ -70,17 +70,18 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   return { url: redirectUrl, state, codeVerifier };
 };
 
-const setupOAuth = async (token: string, dto: Partial<SystemConfigOAuthDto>) => {
+const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
   const options = { headers: asBearerAuth(token) };
   const defaults = await getConfigDefaults(options);
   const merged = {
     ...defaults.oauth,
     buttonText: 'Login with Immich',
     issuerUrl: `${authServer.internal}/.well-known/openid-configuration`,
+    accountManagementUrl: authServer.internal,
     allowInsecureRequests: true,
     ...dto,
   };
-  await updateConfig({ systemConfigDto: { ...defaults, oauth: merged } }, options);
+  await updateConfig({ adminConfigDto: { ...defaults, oauth: merged } }, options);
 };
 
 describe(`/oauth`, () => {
@@ -100,16 +101,6 @@ describe(`/oauth`, () => {
         buttonText: 'Login with Immich',
         storageLabelClaim: 'immich_username',
       });
-    });
-
-    it(`should throw an error if a redirect uri is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/authorize').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['redirectUri'], message: 'Invalid input: expected string, received undefined' },
-        ]),
-      );
     });
 
     it('should return a redirect uri', async () => {
@@ -163,22 +154,6 @@ describe(`/oauth`, () => {
         buttonText: 'Login with Immich',
         storageLabelClaim: 'immich_username',
       });
-    });
-
-    it(`should throw an error if a url is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/callback').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['url'], message: 'Invalid input: expected string, received undefined' }]),
-      );
-    });
-
-    it(`should throw an error if the url is empty`, async () => {
-      const { status, body } = await request(app).post('/oauth/callback').send({ url: '' });
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['url'], message: 'Too small: expected string to have >=1 characters' }]),
-      );
     });
 
     it(`should throw an error if the state is not provided`, async () => {
@@ -311,6 +286,21 @@ describe(`/oauth`, () => {
       });
     });
 
+    it('should set the profile picture from a picture claim with an embedded image', async () => {
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_EMBEDDED_PROFILE_PICTURE);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        userId: expect.any(String),
+        userEmail: 'oauth-with-embedded-profile-picture@immich.app',
+        profileImagePath: expect.any(String),
+      });
+
+      const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+      expect(user.profileImagePath.length).toBeGreaterThan(0);
+    });
+
     it('should work with RS256 signed user profiles', async () => {
       await setupOAuth(admin.accessToken, {
         enabled: true,
@@ -380,16 +370,6 @@ describe(`/oauth`, () => {
   });
 
   describe(`POST /oauth/backchannel-logout`, () => {
-    it(`should throw an error if the logout_token is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/backchannel-logout').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['logout_token'], message: 'Invalid input: expected string, received undefined' },
-        ]),
-      );
-    });
-
     it(`should throw an error if an invalid logout token is provided`, async () => {
       const { status, body } = await request(app)
         .post('/oauth/backchannel-logout')

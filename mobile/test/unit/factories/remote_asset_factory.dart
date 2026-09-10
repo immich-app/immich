@@ -16,13 +16,13 @@ class RemoteAssetFactory {
     DateTime? deletedAt,
     String? localId,
   }) {
-    id = TestUtils.uuid(id);
+    final assetId = TestUtils.uuid(id);
 
     return RemoteAsset(
-      id: id,
-      name: name ?? 'remote_$id.jpg',
+      id: assetId,
+      name: name ?? 'remote_$assetId.jpg',
       ownerId: TestUtils.uuid(ownerId),
-      checksum: 'checksum-$id',
+      checksum: 'checksum-$assetId',
       type: type,
       createdAt: TestUtils.yesterday(),
       updatedAt: TestUtils.now(),

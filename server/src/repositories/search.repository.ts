@@ -14,11 +14,13 @@ import {
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
+  searchRandomV3Examples,
+  searchSmartV3Examples,
   searchStatisticsV3Examples,
   withExifInner,
   withSearchOrder,
 } from 'src/utils/database';
-import { paginationHelper } from 'src/utils/pagination';
+import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 import z from 'zod';
 
 export interface SearchAssetIdOptions {
@@ -54,6 +56,8 @@ export interface SearchOneToOneRelationOptions {
 export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
   withFaces?: boolean;
   withPeople?: boolean;
+  /** whose version of the people to select, required when selecting faces or people */
+  viewingUserId?: string;
 }
 
 export interface SearchDateOptions {
@@ -133,19 +137,20 @@ export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
+export interface AssetSearchScope {
+  userIds: string[];
+  lockedOwnerId: string;
+  /** whose version of the people to select, required when selecting faces or people */
+  viewingUserId?: string;
+}
+
 export interface AssetSearchBuilderV3Options {
   filter?: SearchFilter;
-  /** Server-derived ownership scope. Never client-controlled. */
-  userIds?: string[];
   withExif?: boolean;
   withFaces?: boolean;
   withPeople?: boolean;
   withStacked?: boolean;
   order?: SearchOrder;
-}
-
-export interface AssetSearchPaginationV3Options {
-  size: number;
 }
 
 export type SmartSearchOptions = SearchDateOptions &
@@ -156,13 +161,12 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked' };
-
-export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
+  SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked'; viewingUserId?: string };
 
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 
-export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
+export interface FaceEmbeddingSearch extends Omit<SearchEmbeddingOptions, 'userIds'> {
+  clusterGroupId: string;
   hasPerson?: boolean;
   numResults: number;
   maxDistance: number;
@@ -172,7 +176,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
 export interface FaceSearchResult {
   distance: number;
   id: string;
-  personId: string | null;
+  personGroupId: string | null;
 }
 
 export interface AssetDuplicateResult {
@@ -208,6 +212,7 @@ export interface GetCameraLensModelsOptions {
 export class SearchRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       { page: 1, size: 100 },
@@ -233,6 +238,7 @@ export class SearchRepository {
     return paginationHelper(items, pagination.size);
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       {
@@ -249,6 +255,7 @@ export class SearchRepository {
       .executeTakeFirstOrThrow();
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       100,
@@ -269,6 +276,7 @@ export class SearchRepository {
       .execute();
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       100,
@@ -292,6 +300,7 @@ export class SearchRepository {
       .execute();
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       { page: 1, size: 200 },
@@ -341,7 +350,7 @@ export class SearchRepository {
       },
     ],
   })
-  searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
+  searchFaces({ clusterGroupId, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
     if (!z.int().min(1).max(1000).safeParse(numResults).success) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -352,20 +361,29 @@ export class SearchRepository {
         .with('cte', (qb) =>
           qb
             .selectFrom('asset_face')
-            .select([
-              'asset_face.id',
-              'asset_face.personId',
-              sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
-            ])
             .innerJoin('asset', 'asset.id', 'asset_face.assetId')
             .innerJoin('face_search', 'face_search.faceId', 'asset_face.id')
-            .leftJoin('person', 'person.id', 'asset_face.personId')
-            .where('asset.ownerId', '=', anyUuid(userIds))
+            .select([
+              'asset_face.id',
+              'asset_face.personGroupId',
+              sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
+            ])
+            .where('asset.ownerId', 'in', (eb) =>
+              eb.selectFrom('user').select('user.id').where('user.clusterGroupId', '=', clusterGroupId),
+            )
             .where('asset.deletedAt', 'is', null)
-            .$if(!!hasPerson, (qb) => qb.where('asset_face.personId', 'is not', null))
+            .$if(!!hasPerson, (qb) => qb.where('asset_face.personGroupId', 'is not', null))
             .$if(!!minBirthDate, (qb) =>
               qb.where((eb) =>
-                eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)]),
+                eb.not(
+                  eb.exists(
+                    eb
+                      .selectFrom('person')
+                      .select('person.personGroupId')
+                      .whereRef('person.personGroupId', '=', 'asset_face.personGroupId')
+                      .where('person.birthDate', '>', minBirthDate!),
+                  ),
+                ),
               ),
             )
             .orderBy('distance')
@@ -518,20 +536,56 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchMetadataV3Examples)
-  searchMetadataV3(
-    pagination: AssetSearchPaginationV3Options,
-    options: AssetSearchBuilderV3Options,
-  ): Promise<MapAsset[]> {
-    return withSearchOrder(searchAssetBuilder(this.db, options), options.order)
+  async searchMetadataV3(pagination: PaginationOptions, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
+    const items = await withSearchOrder(searchAssetBuilder(this.db, options, scope), options.order)
       .select(columns.searchAsset)
-      .limit(pagination.size)
+      .limit(pagination.take + 1)
+      .offset(pagination.skip ?? 0)
+      .execute();
+    return paginationHelper(items, pagination.take);
+  }
+
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
+  @GenerateSql(...searchRandomV3Examples)
+  searchRandomV3(
+    size: number,
+    options: Omit<AssetSearchBuilderV3Options, 'order'>,
+    scope: AssetSearchScope,
+  ): Promise<MapAsset[]> {
+    return searchAssetBuilder(this.db, options, scope)
+      .select(columns.searchAsset)
+      .orderBy(sql`random()`)
+      .limit(size)
       .execute();
   }
 
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
+  @GenerateSql(...searchSmartV3Examples)
+  searchSmartV3(
+    pagination: PaginationOptions,
+    options: Omit<AssetSearchBuilderV3Options, 'order'> & { embedding: string },
+    scope: AssetSearchScope,
+  ) {
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
+      const items = await searchAssetBuilder(trx, options, scope)
+        .select(columns.searchAsset)
+        .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .orderBy('asset.id', 'asc')
+        .limit(pagination.take + 1)
+        .offset(pagination.skip ?? 0)
+        .execute();
+      return paginationHelper(items, pagination.take);
+    });
+  }
+
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchStatisticsV3Examples)
-  searchStatisticsV3(options: AssetSearchBuilderV3Options) {
-    return searchAssetBuilder(this.db, options)
+  searchStatisticsV3(options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
+    return searchAssetBuilder(this.db, options, scope)
       .select((qb) => qb.fn.countAll<number>().as('total'))
       .executeTakeFirstOrThrow();
   }

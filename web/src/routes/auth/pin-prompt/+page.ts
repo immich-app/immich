@@ -16,6 +16,6 @@ export const load = (async ({ url }) => {
       title: $t('pin_verification'),
     },
     hasPinCode: !!pinCode,
-    continueUrl: url.searchParams.get('continue') || Route.locked(),
+    continueUrl: Route.continue(url.searchParams.get('continue'), Route.locked()),
   };
 }) satisfies PageLoad;

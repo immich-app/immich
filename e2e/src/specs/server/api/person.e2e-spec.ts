@@ -82,32 +82,32 @@ describe('/people', () => {
     const asset4 = await utils.createAsset(admin.accessToken);
 
     await Promise.all([
-      utils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset3.id, personId: multipleAssetsPerson.id }), // 4 assets
+      utils.createFace({ assetId: asset1.id, personGroupId: visiblePerson.id }),
+      utils.createFace({ assetId: asset1.id, personGroupId: hiddenPerson.id }),
+      utils.createFace({ assetId: asset1.id, personGroupId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset1.id, personGroupId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset2.id, personGroupId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset3.id, personGroupId: multipleAssetsPerson.id }), // 4 assets
       // Named persons
-      utils.createFace({ assetId: asset1.id, personId: nameCharliePerson.id }), // 1 asset
-      utils.createFace({ assetId: asset1.id, personId: nameBobPerson.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameBobPerson.id }), // 2 assets
-      utils.createFace({ assetId: asset1.id, personId: nameAlicePerson.id }), // 1 asset
+      utils.createFace({ assetId: asset1.id, personGroupId: nameCharliePerson.id }), // 1 asset
+      utils.createFace({ assetId: asset1.id, personGroupId: nameBobPerson.id }),
+      utils.createFace({ assetId: asset2.id, personGroupId: nameBobPerson.id }), // 2 assets
+      utils.createFace({ assetId: asset1.id, personGroupId: nameAlicePerson.id }), // 1 asset
       // Null-named person 4 assets
-      utils.createFace({ assetId: asset1.id, personId: nameNullPerson4Assets.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameNullPerson4Assets.id }),
-      utils.createFace({ assetId: asset3.id, personId: nameNullPerson4Assets.id }),
-      utils.createFace({ assetId: asset4.id, personId: nameNullPerson4Assets.id }), // 4 assets
+      utils.createFace({ assetId: asset1.id, personGroupId: nameNullPerson4Assets.id }),
+      utils.createFace({ assetId: asset2.id, personGroupId: nameNullPerson4Assets.id }),
+      utils.createFace({ assetId: asset3.id, personGroupId: nameNullPerson4Assets.id }),
+      utils.createFace({ assetId: asset4.id, personGroupId: nameNullPerson4Assets.id }), // 4 assets
       // Null-named person 3 assets
-      utils.createFace({ assetId: asset1.id, personId: nameNullPerson3Assets.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameNullPerson3Assets.id }),
-      utils.createFace({ assetId: asset3.id, personId: nameNullPerson3Assets.id }), // 3 assets
+      utils.createFace({ assetId: asset1.id, personGroupId: nameNullPerson3Assets.id }),
+      utils.createFace({ assetId: asset2.id, personGroupId: nameNullPerson3Assets.id }),
+      utils.createFace({ assetId: asset3.id, personGroupId: nameNullPerson3Assets.id }), // 3 assets
       // Null-named person 1 asset
-      utils.createFace({ assetId: asset3.id, personId: nameNullPerson1Asset.id }),
+      utils.createFace({ assetId: asset3.id, personGroupId: nameNullPerson1Asset.id }),
       // Favourite People
-      utils.createFace({ assetId: asset1.id, personId: nameFreddyPersonFavourite.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameFreddyPersonFavourite.id }),
-      utils.createFace({ assetId: asset1.id, personId: nameBillPersonFavourite.id }),
+      utils.createFace({ assetId: asset1.id, personGroupId: nameFreddyPersonFavourite.id }),
+      utils.createFace({ assetId: asset2.id, personGroupId: nameFreddyPersonFavourite.id }),
+      utils.createFace({ assetId: asset1.id, personGroupId: nameBillPersonFavourite.id }),
     ]);
   });
 

@@ -2,10 +2,15 @@ import { ActivityController } from 'src/controllers/activity.controller';
 import { AlbumController } from 'src/controllers/album.controller';
 import { ApiKeyController } from 'src/controllers/api-key.controller';
 import { AppController } from 'src/controllers/app.controller';
+import { AssetFilesController } from 'src/controllers/asset-file.controller';
 import { AssetMediaController } from 'src/controllers/asset-media.controller';
 import { AssetController } from 'src/controllers/asset.controller';
 import { AuthAdminController } from 'src/controllers/auth-admin.controller';
 import { AuthController } from 'src/controllers/auth.controller';
+import { ClusterGroupController } from 'src/controllers/cluster-group.controller';
+import { ConfigAdminController } from 'src/controllers/config-admin.controller';
+import { ConfigPublicController } from 'src/controllers/config-public.controller';
+import { ConfigUserController } from 'src/controllers/config-user.controller';
 import { DatabaseBackupController } from 'src/controllers/database-backup.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
@@ -46,9 +51,14 @@ export const controllers = [
   AlbumController,
   AppController,
   AssetController,
+  AssetFilesController,
   AssetMediaController,
   AuthController,
   AuthAdminController,
+  ClusterGroupController,
+  ConfigUserController,
+  ConfigAdminController,
+  ConfigPublicController,
   DatabaseBackupController,
   DownloadController,
   DuplicateController,

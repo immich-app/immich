@@ -149,6 +149,17 @@ where
     "albumAssets"."livePhotoVideoId"
   ] && array[$2]::uuid[]
 
+-- AccessRepository.assetFile.checkOwnerAccess
+select
+  "asset_file"."id"
+from
+  "asset_file"
+  inner join "asset" on "asset"."id" = "asset_file"."assetId"
+where
+  "asset"."visibility" != $1
+  and "asset"."ownerId" = $2
+  and "asset_file"."id" in ($3)
+
 -- AccessRepository.authDevice.checkOwnerAccess
 select
   "session"."id"
@@ -187,13 +198,56 @@ where
   "notification"."id" in ($1)
   and "notification"."userId" = $2
 
+-- AccessRepository.clusterGroup.checkInviteAccess
+select
+  "cluster_group_request"."clusterGroupId"
+from
+  "cluster_group_request"
+where
+  "cluster_group_request"."clusterGroupId" in ($1)
+  and "cluster_group_request"."userId" = $2
+
+-- AccessRepository.clusterGroup.checkOwnerAccess
+select
+  "user"."clusterGroupId"
+from
+  "user"
+where
+  "user"."clusterGroupId" in ($1)
+  and "user"."id" = $2
+
+-- AccessRepository.clusterGroupRequest.checkOwnerAccess
+select
+  "cluster_group_request"."id"
+from
+  "cluster_group_request"
+where
+  "cluster_group_request"."id" in ($1)
+  and "cluster_group_request"."userId" = $2
+
+-- AccessRepository.clusterGroupRequest.checkGroupAccess
+select
+  "cluster_group_request"."id"
+from
+  "cluster_group_request"
+where
+  "cluster_group_request"."id" in ($1)
+  and "cluster_group_request"."clusterGroupId" = (
+    select
+      "user"."clusterGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $2
+  )
+
 -- AccessRepository.person.checkOwnerAccess
 select
-  "person"."id"
+  "person"."personGroupId"
 from
   "person"
 where
-  "person"."id" in ($1)
+  "person"."personGroupId" in ($1)
   and "person"."ownerId" = $2
 
 -- AccessRepository.person.checkFaceOwnerAccess
