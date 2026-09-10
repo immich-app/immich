@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart' hide AssetEditAction;
 import 'package:immich_mobile/domain/models/stack.model.dart';
@@ -43,11 +42,6 @@ class AssetApiRepository extends ApiRepository {
     return response?.count ?? 0;
   }
 
-  // TODO(shenlong): remove after action migration
-  Future<void> updateVisibility(List<String> ids, AssetVisibility visibility) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, visibility: Optional.present(_mapVisibility(visibility))));
-  }
-
   Future<StackResponse> stack(List<String> ids) async {
     final responseDto = await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
 
@@ -56,10 +50,6 @@ class AssetApiRepository extends ApiRepository {
 
   Future<void> unStack(List<String> ids) async {
     return _stacksApi.deleteStacks(BulkIdsDto(ids: ids));
-  }
-
-  Future<Response> downloadAsset(String id, {required bool edited}) {
-    return _api.downloadAssetWithHttpInfo(id, edited: edited);
   }
 
   api.AssetVisibility _mapVisibility(AssetVisibility visibility) => switch (visibility) {
@@ -109,20 +99,6 @@ class AssetApiRepository extends ApiRepository {
         longitude: location.map((loc) => loc.longitude).toOptional(),
       ),
     );
-  }
-
-  Future<void> updateLocation(List<String> ids, LatLng location) async {
-    return _api.updateAssets(
-      AssetBulkUpdateDto(
-        ids: ids,
-        latitude: Optional.present(location.latitude),
-        longitude: Optional.present(location.longitude),
-      ),
-    );
-  }
-
-  Future<void> updateDateTime(List<String> ids, String dateTime) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: Optional.present(dateTime)));
   }
 }
 
