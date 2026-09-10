@@ -612,8 +612,8 @@
             }
           },
           {
-            "name": "prior_checksum",
-            "getter_name": "priorChecksum",
+            "name": "previous_checksum",
+            "getter_name": "previousChecksum",
             "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
@@ -3241,7 +3241,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"prior_checksum\" TEXT NULL, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"previous_checksum\" TEXT NULL, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },

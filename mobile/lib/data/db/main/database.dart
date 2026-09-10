@@ -360,7 +360,7 @@ class Drift extends $Drift {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
               },
               from31To32: (m, v32) async {
-                await m.addColumn(v32.localAssetEntity, v32.localAssetEntity.priorChecksum);
+                await m.addColumn(v32.localAssetEntity, v32.localAssetEntity.previousChecksum);
               },
             ),
           ),

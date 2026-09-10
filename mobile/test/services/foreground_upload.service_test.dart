@@ -28,7 +28,7 @@ void main() {
   late MockBackupRepository mockBackupRepository;
   late MockConnectivityApi mockConnectivityApi;
   late MockAssetMediaRepository mockAssetMediaRepository;
-  late MockStackService mockStackService;
+  late MockAssetService mockAssetService;
   late Drift db;
 
   setUpAll(() async {
@@ -54,9 +54,8 @@ void main() {
     mockBackupRepository = MockBackupRepository();
     mockConnectivityApi = MockConnectivityApi();
     mockAssetMediaRepository = MockAssetMediaRepository();
-    mockStackService = MockStackService();
-    when(() => mockStackService.afterUpload(any(), any())).thenAnswer((_) async {});
-    when(() => mockStackService.priorRemoteId(any())).thenAnswer((_) async => null);
+    mockAssetService = MockAssetService();
+    when(() => mockAssetService.stackEditedUpload(any(), any())).thenAnswer((_) async {});
 
     sut = ForegroundUploadService(
       mockUploadRepository,
@@ -64,7 +63,7 @@ void main() {
       mockBackupRepository,
       mockConnectivityApi,
       mockAssetMediaRepository,
-      mockStackService,
+      mockAssetService,
     );
   });
 
@@ -201,6 +200,26 @@ void main() {
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
 
       expect(names, equals(['DJI_0001.jpg']));
+    });
+
+    test('stacks the still of a live photo, not its video', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/still.heic');
+      final videoFile = File('/path/to/motion.mov');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => videoFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.heic');
+      captureFields();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote-2')).called(1);
+      verifyNoMoreInteractions(mockAssetService);
     });
   });
 }

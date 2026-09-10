@@ -244,10 +244,13 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
     );
   }
 
-  Future<String?> getPriorRemoteId(String id) {
+  Future<String?> getPreviousRemoteId(String id) {
     final query = _db.selectOnly(_db.localAssetEntity)
       ..join([
-        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.priorChecksum)),
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.previousChecksum),
+        ),
         innerJoin(_db.authUserEntity, _db.authUserEntity.id.equalsExp(_db.remoteAssetEntity.ownerId)),
       ])
       ..addColumns([_db.remoteAssetEntity.id])

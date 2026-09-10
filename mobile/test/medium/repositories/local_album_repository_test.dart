@@ -23,9 +23,9 @@ void main() {
   group('upsert', () {
     final album = LocalAlbum(id: 'album', name: 'Camera', updatedAt: DateTime(2024));
 
-    Future<({String? checksum, String? priorChecksum})> row(String id) async {
+    Future<({String? checksum, String? previousChecksum})> row(String id) async {
       final data = await ctx.db.managers.localAssetEntity.filter((row) => row.id.equals(id)).getSingle();
-      return (checksum: data.checksum, priorChecksum: data.priorChecksum);
+      return (checksum: data.checksum, previousChecksum: data.previousChecksum);
     }
 
     for (final (platform, edited) in [
@@ -44,8 +44,8 @@ void main() {
 
         await sut.upsert(album, toUpsert: [edited, _localAsset('untouched')]);
 
-        expect(await row('edited'), (checksum: null, priorChecksum: 'a'));
-        expect(await row('untouched'), (checksum: 'b', priorChecksum: null));
+        expect(await row('edited'), (checksum: null, previousChecksum: 'a'));
+        expect(await row('untouched'), (checksum: 'b', previousChecksum: null));
       });
     }
   });

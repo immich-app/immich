@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -15,12 +16,12 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
-import 'package:immich_mobile/services/stack.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -44,7 +45,7 @@ final foregroundUploadServiceProvider = Provider((ref) {
     ref.watch(driftProvider).backupRepository,
     ref.watch(connectivityApiProvider),
     ref.watch(assetMediaRepositoryProvider),
-    ref.watch(stackServiceProvider),
+    ref.watch(assetServiceProvider),
   );
 });
 
@@ -60,7 +61,7 @@ class ForegroundUploadService {
     this._backupRepository,
     this._connectivityApi,
     this._assetMediaRepository,
-    this._stackService,
+    this._assetService,
   );
 
   final UploadRepository _uploadRepository;
@@ -68,7 +69,7 @@ class ForegroundUploadService {
   final BackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
   final AssetMediaRepository _assetMediaRepository;
-  final StackService _stackService;
+  final AssetService _assetService;
   final Logger _logger = Logger('ForegroundUploadService');
 
   bool shouldAbortUpload = false;
@@ -353,9 +354,8 @@ class ForegroundUploadService {
         fields['livePhotoVideoId'] = livePhotoVideoId;
       }
 
-      final previousAssetId = await _stackService.priorRemoteId(asset.localId!);
       // Add cloudId metadata only to the still image, not the motion video, becasue when the sync id happens, the motion video can get associated with the wrong still image.
-      if ((CurrentPlatform.isIOS && asset.cloudId != null) || previousAssetId != null) {
+      if (CurrentPlatform.isIOS && asset.cloudId != null) {
         fields['metadata'] = jsonEncode([
           RemoteAssetMetadataItem(
             key: RemoteAssetMetadataKey.mobileApp,
@@ -365,7 +365,6 @@ class ForegroundUploadService {
               adjustmentTime: asset.adjustmentTime?.toIso8601String(),
               latitude: asset.latitude?.toString(),
               longitude: asset.longitude?.toString(),
-              previousAssetId: previousAssetId,
             ),
           ),
         ]);
@@ -385,7 +384,11 @@ class ForegroundUploadService {
 
       if (result.isSuccess && result.remoteAssetId != null) {
         callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
-        await _stackService.afterUpload(asset.localId!, result.remoteAssetId!);
+        try {
+          await _assetService.stackEditedUpload(asset.localId!, result.remoteAssetId!);
+        } catch (error) {
+          _logger.warning("Failed to stack the upload of ${asset.localId}: $error");
+        }
       } else if (result.isCancelled) {
         shouldAbortUpload = true;
       } else if (result.errorMessage != null) {
