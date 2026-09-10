@@ -376,27 +376,51 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   }
 };
 
-const handleFavorite = async (asset: AssetResponseDto) => {
+const toggling = new Set<string>();
+
+export const handleFavorite = async (asset: AssetResponseDto) => {
   const $t = await getFormatter();
+
+  if (toggling.has(asset.id)) return;
+  toggling.add(asset.id);
+
+  const previous = asset;
+  const optimistic = { ...asset, isFavorite: true }
+
+  eventManager.emit('AssetUpdate', optimistic)
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
     toastManager.primary($t('added_to_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
+    eventManager.emit('AssetUpdate', previous);
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  } finally {
+    toggling.delete(asset.id);
   }
 };
 
-const handleUnfavorite = async (asset: AssetResponseDto) => {
+export const handleUnfavorite = async (asset: AssetResponseDto) => {
   const $t = await getFormatter();
+
+  if (toggling.has(asset.id)) return;
+  toggling.add(asset.id);
+
+  const previous = asset;
+  const optimistic = { ...asset, isFavorite: false }
+
+  eventManager.emit('AssetUpdate', optimistic);
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
     toastManager.primary($t('removed_from_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
+    eventManager.emit('AssetUpdate', previous)
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  } finally {
+    toggling.delete(asset.id)
   }
 };
 
