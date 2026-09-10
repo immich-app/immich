@@ -48,6 +48,17 @@ export class TagRepository {
     return this.db.selectFrom('tag').select(columns.tag).where('userId', '=', userId).orderBy('value').execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getIdsForAssets(assetIds: string[]) {
+    return this.db
+      .selectFrom('tag_asset')
+      .select('tagId')
+      .select((eb) => eb.fn.agg<string[]>('array_agg', ['assetId']).as('assetIds'))
+      .where('assetId', 'in', assetIds)
+      .groupBy('tagId')
+      .execute();
+  }
+
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
   create(tag: Insertable<TagTable>) {
     return this.insertTagWithClosures((db) => db.insertInto('tag').values(tag).returningAll());
@@ -173,6 +184,26 @@ export class TagRepository {
       .insertInto('tag_asset')
       .values(items)
       .onConflict((oc) => oc.doNothing())
+      .returningAll()
+      .execute();
+  }
+
+  @GenerateSql({ params: [[{ tagId: DummyValue.UUID, assetId: DummyValue.UUID }]] })
+  @Chunked()
+  deleteAssetIds(items: Insertable<TagAssetTable>[]) {
+    if (items.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.db
+      .deleteFrom('tag_asset')
+      .where(({ eb, refTuple, tuple }) =>
+        eb(
+          refTuple('tagId', 'assetId'),
+          'in',
+          items.map(({ tagId, assetId }) => tuple(tagId, assetId)),
+        ),
+      )
       .returningAll()
       .execute();
   }
