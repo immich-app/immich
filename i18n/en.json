@@ -729,6 +729,7 @@
   "clear_file_cache": "Clear File Cache",
   "clear_file_cache_error": "Failed to clear file cache",
   "clear_file_cache_success": "Successfully cleared {size}",
+  "clear_file_cache_success_without_size": "File cache cleared",
   "clear_message": "Clear message",
   "clear_value": "Clear value",
   "client_cert_import": "Import",

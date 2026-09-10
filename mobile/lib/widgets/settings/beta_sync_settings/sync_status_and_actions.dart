@@ -88,20 +88,27 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
     Future<void> clearFileCache() async {
       try {
-        final clearedBytes = await ref.read(storageRepositoryProvider).clearCacheAndGetSize();
-        final clearedMB = clearedBytes < (256 * 1024) ? "0 MiB" : formatHumanReadableBytes(clearedBytes, 2);
+        String? clearedMB;
+
+        if (CurrentPlatform.isIOS) {
+          final clearedBytes = await ref.read(storageRepositoryProvider).clearCacheAndGetSize();
+          clearedMB = clearedBytes < (256 * 1024) ? "0 MiB" : formatHumanReadableBytes(clearedBytes, 2);
+        } else {
+          await ref.read(storageRepositoryProvider).clearCache();
+        }
 
         if (!context.mounted) {
           return;
         }
 
+        final message = CurrentPlatform.isIOS
+            ? context.t.clear_file_cache_success(size: clearedMB!)
+            : context.t.clear_file_cache_success_without_size;
+
         context.scaffoldMessenger.showSnackBar(
           SnackBar(
             duration: const Duration(seconds: 2),
-            content: Text(
-              context.t.clear_file_cache_success(size: clearedMB),
-              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
-            ),
+            content: Text(message, style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor)),
           ),
         );
       } catch (e) {

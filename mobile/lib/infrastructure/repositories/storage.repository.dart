@@ -160,7 +160,9 @@ class StorageRepository {
 
     await clearCache();
 
-    return beforeSize;
+    final afterSize = CurrentPlatform.isIOS ? await _tempDirectory.size() : 0;
+
+    return beforeSize > afterSize ? beforeSize - afterSize : 0;
   }
 }
 
