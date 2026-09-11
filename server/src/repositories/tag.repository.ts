@@ -31,6 +31,19 @@ export class TagRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getAssetIdsByTagId(tagId: string): Promise<string[]> {
+    const rows = await this.db
+      .selectFrom('tag_closure')
+      .innerJoin('tag_asset', 'tag_asset.tagId', 'tag_closure.id_descendant')
+      .select('tag_asset.assetId')
+      .distinct()
+      .where('tag_closure.id_ancestor', '=', tagId)
+      .execute();
+
+    return rows.map(({ assetId }) => assetId);
+  }
+
   @GenerateSql({ params: [{ userId: DummyValue.UUID, value: DummyValue.STRING, parentId: DummyValue.UUID }] })
   async upsertValue({ userId, value, parentId: _parentId }: { userId: string; value: string; parentId?: string }) {
     const parentId = _parentId ?? null;
