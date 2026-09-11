@@ -94,16 +94,22 @@ class _PeopleCollectionPageState extends ConsumerState<PeopleCollectionPage> {
                           onTap: () {
                             unawaited(context.pushRoute(PersonRoute(person: person)));
                           },
-                          child: Material(
-                            shape: const CircleBorder(side: BorderSide.none),
-                            elevation: 3,
-                            child: CircleAvatar(
-                              key: ValueKey(person.id),
-                              maxRadius: isTablet ? 100 / 2 : 96 / 2,
-                              backgroundImage: RemoteImageProvider(
-                                url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                          child: Stack(
+                            children: [
+                              Material(
+                                shape: const CircleBorder(side: BorderSide.none),
+                                elevation: 3,
+                                child: CircleAvatar(
+                                  key: ValueKey(person.id),
+                                  maxRadius: isTablet ? 100 / 2 : 96 / 2,
+                                  backgroundImage: RemoteImageProvider(
+                                    url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                                  ),
+                                ),
                               ),
-                            ),
+                              if (person.isFavorite ?? false)
+                                const Positioned(left: 6, top: 6, child: _AvatarOverlayIcon(Icons.favorite_rounded)),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -137,6 +143,22 @@ class _PeopleCollectionPageState extends ConsumerState<PeopleCollectionPage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _AvatarOverlayIcon extends StatelessWidget {
+  final IconData icon;
+
+  const _AvatarOverlayIcon(this.icon);
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      icon,
+      color: Colors.white,
+      size: 24,
+      shadows: const [Shadow(blurRadius: 7.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset.zero)],
     );
   }
 }

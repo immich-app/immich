@@ -55,6 +55,7 @@ class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMix
           )
           ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(minFaces) | people.name.equals('').not())
           ..orderBy([
+            OrderingTerm(expression: people.isFavorite, mode: OrderingMode.desc),
             OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
@@ -76,8 +77,14 @@ class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMix
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
   }
+
+  Future<int> updateFavorite(String personId, bool isFavorite) {
+    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.write(PersonEntityCompanion(isFavorite: Value(isFavorite), updatedAt: Value(DateTime.now())));
+  }
 }
 
 extension on PersonEntityData {
-  Person toDto() => Person(id: id, updatedAt: updatedAt, name: name, birthDate: birthDate);
+  Person toDto() => Person(id: id, updatedAt: updatedAt, name: name, birthDate: birthDate, isFavorite: isFavorite);
 }

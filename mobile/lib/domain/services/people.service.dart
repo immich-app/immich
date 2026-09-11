@@ -32,4 +32,9 @@ class PeopleService {
     await _personApiRepository.update(personId, birthday: birthday);
     return _repository.updateBirthday(personId, birthday);
   }
+
+  Future<int> updateFavorite(String personId, bool isFavorite) async {
+    await _personApiRepository.update(personId, isFavorite: isFavorite);
+    return _repository.updateFavorite(personId, isFavorite);
+  }
 }
