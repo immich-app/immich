@@ -35,6 +35,7 @@ import {
 } from 'src/enum.js';
 import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
 import { PersonId, UpdateFacesData } from 'src/repositories/person.repository.js';
+import { DB } from 'src/schema/index.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
@@ -296,7 +297,7 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
-      await this.personRepository.vacuum({ reindexVectors: true });
+      await this.vacuum('asset_face', 'person', 'face_search');
     }
 
     for await (const assets of batched(this.assetJobRepository.streamForDetectFacesJob(force))) {
@@ -443,7 +444,7 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.unassignFaces({ clusterGroupId, sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
-      await this.personRepository.vacuum({ reindexVectors: false });
+      await this.vacuum('asset_face', 'person');
     } else if (waiting) {
       this.logger.debug(
         `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,
@@ -737,5 +738,15 @@ export class PersonService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
 
     return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+  }
+
+  private vacuum(...tables: (keyof DB)[]): Promise<unknown> {
+    return Promise.all(
+      tables.map((table) =>
+        this.databaseRepository
+          .vacuum({ analyze: true, table })
+          .then(() => this.databaseRepository.reindex(table, { concurrently: true })),
+      ),
+    );
   }
 }
