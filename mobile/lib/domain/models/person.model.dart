@@ -5,5 +5,11 @@ part 'person.model.freezed.dart';
 
 @freezed
 abstract class Person with _$Person {
-  const factory Person({required String id, required String name, DateTime? updatedAt, DateTime? birthDate}) = _Person;
+  const factory Person({
+    required String id,
+    required String name,
+    DateTime? updatedAt,
+    DateTime? birthDate,
+    @Default(false) bool isHidden,
+  }) = _Person;
 }
