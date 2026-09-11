@@ -626,7 +626,7 @@ describe(PersonService.name, () => {
       await sut.handleQueueDetectFaces({ force: false });
 
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(false);
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
@@ -648,7 +648,9 @@ describe(PersonService.name, () => {
       expect(mocks.person.deleteFaces).toHaveBeenCalledWith({ sourceType: SourceType.MachineLearning });
       expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
       expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: true });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'face_search' });
       expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -667,7 +669,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.deleteGroups).not.toHaveBeenCalled();
       expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -703,7 +705,9 @@ describe(PersonService.name, () => {
       expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
       expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
       expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: true });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'face_search' });
     });
   });
 
@@ -768,7 +772,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState, {
         lastRun: expect.any(String),
       });
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
     });
 
     it('should queue all assets', async () => {
@@ -797,7 +801,8 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState, {
         lastRun: expect.any(String),
       });
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: false });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
     });
 
     it('should run nightly if new face has been added since last run', async () => {
@@ -834,7 +839,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState, {
         lastRun: expect.any(String),
       });
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
     });
 
     it('should skip nightly if no new face has been added since last run', async () => {
@@ -852,7 +857,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.getAllFaces).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
     });
 
     it('should delete existing people if forced', async () => {
@@ -886,7 +891,8 @@ describe(PersonService.name, () => {
       expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
       expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
       expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: false });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
     });
   });
 

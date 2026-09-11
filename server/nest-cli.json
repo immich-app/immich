@@ -2,6 +2,7 @@
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
+  "exec": "./node_modules/.bin/tsc-alias && exec node",
   "compilerOptions": {
     "deleteOutDir": false,
     "plugins": [
