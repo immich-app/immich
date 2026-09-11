@@ -1,7 +1,14 @@
 import { Writable } from 'node:stream';
+<<<<<<< HEAD
 import { SyncEntityType } from 'src/enum';
 import { send } from 'src/services/sync.service';
 import { serialize } from 'src/utils/sync';
+=======
+import { SyncEntityType } from 'src/enum.js';
+import { send } from 'src/services/sync.service.js';
+import { ClientDisconnectedError } from 'src/utils/response.js';
+import { serialize } from 'src/utils/sync.js';
+>>>>>>> 9abb605 (fix: sync client disconnect (#31461))
 
 type TestStream = {
   stream: Writable;
@@ -37,7 +44,7 @@ describe('send', () => {
     ids: ['now-id'] as [string],
   };
 
-  it('resolves immediately when the stream has capacity', async () => {
+  it('should resolve immediately when the stream has capacity', async () => {
     // A large highWaterMark means write() never signals backpressure for a
     // single small item.
     const { stream, chunks, flushNext } = createTestStream(1024 * 1024);
@@ -49,7 +56,7 @@ describe('send', () => {
     expect(chunks).toEqual([serialize(item)]);
   });
 
-  it('waits for the drain event before resolving when the stream signals backpressure', async () => {
+  it('should wait for the drain event when the stream signals backpressure', async () => {
     // A tiny highWaterMark means the very first write already exceeds
     // capacity, so write() returns false and send() must wait for 'drain'.
     const { stream, chunks, flushNext, pendingCount } = createTestStream(1);
@@ -74,5 +81,37 @@ describe('send', () => {
 
     expect(resolved).toBe(true);
     expect(chunks).toEqual([serialize(item)]);
+  });
+
+  it('should throw a disconnect error when the stream destroyed', async () => {
+    const { stream, chunks } = createTestStream(1024 * 1024);
+
+    stream.destroy();
+
+    await expect(send(stream, item)).rejects.toBeInstanceOf(ClientDisconnectedError);
+    expect(chunks).toEqual([]);
+  });
+
+  it('should throw a disconnect error when the stream is destroyed after writing some data', async () => {
+    const { stream } = createTestStream(1);
+
+    const sendPromise = send(stream, item);
+
+    await Promise.resolve();
+    stream.destroy();
+
+    await expect(sendPromise).rejects.toBeInstanceOf(ClientDisconnectedError);
+  });
+
+  it('should handle a stream error', async () => {
+    const { stream } = createTestStream(1);
+    const error = new Error('socket hang up');
+
+    const sendPromise = send(stream, item);
+
+    await Promise.resolve();
+    stream.emit('error', error);
+
+    await expect(sendPromise).rejects.toBe(error);
   });
 });
