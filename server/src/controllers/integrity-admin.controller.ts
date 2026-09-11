@@ -83,9 +83,11 @@ export class IntegrityAdminController {
   @FileResponse()
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   getIntegrityReportCsv(@Param() { type }: IntegrityReportTypeParamDto, @Res() res: Response): void {
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Cache-Control', 'private, no-cache, no-transform');
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(`${Date.now()}-${type}.csv`)}"`);
+    res.header({
+      'Content-Type': 'text/csv',
+      'Cache-Control': 'private, no-cache, no-transform',
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(`${Date.now()}-${type}.csv`)}"`,
+    });
 
     this.service.getIntegrityReportCsv(type).pipe(res);
   }
