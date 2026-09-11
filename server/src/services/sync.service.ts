@@ -1,10 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import { DateTime, Duration } from 'luxon';
-import { once } from 'node:events';
 import { Writable } from 'node:stream';
-import { OnJob } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { OnJob } from 'src/decorators.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   SyncAckDeleteDto,
   SyncAckSetDto,
@@ -12,14 +11,15 @@ import {
   SyncAssetV2,
   SyncItem,
   SyncStreamDto,
-} from 'src/dtos/sync.dto';
-import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum';
-import { SyncQueryOptions } from 'src/repositories/sync.repository';
-import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
-import { BaseService } from 'src/services/base.service';
-import { SyncAck } from 'src/types';
-import { hexOrBufferToBase64 } from 'src/utils/bytes';
-import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
+} from 'src/dtos/sync.dto.js';
+import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { SyncQueryOptions } from 'src/repositories/sync.repository.js';
+import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { SyncAck } from 'src/types.js';
+import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
+import { ClientDisconnectedError, waitForDrain } from 'src/utils/response.js';
+import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync.js';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
 type AssetLike = Omit<SyncAssetV2, 'checksum' | 'thumbhash'> & {
@@ -47,8 +47,13 @@ export const send = async <T extends keyof SyncItem, D extends SyncItem[T]>(
   response: Writable,
   item: SerializeOptions<T, D>,
 ) => {
+  if (response.destroyed || response.writableEnded) {
+    throw new ClientDisconnectedError();
+  }
+
+  // indicates back pressure, so we wait for 'drain' event
   if (!response.write(serialize(item))) {
-    await once(response, 'drain');
+    await waitForDrain(response);
   }
 };
 
@@ -136,6 +141,19 @@ export class SyncService extends BaseService {
   }
 
   async stream(auth: AuthDto, response: Writable, dto: SyncStreamDto) {
+    try {
+      await this.streamInternal(auth, response, dto);
+    } catch (error) {
+      if (error instanceof ClientDisconnectedError) {
+        this.logger.debug('Client closed the connection');
+        return;
+      }
+
+      throw error;
+    }
+  }
+
+  private async streamInternal(auth: AuthDto, response: Writable, dto: SyncStreamDto) {
     const session = auth.session;
     if (!session) {
       return throwSessionRequired();

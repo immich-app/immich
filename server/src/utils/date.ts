@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { isoDateToDate, isoDatetimeToDate } from 'src/validation';
+import { isoDateToDate, isoDatetimeToDate } from 'src/validation.js';
 
 /**
  * Convert a date to a ISO 8601 datetime string.

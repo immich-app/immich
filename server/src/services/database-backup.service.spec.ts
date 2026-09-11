@@ -1,13 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { Duplex, PassThrough, Readable } from 'node:stream';
-import { StorageCore } from 'src/cores/storage.core';
-import { defaults, SystemConfig } from 'src/dtos/config.dto';
-import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum';
-import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { automock, AutoMocked, getMocks, mockDuplex, mockSpawn, ServiceMocks } from 'test/utils';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { defaults, SystemConfig } from 'src/dtos/config.dto.js';
+import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum.js';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
+import { automock, AutoMocked, getMocks, mockDuplex, mockSpawn, ServiceMocks } from 'test/utils.js';
 
 describe(DatabaseBackupService.name, () => {
   let sut: DatabaseBackupService;

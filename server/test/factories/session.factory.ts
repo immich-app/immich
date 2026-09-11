@@ -1,7 +1,7 @@
 import { Selectable } from 'kysely';
-import { SessionTable } from 'src/schema/tables/session.table';
-import { SessionLike } from 'test/factories/types';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { SessionTable } from 'src/schema/tables/session.table.js';
+import { SessionLike } from 'test/factories/types.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class SessionFactory {
   private constructor(private value: Selectable<SessionTable>) {}
