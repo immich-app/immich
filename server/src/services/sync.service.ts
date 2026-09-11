@@ -11,7 +11,6 @@ import {
   SyncAssetV2,
   SyncItem,
   SyncStreamDto,
-<<<<<<< HEAD
 } from 'src/dtos/sync.dto';
 import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum';
 import { SyncQueryOptions } from 'src/repositories/sync.repository';
@@ -19,18 +18,8 @@ import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.ta
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { ClientDisconnectedError, waitForDrain } from 'src/utils/response';
 import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
-=======
-} from 'src/dtos/sync.dto.js';
-import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum.js';
-import { SyncQueryOptions } from 'src/repositories/sync.repository.js';
-import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table.js';
-import { BaseService } from 'src/services/base.service.js';
-import type { SyncAck } from 'src/types.js';
-import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
-import { ClientDisconnectedError, waitForDrain } from 'src/utils/response.js';
-import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync.js';
->>>>>>> 9abb605 (fix: sync client disconnect (#31461))
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
 type AssetLike = Omit<SyncAssetV2, 'checksum' | 'thumbhash'> & {

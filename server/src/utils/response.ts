@@ -1,13 +1,8 @@
 import { CookieOptions, Response } from 'express';
 import { Duration } from 'luxon';
-<<<<<<< HEAD
+import { Writable } from 'node:stream';
 import { CookieResponse } from 'src/dtos/auth.dto';
 import { ImmichCookie } from 'src/enum';
-=======
-import { Writable } from 'node:stream';
-import { CookieResponse } from 'src/dtos/auth.dto.js';
-import { ImmichCookie } from 'src/enum.js';
->>>>>>> 9abb605 (fix: sync client disconnect (#31461))
 
 export class ClientDisconnectedError extends Error {}
 
