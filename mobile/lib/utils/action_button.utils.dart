@@ -213,7 +213,7 @@ enum ActionButtonType {
         action: SimilarPhotosAction(assetId: (context.asset as RemoteAsset).id),
       ),
       ActionButtonType.setFeaturedPhoto => ActionMenuItem(
-        action: SetFeaturedPhotoAction(assetId: context.asset.remoteId!, personId: context.currentPerson!.id),
+        action: SetFeaturedPhotoAction(assetId: (context.asset as RemoteAsset).id, personId: context.currentPerson!.id),
       ),
       ActionButtonType.setProfilePicture => ActionMenuItem(action: SetProfilePictureAction(asset: context.asset)),
       ActionButtonType.openInfo => BaseActionButton(
