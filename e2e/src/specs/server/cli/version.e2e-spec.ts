@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { immichCli } from 'src/utils';
+import { immichCli } from 'src/utils.js';
 import { describe, expect, it } from 'vitest';
 
 const pkg = JSON.parse(readFileSync('../packages/cli/package.json', 'utf8'));

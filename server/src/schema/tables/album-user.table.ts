@@ -4,18 +4,18 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   Index,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AlbumUserRole } from 'src/enum';
-import { album_user_role_enum } from 'src/schema/enums';
-import { album_user_after_insert, album_user_delete, album_user_delete_audit } from 'src/schema/functions';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { UserTable } from 'src/schema/tables/user.table';
+import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { AlbumUserRole } from 'src/enum.js';
+import { album_user_role_enum } from 'src/schema/enums.js';
+import { album_user_after_insert, album_user_delete, album_user_delete_audit } from 'src/schema/functions.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table({ name: 'album_user' })
 @Index({

@@ -1,15 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MaybeDuplicate } from 'src/dtos/activity.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { MaybeDuplicate } from 'src/dtos/activity.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   ClusterGroupRequestCreateDto,
   ClusterGroupRequestResponseDto,
   mapClusterGroupRequest,
-} from 'src/dtos/cluster-group.dto';
-import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
-import { JobName, Permission } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { findOrFail } from 'src/utils/misc';
+} from 'src/dtos/cluster-group.dto.js';
+import { mapUser, UserResponseDto } from 'src/dtos/user.dto.js';
+import { JobName, Permission } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { findOrFail } from 'src/utils/misc.js';
 
 @Injectable()
 export class ClusterGroupService extends BaseService {

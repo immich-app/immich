@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { SeededRandom, selectRandom, TimelineAssetConfig } from 'src/ui/generators/timeline';
+import { SeededRandom, selectRandom, TimelineAssetConfig } from 'src/ui/generators/timeline.js';
 import {
   createMockPeople,
   FaceCreateCapture,

@@ -1,4 +1,4 @@
-import { asDateString, asDateTimeString } from 'src/utils/date';
+import { asDateString, asDateTimeString } from 'src/utils/date.js';
 import { describe, expect, it } from 'vitest';
 
 describe('asDateString', () => {

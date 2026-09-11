@@ -1,6 +1,6 @@
 import { ForeignKeyColumn, Index, Table } from '@immich/sql-tools';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { TagTable } from 'src/schema/tables/tag.table';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { TagTable } from 'src/schema/tables/tag.table.js';
 
 @Index({ columns: ['assetId', 'tagId'] })
 @Table('tag_asset')

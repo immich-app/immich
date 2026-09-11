@@ -2,16 +2,16 @@ import {
   AfterDeleteTrigger,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { stack_delete_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { UserTable } from 'src/schema/tables/user.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { stack_delete_audit } from 'src/schema/functions.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('stack')
 @UpdatedAtTrigger('stack_updatedAt')

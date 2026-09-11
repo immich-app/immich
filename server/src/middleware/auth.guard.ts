@@ -9,11 +9,11 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiExtension, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiCustomExtension, ImmichQuery, MetadataKey, Permission } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { getUserAgentDetails } from 'src/utils/request';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { ApiCustomExtension, ImmichQuery, MetadataKey, Permission } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { AuthService, LoginDetails } from 'src/services/auth.service.js';
+import { getUserAgentDetails } from 'src/utils/request.js';
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };

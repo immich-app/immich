@@ -1,9 +1,9 @@
-import { Kysely } from 'kysely';
+import type { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
-import { asUuid, withExif } from 'src/utils/database';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetVisibility } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { asUuid, withExif } from 'src/utils/database.js';
 
 export class ViewRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
