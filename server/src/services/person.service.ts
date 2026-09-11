@@ -32,36 +32,20 @@ import {
   SourceType,
   SystemMetadataKey,
   VectorIndex,
-<<<<<<< HEAD
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { PersonId, UpdateFacesData } from 'src/repositories/person.repository';
+import { DB } from 'src/schema/index';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import type { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc';
 import { Point, transformPoints } from 'src/utils/transform';
-=======
-} from 'src/enum.js';
-import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
-import { PersonId, UpdateFacesData } from 'src/repositories/person.repository.js';
-import { DB } from 'src/schema/index.js';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
-import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
-import { PersonTable } from 'src/schema/tables/person.table.js';
-import { BaseService } from 'src/services/base.service.js';
-import type { JobItem, JobOf } from 'src/types.js';
-import { getDimensions } from 'src/utils/asset.util.js';
-import { ImmichFileResponse } from 'src/utils/file.js';
-import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc.js';
-import { Point, transformPoints } from 'src/utils/transform.js';
->>>>>>> e039168 (fix(server): vacuum after migrations, concurrent reindex (#31424))
 
 const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${personGroupId}`;
 
