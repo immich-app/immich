@@ -210,10 +210,6 @@ class CleanupLocalAction extends AssetActionBuilder {
 }
 
 /// Removes the device copies of [assetIds], returning how many were deleted.
-///
-/// Android below 30 deletes for good without asking, so we ask, warning for [notBackedUp] assets. From 30
-/// the OS asks itself; from 31 it trashes (_androidSupportsTrash), silently with MANAGE_MEDIA, so we confirm
-/// that trash ourselves. Never two prompts, none when [requestCustomPrompt] is false.
 Future<int> _cleanupLocalAssets(
   BuildContext context,
   WidgetRef ref,
@@ -226,16 +222,36 @@ Future<int> _cleanupLocalAssets(
   }
 
   final cleanupService = ref.read(cleanupServiceProvider);
-  final manageMedia = ref.read(storeServiceProvider).get(.manageLocalMediaAndroid, false);
-  final requiresPrompt =
-      requestCustomPrompt &&
-      CurrentPlatform.isAndroid &&
-      (manageMedia || await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30);
-  if (!context.mounted) {
+  if (!await _allowsDeletion(context, ref, requestCustomPrompt: requestCustomPrompt, notBackedUp: notBackedUp)) {
     return 0;
   }
 
-  if (requiresPrompt) {
+  return cleanupService.deleteLocalAssets(assetIds);
+}
+
+/// iOS always shows a prompt and adds to on device trash
+/// Android varies by API version:
+///   < 30: Does not prompt by default. Immediately deletes. We provide a prompt to notify the user
+///   30: Prompts by default. Immediately deletes
+///   > 30: When `MANAGE_MEDIA` is present, does not prompt by default. When `MANAGE_MEDIA` is not present, does prompt
+///         by default. Either way adds to trash. We provide a prompt to notify the user in the `MANAGE_MEDIA` case
+Future<bool> _allowsDeletion(
+  BuildContext context,
+  WidgetRef ref, {
+  required bool requestCustomPrompt,
+  required bool notBackedUp,
+}) async {
+  if (!requestCustomPrompt || !CurrentPlatform.isAndroid) {
+    return true;
+  }
+
+  final manageMedia = ref.read(storeServiceProvider).get(.manageLocalMediaAndroid, false);
+  final versionRequiresPrompt = await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30;
+  if (!context.mounted) {
+    return false;
+  }
+
+  if (manageMedia || versionRequiresPrompt) {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => !manageMedia
@@ -252,10 +268,8 @@ Future<int> _cleanupLocalAssets(
               ok: context.t.ok,
             ),
     );
-    if (confirmed != true) {
-      return 0;
-    }
+    return confirmed == true;
   }
 
-  return cleanupService.deleteLocalAssets(assetIds);
+  return true;
 }

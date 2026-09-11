@@ -251,7 +251,7 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
 
-      testWidgets('local only delete on Android 30 shows no prompt', (tester) async {
+      testWidgets('local only delete on Android 30 shows no Flutter prompt', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
         final asset = LocalAssetFactory.create();
@@ -264,7 +264,7 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
 
-      testWidgets('backed up device copy below API 30 asks instead of warning', (tester) async {
+      testWidgets('backed up device copy below API 30 shows the delete prompt, not the backup warning', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
         final asset = LocalAssetFactory.create(remoteId: 'remote');
