@@ -415,6 +415,26 @@ void main() {
   });
 
   group('onUploadStatus', () {
+    test('stacks a plain photo after its upload', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/photo.jpg');
+      final void Function(TaskStatusUpdate) onStatus = verify(
+        () => mockUploadRepository.onUploadStatus = captureAny(),
+      ).captured.first;
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+
+      final task = await sut.getUploadTask(asset);
+      onStatus(TaskStatusUpdate(task!, TaskStatus.complete, null, '{"id": "remote"}'));
+
+      verify(() => mockAssetService.stackEditedUpload(asset.id, 'remote')).called(1);
+      verifyNoMoreInteractions(mockAssetService);
+    });
+
     test('stacks the still of a live photo, not its video', () async {
       final asset = LocalAssetStub.image1;
       final mockEntity = MockAssetEntity();

@@ -28,24 +28,39 @@ void main() {
       return (checksum: data.checksum, previousChecksum: data.previousChecksum);
     }
 
-    for (final (platform, edited) in [
-      (TargetPlatform.android, _localAsset('edited', updatedAt: DateTime(2025))),
-      (TargetPlatform.iOS, _localAsset('edited', adjustmentTime: DateTime(2025))),
+    for (final (platform, scenario, edited, expected) in [
+      (
+        TargetPlatform.android,
+        'updatedAt changed clears the checksum and remembers it',
+        _localAsset('edited', updatedAt: DateTime(2025)),
+        (checksum: null, previousChecksum: 'a'),
+      ),
+      (
+        TargetPlatform.android,
+        'adjustmentTime changed keeps the checksum',
+        _localAsset('edited', adjustmentTime: DateTime(2025)),
+        (checksum: 'a', previousChecksum: null),
+      ),
+      (
+        TargetPlatform.iOS,
+        'adjustmentTime changed clears the checksum and remembers it',
+        _localAsset('edited', adjustmentTime: DateTime(2025)),
+        (checksum: null, previousChecksum: 'a'),
+      ),
+      (
+        TargetPlatform.iOS,
+        'updatedAt changed keeps the checksum',
+        _localAsset('edited', updatedAt: DateTime(2025)),
+        (checksum: 'a', previousChecksum: null),
+      ),
     ]) {
-      test('${platform.name} remembers the checksum it clears', () async {
+      test('${platform.name}: $scenario', () async {
         debugDefaultTargetPlatformOverride = platform;
         await ctx.newLocalAsset(id: 'edited', checksum: 'a', updatedAt: DateTime(2024), adjustmentTime: DateTime(2024));
-        await ctx.newLocalAsset(
-          id: 'untouched',
-          checksum: 'b',
-          updatedAt: DateTime(2024),
-          adjustmentTime: DateTime(2024),
-        );
 
-        await sut.upsert(album, toUpsert: [edited, _localAsset('untouched')]);
+        await sut.upsert(album, toUpsert: [edited]);
 
-        expect(await row('edited'), (checksum: null, previousChecksum: 'a'));
-        expect(await row('untouched'), (checksum: 'b', previousChecksum: null));
+        expect(await row('edited'), expected);
       });
     }
   });

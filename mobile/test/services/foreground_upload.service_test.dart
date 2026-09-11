@@ -202,6 +202,24 @@ void main() {
       expect(names, equals(['DJI_0001.jpg']));
     });
 
+    test('stacks a plain photo after its upload', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/photo.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+      captureFields();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote-1')).called(1);
+      verifyNoMoreInteractions(mockAssetService);
+    });
+
     test('stacks the still of a live photo, not its video', () async {
       final asset = LocalAssetStub.image1;
       final mockEntity = MockAssetEntity();
