@@ -22,7 +22,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
-  import { navigateToAsset } from '$lib/utils/asset-utils';
+  import { navigateToAsset, orderStackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
@@ -106,6 +106,7 @@
 
   let previewStackedAsset: AssetResponseDto | undefined = $state();
   let stack: StackResponseDto | null = $state(null);
+  const stackedAssets = $derived.by(() => (stack ? orderStackAssets(stack.assets) : []));
 
   const asset = $derived(previewStackedAsset ?? cursor.current);
   const nextAsset = $derived(cursor.nextAsset);
@@ -267,7 +268,7 @@
     if (!stack || !withStacked || assetViewerManager.isShowEditor) {
       return;
     }
-    const assets = stack.assets;
+    const assets = stackedAssets;
     const currentIndex = assets.findIndex(({ id }) => id === asset.id);
     if (currentIndex === -1) {
       return;
@@ -641,7 +642,6 @@
   {/if}
 
   {#if stack && withStacked && !assetViewerManager.isShowEditor && $slideshowState === SlideshowState.None}
-    {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-fit max-w-full">
       <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
