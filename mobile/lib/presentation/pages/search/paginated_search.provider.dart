@@ -42,11 +42,10 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   final RemoteAssetRepository _remoteAssetRepository;
   final _assetCountController = StreamController<int>.broadcast();
 
-  StreamSubscription<Set<String>>? _matchingIdsSubscription;
+  StreamSubscription<Set<String>>? _hiddenIdsSubscription;
   AssetVisibility _visibility = AssetVisibility.timeline;
-  List<BaseAsset> _allAssets = const [];
-  Set<String> _matchingIds = const {};
-  final Set<String> _knownMatchingIds = {};
+  List<BaseAsset> _results = const [];
+  Set<String> _hiddenIds = const {};
 
   PaginatedSearchNotifier(this._searchService, this._remoteAssetRepository) : super(const SearchState());
 
@@ -68,48 +67,39 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
       return;
     }
 
-    _allAssets = [..._allAssets, ...result.assets];
-    _applyFilter(nextPage: result.nextPage);
-    _watchMatchingIds();
+    _results = [..._results, ...result.assets];
+    _emit(result.nextPage);
+    _watchHiddenIds();
   }
 
   void clear() {
-    unawaited(_matchingIdsSubscription?.cancel());
-    _matchingIdsSubscription = null;
-    _allAssets = const [];
-    _matchingIds = const {};
-    _knownMatchingIds.clear();
+    unawaited(_hiddenIdsSubscription?.cancel());
+    _hiddenIdsSubscription = null;
+    _results = const [];
+    _hiddenIds = const {};
     state = const SearchState();
     _assetCountController.add(0);
   }
 
-  void _watchMatchingIds() {
-    unawaited(_matchingIdsSubscription?.cancel());
+  void _watchHiddenIds() {
+    unawaited(_hiddenIdsSubscription?.cancel());
 
-    final ids = _allAssets.whereType<RemoteAsset>().map((asset) => asset.id).toList(growable: false);
+    final ids = _results.whereType<RemoteAsset>().map((asset) => asset.id).toList(growable: false);
     if (ids.isEmpty) {
-      _matchingIdsSubscription = null;
+      _hiddenIdsSubscription = null;
       return;
     }
 
-    _matchingIdsSubscription = _remoteAssetRepository.watchMatchingIds(ids, _visibility).listen(_onMatchingIds);
+    _hiddenIdsSubscription = _remoteAssetRepository.watchHiddenIds(ids, _visibility).listen((hidden) {
+      _hiddenIds = hidden;
+      _emit(state.nextPage);
+    });
   }
 
-  void _onMatchingIds(Set<String> matchingIds) {
-    _matchingIds = matchingIds;
-    _knownMatchingIds.addAll(matchingIds);
-    _applyFilter(nextPage: state.nextPage);
-  }
-
-  void _applyFilter({required int? nextPage}) {
-    final visible = _allAssets
-        .where((asset) {
-          if (asset is! RemoteAsset || _matchingIds.contains(asset.id)) {
-            return true;
-          }
-          return !_knownMatchingIds.contains(asset.id);
-        })
-        .toList(growable: false);
+  void _emit(int? nextPage) {
+    final visible = _hiddenIds.isEmpty
+        ? _results
+        : _results.where((asset) => asset is! RemoteAsset || !_hiddenIds.contains(asset.id)).toList(growable: false);
 
     final changed = visible.length != state.assets.length;
     state = SearchState(assets: visible, nextPage: nextPage);
@@ -120,7 +110,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
 
   @override
   void dispose() {
-    unawaited(_matchingIdsSubscription?.cancel());
+    unawaited(_hiddenIdsSubscription?.cancel());
     unawaited(_assetCountController.close());
     super.dispose();
   }

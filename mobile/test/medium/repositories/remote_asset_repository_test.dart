@@ -67,7 +67,7 @@ void main() {
     });
   });
 
-  group('watchMatchingIds', () {
+  group('watchHiddenIds', () {
     late String userId;
 
     setUp(() async {
@@ -76,39 +76,42 @@ void main() {
       await ctx.newAuthUser(id: userId);
     });
 
-    test('excludes trashed, deleted and archived assets', () async {
+    test('hides trashed and archived assets but keeps matching and unsynced ones', () async {
       final timeline = await ctx.newRemoteAsset(ownerId: userId);
       final trashed = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2020));
       final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
 
-      final result = await sut.watchMatchingIds([
+      final result = await sut.watchHiddenIds([
         timeline.id,
         trashed.id,
         archived.id,
         'never-synced',
       ], AssetVisibility.timeline).first;
 
-      expect(result, {timeline.id});
+      expect(result, {trashed.id, archived.id});
     });
 
-    test('matches the requested visibility for archive searches', () async {
+    test('hides assets not matching the requested visibility for archive searches', () async {
       final timeline = await ctx.newRemoteAsset(ownerId: userId);
       final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
 
-      final result = await sut.watchMatchingIds([timeline.id, archived.id], AssetVisibility.archive).first;
+      final result = await sut.watchHiddenIds([timeline.id, archived.id], AssetVisibility.archive).first;
 
-      expect(result, {archived.id});
+      expect(result, {timeline.id});
     });
 
-    test('emits again when a matching asset is trashed', () async {
+    test('emits when an asset is trashed and again when it is restored', () async {
       final asset = await ctx.newRemoteAsset(ownerId: userId);
-      final queue = StreamQueue(sut.watchMatchingIds([asset.id], AssetVisibility.timeline));
-
-      expect(await queue.next, {asset.id});
-
-      await sut.trash([asset.id]);
+      final queue = StreamQueue(sut.watchHiddenIds([asset.id], AssetVisibility.timeline));
 
       expect(await queue.next, isEmpty);
+
+      await sut.trash([asset.id]);
+      expect(await queue.next, {asset.id});
+
+      await sut.restoreTrash([asset.id]);
+      expect(await queue.next, isEmpty);
+
       await queue.cancel();
     });
   });
