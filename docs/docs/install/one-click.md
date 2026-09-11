@@ -25,6 +25,10 @@ https://marketplace.digitalocean.com/apps/immich
 
 https://www.vultr.com/marketplace/apps/immich
 
+### Yundera
+
+<https://yundera.com/install-immich-on-yundera>
+
 ## Issues
 
 For issues, open an issue on the associated [GitHub Repository][github].
