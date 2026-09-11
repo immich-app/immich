@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -87,6 +88,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
           onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
+            extendBody: true,
             body: isScreenLandscape
                 ? Row(
                     children: [
@@ -138,6 +140,8 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   ref.read(tabProvider.notifier).state = TabEnum.values[index];
 }
 
+const _kFloatingNavBarRadius = BorderRadius.all(Radius.circular(28));
+
 class _BottomNavigationBar extends ConsumerStatefulWidget {
   const _BottomNavigationBar({required this.tabsRouter, required this.destinations});
 
@@ -178,10 +182,51 @@ class _BottomNavigationBarState extends ConsumerState<_BottomNavigationBar> {
       return const SizedBox.shrink();
     }
 
-    return NavigationBar(
-      selectedIndex: widget.tabsRouter.activeIndex,
-      onDestinationSelected: (index) => _onNavigationSelected(widget.tabsRouter, index, ref),
-      destinations: widget.destinations,
+    final colorScheme = context.colorScheme;
+    final isDark = context.isDarkTheme;
+
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: _kFloatingNavBarRadius,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.15),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: _kFloatingNavBarRadius,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withValues(alpha: isDark ? 0.55 : 0.7),
+                  borderRadius: _kFloatingNavBarRadius,
+                  border: Border.all(color: colorScheme.onSurface.withValues(alpha: isDark ? 0.12 : 0.08)),
+                ),
+                child: NavigationBar(
+                  selectedIndex: widget.tabsRouter.activeIndex,
+                  onDestinationSelected: (index) => _onNavigationSelected(widget.tabsRouter, index, ref),
+                  destinations: widget.destinations,
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  elevation: 0,
+                  height: 72,
+                  labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
