@@ -19,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -233,6 +234,7 @@ class _AssetTileWidget extends ConsumerWidget {
             timelineService: ref.read(timelineServiceProvider),
             heroOffset: heroOffset,
             currentAlbum: ref.read(currentRemoteAlbumProvider),
+            currentPerson: ref.read(currentPersonScopedProvider),
           ),
         ),
       );

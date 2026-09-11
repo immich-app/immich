@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -33,6 +34,7 @@ class ViewerKebabMenu extends ConsumerWidget {
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final isInLockedView = ref.watch(inLockedViewProvider);
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
+    final currentPerson = ref.watch(currentPersonScopedProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
 
@@ -44,6 +46,7 @@ class ViewerKebabMenu extends ConsumerWidget {
       isStacked: asset is RemoteAsset && asset.stackId != null,
       isInLockedView: isInLockedView,
       currentAlbum: currentAlbum,
+      currentPerson: currentPerson,
       advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
       isCasting: isCasting,

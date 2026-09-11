@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
@@ -86,6 +87,7 @@ class _PersonPageState extends ConsumerState<PersonPage> {
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),
+        currentPersonScopedProvider.overrideWithValue(_person),
       ],
       child: Timeline(
         appBar: PersonSliverAppBar(

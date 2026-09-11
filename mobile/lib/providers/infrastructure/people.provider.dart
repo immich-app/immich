@@ -19,3 +19,5 @@ final getAllPeopleProvider = StreamProvider<List<Person>>((ref) async* {
   final prefs = await ref.watch(userMetadataPreferencesProvider.future);
   yield* service.watch(minFaces: prefs?.minimumFaces ?? 3);
 });
+
+final currentPersonScopedProvider = Provider<Person?>((ref) => null);
