@@ -153,6 +153,8 @@ export class BaseConfig implements VideoCodecSWConfig {
         'faststart',
         '-fps_mode',
         'passthrough',
+        '-enc_time_base:v',
+        'filter',
         '-v',
         'verbose',
       ],
