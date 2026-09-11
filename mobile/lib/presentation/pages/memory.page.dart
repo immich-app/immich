@@ -4,7 +4,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
@@ -12,20 +11,20 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
+import 'package:immich_mobile/presentation/widgets/slideshow/slideshow_controller.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
-/// How long a single image is shown before the memory auto-advances to the
-/// next asset
 const _kMemoryAssetDuration = Duration(seconds: 5);
 
 /// Expects the current asset to be set via [assetViewerProvider] before navigating to this page
 @RoutePage()
-class MemoryPage extends HookConsumerWidget {
+class MemoryPage extends ConsumerStatefulWidget {
   final List<Memory> memories;
   final int memoryIndex;
 
@@ -38,427 +37,516 @@ class MemoryPage extends HookConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentMemory = useState(memories[memoryIndex]);
-    final currentAssetPage = useState(0);
-    final currentMemoryIndex = useState(memoryIndex);
-    final assetProgress = useState("${currentAssetPage.value + 1}|${currentMemory.value.assets.length}");
-    const bgColor = Colors.black;
-    final currentAsset = useState<RemoteAsset?>(null);
-    final autoAdvanceController = useAnimationController(duration: _kMemoryAssetDuration);
-    final isPaused = useState(false);
-    final onEpilogue = useState(false);
-    final autoplayMemories = ref.watch(appConfigProvider.select((config) => config.viewer.autoplayMemories));
+  ConsumerState<MemoryPage> createState() => _MemoryPageState();
+}
 
-    /// The list of all of the asset page controllers
-    final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
+class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStateMixin implements SlideshowDelegate {
+  late final SlideshowController _slideshow;
+  late final PageController _memoryPageController;
+  late final List<PageController> _assetPageControllers;
 
-    /// The main vertically scrolling page controller with each list of memories
-    final memoryPageController = usePageController(initialPage: memoryIndex);
+  late final List<int> _offsets;
+  late final int _totalAssets;
 
-    useEffect(() {
-      // Memories is an immersive activity
-      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
-      return () {
-        // Clean up to normal edge to edge when we are done
-        unawaited(restoreEdgeToEdge());
-      };
+  int _currentMemoryIndex = 0;
+  int _currentAssetPage = 0;
+  bool _onEpilogue = false;
+
+  bool _userPaused = false;
+
+  RemoteAsset? _currentAsset;
+
+  List<Memory> get _memories => widget.memories;
+
+  bool get _autoplay => ref.read(appConfigProvider).viewer.autoplayMemories;
+
+  int _encode(int memory, int asset) => _offsets[memory] + asset;
+
+  (int, int) _decode(int index) {
+    for (var m = _memories.length - 1; m >= 0; m--) {
+      if (index >= _offsets[m]) {
+        return (m, index - _offsets[m]);
+      }
+    }
+    return (0, 0);
+  }
+
+  RemoteAsset? _assetAtFlat(int index) {
+    if (index < 0 || index >= _totalAssets) {
+      return null;
+    }
+    final (m, a) = _decode(index);
+    return _memories[m].assets[a];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _offsets = List<int>.filled(_memories.length, 0);
+    var running = 0;
+    for (var m = 0; m < _memories.length; m++) {
+      _offsets[m] = running;
+      running += _memories[m].assets.length;
+    }
+    _totalAssets = running;
+
+    _currentMemoryIndex = widget.memoryIndex;
+    _currentAsset = _memories[widget.memoryIndex].assets.isNotEmpty ? _memories[widget.memoryIndex].assets.first : null;
+
+    _memoryPageController = PageController(initialPage: widget.memoryIndex);
+    _assetPageControllers = List.generate(_memories.length, (_) => PageController());
+
+    _slideshow = SlideshowController(
+      vsync: this,
+      slideDuration: _kMemoryAssetDuration,
+      initialIndex: _encode(widget.memoryIndex, 0),
+      delegate: this,
+    );
+
+    ref.listenManual(appConfigProvider.select((c) => c.viewer.autoplayMemories), (_, enabled) {
+      if (enabled && !_userPaused && !_onEpilogue) {
+        _slideshow.resume();
+      } else if (!enabled) {
+        _slideshow.pause();
+      }
     });
 
-    void toNextMemory() {
-      unawaited(memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      if (!_autoplay) {
+        _slideshow.pause();
+      }
+      _slideshow.goToNextSlide();
+      unawaited(_precacheAsset(1));
+    });
+  }
+
+  @override
+  void dispose() {
+    _slideshow.dispose();
+    _memoryPageController.dispose();
+    for (final controller in _assetPageControllers) {
+      controller.dispose();
     }
+    unawaited(restoreEdgeToEdge());
+    super.dispose();
+  }
 
-    void toPreviousMemory() {
-      if (currentMemoryIndex.value > 0) {
-        // Move to the previous memory page
-        unawaited(memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
+  @override
+  int? nextIndexAfter(int index) {
+    if (index >= _totalAssets) {
+      return null;
+    }
+    final (m, a) = _decode(index);
+    if (a + 1 < _memories[m].assets.length) {
+      return index + 1;
+    }
+    if (m + 1 < _memories.length) {
+      return _encode(m + 1, 0);
+    }
+    // Past the last asset lies the epilogue
+    return _totalAssets;
+  }
 
-        // Wait for the next frame to ensure the page is built
+  @override
+  Duration? videoProgressOf(int index) {
+    if (!_autoplay) {
+      return null;
+    }
+    final asset = _assetAtFlat(index);
+    if (asset == null || asset.isImage) {
+      return null;
+    }
+    return ref.read(videoPlayerProvider(asset.id)).position;
+  }
+
+  @override
+  bool isVideoCompleted(int index) {
+    if (!_autoplay) {
+      return false;
+    }
+    final asset = _assetAtFlat(index);
+    if (asset == null || asset.isImage) {
+      return false;
+    }
+    return ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed;
+  }
+
+  @override
+  void onPlaybackChanged(int index, bool playing) {
+    final asset = _assetAtFlat(index);
+    if (asset == null || asset.isImage) {
+      return;
+    }
+    final notifier = ref.read(videoPlayerProvider(asset.id).notifier);
+    unawaited(playing ? notifier.play() : notifier.pause());
+  }
+
+  @override
+  void onShowSlide(int index, int prevIndex) {
+    if (index == prevIndex) {
+      _slideshow.didCompleteShowSlide(index);
+    } else if (index >= _totalAssets) {
+      unawaited(_toNextMemory());
+    } else if (_decode(index).$1 == _decode(prevIndex.clamp(0, _totalAssets - 1)).$1) {
+      _toNextAsset(_currentAssetPage);
+    } else {
+      unawaited(_toNextMemory());
+    }
+  }
+
+  Future<void> _toNextMemory() {
+    return _memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+  }
+
+  void _toPreviousMemory() {
+    if (_currentMemoryIndex == 0) {
+      return;
+    }
+    unawaited(_memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
+
+    void jumpToEnd() {
+      final previousIndex = _currentMemoryIndex - 1;
+      final controller = _assetPageControllers[previousIndex];
+      if (controller.hasClients) {
+        controller.jumpToPage(_memories[previousIndex].assets.length - 1);
+      } else {
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          final previousIndex = currentMemoryIndex.value - 1;
-          final previousMemoryController = memoryAssetPageControllers[previousIndex];
-
-          // Ensure the controller is attached
-          if (previousMemoryController.hasClients) {
-            previousMemoryController.jumpToPage(memories[previousIndex].assets.length - 1);
-          } else {
-            // Wait for the next frame until it is attached
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              if (previousMemoryController.hasClients) {
-                previousMemoryController.jumpToPage(memories[previousIndex].assets.length - 1);
-              }
-            });
+          if (controller.hasClients) {
+            controller.jumpToPage(_memories[previousIndex].assets.length - 1);
           }
         });
       }
     }
 
-    void toNextAsset(int currentAssetIndex) {
-      if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
-        // Go to the next asset
-        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+    SchedulerBinding.instance.addPostFrameCallback((_) => jumpToEnd());
+  }
 
-        unawaited(controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
-      } else {
-        // Go to the next memory since we are at the end of our assets
-        toNextMemory();
-      }
+  void _toNextAsset(int currentAssetIndex) {
+    if (currentAssetIndex + 1 < _memories[_currentMemoryIndex].assets.length) {
+      unawaited(
+        _assetPageControllers[_currentMemoryIndex].nextPage(
+          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 500),
+        ),
+      );
+    } else {
+      unawaited(_toNextMemory());
+    }
+  }
+
+  void _toPreviousAsset(int currentAssetIndex) {
+    if (currentAssetIndex > 0) {
+      unawaited(
+        _assetPageControllers[_currentMemoryIndex].previousPage(
+          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 500),
+        ),
+      );
+    } else {
+      _toPreviousMemory();
+    }
+  }
+
+  Future<void> _precacheAsset(int index) async {
+    if (index < 0 || !mounted) {
+      return;
     }
 
-    void toPreviousAsset(int currentAssetIndex) {
-      if (currentAssetIndex > 0) {
-        // Go to the previous asset
-        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
-
-        unawaited(controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
-      } else {
-        // Go to the previous memory since we are at the end of our assets
-        toPreviousMemory();
-      }
-    }
-
-    void updateProgressText() {
-      assetProgress.value = "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
-    }
-
-    /// Downloads and caches the image for the asset at this [currentMemory]'s index
-    Future<void> precacheAsset(int index) async {
-      // Guard index out of range
-      if (index < 0) {
+    final currentMemory = _memories[_currentMemoryIndex];
+    late RemoteAsset asset;
+    if (index < currentMemory.assets.length) {
+      asset = currentMemory.assets[index];
+    } else {
+      final nextMemoryIndex = _currentMemoryIndex + 1;
+      if (nextMemoryIndex >= _memories.length) {
         return;
       }
-
-      // Context might be removed due to popping out of Memory Lane during Scroll handling
-      if (!context.mounted) {
-        return;
-      }
-
-      late RemoteAsset asset;
-      if (index < currentMemory.value.assets.length) {
-        // Uses the next asset in this current memory
-        asset = currentMemory.value.assets[index];
-      } else {
-        // Precache the first asset in the next memory if available
-        final currentMemoryIndex = memories.indexOf(currentMemory.value);
-
-        // Guard no memory found
-        if (currentMemoryIndex == -1) {
-          return;
-        }
-
-        final nextMemoryIndex = currentMemoryIndex + 1;
-        // Guard no next memory
-        if (nextMemoryIndex >= memories.length) {
-          return;
-        }
-
-        // Get the first asset from the next memory
-        asset = memories[nextMemoryIndex].assets.first;
-      }
-
-      // Precache the asset
-      final size = MediaQuery.sizeOf(context);
-      await precacheImage(getFullImageProvider(asset, size: Size(size.width, size.height)), context, size: size);
+      asset = _memories[nextMemoryIndex].assets.first;
     }
 
-    // Precache the next page right away if we are on the first page
-    if (currentAssetPage.value == 0) {
-      unawaited(Future.delayed(const Duration(milliseconds: 200)).then((_) => precacheAsset(1)));
+    final size = MediaQuery.sizeOf(context);
+    await precacheImage(getFullImageProvider(asset, size: Size(size.width, size.height)), context, size: size);
+  }
+
+  Future<void> _onAssetChanged(int memoryIndex, int assetIndex) async {
+    ref.read(hapticFeedbackProvider.notifier).selectionClick();
+    setState(() {
+      _currentMemoryIndex = memoryIndex;
+      _currentAssetPage = assetIndex;
+    });
+    _slideshow.didCompleteShowSlide(_encode(memoryIndex, assetIndex));
+
+    final activeMemory = _memories[memoryIndex];
+
+    // Wait for the page change animation before precaching, then bail if the
+    // visible memory changed underneath us
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted || _currentMemoryIndex != memoryIndex) {
+      return;
+    }
+    await _precacheAsset(assetIndex + 1);
+    if (!mounted || _currentMemoryIndex != memoryIndex) {
+      return;
     }
 
-    Future<void> onAssetChanged(int otherIndex) async {
-      ref.read(hapticFeedbackProvider.notifier).selectionClick();
-      currentAssetPage.value = otherIndex;
-      updateProgressText();
+    final asset = activeMemory.assets[assetIndex];
+    setState(() => _currentAsset = asset);
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+  }
 
-      final activeMemory = currentMemory.value;
+  void _onMemoryChanged(int pageNumber) {
+    ref.read(hapticFeedbackProvider.notifier).mediumImpact();
 
-      // Wait for page change animation to finish
-      await Future.delayed(const Duration(milliseconds: 400));
-
-      // check if memory is still the same and if context is still mounted
-      if (currentMemory.value != activeMemory || !context.mounted) {
-        return;
-      }
-
-      // And then precache the next asset
-      await precacheAsset(otherIndex + 1);
-
-      // check again as precache involves async operations
-      if (currentMemory.value != activeMemory || !context.mounted) {
-        return;
-      }
-
-      final asset = activeMemory.assets[otherIndex];
-      currentAsset.value = asset;
-      ref.read(assetViewerProvider.notifier).setAsset(asset);
+    if (pageNumber >= _memories.length) {
+      // Epilogue: no next slide, so stop the timer and settle the controller there
+      setState(() => _onEpilogue = true);
+      _slideshow.pause();
+      _slideshow.didCompleteShowSlide(_totalAssets);
+      return;
     }
 
-    // Restarts the auto-advance timer whenever the visible asset changes and
-    // advances to the next asset when it completes (Google Photos style).
-    useEffect(() {
-      final memory = memories[currentMemoryIndex.value];
-      if (currentAssetPage.value >= memory.assets.length) {
-        return null;
+    setState(() {
+      _onEpilogue = false;
+      _currentMemoryIndex = pageNumber;
+      _currentAssetPage = 0;
+      if (_memories[pageNumber].assets.isNotEmpty) {
+        _currentAsset = _memories[pageNumber].assets.first;
       }
-      final asset = memory.assets[currentAssetPage.value];
+    });
 
-      // Videos play for their own length; images use the fixed duration.
-      autoAdvanceController.duration = asset.isVideo && asset.duration > Duration.zero
-          ? asset.duration
-          : _kMemoryAssetDuration;
-
-      void onStatus(AnimationStatus status) {
-        if (status == AnimationStatus.completed) {
-          toNextAsset(currentAssetPage.value);
-        }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        MemoryPage.setMemory(ref, _memories[pageNumber]);
       }
+    });
 
-      autoAdvanceController
-        ..reset()
-        ..addStatusListener(onStatus);
+    _slideshow.didCompleteShowSlide(_encode(pageNumber, 0));
+  }
 
-      if (autoplayMemories && !isPaused.value && !onEpilogue.value) {
-        unawaited(autoAdvanceController.forward());
-      }
+  void _togglePause() {
+    setState(() => _userPaused = !_userPaused);
+    _userPaused ? _slideshow.pause() : _slideshow.resume();
+  }
 
-      return () => autoAdvanceController.removeStatusListener(onStatus);
-    }, [currentMemoryIndex.value, currentAssetPage.value, onEpilogue.value, autoplayMemories]);
+  void _holdPause() {
+    if (_autoplay && !_userPaused) {
+      _slideshow.pause();
+    }
+  }
 
-    // Pauses/resumes the timer without resetting the current segment's progress.
-    useEffect(() {
-      if (isPaused.value) {
-        autoAdvanceController.stop();
-      } else if (autoplayMemories && !autoAdvanceController.isCompleted && !onEpilogue.value) {
-        final memory = memories[currentMemoryIndex.value];
-        if (currentAssetPage.value < memory.assets.length) {
-          unawaited(autoAdvanceController.forward());
-        }
-      }
-      return null;
-    }, [isPaused.value]);
+  void _holdResume() {
+    if (_autoplay && !_userPaused && !_onEpilogue) {
+      _slideshow.resume();
+    }
+  }
 
-    /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
-     * when the page in the **center** of the viewer changes. We want to reset currentAssetPage only when the final
-     * page during the end of scroll is different than the current page
-     */
+  void _onVideoCompleted(RemoteAsset asset) {
+    if (_assetAtFlat(_slideshow.currentIndex)?.id == asset.id) {
+      _slideshow.didCompleteVideo();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final autoplay = ref.watch(appConfigProvider.select((config) => config.viewer.autoplayMemories));
+
     return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification notification) {
-        // Freeze the auto-advance timer while the user is manually scrolling so
-        // it doesn't fight the drag, and resume once the scroll settles.
-        if (notification is ScrollStartNotification) {
-          autoAdvanceController.stop();
-        } else if (notification is ScrollEndNotification) {
-          final memory = memories[currentMemoryIndex.value];
-          if (autoplayMemories &&
-              !isPaused.value &&
-              !onEpilogue.value &&
-              !autoAdvanceController.isCompleted &&
-              currentAssetPage.value < memory.assets.length) {
-            unawaited(autoAdvanceController.forward());
-          }
-        }
-
-        // Calculate OverScroll manually using the number of pixels away from maxScrollExtent
-        // maxScrollExtend contains the sum of horizontal pixels of all assets for depth = 1
-        // or sum of vertical pixels of all memories for depth = 0
-        if (notification is ScrollUpdateNotification) {
-          final isEpiloguePage = (memoryPageController.page?.floor() ?? 0) >= memories.length;
-
-          final offset = notification.metrics.pixels;
-          if (isEpiloguePage && (offset > notification.metrics.maxScrollExtent + 150)) {
-            unawaited(context.maybePop());
-            return true;
-          }
-        }
-
-        return false;
-      },
+      onNotification: (notification) => _onScroll(notification, autoplay),
       child: Scaffold(
-        backgroundColor: bgColor,
+        backgroundColor: Colors.black,
         body: SafeArea(
-          child: PageView.builder(
-            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            scrollDirection: Axis.vertical,
-            controller: memoryPageController,
-            onPageChanged: (pageNumber) {
-              ref.read(hapticFeedbackProvider.notifier).mediumImpact();
-              if (pageNumber < memories.length) {
-                currentMemoryIndex.value = pageNumber;
-                currentMemory.value = memories[pageNumber];
-
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  MemoryPage.setMemory(ref, memories[pageNumber]);
-                });
-
-                // Update currentAsset to the first asset of the new memory
-                if (memories[pageNumber].assets.isNotEmpty) {
-                  currentAsset.value = memories[pageNumber].assets.first;
-                }
-              }
-
-              currentAssetPage.value = 0;
-              onEpilogue.value = pageNumber >= memories.length;
-
-              updateProgressText();
-            },
-            itemCount: memories.length + 1,
-            itemBuilder: (context, mIndex) {
-              // Build last page
-              if (mIndex == memories.length) {
-                return MemoryEpilogue(
-                  onStartOver: () => memoryPageController.animateToPage(
-                    0,
-                    duration: const Duration(seconds: 1),
-                    curve: Curves.easeInOut,
-                  ),
-                );
-              }
-
-              final yearsAgo = DateTime.now().year - memories[mIndex].data.year;
-              final title = context.t.years_ago(years: yearsAgo);
-              // Build horizontal page
-              final assetController = memoryAssetPageControllers[mIndex];
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 8.0, bottom: 2.0),
-                    child: AnimatedBuilder(
-                      // With autoplay, the fill is driven by the auto-advance timer;
-                      // otherwise it tracks the manually scrolled page position.
-                      animation: autoplayMemories ? autoAdvanceController : assetController,
-                      builder: (context, child) {
-                        final assetCount = memories[mIndex].assets.length;
-                        double value;
-                        if (autoplayMemories) {
-                          if (mIndex == currentMemoryIndex.value) {
-                            // Current memory: completed segments plus the live fill
-                            // of the current asset's segment driven by the timer.
-                            value = (currentAssetPage.value + autoAdvanceController.value) / assetCount;
-                          } else if (mIndex < currentMemoryIndex.value) {
-                            value = 1.0;
-                          } else {
-                            value = 0.0;
-                          }
-                        } else {
-                          // Manual mode: fill up to (and including) the current page.
-                          final page = assetController.hasClients ? (assetController.page ?? 0) : 0.0;
-                          value = (page + 1) / assetCount;
-                        }
-                        return MemoryProgressIndicator(ticks: assetCount, value: value.clamp(0.0, 1.0));
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        PageView.builder(
-                          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                          controller: assetController,
-                          onPageChanged: onAssetChanged,
-                          scrollDirection: Axis.horizontal,
-                          itemCount: memories[mIndex].assets.length,
-                          itemBuilder: (context, index) {
-                            final asset = memories[mIndex].assets[index];
-                            return Stack(
-                              children: [
-                                ColoredBox(
-                                  color: Colors.black,
-                                  child: MemoryCard(
-                                    asset: asset,
-                                    title: title,
-                                    showTitle: index == 0,
-                                    isCurrent: mIndex == currentMemoryIndex.value && index == currentAssetPage.value,
-                                  ),
-                                ),
-                                Positioned.fill(
-                                  child: Row(
-                                    children: [
-                                      // Left side of the screen
-                                      Expanded(
-                                        child: GestureDetector(
-                                          behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toPreviousAsset(index);
-                                          },
-                                          // Press-and-hold to pause auto-advance
-                                          onLongPressStart: autoplayMemories ? (_) => isPaused.value = true : null,
-                                          onLongPressEnd: autoplayMemories ? (_) => isPaused.value = false : null,
-                                          onLongPressCancel: autoplayMemories ? () => isPaused.value = false : null,
-                                        ),
-                                      ),
-
-                                      // Right side of the screen
-                                      Expanded(
-                                        child: GestureDetector(
-                                          behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toNextAsset(index);
-                                          },
-                                          // Press-and-hold to pause auto-advance
-                                          onLongPressStart: autoplayMemories ? (_) => isPaused.value = true : null,
-                                          onLongPressEnd: autoplayMemories ? (_) => isPaused.value = false : null,
-                                          onLongPressCancel: autoplayMemories ? () => isPaused.value = false : null,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: MaterialButton(
-                            minWidth: 0,
-                            onPressed: () {
-                              // auto_route doesn't invoke pop scope, so
-                              // turn off full screen mode here
-                              // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                              unawaited(context.maybePop());
-                              unawaited(restoreEdgeToEdge());
-                            },
-                            shape: const CircleBorder(),
-                            color: Colors.white.withValues(alpha: 0.2),
-                            elevation: 0,
-                            child: const Icon(Icons.close_rounded, color: Colors.white),
-                          ),
-                        ),
-                        if (autoplayMemories)
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: MaterialButton(
-                              minWidth: 0,
-                              onPressed: () => isPaused.value = !isPaused.value,
-                              shape: const CircleBorder(),
-                              color: Colors.white.withValues(alpha: 0.2),
-                              elevation: 0,
-                              child: Icon(
-                                isPaused.value ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        if (currentAsset.value != null && currentAsset.value!.isVideo)
-                          Positioned(
-                            bottom: 24,
-                            right: 32,
-                            child: Icon(Icons.videocam_outlined, color: Colors.grey[200]),
-                          ),
-                      ],
-                    ),
-                  ),
-                  MemoryBottomInfo(memory: memories[mIndex], title: title),
-                ],
-              );
-            },
+          child: ListenableBuilder(
+            listenable: _slideshow,
+            builder: (context, _) => PageView.builder(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              scrollDirection: Axis.vertical,
+              controller: _memoryPageController,
+              onPageChanged: _onMemoryChanged,
+              itemCount: _memories.length + 1,
+              itemBuilder: (context, mIndex) =>
+                  mIndex == _memories.length ? _buildEpilogue() : _buildMemoryPage(context, mIndex, autoplay),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  bool _onScroll(ScrollNotification notification, bool autoplay) {
+    // Freeze the timer while the user drags so it doesn't fight the scroll
+    if (notification is ScrollStartNotification && autoplay && !_userPaused && !_onEpilogue) {
+      _slideshow.pause();
+    } else if (notification is ScrollEndNotification && autoplay && !_userPaused && !_onEpilogue) {
+      _slideshow.resume();
+    } else if (notification is ScrollUpdateNotification) {
+      // Overscrolling past the epilogue pops the page
+      final isEpiloguePage = (_memoryPageController.page?.floor() ?? 0) >= _memories.length;
+      if (isEpiloguePage && notification.metrics.pixels > notification.metrics.maxScrollExtent + 150) {
+        unawaited(context.maybePop());
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Widget _buildEpilogue() {
+    return MemoryEpilogue(
+      onStartOver: () =>
+          _memoryPageController.animateToPage(0, duration: const Duration(seconds: 1), curve: Curves.easeInOut),
+    );
+  }
+
+  Widget _buildMemoryPage(BuildContext context, int mIndex, bool autoplay) {
+    final yearsAgo = DateTime.now().year - _memories[mIndex].data.year;
+    final title = context.t.years_ago(years: yearsAgo);
+    final assetController = _assetPageControllers[mIndex];
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 8.0, bottom: 2.0),
+          child: _buildProgressBar(mIndex, assetController, autoplay),
+        ),
+        Expanded(
+          child: Stack(
+            children: [
+              PageView.builder(
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                controller: assetController,
+                onPageChanged: (assetIndex) => _onAssetChanged(mIndex, assetIndex),
+                scrollDirection: Axis.horizontal,
+                itemCount: _memories[mIndex].assets.length,
+                itemBuilder: (context, index) => _buildAsset(mIndex, index, title, autoplay),
+              ),
+              _buildCloseButton(context),
+              if (autoplay) _buildPauseButton(),
+              if (_currentAsset != null && _currentAsset!.isVideo) ...[
+                if (autoplay) _MemoryVideoCompletionListener(asset: _currentAsset!, onCompleted: _onVideoCompleted),
+                Positioned(bottom: 24, right: 32, child: Icon(Icons.videocam_outlined, color: Colors.grey[200])),
+              ],
+            ],
+          ),
+        ),
+        MemoryBottomInfo(memory: _memories[mIndex], title: title),
+      ],
+    );
+  }
+
+  Widget _buildProgressBar(int mIndex, PageController assetController, bool autoplay) {
+    return AnimatedBuilder(
+      // With autoplay the fill is driven by the timer, otherwise by the scrolled page
+      animation: autoplay ? _slideshow.progress : assetController,
+      builder: (context, _) {
+        final assetCount = _memories[mIndex].assets.length;
+        double value;
+        if (!autoplay) {
+          final page = assetController.hasClients ? (assetController.page ?? 0) : 0.0;
+          value = (page + 1) / assetCount;
+        } else if (mIndex == _currentMemoryIndex) {
+          value = (_currentAssetPage + _slideshow.progress.value) / assetCount;
+        } else {
+          value = mIndex < _currentMemoryIndex ? 1.0 : 0.0;
+        }
+        return MemoryProgressIndicator(ticks: assetCount, value: value.clamp(0.0, 1.0));
+      },
+    );
+  }
+
+  Widget _buildAsset(int mIndex, int index, String title, bool autoplay) {
+    final asset = _memories[mIndex].assets[index];
+    return Stack(
+      children: [
+        ColoredBox(
+          color: Colors.black,
+          child: MemoryCard(
+            asset: asset,
+            title: title,
+            showTitle: index == 0,
+            isCurrent: mIndex == _currentMemoryIndex && index == _currentAssetPage,
+          ),
+        ),
+        Positioned.fill(
+          child: Row(
+            children: [
+              _buildTapZone(autoplay, () => _toPreviousAsset(index)),
+              _buildTapZone(autoplay, () => _toNextAsset(index)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Half-screen tap target that navigates on tap and pauses on press-and-hold.
+  Widget _buildTapZone(bool autoplay, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: onTap,
+        onLongPressStart: autoplay ? (_) => _holdPause() : null,
+        onLongPressEnd: autoplay ? (_) => _holdResume() : null,
+        onLongPressCancel: autoplay ? _holdResume : null,
+      ),
+    );
+  }
+
+  Widget _buildCloseButton(BuildContext context) {
+    return Positioned(
+      top: 8,
+      left: 8,
+      child: MaterialButton(
+        minWidth: 0,
+        onPressed: () {
+          // auto_route doesn't invoke pop scope, so turn off full screen mode here
+          // https://github.com/Milad-Akarie/auto_route_library/issues/1799
+          unawaited(context.maybePop());
+          unawaited(restoreEdgeToEdge());
+        },
+        shape: const CircleBorder(),
+        color: Colors.white.withValues(alpha: 0.2),
+        elevation: 0,
+        child: const Icon(Icons.close_rounded, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildPauseButton() {
+    return Positioned(
+      top: 8,
+      right: 8,
+      child: MaterialButton(
+        minWidth: 0,
+        onPressed: _togglePause,
+        shape: const CircleBorder(),
+        color: Colors.white.withValues(alpha: 0.2),
+        elevation: 0,
+        child: Icon(_userPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, color: Colors.white),
+      ),
+    );
+  }
+}
+
+/// Invisible listener that reports when [asset]'s video finishes playing, kept
+/// as a widget so the subscription stays unconditional
+class _MemoryVideoCompletionListener extends ConsumerWidget {
+  final RemoteAsset asset;
+  final void Function(RemoteAsset asset) onCompleted;
+
+  const _MemoryVideoCompletionListener({required this.asset, required this.onCompleted});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(videoPlayerProvider(asset.id).select((s) => s.status), (_, status) {
+      if (status == VideoPlaybackStatus.completed) {
+        onCompleted(asset);
+      }
+    });
+    return const SizedBox.shrink();
   }
 }
