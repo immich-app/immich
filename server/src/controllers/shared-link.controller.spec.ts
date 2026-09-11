@@ -1,10 +1,10 @@
-import { SharedLinkController } from 'src/controllers/shared-link.controller';
-import { Permission, SharedLinkType } from 'src/enum';
-import { SharedLinkService } from 'src/services/shared-link.service';
+import { SharedLinkController } from 'src/controllers/shared-link.controller.js';
+import { Permission, SharedLinkType } from 'src/enum.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { factory, newUuid } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { factory, newUuid } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(SharedLinkController.name, () => {
   let ctx: ControllerContext;
@@ -47,6 +47,15 @@ describe(SharedLinkController.name, () => {
       expect(service.create).toHaveBeenCalledWith(undefined, expect.objectContaining({ expiresAt: null }));
     });
 
+    it('should require an albumId for share type Album', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/shared-links')
+        .send({ type: SharedLinkType.Album });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: [], message: 'albumId is required for type ALBUM' }]));
+      expect(service.create).not.toHaveBeenCalled();
+    });
+
     it('should not allow an albumId for share type Individual', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/shared-links')
@@ -67,6 +76,17 @@ describe(SharedLinkController.name, () => {
         errorDto.validationError([{ path: [], message: 'assetIds can only be used with type INDIVIDUAL' }]),
       );
       expect(service.create).not.toHaveBeenCalled();
+    });
+
+    it('should allow an empty assetIds array for share type Album', async () => {
+      const albumId = newUuid();
+      await request(ctx.getHttpServer())
+        .post('/shared-links')
+        .send({ type: SharedLinkType.Album, albumId, assetIds: [] });
+      expect(service.create).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({ type: SharedLinkType.Album, albumId }),
+      );
     });
   });
 

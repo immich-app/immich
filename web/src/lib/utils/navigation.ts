@@ -7,9 +7,6 @@ import { Route } from '$lib/route';
 export type AssetGridRouteSearchParams = {
   at: string | null | undefined;
 };
-export const isExternalUrl = (url: string): boolean => {
-  return new URL(url, location.href).origin !== location.origin;
-};
 
 export const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');
 const isSharedLinkSlugRoute = (route?: string | null) => !!route?.startsWith('/(user)/s/[slug]');

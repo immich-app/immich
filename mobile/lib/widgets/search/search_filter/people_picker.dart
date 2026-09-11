@@ -13,10 +13,10 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class PeoplePicker extends HookConsumerWidget {
-  const PeoplePicker({super.key, required this.onSelect, this.filter});
+  const PeoplePicker({super.key, required this.onSelect, this.initialSelection});
 
   final Function(Set<Person>) onSelect;
-  final Set<Person>? filter;
+  final Set<Person>? initialSelection;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +24,7 @@ class PeoplePicker extends HookConsumerWidget {
     const imageSize = 60.0;
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
-    final selectedPeople = useState<Set<Person>>(filter ?? {});
+    final selectedPeople = useState<Set<Person>>({...?initialSelection});
 
     return Column(
       children: [
@@ -87,14 +87,15 @@ class PeoplePicker extends HookConsumerWidget {
                         ),
                       ),
                       onTap: () {
-                        if (selectedPeople.value.contains(person)) {
-                          selectedPeople.value.remove(person);
+                        final newSelected = {...selectedPeople.value};
+                        if (isSelected) {
+                          newSelected.remove(person);
                         } else {
-                          selectedPeople.value.add(person);
+                          newSelected.add(person);
                         }
 
-                        selectedPeople.value = {...selectedPeople.value};
-                        onSelect(selectedPeople.value);
+                        selectedPeople.value = newSelected;
+                        onSelect(newSelected);
                       },
                       selected: isSelected,
                       selectedTileColor: context.primaryColor,

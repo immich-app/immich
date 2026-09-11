@@ -1,20 +1,28 @@
 import { createZodDto } from 'nestjs-zod';
-import { Tag } from 'src/database';
-import { MaybeDehydrated } from 'src/types';
-import { asDateTimeString } from 'src/utils/date';
-import { hexColor } from 'src/validation';
+import { Tag } from 'src/database.js';
+import type { MaybeDehydrated } from 'src/types.js';
+import { asDateTimeString } from 'src/utils/date.js';
+import { hexColor } from 'src/validation.js';
 import z from 'zod';
 
 const TagCreateSchema = z
   .object({
-    name: z.string().describe('Tag name'),
+    name: z
+      .string()
+      .regex(/^[^/]*$/, `Tag name cannot contain slash characters ("/")`)
+      .describe('Tag name'),
     parentId: z.uuidv4().nullish().describe('Parent tag ID'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagCreateDto' });
 
-const TagUpdateSchema = z
+export const TagUpdateSchema = z
   .object({
+    name: z
+      .string()
+      .regex(/^[^/]*$/, `Tag name cannot contain slash characters ("/")`)
+      .optional()
+      .describe('Tag name'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagUpdateDto' });

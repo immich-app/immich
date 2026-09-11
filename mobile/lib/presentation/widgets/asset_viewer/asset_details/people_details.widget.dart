@@ -28,18 +28,18 @@ class PeopleDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final peopleFuture = ref.watch(driftPeopleAssetProvider(asset.id));
+    final peopleFuture = ref.watch(peopleAssetProvider(asset.id));
 
     Future<void> showNameEditModal(Person person) async {
       await showDialog(
         context: context,
         useRootNavigator: false,
         builder: (BuildContext context) {
-          return DriftPersonNameEditForm(person: person);
+          return PersonNameEditForm(person: person);
         },
       );
 
-      ref.invalidate(driftPeopleAssetProvider(asset.id));
+      ref.invalidate(peopleAssetProvider(asset.id));
     }
 
     return peopleFuture.when(
@@ -71,12 +71,12 @@ class PeopleDetails extends ConsumerWidget {
                           final previousRouteArgs = previousRouteData?.arguments;
 
                           // Prevent circular navigation
-                          if (previousRouteArgs is DriftPersonRouteArgs && previousRouteArgs.person.id == person.id) {
+                          if (previousRouteArgs is PersonRouteArgs && previousRouteArgs.person.id == person.id) {
                             context.back();
                             return;
                           }
                           ContextHelper(context).pop();
-                          unawaited(context.pushRoute(DriftPersonRoute(person: person)));
+                          unawaited(context.pushRoute(PersonRoute(person: person)));
                         },
                         onNameTap: () => showNameEditModal(person),
                       ),
@@ -106,6 +106,8 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final birthDate = person.birthDate;
+    final formattedAge = birthDate != null ? formatAge(birthDate, assetFileCreatedAt) : null;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 96),
       child: Padding(
@@ -153,11 +155,11 @@ class _Avatar extends StatelessWidget {
                     style: context.textTheme.labelLarge,
                     maxLines: 1,
                   ),
-                  if (person.birthDate != null)
+                  if (formattedAge != null)
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        formatAge(person.birthDate!, assetFileCreatedAt),
+                        formattedAge,
                         textAlign: TextAlign.center,
                         style: context.textTheme.bodyMedium?.copyWith(
                           color: context.textTheme.bodyMedium?.color?.withAlpha(175),

@@ -8,16 +8,16 @@ import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class DriftPersonNameEditForm extends ConsumerStatefulWidget {
+class PersonNameEditForm extends ConsumerStatefulWidget {
   final Person person;
 
-  const DriftPersonNameEditForm({super.key, required this.person});
+  const PersonNameEditForm({super.key, required this.person});
 
   @override
-  ConsumerState<DriftPersonNameEditForm> createState() => _DriftPersonNameEditFormState();
+  ConsumerState<PersonNameEditForm> createState() => _PersonNameEditFormState();
 }
 
-class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditForm> {
+class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
   late TextEditingController _formController;
 
   @override
@@ -28,7 +28,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
 
   Future<void> onEdit(String personId, String newName) async {
     try {
-      final result = await ref.read(driftPeopleServiceProvider).updateName(personId, newName);
+      final result = await ref.read(peopleServiceProvider).updateName(personId, newName);
       if (result != 0 && mounted) {
         context.pop<String>(newName);
       }

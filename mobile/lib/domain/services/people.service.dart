@@ -1,14 +1,15 @@
 import 'dart:async';
 
+import 'package:immich_mobile/data/db/main/dao/person.dart';
+import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
-import 'package:immich_mobile/repositories/person_api.repository.dart';
 
-class DriftPeopleService {
-  final DriftPeopleRepository _repository;
+/// Accesses People; entities mapped to assets for presence and face detection
+class PeopleService {
+  final PeopleRepository _repository;
   final PersonApiRepository _personApiRepository;
 
-  const DriftPeopleService(this._repository, this._personApiRepository);
+  const PeopleService(this._repository, this._personApiRepository);
 
   Future<Person?> get(String personId) {
     return _repository.get(personId);

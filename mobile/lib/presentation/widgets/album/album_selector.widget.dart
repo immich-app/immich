@@ -47,8 +47,8 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   List<RemoteAlbum> sortedAlbums = [];
   List<RemoteAlbum> shownAlbums = [];
 
-  AlbumFilter filter = AlbumFilter(query: "", mode: QuickFilterMode.all);
-  AlbumSort sort = AlbumSort(mode: AlbumSortMode.lastModified, isReverse: true);
+  AlbumFilter filter = const AlbumFilter(query: "", mode: QuickFilterMode.all);
+  AlbumSort sort = const AlbumSort(mode: AlbumSortMode.lastModified, isReverse: true);
 
   @override
   void initState() {
@@ -81,10 +81,6 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
 
     unawaited(filterAlbums());
-  }
-
-  Future<void> onRefresh() async {
-    await ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
   void toggleViewMode() {

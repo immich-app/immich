@@ -16,7 +16,7 @@
     menuItem?: boolean;
   }
 
-  let { filename = 'immich.zip', menuItem = false }: Props = $props();
+  let { filename = 'immich', menuItem = false }: Props = $props();
 
   const handleDownloadFiles = async () => {
     const assets = assetMultiSelectManager.assets;

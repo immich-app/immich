@@ -1,17 +1,20 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
-import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { ActivityTable } from 'src/schema/tables/activity.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { PartnerTable } from 'src/schema/tables/partner.table';
-import { AudioStreamInfo, VideoFormat, VideoStreamInfo } from 'src/types';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { AssetFaceFactory } from 'test/factories/asset-face.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { MemoryFactory } from 'test/factories/memory.factory';
-import { SharedLinkFactory } from 'test/factories/shared-link.factory';
-import { StackFactory } from 'test/factories/stack.factory';
-import { UserFactory } from 'test/factories/user.factory';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import { AssetFileType } from 'src/enum.js';
+import { FaceSearchResult } from 'src/repositories/search.repository.js';
+import { ActivityTable } from 'src/schema/tables/activity.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { PartnerTable } from 'src/schema/tables/partner.table.js';
+import type { AudioStreamInfo, VideoFormat, VideoStreamInfo } from 'src/types.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { MemoryFactory } from 'test/factories/memory.factory.js';
+import { SharedLinkFactory } from 'test/factories/shared-link.factory.js';
+import { StackFactory } from 'test/factories/stack.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { newUuid } from 'test/small.factory.js';
 
 export const getForStorageTemplate = (asset: ReturnType<AssetFactory['build']>) => {
   return {
@@ -54,13 +57,25 @@ export const getAsDetectedFace = (face: ReturnType<AssetFaceFactory['build']>) =
 
 export const getForFacialRecognitionJob = (
   face: ReturnType<AssetFaceFactory['build']>,
-  asset: Pick<Selectable<AssetTable>, 'ownerId' | 'visibility' | 'fileCreatedAt'> | null,
+  asset:
+    (Pick<Selectable<AssetTable>, 'ownerId' | 'visibility' | 'fileCreatedAt'> & { clusterGroupId?: string }) | null,
 ) => ({
   ...face,
   asset: asset
-    ? { ownerId: asset.ownerId, visibility: asset.visibility, fileCreatedAt: asset.fileCreatedAt.toISOString() }
+    ? {
+        ownerId: asset.ownerId,
+        clusterGroupId: asset.clusterGroupId ?? newUuid(),
+        visibility: asset.visibility,
+        fileCreatedAt: asset.fileCreatedAt.toISOString(),
+      }
     : null,
   faceSearch: { faceId: face.id, embedding: '[1, 2, 3, 4]' },
+});
+
+export const getForFaceSearch = (face: ReturnType<AssetFaceFactory['build']>, distance: number): FaceSearchResult => ({
+  id: face.id,
+  personGroupId: face.personGroupId,
+  distance,
 });
 
 export const getDehydrated = <T extends Record<string, unknown>>(entity: T) => {
@@ -122,8 +137,12 @@ export const getForMemory = (memory: ReturnType<MemoryFactory['build']>) => ({
   assets: memory.assets.map((asset) => getDehydrated(asset)),
 });
 
-export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']>) => ({
+export const getForMetadataExtraction = (
+  asset: ReturnType<AssetFactory['build']>,
+  { clusterGroupId }: { clusterGroupId?: string } = {},
+) => ({
   id: asset.id,
+  clusterGroupId: clusterGroupId ?? newUuid(),
   checksum: asset.checksum,
   checksumAlgorithm: asset.checksumAlgorithm,
   fileCreatedAt: asset.fileCreatedAt,
@@ -170,7 +189,10 @@ export const getForDetectedFaces = (asset: ReturnType<AssetFactory['build']>) =>
   visibility: asset.visibility,
   exifInfo: getDehydrated(asset.exifInfo),
   faces: asset.faces.map((face) => getDehydrated(face)),
-  files: asset.files.map((file) => getDehydrated(file)),
+  previewFile: asset.files
+    .filter((file) => file.type === AssetFileType.Preview)
+    .toSorted((a) => (a.isEdited ? -1 : 1))
+    .map((file) => getDehydrated(file))[0],
 });
 
 export const getForSidecarWrite = (asset: ReturnType<AssetFactory['build']>) => ({

@@ -1,33 +1,27 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:path/path.dart';
+
+part 'share_intent_attachment.model.freezed.dart';
 
 enum ShareIntentAttachmentType { image, video }
 
 enum UploadStatus { enqueued, running, complete, failed }
 
-class ShareIntentAttachment {
-  final String path;
+@Freezed(fromJson: false, toJson: false, equal: false)
+abstract class ShareIntentAttachment with _$ShareIntentAttachment {
+  const ShareIntentAttachment._();
 
-  // enum
-  final ShareIntentAttachmentType type;
-
-  // enum
-  final UploadStatus status;
-
-  final double uploadProgress;
-
-  final int fileLength;
-
-  ShareIntentAttachment({
-    required this.path,
-    required this.type,
-    required this.status,
-    this.uploadProgress = 0,
-    this.fileLength = 0,
-  });
+  const factory ShareIntentAttachment({
+    required String path,
+    required ShareIntentAttachmentType type,
+    required UploadStatus status,
+    @Default(0.0) double uploadProgress,
+    @Default(0) int fileLength,
+  }) = _ShareIntentAttachment;
 
   int get id => hash(path);
 
@@ -39,23 +33,7 @@ class ShareIntentAttachment {
 
   bool get isVideo => type == ShareIntentAttachmentType.video;
 
-  String? _fileSize;
-
-  String get fileSize => _fileSize ??= formatHumanReadableBytes(fileLength, 2);
-
-  ShareIntentAttachment copyWith({
-    String? path,
-    ShareIntentAttachmentType? type,
-    UploadStatus? status,
-    double? uploadProgress,
-  }) {
-    return ShareIntentAttachment(
-      path: path ?? this.path,
-      type: type ?? this.type,
-      status: status ?? this.status,
-      uploadProgress: uploadProgress ?? this.uploadProgress,
-    );
-  }
+  String get fileSize => formatHumanReadableBytes(fileLength, 2);
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -80,18 +58,14 @@ class ShareIntentAttachment {
   factory ShareIntentAttachment.fromJson(String source) =>
       ShareIntentAttachment.fromMap(json.decode(source) as Map<String, dynamic>);
 
+  // Identity is sourced from the backing file, not from upload progress
   @override
-  String toString() {
-    return 'ShareIntentAttachment(path: $path, type: $type, status: $status, uploadProgress: $uploadProgress)';
-  }
-
-  @override
-  bool operator ==(covariant ShareIntentAttachment other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) {
       return true;
     }
 
-    return other.path == path && other.type == type;
+    return other is ShareIntentAttachment && other.path == path && other.type == type;
   }
 
   @override

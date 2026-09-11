@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
+import 'package:immich_mobile/domain/services/local_album.service.dart';
+import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -12,15 +14,13 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
-import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
-import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -218,10 +218,11 @@ class _SyncStatsCounts extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final db = ref.watch(driftProvider);
     final assetService = ref.watch(assetServiceProvider);
-    final localAlbumService = ref.watch(localAlbumServiceProvider);
+    final localAlbumService = LocalAlbumService(db.localAlbumRepository);
     final remoteAlbumService = ref.watch(remoteAlbumServiceProvider);
-    final memoryService = ref.watch(driftMemoryServiceProvider);
+    final memoryService = MemoryService(db.memoryRepository);
     final appSettingsService = ref.watch(appSettingsServiceProvider);
 
     Future<List<dynamic>> loadCounts() async {

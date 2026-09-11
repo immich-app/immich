@@ -1,8 +1,8 @@
-import { SearchController } from 'src/controllers/search.controller';
-import { SearchService } from 'src/services/search.service';
+import { SearchController } from 'src/controllers/search.controller.js';
+import { SearchService } from 'src/services/search.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(SearchController.name, () => {
   let ctx: ControllerContext;
@@ -112,6 +112,46 @@ describe(SearchController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(
         errorDto.validationError([{ path: ['isMotion'], message: 'Invalid input: expected boolean, received string' }]),
+      );
+    });
+
+    it('should reject a deprecated field combined with a new structure field', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: {}, city: 'Oslo' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['city'], message: 'Deprecated field city cannot be combined with filter' }]),
+      );
+    });
+
+    it('should reject an unknown key in the filter', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: { previewPath: { eq: 'preview.webp' } } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['filter'], message: 'Unrecognized key: "previewPath"' }]),
+      );
+    });
+
+    it('should reject a nested or', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: { or: [{ or: [{ city: { eq: 'Oslo' } }] }] } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['filter', 'or', 0], message: 'Unrecognized key: "or"' }]),
+      );
+    });
+
+    it('should reject an empty or branch', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: { or: [{}] } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['filter', 'or', 0], message: 'At least one filter condition is required' }]),
       );
     });
 

@@ -1,7 +1,7 @@
-import { AssetFace } from 'src/database';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { SourceType } from 'src/enum';
-import { boundingBoxOverlap, checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
+import { AssetFace } from 'src/database.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
+import { SourceType } from 'src/enum.js';
+import { boundingBoxOverlap, checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor.js';
 import { describe, expect, it } from 'vitest';
 
 describe('boundingBoxOverlap', () => {
@@ -64,7 +64,7 @@ const createFace = (params: Partial<AssetFace> = {}): AssetFace => ({
   boundingBoxY2: 200,
   imageWidth: 1000,
   imageHeight: 1000,
-  personId: null,
+  personGroupId: null,
   sourceType: SourceType.MachineLearning,
   person: null,
   updatedAt: new Date(),

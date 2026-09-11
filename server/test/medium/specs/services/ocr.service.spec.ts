@@ -1,17 +1,17 @@
 import { Kysely } from 'kysely';
-import { AssetFileType, JobStatus } from 'src/enum';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
-import { OcrRepository } from 'src/repositories/ocr.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DB } from 'src/schema';
-import { OcrService } from 'src/services/ocr.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetFileType, JobStatus } from 'src/enum.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { OcrRepository } from 'src/repositories/ocr.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { DB } from 'src/schema/index.js';
+import { OcrService } from 'src/services/ocr.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -56,6 +56,7 @@ describe(OcrService.name, () => {
         boxScore: 0.99,
         id: expect.any(String),
         updateId: expect.any(String),
+        updatedAt: expect.any(Date),
         text: 'Test OCR',
         textScore: 0.95,
         isVisible: true,
@@ -107,6 +108,7 @@ describe(OcrService.name, () => {
         boxScore: 0.7,
         id: expect.any(String),
         updateId: expect.any(String),
+        updatedAt: expect.any(Date),
         text: 'One',
         textScore: 0.9,
         isVisible: true,
@@ -124,6 +126,7 @@ describe(OcrService.name, () => {
         boxScore: 0.67,
         id: expect.any(String),
         updateId: expect.any(String),
+        updatedAt: expect.any(Date),
         text: 'Two',
         textScore: 0.89,
         isVisible: true,
@@ -141,6 +144,7 @@ describe(OcrService.name, () => {
         boxScore: 0.65,
         id: expect.any(String),
         updateId: expect.any(String),
+        updatedAt: expect.any(Date),
         text: 'Three',
         textScore: 0.88,
         isVisible: true,
@@ -158,6 +162,7 @@ describe(OcrService.name, () => {
         boxScore: 0.62,
         id: expect.any(String),
         updateId: expect.any(String),
+        updatedAt: expect.any(Date),
         text: 'Four',
         textScore: 0.87,
         isVisible: true,
@@ -175,6 +180,7 @@ describe(OcrService.name, () => {
         boxScore: 0.6,
         id: expect.any(String),
         updateId: expect.any(String),
+        updatedAt: expect.any(Date),
         text: 'Five',
         textScore: 0.86,
         isVisible: true,

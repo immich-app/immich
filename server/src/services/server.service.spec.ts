@@ -1,7 +1,7 @@
-import { SystemMetadataKey } from 'src/enum';
-import { ServerService } from 'src/services/server.service';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { SystemMetadataKey } from 'src/enum.js';
+import { ServerService } from 'src/services/server.service.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
@@ -160,6 +160,7 @@ describe(ServerService.name, () => {
       await expect(sut.getSystemConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
+        oauthAccountManagementUrl: '',
         trashDays: 30,
         userDeleteDelay: 7,
         isInitialized: false,

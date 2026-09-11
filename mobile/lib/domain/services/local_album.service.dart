@@ -3,7 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 
 class LocalAlbumService {
-  final DriftLocalAlbumRepository _repository;
+  final LocalAlbumRepository _repository;
 
   const LocalAlbumService(this._repository);
 
@@ -21,17 +21,5 @@ class LocalAlbumService {
 
   Future<int> getCount() {
     return _repository.getCount();
-  }
-
-  Future<void> unlinkRemoteAlbum(String id) async {
-    return _repository.unlinkRemoteAlbum(id);
-  }
-
-  Future<void> linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {
-    return _repository.linkRemoteAlbum(localAlbumId, remoteAlbumId);
-  }
-
-  Future<List<LocalAlbum>> getBackupAlbums() {
-    return _repository.getBackupAlbums();
   }
 }

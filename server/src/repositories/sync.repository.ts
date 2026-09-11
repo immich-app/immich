@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { SyncAck } from 'src/types';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import type { SyncAck } from 'src/types.js';
 
 export type SyncBackfillOptions = {
   nowId: string;
@@ -65,6 +65,7 @@ export class SyncRepository {
   partnerAssetExif: PartnerAssetExifsSync;
   partnerStack: PartnerStackSync;
   person: PersonSync;
+  personGroup: PersonGroupSync;
   stack: StackSync;
   user: UserSync;
   userMetadata: UserMetadataSync;
@@ -89,6 +90,7 @@ export class SyncRepository {
     this.partnerAssetExif = new PartnerAssetExifsSync(this.db);
     this.partnerStack = new PartnerStackSync(this.db);
     this.person = new PersonSync(this.db);
+    this.personGroup = new PersonGroupSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
     this.userMetadata = new UserMetadataSync(this.db);
@@ -422,7 +424,7 @@ class PersonSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getDeletes(options: SyncQueryOptions) {
     return this.auditQuery('person_audit', options)
-      .select(['id', 'personId'])
+      .select(['id', 'personGroupId as personId'])
       .where('ownerId', '=', options.userId)
       .stream();
   }
@@ -435,7 +437,7 @@ class PersonSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('person', options)
       .select([
-        'id',
+        'personGroupId as id',
         'createdAt',
         'updatedAt',
         'ownerId',
@@ -449,6 +451,12 @@ class PersonSync extends BaseSync {
       ])
       .where('ownerId', '=', options.userId)
       .stream();
+  }
+}
+
+class PersonGroupSync extends BaseSync {
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('person_group_audit', daysAgo);
   }
 }
 
@@ -472,7 +480,7 @@ class AssetFaceSync extends BaseSync {
       .select([
         'asset_face.id',
         'assetId',
-        'personId',
+        'personGroupId as personId',
         'imageWidth',
         'imageHeight',
         'boundingBoxX1',

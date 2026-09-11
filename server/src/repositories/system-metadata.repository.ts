@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely } from 'kysely';
+import type { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readFile } from 'node:fs/promises';
-import { GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
-import { SystemMetadata } from 'src/types';
+import { GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table.js';
+import type { SystemMetadata } from 'src/types.js';
 
 type Upsert = Insertable<SystemMetadataTable>;
 

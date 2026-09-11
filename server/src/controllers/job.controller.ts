@@ -1,14 +1,14 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { JobCreateDto } from 'src/dtos/job.dto';
-import { QueueResponseLegacyDto, QueuesResponseLegacyDto } from 'src/dtos/queue-legacy.dto';
-import { QueueCommandDto, QueueNameParamDto } from 'src/dtos/queue.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { JobService } from 'src/services/job.service';
-import { QueueService } from 'src/services/queue.service';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { JobCreateDto } from 'src/dtos/job.dto.js';
+import { QueueResponseLegacyDto, QueuesResponseLegacyDto } from 'src/dtos/queue-legacy.dto.js';
+import { QueueCommandDto, QueueNameParamDto } from 'src/dtos/queue.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { JobService } from 'src/services/job.service.js';
+import { QueueService } from 'src/services/queue.service.js';
 
 @ApiTags(ApiTag.Jobs)
 @Controller('jobs')

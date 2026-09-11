@@ -7,17 +7,16 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import _ from 'lodash';
+import { get, isArray, isDate, isEmpty, isObject, orderBy, unset } from 'lodash-es';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
-import parse from 'picomatch/lib/parse';
-import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
-import { extraModels } from 'src/decorators';
-import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants.js';
+import { extraModels } from 'src/decorators.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
 type ReferenceOrSchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
@@ -70,7 +69,7 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
       continue;
     }
 
-    if (_.isObject(value) && !_.isArray(value) && !_.isDate(value)) {
+    if (isObject(value) && !isArray(value) && !isDate(value)) {
       properties.push(...getKeysDeep(value, [...path, key]));
       continue;
     }
@@ -84,14 +83,14 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
 export const unsetDeep = (object: unknown, key: string) => {
   const parts = key.split('.');
   while (parts.length > 0) {
-    _.unset(object, parts);
+    unset(object, parts);
     parts.pop();
-    if (!_.isEmpty(_.get(object, parts))) {
+    if (!isEmpty(get(object, parts))) {
       break;
     }
   }
 
-  return _.isEmpty(object) ? undefined : object;
+  return isEmpty(object) ? undefined : object;
 };
 
 const isMachineLearningEnabled = (machineLearning: SystemConfig['machineLearning']) => machineLearning.enabled;
@@ -212,9 +211,21 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
     for (const schema of Object.values(schemas)) {
       delete (schema as Record<string, unknown>).id;
+
+      // documents a property as required even though it is optional during body validation
+      for (const [key, value] of Object.entries(schema.properties ?? {})) {
+        if (!(ApiCustomExtension.Required in value)) {
+          continue;
+        }
+
+        delete (value as Record<string, unknown>)[ApiCustomExtension.Required];
+        (schema.required ??= []).push(key);
+      }
     }
 
     document.components.schemas = sortKeys(schemas);
+
+    const errors: string[] = [];
 
     for (const [schemaName, schema] of Object.entries(schemas)) {
       if (!schema.properties) {
@@ -223,16 +234,35 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
       schema.properties = sortKeys(schema.properties);
 
-      for (const [key, value] of Object.entries(schema.properties)) {
-        if (typeof value === 'string') {
+      for (const [key, initialValue] of Object.entries(schema.properties)) {
+        if (typeof initialValue === 'string' || !isSchema(initialValue)) {
           continue;
         }
 
-        if (isSchema(value) && value.type === 'number' && value.format === 'float') {
-          throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        // check array types
+        let value: SchemaObject | ReferenceObject = initialValue;
+        if (value.type === 'array' && value.items) {
+          value = value.items;
+        }
+
+        if (isSchema(value) && value.type === 'number') {
+          if (value.format === 'float') {
+            errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+          }
+
+          // verify it was meant to be a number (and not an integer)
+          if (!value.format) {
+            errors.push(
+              `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
+            );
+          }
         }
       }
       schema.required?.sort();
+
+      if (errors.length > 0) {
+        throw new Error(`Schema validation failed:\n  ${errors.join('\n  ')}`);
+      }
     }
   }
 
@@ -277,7 +307,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       }
 
       if (operation.parameters) {
-        operation.parameters = _.orderBy(operation.parameters, 'name');
+        operation.parameters = orderBy(operation.parameters, 'name');
       }
     }
   }
@@ -338,37 +368,10 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   }
 };
 
-const convertTokenToSqlPattern = (token: parse.Token): string => {
-  switch (token.type) {
-    case 'slash': {
-      return '/';
-    }
-    case 'text': {
-      return token.value;
-    }
-    case 'globstar':
-    case 'star': {
-      return '%';
-    }
-    case 'underscore': {
-      return String.raw`\_`;
-    }
-    case 'qmark': {
-      return '_';
-    }
-    case 'dot': {
-      return '.';
-    }
-    default: {
-      return '';
-    }
-  }
-};
-
-export const globToSqlPattern = (glob: string) => {
-  const tokens = picomatch.parse(glob).tokens;
-  return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
-};
+// Compiles a glob to the equivalent Postgres regex (Postgres's Advanced Regular Expression
+// dialect is a superset of what picomatch emits, so the two stay in sync with `picomatch.isMatch`,
+// including which paths a lone `*` may cross vs `/`).
+export const globToPostgresRegex = (glob: string) => picomatch.makeRe(glob).source;
 
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));

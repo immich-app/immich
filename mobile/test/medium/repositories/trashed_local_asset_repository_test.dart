@@ -6,11 +6,11 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftTrashedLocalAssetRepository sut;
+  late TrashedLocalAssetRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = DriftTrashedLocalAssetRepository(ctx.db);
+    sut = TrashedLocalAssetRepository(ctx.db);
   });
 
   tearDown(() async {

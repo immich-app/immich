@@ -1,4 +1,4 @@
-import { immichCli, utils } from 'src/utils';
+import { immichCli, utils } from 'src/utils.js';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 describe(`immich server-info`, () => {

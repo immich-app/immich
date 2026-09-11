@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
@@ -20,9 +22,9 @@ class MockAssetService extends Mock implements AssetService {}
 
 class MockRemoteAlbumService extends Mock implements RemoteAlbumService {}
 
-class MockDriftMemoryService extends Mock implements DriftMemoryService {}
+class MockMemoryService extends Mock implements MemoryService {}
 
-class MockDriftPeopleService extends Mock implements DriftPeopleService {}
+class MockPeopleService extends Mock implements PeopleService {}
 
 class MockPlatformDeepLink extends Mock implements PlatformDeepLink {}
 
@@ -32,11 +34,13 @@ class MockAssetViewerStateNotifier extends Mock implements AssetViewerStateNotif
 
 const _assetId = 'aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb';
 const _albumId = 'cccccccc-4444-5555-6666-dddddddddddd';
+const _memoryId = 'mmmmmmmm-7777-8888-9999-yyyyyyyyyyyy';
+const _userId = 'user-1';
 
 final _asset = RemoteAsset(
   id: _assetId,
   name: 'photo.jpg',
-  ownerId: 'user-1',
+  ownerId: _userId,
   checksum: 'checksum-1',
   type: AssetType.image,
   createdAt: DateTime(2026, 6, 12),
@@ -47,7 +51,7 @@ final _asset = RemoteAsset(
 final _album = RemoteAlbum(
   id: _albumId,
   name: 'Shared Album',
-  ownerId: 'user-1',
+  ownerId: _userId,
   description: '',
   createdAt: DateTime(2026, 6, 12),
   updatedAt: DateTime(2026, 6, 12),
@@ -58,10 +62,30 @@ final _album = RemoteAlbum(
   ownerName: 'Owner',
 );
 
+final _memory = Memory(
+  id: _memoryId,
+  createdAt: DateTime(2026, 6, 12),
+  updatedAt: DateTime(2026, 6, 12),
+  ownerId: _userId,
+  type: MemoryTypeEnum.onThisDay,
+  data: const MemoryData(year: 2025),
+  isSaved: false,
+  memoryAt: DateTime(2025, 6, 12),
+  assets: [_asset],
+);
+
+final _user = UserDto(
+  id: _userId,
+  email: 'test@immich.app',
+  name: 'Test User',
+  profileChangedAt: DateTime(2026, 6, 12),
+);
+
 void main() {
   late MockTimelineFactory timelineFactory;
   late MockAssetService assetService;
   late MockRemoteAlbumService remoteAlbumService;
+  late MockMemoryService memoryService;
   late MockWidgetRef ref;
   late List<TimelineService> createdTimelineServices;
   late DeepLinkService sut;
@@ -70,6 +94,7 @@ void main() {
     timelineFactory = MockTimelineFactory();
     assetService = MockAssetService();
     remoteAlbumService = MockRemoteAlbumService();
+    memoryService = MockMemoryService();
     ref = MockWidgetRef();
     createdTimelineServices = [];
 
@@ -90,9 +115,9 @@ void main() {
       timelineFactory,
       assetService,
       remoteAlbumService,
-      MockDriftMemoryService(),
-      MockDriftPeopleService(),
-      null,
+      memoryService,
+      MockPeopleService(),
+      _user,
     );
 
     addTearDown(() async {
@@ -136,5 +161,31 @@ void main() {
     expect(route, isA<AssetViewerRoute>());
     expect((route!.args! as AssetViewerRouteArgs).currentAlbum, isNull);
     verifyNever(() => remoteAlbumService.get(any()));
+  });
+
+  test('memory scheme link without an id opens the memory lane', () async {
+    when(() => memoryService.getMemoryLane(_userId)).thenAnswer((_) async => [_memory]);
+    final deepLink = MockPlatformDeepLink();
+    when(() => deepLink.uri).thenReturn(Uri.parse('immich://memory'));
+
+    final route = await sut.handleScheme(deepLink, ref);
+
+    expect(route, isA<MemoryRoute>());
+    expect((route!.args! as MemoryRouteArgs).memories, [_memory]);
+    verify(() => memoryService.getMemoryLane(_userId)).called(1);
+    verifyNever(() => memoryService.get(any()));
+  });
+
+  test('memory scheme link with an id opens only the specified memory', () async {
+    when(() => memoryService.get(_memoryId)).thenAnswer((_) async => _memory);
+    final deepLink = MockPlatformDeepLink();
+    when(() => deepLink.uri).thenReturn(Uri.parse('immich://memory?id=$_memoryId'));
+
+    final route = await sut.handleScheme(deepLink, ref);
+
+    expect(route, isA<MemoryRoute>());
+    expect((route!.args! as MemoryRouteArgs).memories, [_memory]);
+    verifyNever(() => memoryService.getMemoryLane(any()));
+    verify(() => memoryService.get(_memoryId)).called(1);
   });
 }

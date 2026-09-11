@@ -3,7 +3,8 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Generated,
+  ForeignKeyColumn,
+  type Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
@@ -11,9 +12,10 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { ColumnType } from 'kysely';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserAvatarColor, UserStatus } from 'src/enum';
-import { user_delete_audit } from 'src/schema/functions';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { UserAvatarColor, UserStatus } from 'src/enum.js';
+import { user_delete_audit } from 'src/schema/functions.js';
+import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
 
 @Table('user')
 @UpdatedAtTrigger('user_updatedAt')
@@ -82,4 +84,7 @@ export class UserTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @ForeignKeyColumn(() => ClusterGroupTable, { onUpdate: 'CASCADE', nullable: false })
+  clusterGroupId!: string;
 }

@@ -1,11 +1,13 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
-import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-class DriftUserMetadataRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftUserMetadataRepository(this._db) : super(_db);
+@DriftAccessor()
+class UserMetadataRepository extends DatabaseAccessor<Drift> {
+  UserMetadataRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<List<UserMetadata>> getUserMetadata(String userId) {
     final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(userId));

@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/logger/database.dart';
+import 'package:immich_mobile/data/db/logger/table/log.dart';
+import 'package:immich_mobile/data/db/logger/table/log.drift.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 
 class LogRepository {
   final DriftLogger _db;
@@ -50,18 +50,6 @@ class LogRepository {
     await _db.logMessageEntity.insertAll(logEntities);
 
     return true;
-  }
-
-  Future<void> deleteByLogger(String logger) async {
-    await _db.logMessageEntity.deleteWhere((row) => row.logger.equals(logger));
-  }
-
-  Stream<List<LogMessage>> watchMessages(String logger) {
-    final query = _db.logMessageEntity.select()
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
-      ..where((row) => row.logger.equals(logger));
-
-    return query.watch().map((rows) => rows.map((row) => row.toDto()).toList());
   }
 
   Future<void> truncate({int limit = kLogTruncateLimit}) async {

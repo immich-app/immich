@@ -30,7 +30,7 @@
 
     try {
       await sendTestEmailAdmin({
-        systemConfigSmtpDto: {
+        adminConfigSmtpDto: {
           enabled: configToEdit.notifications.smtp.enabled,
           transport: {
             host: configToEdit.notifications.smtp.transport.host,

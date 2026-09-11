@@ -268,7 +268,9 @@
 </script>
 
 <svelte:window onresize={onPositionChange} />
-<Label class="mb-1 block {hideLabel ? 'sr-only' : ''} text-xs font-light text-neutral-500" for={inputId}>{label}</Label>
+{#if !hideLabel}
+  <Label class="mb-1 block text-xs font-light text-neutral-500" for={inputId}>{label}</Label>
+{/if}
 <div
   class="relative w-full text-base text-gray-700 dark:text-gray-300"
   use:focusOutside={{ onFocusOut: deactivate }}

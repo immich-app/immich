@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OnEvent } from 'src/decorators';
-import { mapAsset } from 'src/dtos/asset-response.dto';
-import { JobCreateDto } from 'src/dtos/job.dto';
-import { AssetType, AssetVisibility, IntegrityReport, JobName, JobStatus, ManualJobName } from 'src/enum';
-import { ArgsOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { JobItem } from 'src/types';
-import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { OnEvent } from 'src/decorators.js';
+import { mapAsset } from 'src/dtos/asset-response.dto.js';
+import { JobCreateDto } from 'src/dtos/job.dto.js';
+import { AssetType, AssetVisibility, IntegrityReport, JobName, JobStatus, ManualJobName } from 'src/enum.js';
+import { ArgsOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { JobItem } from 'src/types.js';
+import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
@@ -124,11 +124,8 @@ export class JobService extends BaseService {
       }
 
       case JobName.PersonGenerateThumbnail: {
-        const { id } = item.data;
-        const person = await this.personRepository.getById(id);
-        if (person) {
-          this.websocketRepository.clientSend('on_person_thumbnail', person.ownerId, person.id);
-        }
+        const { ownerId, personGroupId } = item.data;
+        this.websocketRepository.clientSend('on_person_thumbnail', ownerId, personGroupId);
         break;
       }
 

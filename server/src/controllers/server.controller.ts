@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
 import {
   ServerAboutResponseDto,
   ServerApkLinksDto,
@@ -13,13 +13,13 @@ import {
   ServerStorageResponseDto,
   ServerVersionHistoryResponseDto,
   ServerVersionResponseDto,
-} from 'src/dtos/server.dto';
-import { VersionCheckStateResponseDto } from 'src/dtos/system-metadata.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
-import { ServerService } from 'src/services/server.service';
-import { SystemMetadataService } from 'src/services/system-metadata.service';
-import { VersionService } from 'src/services/version.service';
+} from 'src/dtos/server.dto.js';
+import { VersionCheckStateResponseDto } from 'src/dtos/system-metadata.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Authenticated } from 'src/middleware/auth.guard.js';
+import { ServerService } from 'src/services/server.service.js';
+import { SystemMetadataService } from 'src/services/system-metadata.service.js';
+import { VersionService } from 'src/services/version.service.js';
 
 @ApiTags(ApiTag.Server)
 @Controller('server')
@@ -101,7 +101,11 @@ export class ServerController {
   @Endpoint({
     summary: 'Get features',
     description: 'Retrieve available features supported by this server.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3.2.0', { replacementId: 'getPublicConfig' }),
   })
   getServerFeatures(): Promise<ServerFeaturesDto> {
     return this.service.getFeatures();
@@ -112,7 +116,11 @@ export class ServerController {
   @Endpoint({
     summary: 'Get config',
     description: 'Retrieve the current server configuration.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3.2.0', { replacementId: 'getPublicConfig' }),
   })
   getServerConfig(): Promise<ServerConfigDto> {
     return this.service.getSystemConfig();

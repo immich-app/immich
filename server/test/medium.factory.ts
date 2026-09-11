@@ -4,10 +4,10 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
-import { SystemConfig } from 'src/config';
-import { AssetFace } from 'src/database';
-import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
-import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto';
+import { AssetFace } from 'src/database.js';
+import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto.js';
 import {
   AlbumUserRole,
   AssetType,
@@ -17,76 +17,79 @@ import {
   SourceType,
   SyncEntityType,
   SyncRequestType,
-} from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { ActivityRepository } from 'src/repositories/activity.repository';
-import { AlbumUserRepository } from 'src/repositories/album-user.repository';
-import { AlbumRepository } from 'src/repositories/album.repository';
-import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { CronRepository } from 'src/repositories/cron.repository';
-import { CryptoRepository } from 'src/repositories/crypto.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { DuplicateRepository } from 'src/repositories/duplicate.repository';
-import { EmailRepository } from 'src/repositories/email.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { IntegrityRepository } from 'src/repositories/integrity.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
-import { MapRepository } from 'src/repositories/map.repository';
-import { MediaRepository } from 'src/repositories/media.repository';
-import { MemoryRepository } from 'src/repositories/memory.repository';
-import { MetadataRepository } from 'src/repositories/metadata.repository';
-import { NotificationRepository } from 'src/repositories/notification.repository';
-import { OcrRepository } from 'src/repositories/ocr.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { PluginRepository } from 'src/repositories/plugin.repository';
-import { SearchRepository } from 'src/repositories/search.repository';
-import { SessionRepository } from 'src/repositories/session.repository';
-import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
-import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
-import { StackRepository } from 'src/repositories/stack.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
-import { SyncRepository } from 'src/repositories/sync.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { TagRepository } from 'src/repositories/tag.repository';
-import { TelemetryRepository } from 'src/repositories/telemetry.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
-import { WorkflowRepository } from 'src/repositories/workflow.repository';
-import { DB } from 'src/schema';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetFileTable } from 'src/schema/tables/asset-file.table';
-import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
-import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { FaceSearchTable } from 'src/schema/tables/face-search.table';
-import { MemoryTable } from 'src/schema/tables/memory.table';
-import { PersonTable } from 'src/schema/tables/person.table';
-import { SessionTable } from 'src/schema/tables/session.table';
-import { StackTable } from 'src/schema/tables/stack.table';
-import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
-import { TagTable } from 'src/schema/tables/tag.table';
-import { UserTable } from 'src/schema/tables/user.table';
-import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
-import { MetadataService } from 'src/services/metadata.service';
-import { SyncService } from 'src/services/sync.service';
-import { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types';
-import { getConfig, updateConfig } from 'src/utils/config';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
-import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
-import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
-import { automock, wait } from 'test/utils';
+} from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { ActivityRepository } from 'src/repositories/activity.repository.js';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
+import { AlbumRepository } from 'src/repositories/album.repository.js';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository.js';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { CronRepository } from 'src/repositories/cron.repository.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { DuplicateRepository } from 'src/repositories/duplicate.repository.js';
+import { EmailRepository } from 'src/repositories/email.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { IntegrityRepository } from 'src/repositories/integrity.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LibraryRepository } from 'src/repositories/library.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { MapRepository } from 'src/repositories/map.repository.js';
+import { MediaRepository } from 'src/repositories/media.repository.js';
+import { MemoryRepository } from 'src/repositories/memory.repository.js';
+import { MetadataRepository } from 'src/repositories/metadata.repository.js';
+import { NotificationRepository } from 'src/repositories/notification.repository.js';
+import { OcrRepository } from 'src/repositories/ocr.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { PluginRepository } from 'src/repositories/plugin.repository.js';
+import { SearchRepository } from 'src/repositories/search.repository.js';
+import { SessionRepository } from 'src/repositories/session.repository.js';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { StackRepository } from 'src/repositories/stack.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository.js';
+import { SyncRepository } from 'src/repositories/sync.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
+import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
+import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
+import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import { PersonTable } from 'src/schema/tables/person.table.js';
+import { SessionTable } from 'src/schema/tables/session.table.js';
+import { StackTable } from 'src/schema/tables/stack.table.js';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
+import { TagTable } from 'src/schema/tables/tag.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
+import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service.js';
+import { MetadataService } from 'src/services/metadata.service.js';
+import { SyncService } from 'src/services/sync.service.js';
+import type { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types.js';
+import { getConfig, updateConfig } from 'src/utils/config.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
+import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock.js';
+import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory.js';
+import { automock, wait } from 'test/utils.js';
 import { Mocked } from 'vitest';
 
-// eslint-disable-next-line unicorn/prefer-module
-export const testAssetsDir = resolve(__dirname, '../../e2e/test-assets');
+export const testAssetsDir = resolve(import.meta.dirname, '../../e2e/test-assets');
 
 type MediumTestOptions = {
   mock: Array<(typeof BASE_SERVICE_DEPENDENCIES)[number]>;
@@ -164,7 +167,8 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
   }
 
   async newUser(dto: Partial<Insertable<UserTable>> = {}) {
-    const user = mediumFactory.userInsert(dto);
+    const clusterGroup = dto.clusterGroupId ? undefined : await this.get(ClusterGroupRepository).create();
+    const user = mediumFactory.userInsert({ ...dto, clusterGroupId: dto.clusterGroupId ?? clusterGroup!.id });
     const result = await this.get(UserRepository).create(user);
     return { user, result };
   }
@@ -249,6 +253,17 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { albumUser: { albumId, userId, role }, result };
   }
 
+  /** An album owned by one user, containing one asset, shared with a second user */
+  async newSharedAlbum(dto: { role?: AlbumUserRole } = {}) {
+    const { user: owner } = await this.newUser();
+    const { user: sharedWith } = await this.newUser();
+    const { asset } = await this.newAsset({ ownerId: owner.id });
+    const { album } = await this.newAlbum({ ownerId: owner.id }, [asset.id]);
+    await this.newAlbumUser({ albumId: album.id, userId: sharedWith.id, role: dto.role ?? AlbumUserRole.Editor });
+
+    return { album, asset, owner, sharedWith };
+  }
+
   async softDeleteAsset(assetId: string) {
     await this.database.updateTable('asset').set({ deletedAt: new Date() }).where('id', '=', assetId).execute();
   }
@@ -264,8 +279,14 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
   }
 
   async newPerson(dto: Partial<Insertable<PersonTable>> & { ownerId: string }) {
-    const person = mediumFactory.personInsert(dto);
-    const result = await this.get(PersonRepository).create(person);
+    const repository = this.get(PersonRepository);
+    let personGroupId = dto.personGroupId;
+    if (!personGroupId) {
+      const group = await repository.createGroup(dto.ownerId);
+      personGroupId = group.id;
+    }
+    const person = mediumFactory.personInsert({ ...dto, personGroupId });
+    const result = await repository.create(person);
     return { person, result };
   }
 
@@ -292,6 +313,12 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
       session,
       user,
     };
+  }
+
+  async newTag(dto: Insertable<TagTable>) {
+    const tag = mediumFactory.tagInsert(dto);
+    const result = await this.get(TagRepository).create(tag);
+    return { tag, result };
   }
 
   async newTagAsset(tagBulkAssets: { tagIds: string[]; assetIds: string[] }) {
@@ -443,12 +470,16 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case AlbumRepository:
     case AlbumUserRepository:
     case ActivityRepository:
+    case ApiKeyRepository:
     case AssetRepository:
     case AssetEditRepository:
+    case AssetFileRepository:
     case AssetJobRepository:
+    case ClusterGroupRepository:
     case DuplicateRepository:
     case IntegrityRepository:
     case MemoryRepository:
+    case LibraryRepository:
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:
@@ -515,6 +546,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case AssetJobRepository:
     case ConfigRepository:
     case CryptoRepository:
+    case LibraryRepository:
     case MemoryRepository:
     case IntegrityRepository:
     case NotificationRepository:
@@ -650,7 +682,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     id: assetFace.id ?? newUuid(),
     imageHeight: assetFace.imageHeight ?? 10,
     imageWidth: assetFace.imageWidth ?? 10,
-    personId: assetFace.personId ?? null,
+    personGroupId: assetFace.personGroupId ?? null,
     sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
     isVisible: assetFace.isVisible ?? true,
   };
@@ -677,13 +709,12 @@ const assetJobStatusInsert = (
   };
 };
 
-const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: string }) => {
+const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: string; personGroupId: string }) => {
   const defaults = {
     birthDate: person.birthDate || null,
     color: person.color || null,
     createdAt: person.createdAt || newDate(),
     faceAssetId: person.faceAssetId || null,
-    id: person.id || newUuid(),
     isFavorite: person.isFavorite || false,
     isHidden: person.isHidden || false,
     name: person.name || 'Test Name',
@@ -717,7 +748,7 @@ const sessionInsert = ({
   };
 };
 
-const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
+const userInsert = (user: Partial<Insertable<UserTable>> & { clusterGroupId: string }) => {
   const id = user.id || newUuid();
 
   const defaults = {
@@ -806,7 +837,7 @@ const loginDetails = () => {
 };
 
 const loginResponse = (): LoginResponseDto => {
-  const user = userInsert({});
+  const user = userInsert({ clusterGroupId: newUuid() });
   return {
     accessToken: 'access-token',
     userId: user.id,

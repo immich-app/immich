@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, OrderByDirection, sql, Updateable } from 'kysely';
+import { type Insertable, type Kysely, type OrderByDirection, sql, type Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { MemorySearchDto } from 'src/dtos/memory.dto';
-import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
-import { MemoryTable } from 'src/schema/tables/memory.table';
-import { IBulkAsset } from 'src/types';
+import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
+import { MemorySearchDto } from 'src/dtos/memory.dto.js';
+import { AssetOrderWithRandom, AssetVisibility } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import type { IBulkAsset } from 'src/types.js';
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
@@ -39,6 +39,12 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
+      .$if(dto.isUpcoming !== undefined, (qb) => {
+        const now = DateTime.now().toJSDate();
+        return dto.isUpcoming
+          ? qb.where('showAt', '>', now)
+          : qb.where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', now)]));
+      })
       .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
       .where('ownerId', '=', ownerId);
   }
@@ -56,6 +62,8 @@ export class MemoryRepository implements IBulkAsset {
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+    { name: 'upcoming filter', params: [DummyValue.UUID, { isUpcoming: true }] },
+    { name: 'not upcoming filter', params: [DummyValue.UUID, { isUpcoming: false }] },
   )
   search(ownerId: string, dto: MemorySearchDto) {
     return this.searchBuilder(ownerId, dto)
@@ -73,7 +81,11 @@ export class MemoryRepository implements IBulkAsset {
                 eb.exists(
                   eb
                     .selectFrom('asset_face')
-                    .innerJoin('person', 'person.id', 'asset_face.personId')
+                    .innerJoin('person', (join) =>
+                      join
+                        .onRef('person.personGroupId', '=', 'asset_face.personGroupId')
+                        .onRef('person.ownerId', '=', 'asset.ownerId'),
+                    )
                     .select((eb) => eb.val(1).as('one'))
                     .whereRef('asset_face.assetId', '=', 'asset.id')
                     .where('person.isHidden', '=', true),
@@ -84,12 +96,19 @@ export class MemoryRepository implements IBulkAsset {
         ).as('assets'),
       )
       .selectAll('memory')
-      .$call((qb) =>
-        dto.order === AssetOrderWithRandom.Random
-          ? qb.orderBy(sql`RANDOM()`)
-          : qb.orderBy('memoryAt', (dto.order?.toLowerCase() || 'desc') as OrderByDirection),
-      )
+      .$call((qb) => {
+        if (dto.order === AssetOrderWithRandom.Random) {
+          return qb.orderBy(sql`RANDOM()`);
+        }
+
+        const direction = (dto.order?.toLowerCase() || 'desc') as OrderByDirection;
+        return qb
+          .orderBy('showAt', (ob) => (direction === 'asc' ? ob.asc() : ob.desc()).nullsLast())
+          .orderBy('memoryAt', direction);
+      })
+      .$if(dto.id !== undefined, (qb) => qb.where('id', '=', dto.id!))
       .$if(dto.size !== undefined, (qb) => qb.limit(dto.size!))
+      .$if(dto.page !== undefined && dto.size !== undefined, (qb) => qb.offset((dto.page! - 1) * dto.size!))
       .execute();
   }
 

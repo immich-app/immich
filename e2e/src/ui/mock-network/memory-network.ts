@@ -62,4 +62,14 @@ export const setupMemoryMockApiRoutes = async (
 
     await route.fallback();
   });
+
+  await context.route('**/api/memories/statistics*', async (route) => {
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: {
+        total: memories.length,
+      },
+    });
+  });
 };

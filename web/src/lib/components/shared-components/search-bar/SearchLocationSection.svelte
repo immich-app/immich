@@ -1,18 +1,13 @@
 <script lang="ts">
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/Combobox.svelte';
-  import type { SearchLocationFilter } from '$lib/types';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  type Props = {
-    filters: SearchLocationFilter;
-  };
-
-  let { filters = $bindable() }: Props = $props();
-
+  let filters = $derived(searchManager.filter.location);
   let countries: string[] = $state([]);
   let states: string[] = $state([]);
   let cities: string[] = $state([]);
@@ -68,9 +63,9 @@
 </script>
 
 <div id="location-selection">
-  <Text fontWeight="medium">{$t('place')}</Text>
+  <Text>{$t('search_filter_location_description')}</Text>
 
-  <div class="mt-1 grid grid-auto-fit-40 gap-5">
+  <div class="mt-5 grid grid-auto-fit-40 gap-5">
     <div class="w-full">
       <Combobox
         label={$t('country')}

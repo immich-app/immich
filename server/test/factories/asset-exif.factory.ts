@@ -1,7 +1,7 @@
 import { Selectable } from 'kysely';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetExifLike } from 'test/factories/types';
-import { factory } from 'test/small.factory';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetExifLike } from 'test/factories/types.js';
+import { factory } from 'test/small.factory.js';
 
 export class AssetExifFactory {
   private constructor(private readonly value: Selectable<AssetExifTable>) {}

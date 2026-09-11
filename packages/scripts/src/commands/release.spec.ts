@@ -33,6 +33,13 @@ describe(getNewVersion.name, () => {
         ],
       },
       {
+        name: 'cutting the next line while on a prerelease',
+        items: [
+          ['preminor', '3.3.0-rc.0', '3.4.0-rc.0'],
+          ['premajor', '3.3.0-rc.0', '4.0.0-rc.0'],
+        ],
+      },
+      {
         name: 'premajor',
         items: [
           ['premajor', '2.7.5', '3.0.0-rc.0'],
@@ -58,8 +65,6 @@ describe(getNewVersion.name, () => {
         ['patch', 'v3.0.0-rc.0'],
         ['prepatch', 'v3.0.0-rc.0'],
         ['minor', 'v3.0.0-rc.0'],
-        ['preminor', 'v3.0.0-rc.0'],
-        ['premajor', 'v3.0.0-rc.0'],
         ['prerelease', 'v3.0.0'],
         ['release', 'v3.0.0'],
       ])('should not allow a $0 on $1', (type, version) => {

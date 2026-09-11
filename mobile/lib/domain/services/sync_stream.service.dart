@@ -34,8 +34,8 @@ class SyncStreamService {
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final TrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
   final DevicePermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;

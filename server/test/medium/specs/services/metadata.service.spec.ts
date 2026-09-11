@@ -3,19 +3,19 @@ import { Stats } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MetadataRepository } from 'src/repositories/metadata.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { TagRepository } from 'src/repositories/tag.repository';
-import { DB } from 'src/schema';
-import { MetadataService } from 'src/services/metadata.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB, newRandomImage } from 'test/utils';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MetadataRepository } from 'src/repositories/metadata.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
+import { DB } from 'src/schema/index.js';
+import { MetadataService } from 'src/services/metadata.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB, newRandomImage } from 'test/utils.js';
 
 type TimeZoneTest = {
   description: string;
@@ -150,6 +150,59 @@ describe(MetadataService.name, () => {
           .executeTakeFirstOrThrow(),
         // note that this date is technically wrong. it does not throw though and should get the user's attention either way.
       ).resolves.toEqual({ dateTimeOriginal: new Date('4260-03-05T04:04:12.000Z') });
+    });
+
+    it('should ignore IFD1 thumbnail orientation when extracting metadata', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { filePath } = await createTestFile({ 'IFD1:Orientation#': 6 });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('orientation')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ orientation: null });
+    });
+
+    it('should ignore IFD1 thumbnail dimensions when extracting metadata', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { filePath } = await createTestFile({ 'IFD1:ImageWidth#': 160, 'IFD1:ImageHeight#': 120 });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toEqual(
+        expect.objectContaining({ width: 1, height: 1 }),
+      );
+    });
+
+    it('should keep IFD0 orientation when extracting metadata', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { filePath } = await createTestFile({ 'IFD0:Orientation#': 6 });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('orientation')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ orientation: '6' });
     });
   });
 

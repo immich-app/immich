@@ -1,15 +1,15 @@
 import { Selectable } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
-import { AssetFace, Person } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { SourceTypeSchema } from 'src/enum';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { ImageDimensions, MaybeDehydrated } from 'src/types';
-import { asDateString, asDateTimeString } from 'src/utils/date';
-import { transformFaceBoundingBox } from 'src/utils/transform';
-import { hexColor, stringToBool } from 'src/validation';
+import { AssetFace, Person } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import { SourceTypeSchema } from 'src/enum.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import type { ImageDimensions, MaybeDehydrated } from 'src/types.js';
+import { asDateString, asDateTimeString } from 'src/utils/date.js';
+import { transformFaceBoundingBox } from 'src/utils/transform.js';
+import { hexColor, stringToBool } from 'src/validation.js';
 import z from 'zod';
 
 const PersonCreateSchema = z
@@ -173,7 +173,7 @@ export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 
 export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
-    id: person.id,
+    id: person.personGroupId,
     name: person.name,
     birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
@@ -215,6 +215,6 @@ export function mapFaces(
 ): AssetFaceResponseDto {
   return {
     ...mapFacesWithoutPerson(face, edits, assetDimensions),
-    person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
+    person: face.person ? mapPerson(face.person) : null,
   };
 }

@@ -43,10 +43,13 @@ class AnnSession:
         shapes = self.ann.output_shapes[self.model]
         return [AnnNode(f"output.{i + 1}", s) for i, s in enumerate(shapes)]
 
+    def get_metadata(self) -> dict[str, str]:
+        return {}
+
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]] | dict[str, NDArray[np.uint8]],
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
         inputs: list[NDArray[np.float32]] = [np.ascontiguousarray(v) for v in input_feed.values()]

@@ -1,11 +1,11 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { Permission } from 'src/enum';
-import { ApiKeyService } from 'src/services/api-key.service';
-import { ApiKeyFactory } from 'test/factories/api-key.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { SessionFactory } from 'test/factories/session.factory';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { Permission } from 'src/enum.js';
+import { ApiKeyService } from 'src/services/api-key.service.js';
+import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { SessionFactory } from 'test/factories/session.factory.js';
+import { newUuid } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(ApiKeyService.name, () => {
   let sut: ApiKeyService;
@@ -185,6 +185,51 @@ describe(ApiKeyService.name, () => {
           expect.objectContaining({ permissions: [Permission.AssetRead, Permission.AssetUpdate] }),
         );
       });
+    });
+  });
+
+  describe('rotate', () => {
+    it('should throw an error if the key is not found', async () => {
+      const auth = AuthFactory.create();
+      const id = newUuid();
+
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
+      await expect(sut.rotate(auth, id)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.apiKey.update).not.toHaveBeenCalled();
+    });
+
+    it('should replace the secret of a key', async () => {
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
+
+      mocks.crypto.randomBytesAsText.mockReturnValue('super-secret');
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+      mocks.apiKey.update.mockResolvedValue(apiKey);
+
+      await expect(sut.rotate(auth, apiKey.id)).resolves.toEqual(
+        expect.objectContaining({ secret: 'super-secret', apiKey: expect.objectContaining({ id: apiKey.id }) }),
+      );
+
+      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, {
+        key: Buffer.from('super-secret (hashed)'),
+      });
+    });
+
+    it('should not rotate a key with permissions the caller does not have', async () => {
+      const auth = AuthFactory.from()
+        .apiKey({ permissions: [Permission.ApiKeyRotate] })
+        .build();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id, permissions: [Permission.All] });
+
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+
+      await expect(sut.rotate(auth, apiKey.id)).rejects.toThrow(
+        'Cannot rotate an API Key with permissions you do not have',
+      );
+
+      expect(mocks.apiKey.update).not.toHaveBeenCalled();
     });
   });
 

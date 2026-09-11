@@ -4,12 +4,13 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.drift.dart';
 
 class RemovalCandidatesResult {
   final List<LocalAsset> assets;
@@ -18,10 +19,11 @@ class RemovalCandidatesResult {
   const RemovalCandidatesResult({required this.assets, required this.totalBytes});
 }
 
-class DriftLocalAssetRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepositoryMixin {
+  LocalAssetRepository(super.attachedDatabase);
 
-  const DriftLocalAssetRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
     final query =
@@ -72,7 +74,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> delete(List<String> ids) {
+  Future<void> deleteAssets(List<String> ids) {
     if (ids.isEmpty) {
       return Future.value();
     }
@@ -215,30 +217,5 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
 
     return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
-  }
-
-  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
-    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
-  }
-
-  Future<void> reconcileHashesFromCloudId() async {
-    await _db.customUpdate(
-      '''
-      UPDATE local_asset_entity
-      SET checksum = remote_asset_entity.checksum
-      FROM remote_asset_cloud_id_entity
-      INNER JOIN remote_asset_entity
-        ON remote_asset_cloud_id_entity.asset_id = remote_asset_entity.id
-      WHERE local_asset_entity.i_cloud_id = remote_asset_cloud_id_entity.cloud_id
-        AND local_asset_entity.checksum IS NULL
-        AND remote_asset_cloud_id_entity.adjustment_time IS local_asset_entity.adjustment_time
-        AND remote_asset_cloud_id_entity.latitude IS local_asset_entity.latitude
-        AND remote_asset_cloud_id_entity.longitude IS local_asset_entity.longitude
-        AND remote_asset_cloud_id_entity.created_at IS local_asset_entity.created_at
-      ''',
-      updates: {_db.localAssetEntity},
-      updateKind: UpdateKind.update,
-    );
   }
 }

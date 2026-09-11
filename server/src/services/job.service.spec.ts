@@ -1,9 +1,9 @@
-import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
-import { JobService } from 'src/services/job.service';
-import { JobItem } from 'src/types';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum.js';
+import { JobService } from 'src/services/job.service.js';
+import type { JobItem } from 'src/types.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { newUuid } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(JobService.name, () => {
   let sut: JobService;
@@ -50,7 +50,7 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.PersonGenerateThumbnail, data: { id: 'asset-1' } },
+        item: { name: JobName.PersonGenerateThumbnail, data: { ownerId: 'owner-1', personGroupId: 'person-group-1' } },
         jobs: [],
       },
       {
@@ -90,6 +90,7 @@ describe(JobService.name, () => {
     for (const { item, jobs, stub } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
         if (stub) {
+          mocks.asset.getById.mockResolvedValue(stub[0]);
           mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue(stub);
         }
 

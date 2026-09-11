@@ -42,6 +42,13 @@ export class ProcessRepository {
           process.stdin.end(callback);
         }
       },
+
+      destroy(error, callback) {
+        if (process.exitCode === null && process.signalCode === null) {
+          process.kill();
+        }
+        callback(error);
+      },
     });
 
     // stdout -> duplex

@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
-import { JobName, JobStatus } from 'src/enum';
-import { TrashService } from 'src/services/trash.service';
-import { authStub } from 'test/fixtures/auth.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { JobName, JobStatus } from 'src/enum.js';
+import { TrashService } from 'src/services/trash.service.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 async function* makeAssetIdStream(count: number): AsyncIterableIterator<{ id: string }> {
   for (let i = 0; i < count; i++) {

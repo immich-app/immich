@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
-import _ from 'lodash';
+import { orderBy } from 'lodash-es';
 import { Socket } from 'socket.io';
-import { SystemConfig } from 'src/config';
-import { Asset } from 'src/database';
-import { EventConfig } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobItem, JobSource, UploadFile } from 'src/types';
+import { Asset } from 'src/database.js';
+import { EventConfig } from 'src/decorators.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import type { JobItem, JobSource, UploadFile } from 'src/types.js';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
 
@@ -40,6 +40,9 @@ type EventMap = {
   // album events
   AlbumUpdate: [{ id: string; userIds: string[]; recipientIds: string[] }];
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
+
+  // cluster group events
+  ClusterGroupRequest: [{ clusterGroupId: string; userId: string; senderName: string }];
 
   // asset events
   AssetCreate: [{ asset: Pick<Asset, 'id' | 'ownerId'>; file?: UploadFile }];
@@ -202,7 +205,7 @@ export class EventRepository {
       }
     }
 
-    const handlers = _.orderBy(items, ['priority'], ['asc']);
+    const handlers = orderBy(items, ['priority'], ['asc']);
 
     // register by priority
     for (const handler of handlers) {

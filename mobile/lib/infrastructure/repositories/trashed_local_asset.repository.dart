@@ -1,20 +1,22 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.drift.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
-class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class TrashedLocalAssetRepository extends DatabaseAccessor<Drift> with $TrashedLocalAssetRepositoryMixin {
+  TrashedLocalAssetRepository(super.attachedDatabase);
 
-  const DriftTrashedLocalAssetRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
   /// Matches remote_asset_entity rows owned by the current user. The asset is unique over (owner, checksum),
   /// so partners can have a duplicate checksum
