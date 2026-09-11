@@ -42,7 +42,7 @@ import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
 import { configureUserAgent } from 'src/utils/fetch';
-import { detectMediaLocation } from 'src/utils/storage';
+import { resolveMediaLocation } from 'src/utils/storage';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -60,7 +60,21 @@ const configRepository = new ConfigRepository();
 const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
 
 const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
-const yuccaStatePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'yucca');
+
+const resolveYuccaStatePath = () => {
+  const mediaLocation = resolveMediaLocation(storage.mediaLocation, existsSync);
+  const statePath = join(mediaLocation.path, 'yucca');
+
+  if (mediaLocation.ambiguous) {
+    console.warn(
+      `${mediaLocation.reason} Falling back to ${mediaLocation.path}, so backup configuration and encryption keys will be read from ${statePath}, which may not be where they were written.`,
+    );
+  }
+
+  return statePath;
+};
+
+const yuccaStatePath = resolveYuccaStatePath();
 
 const commonImports = [
   ClsModule.forRoot(cls.config),
