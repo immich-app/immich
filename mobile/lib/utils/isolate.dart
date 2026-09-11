@@ -7,7 +7,6 @@ import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 // ignore: library_prefixes
 import 'package:immich_mobile/entities/store.entity.dart' as dbStore;
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';

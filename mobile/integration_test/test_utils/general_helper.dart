@@ -7,7 +7,6 @@ import 'package:immich_mobile/data/store.dart';
 // ignore: library_prefixes
 import 'package:immich_mobile/entities/store.entity.dart' as dbStore;
 import 'package:immich_mobile/main.dart' as app;
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:integration_test/integration_test.dart';
 // ignore: depend_on_referenced_packages
