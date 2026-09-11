@@ -1156,7 +1156,7 @@ void main() {
         } else if (buttonType == ActionButtonType.setFeaturedPhoto) {
           final person = createPerson();
           final contextWithPerson = ActionButtonContext(
-            asset: asset,
+            asset: createRemoteAsset(),
             isOwner: true,
             isArchived: false,
             isTrashEnabled: true,
