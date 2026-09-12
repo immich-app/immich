@@ -12,6 +12,7 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 immich_core = { path = "../immich_core" }
 immich_db = { path = "../immich_db" }
+libc = { workspace = true }
 
 [target.'cfg(target_os = "android")'.dependencies]
 jni = { workspace = true }
