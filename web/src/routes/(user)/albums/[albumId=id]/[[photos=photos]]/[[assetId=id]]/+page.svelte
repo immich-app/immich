@@ -159,6 +159,7 @@
 
   const handleRemoveAssets = async (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
+    timelineMultiSelectManager.clear();
     await refreshAlbum();
   };
 
