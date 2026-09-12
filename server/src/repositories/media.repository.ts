@@ -273,7 +273,7 @@ export class MediaRepository {
           };
         }),
       audioStreams: results.streams
-        .filter((stream) => stream.codec_type === 'audio')
+        .filter((stream) => stream.codec_type === 'audio' && stream.codec_name !== 'unknown')
         .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
