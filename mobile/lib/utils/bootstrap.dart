@@ -1,18 +1,14 @@
 import 'package:background_downloader/background_downloader.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/data/db/logger/database.dart';
-import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/data_controller.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:sqlite3/common.dart';
 
 void configureFileDownloaderNotifications() {
   final t = StaticTranslations.instance;
@@ -47,50 +43,36 @@ void configureFileDownloaderNotifications() {
 }
 
 abstract final class Bootstrap {
-  static Future<(Drift, DriftLogger)> initDomain({bool listenStoreUpdates = true, bool shouldBufferLogs = true}) async {
-    await configureSqliteCache();
-    final (db, updatePool) = await openSqliteConnectionWithUpdatePool(name: 'immich');
-    final drift = Drift.sqlite(db, updatePool);
-    final StoreRepository storeRepo = StoreRepository(drift);
-
-    await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
-
-    final settingsRepo = await SettingsRepository.ensureInitialized(drift);
-    final logDb = await _initLogger(settingsRepository: settingsRepo, shouldBufferLogs: shouldBufferLogs);
-
+  /// Initalize the base data system. Sets up primary/logging DBs, the [ApiService], and the settings store
+  ///
+  /// `disableStoreWatching` prevents continually updating the setting store's cache on change
+  static Future<(DataController, ApiService)> initDomain({
+    bool shouldBufferLogs = true,
+    bool disableStoreWatching = false,
+  }) async {
     await NetworkRepository.init();
-    // Remove once all asset operations are migrated to Native APIs
-    await PhotoManager.setIgnorePermissionCheck(true);
-    return (drift, logDb);
-  }
-}
 
-Future<DriftLogger> _initLogger({required SettingsRepository settingsRepository, bool shouldBufferLogs = true}) async {
-  Future<DriftLogger> open() async => DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
+    final apiService = ApiService();
+    final (dataController, loggerDatabaseWasRecreated) = await DataController.init(
+      apiClient: apiService.apiClient,
+      disableStoreWatching: disableStoreWatching,
+    );
 
-  DriftLogger logDb = await open();
-  bool wasCorrupt = false;
-  try {
-    await logDb.customSelect('SELECT COUNT(*) FROM logger_messages').get();
-  } on SqliteException catch (error) {
-    if (error.resultCode != SqlError.SQLITE_CORRUPT && error.resultCode != SqlError.SQLITE_NOTADB) {
-      await logDb.close();
-      rethrow;
+    final settingsRepo = await SettingsRepository.ensureInitialized(dataController.db);
+
+    // Take DataController's logging DB and register it with the logging service
+    await LogService.init(
+      logRepository: LogRepository(dataController.logDb),
+      settingsRepository: settingsRepo,
+      shouldBuffer: shouldBufferLogs,
+    );
+
+    if (loggerDatabaseWasRecreated) {
+      Logger('bootstrap:initLogger').warning('Logs database was corrupt and has been recreated');
     }
-    dPrint(() => 'Logs database is corrupt, recreating it');
-    await logDb.close();
-    await deleteSqliteDatabase(name: 'immich_logs');
-    logDb = await open();
-    wasCorrupt = true;
-  }
 
-  await LogService.init(
-    logRepository: LogRepository(logDb),
-    settingsRepository: settingsRepository,
-    shouldBuffer: shouldBufferLogs,
-  );
-  if (wasCorrupt) {
-    Logger('bootstrap:initLogger').warning('Logs database was corrupt and has been recreated');
+    // TODO: Remove once all asset operations are migrated to Native APIs
+    await PhotoManager.setIgnorePermissionCheck(true);
+    return (dataController, apiService);
   }
-  return logDb;
 }
