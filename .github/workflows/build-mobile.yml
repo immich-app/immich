@@ -73,6 +73,7 @@ jobs:
             mobile:
               - 'mobile/**'
               - 'open-api/**'
+              - 'native/**'
           force-filters: |
             - '.github/workflows/build-mobile.yml'
           force-events: 'workflow_call,workflow_dispatch'
@@ -100,6 +101,20 @@ jobs:
           ref: ${{ inputs.ref }}
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
+
+      - name: Restore Rust Cache
+        id: cache-rust-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/immich_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          restore-keys: |
+            build-mobile-rust-${{ runner.os }}-
 
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
@@ -156,6 +171,34 @@ jobs:
             flutter build apk --release
           fi
 
+      - name: Verify native library
+        # the rust build hook links the library for 16 KB pages and against the app's minSdk;
+        # Google Play rejects the first regression, old devices the second
+        run: |
+          set -o pipefail
+          apk=mobile/build/app/outputs/flutter-apk/app-release.apk
+          min_sdk=$(sed -nE 's/^ *minSdk = ([0-9]+)$/\1/p' mobile/android/app/build.gradle)
+          readelf=$(find "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/ndk" -name llvm-readelf | sort -V | tail -n 1)
+          [[ $min_sdk && -x $readelf ]] || { echo "minSdk or llvm-readelf not found" >&2; exit 1; }
+
+          for abi in armeabi-v7a arm64-v8a x86_64; do
+            lib=$RUNNER_TEMP/$abi.so
+            unzip -p "$apk" "lib/$abi/libimmich_core_ffi.so" > "$lib"
+
+            # every loadable segment must be aligned to 16 KB (0x4000)
+            "$readelf" --program-headers --wide "$lib" | awk '$1 == "LOAD" && $NF != "0x4000" { bad = 1 } END { exit bad }' \
+              || { echo "$abi: a LOAD segment is not 16 KB aligned" >&2; exit 1; }
+
+            # the Android ELF note starts with the API level the library was linked against, 4 bytes little endian
+            note=$("$readelf" --notes "$lib" | sed -nE '/^ *Android/,$ s/.*description data: *//p')
+            [[ $note ]] || { echo "$abi: no Android ELF note" >&2; exit 1; }
+            read -r b0 b1 b2 b3 _ <<< "$note"
+            api=$((16#$b3$b2$b1$b0))
+            (( api <= min_sdk )) || { echo "$abi: linked against API $api, minSdk is $min_sdk" >&2; exit 1; }
+
+            echo "$abi ok: 16 KB aligned, API $api"
+          done
+
       - name: Publish Android Artifact
         id: upload-apk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -196,6 +239,19 @@ jobs:
             mobile/android/.gradle
           key: ${{ steps.cache-gradle-restore.outputs.cache-primary-key }}
 
+      - name: Save Rust Cache
+        id: cache-rust-save
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cache-rust-restore.outputs.cache-primary-key }}
+
   build-sign-ios:
     name: Build and sign iOS
     needs: pre-job
@@ -221,6 +277,20 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
+
+      - name: Restore Rust Cache
+        id: cache-rust-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/immich_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          restore-keys: |
+            build-mobile-rust-${{ runner.os }}-
 
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
@@ -313,3 +383,16 @@ jobs:
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa
+
+      - name: Save Rust Cache
+        id: cache-rust-save
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cache-rust-restore.outputs.cache-primary-key }}
