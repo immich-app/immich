@@ -214,11 +214,9 @@
           {/each}
         </div>
       </div>
-      {#if searchManager.filter.queryType === 'smart'}
-        <div class="px-5 pt-5">
-          <SearchSortSection />
-        </div>
-      {/if}
+      <div class="px-5 pt-5">
+        <SearchSortSection />
+      </div>
       {#if activeFilter}
         <div class="px-5 pt-5">
           {#if activeFilter === 'type'}

@@ -128,7 +128,7 @@ class SearchManager {
       tagIds: this.filter.tagIds === null ? null : this.filter.tagIds.size > 0 ? [...this.filter.tagIds] : undefined,
       type,
       rating: this.filter.rating,
-      ...(this.filter.queryType === 'smart' && this.filter.order ? { order: this.filter.order } : {}),
+      ...(this.filter.order ? { order: this.filter.order } : {}),
     };
   }
 

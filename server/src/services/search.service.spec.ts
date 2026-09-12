@@ -231,6 +231,18 @@ describe(SearchService.name, () => {
       expect(mocks.search.searchMetadata).toHaveBeenCalled();
     });
 
+    it('uses the timeline date when an explicit metadata sort is requested', async () => {
+      const auth = AuthFactory.create();
+      mocks.search.searchMetadata.mockResolvedValue({ hasNextPage: false, items: [] });
+
+      await sut.searchMetadata(auth, { size: 250, city: 'Oslo', order: AssetOrder.Asc });
+
+      expect(mocks.search.searchMetadata).toHaveBeenCalledWith(
+        { page: 1, size: 250 },
+        expect.objectContaining({ orderDirection: AssetOrder.Asc, orderField: 'localDateTime' }),
+      );
+    });
+
     it('should route statistics, random, and smart filter requests to their V3 search', async () => {
       const auth = AuthFactory.create();
 

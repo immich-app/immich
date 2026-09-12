@@ -107,6 +107,7 @@ export class SearchService extends BaseService {
         userIds,
         viewingUserId: auth.user.id,
         orderDirection: dto.order ?? AssetOrder.Desc,
+        ...(dto.order && { orderField: 'localDateTime' as const }),
       },
     );
 

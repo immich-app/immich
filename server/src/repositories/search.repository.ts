@@ -113,6 +113,8 @@ export interface SearchAlbumOptions {
 
 export interface SearchOrderOptions {
   orderDirection?: 'asc' | 'desc';
+  /** Internal override used when an explicit search sort should match the timeline date. */
+  orderField?: 'fileCreatedAt' | 'localDateTime';
 }
 
 export interface SearchPaginationOptions {
@@ -228,9 +230,10 @@ export class SearchRepository {
   })
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
+    const orderField = options.orderField === 'localDateTime' ? 'asset.localDateTime' : 'asset.fileCreatedAt';
     const items = await searchAssetBuilderLegacy(this.db, options)
       .select(columns.searchAsset)
-      .orderBy('asset.fileCreatedAt', orderDirection)
+      .orderBy(orderField, orderDirection)
       .orderBy('asset.id', orderDirection)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
