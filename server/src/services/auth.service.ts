@@ -134,7 +134,10 @@ export class AuthService extends BaseService {
 
     const hashedPassword = await this.cryptoRepository.hashBcrypt(newPassword, SALT_ROUNDS);
 
-    const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
+    const updatedUser = await this.userRepository.update(user.id, {
+      password: hashedPassword,
+      shouldChangePassword: false,
+    });
 
     await this.eventRepository.emit('AuthChangePassword', {
       userId: user.id,
