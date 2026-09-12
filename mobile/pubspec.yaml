@@ -123,6 +123,23 @@ dependency_overrides:
       url: https://github.com/mertalev/native
       ref: '2915556701f4734a784222f290a82adb1b101682' # https://github.com/dart-lang/native/pull/3458
       path: pkgs/objective_c/
+  sqlite3:
+    git:
+      url: https://github.com/simolus3/sqlite3.dart
+      ref: '507aaaf1150059176a77e7e9562d3ff4eb901a11' # https://github.com/simolus3/sqlite3.dart/pull/406, until the next sqlite3 release
+      path: sqlite3/
+
+# drift and sqlite_async use the sqlite compiled into the native core instead of their own copy.
+hooks:
+  user_defines:
+    sqlite3:
+      source:
+        android: system
+        ios: system
+        default: sqlite3 # host (flutter test on macos/linux) keeps the prebuilt, as today
+      name:
+        android: immich_core_ffi
+        ios: immich_core_ffi.framework/immich_core_ffi
 
 flutter:
   uses-material-design: true

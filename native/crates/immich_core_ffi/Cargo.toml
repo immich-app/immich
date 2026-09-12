@@ -11,9 +11,16 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 immich_core = { path = "../immich_core" }
+immich_db = { path = "../immich_db" }
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { workspace = true }
 
 [build-dependencies]
 cbindgen = { workspace = true }
+
+[dev-dependencies]
+rusqlite = { workspace = true }
 
 [lints]
 workspace = true

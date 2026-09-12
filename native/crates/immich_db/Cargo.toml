@@ -1,0 +1,11 @@
+[package]
+name = "immich_db"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rusqlite = { workspace = true, features = ["bundled"] }
+
+[lints]
+workspace = true
