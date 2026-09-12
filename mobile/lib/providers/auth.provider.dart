@@ -115,9 +115,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(profileImagePath: path);
   }
 
-  Future<bool> changePassword(String newPassword) async {
+  Future<bool> changePassword({required String currentPassword, required String newPassword}) async {
     try {
-      await _authService.changePassword(newPassword);
+      await _authService.changePassword(currentPassword: currentPassword, newPassword: newPassword);
       return true;
     } catch (_) {
       return false;
