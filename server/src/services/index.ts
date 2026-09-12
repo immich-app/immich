@@ -11,6 +11,7 @@ import { CliService } from 'src/services/cli.service.js';
 import { ClusterGroupService } from 'src/services/cluster-group.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { DatabaseService } from 'src/services/database.service.js';
+import { DeviceMountService } from 'src/services/device-mount.service.js';
 import { DownloadService } from 'src/services/download.service.js';
 import { DuplicateService } from 'src/services/duplicate.service.js';
 import { HlsService } from 'src/services/hls.service.js';
@@ -65,6 +66,7 @@ export const services = [
   CliService,
   DatabaseBackupService,
   DatabaseService,
+  DeviceMountService,
   DownloadService,
   DuplicateService,
   IntegrityService,

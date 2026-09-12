@@ -1130,6 +1130,29 @@ export class AssetRepository {
     return result.map((row) => row.path as string);
   }
 
+  /**
+   * Rewrites the `originalPath` prefix for every external asset in a library, from `oldPrefix` to `newPrefix`.
+   * Used by the device-mount reconciliation flow (Phase 1, work item 4 of the PhotoManager plan): when a
+   * removable drive reconnects under a different OS-assigned mount path/drive letter, this keeps existing
+   * asset rows pointed at the right files instead of letting them go offline and get rediscovered as new
+   * assets under the new path - which is what previously forced a full thumbnail/ML/metadata reprocessing.
+   *
+   * NOTE: written to match this repository's existing conventions but not yet run against a real database in
+   * this cloud workspace - verify with a real library + a real path change before relying on it in production.
+   */
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
+  rewriteOriginalPathPrefix(libraryId: string, oldPrefix: string, newPrefix: string) {
+    return this.db
+      .updateTable('asset')
+      .set({
+        originalPath: sql<string>`${newPrefix} || substring("originalPath" from ${oldPrefix.length + 1})`,
+      })
+      .where('libraryId', '=', asUuid(libraryId))
+      .where('isExternal', '=', true)
+      .where(sql<string>`left("originalPath", ${oldPrefix.length})`, '=', oldPrefix)
+      .executeTakeFirstOrThrow();
+  }
+
   async getLibraryAssetCount(libraryId: string): Promise<number> {
     const { count } = await this.db
       .selectFrom('asset')
