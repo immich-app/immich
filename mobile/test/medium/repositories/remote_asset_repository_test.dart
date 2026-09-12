@@ -1,4 +1,6 @@
+import 'package:async/async.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 
 import '../repository_context.dart';
@@ -62,6 +64,55 @@ void main() {
 
       expect(result.length, 1);
       expect(result[0].id, remote.id);
+    });
+  });
+
+  group('watchHiddenIds', () {
+    late String userId;
+
+    setUp(() async {
+      final user = await ctx.newUser();
+      userId = user.id;
+      await ctx.newAuthUser(id: userId);
+    });
+
+    test('hides trashed and archived assets but keeps matching and unsynced ones', () async {
+      final timeline = await ctx.newRemoteAsset(ownerId: userId);
+      final trashed = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2020));
+      final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
+
+      final result = await sut.watchHiddenIds([
+        timeline.id,
+        trashed.id,
+        archived.id,
+        'never-synced',
+      ], AssetVisibility.timeline).first;
+
+      expect(result, {trashed.id, archived.id});
+    });
+
+    test('hides assets not matching the requested visibility for archive searches', () async {
+      final timeline = await ctx.newRemoteAsset(ownerId: userId);
+      final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
+
+      final result = await sut.watchHiddenIds([timeline.id, archived.id], AssetVisibility.archive).first;
+
+      expect(result, {timeline.id});
+    });
+
+    test('emits when an asset is trashed and again when it is restored', () async {
+      final asset = await ctx.newRemoteAsset(ownerId: userId);
+      final queue = StreamQueue(sut.watchHiddenIds([asset.id], AssetVisibility.timeline));
+
+      expect(await queue.next, isEmpty);
+
+      await sut.trash([asset.id]);
+      expect(await queue.next, {asset.id});
+
+      await sut.restoreTrash([asset.id]);
+      expect(await queue.next, isEmpty);
+
+      await queue.cancel();
     });
   });
 }
