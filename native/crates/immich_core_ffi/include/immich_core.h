@@ -47,3 +47,13 @@ int32_t immich_core_log(const char *app_dir,
                         ImmichCoreLogLevel level,
                         const char *logger,
                         const char *message);
+
+/**
+ * Decodes a thumbhash to RGBA. The caller frees the returned buffer with free().
+ * Returns null on failure.
+ *
+ * # Safety
+ * `hash` must be null or readable for `len` bytes, at most `isize::MAX`.
+ * `width` and `height` must be null or valid writable pointers, outside `hash`.
+ */
+uint8_t *immich_core_thumbhash(const uint8_t *hash, size_t len, int32_t *width, int32_t *height);
