@@ -1,7 +1,0 @@
-* Fix crash at first start related to uninitialized hive key
-* Fix invalid creation time on local asset show 1970 as year
-* Fix Home page app bar icons don't conform to theme change 
-* Fix endless 'Building timeline' loop after changing the number of assets per row
-* Show current upload asset
-* Add to album from asset detail view 
-* Add multi selected assets to album 

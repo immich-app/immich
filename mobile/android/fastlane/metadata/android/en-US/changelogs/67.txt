@@ -1,7 +1,0 @@
-* reused HTTP client for uploading assets
-* top padding missing from drag handle in add to album bottom sheet
-* Improve the gallery to improve scale, double tap, and swipe gesture detection
-* Uses clamping scroll physics on android
-* Fix back button closing the app from multi selection in Android
-* add and delete operation asset in album viewer doesn't update count in album list
-* Update share_file to latest version and migrate to using cross platform shareXFile

@@ -1,4 +1,0 @@
-* Feature - Customization options for asset grid 
-* Added pt-BR Translation: Translation into Portuguese Brazil
-* Feature - Show notifications on background backup errors 
-* Optimization - Use CachedNetworkImage and separate cache for thumbnails on library page

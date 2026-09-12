@@ -1,4 +1,0 @@
-fixes back button while multiselecting showing the last selected image
-fixes dark mode color for invite to album app bar
-fixed local asset thumbnail size and eliminated fade in
-Fullscreen image effects

@@ -1,1 +1,1 @@
-This is a client app for the self-hostable Immich Server
+High performance self-hosted photo and video management solution

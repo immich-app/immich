@@ -1,1 +1,0 @@
-* Added inline font, remove google-font dependency in pubspec.

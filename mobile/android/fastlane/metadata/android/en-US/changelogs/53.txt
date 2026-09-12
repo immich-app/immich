@@ -1,6 +1,0 @@
-* Reduce app startup time by loading Hive boxes in parallel
-* Throttle detail progress notifications & wait on foregroundInfo
-* Throttle all background backup progress notifications 
-* Add selected assets to album
-* Enhanced vertical swiping motion in image viewer
-* Enhance the bottom app bar on the home page

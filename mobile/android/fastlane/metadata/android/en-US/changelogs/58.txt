@@ -1,6 +1,0 @@
-* Use binary prefixes for data sizes
-* Fix not able to show device asset on Android 13
-* Use cached asset info if unchanged instead of downloading all assets
-* Add in-app logging
-* Add search mechanism to album selection page
-* Improve UI
