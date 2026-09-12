@@ -1,4 +1,5 @@
 import 'package:background_downloader/background_downloader.dart';
+
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/logger/database.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
@@ -71,14 +72,16 @@ Future<DriftLogger> _initLogger({required SettingsRepository settingsRepository,
   DriftLogger logDb = await open();
   bool wasCorrupt = false;
   try {
-    await logDb.customSelect('SELECT COUNT(*) FROM logger_messages').get();
+    final check = await logDb.customSelect('PRAGMA quick_check').get();
+    wasCorrupt = check.length != 1 || check.single.read<String>('quick_check') != 'ok';
   } on SqliteException catch (error) {
+    await logDb.close();
+
     if (error.resultCode != SqlError.SQLITE_CORRUPT && error.resultCode != SqlError.SQLITE_NOTADB) {
-      await logDb.close();
       rethrow;
     }
+
     dPrint(() => 'Logs database is corrupt, recreating it');
-    await logDb.close();
     await deleteSqliteDatabase(name: 'immich_logs');
     logDb = await open();
     wasCorrupt = true;
