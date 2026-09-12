@@ -7,6 +7,7 @@
   import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
@@ -14,15 +15,7 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
-  import {
-    mdiCheckOutline,
-    mdiChevronLeft,
-    mdiChevronRight,
-    mdiKeyboard,
-    mdiPageFirst,
-    mdiPageLast,
-    mdiTrashCanOutline,
-  } from '@mdi/js';
+  import { mdiCheckOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -255,7 +248,8 @@
   <div>
     {#if duplicates && duplicates.length > 0}
       <Text size="small" color="muted" class="mb-4">
-        <p>{$t('duplicates_description')} <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" /></p>
+        {$t('duplicates_description')}
+        <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" />
       </Text>
 
       {#key duplicates[duplicatesIndex].duplicateId}
@@ -272,8 +266,7 @@
             <div class="flex text-xs text-black">
               <Button
                 size="small"
-                leadingIcon={mdiPageFirst}
-                color="primary"
+                leadingIcon={languageManager.mdiPageFirst}
                 class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleFirst}
                 disabled={duplicatesIndex === 0}
@@ -282,8 +275,7 @@
               </Button>
               <Button
                 size="small"
-                leadingIcon={mdiChevronLeft}
-                color="primary"
+                leadingIcon={languageManager.mdiChevronPrevious}
                 class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handlePrevious}
                 disabled={duplicatesIndex === 0}
@@ -297,8 +289,7 @@
             <div class="flex text-xs text-black">
               <Button
                 size="small"
-                trailingIcon={mdiChevronRight}
-                color="primary"
+                trailingIcon={languageManager.mdiChevronNext}
                 class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleNext}
                 disabled={duplicatesIndex === duplicates.length - 1}
@@ -307,8 +298,7 @@
               </Button>
               <Button
                 size="small"
-                trailingIcon={mdiPageLast}
-                color="primary"
+                trailingIcon={languageManager.mdiPageLast}
                 class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handleLast}
                 disabled={duplicatesIndex === duplicates.length - 1}
