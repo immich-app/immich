@@ -134,7 +134,8 @@
     searchManager.filter.display.isArchive ||
       searchManager.filter.display.isFavorite ||
       searchManager.filter.display.isNotInAlbum ||
-      searchManager.filter.rating,
+      searchManager.filter.rating ||
+      searchManager.filter.order,
   );
 
   const clear = () => {

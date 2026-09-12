@@ -2558,6 +2558,8 @@ export type SmartSearchDto = {
     query?: string;
     /** Asset ID to use as search reference */
     queryAssetId?: string;
+    /** Sort order */
+    order?: AssetOrder;
     /** Filter by rating [1-5], or null for unrated */
     rating?: number | null;
     /** Number of results to return */
