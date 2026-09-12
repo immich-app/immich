@@ -1874,6 +1874,110 @@ describe(MetadataService.name, () => {
         }),
       );
     });
+
+    // Fixes https://github.com/immich-app/immich/issues/30509
+    //
+    // The `.heic` tag values below (Orientation/dimension/MIME/FileType fields only, no
+    // GPS/date/serial/etc.) come from running Immich's own bundled exiftool-vendored binary
+    // against Tanner's real repro asset (asset id 7b8c0746-955a-4942-a1b3-6543b567f4b3,
+    // IMG_3863.heic). That run revealed the file is actually JPEG-encoded content
+    // (FileType: 'JPEG', FileTypeExtension: 'jpg', MIMEType: 'image/jpeg') saved with a
+    // `.heic` extension - the same "extension lies about content" scenario open PR #30393
+    // targets - not a genuine HEIF/HEIC container. `mimeTypes.isHeifImage()` is
+    // extension-only, so it still routes this file through the HEIF orientation branch; no
+    // Rotation/irot atom exists (it isn't a real HEIF box), so `getHeifOrientation()` returns
+    // null and, before this fix, its valid classic EXIF Orientation tag was deleted.
+    describe('HEIF orientation fallback (issue #30509)', () => {
+      it('does not touch Orientation when a HEIF Rotation/irot atom is present', async () => {
+        const asset = AssetFactory.create({ originalFileName: 'IMG_1234.heic' });
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+        // Rotation: 1 -> ExifOrientation.Rotate270CW (8); a conflicting classic Orientation
+        // tag must be overwritten, never merged, to avoid double-rotating the image.
+        mockReadTags({ ImageWidth: 4032, ImageHeight: 3024, Rotation: 1, Orientation: 6 });
+
+        await sut.handleMetadataExtraction({ id: asset.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({
+            exif: expect.objectContaining({ orientation: ExifOrientation.Rotate270CW.toString() }),
+          }),
+        );
+        expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ width: 3024, height: 4032 }));
+      });
+
+      it('falls back to classic EXIF Orientation 6 when no irot atom is present', async () => {
+        const asset = AssetFactory.create({ originalFileName: 'IMG_1234.heic' });
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+        mockReadTags({ ImageWidth: 4032, ImageHeight: 3024, Orientation: 6 });
+
+        await sut.handleMetadataExtraction({ id: asset.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({
+            exif: expect.objectContaining({ orientation: ExifOrientation.Rotate90CW.toString() }),
+          }),
+        );
+        expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ width: 3024, height: 4032 }));
+      });
+
+      it('falls back to classic EXIF Orientation 8 when no irot atom is present', async () => {
+        const asset = AssetFactory.create({ originalFileName: 'IMG_1234.heic' });
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+        mockReadTags({ ImageWidth: 4032, ImageHeight: 3024, Orientation: 8 });
+
+        await sut.handleMetadataExtraction({ id: asset.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({
+            exif: expect.objectContaining({ orientation: ExifOrientation.Rotate270CW.toString() }),
+          }),
+        );
+        expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ width: 3024, height: 4032 }));
+      });
+
+      it('leaves orientation null and dimensions unswapped when neither irot nor a classic tag exists', async () => {
+        const asset = AssetFactory.create({ originalFileName: 'IMG_1234.heic' });
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+        mockReadTags({ ImageWidth: 4032, ImageHeight: 3024 });
+
+        await sut.handleMetadataExtraction({ id: asset.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({
+            exif: expect.objectContaining({ orientation: null }),
+          }),
+        );
+        expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ width: 4032, height: 3024 }));
+      });
+
+      it('preserves classic Orientation for a real-world JPEG misnamed with a .heic extension (issue #30509 repro asset)', async () => {
+        const asset = AssetFactory.create({ originalFileName: 'IMG_3863.heic' });
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+        // Real tag values (orientation/dimension/mime/format fields only) from exiftool-vendored
+        // against the actual repro file. FileType/FileTypeExtension/MIMEType show it is really
+        // JPEG-encoded content, not a genuine HEIF container - the scenario open PR #30393
+        // addresses by content-sniffing the extension. This test only proves this fix's
+        // narrower guarantee: it stops discarding the classic Orientation tag; it does not
+        // implement #30393's content-type detection.
+        mockReadTags({
+          ImageWidth: 4032,
+          ImageHeight: 3024,
+          Orientation: 6,
+          MIMEType: 'image/jpeg',
+          FileType: 'JPEG',
+          FileTypeExtension: 'jpg',
+        });
+
+        await sut.handleMetadataExtraction({ id: asset.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({
+            exif: expect.objectContaining({ orientation: ExifOrientation.Rotate90CW.toString() }),
+          }),
+        );
+        expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ width: 3024, height: 4032 }));
+      });
+    });
   });
 
   describe('handleQueueSidecar', () => {

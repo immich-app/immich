@@ -605,7 +605,12 @@ export class MetadataService extends BaseService {
     if (mimeTypes.isHeifImage(asset.originalPath)) {
       const orientation = this.getHeifOrientation(mediaTags);
       if (orientation === null) {
-        delete mediaTags.Orientation;
+        // No irot/Rotation atom was found, so there's nothing it could disagree with - keep any
+        // classic EXIF Orientation tag instead of discarding it, since the thumbnail/preview
+        // pipeline already honors that tag here and dropping it just desyncs stored width/height
+        // from what's actually rendered. When irot IS present (the `else` branch) we must keep
+        // overwriting rather than merging, or a classic Orientation tag on the same file would
+        // get applied on top of it and double-rotate the image.
       } else {
         mediaTags.Orientation = orientation;
       }
