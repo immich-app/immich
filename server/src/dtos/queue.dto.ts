@@ -34,7 +34,11 @@ const QueueDeleteSchema = z
 
 const QueueJobSearchSchema = z
   .object({
-    status: z.array(QueueJobStatusSchema).optional().describe('Filter jobs by status'),
+    status: z
+      .union([QueueJobStatusSchema, z.array(QueueJobStatusSchema)])
+      .transform((status) => (Array.isArray(status) ? status : [status]))
+      .optional()
+      .describe('Filter jobs by status'),
   })
   .meta({ id: 'QueueJobSearchDto' });
 
@@ -44,6 +48,10 @@ const QueueJobResponseSchema = z
     name: JobNameSchema,
     data: z.record(z.string(), z.unknown()).describe('Job data payload'),
     timestamp: z.int().describe('Job creation timestamp'),
+    failedReason: z.string().optional().describe('Reason for job failure'),
+    attemptsMade: z.int().describe('Number of attempts made'),
+    processedOn: z.int().optional().describe('Job processing timestamp'),
+    finishedOn: z.int().optional().describe('Job completion timestamp'),
   })
   .meta({ id: 'QueueJobResponseDto' });
 
