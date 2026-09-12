@@ -20,6 +20,7 @@ import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { DeviceMountRepository } from 'src/repositories/device-mount.repository.js';
 import { DownloadRepository } from 'src/repositories/download.repository.js';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository.js';
 import { EmailRepository } from 'src/repositories/email.repository.js';
@@ -58,6 +59,7 @@ import { UserRepository } from 'src/repositories/user.repository.js';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
 import { VideoStreamRepository } from 'src/repositories/video-stream.repository.js';
 import { ViewRepository } from 'src/repositories/view-repository.js';
+import { VolumeInfoRepository } from 'src/repositories/volume-info.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
@@ -82,6 +84,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   CronRepository,
   CryptoRepository,
   DatabaseRepository,
+  DeviceMountRepository,
   DownloadRepository,
   DuplicateRepository,
   EmailRepository,
@@ -119,6 +122,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   VersionHistoryRepository,
   VideoStreamRepository,
   ViewRepository,
+  VolumeInfoRepository,
   WebsocketRepository,
   WorkflowRepository,
 ] as const;
@@ -144,6 +148,7 @@ export class BaseService {
     protected cronRepository: CronRepository,
     protected cryptoRepository: CryptoRepository,
     protected databaseRepository: DatabaseRepository,
+    protected deviceMountRepository: DeviceMountRepository,
     protected downloadRepository: DownloadRepository,
     protected duplicateRepository: DuplicateRepository,
     protected emailRepository: EmailRepository,
@@ -181,6 +186,7 @@ export class BaseService {
     protected versionRepository: VersionHistoryRepository,
     protected videoStreamRepository: VideoStreamRepository,
     protected viewRepository: ViewRepository,
+    protected volumeInfoRepository: VolumeInfoRepository,
     protected websocketRepository: WebsocketRepository,
     protected workflowRepository: WorkflowRepository,
   ) {
@@ -215,6 +221,7 @@ export class BaseService {
       ctx.cronRepository,
       ctx.cryptoRepository,
       ctx.databaseRepository,
+      ctx.deviceMountRepository,
       ctx.downloadRepository,
       ctx.duplicateRepository,
       ctx.emailRepository,
@@ -252,6 +259,7 @@ export class BaseService {
       ctx.versionRepository,
       ctx.videoStreamRepository,
       ctx.viewRepository,
+      ctx.volumeInfoRepository,
       ctx.websocketRepository,
       ctx.workflowRepository,
     );

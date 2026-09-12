@@ -13,6 +13,7 @@ import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { DeviceMountRepository } from 'src/repositories/device-mount.repository.js';
 import { DownloadRepository } from 'src/repositories/download.repository.js';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository.js';
 import { EmailRepository } from 'src/repositories/email.repository.js';
@@ -51,6 +52,7 @@ import { UserRepository } from 'src/repositories/user.repository.js';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
 import { VideoStreamRepository } from 'src/repositories/video-stream.repository.js';
 import { ViewRepository } from 'src/repositories/view-repository.js';
+import { VolumeInfoRepository } from 'src/repositories/volume-info.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 
@@ -69,6 +71,7 @@ export const repositories = [
   CronRepository,
   CryptoRepository,
   DatabaseRepository,
+  DeviceMountRepository,
   DownloadRepository,
   DuplicateRepository,
   EmailRepository,
@@ -108,6 +111,7 @@ export const repositories = [
   ViewRepository,
   VersionHistoryRepository,
   VideoStreamRepository,
+  VolumeInfoRepository,
   WebsocketRepository,
   WorkflowRepository,
 ];

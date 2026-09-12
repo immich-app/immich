@@ -32,6 +32,7 @@ import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { DeviceMountRepository } from 'src/repositories/device-mount.repository.js';
 import { DownloadRepository } from 'src/repositories/download.repository.js';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository.js';
 import { EmailRepository } from 'src/repositories/email.repository.js';
@@ -70,6 +71,7 @@ import { UserRepository } from 'src/repositories/user.repository.js';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
 import { VideoStreamRepository } from 'src/repositories/video-stream.repository.js';
 import { ViewRepository } from 'src/repositories/view-repository.js';
+import { VolumeInfoRepository } from 'src/repositories/volume-info.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -247,6 +249,7 @@ export type ServiceOverrides = {
   cron: CronRepository;
   crypto: CryptoRepository;
   database: DatabaseRepository;
+  deviceMount: DeviceMountRepository;
   downloadRepository: DownloadRepository;
   duplicateRepository: DuplicateRepository;
   email: EmailRepository;
@@ -285,6 +288,7 @@ export type ServiceOverrides = {
   versionHistory: VersionHistoryRepository;
   videoStream: VideoStreamRepository;
   view: ViewRepository;
+  volumeInfo: VolumeInfoRepository;
   websocket: WebsocketRepository;
   workflow: WorkflowRepository;
 };
@@ -332,6 +336,7 @@ export const getMocks = () => {
     app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
     database: databaseMock,
+    deviceMount: automock(DeviceMountRepository, { strict: false }),
     downloadRepository: automock(DownloadRepository, { strict: false }),
     duplicateRepository: automock(DuplicateRepository),
     email: automock(EmailRepository, { args: [loggerMock] }),
@@ -374,6 +379,7 @@ export const getMocks = () => {
     versionHistory: automock(VersionHistoryRepository),
     videoStream: automock(VideoStreamRepository, { strict: false }),
     view: automock(ViewRepository),
+    volumeInfo: automock(VolumeInfoRepository),
     // eslint-disable-next-line no-sparse-arrays
     websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
     workflow: automock(WorkflowRepository, { strict: true }),
@@ -408,6 +414,7 @@ export const newTestService = <T extends BaseService>(
     overrides.cron || (mocks.cron as As<CronRepository>),
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),
     overrides.database || (mocks.database as As<DatabaseRepository>),
+    overrides.deviceMount || (mocks.deviceMount as As<DeviceMountRepository>),
     overrides.downloadRepository || (mocks.downloadRepository as As<DownloadRepository>),
     overrides.duplicateRepository || (mocks.duplicateRepository as As<DuplicateRepository>),
     overrides.email || (mocks.email as As<EmailRepository>),
@@ -445,6 +452,7 @@ export const newTestService = <T extends BaseService>(
     overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),
     overrides.videoStream || (mocks.videoStream as As<VideoStreamRepository>),
     overrides.view || (mocks.view as As<ViewRepository>),
+    overrides.volumeInfo || (mocks.volumeInfo as As<VolumeInfoRepository>),
     overrides.websocket || (mocks.websocket as As<WebsocketRepository>),
     overrides.workflow || (mocks.workflow as As<WorkflowRepository>),
   );

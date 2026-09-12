@@ -51,6 +51,7 @@ import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table.js';
 import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
+import { DeviceMountTable } from 'src/schema/tables/device-mount.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table.js';
@@ -123,6 +124,7 @@ export class ImmichDatabase {
     AssetExifTable,
     ClusterGroupTable,
     ClusterGroupRequestTable,
+    DeviceMountTable,
     FaceSearchTable,
     GeodataPlacesTable,
     IntegrityReportTable,
@@ -235,6 +237,8 @@ export interface DB {
   geodata_places: GeodataPlacesTable;
 
   integrity_report: IntegrityReportTable;
+
+  device_mount: DeviceMountTable;
 
   library: LibraryTable;
 
