@@ -1,7 +1,7 @@
 import { LoginResponseDto, getSessions, login, signUpAdmin } from '@immich/sdk';
-import { loginDto, signupDto, uuidDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, utils } from 'src/utils';
+import { loginDto, signupDto, uuidDto } from 'src/fixtures.js';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 

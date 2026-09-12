@@ -565,7 +565,7 @@
                 {#if containsEditors}
                   <MenuOption
                     icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
-                    text={$t('view_asset_owners')}
+                    text={showAlbumUsers ? $t('hide_asset_owners') : $t('view_asset_owners')}
                     onClick={() => timelineManager.toggleShowAssetOwners()}
                   />
                 {/if}

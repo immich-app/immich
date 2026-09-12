@@ -13,15 +13,6 @@ class SemVer {
     return '$major.$minor.$patch${prerelease == null ? '' : '-rc.$prerelease'}';
   }
 
-  SemVer copyWith({int? major, int? minor, int? patch, int? prerelease}) {
-    return SemVer(
-      major: major ?? this.major,
-      minor: minor ?? this.minor,
-      patch: patch ?? this.patch,
-      prerelease: prerelease ?? this.prerelease,
-    );
-  }
-
   static final _pattern = RegExp(r'^v?(\d+)\.(\d+)\.(\d+)(?:-rc\.(\d+))?(?:[-+].*)?$', caseSensitive: false);
 
   factory SemVer.fromString(String version) {

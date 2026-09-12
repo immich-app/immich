@@ -1,4 +1,4 @@
-import { IsNotSiblingOf, toEmail } from 'src/validation';
+import { IsNotSiblingOf, toEmail } from 'src/validation.js';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 

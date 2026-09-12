@@ -6,8 +6,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 
 @DriftAccessor()
-class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMixin {
-  PeopleRepository(super.attachedDatabase);
+class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatabaseRepositoryMixin {
+  PeopleDatabaseRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;
 

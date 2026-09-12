@@ -231,7 +231,7 @@
   });
 
   $effect(() => {
-    if (current || memoryManager.loading !== undefined) {
+    if (current) {
       return;
     }
 

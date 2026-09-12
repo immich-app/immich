@@ -67,8 +67,8 @@ import { promisify } from 'node:util';
 import { createGzip } from 'node:zlib';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
-import { loginDto, signupDto } from 'src/fixtures';
-import { makeRandomImage } from 'src/generators';
+import { loginDto, signupDto } from 'src/fixtures.js';
+import { makeRandomImage } from 'src/generators.js';
 import request from 'supertest';
 import { playwrightDbHost, playwrightHost, playwriteBaseUrl } from '../playwright.config';
 
