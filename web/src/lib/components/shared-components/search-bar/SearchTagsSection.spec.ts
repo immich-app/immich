@@ -57,4 +57,27 @@ describe('SearchTagsSection component', () => {
     expect(document.activeElement).not.toBe(document.body);
     expect(container.contains(document.activeElement)).toBe(true);
   });
+
+  it('sets tagIds to null when untagged is toggled on', async () => {
+    const user = userEvent.setup();
+    render(SearchTagsSection, {
+      props: { title: undefined, parentPromise: Promise.resolve([tag('tag-1', 'holiday')]) },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'untagged' }));
+
+    expect(searchManager.filter.tagIds).toBeNull();
+  });
+
+  it('restores an empty tag selection when untagged is toggled off', async () => {
+    const user = userEvent.setup();
+    searchManager.setQuery({ tagIds: null });
+    render(SearchTagsSection, {
+      props: { title: undefined, parentPromise: Promise.resolve([tag('tag-1', 'holiday')]) },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'untagged' }));
+
+    expect([...(searchManager.filter.tagIds ?? [])]).toEqual([]);
+  });
 });
