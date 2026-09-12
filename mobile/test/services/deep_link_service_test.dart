@@ -8,7 +8,6 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
-import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -24,7 +23,6 @@ class MockRemoteAlbumService extends Mock implements RemoteAlbumService {}
 
 class MockMemoryService extends Mock implements MemoryService {}
 
-class MockPeopleService extends Mock implements PeopleService {}
 
 class MockPlatformDeepLink extends Mock implements PlatformDeepLink {}
 
@@ -111,14 +109,7 @@ void main() {
 
     when(() => ref.read(assetViewerProvider.notifier)).thenReturn(MockAssetViewerStateNotifier());
 
-    sut = DeepLinkService(
-      timelineFactory,
-      assetService,
-      remoteAlbumService,
-      memoryService,
-      MockPeopleService(),
-      _user,
-    );
+    sut = DeepLinkService(timelineFactory, assetService, remoteAlbumService, memoryService, _user);
 
     addTearDown(() async {
       for (final timelineService in createdTimelineServices) {

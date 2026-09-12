@@ -1202,6 +1202,7 @@
   "height": "Height",
   "hi_user": "Hi {name} ({email})",
   "hide_all_people": "Hide all people",
+  "hide_asset_owners": "Hide asset owners",
   "hide_gallery": "Hide gallery",
   "hide_named_person": "Hide person {name}",
   "hide_password": "Hide password",

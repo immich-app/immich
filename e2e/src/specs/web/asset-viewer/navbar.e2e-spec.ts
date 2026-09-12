@@ -1,6 +1,6 @@
 import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
-import { utils } from 'src/utils';
+import { utils } from 'src/utils.js';
 
 test.describe('Asset Viewer Navbar', () => {
   let admin: LoginResponseDto;

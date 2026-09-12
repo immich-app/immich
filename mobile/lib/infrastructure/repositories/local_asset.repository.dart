@@ -218,29 +218,4 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
 
     return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
   }
-
-  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
-    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
-  }
-
-  Future<void> reconcileHashesFromCloudId() async {
-    await _db.customUpdate(
-      '''
-      UPDATE local_asset_entity
-      SET checksum = remote_asset_entity.checksum
-      FROM remote_asset_cloud_id_entity
-      INNER JOIN remote_asset_entity
-        ON remote_asset_cloud_id_entity.asset_id = remote_asset_entity.id
-      WHERE local_asset_entity.i_cloud_id = remote_asset_cloud_id_entity.cloud_id
-        AND local_asset_entity.checksum IS NULL
-        AND remote_asset_cloud_id_entity.adjustment_time IS local_asset_entity.adjustment_time
-        AND remote_asset_cloud_id_entity.latitude IS local_asset_entity.latitude
-        AND remote_asset_cloud_id_entity.longitude IS local_asset_entity.longitude
-        AND remote_asset_cloud_id_entity.created_at IS local_asset_entity.created_at
-      ''',
-      updates: {_db.localAssetEntity},
-      updateKind: UpdateKind.update,
-    );
-  }
 }

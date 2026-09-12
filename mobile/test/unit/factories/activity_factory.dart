@@ -10,6 +10,7 @@ class ActivityFactory {
 
   static Activity create({
     String? id,
+    String? albumId,
     String? assetId,
     String? comment,
     DateTime? createdAt,
@@ -20,6 +21,7 @@ class ActivityFactory {
   }) {
     return Activity(
       id: TestUtils.uuid(id),
+      albumId: TestUtils.uuid(albumId),
       assetId: assetId,
       comment: comment,
       createdAt: TestUtils.date(createdAt),
@@ -32,6 +34,7 @@ class ActivityFactory {
 
   static Activity createAssetAdded({
     String? id,
+    String? albumId,
     String? assetId,
     DateTime? createdAt,
     UserDto? user,
@@ -40,6 +43,7 @@ class ActivityFactory {
   }) {
     return create(
       id: id,
+      albumId: albumId,
       assetId: TestUtils.uuid(assetId),
       createdAt: createdAt,
       type: ActivityType.assetAdded,

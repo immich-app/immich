@@ -1,15 +1,15 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, Next, Param, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AssetFileResponseDto, AssetFileSearchDto } from 'src/dtos/asset-file.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { AssetFileService } from 'src/services/asset-file.service';
-import { sendFile } from 'src/utils/file';
-import { UUIDParamDto } from 'src/validation';
+import type { NextFunction, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AssetFileResponseDto, AssetFileSearchDto } from 'src/dtos/asset-file.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { AssetFileService } from 'src/services/asset-file.service.js';
+import { sendFile } from 'src/utils/file.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.AssetFiles)
 @Controller('asset-files')

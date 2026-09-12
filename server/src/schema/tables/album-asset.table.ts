@@ -2,16 +2,16 @@ import {
   AfterDeleteTrigger,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { album_asset_delete_audit } from 'src/schema/functions';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { UserTable } from 'src/schema/tables/user.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { album_asset_delete_audit } from 'src/schema/functions.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table({ name: 'album_asset' })
 @UpdatedAtTrigger('album_asset_updatedAt')

@@ -1,5 +1,5 @@
-import { ActivityCreateDto, ReactionType } from 'src/dtos/activity.dto';
-import { newUuid } from 'test/small.factory';
+import { ActivityCreateDto, ReactionType } from 'src/dtos/activity.dto.js';
+import { newUuid } from 'test/small.factory.js';
 
 describe('create activity DTO', () => {
   it('should reject creating an asset_added activity directly', () => {

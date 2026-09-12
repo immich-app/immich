@@ -8,12 +8,12 @@ import {
 } from '@immich/plugin-sdk';
 import { HttpException, UnauthorizedException } from '@nestjs/common';
 import { join } from 'node:path';
-import { DummyValue, OnEvent, OnJob } from 'src/decorators';
-import { AlbumsAddAssetsDto, CreateAlbumDto, GetAlbumsDto } from 'src/dtos/album.dto';
-import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
-import { TagBulkAssetsDto } from 'src/dtos/tag.dto';
+import { DummyValue, OnEvent, OnJob } from 'src/decorators.js';
+import { AlbumsAddAssetsDto, CreateAlbumDto, GetAlbumsDto } from 'src/dtos/album.dto.js';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto.js';
+import { TagBulkAssetsDto } from 'src/dtos/tag.dto.js';
 import {
   BootstrapEventPriority,
   DatabaseLock,
@@ -24,13 +24,13 @@ import {
   QueueName,
   WorkflowResult,
   WorkflowType,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { AlbumService } from 'src/services/album.service';
-import { AssetService } from 'src/services/asset.service';
-import { BaseService } from 'src/services/base.service';
-import { TagService } from 'src/services/tag.service';
-import { JobOf } from 'src/types';
+} from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { AlbumService } from 'src/services/album.service.js';
+import { AssetService } from 'src/services/asset.service.js';
+import { BaseService } from 'src/services/base.service.js';
+import { TagService } from 'src/services/tag.service.js';
+import type { JobOf } from 'src/types.js';
 
 const dummy = () => {
   throw new Error(

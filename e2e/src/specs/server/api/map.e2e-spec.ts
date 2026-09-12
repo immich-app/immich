@@ -2,8 +2,8 @@ import { AssetVisibility, LoginResponseDto } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
-import { createUserDto } from 'src/fixtures';
-import { app, testAssetDir, utils } from 'src/utils';
+import { createUserDto } from 'src/fixtures.js';
+import { app, testAssetDir, utils } from 'src/utils.js';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 

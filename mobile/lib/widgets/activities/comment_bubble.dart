@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
@@ -27,9 +27,13 @@ class CommentBubble extends ConsumerWidget {
     final isLike = activity.type == ActivityType.like;
     final bgColor = isOwn ? context.colorScheme.primaryContainer : context.colorScheme.surfaceContainer;
 
-    final activityNotifier = ref.watch(
-      albumActivityProvider((album.id, isAssetActivity ? activity.assetId : null)).notifier,
-    );
+    Future<void> delete() async {
+      try {
+        await ref.read(Store.activity).remove(activity);
+      } catch (e) {
+        // TODO(rewrite): Actually handle this
+      }
+    }
 
     // avatar (hidden for own messages)
     Widget avatar = const SizedBox.shrink();
@@ -99,7 +103,7 @@ class CommentBubble extends ConsumerWidget {
     final List<Widget> contentChildren = [thumbnail, likes, commentBubble].whereType<Widget>().toList();
 
     return DismissibleActivity(
-      onDismiss: canDelete ? (id) async => await activityNotifier.removeActivity(id) : null,
+      onDismiss: canDelete ? (id) => delete() : null,
       activity.id,
       Align(
         alignment: isOwn ? Alignment.centerRight : Alignment.centerLeft,

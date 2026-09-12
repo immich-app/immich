@@ -180,7 +180,7 @@ void main() {
     await lifeCycle.handleAppPause();
     await releaseResume();
 
-    expect(lifeCycle.getAppState(), AppLifeCycleEnum.paused);
+    expect(lifeCycle.state, AppLifeCycleEnum.paused);
     expect(serverVersionCount, 1);
     expect(websocket.disconnectCount, 2);
     expect(websocket.connectCount, 0);
@@ -194,7 +194,7 @@ void main() {
     unawaited(lifeCycle.handleAppResume());
     await websocket.connectCalled.future;
 
-    expect(lifeCycle.getAppState(), AppLifeCycleEnum.resumed);
+    expect(lifeCycle.state, AppLifeCycleEnum.resumed);
     expect(serverVersionCount, 2);
     expect(websocket.disconnectCount, 1);
     expect(websocket.connectCount, 1);
@@ -211,7 +211,7 @@ void main() {
     unawaited(lifeCycle.handleAppResume());
     await Future<void>.delayed(Duration.zero);
 
-    expect(lifeCycle.getAppState(), AppLifeCycleEnum.resumed);
+    expect(lifeCycle.state, AppLifeCycleEnum.resumed);
     expect(serverVersionCount, 2);
     expect(websocket.disconnectCount, 2);
     expect(websocket.connectCount, 1);

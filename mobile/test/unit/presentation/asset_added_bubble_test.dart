@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/widgets/activities/asset_added_bubble.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart' show AssetTypeEnum;
 
-import '../../service.mocks.dart';
 import '../factories/activity_factory.dart';
 import '../factories/user_factory.dart';
 import 'presentation_context.dart';
 
-class FakeWidgetRef extends Fake implements WidgetRef {}
-
 void main() {
   late PresentationContext context;
   late UserDto alice;
-
-  setUpAll(() => registerFallbackValue(FakeWidgetRef()));
 
   setUp(() async {
     context = await PresentationContext.create();
@@ -112,19 +105,14 @@ void main() {
     });
 
     testWidgets('opens the asset viewer for the tapped tile', (tester) async {
-      final mockActivityService = MockActivityService();
-      when(() => mockActivityService.buildAssetViewerRoute('asset-1', any())).thenAnswer((_) async => null);
+      when(() => context.service.asset.service.getRemoteAsset('asset-1')).thenAnswer((_) async => null);
       final activity = ActivityFactory.createAssetAdded(assetId: 'asset-1', user: alice);
 
-      await tester.pumpTestWidget(
-        context,
-        AssetAddedBubble(activities: [activity]),
-        overrides: [activityServiceProvider.overrideWith((ref) => mockActivityService)],
-      );
+      await tester.pumpTestWidget(context, AssetAddedBubble(activities: [activity]));
       await tester.tap(find.byType(Image), warnIfMissed: false);
       await tester.pumpAndSettle();
 
-      verify(() => mockActivityService.buildAssetViewerRoute('asset-1', any())).called(1);
+      verify(() => context.service.asset.service.getRemoteAsset('asset-1')).called(1);
     });
   });
 }

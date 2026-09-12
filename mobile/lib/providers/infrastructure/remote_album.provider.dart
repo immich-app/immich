@@ -4,12 +4,12 @@ import 'dart:async';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/album/pending_album_uploads.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
@@ -194,7 +194,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final result = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
     if (result.added > 0) {
       await _refreshAlbumInState(albumId);
-      ref.invalidate(albumActivityProvider((albumId, null)));
+      ref.invalidate(Store.activity.list(albumId));
     }
     return result;
   }

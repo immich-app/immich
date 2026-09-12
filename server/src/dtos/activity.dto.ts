@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { Activity, AssetAddition } from 'src/database';
-import { mapUser, UserResponseSchema } from 'src/dtos/user.dto';
-import { AssetTypeSchema } from 'src/enum';
-import { isoDatetimeToDate, stringToBool } from 'src/validation';
+import { Activity, AssetAddition } from 'src/database.js';
+import { mapUser, UserResponseSchema } from 'src/dtos/user.dto.js';
+import { AssetTypeSchema } from 'src/enum.js';
+import { isoDatetimeToDate, stringToBool } from 'src/validation.js';
 import z from 'zod';
 
 export enum ReactionLevel {

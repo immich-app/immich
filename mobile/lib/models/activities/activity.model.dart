@@ -11,6 +11,7 @@ enum ActivityType { comment, like, assetAdded }
 abstract class Activity with _$Activity {
   const factory Activity({
     required String id,
+    required String albumId,
     String? assetId,
     String? comment,
     required DateTime createdAt,

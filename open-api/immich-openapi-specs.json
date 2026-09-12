@@ -15955,9 +15955,9 @@
             "name": "timeBucket",
             "required": true,
             "in": "query",
-            "description": "Time bucket identifier in YYYY-MM-DD format",
+            "description": "Time bucket identifier in YYYY-MM-DDT00:00:00.000Z format",
             "schema": {
-              "example": "2024-01-01",
+              "example": "2024-01-01T00:00:00.000Z",
               "type": "string"
             }
           },
@@ -17904,7 +17904,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.2.0-rc.0",
+    "version": "3.2.0",
     "contact": {}
   },
   "tags": [
