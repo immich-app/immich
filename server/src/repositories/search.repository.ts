@@ -294,6 +294,9 @@ export class SearchRepository {
     return searchAssetBuilderLegacy(this.db, options)
       .select(columns.searchAsset)
       .$call(withExifInner)
+      .$if(options.visibility !== AssetVisibility.Hidden, (qb) =>
+        qb.where('asset.visibility', '!=', AssetVisibility.Hidden),
+      )
       .where('asset_exif.fileSizeInByte', '>', options.minFileSize || 0)
       .orderBy('asset_exif.fileSizeInByte', orderDirection)
       .limit(size)
