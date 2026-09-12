@@ -18,9 +18,9 @@ final _apiServiceProvider = Provider<ApiService>(
 
 /// Global data layer, providing access to Drift and HTTP APIs, scoped by entity
 abstract final class Store {
-  static List<Override> overrideWith({required DataController dataController, ApiService? apiService}) => [
+  static List<Override> overrideWith({required DataController dataController, required ApiService apiService}) => [
     _dataControllerProvider.overrideWithValue(dataController),
-    _apiServiceProvider.overrideWithValue(apiService ?? ApiService()),
+    _apiServiceProvider.overrideWithValue(apiService),
   ];
 
   /// Direct database access for the repositories that have not yet been migrated to `Store`

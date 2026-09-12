@@ -1,7 +1,9 @@
 import 'package:background_downloader/background_downloader.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/data_controller.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
@@ -59,6 +61,12 @@ abstract final class Bootstrap {
     );
 
     final settingsRepo = await SettingsRepository.ensureInitialized(dataController.db);
+
+    // TODO(rewrite): This is bad DB coupling and should be removed
+    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
+    if (endpoint != null && endpoint.isNotEmpty) {
+      apiService.setEndpoint(endpoint);
+    }
 
     // Take DataController's logging DB and register it with the logging service
     await LogService.init(
