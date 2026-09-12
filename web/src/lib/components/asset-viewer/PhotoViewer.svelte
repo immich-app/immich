@@ -3,9 +3,9 @@
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
+  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
@@ -273,9 +273,11 @@
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
-              style="top: {boundingbox.height + 4}px; right: {assetViewerManager.imgRef
-                ? Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)
-                : 0}px;"
+              style="top: {boundingbox.height + 4}px; {assetViewerManager.imgRef
+                ? boundingbox.left >= 0
+                  ? `right: ${Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)}px;`
+                  : `left: ${-boundingbox.left}px;`
+                : ''}"
             >
               {boundingbox.name}
             </div>
