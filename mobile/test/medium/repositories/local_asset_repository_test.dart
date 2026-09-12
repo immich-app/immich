@@ -443,4 +443,21 @@ void main() {
       expect(result.assets.first.id, videoAsset.id);
     });
   });
+
+  group('getPreviousRemoteId', () {
+    test('finds the owned remote asset that has the previous checksum', () async {
+      final me = await ctx.newUser();
+      final partner = await ctx.newUser();
+      await ctx.newAuthUser(id: me.id);
+      final original = await ctx.newRemoteAsset(ownerId: me.id, checksum: 'a');
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: 'z');
+      final edited = await ctx.newLocalAsset(checksum: 'b', previousChecksum: 'a');
+      final partnerEdited = await ctx.newLocalAsset(checksum: 'c', previousChecksum: 'z');
+      final untouched = await ctx.newLocalAsset(checksum: 'd');
+
+      expect(await sut.getPreviousRemoteId(edited.id), original.id);
+      expect(await sut.getPreviousRemoteId(partnerEdited.id), isNull);
+      expect(await sut.getPreviousRemoteId(untouched.id), isNull);
+    });
+  });
 }
