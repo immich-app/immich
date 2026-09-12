@@ -5,7 +5,9 @@
   import { Button, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
   import { mdiClose } from '@mdi/js';
+  import SearchButton from './SearchButton.svelte';
   import { getSearchTagsTitle } from './search-bar-utils';
   import { searchManager } from '$lib/managers/search-manager.svelte';
 
@@ -51,6 +53,13 @@
     selectedTags.delete(tag);
     title = getSearchTagsTitle(allTags, selectedTags);
   };
+
+  const handleToggleUntagged = () => {
+    const isSearchUntagged = selectedTags === null;
+
+    searchManager.filter.tagIds = isSearchUntagged ? new SvelteSet() : null;
+    title = isSearchUntagged ? undefined : $t('untagged');
+  };
 </script>
 
 {#if authManager.authenticated && authManager.preferences.tags.enabled}
@@ -87,5 +96,10 @@
         {/each}
       </section>
     {/if}
+
+    <div class="flex flex-wrap gap-2 pt-5">
+      <SearchButton checked active={selectedTags === null} onclick={handleToggleUntagged}>{$t('untagged')}</SearchButton
+      >
+    </div>
   </div>
 {/if}
