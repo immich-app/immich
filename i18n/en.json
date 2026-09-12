@@ -30,7 +30,8 @@
   "add_to_album": "Add to album",
   "add_to_album_bottom_sheet_added": "Added to {album}",
   "add_to_album_bottom_sheet_already_exists": "Already in {album}",
-  "add_to_album_bottom_sheet_some_local_assets": "Some local assets could not be added to album",
+  "add_to_album_bottom_sheet_conflicts": "Added {added, plural, one {# asset} other {# assets}} to album {album}. {failed, plural, one {# asset is} other {# assets are}} already in the album.",
+  "add_to_album_bottom_sheet_uploaded_not_added": "{count, plural, one {# asset was} other {# assets were}} uploaded but not added to {album}. Try adding {count, plural, one {it} other {them}} again.",
   "add_to_album_item_count": "Add {count, plural, one {# item} other {# items}} to album",
   "add_to_albums": "Add to albums",
   "add_to_albums_count": "Add to albums ({count})",
@@ -976,6 +977,8 @@
   "error_title": "Error - Something went wrong",
   "error_while_navigating": "Error while navigating to asset",
   "errors": {
+    "add_to_album_no_permission": "Cannot add assets you don't own",
+    "add_to_album_not_found": "Some assets could not be found",
     "cannot_navigate_next_asset": "Cannot navigate to the next asset",
     "cannot_navigate_previous_asset": "Cannot navigate to previous asset",
     "cant_apply_changes": "Can't apply changes",

@@ -48,7 +48,7 @@ class AlbumApiRepository extends ApiRepository {
     return (removed: removed, failed: failed);
   }
 
-  Future<({List<String> added, List<String> failed})> addAssets(
+  Future<({List<String> added, Map<AlbumAddFailureReason, int> failureReasons})> addAssets(
     String albumId,
     Iterable<String> assetIds, {
     Future<void>? abortTrigger,
@@ -57,16 +57,22 @@ class AlbumApiRepository extends ApiRepository {
       _api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList()), abortTrigger: abortTrigger),
     );
     final List<String> added = [];
-    final List<String> failed = [];
+    final Map<AlbumAddFailureReason, int> failureReasons = {};
     for (final dto in response) {
       if (dto.success) {
         added.add(dto.id);
-      } else if (dto.error.orElse(null) != BulkIdErrorReason.duplicate) {
-        failed.add(dto.id);
+      } else {
+        final reason = switch (dto.error.orElse(null)) {
+          BulkIdErrorReason.duplicate => AlbumAddFailureReason.duplicate,
+          BulkIdErrorReason.noPermission => AlbumAddFailureReason.noPermission,
+          BulkIdErrorReason.notFound => AlbumAddFailureReason.notFound,
+          _ => AlbumAddFailureReason.unknown,
+        };
+        failureReasons[reason] = (failureReasons[reason] ?? 0) + 1;
       }
     }
 
-    return (added: added, failed: failed);
+    return (added: added, failureReasons: failureReasons);
   }
 
   Future<RemoteAlbum> updateAlbum(
