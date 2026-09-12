@@ -9984,6 +9984,65 @@
         "x-immich-state": "Stable"
       }
     },
+    "/people/merge": {
+      "post": {
+        "description": "Merge an ordered list of people.",
+        "operationId": "mergePeople",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergePersonDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Merge people",
+        "tags": [
+          "People"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.merge",
+        "x-immich-state": "Stable"
+      }
+    },
     "/people/{id}": {
       "delete": {
         "description": "Delete an individual person.",
@@ -10175,8 +10234,9 @@
     },
     "/people/{id}/merge": {
       "post": {
+        "deprecated": true,
         "description": "Merge a list of people into the person specified in the path parameter.",
-        "operationId": "mergePerson",
+        "operationId": "mergePersonLegacy",
         "parameters": [
           {
             "name": "id",
@@ -10227,7 +10287,8 @@
         ],
         "summary": "Merge people",
         "tags": [
-          "People"
+          "People",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -10241,10 +10302,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.2.1",
+            "state": "Deprecated",
+            "replacementId": "mergePeople"
           }
         ],
         "x-immich-permission": "person.merge",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/people/{id}/reassign": {

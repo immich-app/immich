@@ -187,19 +187,35 @@ export class PersonController {
     return this.service.reassignFaces(auth, id, dto);
   }
 
+  @Post('merge')
+  @Authenticated({ permission: Permission.PersonMerge })
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Merge people',
+    description: 'Merge an ordered list of people.',
+    history: new HistoryBuilder().added('v3.2').stable('v3.2'),
+  })
+  mergePeople(@Auth() auth: AuthDto, @Body() dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
+    return this.service.mergePeople(auth, dto);
+  }
+
   @Post(':id/merge')
   @Authenticated({ permission: Permission.PersonMerge })
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Merge people',
     description: 'Merge a list of people into the person specified in the path parameter.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3.2.1', { replacementId: 'mergePeople' }),
   })
-  mergePerson(
+  mergePersonLegacy(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: MergePersonDto,
   ): Promise<BulkIdResponseDto[]> {
-    return this.service.mergePerson(auth, id, dto);
+    return this.service.mergePeople(auth, { ids: [id, ...dto.ids] });
   }
 }
