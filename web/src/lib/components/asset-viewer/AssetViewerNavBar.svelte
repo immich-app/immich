@@ -171,6 +171,12 @@
           <SetFeaturedPhotoAction {asset} {person} {onAction} />
         {/if}
 
+        {#if isOwner && !isLocked}
+          <ActionMenuItem action={Actions.RotateLeft} />
+          <ActionMenuItem action={Actions.RotateRight} />
+          <ActionMenuItem action={Actions.FlipHorizontal} />
+          <ActionMenuItem action={Actions.FlipVertical} />
+        {/if}
         <ActionMenuItem action={Actions.SetProfilePicture} />
 
         {#if isOwner && !isLocked}
