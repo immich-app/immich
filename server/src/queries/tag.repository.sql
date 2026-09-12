@@ -27,6 +27,15 @@ where
   "userId" = $1
   and "value" = $2
 
+-- TagRepository.getAssetIdsByTagId
+select distinct
+  "tag_asset"."assetId"
+from
+  "tag_closure"
+  inner join "tag_asset" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+where
+  "tag_closure"."id_ancestor" = $1
+
 -- TagRepository.upsertValue
 with
   "created_tag" as (
