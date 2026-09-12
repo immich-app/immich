@@ -37,8 +37,10 @@ class AssetService {
   }
 
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
-    final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
-    return asset is LocalAsset ? _localRepository.watch(id) : _remoteRepository.watch(id);
+    return switch (asset) {
+      LocalAsset() => _remoteRepository.watchMergedAsset(localId: asset.localId, checksum: asset.checksum),
+      RemoteAsset() => _remoteRepository.watchMergedAsset(remoteId: asset.remoteId, checksum: asset.checksum),
+    };
   }
 
   Future<List<LocalAsset?>> getLocalAssetsByChecksum(String checksum) {
