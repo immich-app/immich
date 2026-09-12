@@ -229,4 +229,15 @@ void main() {
 
     expect(memoryLaneBuilds, 2);
   });
+
+  test('resume after hidden runs without a pause', () async {
+    lifeCycle.handleAppHidden();
+    unawaited(lifeCycle.handleAppResume());
+    await releaseResume();
+    await websocket.connectCalled.future;
+
+    expect(lifeCycle.state, AppLifeCycleEnum.resumed);
+    expect(serverVersionCount, 1);
+    expect(websocket.connectCount, 1);
+  });
 }
