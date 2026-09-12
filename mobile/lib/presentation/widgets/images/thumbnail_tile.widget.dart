@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/panorama_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -316,6 +317,7 @@ class _AssetTypeIcons extends StatelessWidget {
           ),
         if (asset.isAnimatedImage)
           const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
+        PanoramaBadge(asset: asset),
       ],
     );
   }
