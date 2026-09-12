@@ -23,6 +23,7 @@
   import SearchTagsSection from './SearchTagsSection.svelte';
   import SearchTextSection from './SearchTextSection.svelte';
   import SearchDisplaySection from './SearchDisplaySection.svelte';
+  import SearchSortSection from './SearchSortSection.svelte';
   import SearchRatingsSection from './SearchRatingsSection.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import {
@@ -134,8 +135,7 @@
     searchManager.filter.display.isArchive ||
       searchManager.filter.display.isFavorite ||
       searchManager.filter.display.isNotInAlbum ||
-      searchManager.filter.rating ||
-      searchManager.filter.order,
+      searchManager.filter.rating,
   );
 
   const clear = () => {
@@ -214,6 +214,11 @@
           {/each}
         </div>
       </div>
+      {#if searchManager.filter.queryType === 'smart'}
+        <div class="px-5 pt-5">
+          <SearchSortSection />
+        </div>
+      {/if}
       {#if activeFilter}
         <div class="px-5 pt-5">
           {#if activeFilter === 'type'}
