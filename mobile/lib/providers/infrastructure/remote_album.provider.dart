@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.da
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:logging/logging.dart';
 
 part 'remote_album.provider.freezed.dart';
@@ -142,7 +143,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   Future<RemoteAlbum?> updateAlbum(
     String albumId, {
     String? name,
-    String? description,
+    Option<String?> description = const Option.none(),
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
