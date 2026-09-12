@@ -14,8 +14,7 @@
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import type { LatLng } from '$lib/types';
   import { setQueryValue } from '$lib/utils/navigation';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetVisibility, getAssetInfo, updateAssets } from '@immich/sdk';
+  import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { Button, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -55,22 +54,21 @@
       return;
     }
 
+    const ids = assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id);
+
     await updateAssets({
       assetBulkUpdateDto: {
-        ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
+        ids,
         latitude: point.lat,
         longitude: point.lng,
       },
     });
 
-    const updatedAssets = await Promise.all(
-      assetMultiSelectManager.assets.map(async (asset) => {
-        const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
-        return toTimelineAsset(updatedAsset);
-      }),
-    );
-
-    timelineManager.upsertAssets(updatedAssets);
+    const { lat, lng } = point;
+    timelineManager.update(ids, (asset) => {
+      asset.latitude = lat;
+      asset.longitude = lng;
+    });
 
     assetMultiSelectManager.clear();
   };
