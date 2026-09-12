@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { OnJob } from 'src/decorators.js';
+import { JobName, JobStatus, QueueName } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { DeviceResolverService } from 'src/services/device-resolver/device-resolver.service.js';
 import { DeviceIdentity } from 'src/services/device-resolver/device-resolver.types.js';
+import type { JobOf } from 'src/types.js';
 
 export type ReconcileReason = 'not-tracked' | 'still-at-known-path' | 'relinked' | 'no-match-found';
 
@@ -25,20 +28,37 @@ export interface ReconcileResult {
  * rediscovers the same files as brand-new assets at the new path - which is what forces a full
  * thumbnail/ML/metadata reprocessing (immich-app/immich#17290).
  *
- * The fix here is cheaper than re-hashing every file: recognize the reconnect via DeviceResolverService, then
- * rewrite the library's import path and every existing asset's `originalPath` prefix to the new location
- * *before* the next scan runs, so `stat(asset.originalPath)` succeeds again at the same logical file and no
- * asset ever goes offline or gets rediscovered.
+ * The fix here is a hybrid, applied *before* the next scan runs so no asset ever goes offline or gets
+ * rediscovered: recognize the reconnect via DeviceResolverService (unchanged - still the cheap, content-free way
+ * to answer "which library does this newly-mounted drive belong to"), then relink in two passes. First, a bulk
+ * path-prefix rewrite across the library's import paths and every asset's `originalPath` - free of file reads,
+ * and sufficient whenever the drive's internal folder structure didn't change. Second, a content-checksum
+ * fallback (relinkByContent) for anything the prefix rewrite couldn't follow, i.e. a file also renamed or moved
+ * within the drive - this is why external assets are now checksummed from file content rather than path (see
+ * LibraryService.processEntity).
  *
- * NOT YET WIRED to run automatically: this service doesn't call into LibraryService's scan cron, since services
- * in this codebase don't inject one another - communication between them happens through jobs/events - so the
- * right trigger (a new job this fires on a device-mount event, before the library-scan cron?) needs its own
- * decision instead of folding in ad hoc. `candidateRoots` is likewise left as an explicit parameter rather than
- * having this enumerate the OS's current mounts itself, since that enumeration doesn't exist yet on
- * VolumeInfoRepository.
+ * Wired to run automatically via the job queue (this codebase's only cross-service coordination mechanism, since
+ * services don't inject one another): LibraryService queues JobName.DeviceMountReconcile for every library right
+ * before it queues the files-sync job, both from its periodic scan-all cron (handleQueueScanAll) and from the
+ * existing manual "scan this library now" trigger (queueScan / POST /libraries/:id/scan) - so that same endpoint
+ * doubles as a manual "rescan my drive now" button, with no new endpoint needed. `handleReconcile` below is what
+ * that job calls into; it discovers candidate mount roots itself via VolumeInfoRepository.listMountedVolumes()
+ * rather than requiring a caller to enumerate them.
  */
 @Injectable()
 export class DeviceMountService extends BaseService {
+  @OnJob({ name: JobName.DeviceMountReconcile, queue: QueueName.Library })
+  async handleReconcile(job: JobOf<JobName.DeviceMountReconcile>): Promise<JobStatus> {
+    const candidateRoots = await this.volumeInfoRepository.listMountedVolumes();
+    const result = await this.reconcilePath(job.id, candidateRoots);
+
+    if (result.relinked) {
+      this.logger.log(`Relinked library ${job.id} from ${result.oldPath} to ${result.newPath}`);
+    }
+
+    return JobStatus.Success;
+  }
+
   async reconcilePath(libraryId: string, candidateRoots: string[]): Promise<ReconcileResult> {
     const mount = await this.deviceMountRepository.getByLibraryId(libraryId);
     if (!mount) {
@@ -70,7 +90,15 @@ export class DeviceMountService extends BaseService {
       });
     }
 
+    // Fast path: handles the common case of a whole-drive remount where every file's relative path is unchanged -
+    // one bulk UPDATE, no file reads.
     await this.assetRepository.rewriteOriginalPathPrefix(libraryId, oldPath, newPath);
+
+    // Fallback: catches files that were also renamed/moved within the drive, which the prefix rewrite above can't
+    // follow since it only knows the old and new *mount point*, not the old and new path of any individual file.
+    if (library) {
+      await this.relinkByContent(library, newPath);
+    }
 
     await this.deviceMountRepository.upsert({
       libraryId,
@@ -79,6 +107,45 @@ export class DeviceMountService extends BaseService {
       identityConfidence: identity.confidence,
       lastKnownPath: newPath,
     });
+  }
+
+  /**
+   * Re-identifies files by content checksum rather than path, so a file renamed or moved to a different folder
+   * within the same drive still gets recognized as the asset it already is instead of offlined-then-rediscovered.
+   * Relies on external assets being checksummed from file content (see LibraryService.processEntity) - a checksum
+   * match against an existing asset in this library means "this is that asset, just not at its recorded path
+   * anymore", so its `originalPath` gets corrected in place.
+   *
+   * Walks every file under `newRoot` (library.exclusionPatterns applied, same as a normal scan), skipping any file
+   * that already has an asset row at its exact current path - only files that are NOT already correctly linked pay
+   * the cost of a content hash.
+   */
+  private async relinkByContent(
+    library: { id: string; ownerId: string; exclusionPatterns: string[] },
+    newRoot: string,
+  ): Promise<void> {
+    const filePaths = await this.storageRepository.crawl({
+      pathsToCrawl: [newRoot],
+      exclusionPatterns: library.exclusionPatterns,
+      includeHidden: false,
+    });
+
+    for (const filePath of filePaths) {
+      const alreadyLinked = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, filePath);
+      if (alreadyLinked) {
+        continue;
+      }
+
+      const checksum = await this.cryptoRepository.hashFile(filePath);
+      const match = await this.assetRepository.getByChecksum({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        checksum,
+      });
+      if (match && match.originalPath !== filePath) {
+        await this.assetRepository.update({ id: match.id, originalPath: filePath });
+      }
+    }
   }
 
   private async pathExists(path: string): Promise<boolean> {

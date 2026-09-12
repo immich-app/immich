@@ -1141,7 +1141,11 @@ describe(LibraryService.name, () => {
 
       await sut.queueScan(library.id);
 
-      expect(mocks.job.queue).toHaveBeenCalledTimes(2);
+      expect(mocks.job.queue).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.DeviceMountReconcile,
+        data: { id: library.id },
+      });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.LibrarySyncFilesQueueAll,
         data: { id: library.id },
@@ -1165,6 +1169,9 @@ describe(LibraryService.name, () => {
         name: JobName.LibraryDeleteCheck,
         data: {},
       });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.DeviceMountReconcile, data: { id: library.id } },
+      ]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } },
       ]);

@@ -97,6 +97,33 @@ describe(VolumeInfoRepository.name, () => {
     });
   });
 
+  describe('listMountedVolumes', () => {
+    it('lists real mount targets on Linux and filters out pseudo filesystems', async () => {
+      setPlatform('linux');
+      const lines = ['/ ext4', '/boot vfat', '/proc proc', '/sys sysfs', '/mnt/external/drive exfat', '/tmp tmpfs', ''];
+      mockExecFileResult({ findmnt: lines.join('\n') });
+
+      await expect(sut.listMountedVolumes()).resolves.toEqual(['/', '/boot', '/mnt/external/drive']);
+    });
+
+    it('returns [] on Linux when findmnt fails', async () => {
+      setPlatform('linux');
+      (execFile as unknown as ReturnType<typeof vitest.fn>).mockImplementation((...args: unknown[]) => {
+        const callback = args.at(-1) as ExecFileCallback;
+        callback(new Error('command not found'), { stdout: '', stderr: '' });
+      });
+
+      await expect(sut.listMountedVolumes()).resolves.toEqual([]);
+    });
+
+    it('lists lettered volumes on Windows via PowerShell', async () => {
+      setPlatform('win32');
+      mockExecFileResult({ 'powershell.exe': 'C:\\\nD:\\\n' });
+
+      await expect(sut.listMountedVolumes()).resolves.toEqual(['C:\\', 'D:\\']);
+    });
+  });
+
   describe('marker file', () => {
     let dir: string;
 

@@ -400,11 +400,19 @@ export class LibraryService extends BaseService {
     const assetPath = path.normalize(filePath);
     const stat = await this.storageRepository.stat(assetPath);
 
+    // PhotoManager: external assets are checksummed from file content (reusing the same sha1File algorithm and
+    // column already used for uploaded assets), not from the path string (upstream Immich's ChecksumAlgorithm.
+    // sha1Path). A path-derived checksum can't survive a file being relocated to a different path; a content
+    // checksum can, via AssetRepository.getByChecksum - which is what DeviceMountService's content-match fallback
+    // relies on to relink a renamed/moved file after a drive reconnects (see device-mount.service.ts). The cost is
+    // one file read per newly-discovered file, not a re-read of files already indexed.
+    const checksum = await this.cryptoRepository.hashFile(assetPath);
+
     return {
       ownerId,
       libraryId,
-      checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
-      checksumAlgorithm: ChecksumAlgorithm.sha1Path,
+      checksum,
+      checksumAlgorithm: ChecksumAlgorithm.sha1File,
       originalPath: assetPath,
 
       fileCreatedAt: stat.mtime,
@@ -434,6 +442,11 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting to scan library ${id}`);
 
+    // PhotoManager: give a reconnected removable drive a chance to be relinked to its previous paths before the
+    // scan below walks the disk - this is also how "scan this library now" (POST /libraries/:id/scan) doubles as
+    // a manual "rescan my drive now" trigger, with no separate endpoint needed.
+    await this.jobRepository.queue({ name: JobName.DeviceMountReconcile, data: { id } });
+
     await this.jobRepository.queue({
       name: JobName.LibrarySyncFilesQueueAll,
       data: {
@@ -451,6 +464,12 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LibraryDeleteCheck, data: {} });
 
     const libraries = await this.libraryRepository.getAll(true);
+
+    // PhotoManager: reconcile each library's device mount before the files-sync job below walks its import
+    // paths, so a drive that reconnected under a new mount path is already relinked by the time the scan runs.
+    await this.jobRepository.queueAll(
+      libraries.map((library) => ({ name: JobName.DeviceMountReconcile, data: { id: library.id } })),
+    );
 
     await this.jobRepository.queueAll(
       libraries.map((library) => ({

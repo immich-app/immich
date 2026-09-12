@@ -419,6 +419,7 @@ export type JobItem =
   | { name: JobName.LibraryDelete; data: IEntityJob }
   | { name: JobName.LibraryScanQueueAll; data?: IBaseJob }
   | { name: JobName.LibraryDeleteCheck; data: IBaseJob }
+  | { name: JobName.DeviceMountReconcile; data: IEntityJob }
 
   // Notification
   | { name: JobName.SendMail; data: IEmailJob }

@@ -13,6 +13,34 @@ const execFileAsync = promisify(execFile);
 export const DEVICE_MARKER_FILENAME = '.photomanager-device-id';
 
 /**
+ * Linux filesystem types that are never a removable/external drive worth treating as a reconnect candidate -
+ * virtual, kernel, and container-overlay filesystems that `findmnt` always reports alongside real mounts.
+ */
+const LINUX_PSEUDO_FILESYSTEMS = new Set([
+  'proc',
+  'sysfs',
+  'cgroup',
+  'cgroup2',
+  'tmpfs',
+  'devtmpfs',
+  'devpts',
+  'overlay',
+  'squashfs',
+  'autofs',
+  'mqueue',
+  'debugfs',
+  'tracefs',
+  'securityfs',
+  'pstore',
+  'bpf',
+  'binfmt_misc',
+  'configfs',
+  'fusectl',
+  'hugetlbfs',
+  'rpc_pipefs',
+]);
+
+/**
  * Reads hardware- and filesystem-level identity signals for a mounted volume.
  *
  * Every method here talks to the OS (shell commands, raw filesystem reads) and is expected to occasionally fail
@@ -50,6 +78,21 @@ export class VolumeInfoRepository {
         : await this.getUsbHardwareSerialLinux(mountPath);
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Lists currently mounted volumes' root paths, so callers (DeviceMountService.reconcile) can discover reconnect
+   * candidates automatically instead of being told where to look. Best-effort: returns `[]` rather than throwing
+   * if the platform tool is unavailable or fails, consistent with every other method here.
+   */
+  async listMountedVolumes(): Promise<string[]> {
+    try {
+      return process.platform === 'win32'
+        ? await this.listMountedVolumesWindows()
+        : await this.listMountedVolumesLinux();
+    } catch {
+      return [];
     }
   }
 
@@ -133,6 +176,45 @@ export class VolumeInfoRepository {
     const { stdout } = await execFileAsync('findmnt', ['-n', '-o', 'SOURCE', '--target', mountPath]);
     const device = stdout.trim();
     return device.length > 0 ? device : null;
+  }
+
+  private async listMountedVolumesLinux(): Promise<string[]> {
+    const { stdout } = await execFileAsync('findmnt', ['-r', '-n', '-o', 'TARGET,FSTYPE']);
+    const targets: string[] = [];
+
+    for (const line of stdout.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        continue;
+      }
+
+      const separatorIndex = trimmed.lastIndexOf(' ');
+      if (separatorIndex === -1) {
+        continue;
+      }
+
+      const target = trimmed.slice(0, separatorIndex);
+      const fsType = trimmed.slice(separatorIndex + 1);
+      if (!LINUX_PSEUDO_FILESYSTEMS.has(fsType)) {
+        targets.push(target);
+      }
+    }
+
+    return targets;
+  }
+
+  private async listMountedVolumesWindows(): Promise<string[]> {
+    const { stdout } = await execFileAsync('powershell.exe', [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      String.raw`(Get-Volume | Where-Object { $_.DriveLetter } | ForEach-Object { "$($_.DriveLetter):\" })`,
+    ]);
+
+    return stdout
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => /^[A-Za-z]:\\$/.test(line));
   }
 }
 

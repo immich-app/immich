@@ -879,6 +879,7 @@ export enum JobName {
   LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',
+  DeviceMountReconcile = 'DeviceMountReconcile',
 
   HlsSessionCleanup = 'HlsSessionCleanup',
 

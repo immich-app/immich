@@ -1,3 +1,4 @@
+import { JobStatus } from 'src/enum.js';
 import { DeviceMountService } from 'src/services/device-mount.service.js';
 import { DeviceIdentityConfidence, DeviceIdentityMethod } from 'src/services/device-resolver/device-resolver.types.js';
 import { newTestService } from 'test/utils.js';
@@ -18,6 +19,39 @@ const baseMount = {
 };
 
 describe(DeviceMountService.name, () => {
+  describe('handleReconcile', () => {
+    it('discovers candidate roots itself and delegates to reconcilePath', async () => {
+      const { sut, mocks } = newTestService(DeviceMountService);
+      mocks.volumeInfo.listMountedVolumes.mockResolvedValue(['/mnt/external/new-mount']);
+      mocks.deviceMount.getByLibraryId.mockResolvedValue(baseMount);
+      mocks.storage.stat.mockRejectedValue(new Error('ENOENT'));
+      mocks.volumeInfo.getFilesystemSerial.mockResolvedValue(baseMount.volumeId);
+      mocks.library.get.mockResolvedValue({
+        id: LIBRARY_ID,
+        ownerId: 'owner-1',
+        exclusionPatterns: [],
+        importPaths: [],
+      } as any);
+      mocks.storage.crawl.mockResolvedValue([]);
+
+      const status = await sut.handleReconcile({ id: LIBRARY_ID });
+
+      expect(mocks.volumeInfo.listMountedVolumes).toHaveBeenCalled();
+      expect(mocks.deviceMount.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ lastKnownPath: '/mnt/external/new-mount' }),
+      );
+      expect(status).toBe(JobStatus.Success);
+    });
+
+    it('succeeds without relinking when nothing matches', async () => {
+      const { sut, mocks } = newTestService(DeviceMountService);
+      mocks.volumeInfo.listMountedVolumes.mockResolvedValue([]);
+      mocks.deviceMount.getByLibraryId.mockResolvedValue(undefined);
+
+      await expect(sut.handleReconcile({ id: LIBRARY_ID })).resolves.toBe(JobStatus.Success);
+    });
+  });
+
   it('does nothing for a library with no tracked device', async () => {
     const { sut, mocks } = newTestService(DeviceMountService);
     mocks.deviceMount.getByLibraryId.mockResolvedValue(undefined);
@@ -48,8 +82,11 @@ describe(DeviceMountService.name, () => {
     );
     mocks.library.get.mockResolvedValue({
       id: LIBRARY_ID,
+      ownerId: 'owner-1',
+      exclusionPatterns: [],
       importPaths: ['/mnt/external/old-mount/Photos', '/other/unrelated/path'],
     } as any);
+    mocks.storage.crawl.mockResolvedValue([]);
 
     const result = await sut.reconcilePath(LIBRARY_ID, ['/mnt/external/unrelated', '/mnt/external/new-mount']);
 
@@ -87,7 +124,13 @@ describe(DeviceMountService.name, () => {
     mocks.volumeInfo.getFilesystemSerial
       .mockResolvedValueOnce(baseMount.volumeId)
       .mockResolvedValueOnce('should-not-be-reached');
-    mocks.library.get.mockResolvedValue({ id: LIBRARY_ID, importPaths: [] } as any);
+    mocks.library.get.mockResolvedValue({
+      id: LIBRARY_ID,
+      ownerId: 'owner-1',
+      exclusionPatterns: [],
+      importPaths: [],
+    } as any);
+    mocks.storage.crawl.mockResolvedValue([]);
 
     await sut.reconcilePath(LIBRARY_ID, ['/mnt/external/first', '/mnt/external/second']);
 
@@ -106,6 +149,82 @@ describe(DeviceMountService.name, () => {
     expect(mocks.library.update).not.toHaveBeenCalled();
     expect(mocks.asset.rewriteOriginalPathPrefix).not.toHaveBeenCalled();
     expect(mocks.deviceMount.upsert).not.toHaveBeenCalled();
+  });
+
+  it('relinks a file renamed within the drive by matching its content checksum', async () => {
+    const { sut, mocks } = newTestService(DeviceMountService);
+    mocks.deviceMount.getByLibraryId.mockResolvedValue(baseMount);
+    mocks.storage.stat.mockRejectedValue(new Error('ENOENT'));
+    mocks.volumeInfo.getFilesystemSerial.mockResolvedValue(baseMount.volumeId);
+    mocks.library.get.mockResolvedValue({
+      id: LIBRARY_ID,
+      ownerId: 'owner-1',
+      exclusionPatterns: [],
+      importPaths: [],
+    } as any);
+    // the file now lives at a different relative path than any asset is recorded at, so the prefix rewrite can't
+    // find it - relinkByContent has to hash it and match by checksum instead.
+    mocks.storage.crawl.mockResolvedValue(['/mnt/external/new-mount/Reorganized/vacation.jpg']);
+    mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(undefined);
+    mocks.crypto.hashFile.mockResolvedValue(Buffer.from('content-checksum'));
+    mocks.asset.getByChecksum.mockResolvedValue({
+      id: 'asset-42',
+      originalPath: '/mnt/external/old-mount/Photos/vacation.jpg',
+    } as any);
+
+    await sut.reconcilePath(LIBRARY_ID, ['/mnt/external/new-mount']);
+
+    expect(mocks.crypto.hashFile).toHaveBeenCalledWith('/mnt/external/new-mount/Reorganized/vacation.jpg');
+    expect(mocks.asset.getByChecksum).toHaveBeenCalledWith({
+      ownerId: 'owner-1',
+      libraryId: LIBRARY_ID,
+      checksum: Buffer.from('content-checksum'),
+    });
+    expect(mocks.asset.update).toHaveBeenCalledWith({
+      id: 'asset-42',
+      originalPath: '/mnt/external/new-mount/Reorganized/vacation.jpg',
+    });
+  });
+
+  it('skips the content-checksum fallback for a file already linked at its current path', async () => {
+    const { sut, mocks } = newTestService(DeviceMountService);
+    mocks.deviceMount.getByLibraryId.mockResolvedValue(baseMount);
+    mocks.storage.stat.mockRejectedValue(new Error('ENOENT'));
+    mocks.volumeInfo.getFilesystemSerial.mockResolvedValue(baseMount.volumeId);
+    mocks.library.get.mockResolvedValue({
+      id: LIBRARY_ID,
+      ownerId: 'owner-1',
+      exclusionPatterns: [],
+      importPaths: [],
+    } as any);
+    mocks.storage.crawl.mockResolvedValue(['/mnt/external/new-mount/Photos/vacation.jpg']);
+    mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue({ id: 'asset-42' } as any);
+
+    await sut.reconcilePath(LIBRARY_ID, ['/mnt/external/new-mount']);
+
+    expect(mocks.crypto.hashFile).not.toHaveBeenCalled();
+    expect(mocks.asset.update).not.toHaveBeenCalled();
+  });
+
+  it('does not update an asset when no checksum match is found for an unlinked file', async () => {
+    const { sut, mocks } = newTestService(DeviceMountService);
+    mocks.deviceMount.getByLibraryId.mockResolvedValue(baseMount);
+    mocks.storage.stat.mockRejectedValue(new Error('ENOENT'));
+    mocks.volumeInfo.getFilesystemSerial.mockResolvedValue(baseMount.volumeId);
+    mocks.library.get.mockResolvedValue({
+      id: LIBRARY_ID,
+      ownerId: 'owner-1',
+      exclusionPatterns: [],
+      importPaths: [],
+    } as any);
+    mocks.storage.crawl.mockResolvedValue(['/mnt/external/new-mount/Photos/new-file.jpg']);
+    mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(undefined);
+    mocks.crypto.hashFile.mockResolvedValue(Buffer.from('no-match'));
+    mocks.asset.getByChecksum.mockResolvedValue(undefined);
+
+    await sut.reconcilePath(LIBRARY_ID, ['/mnt/external/new-mount']);
+
+    expect(mocks.asset.update).not.toHaveBeenCalled();
   });
 
   it('still relinks the asset paths and mount record when the library row is missing', async () => {
