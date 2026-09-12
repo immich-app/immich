@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_upload.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,6 +20,20 @@ import '../../../service.mocks.dart';
 import '../../factories/local_asset_factory.dart';
 import '../../factories/remote_asset_factory.dart';
 import '../presentation_context.dart';
+
+class _FailingViewIntentUpload extends ViewIntentUpload {
+  const _FailingViewIntentUpload(super.ref);
+
+  @override
+  Future<void> upload({
+    required ViewIntentPayload activeViewIntent,
+    required LocalAsset asset,
+    required Completer<void> cancelToken,
+    required UploadCallbacks callbacks,
+  }) {
+    throw StateError('The coordinator must not handle a regular upload.');
+  }
+}
 
 void main() {
   late PresentationContext context;
@@ -32,6 +49,7 @@ void main() {
   });
 
   List<Override> uploadOverrides() => [
+    viewIntentUploadProvider.overrideWith(ViewIntentUpload.new),
     foregroundUploadServiceProvider.overrideWithValue(uploadService),
     toastServiceProvider.overrideWithValue(context.service.toast),
   ];
@@ -187,6 +205,70 @@ void main() {
   });
 
   group('uploadAssets', () {
+    testWidgets('uploads a regular timeline asset without the view-intent coordinator', (tester) async {
+      final asset = LocalAssetFactory.create();
+      answerUploadWith(succeeded: {asset.id});
+
+      late WidgetRef capturedRef;
+      await tester.pumpTestWidget(
+        context,
+        Consumer(
+          builder: (_, ref, _) {
+            capturedRef = ref;
+            return const SizedBox.shrink();
+          },
+        ),
+        overrides: [
+          foregroundUploadServiceProvider.overrideWithValue(uploadService),
+          toastServiceProvider.overrideWithValue(context.service.toast),
+          viewIntentUploadProvider.overrideWith(_FailingViewIntentUpload.new),
+        ],
+      );
+
+      await uploadAssets(tester.element(find.byType(SizedBox)), capturedRef, [asset], source: ActionSource.timeline);
+      await tester.pump(const Duration(seconds: 2));
+
+      verify(
+        () => uploadService.uploadManual(
+          [asset],
+          cancelToken: any(named: 'cancelToken'),
+          callbacks: any(named: 'callbacks'),
+        ),
+      ).called(1);
+    });
+
+    testWidgets('uploads a viewer asset without an active view intent through the regular path', (tester) async {
+      final asset = LocalAssetFactory.create();
+      answerUploadWith(succeeded: {asset.id});
+
+      late WidgetRef capturedRef;
+      await tester.pumpTestWidget(
+        context,
+        Consumer(
+          builder: (_, ref, _) {
+            capturedRef = ref;
+            return const SizedBox.shrink();
+          },
+        ),
+        overrides: [
+          foregroundUploadServiceProvider.overrideWithValue(uploadService),
+          toastServiceProvider.overrideWithValue(context.service.toast),
+          viewIntentUploadProvider.overrideWith(_FailingViewIntentUpload.new),
+        ],
+      );
+
+      await uploadAssets(tester.element(find.byType(SizedBox)), capturedRef, [asset], source: ActionSource.viewer);
+      await tester.pump(const Duration(seconds: 2));
+
+      verify(
+        () => uploadService.uploadManual(
+          [asset],
+          cancelToken: any(named: 'cancelToken'),
+          callbacks: any(named: 'callbacks'),
+        ),
+      ).called(1);
+    });
+
     testWidgets('clears the tracked progress once the upload settles', (tester) async {
       final asset = LocalAssetFactory.create();
       answerUploadWith(succeeded: {asset.id});
@@ -203,7 +285,7 @@ void main() {
         overrides: uploadOverrides(),
       );
 
-      await uploadAssets(tester.element(find.byType(SizedBox)), capturedRef, [asset]);
+      await uploadAssets(tester.element(find.byType(SizedBox)), capturedRef, [asset], source: ActionSource.timeline);
       await settleUpload(tester);
 
       expect(capturedRef.read(assetUploadProgressProvider), isEmpty);

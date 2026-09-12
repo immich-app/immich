@@ -412,7 +412,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
-    final asset = _asset;
+    final asset = timelineOrigin == TimelineOrigin.deepLink && currentAsset != null ? currentAsset : _asset;
     if (asset == null) {
       return const Center(child: ImmichLoadingIndicator());
     }

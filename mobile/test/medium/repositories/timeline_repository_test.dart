@@ -22,6 +22,49 @@ void main() {
     await ctx.dispose();
   });
 
+  group('main timeline checksum lookup', () {
+    test('returns only remote assets that are eligible for the main timeline', () async {
+      const checksum = 'view-intent-checksum';
+      final currentUser = await ctx.newUser();
+      final includedPartner = await ctx.newUser();
+      final excludedPartner = await ctx.newUser();
+
+      final currentUserAsset = await ctx.newRemoteAsset(ownerId: currentUser.id, checksum: checksum);
+      final partnerAsset = await ctx.newRemoteAsset(ownerId: includedPartner.id, checksum: checksum);
+      await ctx.newRemoteAsset(ownerId: currentUser.id, checksum: checksum, visibility: AssetVisibility.archive);
+      await ctx.newRemoteAsset(ownerId: currentUser.id, checksum: checksum, visibility: AssetVisibility.hidden);
+      await ctx.newRemoteAsset(ownerId: currentUser.id, checksum: checksum, deletedAt: DateTime(2026, 8, 21));
+      await ctx.newRemoteAsset(ownerId: excludedPartner.id, checksum: checksum);
+
+      final assets = await sut.getViewableRemoteAssetsByChecksum([currentUser.id, includedPartner.id], checksum);
+
+      expect(assets.map((asset) => asset.id), unorderedEquals([currentUserAsset.id, partnerAsset.id]));
+    });
+
+    test('prefers the current user\'s matching asset', () async {
+      const checksum = 'view-intent-owner-preference';
+      final currentUser = await ctx.newUser();
+      await ctx.newAuthUser(id: currentUser.id);
+      final partner = await ctx.newUser();
+      final currentUserAsset = await ctx.newRemoteAsset(
+        id: 'z-current-user',
+        ownerId: currentUser.id,
+        checksum: checksum,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      final partnerAsset = await ctx.newRemoteAsset(
+        id: 'a-partner',
+        ownerId: partner.id,
+        checksum: checksum,
+        createdAt: DateTime(2026, 2, 1),
+      );
+
+      final assets = await sut.getViewableRemoteAssetsByChecksum([currentUser.id, partner.id], checksum);
+
+      expect(assets.map((asset) => asset.id), [currentUserAsset.id, partnerAsset.id]);
+    });
+  });
+
   group('remoteAlbum assets', () {
     test('no duplicate assets when identical checksum appears in multiple local asset rows', () async {
       // Regression check for #23273: a LEFT OUTER JOIN on checksum would fan out and create duplicates

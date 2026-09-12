@@ -8,6 +8,8 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_upload.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -36,7 +38,7 @@ class UploadAction extends AssetActionBuilder {
   Future<void> _upload(BuildContext context, WidgetRef ref, List<LocalAsset> assets) async {
     try {
       if (!showProgress) {
-        await uploadAssets(context, ref, assets);
+        await uploadAssets(context, ref, assets, source: source);
         return;
       }
 
@@ -51,7 +53,7 @@ class UploadAction extends AssetActionBuilder {
         ).whenComplete(() => isDialogOpen = false),
       );
 
-      await uploadAssets(context, ref, assets);
+      await uploadAssets(context, ref, assets, source: source);
 
       if (isDialogOpen && context.mounted) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -63,9 +65,13 @@ class UploadAction extends AssetActionBuilder {
 }
 
 @visibleForTesting
-Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> assets) async {
+Future<void> uploadAssets(
+  BuildContext context,
+  WidgetRef ref,
+  List<LocalAsset> assets, {
+  required ActionSource source,
+}) async {
   final progress = ref.read(assetUploadProgressProvider.notifier);
-  final uploads = ref.read(foregroundUploadServiceProvider);
   final toastService = ref.read(toastServiceProvider);
   final errorMessage = context.t.scaffold_body_error_occurred;
 
@@ -79,21 +85,32 @@ Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> 
   }
 
   try {
-    await uploads.uploadManual(
-      assets,
-      cancelToken: cancelToken,
-      callbacks: UploadCallbacks(
-        onProgress: (id, _, bytes, total) => progress.setProgress(id, total > 0 ? bytes / total : 0.0),
-        onSuccess: (id, _) {
-          uploaded.add(id);
-          progress.remove(id);
-        },
-        onError: (id, _) {
-          failed.add(id);
-          progress.setError(id);
-        },
-      ),
+    final callbacks = UploadCallbacks(
+      onProgress: (id, _, bytes, total) => progress.setProgress(id, total > 0 ? bytes / total : 0.0),
+      onSuccess: (id, _) {
+        uploaded.add(id);
+        progress.remove(id);
+      },
+      onError: (id, _) {
+        failed.add(id);
+        progress.setError(id);
+      },
     );
+    final activeViewIntent = source == ActionSource.viewer ? ref.read(activeViewIntentPayloadProvider) : null;
+    if (activeViewIntent != null) {
+      await ref
+          .read(viewIntentUploadProvider)
+          .upload(
+            activeViewIntent: activeViewIntent,
+            asset: assets.single,
+            cancelToken: cancelToken,
+            callbacks: callbacks,
+          );
+    } else {
+      await ref
+          .read(foregroundUploadServiceProvider)
+          .uploadManual(assets, cancelToken: cancelToken, callbacks: callbacks);
+    }
   } finally {
     ref.read(manualUploadCancelTokenProvider.notifier).state = null;
   }
