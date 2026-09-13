@@ -138,12 +138,7 @@ class ApiService {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         final endpoint = data['api']['endpoint'].toString();
-
-        if (endpoint.startsWith('/')) {
-          // Full URL is relative to base
-          return "$baseUrl$endpoint";
-        }
-        return endpoint;
+        return resolveWellKnownEndpoint(baseUrl, endpoint);
       }
     } catch (e) {
       dPrint(() => "Could not locate /.well-known/immich at $baseUrl");

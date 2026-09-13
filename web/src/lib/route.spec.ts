@@ -70,6 +70,10 @@ describe('Route', () => {
       vi.spyOn(document, 'baseURI', 'get').mockReturnValue('https://my.immich.server/');
     });
 
+    afterEach(() => {
+      delete globalThis.__IMMICH_BASE_PATH__;
+    });
+
     it('should resolve relative URLs', () => {
       expect(Route.continue('/some/path', '/fallback')).property('href', 'https://my.immich.server/some/path');
     });
@@ -95,6 +99,18 @@ describe('Route', () => {
 
     it(String.raw`should block \/ URLs`, () => {
       expect(Route.continue(String.raw`\/malicious.com`, '/fallback')).toBe('/fallback');
+    });
+
+    it('should include the configured base path', () => {
+      // eslint-disable-next-line unicorn/no-global-object-property-assignment
+      globalThis.__IMMICH_BASE_PATH__ = '/immich';
+
+      expect(Route.continue('/some/path', '/fallback')).property('href', 'https://my.immich.server/immich/some/path');
+      expect(Route.continue('/immich/some/path', '/fallback')).property(
+        'href',
+        'https://my.immich.server/immich/some/path',
+      );
+      expect(Route.continue('https://malicious.site/evil', '/fallback')).toBe('/immich/fallback');
     });
   });
 });

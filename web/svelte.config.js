@@ -19,7 +19,7 @@ const config = {
       name: process.env.IMMICH_BUILD || process.env.npm_package_version || 'local',
     },
     paths: {
-      relative: false,
+      relative: true,
     },
     adapter: adapter({
       fallback: 'index.html',

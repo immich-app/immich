@@ -9,6 +9,7 @@ import {
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
+import { withBasePath } from '$lib/base-path';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { Route } from '$lib/route';
 import { isSharedLinkRoute } from '$lib/utils/navigation';
@@ -107,7 +108,7 @@ class AuthManager {
       this.reset();
       eventManager.emit('AuthLogout');
 
-      await goto(redirectUri);
+      await goto(withBasePath(redirectUri));
     } else {
       location.assign(redirectUri);
     }

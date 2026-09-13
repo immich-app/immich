@@ -5,6 +5,7 @@
   import ThemeButton from '$lib/components/shared-components/ThemeButton.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { Route } from '$lib/route';
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
@@ -93,7 +94,7 @@
   <header>
     <ControlAppBar>
       {#snippet leading()}
-        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+        <a data-sveltekit-preload-data="hover" class="ms-4" href={Route.photos()}>
           <Logo variant="inline" />
         </a>
       {/snippet}

@@ -1,11 +1,22 @@
 import { UnauthorizedException } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 import { SignJWT } from 'jose';
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { automock, AutoMocked, getMocks, ServiceMocks } from 'test/utils.js';
+
+const newResponse = () =>
+  ({
+    redirect: vi.fn(),
+    status: vi.fn().mockReturnThis(),
+    type: vi.fn().mockReturnThis(),
+    header: vi.fn().mockReturnThis(),
+    send: vi.fn(),
+  }) as unknown as Response;
 
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
@@ -74,7 +85,21 @@ describe(MaintenanceWorkerService.name, () => {
     });
   });
 
-  describe.skip('ssr');
+  describe('ssr', () => {
+    beforeEach(() => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ basePath: '/immich' }));
+    });
+
+    it('should redirect to the maintenance page with the configured base path', () => {
+      const response = newResponse();
+      const next = vi.fn() as NextFunction;
+      const handler = sut.ssr([]);
+
+      handler({ url: '/photos', path: '/photos', method: 'GET' } as Request, response, next);
+
+      expect(response.redirect).toHaveBeenCalledWith('/immich/maintenance?continue=%2Fphotos');
+    });
+  });
   describe.skip('detectMediaLocation');
 
   describe('setStatus', () => {

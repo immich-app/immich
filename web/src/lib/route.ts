@@ -1,5 +1,6 @@
 import { getBaseUrl, IntegrityReport, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
+import { withBasePath } from '$lib/base-path';
 import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
 
 const asQueueSlug = (name: QueueName) => {
@@ -38,7 +39,7 @@ const asQueryString = (
   return items.length === 0 ? '' : `?${items.join('&')}`;
 };
 
-export const Route = {
+const routeDefinitions = {
   // auth
   login: (params?: { continue?: string; autoLaunch?: 0 | 1 }) => '/auth/login' + asQueryString(params),
   logout: (params?: { continue?: string }) => '/auth/logout' + asQueryString(params),
@@ -156,12 +157,34 @@ export const Route = {
 
   // continue helper for ensuring same-origin URLs
   continue: (url: string | null, fallback: string): string | URL => {
-    const resolved = new URL(url ?? fallback, document.baseURI);
+    const value = url ?? fallback;
+    const resolved = new URL(
+      value.startsWith('/') && !value.startsWith('//') ? withBasePath(value) : value,
+      document.baseURI,
+    );
 
     if (resolved.origin !== location.origin) {
-      return fallback;
+      return withBasePath(fallback);
     }
 
     return resolved;
   },
 };
+
+export const Route = new Proxy(routeDefinitions, {
+  get(target, property, receiver) {
+    const value = Reflect.get(target, property, receiver);
+    if (typeof value !== 'function') {
+      return value;
+    }
+
+    return (...args: unknown[]) => {
+      const result = Reflect.apply(value, target, args);
+      if (typeof result !== 'string' || !result.startsWith('/')) {
+        return result;
+      }
+
+      return withBasePath(result);
+    };
+  },
+});

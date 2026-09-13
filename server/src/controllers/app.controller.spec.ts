@@ -1,20 +1,25 @@
 import { AppController } from 'src/controllers/app.controller.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
 import request from 'supertest';
+import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(AppController.name, () => {
   let ctx: ControllerContext;
+  const configRepository = newConfigRepositoryMock();
 
   beforeAll(async () => {
     ctx = await controllerSetup(AppController, [
       { provide: SystemConfigService, useValue: mockBaseService(SystemConfigService) },
+      { provide: ConfigRepository, useValue: configRepository },
     ]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
     ctx.reset();
+    configRepository.getEnv.mockReturnValue(mockEnvData({}));
   });
 
   describe('GET /.well-known/immich', () => {
@@ -31,6 +36,14 @@ describe(AppController.name, () => {
           endpoint: '/api',
         },
       });
+    });
+
+    it('should include the configured base path', async () => {
+      configRepository.getEnv.mockReturnValue(mockEnvData({ basePath: '/immich' }));
+
+      const { body } = await request(ctx.getHttpServer()).get('/.well-known/immich');
+
+      expect(body.api.endpoint).toBe('/immich/api');
     });
   });
 

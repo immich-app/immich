@@ -1,5 +1,6 @@
-import { setFetch } from '@immich/sdk';
+import { setBaseUrl, setFetch } from '@immich/sdk';
 import { memoize } from 'lodash-es';
+import { withBasePath } from '$lib/base-path';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
@@ -12,6 +13,7 @@ async function _init(fetch: Fetch) {
   // https://kit.svelte.dev/docs/load#making-fetch-requests
   // https://github.com/oazapfts/oazapfts/blob/main/README.md#fetch-options
   setFetch(fetch);
+  setBaseUrl(withBasePath('/api'));
   await initLanguage();
   await serverConfigManager.init();
   await authManager.load();

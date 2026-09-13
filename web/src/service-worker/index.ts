@@ -5,9 +5,10 @@
 import { installMessageListener } from './messaging';
 import { handleFetch as handleAssetFetch } from './request';
 
-const ASSET_REQUEST_REGEX = /^\/api\/assets\/[a-f0-9-]+\/(original|thumbnail)/;
-
 const sw = globalThis as unknown as ServiceWorkerGlobalScope;
+const basePath = new URL(sw.registration.scope).pathname.replace(/\/$/, '');
+const escapedBasePath = basePath.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+const ASSET_REQUEST_REGEX = new RegExp(`^${escapedBasePath}/api/assets/[a-f0-9-]+/(original|thumbnail)`);
 
 const handleActivate = (event: ExtendableEvent) => {
   event.waitUntil(sw.clients.claim());

@@ -272,7 +272,7 @@ export class NotificationService extends BaseService {
     const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
-        baseUrl: getExternalDomain(server),
+        baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
         displayName: user.name,
       },
       customTemplate: tempTemplate!,
@@ -301,7 +301,7 @@ export class NotificationService extends BaseService {
     const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
-        baseUrl: getExternalDomain(server),
+        baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
         displayName: user.name,
         username: user.email,
         password,
@@ -348,7 +348,7 @@ export class NotificationService extends BaseService {
     const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
-        baseUrl: getExternalDomain(server),
+        baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
         albumId: album.id,
         albumName: album.albumName,
         senderName,
@@ -405,7 +405,7 @@ export class NotificationService extends BaseService {
     const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.ALBUM_UPDATE,
       data: {
-        baseUrl: getExternalDomain(server),
+        baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
         albumId: album.id,
         albumName: album.albumName,
         recipientName: user.name,

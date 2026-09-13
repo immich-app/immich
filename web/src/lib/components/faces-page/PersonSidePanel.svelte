@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import { withBasePath } from '$lib/base-path';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -294,7 +295,7 @@
                       curve
                       shadow
                       highlighted={isHighlighted}
-                      url="/src/lib/assets/no-thumbnail.png"
+                      url={withBasePath('/src/lib/assets/no-thumbnail.png')}
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}
                       widthStyle="90px"
@@ -305,7 +306,7 @@
                       curve
                       shadow
                       highlighted={isHighlighted}
-                      url={data === null ? '/src/lib/assets/no-thumbnail.png' : data}
+                      url={data === null ? withBasePath('/src/lib/assets/no-thumbnail.png') : data}
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}
                       widthStyle="90px"

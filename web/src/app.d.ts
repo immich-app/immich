@@ -26,6 +26,10 @@ declare module '$env/static/public' {
   export const PUBLIC_IMMICH_BUY_HOST: string;
 }
 
+declare global {
+  var __IMMICH_BASE_PATH__: string | undefined;
+}
+
 interface Element {
   // Make optional, because it's unavailable on iPhones.
   requestFullscreen?(options?: FullscreenOptions): Promise<void>;

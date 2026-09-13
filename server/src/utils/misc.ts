@@ -16,6 +16,7 @@ import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersio
 import { extraModels } from 'src/decorators.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
@@ -49,8 +50,11 @@ export const getMethodNames = (instance: any) => {
   return methods;
 };
 
-export const getExternalDomain = (server: SystemConfig['server'], defaultDomain = 'https://my.immich.app') =>
-  server.externalDomain || defaultDomain;
+export const getExternalDomain = (
+  server: SystemConfig['server'],
+  defaultDomain = 'https://my.immich.app',
+  basePath = '',
+) => `${server.externalDomain || defaultDomain}${basePath}`;
 
 /**
  * @returns a list of strings representing the keys of the object in dot notation
@@ -314,6 +318,8 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 };
 
 export const useSwagger = (app: INestApplication, { write }: { write: boolean }) => {
+  const { basePath } = app.get(ConfigRepository).getEnv();
+  const apiPath = `${basePath}/api`;
   const builder = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
@@ -332,7 +338,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
       },
       MetadataKey.ApiKeySecurity,
     )
-    .addServer('/api');
+    .addServer(apiPath);
 
   for (const [tag, description] of Object.entries(endpointTags)) {
     builder.addTag(tag, description);
@@ -352,8 +358,8 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     swaggerOptions: {
       persistAuthorization: true,
     },
-    jsonDocumentUrl: '/api/spec.json',
-    yamlDocumentUrl: '/api/spec.yaml',
+    jsonDocumentUrl: `${apiPath}/spec.json`,
+    yamlDocumentUrl: `${apiPath}/spec.yaml`,
     customSiteTitle: 'Immich API Documentation',
   };
 

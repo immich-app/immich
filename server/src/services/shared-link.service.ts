@@ -218,6 +218,7 @@ export class SharedLinkService extends BaseService {
     }
 
     const config = await this.getConfig({ withCache: true });
+    const { basePath } = this.configRepository.getEnv();
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets?.length || 0;
@@ -228,7 +229,7 @@ export class SharedLinkService extends BaseService {
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
       description: sharedLink.description || `${assetCount} shared photos & videos`,
-      imageUrl: new URL(imagePath, getExternalDomain(config.server, defaultDomain)).href,
+      imageUrl: new URL(`${basePath}${imagePath}`, getExternalDomain(config.server, defaultDomain)).href,
     };
   }
 

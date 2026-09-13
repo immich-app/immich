@@ -1,5 +1,6 @@
 <script lang="ts">
   import { cleanClass } from '$lib';
+  import { getBasePath } from '$lib/base-path';
 
   interface Props {
     height: number;
@@ -11,7 +12,10 @@
   let { height = 0, title, invisible = false, class: className }: Props = $props();
 </script>
 
-<div class={cleanClass('overflow-clip', invisible && 'invisible', className)} style:height={height + 'px'}>
+<div
+  class={cleanClass('overflow-clip', invisible && 'invisible', className)}
+  style={`height: ${height}px; --immich-light-skeleton: url('${getBasePath()}/light_skeleton.png'); --immich-dark-skeleton: url('${getBasePath()}/dark_skeleton.png')`}
+>
   {#if title}
     <div
       class="flex h-6 place-items-center pt-7 pb-5 text-xs font-medium text-immich-fg max-md:pt-5 max-md:pb-3 md:text-sm dark:text-immich-dark-fg"
@@ -24,7 +28,7 @@
 
 <style>
   [data-skeleton] {
-    background-image: url('/light_skeleton.png');
+    background-image: var(--immich-light-skeleton);
     background-repeat: repeat;
     background-size: 235px, 235px;
   }
@@ -34,7 +38,7 @@
     }
   }
   :global(.dark) [data-skeleton] {
-    background-image: url('/dark_skeleton.png');
+    background-image: var(--immich-dark-skeleton);
   }
   .invisible [data-skeleton] {
     visibility: hidden !important;

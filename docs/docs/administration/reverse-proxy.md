@@ -2,17 +2,15 @@
 
 Users can deploy a custom reverse proxy that forwards requests to Immich. This way, the reverse proxy can handle TLS termination, load balancing, or other advanced features. All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Real-IP`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
 
-:::caution
-Immich does not support being served on a sub-path such as `location /immich {`. It has to be served on the root path of a (sub)domain.
-:::
+Immich also supports being served below a reverse-proxy sub-path. Set `IMMICH_BASE_PATH` on the `immich-server` container to the public path, then configure the proxy to remove that path before forwarding requests.
 
 :::info
 If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), you may want to verify that the Immich well-known endpoint (`/.well-known/immich`) gets correctly routed to Immich, otherwise it will likely be routed elsewhere and the mobile app may run into connection issues.
 :::
 
-### Nginx example config
+### Nginx example config (default)
 
-Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
+Below is the standard nginx configuration for serving Immich at the root of a domain (without a sub-path). Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
 
 ```nginx
 server {
@@ -48,10 +46,27 @@ server {
         proxy_set_header   Connection "upgrade";
     }
 
-    # useful when using Let's Encrypt http-01 challenge
-    # location = /.well-known/immich {
-    #     proxy_pass http://<backend_url>:2283;
-    # }
+}
+```
+
+### Optional: Nginx sub-path configuration
+
+To serve Immich below a reverse-proxy sub-path, set `IMMICH_BASE_PATH=/immich` on the `immich-server` container and replace only the `location /` block in the default configuration above with:
+
+```nginx
+location = /immich {
+    return 301 /immich/;
+}
+
+location /immich/ {
+    proxy_pass http://<backend_url>:2283/;
+    proxy_set_header Upgrade    $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+
+# Keep the well-known endpoint at the domain root for mobile discovery.
+location = /.well-known/immich {
+    proxy_pass http://<backend_url>:2283;
 }
 ```
 

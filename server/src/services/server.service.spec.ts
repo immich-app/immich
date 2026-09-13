@@ -187,6 +187,15 @@ describe(ServerService.name, () => {
 
       await expect(sut.getSystemConfig()).resolves.toMatchObject({ isInitialized: true });
     });
+
+    it('should include the configured base path in the external domain', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ basePath: '/immich' }));
+      mocks.systemMetadata.get.mockResolvedValue({ server: { externalDomain: 'https://demo.immich.app' } });
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        externalDomain: 'https://demo.immich.app/immich',
+      });
+    });
   });
 
   describe('getStats', () => {

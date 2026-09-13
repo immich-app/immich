@@ -111,6 +111,20 @@ void main() {
     });
   });
 
+  group('resolveWellKnownEndpoint', () {
+    test('should resolve a configured base path from the domain root', () {
+      expect(resolveWellKnownEndpoint('https://example.com', '/immich/api'), 'https://example.com/immich/api');
+    });
+
+    test('should not duplicate a configured base path', () {
+      expect(resolveWellKnownEndpoint('https://example.com/immich', '/immich/api'), 'https://example.com/immich/api');
+    });
+
+    test('should preserve legacy endpoints relative to a path-based server URL', () {
+      expect(resolveWellKnownEndpoint('https://example.com/immich', '/api'), 'https://example.com/immich/api');
+    });
+  });
+
   group('punycodeDecodeUrl', () {
     test('should return null for null input', () {
       expect(punycodeDecodeUrl(null), isNull);

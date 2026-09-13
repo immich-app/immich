@@ -1,6 +1,40 @@
-import { ApiService, render } from 'src/services/api.service.js';
+import { ApiService, render, renderBasePath } from 'src/services/api.service.js';
 
 describe(ApiService.name, () => {
+  describe('renderBasePath', () => {
+    const index = `
+      <script>globalThis.__IMMICH_BASE_PATH__ = '__IMMICH_BASE_PATH__';</script>
+      <script>globalThis.__sveltekit = { base: "" };</script>
+      <link href="/_app/app.css" />
+      <script src="/_app/app.js"></script>
+      <script>
+        import("/_app/start.js");
+        const script_url = '/service-worker.js';
+      </script>`;
+
+    it('renders a configured base path', () => {
+      const output = renderBasePath(index, '/immich');
+
+      expect(output).toContain(`globalThis.__IMMICH_BASE_PATH__ = "/immich"`);
+      expect(output).toContain(`globalThis.__sveltekit = { base: "/immich" }`);
+      expect(output).toContain('href="/immich/_app/app.css"');
+      expect(output).toContain('src="/immich/_app/app.js"');
+      expect(output).toContain('import("/immich/_app/start.js")');
+      expect(output).toContain("const script_url = '/immich/service-worker.js'");
+    });
+
+    it('keeps root deployments unchanged', () => {
+      const output = renderBasePath(index, '');
+
+      expect(output).toContain(`globalThis.__IMMICH_BASE_PATH__ = ""`);
+      expect(output).toContain(`globalThis.__sveltekit = { base: "" }`);
+      expect(output).toContain('href="/_app/app.css"');
+      expect(output).toContain('src="/_app/app.js"');
+      expect(output).toContain('import("/_app/start.js")');
+      expect(output).toContain("const script_url = '/service-worker.js'");
+    });
+  });
+
   describe('render', () => {
     it('should correctly render open graph tags', () => {
       const output = render('<!-- metadata:tags -->', {

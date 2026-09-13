@@ -112,7 +112,7 @@ export class CliService extends BaseService {
 
   async enableMaintenanceMode(): Promise<{ authUrl: string; alreadyEnabled: boolean }> {
     const { server } = await this.getConfig({ withCache: true });
-    const baseUrl = getExternalDomain(server);
+    const baseUrl = getExternalDomain(server, undefined, this.configRepository.getEnv().basePath);
 
     const payload: MaintenanceAuthDto = {
       username: 'cli-admin',

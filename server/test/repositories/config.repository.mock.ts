@@ -4,6 +4,7 @@ import type { RepositoryInterface } from 'src/types.js';
 import { Mocked, vitest } from 'vitest';
 
 export const envData: EnvData = {
+  basePath: '',
   port: 2283,
   environment: ImmichEnvironment.Production,
   logFormat: LogFormat.Console,

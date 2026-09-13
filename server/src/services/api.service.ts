@@ -8,6 +8,15 @@ import { AuthService } from 'src/services/auth.service.js';
 import { SharedLinkService } from 'src/services/shared-link.service.js';
 import { OpenGraphTags } from 'src/utils/misc.js';
 
+export const renderBasePath = (index: string, basePath: string) =>
+  index
+    .replace("'__IMMICH_BASE_PATH__'", () => JSON.stringify(basePath))
+    .replace(/(\bbase:\s*)""/, (_, prefix: string) => `${prefix}${JSON.stringify(basePath)}`)
+    .replaceAll('href="/', () => `href="${basePath}/`)
+    .replaceAll('src="/', () => `src="${basePath}/`)
+    .replaceAll('import("/', () => `import("${basePath}/`)
+    .replace("const script_url = '/service-worker.js'", () => `const script_url = '${basePath}/service-worker.js'`);
+
 export const render = (index: string, meta: OpenGraphTags) => {
   const [title, description, imageUrl] = [meta.title, meta.description, meta.imageUrl].map((item) =>
     item ? escape(item) : '',
@@ -37,7 +46,7 @@ export class ApiService {
   }
 
   ssr(excludePaths: string[]) {
-    const { resourcePaths } = this.configRepository.getEnv();
+    const { basePath, resourcePaths } = this.configRepository.getEnv();
 
     let index = '';
     try {
@@ -64,7 +73,8 @@ export class ApiService {
       }
 
       let status = 200;
-      let html = index;
+      const page = renderBasePath(index, basePath);
+      let html = page;
 
       const defaultDomain = request.host ? `${request.protocol}://${request.host}` : undefined;
 
@@ -93,7 +103,7 @@ export class ApiService {
       }
 
       if (meta) {
-        html = render(index, meta);
+        html = render(page, meta);
       }
 
       res.status(status).type(responseType).header('Cache-Control', 'no-store').send(html);

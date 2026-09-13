@@ -3,6 +3,7 @@ import { getAssetMediaUrl, getSharedLink as getCachedSharedLink, setSharedLink }
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
+import { withBasePath } from '$lib/base-path';
 
 export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) => {
   const params = new URLSearchParams();
@@ -41,7 +42,7 @@ export const loadSharedLink = async ({
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetPath = assetId ? getAssetMediaUrl({ id: assetId }) : '/feature-panel.png';
+    const assetPath = assetId ? getAssetMediaUrl({ id: assetId }) : withBasePath('/feature-panel.png');
 
     return {
       ...common,

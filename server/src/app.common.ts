@@ -2,6 +2,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json, urlencoded } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import type { NextFunction, Request, Response } from 'express';
 import helmetMiddleware from 'helmet';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
@@ -40,7 +41,7 @@ export async function configureExpress(
   },
 ) {
   const configRepository = app.get(ConfigRepository);
-  const { environment, host, port, helmet, resourcePaths, network } = configRepository.getEnv();
+  const { basePath, environment, host, port, helmet, resourcePaths, network } = configRepository.getEnv();
 
   const logger = await app.resolve(LoggingRepository);
   logger.setContext('Bootstrap');
@@ -67,6 +68,19 @@ export async function configureExpress(
 
   useSwagger(app, { write: configRepository.isDev() && permitSwaggerWrite });
 
+  const ssrHandler = app.get(ssr).ssr(excludePaths);
+  if (basePath) {
+    // sirv serves index.html for `/` before the SSR handler gets a chance to inject
+    // the reverse-proxy prefix into the document.
+    app.use((request: Request, response: Response, next: NextFunction) => {
+      if (request.path === '/') {
+        return ssrHandler(request, response, next);
+      }
+
+      return next();
+    });
+  }
+
   if (existsSync(resourcePaths.web.root)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46
     // provides serving of precompressed assets and caching of immutable assets
@@ -85,7 +99,7 @@ export async function configureExpress(
     );
   }
 
-  app.use(app.get(ssr).ssr(excludePaths));
+  app.use(ssrHandler);
   app.use(compression());
 
   const server = await (host ? app.listen(port, host) : app.listen(port));

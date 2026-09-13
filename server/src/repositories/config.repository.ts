@@ -26,6 +26,7 @@ import type { VectorExtension } from 'src/types.js';
 import { setDifference } from 'src/utils/set.js';
 
 export interface EnvData {
+  basePath: string;
   host?: string;
   port: number;
   environment: ImmichEnvironment;
@@ -253,6 +254,7 @@ const getEnv = (): EnvData => {
   }
 
   return {
+    basePath: dto.IMMICH_BASE_PATH,
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
     environment,

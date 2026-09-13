@@ -9,6 +9,7 @@ import { SharedLinkFactory } from 'test/factories/shared-link.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
 import { getForSharedLink } from 'test/mappers.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { factory } from 'test/small.factory.js';
 import { newTestService, ServiceMocks } from 'test/utils.js';
 
@@ -382,6 +383,20 @@ describe(SharedLinkService.name, () => {
       });
 
       expect(mocks.sharedLink.get).toHaveBeenCalled();
+    });
+
+    it('should include the configured base path', async () => {
+      const sharedLink = SharedLinkFactory.from({ description: null })
+        .asset({}, (builder) => builder.exif())
+        .build();
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ basePath: '/immich' }));
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+
+      await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual(
+        expect.objectContaining({
+          imageUrl: `https://my.immich.app/immich/api/assets/${sharedLink.assets[0].id}/thumbnail?key=${sharedLink.key.toString('base64url')}`,
+        }),
+      );
     });
 
     it('should return metadata tags with a default image path if the asset id is not set', async () => {

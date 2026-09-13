@@ -38,7 +38,7 @@ export class NotificationAdminService extends BaseService {
     const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
-        baseUrl: getExternalDomain(server),
+        baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
         displayName: user.name,
       },
       customTemplate: tempTemplate!,
@@ -66,7 +66,7 @@ export class NotificationAdminService extends BaseService {
         const { html: _welcomeHtml } = await this.emailRepository.renderEmail({
           template: EmailTemplate.WELCOME,
           data: {
-            baseUrl: getExternalDomain(server),
+            baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
             displayName: 'John Doe',
             username: 'john@doe.com',
             password: 'thisIsAPassword123',
@@ -81,7 +81,7 @@ export class NotificationAdminService extends BaseService {
         const { html: _updateAlbumHtml } = await this.emailRepository.renderEmail({
           template: EmailTemplate.ALBUM_UPDATE,
           data: {
-            baseUrl: getExternalDomain(server),
+            baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
             albumId: '1',
             albumName: 'Favorite Photos',
             recipientName: 'Jane Doe',
@@ -97,7 +97,7 @@ export class NotificationAdminService extends BaseService {
         const { html } = await this.emailRepository.renderEmail({
           template: EmailTemplate.ALBUM_INVITE,
           data: {
-            baseUrl: getExternalDomain(server),
+            baseUrl: getExternalDomain(server, undefined, this.configRepository.getEnv().basePath),
             albumId: '1',
             albumName: "John Doe's Favorites",
             senderName: 'John Doe',

@@ -11,6 +11,7 @@ import {
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { page } from '$app/state';
+import { withBasePath } from '$lib/base-path';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { Route } from '$lib/route';
@@ -45,7 +46,7 @@ export interface Events {
 }
 
 const websocket: Socket<Events> = io({
-  path: '/api/socket.io',
+  path: withBasePath('/api/socket.io'),
   transports: ['websocket'],
   reconnection: true,
   forceNew: true,

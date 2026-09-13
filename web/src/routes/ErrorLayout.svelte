@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Route } from '$lib/route';
   import { copyToClipboard } from '$lib/utils';
   import {
     Card,
@@ -34,7 +35,7 @@
 <div class="flex h-dvh w-dvw flex-col">
   <section>
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
-      <Link href="/photos">
+      <Link href={Route.photos()}>
         <Logo variant="inline" />
       </Link>
     </div>

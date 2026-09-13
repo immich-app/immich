@@ -3,6 +3,7 @@
   import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { getBasePath } from '$lib/base-path';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -24,7 +25,7 @@
     // click runs before bind
     const previouslyEnabled = configToEdit.oauth.mobileOverrideEnabled;
     if (!previouslyEnabled && !configToEdit.oauth.mobileRedirectUri) {
-      configToEdit.oauth.mobileRedirectUri = location.origin + '/api/oauth/mobile-redirect';
+      configToEdit.oauth.mobileRedirectUri = location.origin + getBasePath() + '/api/oauth/mobile-redirect';
     }
   };
 

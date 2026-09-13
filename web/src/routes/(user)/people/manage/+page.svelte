@@ -4,6 +4,7 @@
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import { ToggleVisibility } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -75,7 +76,7 @@
       }
       overrides.clear();
 
-      await goto('/people');
+      await goto(Route.people());
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changed.length } }));
     } finally {
@@ -122,7 +123,7 @@
           variant="ghost"
           aria-label={$t('close')}
           icon={mdiClose}
-          onclick={() => goto('/people')}
+          onclick={() => goto(Route.people())}
         />
         <IconButton
           shape="round"

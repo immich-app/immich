@@ -20,6 +20,7 @@ import { BaseService } from 'src/services/base.service.js';
 import { asHumanReadable } from 'src/utils/bytes.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import {
+  getExternalDomain,
   isDuplicateDetectionEnabled,
   isFacialRecognitionEnabled,
   isOcrEnabled,
@@ -112,6 +113,7 @@ export class ServerService extends BaseService {
 
   async getSystemConfig(): Promise<ServerConfigDto> {
     const config = await this.getConfig({ withCache: false });
+    const { basePath } = this.configRepository.getEnv();
     const isInitialized = !(await this.isSetupAvailable());
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
 
@@ -123,7 +125,7 @@ export class ServerService extends BaseService {
       oauthAccountManagementUrl: config.oauth.accountManagementUrl,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
-      externalDomain: config.server.externalDomain,
+      externalDomain: config.server.externalDomain ? getExternalDomain(config.server, undefined, basePath) : '',
       publicUsers: config.server.publicUsers,
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,

@@ -10,6 +10,7 @@ const resetEnv = () => {
   for (const env of [
     'IMMICH_ALLOW_EXTERNAL_PLUGINS',
     'IMMICH_ALLOW_SETUP',
+    'IMMICH_BASE_PATH',
     'IMMICH_ENV',
     'IMMICH_WORKERS_INCLUDE',
     'IMMICH_WORKERS_EXCLUDE',
@@ -73,6 +74,7 @@ describe('getEnv', () => {
     expect(config).toMatchObject({
       host: undefined,
       port: 2283,
+      basePath: '',
       environment: 'production',
       configFile: undefined,
       logLevel: undefined,
@@ -86,6 +88,23 @@ describe('getEnv', () => {
     it('should throw an error for relative paths', () => {
       process.env.IMMICH_MEDIA_LOCATION = './relative/path';
       expect(() => getEnv()).toThrowError('[IMMICH_MEDIA_LOCATION] Must be an absolute path');
+    });
+  });
+
+  describe('IMMICH_BASE_PATH', () => {
+    it('normalizes a trailing slash', () => {
+      process.env.IMMICH_BASE_PATH = '/immich/';
+      expect(getEnv().basePath).toBe('/immich');
+    });
+
+    it('requires an absolute URL path', () => {
+      process.env.IMMICH_BASE_PATH = 'immich';
+      expect(() => getEnv()).toThrowError('[IMMICH_BASE_PATH] Must be an absolute URL path');
+    });
+
+    it('rejects parent path segments', () => {
+      process.env.IMMICH_BASE_PATH = '/photos/../immich';
+      expect(() => getEnv()).toThrowError('[IMMICH_BASE_PATH] Must be an absolute URL path');
     });
   });
 

@@ -13,6 +13,28 @@ String normalizeServerUrl(String url) {
   return urlWithSchema.replaceFirst(RegExp(r"/+$"), "");
 }
 
+/// Resolves a well-known API endpoint against the server origin.
+///
+/// Older servers returned `/api`, which was relative to a user-entered path.
+/// Keep that behavior for path-based URLs while treating configured base paths
+/// such as `/immich/api` as origin-relative paths.
+String resolveWellKnownEndpoint(String baseUrl, String endpoint) {
+  final baseUri = Uri.parse(baseUrl);
+  final endpointUri = Uri.parse(endpoint);
+
+  if (endpointUri.hasScheme) {
+    return endpointUri.toString();
+  }
+
+  if (endpoint.startsWith('/')) {
+    final basePath = baseUri.path;
+    final path = basePath.isNotEmpty && endpoint == '/api' ? '$basePath$endpoint' : endpoint;
+    return baseUri.replace(path: path, query: endpointUri.query, fragment: endpointUri.fragment).toString();
+  }
+
+  return baseUri.replace(path: '${baseUri.path}/').resolve(endpoint).toString();
+}
+
 /// Validates a user-entered server URL
 bool _validateServerUrl(String url) {
   final parsedUrl = Uri.tryParse(url);

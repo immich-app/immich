@@ -77,7 +77,7 @@ export class MaintenanceService extends BaseService {
 
   async createLoginUrl(auth: MaintenanceAuthDto, secret?: string): Promise<string> {
     const { server } = await this.getConfig({ withCache: true });
-    const baseUrl = getExternalDomain(server);
+    const baseUrl = getExternalDomain(server, undefined, this.configRepository.getEnv().basePath);
 
     if (!secret) {
       const state = await this.getMaintenanceMode();

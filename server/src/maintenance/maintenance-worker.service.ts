@@ -23,7 +23,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
-import { type ApiService as _ApiService } from 'src/services/api.service.js';
+import { renderBasePath, type ApiService as _ApiService } from 'src/services/api.service.js';
 import { type BaseService as _BaseService } from 'src/services/base.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { type ServerService as _ServerService } from 'src/services/server.service.js';
@@ -129,7 +129,7 @@ export class MaintenanceWorkerService {
    * {@link _ApiService.ssr}
    */
   ssr(excludePaths: string[]) {
-    const { resourcePaths } = this.configRepository.getEnv();
+    const { basePath, resourcePaths } = this.configRepository.getEnv();
 
     let index = '';
     try {
@@ -151,10 +151,10 @@ export class MaintenanceWorkerService {
       if (!request.url.startsWith(maintenancePath)) {
         const params = new URLSearchParams();
         params.set('continue', request.path);
-        return res.redirect(`${maintenancePath}?${params}`);
+        return res.redirect(`${basePath}${maintenancePath}?${params}`);
       }
 
-      res.status(200).type('text/html').header('Cache-Control', 'no-store').send(index);
+      res.status(200).type('text/html').header('Cache-Control', 'no-store').send(renderBasePath(index, basePath));
     };
   }
 
@@ -227,7 +227,7 @@ export class MaintenanceWorkerService {
   async logSecret(): Promise<void> {
     const { server } = await this.getConfig({ withCache: true });
 
-    const baseUrl = getExternalDomain(server);
+    const baseUrl = getExternalDomain(server, undefined, this.configRepository.getEnv().basePath);
     const url = await createMaintenanceLoginUrl(
       baseUrl,
       {
