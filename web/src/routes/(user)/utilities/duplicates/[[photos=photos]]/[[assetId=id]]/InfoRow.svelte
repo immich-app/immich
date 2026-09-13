@@ -7,12 +7,17 @@
     children?: Snippet;
     borderBottom?: boolean;
     title?: string;
+    tooltip?: string;
   }
 
-  let { icon, children, borderBottom = true, title }: Props = $props();
+  let { icon, children, borderBottom = true, title, tooltip }: Props = $props();
 </script>
 
-<div class="grid w-full grid-cols-[20px_auto_1fr] overflow-hidden px-1 py-0.5" class:border-b={borderBottom} {title}>
+<div
+  class="grid w-full grid-cols-[20px_auto_1fr] overflow-hidden px-1 py-0.5"
+  class:border-b={borderBottom}
+  title={tooltip ?? title}
+>
   <Icon {icon} size="16" class="self-center text-dark/25" />
 
   {#if title}
