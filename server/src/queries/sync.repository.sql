@@ -1091,6 +1091,80 @@ where
 order by
   "stack"."updateId" asc
 
+-- SyncRepository.tag.getDeletes
+select
+  "id",
+  "tagId"
+from
+  "tag_audit" as "tag_audit"
+where
+  "tag_audit"."id" < $1
+  and "tag_audit"."id" > $2
+  and "userId" = $3
+order by
+  "tag_audit"."id" asc
+
+-- SyncRepository.tag.getUpserts
+select
+  "id",
+  "userId" as "ownerId",
+  "parentId",
+  "value",
+  "color",
+  "createdAt",
+  "updatedAt",
+  "updateId"
+from
+  "tag" as "tag"
+where
+  "tag"."updateId" < $1
+  and "tag"."updateId" > $2
+  and "userId" = $3
+order by
+  "tag"."updateId" asc
+
+-- SyncRepository.tagToAsset.getDeletes
+select
+  "id",
+  "tagId",
+  "assetId"
+from
+  "tag_asset_audit" as "tag_asset_audit"
+where
+  "tag_asset_audit"."id" < $1
+  and "tag_asset_audit"."id" > $2
+  and "tagId" in (
+    select
+      "id"
+    from
+      "tag"
+    where
+      "userId" = $3
+  )
+order by
+  "tag_asset_audit"."id" asc
+
+-- SyncRepository.tagToAsset.getUpserts
+select
+  "tagId",
+  "assetId",
+  "updateId"
+from
+  "tag_asset" as "tag_asset"
+where
+  "tag_asset"."updateId" < $1
+  and "tag_asset"."updateId" > $2
+  and "tagId" in (
+    select
+      "id"
+    from
+      "tag"
+    where
+      "userId" = $3
+  )
+order by
+  "tag_asset"."updateId" asc
+
 -- SyncRepository.user.getDeletes
 select
   "id",

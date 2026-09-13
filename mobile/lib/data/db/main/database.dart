@@ -31,6 +31,8 @@ import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/cloud_id.dart';
 import 'package:immich_mobile/data/db/main/table/remote/exif.dart';
 import 'package:immich_mobile/data/db/main/table/remote/stack.dart';
+import 'package:immich_mobile/data/db/main/table/tag/asset.dart';
+import 'package:immich_mobile/data/db/main/table/tag/tag.dart';
 import 'package:immich_mobile/data/db/main/table/user/auth_user.dart';
 import 'package:immich_mobile/data/db/main/table/user/metadata.dart';
 import 'package:immich_mobile/data/db/main/table/user/partner.dart';
@@ -48,6 +50,7 @@ import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/tag.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
@@ -85,6 +88,8 @@ import 'package:sqlite_async/sqlite_async.dart';
     AssetEditEntity,
     SettingsEntity,
     AssetOcrEntity,
+    TagEntity,
+    TagAssetEntity,
   ],
   include: {'package:immich_mobile/data/db/main/query/merged_asset.drift'},
   daos: [
@@ -103,6 +108,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     StoreRepository,
     SyncMigrationRepository,
     SyncStreamRepository,
+    TagRepository,
     TimelineRepository,
     TrashedLocalAssetRepository,
     UserMetadataRepository,
@@ -159,7 +165,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -356,6 +362,12 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
+              },
+              from31To32: (m, v32) async {
+                await m.createTable(v32.tagEntity);
+                await m.createIndex(v32.idxTagOwnerId);
+                await m.createTable(v32.tagAssetEntity);
+                await m.createIndex(v32.idxTagAssetTagAsset);
               },
             ),
           ),

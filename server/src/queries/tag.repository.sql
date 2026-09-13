@@ -151,7 +151,8 @@ values
   ($1, $2)
 on conflict do nothing
 returning
-  *
+  "tagId",
+  "assetId"
 
 -- TagRepository.replaceAssetTags
 begin
@@ -164,5 +165,6 @@ values
   ($1, $2)
 on conflict do nothing
 returning
-  *
+  "tagId",
+  "assetId"
 rollback

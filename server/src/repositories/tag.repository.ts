@@ -173,7 +173,7 @@ export class TagRepository {
       .insertInto('tag_asset')
       .values(items)
       .onConflict((oc) => oc.doNothing())
-      .returningAll()
+      .returning(['tagId', 'assetId'])
       .execute();
   }
 
@@ -191,7 +191,7 @@ export class TagRepository {
         .insertInto('tag_asset')
         .values(tagIds.map((tagId) => ({ tagId, assetId })))
         .onConflict((oc) => oc.doNothing())
-        .returningAll()
+        .returning(['tagId', 'assetId'])
         .execute();
     });
   }

@@ -1033,6 +1033,8 @@ export enum SyncRequestType {
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
   PartnerStacksV1 = 'PartnerStacksV1',
   StacksV1 = 'StacksV1',
+  TagsV1 = 'TagsV1',
+  TagToAssetsV1 = 'TagToAssetsV1',
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
   /** @deprecated */
@@ -1120,6 +1122,12 @@ export enum SyncEntityType {
   AssetFaceV1 = 'AssetFaceV1',
   AssetFaceV2 = 'AssetFaceV2',
   AssetFaceDeleteV1 = 'AssetFaceDeleteV1',
+
+  TagV1 = 'TagV1',
+  TagDeleteV1 = 'TagDeleteV1',
+
+  TagToAssetV1 = 'TagToAssetV1',
+  TagToAssetDeleteV1 = 'TagToAssetDeleteV1',
 
   UserMetadataV1 = 'UserMetadataV1',
   UserMetadataDeleteV1 = 'UserMetadataDeleteV1',
