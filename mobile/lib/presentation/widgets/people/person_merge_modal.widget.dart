@@ -21,10 +21,10 @@ class PersonMergeForm extends ConsumerStatefulWidget {
 }
 
 class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
-  bool _isMerging = false;
+  bool _isSubmitting = false;
 
   Future<void> _mergePeople() async {
-    setState(() => _isMerging = true);
+    setState(() => _isSubmitting = true);
     try {
       final mergedIds = await ref
           .read(Store.people)
@@ -35,7 +35,7 @@ class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
       }
 
       if (mergedIds.isEmpty) {
-        setState(() => _isMerging = false);
+        setState(() => _isSubmitting = false);
         ImmichToast.show(
           context: context,
           msg: context.t.cannot_merge_people,
@@ -55,7 +55,7 @@ class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
       );
     } catch (e) {
       if (mounted) {
-        setState(() => _isMerging = false);
+        setState(() => _isSubmitting = false);
         ImmichToast.show(
           context: context,
           msg: context.t.error_title,
@@ -111,7 +111,7 @@ class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
                     foregroundColor: Theme.of(context).colorScheme.onInverseSurface,
                     elevation: 0,
                   ),
-                  onPressed: _isMerging ? null : () => Navigator.of(context).pop(),
+                  onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
                   child: Text(context.t.no, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
@@ -122,8 +122,8 @@ class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
-                  onPressed: _isMerging ? null : () => unawaited(_mergePeople()),
-                  child: _isMerging
+                  onPressed: _isSubmitting ? null : () => unawaited(_mergePeople()),
+                  child: _isSubmitting
                       ? SizedBox(
                           height: 20,
                           width: 20,
