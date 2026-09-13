@@ -356,7 +356,7 @@ export class AssetMediaService extends BaseService {
       return;
     }
 
-    await this.albumRepository.addAssetIds(album.id, [assetId]);
+    await this.albumRepository.addAssetIds(album.id, [assetId], sharedLink.userId);
     const userIds = album.albumUsers.map(({ user }) => user.id);
     await this.eventRepository.emit('AlbumUpdate', {
       id: album.id,
