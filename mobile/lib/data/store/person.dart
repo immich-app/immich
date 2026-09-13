@@ -47,7 +47,8 @@ final _forAssetProvider = FutureProvider.autoDispose.family<List<Person>, String
 );
 
 final _watchByIdProvider = StreamProvider.autoDispose.family<Person?, String>(
-  (ref, personId) => ref.watch(_peopleDb).watchPersonById(personId),
+  (ref, personId) =>
+      ref.watch(_peopleDb).watch(personId: personId).map((people) => people.isEmpty ? null : people.first),
 );
 
 final _allProvider = StreamProvider.autoDispose<List<Person>>((ref) async* {

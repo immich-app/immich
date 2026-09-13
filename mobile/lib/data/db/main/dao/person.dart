@@ -37,7 +37,10 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
     return query.map((row) => row.toDto()).get();
   }
 
-  Stream<List<Person>> watch({int minFaces = 3}) {
+  /// Watches known people, honoring the visibility/face-count protection checks.
+  ///
+  /// When [personId] is provided, the stream is limited to that single person
+  Stream<List<Person>> watch({int minFaces = 3, String? personId}) {
     final people = _db.personEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;
@@ -60,16 +63,14 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
 
+    if (personId != null) {
+      query.where(people.id.equals(personId));
+    }
+
     return query.map((row) {
       final person = row.readTable(people);
       return person.toDto();
     }).watch();
-  }
-
-  Stream<Person?> watchPersonById(String personId) {
-    return (_db.select(
-      _db.personEntity,
-    )..where((tbl) => tbl.id.equals(personId))).watchSingleOrNull().map((entity) => entity?.toDto());
   }
 
   Future<int> updateName(String personId, String name) {
