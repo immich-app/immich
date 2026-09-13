@@ -1,7 +1,7 @@
 import { AssetMediaResponseDto, LoginResponseDto, updateAssets } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import crypto from 'node:crypto';
-import { asBearerAuth, utils } from 'src/utils';
+import { asBearerAuth, utils } from 'src/utils.js';
 
 test.describe('Duplicates Utility', () => {
   let admin: LoginResponseDto;

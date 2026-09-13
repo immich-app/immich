@@ -3,9 +3,9 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
-import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto.js';
 import {
   AssetFileType,
   AssetPathType,
@@ -15,12 +15,12 @@ import {
   JobStatus,
   QueueName,
   StorageFolder,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { JobOf, StorageAsset } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
-import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file';
+} from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { JobOf, StorageAsset } from 'src/types.js';
+import { getAssetFile } from 'src/utils/asset.util.js';
+import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file.js';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { SyncAck } from 'src/types';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import type { SyncAck } from 'src/types.js';
 
 export type SyncBackfillOptions = {
   nowId: string;

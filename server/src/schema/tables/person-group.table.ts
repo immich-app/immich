@@ -2,15 +2,15 @@ import {
   AfterDeleteTrigger,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { person_group_delete_audit } from 'src/schema/functions';
-import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table';
+import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { person_group_delete_audit } from 'src/schema/functions.js';
+import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
 
 @Table('person_group')
 @UpdatedAtTrigger('person_group_updatedAt')

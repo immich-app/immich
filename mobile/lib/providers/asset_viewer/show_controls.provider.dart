@@ -14,8 +14,4 @@ class ShowControls extends StateNotifier<bool> {
   set show(bool value) {
     state = value;
   }
-
-  void toggle() {
-    state = !state;
-  }
 }

@@ -1,15 +1,15 @@
-import _ from 'lodash';
-import { SystemConfigController } from 'src/controllers/system-config.controller';
-import { defaults } from 'src/dtos/config.dto';
-import { StorageTemplateService } from 'src/services/storage-template.service';
-import { SystemConfigService } from 'src/services/system-config.service';
+import { cloneDeep } from 'lodash-es';
+import { SystemConfigController } from 'src/controllers/system-config.controller.js';
+import { defaults } from 'src/dtos/config.dto.js';
+import { StorageTemplateService } from 'src/services/storage-template.service.js';
+import { SystemConfigService } from 'src/services/system-config.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 /** Returns a full config that passes Zod validation (required URLs and min lengths). */
 function validConfig() {
-  const config = _.cloneDeep(defaults) as typeof defaults & {
+  const config = cloneDeep(defaults) as typeof defaults & {
     oauth: { mobileRedirectUri: string };
     notifications: { smtp: { from: string; transport: { host: string } } };
     server: { externalDomain: string };

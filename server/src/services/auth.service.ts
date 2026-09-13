@@ -2,8 +2,8 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
-import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
+import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
+import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import {
   AuthDto,
   AuthStatusResponseDto,
@@ -19,15 +19,15 @@ import {
   SessionUnlockDto,
   SignUpDto,
   mapLoginResponse,
-} from 'src/dtos/auth.dto';
-import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum';
-import { OAuthProfile } from 'src/repositories/oauth.repository';
-import { BaseService } from 'src/services/base.service';
-import { isGranted } from 'src/utils/access';
-import { HumanReadableSize } from 'src/utils/bytes';
-import { generateProfileImage } from 'src/utils/profile-image';
-import { getUserAgentDetails } from 'src/utils/request';
+} from 'src/dtos/auth.dto.js';
+import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
+import { OAuthProfile } from 'src/repositories/oauth.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { isGranted } from 'src/utils/access.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
+import { generateProfileImage } from 'src/utils/profile-image.js';
+import { getUserAgentDetails } from 'src/utils/request.js';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;

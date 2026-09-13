@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation';
+import { isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation.js';
 import z from 'zod';
 
 const MapReverseGeocodeSchema = z

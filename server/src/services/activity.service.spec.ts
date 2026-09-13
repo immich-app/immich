@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { ReactionType } from 'src/dtos/activity.dto';
-import { ActivityService } from 'src/services/activity.service';
-import { ActivityFactory } from 'test/factories/activity.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { getForActivity } from 'test/mappers';
-import { newUuid, newUuids } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { ReactionType } from 'src/dtos/activity.dto.js';
+import { ActivityService } from 'src/services/activity.service.js';
+import { ActivityFactory } from 'test/factories/activity.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { getForActivity } from 'test/mappers.js';
+import { newUuid, newUuids } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;

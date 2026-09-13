@@ -3,14 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { setTimeout } from 'node:timers/promises';
-import { JobConfig } from 'src/decorators';
-import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto';
-import { ImmichWorker, JobName, JobStatus, MetadataKey, QueueCleanType, QueueJobStatus, QueueName } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobCounts, JobItem, JobOf } from 'src/types';
-import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
+import { JobConfig } from 'src/decorators.js';
+import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto.js';
+import { ImmichWorker, JobName, JobStatus, MetadataKey, QueueCleanType, QueueJobStatus, QueueName } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import type { JobCounts, JobItem, JobOf } from 'src/types.js';
+import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc.js';
 
 type JobMapItem = {
   jobName: JobName;

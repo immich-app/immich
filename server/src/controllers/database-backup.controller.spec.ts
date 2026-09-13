@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
-import { DatabaseBackupController } from 'src/controllers/database-backup.controller';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
+import { DatabaseBackupController } from 'src/controllers/database-backup.controller.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(DatabaseBackupController.name, () => {
   let ctx: ControllerContext;

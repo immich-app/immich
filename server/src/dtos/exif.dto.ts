@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { Exif } from 'src/database';
-import { MaybeDehydrated } from 'src/types';
-import { asDateTimeString } from 'src/utils/date';
+import { Exif } from 'src/database.js';
+import type { MaybeDehydrated } from 'src/types.js';
+import { asDateTimeString } from 'src/utils/date.js';
 import z from 'zod';
 
 export const ExifResponseSchema = z
@@ -18,12 +18,12 @@ export const ExifResponseSchema = z
     modifyDate: z.string().meta({ format: 'date-time' }).nullish().default(null).describe('Modification date/time'),
     timeZone: z.string().nullish().default(null).describe('Time zone'),
     lensModel: z.string().nullish().default(null).describe('Lens model'),
-    fNumber: z.number().nullish().default(null).describe('F-number (aperture)'),
-    focalLength: z.number().nullish().default(null).describe('Focal length in mm'),
+    fNumber: z.number().meta({ format: 'double' }).nullish().default(null).describe('F-number (aperture)'),
+    focalLength: z.number().meta({ format: 'double' }).nullish().default(null).describe('Focal length in mm'),
     iso: z.int().nullish().default(null).describe('ISO sensitivity'),
     exposureTime: z.string().nullish().default(null).describe('Exposure time'),
-    latitude: z.number().nullish().default(null).describe('GPS latitude'),
-    longitude: z.number().nullish().default(null).describe('GPS longitude'),
+    latitude: z.number().meta({ format: 'double' }).nullish().default(null).describe('GPS latitude'),
+    longitude: z.number().meta({ format: 'double' }).nullish().default(null).describe('GPS longitude'),
     city: z.string().nullish().default(null).describe('City name'),
     state: z.string().nullish().default(null).describe('State/province name'),
     country: z.string().nullish().default(null).describe('Country name'),

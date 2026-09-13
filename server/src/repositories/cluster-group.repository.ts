@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { type Insertable, type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table.js';
 
 @Injectable()
 export class ClusterGroupRepository {

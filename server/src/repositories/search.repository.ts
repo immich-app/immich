@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
+import { type Kysely, type OrderByDirection, type Selectable, type ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
-import { SearchFilter, SearchOrder } from 'src/dtos/search.dto';
-import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
-import { probes } from 'src/repositories/database.repository';
-import { DB } from 'src/schema';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
+import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum.js';
+import { probes } from 'src/repositories/database.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import {
   anyUuid,
   searchAssetBuilder,
@@ -19,8 +19,8 @@ import {
   searchStatisticsV3Examples,
   withExifInner,
   withSearchOrder,
-} from 'src/utils/database';
-import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
+} from 'src/utils/database.js';
+import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
 import z from 'zod';
 
 export interface SearchAssetIdOptions {

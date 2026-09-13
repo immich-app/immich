@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -27,7 +27,7 @@ class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
     setState(() => _isMerging = true);
     try {
       final mergedIds = await ref
-          .read(peopleServiceProvider)
+          .read(Store.people)
           .merge(targetPersonId: widget.mergeTarget.id, mergePersonIds: [widget.person.id]);
 
       if (!mounted) {
@@ -45,7 +45,7 @@ class _PersonMergeFormState extends ConsumerState<PersonMergeForm> {
         return;
       }
 
-      ref.invalidate(getAllPeopleProvider);
+      ref.invalidate(Store.people.all());
       Navigator.of(context).pop(widget.mergeTarget);
       ImmichToast.show(
         context: context,

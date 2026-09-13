@@ -1,20 +1,20 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { ImmichEnvironment, JobName, JobStatus, UserAvatarColor } from 'src/enum';
-import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { CryptoRepository } from 'src/repositories/crypto.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { UserService } from 'src/services/user.service';
-import { HumanReadableSize } from 'src/utils/bytes';
-import { mediumFactory, newMediumService } from 'test/medium.factory';
-import { factory, newUuid } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { ImmichEnvironment, JobName, JobStatus, UserAvatarColor } from 'src/enum.js';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { UserService } from 'src/services/user.service.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
+import { mediumFactory, newMediumService } from 'test/medium.factory.js';
+import { factory, newUuid } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 const userLicense = {
   licenseKey: 'IMCL-FF69-TUK1-RWZU-V9Q8-QGQS-S5GC-X4R2-UFK4',

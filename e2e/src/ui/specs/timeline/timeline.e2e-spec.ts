@@ -13,13 +13,13 @@ import {
   TimelineAssetConfig,
   TimelineData,
 } from 'src/ui/generators/timeline';
-import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
+import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network.js';
 import {
   pageRoutePromise,
   setupTimelineMockApiRoutes,
   TimelineTestContext,
 } from 'src/ui/mock-network/timeline-network';
-import { utils } from 'src/utils';
+import { utils } from 'src/utils.js';
 import { assetViewerUtils, padYearMonth, pageUtils, poll, thumbnailUtils, timelineUtils } from './utils';
 
 test.describe.configure({ mode: 'parallel' });

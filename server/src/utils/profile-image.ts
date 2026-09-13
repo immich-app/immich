@@ -1,9 +1,9 @@
 import { join } from 'node:path';
-import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfig } from 'src/dtos/config.dto';
-import { StorageFolder } from 'src/enum';
-import { CryptoRepository } from 'src/repositories/crypto.repository';
-import { MediaRepository } from 'src/repositories/media.repository';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { StorageFolder } from 'src/enum.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { MediaRepository } from 'src/repositories/media.repository.js';
 
 type Repos = {
   media: MediaRepository;

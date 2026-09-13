@@ -1,10 +1,10 @@
-import { SystemConfig } from 'src/dtos/config.dto';
-import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
-import { SmartInfoService } from 'src/services/smart-info.service';
-import { getCLIPModelInfo } from 'src/utils/misc';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
+import { SmartInfoService } from 'src/services/smart-info.service.js';
+import { getCLIPModelInfo } from 'src/utils/misc.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;

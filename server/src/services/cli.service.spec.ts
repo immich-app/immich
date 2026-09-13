@@ -1,8 +1,8 @@
 import { jwtVerify } from 'jose';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { CliService } from 'src/services/cli.service';
-import { UserFactory } from 'test/factories/user.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { CliService } from 'src/services/cli.service.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 import { describe, it } from 'vitest';
 
 describe(CliService.name, () => {

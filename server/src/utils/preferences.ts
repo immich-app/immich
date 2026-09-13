@@ -1,9 +1,9 @@
-import _ from 'lodash';
-import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { AssetOrder, UserMetadataKey } from 'src/enum';
-import { DeepPartial, UserMetadataItem, UserPreferences } from 'src/types';
-import { HumanReadableSize } from 'src/utils/bytes';
-import { getKeysDeep } from 'src/utils/misc';
+import { get, isEqual, set } from 'lodash-es';
+import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto.js';
+import { AssetOrder, UserMetadataKey } from 'src/enum.js';
+import type { DeepPartial, UserMetadataItem, UserPreferences } from 'src/types.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
+import { getKeysDeep } from 'src/utils/misc.js';
 
 const getDefaultPreferences = (): UserPreferences => {
   return {
@@ -62,7 +62,7 @@ export const getPreferences = (metadata: UserMetadataItem[]): UserPreferences =>
   const item = metadata.find(({ key }) => key === UserMetadataKey.Preferences);
   const partial = item?.value || {};
   for (const property of getKeysDeep(partial)) {
-    _.set(preferences, property, _.get(partial, property));
+    set(preferences, property, get(partial, property));
   }
 
   return preferences;
@@ -72,16 +72,16 @@ export const getPreferencesPartial = (newPreferences: UserPreferences) => {
   const defaultPreferences = getDefaultPreferences();
   const partial: DeepPartial<UserPreferences> = {};
   for (const property of getKeysDeep(defaultPreferences)) {
-    const newValue = _.get(newPreferences, property);
+    const newValue = get(newPreferences, property);
     const isEmpty = [undefined, null, ''].includes(newValue);
-    const defaultValue = _.get(defaultPreferences, property);
-    const isEqual = newValue === defaultValue || _.isEqual(newValue, defaultValue);
+    const defaultValue = get(defaultPreferences, property);
+    const equal = newValue === defaultValue || isEqual(newValue, defaultValue);
 
-    if (isEmpty || isEqual) {
+    if (isEmpty || equal) {
       continue;
     }
 
-    _.set(partial, property, newValue);
+    set(partial, property, newValue);
   }
 
   return partial;
@@ -89,7 +89,7 @@ export const getPreferencesPartial = (newPreferences: UserPreferences) => {
 
 export const mergePreferences = (preferences: UserPreferences, dto: UserPreferencesUpdateDto) => {
   for (const key of getKeysDeep(dto)) {
-    _.set(preferences, key, _.get(dto, key));
+    set(preferences, key, get(dto, key));
   }
 
   return preferences;

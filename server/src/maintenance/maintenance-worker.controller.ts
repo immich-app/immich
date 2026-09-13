@@ -12,29 +12,29 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
-} from 'src/dtos/maintenance.dto';
-import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ImmichCookie } from 'src/enum';
-import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
-import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
-import { GetLoginDetails } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { LoginDetails } from 'src/services/auth.service';
-import { sendFile } from 'src/utils/file';
-import { respondWithCookie } from 'src/utils/response';
-import { FilenameParamDto } from 'src/validation';
+} from 'src/dtos/maintenance.dto.js';
+import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
+import { ImmichCookie } from 'src/enum.js';
+import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard.js';
+import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
+import { GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { sendFile } from 'src/utils/file.js';
+import { respondWithCookie } from 'src/utils/response.js';
+import { FilenameParamDto } from 'src/validation.js';
 
-import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
-import type { ServerController as _ServerController } from 'src/controllers/server.controller';
-import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
+import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller.js';
+import type { ServerController as _ServerController } from 'src/controllers/server.controller.js';
+import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 
 @Controller()
 export class MaintenanceWorkerController {

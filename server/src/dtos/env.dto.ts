@@ -1,5 +1,5 @@
-import { ImmichEnvironmentSchema, LogFormatSchema, LogLevelSchema } from 'src/enum';
-import { IsIPRange } from 'src/validation';
+import { ImmichEnvironmentSchema, LogFormatSchema, LogLevelSchema } from 'src/enum.js';
+import { IsIPRange } from 'src/validation.js';
 import z from 'zod';
 
 // TODO import from sql-tools once the swagger plugin supports external enums

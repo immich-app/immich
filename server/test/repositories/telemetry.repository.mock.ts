@@ -1,5 +1,5 @@
-import { TelemetryRepository } from 'src/repositories/telemetry.repository';
-import { RepositoryInterface } from 'src/types';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 import { Mocked, vitest } from 'vitest';
 
 const newMetricGroupMock = () => {

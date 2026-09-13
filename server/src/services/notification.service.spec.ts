@@ -1,15 +1,15 @@
-import { AdminConfigDto, defaults, SystemConfig } from 'src/dtos/config.dto';
-import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
-import { NotificationService } from 'src/services/notification.service';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { AssetFileFactory } from 'test/factories/asset-file.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { UserFactory } from 'test/factories/user.factory';
-import { notificationStub } from 'test/fixtures/notification.stub';
-import { userStub } from 'test/fixtures/user.stub';
-import { getForAlbum } from 'test/mappers';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { AdminConfigDto, defaults, SystemConfig } from 'src/dtos/config.dto.js';
+import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
+import { NotificationService } from 'src/services/notification.service.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { notificationStub } from 'test/fixtures/notification.stub.js';
+import { userStub } from 'test/fixtures/user.stub.js';
+import { getForAlbum } from 'test/mappers.js';
+import { newUuid } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 const configs = {
   smtpDisabled: Object.freeze<SystemConfig>({

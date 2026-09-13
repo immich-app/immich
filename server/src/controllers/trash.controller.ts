@@ -1,12 +1,12 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { TrashResponseDto } from 'src/dtos/trash.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { TrashService } from 'src/services/trash.service';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { TrashResponseDto } from 'src/dtos/trash.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { TrashService } from 'src/services/trash.service.js';
 
 @ApiTags(ApiTag.Trash)
 @Controller('trash')

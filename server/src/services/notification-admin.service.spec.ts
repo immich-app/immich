@@ -1,8 +1,8 @@
-import { defaults, SystemConfig } from 'src/dtos/config.dto';
-import { EmailTemplate } from 'src/repositories/email.repository';
-import { NotificationService } from 'src/services/notification.service';
-import { userStub } from 'test/fixtures/user.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { defaults, SystemConfig } from 'src/dtos/config.dto.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { NotificationService } from 'src/services/notification.service.js';
+import { userStub } from 'test/fixtures/user.stub.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 const smtpTransport = Object.freeze<SystemConfig>({
   ...defaults,

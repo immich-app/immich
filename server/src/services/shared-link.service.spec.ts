@@ -1,16 +1,16 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
-import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { mapSharedLink } from 'src/dtos/shared-link.dto';
-import { SharedLinkType } from 'src/enum';
-import { SharedLinkService } from 'src/services/shared-link.service';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { SharedLinkFactory } from 'test/factories/shared-link.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
-import { getForSharedLink } from 'test/mappers';
-import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { mapSharedLink } from 'src/dtos/shared-link.dto.js';
+import { SharedLinkType } from 'src/enum.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { SharedLinkFactory } from 'test/factories/shared-link.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
+import { getForSharedLink } from 'test/mappers.js';
+import { factory } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;

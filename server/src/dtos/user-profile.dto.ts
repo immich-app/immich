@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
-import { UploadFieldName } from 'src/dtos/asset-media.dto';
-import { isoDatetimeToDate } from 'src/validation';
+import { UploadFieldName } from 'src/dtos/asset-media.dto.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 import z from 'zod';
 
 export class CreateProfileImageDto {

@@ -1,17 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { OnEvent, OnJob } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   SessionCreateDto,
   SessionCreateResponseDto,
   SessionResponseDto,
   SessionUpdateDto,
   mapSession,
-} from 'src/dtos/session.dto';
-import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
+} from 'src/dtos/session.dto.js';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
 export class SessionService extends BaseService {

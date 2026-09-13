@@ -4,8 +4,11 @@
 update "asset_face"
 set
   "personGroupId" = $1
+from
+  "asset"
 where
-  "asset_face"."personGroupId" = $2
+  "asset_face"."assetId" = "asset"."id"
+  and "asset_face"."personGroupId" = $2
 
 -- PersonRepository.unassignFaces
 update "asset_face"

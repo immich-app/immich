@@ -1,9 +1,9 @@
-import { MaintenanceController } from 'src/controllers/maintenance.controller';
-import { MaintenanceAction } from 'src/enum';
-import { MaintenanceService } from 'src/services/maintenance.service';
+import { MaintenanceController } from 'src/controllers/maintenance.controller.js';
+import { MaintenanceAction } from 'src/enum.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(MaintenanceController.name, () => {
   let ctx: ControllerContext;
