@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, ForeignKeyColumn, Generated, Table, Timestamp } from '@immich/sql-tools';
-import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
-import { TagTable } from 'src/schema/tables/tag.table';
+import type { Generated } from '@immich/sql-tools';
+import { Column, CreateDateColumn, ForeignKeyColumn, Table, Timestamp } from '@immich/sql-tools';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
+import { TagTable } from 'src/schema/tables/tag.table.js';
 
 @Table('tag_asset_audit')
 export class TagAssetAuditTable {

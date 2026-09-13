@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Generated, Table, Timestamp } from '@immich/sql-tools';
-import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
+import type { Generated } from '@immich/sql-tools';
+import { Column, CreateDateColumn, Table, Timestamp } from '@immich/sql-tools';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
 
 @Table('tag_audit')
 export class TagAuditTable {
