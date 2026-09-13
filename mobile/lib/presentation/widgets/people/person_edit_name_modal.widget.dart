@@ -109,7 +109,7 @@ class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
   @override
   Widget build(BuildContext context) {
     final curatedPeople = ref.watch(Store.people.all());
-    List<Person> people = [];
+    final people = curatedPeople.valueOrNull ?? const <Person>[];
 
     return AlertDialog(
       title: Text(context.t.edit_name, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -129,8 +129,7 @@ class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
               onTapOutside: (event) => FocusScope.of(context).unfocus(),
             ),
             curatedPeople.when(
-              data: (p) {
-                people = p;
+              data: (_) {
                 return AnimatedSize(
                   duration: const Duration(milliseconds: 200),
                   child: SizedBox(
