@@ -63,25 +63,20 @@ class PeopleDetails extends ConsumerWidget {
                           unawaited(context.pushRoute(PersonRoute(person: person)));
                         },
                         onNameTap: () async {
+                          // When viewing the asset from this person's own timeline, a merge
+                          // navigates to the merged person; otherwise just refresh the list
                           final isFromTheSamePersonTimeline = ref.read(timelinePersonProvider)?.id == person.id;
-                          final mergedInto = await showNameEditModal(context, person);
+                          final mergedInto = await editPersonName(
+                            context,
+                            person,
+                            navigateToMergedPerson: isFromTheSamePersonTimeline,
+                            popCurrentRoute: true,
+                          );
 
-                          if (!context.mounted) {
-                            return;
+                          final navigatedAway = mergedInto != null && isFromTheSamePersonTimeline;
+                          if (!navigatedAway && context.mounted) {
+                            ref.invalidate(Store.people.forAsset(asset.id));
                           }
-
-                          // Pop the current route and open the merged person if this person was
-                          // merged into another and we are viewing them from that person's timeline
-                          if (mergedInto != null && isFromTheSamePersonTimeline) {
-                            await context.router.maybePop();
-                            if (!context.mounted) {
-                              return;
-                            }
-                            await context.router.replace(PersonRoute(person: mergedInto));
-                            return;
-                          }
-
-                          ref.invalidate(Store.people.forAsset(asset.id));
                         },
                       ),
                   ],

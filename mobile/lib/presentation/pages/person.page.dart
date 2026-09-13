@@ -8,7 +8,6 @@ import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.wi
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
@@ -19,10 +18,7 @@ class PersonPage extends ConsumerWidget {
   const PersonPage({super.key, required this.person});
 
   Future<void> handleEditName(BuildContext context, Person person) async {
-    final mergedInto = await showNameEditModal(context, person);
-    if (mergedInto != null && context.mounted) {
-      await context.replaceRoute(PersonRoute(person: mergedInto));
-    }
+    await editPersonName(context, person, navigateToMergedPerson: true);
   }
 
   Future<void> showOptionSheet(BuildContext context, Person person) {

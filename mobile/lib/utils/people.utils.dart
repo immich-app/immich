@@ -1,9 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_birthday_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_merge_modal.widget.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 String? formatAge(DateTime birthDate, DateTime referenceDate) {
   final int ageInYears = _calculateAge(birthDate, referenceDate);
@@ -39,14 +41,33 @@ int _calculateAgeInMonths(DateTime birthDate, DateTime referenceDate) {
       (referenceDate.day < birthDate.day ? 1 : 0);
 }
 
-Future<Person?> showNameEditModal(BuildContext context, Person person) {
-  return showDialog<Person?>(
+Future<Person?> editPersonName(
+  BuildContext context,
+  Person person, {
+  bool navigateToMergedPerson = false,
+  bool popCurrentRoute = false,
+}) async {
+  final mergedInto = await showDialog<Person?>(
     context: context,
     useRootNavigator: false,
     builder: (BuildContext context) {
       return PersonNameEditForm(person: person);
     },
   );
+
+  if (mergedInto == null || !navigateToMergedPerson || !context.mounted) {
+    return mergedInto;
+  }
+
+  if (popCurrentRoute) {
+    await context.router.maybePop();
+    if (!context.mounted) {
+      return mergedInto;
+    }
+  }
+
+  await context.router.replace(PersonRoute(person: mergedInto));
+  return mergedInto;
 }
 
 Future<DateTime?> showBirthdayEditModal(BuildContext context, Person person) {
