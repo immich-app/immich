@@ -73,10 +73,7 @@ class PersonMutations extends StoreMutations {
   /// Merge [mergePersonIds] into [targetPersonId], returning the IDs that were successfully merged
   Future<List<String>> merge({required String targetPersonId, required List<String> mergePersonIds}) async {
     final mergedIds = await read(personApiRepositoryProvider).merge(targetPersonId, mergePersonIds);
-    if (mergedIds.isNotEmpty) {
-      await read(_peopleDb).merge(targetPersonId, mergedIds);
-    }
-
+    await read(_peopleDb).merge(targetPersonId, mergedIds);
     return mergedIds;
   }
 }
