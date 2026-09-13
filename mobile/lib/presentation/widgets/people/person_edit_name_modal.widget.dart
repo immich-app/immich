@@ -128,54 +128,7 @@ class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
               onChanged: (value) => _filterPeople(people, value),
               onTapOutside: (event) => FocusScope.of(context).unfocus(),
             ),
-            curatedPeople.when(
-              data: (_) {
-                return AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: _filteredPeople.isEmpty
-                        // Tile instead of a blank space to avoid horizontal layout shift
-                        ? LargeLeadingTile(
-                            leading: const SizedBox.shrink(),
-                            onTap: () {},
-                            title: const SizedBox.shrink(),
-                            disabled: true,
-                          )
-                        : Container(
-                            margin: const EdgeInsets.only(top: 8),
-                            decoration: const BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: _filteredPeople.map((person) {
-                                return PersonTile(
-                                  isSelected: false,
-                                  onTap: () {
-                                    if (!mounted) {
-                                      return;
-                                    }
-                                    setState(() {
-                                      _formController.text = person.name;
-                                    });
-                                    _formController.selection = TextSelection.fromPosition(
-                                      TextPosition(offset: _formController.text.length),
-                                    );
-                                    unawaited(onMerge(context: context, person: widget.person, mergeTarget: person));
-                                  },
-                                  person: person,
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) {
-                Logger('PersonEditNameModal').warning('Error loading people for name edit modal', err, stack);
-                return Center(child: Text('Error loading people for name edit modal: $err'));
-              },
-            ),
+            _buildSuggestions(curatedPeople),
           ],
         ),
       ),
@@ -195,6 +148,57 @@ class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSuggestions(AsyncValue<List<Person>> curatedPeople) {
+    return curatedPeople.when(
+      data: (_) {
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          child: SizedBox(
+            width: double.infinity,
+            child: _filteredPeople.isEmpty
+                // Tile instead of a blank space to avoid horizontal layout shift
+                ? LargeLeadingTile(
+                    leading: const SizedBox.shrink(),
+                    onTap: () {},
+                    title: const SizedBox.shrink(),
+                    disabled: true,
+                  )
+                : Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    decoration: const BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: _filteredPeople.map(_buildSuggestionTile).toList(),
+                    ),
+                  ),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) {
+        Logger('PersonEditNameModal').warning('Error loading people for name edit modal', err, stack);
+        return Center(child: Text('Error loading people for name edit modal: $err'));
+      },
+    );
+  }
+
+  Widget _buildSuggestionTile(Person person) {
+    return PersonTile(
+      isSelected: false,
+      onTap: () {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _formController.text = person.name;
+        });
+        _formController.selection = TextSelection.fromPosition(TextPosition(offset: _formController.text.length));
+        unawaited(onMerge(context: context, person: widget.person, mergeTarget: person));
+      },
+      person: person,
     );
   }
 }
