@@ -17,3 +17,7 @@ vi.mock('@immich/sdk', async (originalImport) => {
 });
 
 export const sdkMock = sdk as MockedObject<typeof sdk>;
+
+export const mockActivities = (activities: sdk.ActivityResponseDto[]) => {
+  sdkMock.getActivities.mockImplementation((params) => Promise.resolve(params.withAdditions ? activities : []));
+};

@@ -221,7 +221,7 @@ export class AlbumService extends BaseService {
       return results;
     }
 
-    const albumAssetValues: { albumId: string; assetId: string }[] = [];
+    const albumAssetValues: { albumId: string; assetId: string; createdById: string }[] = [];
     const events: { id: string; userIds: string[]; recipientIds: string[] }[] = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
@@ -234,7 +234,7 @@ export class AlbumService extends BaseService {
       results.success = true;
 
       for (const assetId of notPresentAssetIds) {
-        albumAssetValues.push({ albumId, assetId });
+        albumAssetValues.push({ albumId, assetId, createdById: auth.user.id });
       }
       await this.albumRepository.update(
         albumId,

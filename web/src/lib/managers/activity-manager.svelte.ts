@@ -11,6 +11,7 @@ import {
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { handlePromiseError } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 
@@ -33,6 +34,19 @@ class ActivityManager {
   #cache = new Map<CacheKey, ActivityCache>();
 
   isLoading = $state(false);
+
+  constructor() {
+    eventManager.on({
+      AlbumAddAssets: ({ albumIds }) => {
+        for (const albumId of albumIds) {
+          this.#invalidateAlbumCache(albumId);
+        }
+        if (this.#albumId && albumIds.includes(this.#albumId)) {
+          handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId));
+        }
+      },
+    });
+  }
 
   get assetId() {
     return this.#assetId;
@@ -77,6 +91,15 @@ class ActivityManager {
     this.#cache.delete(this.#getCacheKey(albumId, assetId));
   }
 
+  #invalidateAlbumCache(albumId: string) {
+    const prefix = `${albumId}:`;
+    for (const key of this.#cache.keys()) {
+      if (key.startsWith(prefix)) {
+        this.#cache.delete(key);
+      }
+    }
+  }
+
   async addActivity(dto: ActivityCreateDto) {
     if (this.#albumId === undefined) {
       return;
@@ -98,8 +121,8 @@ class ActivityManager {
     return activity;
   }
 
-  async deleteActivity(activity: ActivityResponseDto, index?: number) {
-    if (!this.#albumId) {
+  async deleteActivity(activity: ActivityResponseDto) {
+    if (!this.#albumId || activity.type === ReactionType.AssetAdded) {
       return;
     }
 
@@ -111,9 +134,7 @@ class ActivityManager {
       this.#likeCount--;
     }
 
-    this.#activities = index
-      ? this.#activities.splice(index, 1)
-      : this.#activities.filter(({ id }) => id !== activity.id);
+    this.#activities = this.#activities.filter(({ id }) => id !== activity.id);
 
     await deleteActivity({ id: activity.id });
     this.#invalidateCache(this.#albumId, this.#assetId);
@@ -152,7 +173,7 @@ class ActivityManager {
       return;
     }
 
-    this.#activities = await getActivities({ albumId, assetId });
+    this.#activities = await getActivities({ albumId, assetId, withAdditions: true });
 
     const [liked] = await getActivities({
       albumId,

@@ -179,7 +179,9 @@ export class DuplicateService extends BaseService {
 
         if (allowedAlbumIds.size > 0 && allowedShareIds.size > 0) {
           await this.albumRepository.addAssetIdsToAlbums(
-            [...allowedAlbumIds].flatMap((albumId) => [...allowedShareIds].map((assetId) => ({ albumId, assetId }))),
+            [...allowedAlbumIds].flatMap((albumId) =>
+              [...allowedShareIds].map((assetId) => ({ albumId, assetId, createdById: auth.user.id })),
+            ),
           );
         }
       }

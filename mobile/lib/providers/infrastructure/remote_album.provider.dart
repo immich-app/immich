@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -193,6 +194,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final result = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
     if (result.added > 0) {
       await _refreshAlbumInState(albumId);
+      ref.invalidate(Store.activity.list(albumId));
     }
     return result;
   }

@@ -236,6 +236,7 @@ describe(MemoryService.name, () => {
     it('should add assets', async () => {
       const assetId = newUuid();
       const memory = MemoryFactory.create();
+      const auth = factory.auth();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
@@ -244,11 +245,11 @@ describe(MemoryService.name, () => {
       mocks.memory.getAssetIds.mockResolvedValue(new Set());
       mocks.memory.addAssetIds.mockResolvedValue();
 
-      await expect(sut.addAssets(factory.auth(), memory.id, { ids: [assetId] })).resolves.toEqual([
+      await expect(sut.addAssets(auth, memory.id, { ids: [assetId] })).resolves.toEqual([
         { id: assetId, success: true },
       ]);
 
-      expect(mocks.memory.addAssetIds).toHaveBeenCalledWith(memory.id, [assetId]);
+      expect(mocks.memory.addAssetIds).toHaveBeenCalledWith(memory.id, [assetId], auth.user.id);
     });
   });
 

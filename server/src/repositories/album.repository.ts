@@ -286,16 +286,23 @@ export class AlbumRepository {
       .then((results) => new Set(results.map(({ assetId }) => assetId)));
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
-  async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID], DummyValue.UUID] })
+  async addAssetIds(albumId: string, assetIds: string[], createdById?: string): Promise<void> {
     if (assetIds.length === 0) {
       return;
     }
 
     await this.db
       .insertInto('album_asset')
+      .columns(['albumId', 'assetId', 'createdById'])
       .expression((eb) =>
-        eb.selectFrom(dummy).select([asUuid(albumId).as('albumId'), sql`unnest(${assetIds}::uuid[])`.as('assetId')]),
+        eb
+          .selectFrom(dummy)
+          .select([
+            asUuid(albumId).as('albumId'),
+            sql`unnest(${assetIds}::uuid[])`.as('assetId'),
+            (createdById ? asUuid(createdById) : sql`null::uuid`).as('createdById'),
+          ]),
       )
       .onConflict((oc) => oc.doNothing())
       .execute();
@@ -340,10 +347,15 @@ export class AlbumRepository {
       .with('album_asset', (db) =>
         db
           .insertInto('album_asset')
+          .columns(['albumId', 'assetId', 'createdById'])
           .expression((eb) =>
             eb
               .selectFrom('album')
-              .select(({ ref }) => [ref('album.id').as('albumId'), sql`unnest(${assetIds}::uuid[])`.as('assetId')]),
+              .select(({ ref }) => [
+                ref('album.id').as('albumId'),
+                sql`unnest(${assetIds}::uuid[])`.as('assetId'),
+                asUuid(authUserId).as('createdById'),
+              ]),
           )
           .onConflict((oc) => oc.doNothing())
           .returning(['album_asset.albumId', 'album_asset.assetId']),
@@ -374,7 +386,7 @@ export class AlbumRepository {
   }
 
   @Chunked({ chunkSize: 30_000 })
-  async addAssetIdsToAlbums(values: { albumId: string; assetId: string }[]): Promise<void> {
+  async addAssetIdsToAlbums(values: { albumId: string; assetId: string; createdById: string }[]): Promise<void> {
     if (values.length === 0) {
       return;
     }
@@ -459,10 +471,16 @@ export class AlbumRepository {
   async copyAlbums({ sourceAssetId, targetAssetId }: { sourceAssetId: string; targetAssetId: string }) {
     return this.db
       .insertInto('album_asset')
+      .columns(['albumId', 'assetId', 'createdById', 'createdAt'])
       .expression((eb) =>
         eb
           .selectFrom('album_asset')
-          .select((eb) => ['album_asset.albumId', eb.val(targetAssetId).as('assetId')])
+          .select((eb) => [
+            'album_asset.albumId',
+            eb.val(targetAssetId).as('assetId'),
+            'album_asset.createdById',
+            'album_asset.createdAt',
+          ])
           .where('album_asset.assetId', '=', sourceAssetId),
       )
       .onConflict((oc) => oc.doNothing())

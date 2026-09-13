@@ -284,7 +284,7 @@ describe(TagService.name, () => {
         }),
       );
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
-      expect(mocks.tag.addAssetIds).toHaveBeenCalledWith('tag-1', ['asset-2']);
+      expect(mocks.tag.addAssetIds).toHaveBeenCalledWith('tag-1', ['asset-2'], authStub.admin.user.id);
     });
   });
 

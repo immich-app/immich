@@ -1,19 +1,14 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/store.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
+import 'package:immich_mobile/widgets/activities/open_asset_viewer.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class CommentBubble extends ConsumerWidget {
@@ -31,22 +26,6 @@ class CommentBubble extends ConsumerWidget {
     final showThumbnail = !isAssetActivity && activity.assetId != null && activity.assetId!.isNotEmpty;
     final isLike = activity.type == ActivityType.like;
     final bgColor = isOwn ? context.colorScheme.primaryContainer : context.colorScheme.surfaceContainer;
-
-    Future<void> openAssetViewer() async {
-      final asset = await ref.read(assetServiceProvider).getRemoteAsset(activity.assetId!);
-      if (asset == null || !context.mounted) {
-        return;
-      }
-
-      AssetViewer.setAsset(ref, asset);
-      await context.pushRoute(
-        AssetViewerRoute(
-          initialIndex: 0,
-          timelineService: ref.read(timelineFactoryProvider).fromAssets([asset], TimelineOrigin.albumActivities),
-          currentAlbum: ref.read(currentRemoteAlbumProvider),
-        ),
-      );
-    }
 
     Future<void> delete() async {
       try {
@@ -70,7 +49,7 @@ class CommentBubble extends ConsumerWidget {
         child: Stack(
           children: [
             GestureDetector(
-              onTap: openAssetViewer,
+              onTap: () => openActivityAssetViewer(context, ref, activity.assetId!),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image(

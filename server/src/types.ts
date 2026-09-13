@@ -492,7 +492,7 @@ export interface UploadFiles {
 
 export interface IBulkAsset {
   getAssetIds: (id: string, assetIds: string[]) => Promise<Set<string>>;
-  addAssetIds: (id: string, assetIds: string[]) => Promise<void>;
+  addAssetIds: (id: string, assetIds: string[], userId?: string) => Promise<void>;
   removeAssetIds: (id: string, assetIds: string[]) => Promise<void>;
 }
 
