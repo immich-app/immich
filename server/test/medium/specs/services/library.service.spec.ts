@@ -4,10 +4,13 @@ import { copyFile, mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core.js';
+import type { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetStatus, JobName, JobStatus } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { CronRepository } from 'src/repositories/cron.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LibraryRepository } from 'src/repositories/library.repository.js';
@@ -15,6 +18,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { MediumTestContext, testAssetsDir } from 'test/medium.factory.js';
 import { newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
@@ -45,7 +49,7 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     super(LibraryService, {
       database,
       real: [AssetRepository, AssetJobRepository, CryptoRepository, LibraryRepository, StorageRepository],
-      mock: [EventRepository, JobRepository, LoggingRepository],
+      mock: [CronRepository, DatabaseRepository, EventRepository, JobRepository, LoggingRepository],
     });
 
     const jobs = this.getMock(JobRepository);
@@ -515,6 +519,32 @@ describe(LibraryService.name, () => {
 
       await ctx.scan(library.id);
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([asset1]);
+    });
+  });
+
+  describe('watch', () => {
+    it('should pass exclusion patterns to the library watcher', async () => {
+      const { sut, ctx } = setup();
+      const library = await ctx.createLibrary({
+        importPaths: [importRoot],
+        exclusionPatterns: ['**/excluded/**'],
+      });
+      const storage = ctx.get(StorageRepository);
+      const watch = vitest.spyOn(storage, 'watch');
+
+      ctx.getMock(DatabaseRepository).tryLock.mockResolvedValue(true);
+
+      try {
+        await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
+
+        expect(watch).toHaveBeenCalledWith(
+          library.importPaths,
+          expect.objectContaining({ ignored: library.exclusionPatterns }),
+          expect.anything(),
+        );
+      } finally {
+        await sut.onShutdown();
+      }
     });
   });
 
