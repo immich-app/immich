@@ -66,19 +66,22 @@ class PeopleDetails extends ConsumerWidget {
                           final isFromTheSamePersonTimeline = ref.read(timelinePersonProvider)?.id == person.id;
                           final mergedInto = await showNameEditModal(context, person);
 
-                          // Pop the current route if the person was merged into another person
-                          // and we are on the person's timeline
-                          if (mergedInto != null && isFromTheSamePersonTimeline && context.mounted) {
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          // Pop the current route and open the merged person if this person was
+                          // merged into another and we are viewing them from that person's timeline
+                          if (mergedInto != null && isFromTheSamePersonTimeline) {
                             await context.router.maybePop();
-
-                            if (context.mounted) {
-                              await context.router.replace(PersonRoute(person: mergedInto));
+                            if (!context.mounted) {
+                              return;
                             }
+                            await context.router.replace(PersonRoute(person: mergedInto));
+                            return;
                           }
 
-                          if (context.mounted) {
-                            ref.invalidate(Store.people.forAsset(asset.id));
-                          }
+                          ref.invalidate(Store.people.forAsset(asset.id));
                         },
                       ),
                   ],
