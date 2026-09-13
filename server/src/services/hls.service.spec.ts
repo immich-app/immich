@@ -1,9 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { HlsVideoResolution, VideoCodec } from 'src/enum';
-import { HlsService } from 'src/services/hls.service';
-import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
-import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { HlsVideoResolution, VideoCodec } from 'src/enum.js';
+import { HlsService } from 'src/services/hls.service.js';
+import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub.js';
+import { factory } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 // EXTINF values come from FFmpeg's playlist to enforce an exact match
 const eiffelExpectedMediaPlaylist = `#EXTM3U

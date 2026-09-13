@@ -1,16 +1,16 @@
 import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   MapMarkerDto,
   MapMarkerResponseDto,
   MapReverseGeocodeDto,
   MapReverseGeocodeResponseDto,
-} from 'src/dtos/map.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { MapService } from 'src/services/map.service';
+} from 'src/dtos/map.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { MapService } from 'src/services/map.service.js';
 
 @ApiTags(ApiTag.Map)
 @Controller('map')

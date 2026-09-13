@@ -1,15 +1,16 @@
 import { DateTime } from 'luxon';
-import { SemVer } from 'semver';
-import { defaults } from 'src/dtos/config.dto';
-import { CronJob, JobName, JobStatus, ReleaseChannel, SystemMetadataKey } from 'src/enum';
-import { VersionService } from 'src/services/version.service';
-import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { defaults } from 'src/dtos/config.dto.js';
+import { CronJob, JobName, JobStatus, ReleaseChannel, SystemMetadataKey } from 'src/enum.js';
+import { VersionService } from 'src/services/version.service.js';
+import { factory } from 'test/small.factory.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 const mockVersionResponse = (version: string) => ({
   version,
   published_at: DateTime.utc().toISO(),
 });
+
+vitest.mock('node:fs', () => ({ readFileSync: () => JSON.stringify({ version: 'v3.0.0' }) }));
 
 describe(VersionService.name, () => {
   let sut: VersionService;
@@ -20,11 +21,6 @@ describe(VersionService.name, () => {
     mocks.cron.create.mockResolvedValue();
     mocks.cron.update.mockResolvedValue();
   });
-
-  vitest.mock(import('src/constants.js'), async (importOriginal) => ({
-    ...(await importOriginal()),
-    serverVersion: new SemVer('v3.0.0'),
-  }));
 
   it('should work', () => {
     expect(sut).toBeDefined();

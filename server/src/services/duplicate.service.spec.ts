@@ -1,13 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
-import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
-import { DuplicateService } from 'src/services/duplicate.service';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { getForDuplicate } from 'test/mappers';
-import { newUuid } from 'test/small.factory';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum.js';
+import { DuplicateService } from 'src/services/duplicate.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { getForDuplicate } from 'test/mappers.js';
+import { newUuid } from 'test/small.factory.js';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
 vitest.useFakeTimers();

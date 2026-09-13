@@ -1,4 +1,4 @@
-import { latitudeSchema, longitudeSchema } from 'src/validation';
+import { latitudeSchema, longitudeSchema } from 'src/validation.js';
 import z from 'zod';
 
 export const BBoxSchema = z

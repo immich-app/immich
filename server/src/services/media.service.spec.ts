@@ -1,8 +1,8 @@
 import { ShallowDehydrateObject } from 'kysely';
 import { OutputInfo } from 'sharp';
-import { Exif } from 'src/database';
-import { SystemConfig } from 'src/dtos/config.dto';
-import { AssetEditAction } from 'src/dtos/editing.dto';
+import { Exif } from 'src/database.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { AssetEditAction } from 'src/dtos/editing.dto.js';
 import {
   AssetFileType,
   AssetPathType,
@@ -19,18 +19,18 @@ import {
   TranscodeHardwareAcceleration,
   TranscodePolicy,
   VideoCodec,
-} from 'src/enum';
-import { MediaService } from 'src/services/media.service';
-import { AudioStreamInfo, JobCounts, RawImageInfo, VideoFormat, VideoStreamInfo } from 'src/types';
-import { AssetFaceFactory } from 'test/factories/asset-face.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { PersonFactory } from 'test/factories/person.factory';
-import { probeStub } from 'test/fixtures/media.stub';
-import { personThumbnailStub } from 'test/fixtures/person.stub';
-import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { getForGenerateThumbnail } from 'test/mappers';
-import { factory, newUuid } from 'test/small.factory';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+} from 'src/enum.js';
+import { MediaService } from 'src/services/media.service.js';
+import type { AudioStreamInfo, JobCounts, RawImageInfo, VideoFormat, VideoStreamInfo } from 'src/types.js';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { PersonFactory } from 'test/factories/person.factory.js';
+import { probeStub } from 'test/fixtures/media.stub.js';
+import { personThumbnailStub } from 'test/fixtures/person.stub.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
+import { getForGenerateThumbnail } from 'test/mappers.js';
+import { factory, newUuid } from 'test/small.factory.js';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
 
 const fullsizeBuffer = Buffer.from('embedded image data');
 const rawBuffer = Buffer.from('raw image data');

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely } from 'kysely';
+import type { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
+import { GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import { VersionHistoryTable } from 'src/schema/tables/version-history.table.js';
 
 @Injectable()
 export class VersionHistoryRepository {

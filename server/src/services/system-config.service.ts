@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import _ from 'lodash';
-import { OnEvent } from 'src/decorators';
+import { isEqual } from 'lodash-es';
+import { OnEvent } from 'src/decorators.js';
 import {
   AdminConfigDto,
   defaults,
@@ -9,12 +9,12 @@ import {
   mapUserConfig,
   PublicConfigDto,
   UserConfigDto,
-} from 'src/dtos/config.dto';
-import { BootstrapEventPriority } from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { clearConfigCache } from 'src/utils/config';
-import { toPlainObject } from 'src/utils/object';
+} from 'src/dtos/config.dto.js';
+import { BootstrapEventPriority } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { clearConfigCache } from 'src/utils/config.js';
+import { toPlainObject } from 'src/utils/object.js';
 
 @Injectable()
 export class SystemConfigService extends BaseService {
@@ -76,7 +76,7 @@ export class SystemConfigService extends BaseService {
   @OnEvent({ name: 'ConfigValidate' })
   onConfigValidate({ newConfig, oldConfig }: ArgOf<'ConfigValidate'>) {
     const { logLevel } = this.configRepository.getEnv();
-    if (logLevel && !_.isEqual(toPlainObject(newConfig.logging), oldConfig.logging)) {
+    if (logLevel && !isEqual(toPlainObject(newConfig.logging), oldConfig.logging)) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }

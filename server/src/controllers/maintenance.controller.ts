@@ -1,20 +1,20 @@
 import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
-} from 'src/dtos/maintenance.dto';
-import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
-import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
-import { LoginDetails } from 'src/services/auth.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
-import { respondWithCookie } from 'src/utils/response';
+} from 'src/dtos/maintenance.dto.js';
+import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum.js';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { respondWithCookie } from 'src/utils/response.js';
 
 @ApiTags(ApiTag.Maintenance)
 @Controller('admin/maintenance')

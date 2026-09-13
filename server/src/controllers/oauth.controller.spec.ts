@@ -1,8 +1,8 @@
-import { OAuthController } from 'src/controllers/oauth.controller';
-import { AuthService } from 'src/services/auth.service';
+import { OAuthController } from 'src/controllers/oauth.controller.js';
+import { AuthService } from 'src/services/auth.service.js';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(OAuthController.name, () => {
   let ctx: ControllerContext;

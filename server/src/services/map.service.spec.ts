@@ -1,11 +1,11 @@
-import { MapService } from 'src/services/map.service';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { PartnerFactory } from 'test/factories/partner.factory';
-import { userStub } from 'test/fixtures/user.stub';
-import { getForPartner } from 'test/mappers';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { MapService } from 'src/services/map.service.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { PartnerFactory } from 'test/factories/partner.factory.js';
+import { userStub } from 'test/fixtures/user.stub.js';
+import { getForPartner } from 'test/mappers.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 describe(MapService.name, () => {
   let sut: MapService;

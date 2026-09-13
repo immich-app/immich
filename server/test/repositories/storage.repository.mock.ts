@@ -1,7 +1,7 @@
 import { ChokidarOptions } from 'chokidar';
-import { StorageCore } from 'src/cores/storage.core';
-import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository';
-import { RepositoryInterface } from 'src/types';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 import { Mocked, vitest } from 'vitest';
 
 interface MockWatcherOptions {

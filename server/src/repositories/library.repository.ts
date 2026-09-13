@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { type Insertable, type Kysely, sql, type Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
-import { AssetType, AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
-import { LibraryTable } from 'src/schema/tables/library.table';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { LibraryStatsResponseDto } from 'src/dtos/library.dto.js';
+import { AssetType, AssetVisibility } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { LibraryTable } from 'src/schema/tables/library.table.js';
 
 export enum AssetSyncResult {
   DO_NOTHING,

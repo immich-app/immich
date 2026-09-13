@@ -1,10 +1,10 @@
 import { createZodDto } from 'nestjs-zod';
-import { SharedLink } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
-import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto';
-import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
+import { SharedLink } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto.js';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 import z from 'zod';
 
 const SharedLinkSearchSchema = z

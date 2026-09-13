@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { OnJob } from 'src/decorators';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResolveDto, DuplicateResolveGroupDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
-import { AssetDuplicateResult } from 'src/repositories/search.repository';
-import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
-import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate';
-import { batched, isDuplicateDetectionEnabled } from 'src/utils/misc';
+import { OnJob } from 'src/decorators.js';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { DuplicateResolveDto, DuplicateResolveGroupDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto.js';
+import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import { AssetDuplicateResult } from 'src/repositories/search.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { JobOf } from 'src/types.js';
+import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate.js';
+import { batched, isDuplicateDetectionEnabled } from 'src/utils/misc.js';
 
 type ResolveRequest = {
   assetUpdate: {

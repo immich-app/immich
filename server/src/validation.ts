@@ -2,17 +2,17 @@ import { FileValidator, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { isIP, isIPRange } from 'validator';
+import validator from 'validator';
 import z from 'zod';
 
 export type IsIPRangeOptions = { requireCIDR?: boolean };
 
 function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   const { requireCIDR = true } = options ?? {};
-  if (isIPRange(value)) {
+  if (validator.isIPRange(value)) {
     return true;
   }
-  return !requireCIDR && isIP(value);
+  return !requireCIDR && validator.isIP(value);
 }
 
 /**

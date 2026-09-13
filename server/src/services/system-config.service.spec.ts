@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { defaults, SystemConfig } from 'src/dtos/config.dto';
+import { defaults, SystemConfig } from 'src/dtos/config.dto.js';
 import {
   AudioCodec,
   Colorspace,
@@ -15,11 +15,11 @@ import {
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
-} from 'src/enum';
-import { SystemConfigService } from 'src/services/system-config.service';
-import { DeepPartial } from 'src/types';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
-import { newTestService, ServiceMocks } from 'test/utils';
+} from 'src/enum.js';
+import { SystemConfigService } from 'src/services/system-config.service.js';
+import type { DeepPartial } from 'src/types.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
+import { newTestService, ServiceMocks } from 'test/utils.js';
 
 const partialConfig = {
   ffmpeg: { crf: 30 },

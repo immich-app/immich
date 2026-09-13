@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { decodeSearchCursor, encodeSearchCursor } from 'src/utils/search-cursor';
+import { decodeSearchCursor, encodeSearchCursor } from 'src/utils/search-cursor.js';
 import { describe, expect, it } from 'vitest';
 
 describe('encodeSearchCursor', () => {

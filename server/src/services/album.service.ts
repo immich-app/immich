@@ -10,17 +10,17 @@ import {
   mapAlbum,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
-} from 'src/dtos/album.dto';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerResponseDto } from 'src/dtos/map.dto';
-import { AlbumUserRole, Permission } from 'src/enum';
-import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
-import { BaseService } from 'src/services/base.service';
-import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { asDateTimeString } from 'src/utils/date';
-import { findOrFail } from 'src/utils/misc';
-import { getPreferences } from 'src/utils/preferences';
+} from 'src/dtos/album.dto.js';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
+import { AlbumUserRole, Permission } from 'src/enum.js';
+import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { addAssets, removeAssets } from 'src/utils/asset.util.js';
+import { asDateTimeString } from 'src/utils/date.js';
+import { findOrFail } from 'src/utils/misc.js';
+import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
 export class AlbumService extends BaseService {

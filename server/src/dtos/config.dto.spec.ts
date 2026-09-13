@@ -5,8 +5,8 @@ import {
   mapUserConfig,
   PublicConfigDto,
   UserConfigDto,
-} from 'src/dtos/config.dto';
-import { getKeysDeep } from 'src/utils/misc';
+} from 'src/dtos/config.dto.js';
+import { getKeysDeep } from 'src/utils/misc.js';
 import z from 'zod';
 
 const PUBLIC_PROPERTIES = [

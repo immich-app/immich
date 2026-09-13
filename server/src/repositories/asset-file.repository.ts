@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import type { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFileSearchDto } from 'src/dtos/asset-file.dto';
-import { DB } from 'src/schema';
+import { AssetFileSearchDto } from 'src/dtos/asset-file.dto.js';
+import { DB } from 'src/schema/index.js';
 
 @Injectable()
 export class AssetFileRepository {

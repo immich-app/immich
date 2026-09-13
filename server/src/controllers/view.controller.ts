@@ -1,11 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { ViewService } from 'src/services/view.service';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { ViewService } from 'src/services/view.service.js';
 
 @ApiTags(ApiTag.Views)
 @Controller('view')

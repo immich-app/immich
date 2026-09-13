@@ -8,14 +8,14 @@ import { createHash, randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { pipeline } from 'node:stream';
 import { Observable } from 'rxjs';
-import { UploadFieldName } from 'src/dtos/asset-media.dto';
-import { RouteKey } from 'src/enum';
-import { AuthRequest } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { AssetMediaService } from 'src/services/asset-media.service';
-import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
-import { asUploadRequest, mapToUploadFile } from 'src/utils/asset.util';
+import { UploadFieldName } from 'src/dtos/asset-media.dto.js';
+import { RouteKey } from 'src/enum.js';
+import { AuthRequest } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { AssetMediaService } from 'src/services/asset-media.service.js';
+import type { ImmichFile, UploadFile, UploadFiles } from 'src/types.js';
+import { asUploadRequest, mapToUploadFile } from 'src/utils/asset.util.js';
 
 export function getFile(files: UploadFiles, property: 'assetData' | 'sidecarData') {
   const file = files[property]?.[0];

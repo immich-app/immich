@@ -29,8 +29,8 @@ import {
   VideoCodecSchema,
   VideoContainer,
   VideoContainerSchema,
-} from 'src/enum';
-import { DeepPartial } from 'src/types';
+} from 'src/enum.js';
+import type { DeepPartial } from 'src/types.js';
 import z from 'zod';
 
 const { Admin, User, Public } = ConfigVisibility;

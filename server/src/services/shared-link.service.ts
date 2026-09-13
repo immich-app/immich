@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PostgresError } from 'postgres';
-import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetIdsDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AssetIdsDto } from 'src/dtos/asset.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   mapSharedLink,
   SharedLinkCreateDto,
@@ -10,10 +10,10 @@ import {
   SharedLinkLoginDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
-} from 'src/dtos/shared-link.dto';
-import { Permission, SharedLinkType } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { findOrFail, getExternalDomain, OpenGraphTags } from 'src/utils/misc';
+} from 'src/dtos/shared-link.dto.js';
+import { Permission, SharedLinkType } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { findOrFail, getExternalDomain, OpenGraphTags } from 'src/utils/misc.js';
 
 @Injectable()
 export class SharedLinkService extends BaseService {

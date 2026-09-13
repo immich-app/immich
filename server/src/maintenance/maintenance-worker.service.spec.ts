@@ -1,11 +1,11 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
-import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
-import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { automock, AutoMocked, getMocks, ServiceMocks } from 'test/utils';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
+import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
+import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { automock, AutoMocked, getMocks, ServiceMocks } from 'test/utils.js';
 
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;

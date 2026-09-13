@@ -18,9 +18,9 @@ import {
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
-import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
-import { DummyValue, GenerateSqlQueries } from 'src/decorators';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
+import { columns, lockableProperties, LockableProperty, Person } from 'src/database.js';
+import { DummyValue, GenerateSqlQueries } from 'src/decorators.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
   DEFAULT_SEARCH_ORDER,
   IdsFilter,
@@ -29,7 +29,7 @@ import {
   SearchOrder,
   StringFilter,
   StringPatternFilter,
-} from 'src/dtos/search.dto';
+} from 'src/dtos/search.dto.js';
 import {
   AssetFileType,
   AssetOrder,
@@ -38,16 +38,16 @@ import {
   DatabaseExtension,
   ExifOrientation,
   SearchOrderField,
-} from 'src/enum';
+} from 'src/enum.js';
 import {
   AssetSearchBuilderOptions,
   AssetSearchBuilderV3Options,
   AssetSearchScope,
-} from 'src/repositories/search.repository';
-import { DB } from 'src/schema';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
-import { fromChecksum } from 'src/utils/request';
+} from 'src/repositories/search.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import type { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
+import { fromChecksum } from 'src/utils/request.js';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {

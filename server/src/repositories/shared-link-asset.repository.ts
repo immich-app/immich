@@ -1,7 +1,7 @@
-import { Kysely } from 'kysely';
+import type { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
 
 export class SharedLinkAssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
