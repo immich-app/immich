@@ -73,7 +73,7 @@ class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
 
   // TODO: Add diacritic filtering?
   void _filterPeople(List<Person> people, String query) {
-    final queryParts = query.toLowerCase().split(' ').where((e) => e.isNotEmpty).toList();
+    final queryParts = query.toLowerCase().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
 
     final startsWithMatches = <Person>[];
     final containsMatches = <Person>[];
@@ -83,7 +83,7 @@ class _PersonNameEditFormState extends ConsumerState<PersonNameEditForm> {
         continue;
       }
 
-      final nameParts = p.name.toLowerCase().split(' ').where((e) => e.isNotEmpty).toList();
+      final nameParts = p.name.toLowerCase().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
 
       final allStart = queryParts.every((q) => nameParts.any((n) => n.startsWith(q)));
       final allContain = queryParts.every((q) => nameParts.any((n) => n.contains(q)));
