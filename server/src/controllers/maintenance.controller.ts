@@ -12,6 +12,7 @@ import {
 } from 'src/dtos/maintenance.dto.js';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import type { LoginDetails } from 'src/services/auth.service.js';
 import { MaintenanceService } from 'src/services/maintenance.service.js';
 import { respondWithCookie } from 'src/utils/response.js';
@@ -19,7 +20,10 @@ import { respondWithCookie } from 'src/utils/response.js';
 @ApiTags(ApiTag.Maintenance)
 @Controller('admin/maintenance')
 export class MaintenanceController {
-  constructor(private service: MaintenanceService) {}
+  constructor(
+    private service: MaintenanceService,
+    private configRepository: ConfigRepository,
+  ) {}
 
   @Get('status')
   @Endpoint({
@@ -73,6 +77,7 @@ export class MaintenanceController {
 
     const { jwt } = await this.service.startMaintenance(dto, auth.user.name);
     return respondWithCookie(res, undefined, {
+      basePath: this.configRepository.getEnv().basePath,
       isSecure: loginDetails.isSecure,
       values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
     });

@@ -10,6 +10,7 @@ import {
 } from 'src/dtos/database-backup.dto.js';
 import { ApiTag, ImmichCookie, Permission } from 'src/enum.js';
 import { Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import type { LoginDetails } from 'src/services/auth.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
@@ -25,6 +26,7 @@ export class DatabaseBackupController {
     private logger: LoggingRepository,
     private service: DatabaseBackupService,
     private maintenanceService: MaintenanceService,
+    private configRepository: ConfigRepository,
   ) {}
 
   @Get()
@@ -78,6 +80,7 @@ export class DatabaseBackupController {
   ): Promise<void> {
     const { jwt } = await this.maintenanceService.startRestoreFlow();
     return respondWithCookie(res, undefined, {
+      basePath: this.configRepository.getEnv().basePath,
       isSecure: loginDetails.isSecure,
       values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
     });

@@ -13,13 +13,17 @@ import {
 import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
 import { ApiTag, AuthType, ImmichCookie } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { AuthService, type LoginDetails } from 'src/services/auth.service.js';
-import { respondWithCookie } from 'src/utils/response.js';
+import { clearCookies, respondWithCookie } from 'src/utils/response.js';
 
 @ApiTags(ApiTag.Authentication)
 @Controller('oauth')
 export class OAuthController {
-  constructor(private service: AuthService) {}
+  constructor(
+    private service: AuthService,
+    private configRepository: ConfigRepository,
+  ) {}
 
   @Get('mobile-redirect')
   @Authenticated({ public: true })
@@ -54,6 +58,7 @@ export class OAuthController {
       res,
       { url },
       {
+        basePath: this.configRepository.getEnv().basePath,
         isSecure: loginDetails.isSecure,
         values: [
           { key: ImmichCookie.OAuthState, value: state },
@@ -77,9 +82,10 @@ export class OAuthController {
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
     const body = await this.service.callback(dto, request.headers, loginDetails);
-    res.clearCookie(ImmichCookie.OAuthState);
-    res.clearCookie(ImmichCookie.OAuthCodeVerifier);
+    const { basePath } = this.configRepository.getEnv();
+    clearCookies(res, [ImmichCookie.OAuthState, ImmichCookie.OAuthCodeVerifier], basePath);
     return respondWithCookie(res, body, {
+      basePath,
       isSecure: loginDetails.isSecure,
       values: [
         { key: ImmichCookie.AccessToken, value: body.accessToken },

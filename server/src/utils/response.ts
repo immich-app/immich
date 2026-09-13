@@ -39,9 +39,17 @@ export const waitForDrain = (response: Writable) =>
     }
   });
 
-export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values }: CookieResponse) => {
+const getCookiePath = (basePath = '') => basePath || '/';
+
+export const clearCookies = (res: Response, cookies: ImmichCookie[], basePath = '') => {
+  for (const cookie of cookies) {
+    res.clearCookie(cookie, { path: getCookiePath(basePath) });
+  }
+};
+
+export const respondWithCookie = <T>(res: Response, body: T, { basePath, isSecure, values }: CookieResponse) => {
   const defaults: CookieOptions = {
-    path: '/',
+    path: getCookiePath(basePath),
     sameSite: 'lax',
     httpOnly: true,
     secure: isSecure,
@@ -67,10 +75,7 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
   return body;
 };
 
-export const respondWithoutCookie = <T>(res: Response, body: T, cookies: ImmichCookie[]) => {
-  for (const cookie of cookies) {
-    res.clearCookie(cookie);
-  }
-
+export const respondWithoutCookie = <T>(res: Response, body: T, cookies: ImmichCookie[], basePath = '') => {
+  clearCookies(res, cookies, basePath);
   return body;
 };

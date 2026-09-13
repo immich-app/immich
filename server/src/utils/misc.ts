@@ -358,8 +358,9 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     swaggerOptions: {
       persistAuthorization: true,
     },
-    jsonDocumentUrl: `${apiPath}/spec.json`,
-    yamlDocumentUrl: `${apiPath}/spec.yaml`,
+    // The reverse proxy removes basePath before forwarding requests to the server.
+    jsonDocumentUrl: '/api/spec.json',
+    yamlDocumentUrl: '/api/spec.yaml',
     customSiteTitle: 'Immich API Documentation',
   };
 

@@ -28,6 +28,7 @@ import {
 } from 'src/dtos/shared-link.dto.js';
 import { ApiTag, ImmichCookie, Permission } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import type { LoginDetails } from 'src/services/auth.service.js';
 import { SharedLinkService } from 'src/services/shared-link.service.js';
@@ -53,6 +54,7 @@ export class SharedLinkController {
   constructor(
     private service: SharedLinkService,
     private logger: LoggingRepository,
+    private configRepository: ConfigRepository,
   ) {}
 
   @Get()
@@ -83,6 +85,7 @@ export class SharedLinkController {
     const { sharedLink, token } = await this.service.login(auth, dto);
 
     return respondWithCookie(res, sharedLink, {
+      basePath: this.configRepository.getEnv().basePath,
       isSecure: loginDetails.isSecure,
       values: [{ key: ImmichCookie.SharedLinkToken, value: merge(req.cookies, token) }],
     });

@@ -130,6 +130,7 @@ export const controllerSetup = async (controller: ControllerClass | ControllerCl
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: LoggingRepository, useValue: LoggingRepository.create() },
       { provide: ClsService, useValue: { getId: vi.fn() } },
+      { provide: ConfigRepository, useValue: newConfigRepositoryMock() },
       { provide: AuthService, useValue: { authenticate: vi.fn(), requireSetupAvailable: vi.fn() } },
       ...providers,
     ],

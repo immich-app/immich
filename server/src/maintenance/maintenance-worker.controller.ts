@@ -25,6 +25,7 @@ import { ImmichCookie } from 'src/enum.js';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
 import { GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import type { LoginDetails } from 'src/services/auth.service.js';
 import { sendFile } from 'src/utils/file.js';
@@ -42,6 +43,7 @@ export class MaintenanceWorkerController {
     private logger: LoggingRepository,
     private service: MaintenanceWorkerService,
     private databaseBackupService: DatabaseBackupService,
+    private configRepository: ConfigRepository,
   ) {}
 
   /**
@@ -126,6 +128,7 @@ export class MaintenanceWorkerController {
     const token = dto.token ?? request.cookies[ImmichCookie.MaintenanceToken];
     const auth = await this.service.login(token);
     return respondWithCookie(res, auth, {
+      basePath: this.configRepository.getEnv().basePath,
       isSecure: loginDetails.isSecure,
       values: [{ key: ImmichCookie.MaintenanceToken, value: token }],
     });

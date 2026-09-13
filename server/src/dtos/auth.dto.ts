@@ -6,6 +6,7 @@ import { toEmail } from 'src/validation.js';
 import z from 'zod';
 
 export type CookieResponse = {
+  basePath?: string;
   isSecure: boolean;
   values: Array<{ key: ImmichCookie; value: string | null }>;
 };

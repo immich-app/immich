@@ -19,13 +19,17 @@ import {
 import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
 import { ApiTag, AuthType, ImmichCookie, Permission } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { AuthService, type LoginDetails } from 'src/services/auth.service.js';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response.js';
 
 @ApiTags(ApiTag.Authentication)
 @Controller('auth')
 export class AuthController {
-  constructor(private service: AuthService) {}
+  constructor(
+    private service: AuthService,
+    private configRepository: ConfigRepository,
+  ) {}
 
   @Post('login')
   @Endpoint({
@@ -41,6 +45,7 @@ export class AuthController {
   ): Promise<LoginResponseDto> {
     const body = await this.service.login(loginCredential, loginDetails);
     return respondWithCookie(res, body, {
+      basePath: this.configRepository.getEnv().basePath,
       isSecure: loginDetails.isSecure,
       values: [
         { key: ImmichCookie.AccessToken, value: body.accessToken },
@@ -101,11 +106,12 @@ export class AuthController {
     const authType = (request.cookies || {})[ImmichCookie.AuthType];
 
     const body = await this.service.logout(auth, authType);
-    return respondWithoutCookie(res, body, [
-      ImmichCookie.AccessToken,
-      ImmichCookie.AuthType,
-      ImmichCookie.IsAuthenticated,
-    ]);
+    return respondWithoutCookie(
+      res,
+      body,
+      [ImmichCookie.AccessToken, ImmichCookie.AuthType, ImmichCookie.IsAuthenticated],
+      this.configRepository.getEnv().basePath,
+    );
   }
 
   @Get('status')
