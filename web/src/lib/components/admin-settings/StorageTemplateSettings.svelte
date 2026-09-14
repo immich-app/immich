@@ -100,11 +100,16 @@
   };
 
   let selectedOption = $state(
-    configToEdit.storageTemplate.enabled
-      ? configToEdit.storageTemplate.template === DATE_TEMPLATE
+    // initially load the selection state from saved config
+    (() => {
+      if (!configToEdit.storageTemplate.enabled) {
+        return StorageTemplateOption.None;
+      }
+
+      return configToEdit.storageTemplate.template === DATE_TEMPLATE
         ? StorageTemplateOption.Date
-        : StorageTemplateOption.Custom
-      : StorageTemplateOption.None,
+        : StorageTemplateOption.Custom;
+    })(),
   );
 
   const handleOptionSelection = (option: StorageTemplateOption) => {
@@ -168,7 +173,7 @@
     </label>
 
     {#if option === StorageTemplateOption.Custom && selectedOption === StorageTemplateOption.Custom}
-      <div class="mt-4 flex flex-col gap-2" transition:slide={{ duration: 200 }}>
+      <div class="mt-4 flex flex-col gap-2" transition:slide={{ duration }}>
         <div class="flex flex-col">
           <label class="text-sm font-medium text-primary" for="preset-select">
             {$t('preset')}
