@@ -1,18 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Insertable, Selectable, Updateable } from 'kysely';
-<<<<<<< HEAD
+import _ from 'lodash';
 import { Person } from 'src/database';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-=======
-import { isUndefined, omitBy } from 'lodash-es';
-import type { JobItem, JobOf } from 'src/types.js';
-import { Person } from 'src/database.js';
-import { Chunked, OnJob } from 'src/decorators.js';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
->>>>>>> 7b51c50 (feat: people merge improvements (#31456))
 import {
   AssetFaceCreateDto,
   AssetFaceDeleteDto,
@@ -632,12 +624,12 @@ export class PersonService extends BaseService {
           continue;
         }
 
-        const changes: Updateable<Person> = omitBy(
+        const changes: Updateable<Person> = _.omitBy(
           {
             name: mergePerson.name && !targetPerson.name ? mergePerson.name : undefined,
             birthDate: mergePerson.birthDate && !targetPerson.birthDate ? mergePerson.birthDate : undefined,
           },
-          isUndefined,
+          _.isUndefined,
         );
 
         if (Object.keys(changes).length > 0) {
