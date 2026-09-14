@@ -2,10 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -60,7 +59,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
       body: Consumer(
         builder: (ctx, ref, _) {
           final db = ref.watch(driftProvider);
-          final albumsFuture = ref.watch(localAlbumRepository).getAll();
+          final albumsFuture = db.localAlbumRepository.getAll();
 
           return CustomScrollView(
             slivers: [
@@ -140,7 +139,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
       body: Consumer(
         builder: (ctx, ref, _) {
           final db = ref.watch(driftProvider);
-          final albumsFuture = ref.watch(remoteAlbumRepository).getAll();
+          final albumsFuture = db.remoteAlbumRepository.getAll();
 
           return CustomScrollView(
             slivers: [

@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { Activity } from 'src/database';
-import { mapUser, UserResponseSchema } from 'src/dtos/user.dto';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import { Activity } from 'src/database.js';
+import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 export enum ReactionLevel {
   ALBUM = 'album',

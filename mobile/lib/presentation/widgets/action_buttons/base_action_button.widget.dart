@@ -86,7 +86,7 @@ class BaseActionButton extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
+              style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w500),
               maxLines: 3,
               textAlign: TextAlign.center,
               softWrap: true,

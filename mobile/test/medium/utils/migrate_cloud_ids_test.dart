@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
@@ -15,15 +16,17 @@ import '../repository_context.dart';
 void main() {
   late MediumRepositoryContext ctx;
   late MockNativeSyncApi mockNativeSyncApi;
-  late DriftLocalAlbumRepository albumRepository;
+  late LocalAlbumRepository albumRepository;
 
   setUp(() {
+    debugDefaultTargetPlatformOverride = .iOS;
     ctx = MediumRepositoryContext();
     mockNativeSyncApi = MockNativeSyncApi();
-    albumRepository = DriftLocalAlbumRepository(ctx.db);
+    albumRepository = LocalAlbumRepository(ctx.db);
   });
 
   tearDown(() async {
+    debugDefaultTargetPlatformOverride = null;
     await ctx.dispose();
   });
 

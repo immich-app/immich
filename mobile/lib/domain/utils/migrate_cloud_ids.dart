@@ -5,12 +5,12 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -136,7 +136,7 @@ Future<void> populateMissingCloudIds(Drift drift, NativeSyncApi nativeSyncApi, C
     ..where(drift.localAssetEntity.iCloudId.isNull());
   final ids = await query.map((row) => row.read(drift.localAssetEntity.id)!).get();
 
-  await resolveCloudIds(nativeSyncApi, DriftLocalAlbumRepository(drift), ids, cancellation: cancellation);
+  await resolveCloudIds(nativeSyncApi, LocalAlbumRepository(drift), ids, cancellation: cancellation);
 }
 
 @visibleForTesting

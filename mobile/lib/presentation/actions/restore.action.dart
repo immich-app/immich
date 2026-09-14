@@ -38,7 +38,7 @@ class RestoreAction extends AssetActionBuilder {
 
     try {
       await assetService.restoreTrash(assetIds);
-      toastService.success(message);
+      toastService.success(message, toast: .new(onUndo: () => assetService.trash(assetIds)));
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to restore assets");

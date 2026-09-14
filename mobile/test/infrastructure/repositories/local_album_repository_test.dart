@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 
 import '../../test_utils/medium_factory.dart';
@@ -23,7 +23,7 @@ void main() {
 
   group('getAll', () {
     test('sorts albums by backupSelection & isIosSharedAlbum', () async {
-      final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
       await localAlbumRepo.upsert(mediumFactory.localAlbum(id: '1', backupSelection: BackupSelection.none));
       await localAlbumRepo.upsert(mediumFactory.localAlbum(id: '2', backupSelection: BackupSelection.excluded));
       await localAlbumRepo.upsert(
@@ -46,7 +46,7 @@ void main() {
     // Android was dropped. The delta reports only the asset's new album, and the
     // stale link to its old album made the per-album delete sweep wipe the asset.
     test('keeps an asset moved to another album that still holds other assets', () async {
-      final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
 
       final moved = _localAsset('moved');
       final other = _localAsset('other');
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('replaces album membership with exactly what the delta reports', () async {
-      final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
 
       final moved = _localAsset('moved');
       await localAlbumRepo.upsert(mediumFactory.localAlbum(id: 'src'), toUpsert: [moved]);

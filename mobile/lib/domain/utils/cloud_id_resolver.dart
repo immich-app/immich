@@ -13,7 +13,7 @@ const kCloudIdChunkSize = 5000;
 
 Future<void> resolveCloudIds(
   NativeSyncApi nativeSyncApi,
-  DriftLocalAlbumRepository albumRepository,
+  LocalAlbumRepository albumRepository,
   Iterable<String> assetIds, {
   Completer<void>? cancellation,
 }) async {

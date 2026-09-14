@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { fork, spawn, SpawnOptionsWithoutStdio } from 'node:child_process';
+import { SpawnOptionsWithoutStdio, fork, spawn } from 'node:child_process';
 import { Duplex } from 'node:stream';
 
 @Injectable()
@@ -41,6 +41,13 @@ export class ProcessRepository {
         } else {
           process.stdin.end(callback);
         }
+      },
+
+      destroy(error, callback) {
+        if (process.exitCode === null && process.signalCode === null) {
+          process.kill();
+        }
+        callback(error);
       },
     });
 
