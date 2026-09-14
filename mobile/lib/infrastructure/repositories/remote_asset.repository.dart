@@ -41,7 +41,7 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return _assetSelectable(id).watchSingleOrNull();
   }
 
-  Stream<Set<String>> watchHiddenIds(Iterable<String> ids, AssetVisibility visibility) {
+  Stream<Set<String>> watchDeletedAssetIds(Iterable<String> ids, AssetVisibility visibility) {
     final idList = ids.toList(growable: false);
     if (idList.isEmpty) {
       return Stream.value(const <String>{});

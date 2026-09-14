@@ -42,10 +42,10 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   final RemoteAssetRepository _remoteAssetRepository;
   final _assetCountController = StreamController<int>.broadcast();
 
-  StreamSubscription<Set<String>>? _hiddenIdsSubscription;
+  StreamSubscription<Set<String>>? _deletedIdsSubscription;
   AssetVisibility _visibility = AssetVisibility.timeline;
   List<BaseAsset> _results = const [];
-  Set<String> _hiddenIds = const {};
+  int? _nextPage = 1;
 
   PaginatedSearchNotifier(this._searchService, this._remoteAssetRepository) : super(const SearchState());
 
@@ -68,41 +68,38 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
     }
 
     _results = [..._results, ...result.assets];
-    _emit(result.nextPage);
-    _watchHiddenIds();
+    _nextPage = result.nextPage;
+    _watchDeletedIds();
   }
 
   void clear() {
-    unawaited(_hiddenIdsSubscription?.cancel());
-    _hiddenIdsSubscription = null;
+    unawaited(_deletedIdsSubscription?.cancel());
+    _deletedIdsSubscription = null;
     _results = const [];
-    _hiddenIds = const {};
-    state = const SearchState();
-    _assetCountController.add(0);
+    _nextPage = 1;
+    _emit(const {});
   }
 
-  void _watchHiddenIds() {
-    unawaited(_hiddenIdsSubscription?.cancel());
+  void _watchDeletedIds() {
+    unawaited(_deletedIdsSubscription?.cancel());
 
     final ids = _results.whereType<RemoteAsset>().map((asset) => asset.id).toList(growable: false);
     if (ids.isEmpty) {
-      _hiddenIdsSubscription = null;
+      _deletedIdsSubscription = null;
+      _emit(const {});
       return;
     }
 
-    _hiddenIdsSubscription = _remoteAssetRepository.watchHiddenIds(ids, _visibility).listen((hidden) {
-      _hiddenIds = hidden;
-      _emit(state.nextPage);
-    });
+    _deletedIdsSubscription = _remoteAssetRepository.watchDeletedAssetIds(ids, _visibility).listen(_emit);
   }
 
-  void _emit(int? nextPage) {
-    final visible = _hiddenIds.isEmpty
+  void _emit(Set<String> deletedIds) {
+    final visible = deletedIds.isEmpty
         ? _results
-        : _results.where((asset) => asset is! RemoteAsset || !_hiddenIds.contains(asset.id)).toList(growable: false);
+        : _results.where((asset) => asset is! RemoteAsset || !deletedIds.contains(asset.id)).toList(growable: false);
 
     final changed = visible.length != state.assets.length;
-    state = SearchState(assets: visible, nextPage: nextPage);
+    state = SearchState(assets: visible, nextPage: _nextPage);
     if (changed) {
       _assetCountController.add(visible.length);
     }
@@ -110,7 +107,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
 
   @override
   void dispose() {
-    unawaited(_hiddenIdsSubscription?.cancel());
+    unawaited(_deletedIdsSubscription?.cancel());
     unawaited(_assetCountController.close());
     super.dispose();
   }
