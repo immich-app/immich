@@ -137,7 +137,7 @@ export class MachineLearningRepository {
       if (response.ok) {
         isHealthy = true;
       }
-      response.body?.cancel();
+      await response.body?.cancel().catch(() => {});
     } catch {
       // nothing to do here
     }
@@ -180,7 +180,7 @@ export class MachineLearningRepository {
         this.logger.warn(
           `Machine learning request to "${url}" failed with status ${response.status}: ${response.statusText}`,
         );
-        await response.body.cancel(); 
+        await response.body?.cancel().catch(() => {});
       } catch (error: Error | unknown) {
         this.logger.warn(`Machine learning request to "${url}" failed`, error);
       }
