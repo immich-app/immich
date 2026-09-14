@@ -1,8 +1,8 @@
 import { DateTime } from 'luxon';
-import { CalendarHeatmapDto } from 'src/dtos/calendar-heatmap.dto';
-import { CalendarHeatmapType } from 'src/enum';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { asDateString } from 'src/utils/date';
+import { CalendarHeatmapDto } from 'src/dtos/calendar-heatmap.dto.js';
+import { CalendarHeatmapType } from 'src/enum.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { asDateString } from 'src/utils/date.js';
 
 export const getCalendarHeatmap = async (
   userId: string,

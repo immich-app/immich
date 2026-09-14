@@ -1,16 +1,17 @@
 import { Kysely } from 'kysely';
-import { JobStatus } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { TagRepository } from 'src/repositories/tag.repository';
-import { DB } from 'src/schema';
-import { TagService } from 'src/services/tag.service';
-import { upsertTags } from 'src/utils/tag';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { JobStatus } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
+import { DB } from 'src/schema/index.js';
+import { TagService } from 'src/services/tag.service.js';
+import { upsertTags } from 'src/utils/tag.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -100,6 +101,21 @@ describe(TagService.name, () => {
         expect.objectContaining({ id: tag.id }),
       );
       await expect(ctx.get(TagRepository).getAssetIds(tag.id, [asset.id])).resolves.toContain(asset.id);
+    });
+
+    it('should not tag a partner asset', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const [tag] = await upsertTags(ctx.get(TagRepository), { userId: owner.id, tags: ['tag-1'] });
+      const authDto = factory.auth({ user: owner });
+
+      await expect(sut.addAssets(authDto, tag.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
     });
   });
 

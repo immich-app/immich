@@ -1,5 +1,6 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
-import { MapAsset } from 'src/dtos/asset-response.dto';
+import type { UserMetadataItem } from 'src/types.js';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import {
   AlbumUserRole,
   AssetFileType,
@@ -12,12 +13,11 @@ import {
   SourceType,
   UserAvatarColor,
   UserStatus,
-} from 'src/enum';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { PluginTable } from 'src/schema/tables/plugin.table';
-import { UserMetadataItem } from 'src/types';
+} from 'src/enum.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { PluginTable } from 'src/schema/tables/plugin.table.js';
 
 export type AuthUser = {
   id: string;

@@ -3,11 +3,11 @@ import type { AssetResponseDto } from '@immich/sdk';
 import { expect, Page } from '@playwright/test';
 
 function getAssetIdFromUrl(url: URL): string | null {
-  const pathMatch = url.pathname.match(/\/memory\/photos\/([^/]+)/);
+  const pathMatch = url.pathname.match(/\/memories\/[^/]+\/photos\/([^/]+)/);
   if (pathMatch) {
     return pathMatch[1];
   }
-  return url.searchParams.get('id');
+  return url.searchParams.get('assetId');
 }
 
 export const memoryViewerUtils = {
@@ -20,13 +20,8 @@ export const memoryViewerUtils = {
     await expect(page.locator('#memory-viewer img').first()).toBeVisible();
   },
 
-  async openMemoryPage(page: Page) {
-    await page.goto('/memory');
-    await this.waitForMemoryLoad(page);
-  },
-
-  async openMemoryPageWithAsset(page: Page, assetId: string) {
-    await page.goto(`/memory?id=${assetId}`);
+  async openMemoryPageWithAsset(page: Page, memoryId: string, assetId: string) {
+    await page.goto(`/memories/${memoryId}?assetId=${assetId}`);
     await this.waitForMemoryLoad(page);
   },
 };

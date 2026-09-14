@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202608111116@sha256:f53e6bc2aa6e4c7b043e6ec1740448af4ba69e2090411daa7fa1df288bc0131a AS builder
+FROM ghcr.io/immich-app/base-server-dev:202608300913@sha256:188679bfc2e7a496bdc13bd145cf59d90b2fb8f9dbf7131b2c1a368cd637b1a0 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -39,7 +39,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   pnpm --filter immich build && \
   pnpm --filter immich --prod --no-optional deploy /output/server-pruned
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
-  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --dir /output/server-pruned/node_modules/sharp exec npm run build
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
 
 FROM sdk AS web
 
@@ -68,7 +68,7 @@ FROM plugin-sdk AS plugins
 
 ARG TARGETPLATFORM
 
-COPY --from=ghcr.io/jdx/mise:2026.8.8@sha256:638270210fb690efc0a8492b2c173d51bee6cb33f26381f05790d90c8e646a80 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.9.2@sha256:812f7860a2fb911e1d5dd3375834abb2a08f8c783a23f783fcbccaf7fc7357aa /usr/local/bin/mise /usr/local/bin/mise
 
 COPY ./mise.toml ./mise.toml
 COPY ./mise.lock ./mise.lock
@@ -86,7 +86,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
-FROM ghcr.io/immich-app/base-server-prod:202608111116@sha256:15083a121ada9d243c3e717d84c2819a028f214c1f4bf3b39d0b63a299e994b3
+FROM ghcr.io/immich-app/base-server-prod:202608300913@sha256:e809772a5ee5babfe2073563a40757818f997feff8d161d30bf7b904ca49eb6b
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

@@ -1,21 +1,21 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { AssetFileType, MemoryType } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MemoryRepository } from 'src/repositories/memory.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { MemoryService } from 'src/services/memory.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { AssetFileType, MemoryType } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MemoryRepository } from 'src/repositories/memory.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { MemoryService } from 'src/services/memory.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -292,6 +292,43 @@ describe(MemoryService.name, () => {
           assets: [expect.objectContaining({ id: asset1.id })],
         }),
       );
+    });
+
+    it('should not link a partner asset', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const auth = factory.auth({ user: owner });
+      const dto = {
+        type: MemoryType.OnThisDay,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+        assetIds: [asset.id],
+      };
+
+      await expect(sut.create(auth, dto)).resolves.toEqual(expect.objectContaining({ assets: [] }));
+    });
+  });
+
+  describe('addAssets', () => {
+    it('should not link a partner asset', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const auth = factory.auth({ user: owner });
+      const memory = await sut.create(auth, {
+        type: MemoryType.OnThisDay,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+      });
+
+      await expect(sut.addAssets(auth, memory.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
     });
   });
 

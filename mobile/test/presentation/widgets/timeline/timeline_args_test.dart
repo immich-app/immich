@@ -54,6 +54,27 @@ class _CountingBucketService implements TimelineService {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+// The timeline embeds a [BackButtonListener], which resolves its dispatcher via
+// `Router.of(context)` and throws without a [Router] ancestor. The running app always has one
+// (via `MaterialApp.router`); these tests use a plain [MaterialApp], so supply a minimal Router.
+class _StubRouterDelegate extends RouterDelegate<void> with ChangeNotifier {
+  _StubRouterDelegate(this.child);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child;
+
+  @override
+  Future<bool> popRoute() => Future.value(false);
+
+  @override
+  Future<void> setNewRoutePath(void configuration) => Future.value();
+}
+
+Widget _withRouter(Widget child) =>
+    Router<void>(routerDelegate: _StubRouterDelegate(child), backButtonDispatcher: RootBackButtonDispatcher());
+
 void main() {
   testWidgets('timeline args follow constraints after a zero-sized first frame while buckets are still loading', (
     tester,
@@ -76,7 +97,7 @@ void main() {
           timelineServiceProvider.overrideWithValue(_FrozenBucketService()),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
-        child: MaterialApp(home: Timeline(withScrubber: false, readOnly: true, loadingWidget: probe)),
+        child: MaterialApp(home: _withRouter(Timeline(withScrubber: false, readOnly: true, loadingWidget: probe))),
       ),
     );
     await tester.pump();
@@ -117,11 +138,13 @@ void main() {
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
         child: MaterialApp(
-          home: Timeline(
-            withScrubber: false,
-            readOnly: true,
-            appBar: const SliverToBoxAdapter(child: SizedBox.shrink()),
-            topSliverWidget: probe,
+          home: _withRouter(
+            Timeline(
+              withScrubber: false,
+              readOnly: true,
+              appBar: const SliverToBoxAdapter(child: SizedBox.shrink()),
+              topSliverWidget: probe,
+            ),
           ),
         ),
       ),
@@ -160,7 +183,7 @@ void main() {
           timelineServiceProvider.overrideWithValue(service),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
-        child: MaterialApp(home: Timeline(withScrubber: false, readOnly: true, loadingWidget: probe)),
+        child: MaterialApp(home: _withRouter(Timeline(withScrubber: false, readOnly: true, loadingWidget: probe))),
       ),
     );
     await tester.pump();

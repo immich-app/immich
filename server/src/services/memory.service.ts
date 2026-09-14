@@ -1,15 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Memory } from 'src/database';
-import { OnJob } from 'src/decorators';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
-import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
+import { Memory } from 'src/database.js';
+import { OnJob } from 'src/decorators.js';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import {
+  MemoryCreateDto,
+  MemoryResponseDto,
+  MemorySearchDto,
+  MemoryUpdateDto,
+  mapMemory,
+} from 'src/dtos/memory.dto.js';
+import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum.js';
 import { YearMonthDay } from 'src/repositories/asset.repository';
-import { BaseService } from 'src/services/base.service';
-import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { findOrFail, shuffle } from 'src/utils/misc';
+import { BaseService } from 'src/services/base.service.js';
+import { addAssets, removeAssets } from 'src/utils/asset.util.js';
+import { findOrFail, shuffle } from 'src/utils/misc.js';
 
 const DAYS = 3;
 const DAYS_UNTIL_BIRTHDAY = 3;
@@ -165,7 +171,7 @@ export class MemoryService extends BaseService {
     const assetIds = dto.assetIds || [];
     const allowedAssetIds = await this.checkAccess({
       auth,
-      permission: Permission.AssetShare,
+      permission: Permission.AssetUpdate,
       ids: assetIds,
     });
     const data =
@@ -210,7 +216,11 @@ export class MemoryService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.MemoryRead, ids: [id] });
 
     const repos = { access: this.accessRepository, bulk: this.memoryRepository };
-    const results = await addAssets(auth, repos, { parentId: id, assetIds: dto.ids });
+    const results = await addAssets(auth, repos, {
+      parentId: id,
+      assetIds: dto.ids,
+      permission: Permission.AssetUpdate,
+    });
 
     const hasSuccess = results.some(({ success }) => success);
     if (hasSuccess) {

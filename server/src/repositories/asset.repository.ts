@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import {
-  ExpressionBuilder,
-  Insertable,
-  Kysely,
-  NotNull,
-  Selectable,
-  SelectQueryBuilder,
-  ShallowDehydrateObject,
-  sql,
-  Updateable,
+  type ExpressionBuilder,
+  type Insertable,
+  type Kysely,
+  type NotNull,
+  type SelectQueryBuilder,
+  type Selectable,
+  type ShallowDehydrateObject,
   UpdateResult,
+  type Updateable,
+  sql,
 } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import { isEmpty, isUndefined, omitBy } from 'lodash';
+import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
-import { LockableProperty, Stack } from 'src/database';
-import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { LockableProperty, Stack } from 'src/database.js';
+import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
 import {
   AssetFileType,
   AssetOrder,
@@ -25,14 +25,14 @@ import {
   AssetType,
   AssetVisibility,
   CalendarHeatmapType,
-} from 'src/enum';
-import { DB } from 'src/schema';
-import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetFileTable } from 'src/schema/tables/asset-file.table';
-import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
-import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
+} from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
+import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 import {
   anyUuid,
   asUuid,
@@ -53,8 +53,8 @@ import {
   withSmartSearch,
   withTagId,
   withTags,
-} from 'src/utils/database';
-import { globToPostgresRegex } from 'src/utils/misc';
+} from 'src/utils/database.js';
+import { globToPostgresRegex } from 'src/utils/misc.js';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -198,10 +198,10 @@ export class AssetRepository {
           .values(audio)
           .onConflict((oc) =>
             oc.column('assetId').doUpdateSet(({ ref }) => ({
-              bitrate: ref('asset_audio.bitrate'),
-              index: ref('asset_audio.index'),
-              profile: ref('asset_audio.profile'),
-              codecName: ref('asset_audio.codecName'),
+              bitrate: ref('excluded.bitrate'),
+              index: ref('excluded.index'),
+              profile: ref('excluded.profile'),
+              codecName: ref('excluded.codecName'),
             })),
           ),
       );
@@ -214,21 +214,22 @@ export class AssetRepository {
           .values(video)
           .onConflict((oc) =>
             oc.column('assetId').doUpdateSet(({ ref }) => ({
-              bitrate: ref('asset_video.bitrate'),
-              timeBase: ref('asset_video.timeBase'),
-              index: ref('asset_video.index'),
-              profile: ref('asset_video.profile'),
-              level: ref('asset_video.level'),
-              colorPrimaries: ref('asset_video.colorPrimaries'),
-              colorTransfer: ref('asset_video.colorTransfer'),
-              colorMatrix: ref('asset_video.colorMatrix'),
-              dvProfile: ref('asset_video.dvProfile'),
-              dvLevel: ref('asset_video.dvLevel'),
-              dvBlSignalCompatibilityId: ref('asset_video.dvBlSignalCompatibilityId'),
-              codecName: ref('asset_video.codecName'),
-              formatName: ref('asset_video.formatName'),
-              formatLongName: ref('asset_video.formatLongName'),
-              pixelFormat: ref('asset_video.pixelFormat'),
+              bitrate: ref('excluded.bitrate'),
+              frameCount: ref('excluded.frameCount'),
+              timeBase: ref('excluded.timeBase'),
+              index: ref('excluded.index'),
+              profile: ref('excluded.profile'),
+              level: ref('excluded.level'),
+              colorPrimaries: ref('excluded.colorPrimaries'),
+              colorTransfer: ref('excluded.colorTransfer'),
+              colorMatrix: ref('excluded.colorMatrix'),
+              dvProfile: ref('excluded.dvProfile'),
+              dvLevel: ref('excluded.dvLevel'),
+              dvBlSignalCompatibilityId: ref('excluded.dvBlSignalCompatibilityId'),
+              codecName: ref('excluded.codecName'),
+              formatName: ref('excluded.formatName'),
+              formatLongName: ref('excluded.formatLongName'),
+              pixelFormat: ref('excluded.pixelFormat'),
             })),
           ),
       );
@@ -241,12 +242,12 @@ export class AssetRepository {
           .values(keyframes)
           .onConflict((oc) =>
             oc.column('assetId').doUpdateSet(({ ref }) => ({
-              pts: ref('asset_keyframe.pts'),
-              accDuration: ref('asset_keyframe.accDuration'),
-              ownDuration: ref('asset_keyframe.ownDuration'),
-              totalDuration: ref('asset_keyframe.totalDuration'),
-              packetCount: ref('asset_keyframe.packetCount'),
-              outputFrames: ref('asset_keyframe.outputFrames'),
+              pts: ref('excluded.pts'),
+              accDuration: ref('excluded.accDuration'),
+              ownDuration: ref('excluded.ownDuration'),
+              totalDuration: ref('excluded.totalDuration'),
+              packetCount: ref('excluded.packetCount'),
+              outputFrames: ref('excluded.outputFrames'),
             })),
           ),
       );
@@ -984,7 +985,8 @@ export class AssetRepository {
               : sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`,
             order,
           )
-          .orderBy('asset.fileCreatedAt', order),
+          .orderBy('asset.fileCreatedAt', order)
+          .orderBy('asset.originalFileName', order),
       )
       .with('agg', (qb) =>
         qb

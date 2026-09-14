@@ -29,7 +29,12 @@ export type ContentMetrics = {
   offsetY: number;
 };
 
+const isMeasurable = (dimensions: Size) => dimensions.width > 0 && dimensions.height > 0;
+
 export const scaleToCover = (dimensions: Size, container: Size): Size => {
+  if (!isMeasurable(dimensions)) {
+    return { width: 0, height: 0 };
+  }
   const scaleX = container.width / dimensions.width;
   const scaleY = container.height / dimensions.height;
   const scale = Math.max(scaleX, scaleY);
@@ -40,6 +45,9 @@ export const scaleToCover = (dimensions: Size, container: Size): Size => {
 };
 
 export const scaleToFit = (dimensions: Size, container: Size): Size => {
+  if (!isMeasurable(dimensions)) {
+    return { width: 0, height: 0 };
+  }
   const scaleX = container.width / dimensions.width;
   const scaleY = container.height / dimensions.height;
   const scale = Math.min(scaleX, scaleY);

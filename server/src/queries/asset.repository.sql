@@ -521,7 +521,8 @@ with
       )
     order by
       (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
-      "asset"."fileCreatedAt" desc
+      "asset"."fileCreatedAt" desc,
+      "asset"."originalFileName" desc
   ),
   "agg" as (
     select

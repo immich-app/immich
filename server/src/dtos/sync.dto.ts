@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { ExtraModel } from 'src/decorators';
-import { AssetEditActionSchema } from 'src/dtos/editing.dto';
+import z from 'zod';
+import { ExtraModel } from 'src/decorators.js';
+import { AssetEditActionSchema } from 'src/dtos/editing.dto.js';
 import {
   AlbumUserRole,
   AlbumUserRoleSchema,
@@ -13,9 +14,8 @@ import {
   SyncRequestTypeSchema,
   UserAvatarColorSchema,
   UserMetadataKeySchema,
-} from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
-import z from 'zod';
+} from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const SyncUserV1Schema = z
   .object({
