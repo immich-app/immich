@@ -90,19 +90,6 @@ class ViewIntentService {
     }
   }
 
-  void markUploadActive(String path) {
-    _activeUploadPaths.add(path);
-  }
-
-  Future<void> markUploadInactive(String path) async {
-    if (!_activeUploadPaths.remove(path)) {
-      return;
-    }
-    if (_managedTempFilePath != path) {
-      await cleanupTempFile(path);
-    }
-  }
-
   bool _isManagedTempFile(String path) {
     return p.basename(path).startsWith('view_intent_') && p.basename(p.dirname(path)) == 'cache';
   }
