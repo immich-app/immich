@@ -56,6 +56,7 @@ _OPENCLIP_MODELS = {
     "ViT-SO400M-16-SigLIP2-512__webli",
     "ViT-gopt-16-SigLIP2-256__webli",
     "ViT-gopt-16-SigLIP2-384__webli",
+    "fg-clip2-base",
 }
 
 

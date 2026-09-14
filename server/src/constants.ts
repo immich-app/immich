@@ -124,6 +124,7 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-SO400M-16-SigLIP2-512__webli': { dimSize: 1152 },
   'ViT-gopt-16-SigLIP2-256__webli': { dimSize: 1536 },
   'ViT-gopt-16-SigLIP2-384__webli': { dimSize: 1536 },
+  'fg-clip2-base': { dimSize: 768 },
 };
 
 type SharpRotationData = {
