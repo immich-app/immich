@@ -1,6 +1,6 @@
-import { AssetRepository } from 'src/repositories/asset.repository.js';
-import type { RepositoryInterface } from 'src/types.js';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
 
 export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetRepository>> => {
   return {

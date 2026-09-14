@@ -1,9 +1,9 @@
+import request from 'supertest';
 import { UserController } from 'src/controllers/user.controller.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { UserService } from 'src/services/user.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
+import { ControllerContext, automock, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(UserController.name, () => {
   let ctx: ControllerContext;

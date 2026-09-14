@@ -2,8 +2,6 @@ import { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
-  mapWorkflow,
-  mapWorkflowShare,
   WorkflowCreateDto,
   WorkflowGetLogsDto,
   WorkflowLogEntryDto,
@@ -12,6 +10,8 @@ import {
   WorkflowShareResponseDto,
   WorkflowTriggerResponseDto,
   WorkflowUpdateDto,
+  mapWorkflow,
+  mapWorkflowShare,
 } from 'src/dtos/workflow.dto.js';
 import { Permission } from 'src/enum.js';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository.js';

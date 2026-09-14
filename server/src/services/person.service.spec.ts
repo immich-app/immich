@@ -21,7 +21,7 @@ import {
   getForFacialRecognitionJob,
 } from 'test/mappers.js';
 import { newDate, newUuid } from 'test/small.factory.js';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
 describe(PersonService.name, () => {
   let sut: PersonService;

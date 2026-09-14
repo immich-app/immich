@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Insertable, Selectable, Updateable } from 'kysely';
+import type { JobItem, JobOf } from 'src/types.js';
 import { Person } from 'src/database.js';
 import { Chunked, OnJob } from 'src/decorators.js';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
@@ -10,8 +11,6 @@ import {
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
   FaceDto,
-  mapFaces,
-  mapPerson,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -20,6 +19,8 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  mapFaces,
+  mapPerson,
 } from 'src/dtos/person.dto.js';
 import {
   AssetVisibility,
@@ -40,7 +41,6 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { JobItem, JobOf } from 'src/types.js';
 import { getDimensions } from 'src/utils/asset.util.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';

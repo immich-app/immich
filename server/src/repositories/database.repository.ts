@@ -6,27 +6,29 @@ import { FileMigrationProvider, Migrator } from 'kysely/migration';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import semver from 'semver';
+import { diff } from 'semver';
+import z from 'zod';
+import type { ExtensionVersion, VectorExtension } from 'src/types.js';
 import {
   EXTENSION_NAMES,
   POSTGRES_VERSION_RANGE,
-  serverVersion,
+  VECTORCHORD_LIST_SLACK_FACTOR,
+  VECTORCHORD_VERSION_RANGE,
   VECTOR_EXTENSIONS,
   VECTOR_INDEX_TABLES,
   VECTOR_VERSION_RANGE,
-  VECTORCHORD_LIST_SLACK_FACTOR,
-  VECTORCHORD_VERSION_RANGE,
+  serverVersion,
 } from 'src/constants.js';
 import { GenerateSql } from 'src/decorators.js';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { immich_uuid_v7 } from 'src/schema/functions.js';
+// eslint-disable-next-line import-x/no-duplicates
 import 'src/schema/index.js'; // make sure all schema definitions are imported for schemaFromCode
+// eslint-disable-next-line import-x/no-duplicates
 import { DB } from 'src/schema/index.js';
-import type { ExtensionVersion, VectorExtension } from 'src/types.js';
 import { vectorIndexQuery } from 'src/utils/database.js';
-import z from 'zod';
 
 export let cachedVectorExtension: VectorExtension | undefined;
 export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
@@ -134,7 +136,7 @@ export class DatabaseRepository {
     }
     targetVersion ??= availableVersion;
 
-    if (!semver.diff(installedVersion, targetVersion)) {
+    if (!diff(installedVersion, targetVersion)) {
       return;
     }
 

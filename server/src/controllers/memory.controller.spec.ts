@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { MemoryController } from 'src/controllers/memory.controller.js';
 import { MemoryService } from 'src/services/memory.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';

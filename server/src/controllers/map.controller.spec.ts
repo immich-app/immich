@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { MapController } from 'src/controllers/map.controller.js';
 import { MapService } from 'src/services/map.service.js';
-import request from 'supertest';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
