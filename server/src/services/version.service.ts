@@ -98,6 +98,10 @@ export class VersionService extends BaseService {
   @OnJob({ name: JobName.VersionCheck, queue: QueueName.BackgroundTask })
   async handleVersionCheck(): Promise<JobStatus> {
     try {
+      if (!this.configRepository.isProduction()) {
+        return JobStatus.Skipped;
+      }
+
       this.logger.debug('Running version check');
 
       const { newVersionCheck } = await this.getConfig({ withCache: true });

@@ -394,6 +394,10 @@ export class ConfigRepository {
     return this.getEnv().environment === ImmichEnvironment.Development;
   }
 
+  isProduction() {
+    return this.getEnv().environment === ImmichEnvironment.Production;
+  }
+
   getWorker() {
     return this.worker;
   }

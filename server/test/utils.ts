@@ -312,6 +312,7 @@ export const getMocks = () => {
   databaseMock.getPostgresVersion = vitest.fn().mockResolvedValue('14.10 (Debian 14.10-1.pgdg120+1)');
   databaseMock.getPostgresVersionRange = vitest.fn().mockReturnValue('>=14.0.0');
   databaseMock.createExtension = vitest.fn().mockResolvedValue(void 0);
+  databaseMock.vacuum.mockResolvedValue(void 0);
 
   const mocks: ServiceMocks = {
     access: newAccessRepositoryMock(),
