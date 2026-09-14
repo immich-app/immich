@@ -7,7 +7,7 @@ import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
-import { existsSync } from 'node:fs';
+import { existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
@@ -42,7 +42,7 @@ import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
 import { configureUserAgent } from 'src/utils/fetch';
-import { detectMediaLocation } from 'src/utils/storage';
+import { getBackupsStatePath } from 'src/utils/storage';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -60,7 +60,29 @@ const configRepository = new ConfigRepository();
 const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
 
 const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
-const yuccaStatePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'yucca');
+const yuccaStatePath = getBackupsStatePath(storage.mediaLocation);
+
+/*
+  TODO[YUCCA]: remove this whole block of code
+  migrate state directories to their new home
+*/
+
+if (!existsSync(yuccaStatePath)) {
+  const candidates = ['/data', '/usr/src/app/upload'];
+
+  for (const candidate of candidates) {
+    const oldYuccaStatePath = join(candidate, 'yucca');
+    if (existsSync(oldYuccaStatePath)) {
+      console.info(`Your FUTO Backups state is being migrated from ${oldYuccaStatePath} to ${yuccaStatePath}.`);
+      renameSync(oldYuccaStatePath, yuccaStatePath);
+      console.info('Your FUTO Backups state has been successfully migrated.');
+
+      break;
+    }
+  }
+}
+
+// end migration code
 
 const commonImports = [
   ClsModule.forRoot(cls.config),
