@@ -61,3 +61,5 @@ class MockWidgetService extends Mock implements WidgetService {}
 class MockBackgroundUploadService extends Mock implements BackgroundUploadService {}
 
 class MockBackgroundWorkerLockService extends Mock implements BackgroundWorkerLockService {}
+
+class MockBackgroundWorkerFgService extends Mock implements BackgroundWorkerFgService {}
