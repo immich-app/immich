@@ -48,8 +48,6 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
   late final List<int> _offsets;
   late final int _totalAssets;
 
-  int _currentMemoryIndex = 0;
-  int _currentAssetPage = 0;
   bool _onEpilogue = false;
 
   bool _userPaused = false;
@@ -59,6 +57,10 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
   List<Memory> get _memories => widget.memories;
 
   bool get _autoplay => ref.read(appConfigProvider).viewer.autoplayMemories;
+
+  // The current position is owned by the controller; derive it from there
+  int get _currentMemoryIndex => _decode(_slideshow.currentIndex).$1;
+  int get _currentAssetPage => _decode(_slideshow.currentIndex).$2;
 
   int _encode(int memory, int asset) => _offsets[memory] + asset;
 
@@ -79,6 +81,13 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
     return _memories[m].assets[a];
   }
 
+  /// The video asset displayed at flat [index], or null when the slide is
+  /// missing or not a video
+  RemoteAsset? _videoAt(int index) {
+    final asset = _assetAtFlat(index);
+    return (asset == null || asset.isImage) ? null : asset;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -91,7 +100,6 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
     }
     _totalAssets = running;
 
-    _currentMemoryIndex = widget.memoryIndex;
     _currentAsset = _memories[widget.memoryIndex].assets.isNotEmpty ? _memories[widget.memoryIndex].assets.first : null;
 
     _memoryPageController = PageController(initialPage: widget.memoryIndex);
@@ -158,8 +166,8 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
     if (!_autoplay) {
       return null;
     }
-    final asset = _assetAtFlat(index);
-    if (asset == null || asset.isImage) {
+    final asset = _videoAt(index);
+    if (asset == null) {
       return null;
     }
     return ref.read(videoPlayerProvider(asset.id)).position;
@@ -170,8 +178,8 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
     if (!_autoplay) {
       return false;
     }
-    final asset = _assetAtFlat(index);
-    if (asset == null || asset.isImage) {
+    final asset = _videoAt(index);
+    if (asset == null) {
       return false;
     }
     return ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed;
@@ -179,8 +187,8 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
 
   @override
   void onPlaybackChanged(int index, bool playing) {
-    final asset = _assetAtFlat(index);
-    if (asset == null || asset.isImage) {
+    final asset = _videoAt(index);
+    if (asset == null) {
       return;
     }
     final notifier = ref.read(videoPlayerProvider(asset.id).notifier);
@@ -191,9 +199,9 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
   void onShowSlide(int index, int prevIndex) {
     if (index == prevIndex) {
       _slideshow.didCompleteShowSlide(index);
-    } else if (index >= _totalAssets) {
-      unawaited(_toNextMemory());
     } else if (_decode(index).$1 == _decode(prevIndex.clamp(0, _totalAssets - 1)).$1) {
+      // Same memory: scroll horizontally. At the last asset this falls through
+      // to the next memory (and thus the epilogue) inside _toNextAsset
       _toNextAsset(_currentAssetPage);
     } else {
       unawaited(_toNextMemory());
@@ -276,10 +284,7 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
 
   Future<void> _onAssetChanged(int memoryIndex, int assetIndex) async {
     ref.read(hapticFeedbackProvider.notifier).selectionClick();
-    setState(() {
-      _currentMemoryIndex = memoryIndex;
-      _currentAssetPage = assetIndex;
-    });
+    // The controller owns the current position and notifies listeners
     _slideshow.didCompleteShowSlide(_encode(memoryIndex, assetIndex));
 
     final activeMemory = _memories[memoryIndex];
@@ -313,8 +318,6 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
 
     setState(() {
       _onEpilogue = false;
-      _currentMemoryIndex = pageNumber;
-      _currentAssetPage = 0;
       if (_memories[pageNumber].assets.isNotEmpty) {
         _currentAsset = _memories[pageNumber].assets.first;
       }
@@ -330,8 +333,11 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
   }
 
   void _togglePause() {
-    setState(() => _userPaused = !_userPaused);
-    _userPaused ? _slideshow.pause() : _slideshow.resume();
+    // Toggle against the controller's actual state so the button stays in sync
+    // even when the slideshow was paused/resumed by the system
+    final shouldPause = !_slideshow.paused;
+    setState(() => _userPaused = shouldPause);
+    shouldPause ? _slideshow.pause() : _slideshow.resume();
   }
 
   void _holdPause() {
@@ -526,7 +532,7 @@ class _MemoryPageState extends ConsumerState<MemoryPage> with TickerProviderStat
         shape: const CircleBorder(),
         color: Colors.white.withValues(alpha: 0.2),
         elevation: 0,
-        child: Icon(_userPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, color: Colors.white),
+        child: Icon(_slideshow.paused ? Icons.play_arrow_rounded : Icons.pause_rounded, color: Colors.white),
       ),
     );
   }
