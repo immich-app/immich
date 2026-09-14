@@ -76,12 +76,6 @@ class PeopleRepository extends DatabaseAccessor<Drift> with $PeopleRepositoryMix
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
   }
-
-  Future<int> setFeaturedPhoto(String personId, String assetId) {
-    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
-
-    return query.write(PersonEntityCompanion(faceAssetId: Value(assetId), updatedAt: Value(DateTime.now())));
-  }
 }
 
 extension on PersonEntityData {

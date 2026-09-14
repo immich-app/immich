@@ -33,8 +33,7 @@ class PeopleService {
     return _repository.updateBirthday(personId, birthday);
   }
 
-  Future<int> setFeaturedPhoto(String personId, String assetId) async {
-    await _personApiRepository.update(personId, featureFaceAssetId: assetId);
-    return _repository.setFeaturedPhoto(personId, assetId);
+  Future<Person> setFeaturedPhoto(String personId, String assetId) async {
+    return _personApiRepository.update(personId, featureFaceAssetId: assetId);
   }
 }
