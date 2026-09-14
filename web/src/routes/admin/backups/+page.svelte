@@ -1,16 +1,7 @@
 <script lang="ts">
-  import {
-    ImmichBackupsPage,
-    orchestrationApiProvider,
-    sdk,
-    setProvider,
-    YuccaContext,
-  } from '@futo-org/backups-orchestrator-ui';
+  import { ImmichBackupsPage, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import HideBackupsReminder from '$lib/components/backups/HideBackupsReminder.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-
-  sdk.defaults.baseUrl = location.origin;
-  setProvider(orchestrationApiProvider);
 
   const questions = [
     {
@@ -44,7 +35,7 @@
   <HideBackupsReminder />
 {/snippet}
 
-<YuccaContext baseUrl={location.origin}>
+<YuccaContext>
   <AdminPageLayout>
     <ImmichBackupsPage
       price="$1"

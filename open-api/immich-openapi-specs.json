@@ -18120,7 +18120,14 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigureImmichIntegrationResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -18145,6 +18152,27 @@
         },
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Integrations"
+        ]
+      }
+    },
+    "/yucca/integrations/immich/status": {
+      "get": {
+        "operationId": "getImmichBackupStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImmichBackupStatusDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -22759,6 +22787,17 @@
         ],
         "type": "object"
       },
+      "ConfigureImmichIntegrationResponseDto": {
+        "properties": {
+          "repositoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId"
+        ],
+        "type": "object"
+      },
       "ContributorCountResponseDto": {
         "properties": {
           "assetCount": {
@@ -23782,6 +23821,26 @@
           "webp"
         ],
         "type": "string"
+      },
+      "ImmichBackupStatusDto": {
+        "properties": {
+          "backend": {
+            "$ref": "#/components/schemas/BackendDto"
+          },
+          "integration": {
+            "$ref": "#/components/schemas/ImmichIntegrationDto"
+          },
+          "latestBackupRun": {
+            "$ref": "#/components/schemas/RunDto"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "type": "object"
       },
       "ImmichIntegrationConfigurationDto": {
         "properties": {
