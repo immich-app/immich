@@ -7,21 +7,21 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     BackgroundWorkerApiImpl.scheduleProcessingWorker()
     print("BackgroundWorkerApiImpl:enable Background worker scheduled")
   }
-
+  
   func configure(settings: BackgroundWorkerSettings) throws {
     // Android only
   }
-
+  
   func saveNotificationMessage(title: String, body: String) throws {
     // Android only
   }
-
+  
   func disable() throws {
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);
     print("BackgroundWorkerApiImpl:disableUploadWorker Disabled background workers")
   }
-
+  
   func wasLaunchedInBackground() throws -> Bool {
     return BackgroundWorkerApiImpl.launchedInBackground
   }
@@ -49,7 +49,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
           }
       }
   }
-
+  
   private static func scheduleRefreshWorker() {
     let backgroundRefresh = BGAppRefreshTaskRequest(identifier: refreshTaskID)
       backgroundRefresh.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60) // 5 mins
@@ -63,17 +63,17 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
 
   private static func scheduleProcessingWorker() {
     let backgroundProcessing = BGProcessingTaskRequest(identifier: processingTaskID)
-
+    
     backgroundProcessing.requiresNetworkConnectivity = true
     backgroundProcessing.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15 mins
-
+    
     do {
         try BGTaskScheduler.shared.submit(backgroundProcessing)
     } catch {
         print("Could not schedule the processing upload task \(error.localizedDescription)")
     }
   }
-
+  
   private static func handleBackgroundRefresh(task: BGAppRefreshTask) {
     scheduleRefreshWorker()
     // If another task is running, cede the background time back to the OS
@@ -84,14 +84,14 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
       task.setTaskCompleted(success: false)
     }
   }
-
+  
   private static func handleBackgroundProcessing(task: BGProcessingTask) {
     scheduleProcessingWorker()
     taskSemaphore.wait()
     // There are no restrictions for processing tasks. Although, the OS could signal expiration at any time
     runBackgroundWorker(task: task, taskType: .processing, maxSeconds: nil)
   }
-
+  
   /**
    * Executes the background worker within the context of a background task.
    * This method creates a BackgroundWorker, sets up task expiration handling,
@@ -106,7 +106,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     defer { taskSemaphore.signal() }
     let semaphore = DispatchSemaphore(value: 0)
     var isSuccess = true
-
+    
     let backgroundWorker = BackgroundWorker(taskType: taskType, maxSeconds: maxSeconds) { success in
       isSuccess = success
       semaphore.signal()
@@ -117,7 +117,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
         backgroundWorker.close()
       }
       isSuccess = false
-
+      
       // Schedule a timer to signal the semaphore after 2 seconds
       Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
         semaphore.signal()
