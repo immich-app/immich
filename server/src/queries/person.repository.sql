@@ -61,6 +61,20 @@ where
       "user"."clusterGroupId" = "cluster_group"."id"
   )
 
+-- PersonRepository.getAllFaces
+select
+  "asset_face".*
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  inner join "user" on "user"."id" = "asset"."ownerId"
+where
+  "asset_face"."personGroupId" is null
+  and "asset_face"."sourceType" = $1
+  and "user"."clusterGroupId" = $2
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+
 -- PersonRepository.getPeopleWithBirthday
 select
   "person"."personGroupId",
@@ -106,20 +120,6 @@ where
     )
   )
   and date_part('year', person."birthDate")::int < $8
-
--- PersonRepository.getAllFaces
-select
-  "asset_face".*
-from
-  "asset_face"
-  inner join "asset" on "asset"."id" = "asset_face"."assetId"
-  inner join "user" on "user"."id" = "asset"."ownerId"
-where
-  "asset_face"."personGroupId" is null
-  and "asset_face"."sourceType" = $1
-  and "user"."clusterGroupId" = $2
-  and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
 
 -- PersonRepository.getFileSamples
 select
