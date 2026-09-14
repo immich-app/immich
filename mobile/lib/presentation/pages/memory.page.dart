@@ -62,12 +62,13 @@ class MemoryPage extends HookConsumerWidget {
 
     void toPreviousMemory() {
       if (currentMemoryIndex.value > 0) {
+        final previousIndex = currentMemoryIndex.value - 1;
+
         // Move to the previous memory page
         unawaited(memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
 
         // Wait for the next frame to ensure the page is built
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          final previousIndex = currentMemoryIndex.value - 1;
           final previousMemoryController = memoryAssetPageControllers[previousIndex];
 
           // Ensure the controller is attached
@@ -85,24 +86,32 @@ class MemoryPage extends HookConsumerWidget {
       }
     }
 
-    void toNextAsset(int currentAssetIndex) {
-      if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
-        // Go to the next asset
-        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+    void toNextAsset() {
+      final controller = memoryAssetPageControllers[currentMemoryIndex.value];
+      if (!controller.hasClients) {
+        return;
+      }
 
-        unawaited(controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
+      final nextPage = currentAssetPage.value + 1;
+      if (nextPage < currentMemory.value.assets.length) {
+        currentAssetPage.value = nextPage;
+        controller.jumpToPage(nextPage);
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
       }
     }
 
-    void toPreviousAsset(int currentAssetIndex) {
-      if (currentAssetIndex > 0) {
-        // Go to the previous asset
-        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+    void toPreviousAsset() {
+      final controller = memoryAssetPageControllers[currentMemoryIndex.value];
+      if (!controller.hasClients) {
+        return;
+      }
 
-        unawaited(controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
+      final prevPage = currentAssetPage.value - 1;
+      if (prevPage >= 0) {
+        currentAssetPage.value = prevPage;
+        controller.jumpToPage(prevPage);
       } else {
         // Go to the previous memory since we are at the end of our assets
         toPreviousMemory();
@@ -216,6 +225,7 @@ class MemoryPage extends HookConsumerWidget {
             controller: memoryPageController,
             onPageChanged: (pageNumber) {
               ref.read(hapticFeedbackProvider.notifier).mediumImpact();
+              final isPreviousMemory = pageNumber < currentMemoryIndex.value;
               if (pageNumber < memories.length) {
                 currentMemoryIndex.value = pageNumber;
                 currentMemory.value = memories[pageNumber];
@@ -224,13 +234,15 @@ class MemoryPage extends HookConsumerWidget {
                   MemoryPage.setMemory(ref, memories[pageNumber]);
                 });
 
-                // Update currentAsset to the first asset of the new memory
                 if (memories[pageNumber].assets.isNotEmpty) {
-                  currentAsset.value = memories[pageNumber].assets.first;
+                  currentAsset.value = isPreviousMemory
+                      ? memories[pageNumber].assets.last
+                      : memories[pageNumber].assets.first;
                 }
               }
 
-              currentAssetPage.value = 0;
+              currentAssetPage.value =
+                  isPreviousMemory && pageNumber < memories.length ? memories[pageNumber].assets.length - 1 : 0;
 
               updateProgressText();
             },
@@ -299,9 +311,7 @@ class MemoryPage extends HookConsumerWidget {
                                       Expanded(
                                         child: GestureDetector(
                                           behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toPreviousAsset(index);
-                                          },
+                                          onTap: toPreviousAsset,
                                         ),
                                       ),
 
@@ -309,9 +319,7 @@ class MemoryPage extends HookConsumerWidget {
                                       Expanded(
                                         child: GestureDetector(
                                           behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toNextAsset(index);
-                                          },
+                                          onTap: toNextAsset,
                                         ),
                                       ),
                                     ],
