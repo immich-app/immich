@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { MemoryType } from 'src/enum.js';
-import type { OnThisDayData } from 'src/types.js';
 import { MemoryService } from 'src/services/memory.service.js';
+import { OnThisDayData } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { MemoryFactory } from 'test/factories/memory.factory.js';
 import { getForMemory } from 'test/mappers.js';

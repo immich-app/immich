@@ -12,7 +12,7 @@ import {
   mapMemory,
 } from 'src/dtos/memory.dto.js';
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum.js';
-import { YearMonthDay } from 'src/repositories/asset.repository';
+import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { findOrFail, shuffle } from 'src/utils/misc.js';
