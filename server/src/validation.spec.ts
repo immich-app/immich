@@ -1,6 +1,6 @@
-import { IsNotSiblingOf, toEmail } from 'src/validation.js';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
+import { IsNotSiblingOf, toEmail } from 'src/validation.js';
 
 describe('Validation', () => {
   describe('IsNotSiblingOf', () => {

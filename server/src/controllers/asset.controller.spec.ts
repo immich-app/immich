@@ -1,7 +1,7 @@
+import request from 'supertest';
 import { AssetController } from 'src/controllers/asset.controller.js';
 import { AssetMetadataKey } from 'src/enum.js';
 import { AssetService } from 'src/services/asset.service.js';
-import request from 'supertest';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 

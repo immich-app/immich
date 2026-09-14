@@ -10,7 +10,7 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { CreateIdColumn, UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AlbumUserRole } from 'src/enum.js';
 import { album_user_role_enum } from 'src/schema/enums.js';
 import { album_user_after_insert, album_user_delete, album_user_delete_audit } from 'src/schema/functions.js';

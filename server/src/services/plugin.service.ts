@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
-  mapMethod,
-  mapPlugin,
-  mapTemplate,
   PluginMethodResponseDto,
   PluginMethodSearchDto,
   PluginResponseDto,
   PluginSearchDto,
   PluginTemplateResponseDto,
+  mapMethod,
+  mapPlugin,
+  mapTemplate,
 } from 'src/dtos/plugin.dto.js';
 import { BaseService } from 'src/services/base.service.js';
 import { isMethodCompatible } from 'src/utils/workflow.js';

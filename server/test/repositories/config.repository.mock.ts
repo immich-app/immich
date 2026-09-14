@@ -1,7 +1,7 @@
+import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
 import { DatabaseExtension, ImmichEnvironment, ImmichWorker, LogFormat } from 'src/enum.js';
 import { ConfigRepository, EnvData } from 'src/repositories/config.repository.js';
-import type { RepositoryInterface } from 'src/types.js';
-import { Mocked, vitest } from 'vitest';
 
 export const envData: EnvData = {
   port: 2283,

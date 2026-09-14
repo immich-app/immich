@@ -28,6 +28,7 @@ import { isGranted } from 'src/utils/access.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
 import { getUserAgentDetails } from 'src/utils/request.js';
+
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
