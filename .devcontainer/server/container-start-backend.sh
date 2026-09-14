@@ -16,7 +16,7 @@ cd "${IMMICH_WORKSPACE}/server" || (
 )
 
 while true; do
-    run_cmd pnpm --filter immich exec nest start --debug "0.0.0.0:9230" --watch
+    run_cmd pnpm --filter immich exec nest start --debug "0.0.0.0:9230" --watch --preserveWatchOutput
     log "Nest API Server crashed with exit code $?.  Respawning in 3s ..."
     sleep 3
 done
