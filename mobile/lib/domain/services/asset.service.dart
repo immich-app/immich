@@ -63,13 +63,13 @@ class AssetService {
     return [asset, ...stack];
   }
 
-  Future<ExifInfo?> getExif(BaseAsset asset) async {
+  Stream<ExifInfo?> watchExif(BaseAsset asset) {
     if (!asset.hasRemote) {
-      return null;
+      return Stream.value(null);
     }
 
     final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
-    return _remoteRepository.getExif(id);
+    return _remoteRepository.watchExif(id);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {

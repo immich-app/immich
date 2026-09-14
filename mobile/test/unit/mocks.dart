@@ -266,7 +266,7 @@ extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo) imp
 extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
     implements Stub<MockRemoteAssetRepository> {
   Future<ExifInfo?> Function() get getExif =>
-      () => repo.getExif(any());
+      () => repo.watchExif(any()).first;
 
   Future<List<AssetEdit>> Function() get getAssetEdits =>
       () => repo.getAssetEdits(any());

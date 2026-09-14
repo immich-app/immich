@@ -111,7 +111,7 @@ void main() {
       await tester.pump();
 
       verify(() => context.repository.remoteAsset.repo.getAssetEdits(asset.id)).called(1);
-      verify(() => context.repository.remoteAsset.repo.getExif(asset.id)).called(1);
+      verify(() => context.repository.remoteAsset.repo.watch(asset.id)).called(1);
     });
   });
 
