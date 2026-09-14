@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { TagController } from 'src/controllers/tag.controller.js';
 import { TagService } from 'src/services/tag.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';

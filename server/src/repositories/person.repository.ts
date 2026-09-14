@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { type ExpressionBuilder, type Insertable, type Kysely, sql, type Updateable } from 'kysely';
+import { type ExpressionBuilder, type Insertable, type Kysely, type Updateable, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database.js';
@@ -11,7 +11,7 @@ import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
 import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database.js';
-import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
+import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.js';
 
 export interface PersonSearchOptions {
   withHidden: boolean;
@@ -725,15 +725,6 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async softDeleteAssetFaces(id: string): Promise<void> {
     await this.db.updateTable('asset_face').set({ deletedAt: new Date() }).where('asset_face.id', '=', id).execute();
-  }
-
-  async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
-    await sql`VACUUM ANALYZE asset_face, face_search, person`.execute(this.db);
-    await sql`REINDEX TABLE asset_face`.execute(this.db);
-    await sql`REINDEX TABLE person`.execute(this.db);
-    if (reindexVectors) {
-      await sql`REINDEX TABLE face_search`.execute(this.db);
-    }
   }
 
   @GenerateSql({ params: [[], []] })

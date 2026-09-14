@@ -27,6 +27,7 @@ allowBuilds:
   '@tailwindcss/oxide': true
   core-js-pure: false
   postman-code-generators: false
+  unrs-resolver: false
 overrides:
   canvas: 3.2.3
   sharp: ^0.35.3

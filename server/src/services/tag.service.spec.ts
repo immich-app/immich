@@ -4,7 +4,7 @@ import { JobStatus } from 'src/enum.js';
 import { TagService } from 'src/services/tag.service.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(TagService.name, () => {
   let sut: TagService;

@@ -1,10 +1,10 @@
 import { Controller, Delete, Get, Header, Headers, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
-import type { NextFunction, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
+import type { NextFunction, Response } from 'express';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   HlsPlaylistHeaderDto,
   HlsSegmentHeaderDto,

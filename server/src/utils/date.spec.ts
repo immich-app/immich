@@ -1,5 +1,5 @@
-import { asDateString, asDateTimeString } from 'src/utils/date.js';
 import { describe, expect, it } from 'vitest';
+import { asDateString, asDateTimeString } from 'src/utils/date.js';
 
 describe('asDateString', () => {
   it('should return null for null input', () => {

@@ -7,7 +7,7 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 
 @Table('cluster_group')
 @UpdatedAtTrigger('cluster_group_updatedAt')
