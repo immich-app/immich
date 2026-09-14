@@ -1,0 +1,19 @@
+server/package.json
+  s_2c218491c766d9::t_2d483301c931c7 20-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7108227ca43f99e284c87f095dd9237e934bd88c",
+  "prompts": {},
+  "sessions": {
+    "s_2c218491c766d9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a0cd-27b1-74f0-859b-24c920f79aa6",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
