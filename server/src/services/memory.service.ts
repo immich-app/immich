@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { shuffle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { Memory } from 'src/database.js';
 import { OnJob } from 'src/decorators.js';
@@ -15,7 +16,7 @@ import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadat
 import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
-import { findOrFail, shuffle } from 'src/utils/misc.js';
+import { findOrFail } from 'src/utils/misc.js';
 
 const DAYS = 3;
 const DAYS_UNTIL_BIRTHDAY = 3;
@@ -84,7 +85,7 @@ export class MemoryService extends BaseService {
   }
 
   private async createBirthdayMemories(ownerId: string, target: DateTime) {
-    const people = await this.personRepository.getPeopleWithBirthday(ownerId, target);
+    const people = await this.personRepository.forBirthdayMemories(ownerId, target);
     if (people.length === 0) {
       return;
     }
@@ -103,7 +104,7 @@ export class MemoryService extends BaseService {
           {
             ownerId,
             type: MemoryType.Birthday,
-            data: { personGroupId, personName, year: birthDate.year },
+            data: { personId: personGroupId, personName, year: birthDate.year },
             memoryAt: target.startOf('day').toISO()!,
             showAt,
             hideAt,
@@ -120,7 +121,7 @@ export class MemoryService extends BaseService {
     birthDate: YearMonthDay,
     until: YearMonthDay,
   ) {
-    const years = await this.assetRepository.getPersonBirthdayYears(ownerId, personGroupId, birthDate, until);
+    const years = await this.memoryRepository.getPersonBirthdayYears(ownerId, personGroupId, birthDate, until);
     if (years.length === 0) {
       return [];
     }
@@ -138,7 +139,7 @@ export class MemoryService extends BaseService {
 
     const assets = await Promise.all(
       birthdayYears.map((year) =>
-        this.assetRepository.getPersonAssetsByDate(ownerId, personGroupId, { ...birthDate, year }, assetsPerYear),
+        this.memoryRepository.getPersonAssetsByDate(ownerId, personGroupId, { ...birthDate, year }, assetsPerYear),
       ),
     );
 
@@ -174,15 +175,11 @@ export class MemoryService extends BaseService {
       permission: Permission.AssetUpdate,
       ids: assetIds,
     });
-    const data =
-      dto.type === MemoryType.Birthday
-        ? { year: dto.data.year, personGroupId: dto.data.personGroupId, personName: dto.data.personName }
-        : { year: dto.data.year };
     const memory = await this.memoryRepository.create(
       {
         ownerId: auth.user.id,
         type: dto.type,
-        data,
+        data: dto.data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
         showAt: dto.showAt,

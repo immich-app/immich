@@ -521,7 +521,7 @@ export type StorageAsset = {
 };
 
 export type OnThisDayData = { year: number };
-export type BirthdayData = { personGroupId: string; personName: string; year: number };
+export type BirthdayData = { personId: string; personName: string; year: number };
 
 export interface MemoryData {
   [MemoryType.OnThisDay]: OnThisDayData;

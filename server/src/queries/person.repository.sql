@@ -75,7 +75,7 @@ where
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 
--- PersonRepository.getPeopleWithBirthday
+-- PersonRepository.forBirthdayMemories
 select
   "person"."personGroupId",
   "person"."name",
@@ -95,7 +95,7 @@ where
   )
   and date_part('year', person."birthDate")::int < $6
 
--- PersonRepository.getPeopleWithBirthday (leap day fallback)
+-- PersonRepository.forBirthdayMemories (leap day fallback)
 select
   "person"."personGroupId",
   "person"."name",

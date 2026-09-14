@@ -259,7 +259,7 @@ describe(MemoryService.name, () => {
       const auth = factory.auth({ user });
       const dto = {
         type: MemoryType.Birthday as const,
-        data: { personGroupId: person.personGroupId, personName: 'Alice', year: 1990 },
+        data: { personId: person.personGroupId, personName: 'Alice', year: 1990 },
         memoryAt: new Date(2025, 5, 13),
       };
 
@@ -482,7 +482,7 @@ describe(MemoryService.name, () => {
           id: expect.any(String),
           ownerId: user.id,
           type: 'birthday',
-          data: { personGroupId: person.personGroupId, personName: 'Alice', year: 1990 },
+          data: { personId: person.personGroupId, personName: 'Alice', year: 1990 },
           memoryAt: birthday.startOf('day').toJSDate(),
           showAt: birthday.minus({ days: 3 }).startOf('day').toJSDate(),
           hideAt: birthday.endOf('day').toJSDate(),
@@ -715,7 +715,7 @@ describe(MemoryService.name, () => {
       expect(memories.length).toBe(1);
       expect(memories[0]).toEqual(
         expect.objectContaining({
-          data: { personGroupId: person.personGroupId, personName: 'Alice', year: 1992 },
+          data: { personId: person.personGroupId, personName: 'Alice', year: 1992 },
           memoryAt: DateTime.fromObject({ year: 2025, month: 2, day: 28 }, { zone: 'utc' }).toJSDate(),
         }),
       );

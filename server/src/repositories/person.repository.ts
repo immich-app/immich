@@ -225,7 +225,7 @@ export class PersonRepository {
     { params: [DummyValue.UUID, { year: 2025, month: 1, day: 1 }] },
     { name: 'leap day fallback', params: [DummyValue.UUID, { year: 2025, month: 2, day: 28 }] },
   )
-  async getPeopleWithBirthday(ownerId: string, { year, month, day }: YearMonthDay) {
+  async forBirthdayMemories(ownerId: string, { year, month, day }: YearMonthDay) {
     const isLeapDayBirthday = isLeapDayObserved({ year, month, day });
 
     const people = await this.db

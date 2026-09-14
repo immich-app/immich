@@ -15,13 +15,11 @@ export const asDateString = (x: Date | string | null): string | null => {
   return x instanceof Date ? isoDateToDate.encode(x) : x;
 };
 
-export const isLeapYear = (year: number) => (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-
 /**
  * People born on February 29th are celebrated on February 28th in non-leap years.
  */
 export const isLeapDayObserved = ({ year, month, day }: { year: number; month: number; day: number }) => {
-  return month === 2 && day === 28 && !isLeapYear(year);
+  return month === 2 && day === 28 && !DateTime.local(year).isInLeapYear;
 };
 
 export const extractTimeZone = (dateTimeOriginal?: string | null) => {

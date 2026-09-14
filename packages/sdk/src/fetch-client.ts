@@ -1844,7 +1844,7 @@ export type MapReverseGeocodeResponseDto = {
 };
 export type MemoryDataDto = {
     /** Person ID (birthday memories) */
-    personGroupId?: string;
+    personId?: string;
     /** Name of the person when the memory was created (birthday memories) */
     personName?: string;
     /** Year of the memory */
