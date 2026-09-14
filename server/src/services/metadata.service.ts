@@ -22,14 +22,12 @@ import {
   JobStatus,
   QueueName,
   SourceType,
-<<<<<<< HEAD
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
@@ -39,21 +37,6 @@ import { mimeTypes } from 'src/utils/mime-types';
 import { batched, isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 import { Tasks } from 'src/utils/tasks';
-=======
-} from 'src/enum.js';
-import { ReverseGeocodeResult } from 'src/repositories/map.repository.js';
-import { ImmichTags } from 'src/repositories/metadata.repository.js';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
-import { BaseService } from 'src/services/base.service.js';
-import { getAssetFiles } from 'src/utils/asset.util.js';
-import { isAssetChecksumConstraint } from 'src/utils/database.js';
-import { mergeTimeZone } from 'src/utils/date.js';
-import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, isFaceImportEnabled } from 'src/utils/misc.js';
-import { upsertTags } from 'src/utils/tag.js';
-import { Tasks } from 'src/utils/tasks.js';
->>>>>>> a84de01 (fix: metadata extraction of faces (#31551))
 
 const POSTGRES_INT_MAX = 2_147_483_647;
 const POSTGRES_INT_MIN = -2_147_483_648;
