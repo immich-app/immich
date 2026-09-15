@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:logging/logging.dart';
@@ -146,11 +147,29 @@ class StorageRepository {
     }
 
     try {
-      if (await Directory.systemTemp.exists()) {
-        await Directory.systemTemp.delete(recursive: true);
-      }
+      // #30730: Background job may have staged files to tmp. Don't wipe them now
+      await deleteStaleEntries(Directory.systemTemp, DateTime.now().subtract(const Duration(days: 1)));
     } catch (error, stackTrace) {
       log.warning("Error deleting temporary directory", error, stackTrace);
+    }
+  }
+
+  @visibleForTesting
+  static Future<void> deleteStaleEntries(Directory dir, DateTime cutoff) async {
+    if (!await dir.exists()) {
+      return;
+    }
+
+    await for (final entity in dir.list()) {
+      try {
+        final stat = await entity.stat();
+
+        if (stat.modified.isBefore(cutoff)) {
+          await entity.delete(recursive: true);
+        }
+      } catch (error, stackTrace) {
+        Logger('StorageRepository').warning("Error deleting ${entity.path}", error, stackTrace);
+      }
     }
   }
 }
