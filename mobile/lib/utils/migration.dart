@@ -16,7 +16,6 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/services/device_permission.service.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -24,18 +23,14 @@ import 'package:immich_mobile/infrastructure/repositories/network.repository.dar
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:logging/logging.dart';
 
 const int targetVersion = 27;
 
-Future<void> migrateDatabaseIfNeeded(
-  Drift drift,
-  NativeSyncApi nativeSyncApi,
-  DevicePermissionRepository permissionRepository,
-) async {
+Future<void> migrateDatabaseIfNeeded(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
   final version = storedVersion ?? targetVersion;
 
@@ -47,9 +42,8 @@ Future<void> migrateDatabaseIfNeeded(
     await _migrateTo26(drift);
   }
 
-  if (version < 27 && !await _migrateTo27(drift, nativeSyncApi, permissionRepository)) {
-    await Store.put(StoreKey.version, 26);
-    return;
+  if (version < 27) {
+    await _migrateTo27(drift, nativeSyncApi, permissionApi);
   }
 
   if (storedVersion == null) {
@@ -60,20 +54,13 @@ Future<void> migrateDatabaseIfNeeded(
   return;
 }
 
-Future<bool> _migrateTo27(
-  Drift drift,
-  NativeSyncApi nativeSyncApi,
-  DevicePermissionRepository permissionRepository,
-) async {
+// android photos without exif used to get the copy date as created_at,
+// mediastore still has the real one so read it once more and fix only the rows that differ
+Future<void> _migrateTo27(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
   if (!CurrentPlatform.isAndroid) {
-    return true;
+    return;
   }
   try {
-    final status = await DevicePermissionService(permissionRepository).galleryStatus();
-    if (!status.hasAccess) {
-      return false;
-    }
-
     final dates = <String, DateTime>{};
     void addDates(Iterable<PlatformAsset> assets) {
       for (final asset in assets) {
@@ -87,7 +74,7 @@ Future<bool> _migrateTo27(
     for (final album in await nativeSyncApi.getAlbums()) {
       addDates(await nativeSyncApi.getAssetsForAlbum(album.id));
     }
-    if (await permissionRepository.hasManageMediaPermission()) {
+    if (await permissionApi.hasManageMediaPermission()) {
       final trashed = await nativeSyncApi.getTrashedAssets();
       addDates(trashed.values.flattened);
     }
@@ -128,10 +115,8 @@ Future<bool> _migrateTo27(
         });
       }
     });
-    return true;
   } catch (error, stackTrace) {
     Logger('Migration').warning("Error migrating to version 27", error, stackTrace);
-    return false;
   }
 }
 

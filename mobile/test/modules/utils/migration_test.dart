@@ -1,17 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../medium/repository_context.dart';
-import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
 
 void main() {
@@ -19,10 +18,9 @@ void main() {
 
   late MediumRepositoryContext ctx;
   late MockNativeSyncApi nativeSyncApi;
-  late MockPermissionRepository permissionRepository;
+  late MockPermissionApi permissionApi;
 
   setUpAll(() async {
-    registerFallbackValue(DevicePermission.photos);
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     ctx = MediumRepositoryContext();
     await StoreService.init(storeRepository: StoreRepository(ctx.db), listenUpdates: false);
@@ -30,13 +28,11 @@ void main() {
 
   setUp(() async {
     nativeSyncApi = MockNativeSyncApi();
-    permissionRepository = MockPermissionRepository();
+    permissionApi = MockPermissionApi();
     await Store.clear();
     await ctx.db.delete(ctx.db.localAssetEntity).go();
     await ctx.db.delete(ctx.db.trashedLocalAssetEntity).go();
-    when(() => permissionRepository.getAndroidSdkVersion()).thenAnswer((_) async => 33);
-    when(() => permissionRepository.getStatus(any())).thenAnswer((_) async => DevicePermissionStatus.granted);
-    when(() => permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
+    when(() => permissionApi.hasManageMediaPermission()).thenAnswer((_) async => true);
     when(
       () => nativeSyncApi.getAlbums(),
     ).thenAnswer((_) async => [PlatformAlbum(id: 'album', name: 'album', isCloud: false, assetCount: 1)]);
@@ -69,7 +65,7 @@ void main() {
       },
     );
 
-    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionRepository);
+    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionApi);
 
     final local = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     final trashed = await (ctx.db.select(
@@ -88,9 +84,9 @@ void main() {
     when(
       () => nativeSyncApi.getAssetsForAlbum('album'),
     ).thenAnswer((_) async => [_asset('exif', takenAt, updatedAt: modifiedAt)]);
-    when(() => permissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    when(() => permissionApi.hasManageMediaPermission()).thenAnswer((_) async => false);
 
-    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionRepository);
+    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionApi);
 
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('exif'))).getSingle();
     expect(asset.createdAt, takenAt);
@@ -98,42 +94,31 @@ void main() {
     verifyNever(() => nativeSyncApi.getTrashedAssets());
   });
 
-  test('retries after permission is granted', () async {
+  test('completes when MediaStore is empty', () async {
     final wrongDate = DateTime.utc(2026);
-    final platformDate = DateTime.utc(2019);
     await Store.put(StoreKey.version, 26);
-    await ctx.newLocalAsset(id: 'local', createdAt: wrongDate, updatedAt: platformDate);
-    when(() => permissionRepository.getStatus(any())).thenAnswer((_) async => DevicePermissionStatus.denied);
+    await ctx.newLocalAsset(id: 'local', createdAt: wrongDate);
+    when(() => nativeSyncApi.getAlbums()).thenAnswer((_) async => []);
 
-    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionRepository);
+    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionApi);
 
-    expect(Store.tryGet(StoreKey.version), 26);
-    verifyNever(() => nativeSyncApi.getAlbums());
-    verifyNever(() => nativeSyncApi.getTrashedAssets());
-    var asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
+    final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     expect(asset.createdAt, wrongDate);
-
-    when(() => permissionRepository.getStatus(any())).thenAnswer((_) async => DevicePermissionStatus.granted);
-    when(() => nativeSyncApi.getAssetsForAlbum('album')).thenAnswer((_) async => [_asset('local', platformDate)]);
-
-    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionRepository);
-
-    asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
-    expect(asset.createdAt, platformDate);
     expect(Store.tryGet(StoreKey.version), 27);
+    verify(() => nativeSyncApi.getTrashedAssets()).called(1);
   });
 
-  test('keeps version 26 when MediaStore read fails', () async {
+  test('completes when MediaStore read fails', () async {
     final wrongDate = DateTime.utc(2026);
     await Store.put(StoreKey.version, 26);
     await ctx.newLocalAsset(id: 'local', createdAt: wrongDate);
     when(() => nativeSyncApi.getAlbums()).thenThrow(StateError('query failed'));
 
-    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionRepository);
+    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionApi);
 
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     expect(asset.createdAt, wrongDate);
-    expect(Store.tryGet(StoreKey.version), 26);
+    expect(Store.tryGet(StoreKey.version), 27);
   });
 
   test('skips out-of-range date and completes migration', () async {
@@ -144,13 +129,15 @@ void main() {
       () => nativeSyncApi.getAssetsForAlbum('album'),
     ).thenAnswer((_) async => [_asset('local', wrongDate, createdAtSeconds: 8640000000001)]);
 
-    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionRepository);
+    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionApi);
 
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     expect(asset.createdAt, wrongDate);
     expect(Store.tryGet(StoreKey.version), 27);
   });
 }
+
+class MockPermissionApi extends Mock implements PermissionApi {}
 
 PlatformAsset _asset(String id, DateTime createdAt, {DateTime? updatedAt, int? createdAtSeconds}) => PlatformAsset(
   id: id,
