@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -409,23 +410,26 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                     child: SizedBox(
                       width: double.infinity,
                       height: double.infinity,
-                      child: Image(
-                        alignment: Alignment.topRight,
-                        image: getFullImageProvider(_currentAsset!),
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) {
-                            return child;
-                          }
-                          return Container();
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
-                          );
-                        },
+                      child: ProgressiveImage(
+                        provider: getFullImageProvider(_currentAsset!),
+                        builder: (context, provider) => Image(
+                          alignment: Alignment.topRight,
+                          image: provider,
+                          fit: BoxFit.cover,
+                          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                            if (wasSynchronouslyLoaded || frame != null) {
+                              return child;
+                            }
+                            return Container();
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return SizedBox(
+                              width: double.infinity,
+                              height: double.infinity,
+                              child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -436,23 +440,26 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                     child: SizedBox(
                       width: double.infinity,
                       height: double.infinity,
-                      child: Image(
-                        alignment: Alignment.topRight,
-                        image: getFullImageProvider(_nextAsset!),
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) {
-                            return child;
-                          }
-                          return const SizedBox.shrink();
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
-                          );
-                        },
+                      child: ProgressiveImage(
+                        provider: getFullImageProvider(_nextAsset!),
+                        builder: (context, provider) => Image(
+                          alignment: Alignment.topRight,
+                          image: provider,
+                          fit: BoxFit.cover,
+                          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                            if (wasSynchronouslyLoaded || frame != null) {
+                              return child;
+                            }
+                            return const SizedBox.shrink();
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return SizedBox(
+                              width: double.infinity,
+                              height: double.infinity,
+                              child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
