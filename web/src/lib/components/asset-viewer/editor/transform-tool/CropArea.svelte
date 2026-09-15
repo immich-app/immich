@@ -36,6 +36,10 @@
     return transforms.join(' ');
   });
 
+  let imageFilter = $derived(
+    `brightness(${1 + transformManager.brightness / 100}) contrast(${1 + transformManager.contrast / 100})`,
+  );
+
   const edges = [ResizeBoundary.Top, ResizeBoundary.Right, ResizeBoundary.Bottom, ResizeBoundary.Left];
   const corners = [
     ResizeBoundary.TopLeft,
@@ -74,6 +78,7 @@
       alt={$getAltText(toTimelineAsset(asset))}
       class="h-full transition-transform select-none motion-reduce:transition-none"
       style:transform={imageTransform}
+      style:filter={imageFilter}
     />
     <div
       class={[
