@@ -62,7 +62,9 @@ class PersonMutations extends StoreMutations {
   }
 
   /// Set the asset used as a person's featured photo
-  Future<Person> setFeaturedPhoto(String personId, String assetId) {
-    return read(personApiRepositoryProvider).update(personId, featureFaceAssetId: assetId);
+  Future<Person> setFeaturedPhoto(String personId, String assetId) async {
+    final person = read(personApiRepositoryProvider).update(personId, featureFaceAssetId: assetId);
+    await read(_peopleDb).touch(personId);
+    return person;
   }
 }

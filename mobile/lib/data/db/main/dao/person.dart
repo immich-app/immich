@@ -76,6 +76,13 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
   }
+
+  /// Bump [personId]'s `updatedAt` without changing any other field
+  Future<int> touch(String personId) {
+    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.write(PersonEntityCompanion(updatedAt: Value(DateTime.now())));
+  }
 }
 
 extension on PersonEntityData {
