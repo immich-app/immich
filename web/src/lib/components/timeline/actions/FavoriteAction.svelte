@@ -7,6 +7,7 @@
   import { IconButton, toastManager } from '@immich/ui';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { toggleFavoriteAssets } from '$lib/utils/asset-utils'
 
   interface Props {
     onFavorite?: OnFavorite;
@@ -27,28 +28,8 @@
 
     try {
       const assets = assetMultiSelectManager.ownedAssets.filter((asset) => asset.isFavorite !== isFavorite);
-
-      const ids = assets.map(({ id }) => id);
-
-      if (ids.length > 0) {
-        await updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
-      }
-
-      for (const asset of assets) {
-        asset.isFavorite = isFavorite;
-      }
-
-      onFavorite?.(ids, isFavorite);
-
-      toastManager.primary(
-        isFavorite
-          ? $t('added_to_favorites_count', { values: { count: ids.length } })
-          : $t('removed_from_favorites_count', { values: { count: ids.length } }),
-      );
-
+      await toggleFavoriteAssets(assets, isFavorite, onFavorite);
       assetMultiSelectManager.clear();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
     } finally {
       loading = false;
     }
