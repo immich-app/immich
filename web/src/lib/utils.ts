@@ -397,6 +397,10 @@ export const memoryLaneTitle = derived(t, ($t) => {
         : DateTime.fromJSDate(memoryDate).toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
     }
 
+    if (memory.type === MemoryType.Birthday && 'personName' in memory.data) {
+      return $t('birthday_memory_title', { values: { name: memory.data.personName } });
+    }
+
     return $t('unknown');
   };
 });

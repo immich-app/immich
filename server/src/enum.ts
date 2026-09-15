@@ -89,6 +89,9 @@ export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting p
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
+
+  /** pictures of a person, shown leading up to their birthday */
+  Birthday = 'birthday',
 }
 
 export const MemoryTypeSchema = z.enum(MemoryType).describe('Memory type').meta({ id: 'MemoryType' });
