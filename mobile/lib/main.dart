@@ -133,7 +133,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       case AppLifecycleState.resumed:
         dPrint(() => "[APP STATE] resumed");
         unawaited(ref.read(appStateProvider.notifier).handleAppResume());
-        unawaited(ref.read(viewIntentHandlerProvider).onAppResumed());
+        unawaited(ref.read(viewIntentHandlerProvider)?.onAppResumed());
       case AppLifecycleState.inactive:
         dPrint(() => "[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
@@ -241,7 +241,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       }
     });
 
-    ref.read(viewIntentHandlerProvider).init();
+    ref.read(viewIntentHandlerProvider)?.init();
     ref.read(shareIntentUploadProvider.notifier).init();
   }
 
