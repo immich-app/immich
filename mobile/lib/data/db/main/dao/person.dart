@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/dao/person.drift.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
 import 'package:immich_mobile/data/db/main/table/people/person.drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
@@ -36,7 +37,10 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
     return query.map((row) => row.toDto()).get();
   }
 
-  Stream<List<Person>> watch({int minFaces = 3}) {
+  /// Watches known people, honoring the visibility/face-count protection checks.
+  ///
+  /// When [personId] is provided, the stream is limited to that single person
+  Stream<List<Person>> watch({int minFaces = 3, String? personId}) {
     final people = _db.personEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;
@@ -59,6 +63,10 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
 
+    if (personId != null) {
+      query.where(people.id.equals(personId));
+    }
+
     return query.map((row) {
       final person = row.readTable(people);
       return person.toDto();
@@ -76,6 +84,14 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
   }
+
+  Future<void> merge(String targetPersonId, List<String> mergePersonIds) => _db.transaction(() async {
+    final updateQuery = _db.update(_db.assetFaceEntity)..where((row) => row.personId.isIn(mergePersonIds));
+    await updateQuery.write(AssetFaceEntityCompanion(personId: Value(targetPersonId)));
+
+    final deleteQuery = _db.delete(_db.personEntity)..where((row) => row.id.isIn(mergePersonIds));
+    await deleteQuery.go();
+  });
 }
 
 extension on PersonEntityData {
