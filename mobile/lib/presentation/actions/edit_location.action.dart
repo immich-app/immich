@@ -53,7 +53,7 @@ class EditLocationAction extends AssetActionBuilder {
     try {
       LatLng? initialLatLng;
       if (origin != null) {
-        final exif = await remoteAssetRepository.getExif(origin.id);
+        final exif = await remoteAssetRepository.watchExif(origin.id).first;
         if (exif?.latitude != null && exif?.longitude != null) {
           initialLatLng = LatLng(exif!.latitude!, exif.longitude!);
         }

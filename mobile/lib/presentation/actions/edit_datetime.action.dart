@@ -56,7 +56,7 @@ class EditDateTimeAction extends AssetActionBuilder {
       Duration? offset;
 
       if (origin != null) {
-        final exif = await remoteAssetRepository.getExif(origin.id);
+        final exif = await remoteAssetRepository.watchExif(origin.id).first;
 
         // Prefer the EXIF timezone, so the picker opens on what the asset actually shows.
         DateTime dateTime = origin.createdAt.toLocal();
