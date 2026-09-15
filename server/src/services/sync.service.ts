@@ -63,6 +63,7 @@ const sendEntityBackfillCompleteAck = async (response: Writable, ackType: SyncEn
 
 export const SYNC_TYPES_ORDER = [
   SyncRequestType.AuthUsersV1,
+  SyncRequestType.AuthUsersV2,
   SyncRequestType.UsersV1,
   SyncRequestType.PartnersV1,
   SyncRequestType.AssetsV1,
@@ -190,6 +191,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.AlbumAssetsV1]: () => this.syncAlbumAssetsV1(),
 
       [SyncRequestType.AuthUsersV1]: () => this.syncAuthUsersV1(options, response, checkpointMap),
+      [SyncRequestType.AuthUsersV2]: () => this.syncAuthUsersV2(options, response, checkpointMap),
       [SyncRequestType.UsersV1]: () => this.syncUsersV1(options, response, checkpointMap),
       [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(options, response, checkpointMap),
       [SyncRequestType.AssetsV2]: () => this.syncAssetsV2(options, response, checkpointMap),
@@ -265,6 +267,18 @@ export class SyncService extends BaseService {
 
   private async syncAuthUsersV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const upsertType = SyncEntityType.AuthUserV1;
+    const upserts = this.syncRepository.authUser.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, profileImagePath, ...data } of upserts) {
+      await send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: { ...data, oauthId: data.oauthId ?? '', hasProfileImage: !!profileImagePath },
+      });
+    }
+  }
+
+  private async syncAuthUsersV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const upsertType = SyncEntityType.AuthUserV2;
     const upserts = this.syncRepository.authUser.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, profileImagePath, ...data } of upserts) {
       await send(response, {

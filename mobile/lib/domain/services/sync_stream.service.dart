@@ -194,6 +194,8 @@ class SyncStreamService {
     switch (type) {
       case SyncEntityType.authUserV1:
         return _syncStreamRepository.updateAuthUsersV1(data.cast());
+      case SyncEntityType.authUserV2:
+        return _syncStreamRepository.updateAuthUsersV2(data.cast());
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
       case SyncEntityType.userDeleteV1:
