@@ -1,10 +1,8 @@
 package app.alextran.immich.sync
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
-import android.content.pm.PackageManager
 import android.database.Cursor
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +10,6 @@ import android.os.ext.SdkExtensions
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
 import app.alextran.immich.core.ImmichPlugin
 import com.bumptech.glide.Glide
@@ -110,12 +107,6 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
         (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
           SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21)
   }
-
-  fun hasMediaReadPermission(): Boolean =
-    (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
-    } else arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
-      .all { ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED }
 
   protected fun getCursor(
     volume: String,

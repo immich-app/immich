@@ -118,8 +118,6 @@ class CloudIdResult {
 
 @HostApi()
 abstract class NativeSyncApi {
-  bool hasMediaReadPermission();
-
   @async
   bool shouldFullSync();
 
