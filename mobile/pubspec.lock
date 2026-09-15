@@ -1670,11 +1670,12 @@ packages:
   sqlite3:
     dependency: "direct main"
     description:
-      name: sqlite3
-      sha256: "61c7930bebf32c552ac5808c91bf33802e66711c9216090d3b5579c9f862e80c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.4.0"
+      path: sqlite3
+      ref: "507aaaf1150059176a77e7e9562d3ff4eb901a11"
+      resolved-ref: "507aaaf1150059176a77e7e9562d3ff4eb901a11"
+      url: "https://github.com/simolus3/sqlite3.dart"
+    source: git
+    version: "3.5.2"
   sqlite3_connection_pool:
     dependency: "direct main"
     description:
