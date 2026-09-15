@@ -296,12 +296,14 @@ export class MediaRepository {
     const ffprobe = spawn(
       'ffprobe',
       [
+        '-fflags',
+        '+genpts',
         '-v',
         'error',
         '-select_streams',
         String(streamIndex),
         '-show_entries',
-        'packet=pts,duration,flags',
+        'packet=pts,dts,duration,flags',
         '-of',
         'csv=p=0',
         input,
@@ -314,22 +316,24 @@ export class MediaRepository {
     const keyframeAccDuration: number[] = [];
     const keyframeOwnDuration: number[] = [];
     const postDiscard: { pts: number; duration: number }[] = [];
-    const parseLine = (line: string) => {
-      if (!line) {
+    let pendingPacket: { pts: number | null; dts: number | null; duration: number | null; flags: string } | null = null;
+    let previousDuration: number | null = null;
+    const processPacket = (
+      packet: { pts: number | null; dts: number | null; duration: number | null; flags: string },
+      nextPacket?: { pts: number | null; dts: number | null },
+    ) => {
+      const resolved = this.resolvePacketTiming(packet, nextPacket, previousDuration);
+      if (!resolved) {
         return;
       }
-      const [ptsStr, durationStr, flags] = line.split(',', 3);
-      const pts = Number.parseInt(ptsStr);
-      const duration = Number.parseInt(durationStr);
-      if (Number.isNaN(pts) || Number.isNaN(duration) || !flags) {
-        return;
-      }
+      const { pts, duration } = resolved;
+      previousDuration = duration;
       // Discarded packets don't contribute to packet count, but still contribute to video duration
       totalDuration += duration;
-      if (flags[1] !== 'D') {
+      if (packet.flags[1] !== 'D') {
         postDiscard.push({ pts, duration });
       }
-      if (flags[0] === 'K') {
+      if (packet.flags[0] === 'K') {
         keyframePts.push(pts);
         keyframeAccDuration.push(totalDuration);
         // VFR content can have variable duration keyframes,
@@ -337,6 +341,25 @@ export class MediaRepository {
         // Non-keyframes are accounted for in totalDuration.
         keyframeOwnDuration.push(duration);
       }
+    };
+    const parseLine = (line: string) => {
+      if (!line) {
+        return;
+      }
+      const [ptsStr, dtsStr, durationStr, flags] = line.split(',', 4);
+      if (!flags) {
+        return;
+      }
+      const packet = {
+        pts: this.parseOptionalInt(ptsStr),
+        dts: this.parseOptionalInt(dtsStr),
+        duration: this.parseOptionalInt(durationStr),
+        flags,
+      };
+      if (pendingPacket) {
+        processPacket(pendingPacket, packet);
+      }
+      pendingPacket = packet;
     };
 
     let stderr = '';
@@ -360,6 +383,9 @@ export class MediaRepository {
           return reject(new Error(`ffprobe exited with code ${code}: ${stderr.trim()}`));
         }
         parseLine(remainder);
+        if (pendingPacket) {
+          processPacket(pendingPacket);
+        }
         if (postDiscard.length === 0) {
           return resolve(null);
         }
@@ -374,6 +400,26 @@ export class MediaRepository {
         });
       });
     });
+  }
+
+  private resolvePacketTiming(
+    packet: { pts: number | null; dts: number | null; duration: number | null },
+    nextPacket?: { pts: number | null; dts: number | null },
+    previousDuration?: number | null,
+  ): { pts: number; duration: number } | null {
+    const pts = packet.pts ?? packet.dts;
+    const nextDts = nextPacket?.dts;
+    const nextPts = nextPacket?.pts;
+    const dtsDelta = packet.dts !== null && nextDts !== undefined && nextDts !== null ? nextDts - packet.dts : null;
+    const ptsDelta = packet.pts !== null && nextPts !== undefined && nextPts !== null ? nextPts - packet.pts : null;
+    const duration =
+      packet.duration ??
+      (dtsDelta !== null && dtsDelta > 0 ? dtsDelta : null) ??
+      (ptsDelta !== null && ptsDelta > 0 ? ptsDelta : null) ??
+      previousDuration ??
+      null;
+
+    return pts === null || duration === null || duration <= 0 ? null : { pts, duration };
   }
 
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
