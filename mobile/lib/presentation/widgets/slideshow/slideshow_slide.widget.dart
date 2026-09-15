@@ -151,7 +151,10 @@ class _SlideshowVideo extends ConsumerWidget {
         isCurrent: isCurrent,
         // Disable video looping
         loopOverride: false,
-        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+        image: ProgressiveImage(
+          provider: imageProvider,
+          builder: (context, provider) => Image(image: provider, fit: BoxFit.contain, alignment: Alignment.center),
+        ),
       ),
     );
   }
