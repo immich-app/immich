@@ -3433,6 +3433,32 @@ export type SyncAssetFaceV2 = {
     /** Source type */
     sourceType: string;
 };
+export type SyncAssetFaceV3 = {
+    /** Asset ID */
+    assetId: string;
+    /** Bounding box X1 */
+    boundingBoxX1: number;
+    /** Bounding box X2 */
+    boundingBoxX2: number;
+    /** Bounding box Y1 */
+    boundingBoxY1: number;
+    /** Bounding box Y2 */
+    boundingBoxY2: number;
+    /** Face deleted at */
+    deletedAt: string | null;
+    /** Asset face ID */
+    id: string;
+    /** Image height */
+    imageHeight: number;
+    /** Image width */
+    imageWidth: number;
+    /** Is the face visible in the asset */
+    isVisible: boolean;
+    /** Person ID */
+    personId: string | null;
+    /** Source type */
+    sourceType: string;
+};
 export type SyncAssetMetadataDeleteV1 = {
     /** Asset ID */
     assetId: string;
@@ -8386,6 +8412,7 @@ export enum SyncEntityType {
     PersonDeleteV1 = "PersonDeleteV1",
     AssetFaceV1 = "AssetFaceV1",
     AssetFaceV2 = "AssetFaceV2",
+    AssetFaceV3 = "AssetFaceV3",
     AssetFaceDeleteV1 = "AssetFaceDeleteV1",
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
@@ -8421,6 +8448,7 @@ export enum SyncRequestType {
     PeopleV1 = "PeopleV1",
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
+    AssetFacesV3 = "AssetFacesV3",
     UserMetadataV1 = "UserMetadataV1"
 }
 export enum AssetOrderBy {
