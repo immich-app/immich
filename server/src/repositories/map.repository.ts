@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import isoCountries from 'i18n-iso-countries';
-import { type Expression, type Insertable, type Kysely, type NotNull, sql, type SqlBool } from 'kysely';
+import { type Expression, type Insertable, type Kysely, type NotNull, type SqlBool, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -166,6 +166,7 @@ export class MapRepository {
       this.logger.verboseFn(() => `Raw: ${JSON.stringify(response, null, 2)}`);
 
       const { countryCode, name: city, admin1Name } = response;
+      // eslint-disable-next-line import-x/no-named-as-default-member
       const country = isoCountries.getName(countryCode, 'en') ?? null;
       const state = admin1Name;
 
@@ -194,6 +195,7 @@ export class MapRepository {
     this.logger.verboseFn(() => `Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
 
     const { admin_a3 } = ne_response;
+    // eslint-disable-next-line import-x/no-named-as-default-member
     const country = isoCountries.getName(admin_a3, 'en') ?? null;
     const state = null;
     const city = null;

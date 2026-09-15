@@ -1,9 +1,9 @@
+import type { VectorExtension } from 'src/types.js';
 import { EXTENSION_NAMES } from 'src/constants.js';
 import { DatabaseExtension, VectorIndex } from 'src/enum.js';
 import { DatabaseService } from 'src/services/database.service.js';
-import type { VectorExtension } from 'src/types.js';
 import { envData, mockEnvData } from 'test/repositories/config.repository.mock.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;

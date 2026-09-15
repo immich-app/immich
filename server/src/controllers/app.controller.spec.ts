@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { AppController } from 'src/controllers/app.controller.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
-import request from 'supertest';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(AppController.name, () => {

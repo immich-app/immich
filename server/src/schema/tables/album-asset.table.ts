@@ -7,7 +7,7 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { album_asset_delete_audit } from 'src/schema/functions.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';

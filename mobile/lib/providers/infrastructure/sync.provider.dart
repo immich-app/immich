@@ -31,7 +31,6 @@ final localSyncServiceProvider = Provider((ref) {
   final db = ref.watch(driftProvider);
   return LocalSyncService(
     localAlbumRepository: db.localAlbumRepository,
-    localAssetRepository: db.localAssetRepository,
     trashedLocalAssetRepository: db.trashedLocalAssetRepository,
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),
