@@ -21,9 +21,7 @@ class PlaceDetailPage extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: Timeline(
-        appBar: MesmerizingSliverAppBar(title: place),
-      ),
+      child: Timeline(appBar: MesmerizingSliverAppBar(title: place)),
     );
   }
 }
