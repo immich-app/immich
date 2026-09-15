@@ -376,6 +376,9 @@ const SyncAssetFaceV2Schema = SyncAssetFaceV1Schema.extend({
   isVisible: z.boolean().describe('Is the face visible in the asset'),
 }).meta({ id: 'SyncAssetFaceV2' });
 
+// same shape as V2, but scoped to the whole cluster group instead of the user's own assets
+const SyncAssetFaceV3Schema = SyncAssetFaceV2Schema.extend({}).meta({ id: 'SyncAssetFaceV3' });
+
 const SyncAssetFaceDeleteV1Schema = z
   .object({ assetFaceId: z.uuidv4().describe('Asset face ID') })
   .meta({ id: 'SyncAssetFaceDeleteV1' });
@@ -455,6 +458,8 @@ class SyncAssetFaceV1 extends createZodDto(SyncAssetFaceV1Schema) {}
 @ExtraModel()
 class SyncAssetFaceV2 extends createZodDto(SyncAssetFaceV2Schema) {}
 @ExtraModel()
+class SyncAssetFaceV3 extends createZodDto(SyncAssetFaceV3Schema) {}
+@ExtraModel()
 class SyncAssetFaceDeleteV1 extends createZodDto(SyncAssetFaceDeleteV1Schema) {}
 @ExtraModel()
 class SyncUserMetadataV1 extends createZodDto(SyncUserMetadataV1Schema) {}
@@ -516,6 +521,7 @@ export type SyncItem = {
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
   [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
   [SyncEntityType.AssetFaceV2]: SyncAssetFaceV2;
+  [SyncEntityType.AssetFaceV3]: SyncAssetFaceV3;
   [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
