@@ -12,9 +12,10 @@
     albumName: string;
     isOwned: boolean;
     onUpdate: (albumName: string) => void;
+    onNameInput?: (albumName: string) => void;
   };
 
-  let { id, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
+  let { id, albumName = $bindable(), isOwned, onUpdate, onNameInput }: Props = $props();
 
   let newAlbumName = $derived(albumName);
 
@@ -44,6 +45,7 @@
       bind:value={newAlbumName}
       variant="ghost"
       title={$t('edit_title')}
+      oninput={() => onNameInput?.(newAlbumName)}
       onblur={handleUpdate}
       placeholder={$t('add_a_title')}
       class={textClasses}
