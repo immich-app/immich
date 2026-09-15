@@ -5,9 +5,12 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/app/settings.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
@@ -15,14 +18,19 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
+import 'package:logging/logging.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 27;
 
-Future<void> migrateDatabaseIfNeeded(Drift drift) async {
+Future<void> migrateDatabaseIfNeeded(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
   final version = storedVersion ?? targetVersion;
 
@@ -34,12 +42,82 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
     await _migrateTo26(drift);
   }
 
+  if (version < 27) {
+    await _migrateTo27(drift, nativeSyncApi, permissionApi);
+  }
+
   if (storedVersion == null) {
     await FeatureMessageService(SettingsRepository.instance).markSeen();
   }
 
   await Store.put(StoreKey.version, targetVersion);
   return;
+}
+
+// android photos without exif used to get the copy date as created_at,
+// mediastore still has the real one so read it once more and fix only the rows that differ
+Future<void> _migrateTo27(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
+  if (!CurrentPlatform.isAndroid) {
+    return;
+  }
+  try {
+    final dates = <String, DateTime>{};
+    void addDates(Iterable<PlatformAsset> assets) {
+      for (final asset in assets) {
+        final date = tryFromSecondsSinceEpoch(asset.createdAt, isUtc: true);
+        if (date != null) {
+          dates[asset.id] = date;
+        }
+      }
+    }
+
+    for (final album in await nativeSyncApi.getAlbums()) {
+      addDates(await nativeSyncApi.getAssetsForAlbum(album.id));
+    }
+    if (await permissionApi.hasManageMediaPermission()) {
+      final trashed = await nativeSyncApi.getTrashedAssets();
+      addDates(trashed.values.flattened);
+    }
+
+    await drift.transaction(() async {
+      final localDates = {
+        for (final row in await (drift.selectOnly(
+          drift.localAssetEntity,
+        )..addColumns([drift.localAssetEntity.id, drift.localAssetEntity.createdAt])).get())
+          row.read(drift.localAssetEntity.id)!: row.read(drift.localAssetEntity.createdAt)!,
+      };
+      final trashedDates = {
+        for (final row in await (drift.selectOnly(
+          drift.trashedLocalAssetEntity,
+        )..addColumns([drift.trashedLocalAssetEntity.id, drift.trashedLocalAssetEntity.createdAt])).get())
+          row.read(drift.trashedLocalAssetEntity.id)!: row.read(drift.trashedLocalAssetEntity.createdAt)!,
+      };
+      for (final chunk in dates.entries.slices(kDriftMaxChunk)) {
+        await drift.batch((batch) {
+          for (final entry in chunk) {
+            final localDate = localDates[entry.key];
+            if (localDate != null && !localDate.isAtSameMomentAs(entry.value)) {
+              batch.update(
+                drift.localAssetEntity,
+                LocalAssetEntityCompanion(createdAt: Value(entry.value)),
+                where: (row) => row.id.equals(entry.key),
+              );
+            }
+            final trashedDate = trashedDates[entry.key];
+            if (trashedDate != null && !trashedDate.isAtSameMomentAs(entry.value)) {
+              batch.update(
+                drift.trashedLocalAssetEntity,
+                TrashedLocalAssetEntityCompanion(createdAt: Value(entry.value)),
+                where: (row) => row.id.equals(entry.key),
+              );
+            }
+          }
+        });
+      }
+    });
+  } catch (error, stackTrace) {
+    Logger('Migration').warning("Error migrating to version 27", error, stackTrace);
+  }
 }
 
 Future<void> _migrateTo25() async {
