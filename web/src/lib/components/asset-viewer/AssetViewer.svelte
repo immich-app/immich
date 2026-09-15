@@ -650,9 +650,8 @@
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
-              imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
+              imageClass={stackedAsset.id === asset.id ? 'border-2 border-white' : 'brightness-70'}
               brokenAssetClass="text-xs"
-              dimmed={stackedAsset.id !== asset.id}
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
                 cursor.current = stackedAsset;
