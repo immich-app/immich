@@ -96,7 +96,12 @@ export class PersonService extends BaseService {
       );
 
       for (const face of faces) {
-        await this.requireAccess({ auth, permission: Permission.PersonCreate, ids: [face.id] });
+        const ids = await this.checkAccess({ auth, permission: Permission.PersonCreate, ids: [face.id] });
+
+        if (ids.size !== 1) {
+          continue;
+        }
+
         if (person.faceAssetId === null) {
           changeFeaturePhoto.set(personKey(person), person);
         }
