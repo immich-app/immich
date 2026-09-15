@@ -103,6 +103,11 @@ const UserAdminUpdateSchema = z
     shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
     quotaSizeInBytes: z.int().min(0).nullish().describe('Storage quota in bytes'),
     isAdmin: z.boolean().optional().describe('Grant admin privileges'),
+    notify: z
+      .boolean()
+      .optional()
+      .describe('Send a welcome email with the new password when resetting it')
+      .meta(new HistoryBuilder().added('v3.3.0').getExtensions()),
   })
   .meta({ id: 'UserAdminUpdateDto' });
 
