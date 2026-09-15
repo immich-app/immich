@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
+import type { ClassConstructor } from 'src/types.js';
 import { SALT_ROUNDS } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { UserAdmin } from 'src/database.js';
@@ -61,7 +62,6 @@ import { ViewRepository } from 'src/repositories/view-repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
-import type { ClassConstructor } from 'src/types.js';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access.js';
 import { getConfig, updateConfig } from 'src/utils/config.js';
 

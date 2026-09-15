@@ -3,7 +3,7 @@ import { SessionService } from 'src/services/session.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe('SessionService', () => {
   let sut: SessionService;

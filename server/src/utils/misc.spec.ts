@@ -1,5 +1,5 @@
-import { getKeysDeep, globToPostgresRegex, unsetDeep } from 'src/utils/misc.js';
 import { describe, expect, it } from 'vitest';
+import { getKeysDeep, globToPostgresRegex, unsetDeep } from 'src/utils/misc.js';
 
 describe('getKeysDeep', () => {
   it('should handle an empty object', () => {

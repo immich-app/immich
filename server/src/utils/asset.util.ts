@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import type { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AssetFile } from 'src/database.js';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto.js';
@@ -10,7 +11,6 @@ import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
-import type { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types.js';
 import { checkAccess } from 'src/utils/access.js';
 
 export const getAssetFile = (files: AssetFile[], type: AssetFileType, { isEdited }: { isEdited: boolean }) => {

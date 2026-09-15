@@ -2,14 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   AddUsersDto,
   AlbumResponseDto,
+  AlbumStatisticsResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
-  AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
-  mapAlbum,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
+  mapAlbum,
 } from 'src/dtos/album.dto.js';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';

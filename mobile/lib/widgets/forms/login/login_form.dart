@@ -264,6 +264,7 @@ class LoginForm extends HookConsumerWidget {
 
         if (result.shouldChangePassword && !result.isAdmin) {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
+          passwordController.clear();
         } else {
           await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
           if (isSyncRemoteDeletionsMode()) {

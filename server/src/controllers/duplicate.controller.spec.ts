@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { DuplicateController } from 'src/controllers/duplicate.controller.js';
 import { DuplicateService } from 'src/services/duplicate.service.js';
-import request from 'supertest';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
