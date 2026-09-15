@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
@@ -21,11 +21,10 @@ class SetFeaturedPhotoAction extends ActionBuilder {
 
   Future<void> _setFeaturedPhoto(BuildContext context, WidgetRef ref) async {
     final message = context.t.feature_photo_updated;
-    final peopleService = ref.read(peopleServiceProvider);
     final toastService = ref.read(toastServiceProvider);
 
     try {
-      await peopleService.setFeaturedPhoto(personId, assetId);
+      await ref.read(Store.people).setFeaturedPhoto(personId, assetId);
       toastService.success(message);
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to set featured photo");
