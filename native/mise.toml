@@ -1,0 +1,34 @@
+[tools]
+rust = { version = "1.98.0", components = "rustfmt,clippy" } # keep in sync with crates/immich_core_ffi/rust-toolchain.toml
+
+[tasks.build]
+description = "Build the native crates for the host"
+run = "cargo build --workspace"
+
+[tasks.test]
+description = "Run the Rust tests"
+run = "cargo test --workspace --locked"
+
+[tasks.fmt]
+description = "Check Rust formatting"
+run = "cargo fmt --all --check"
+
+[tasks.lint]
+description = "Run clippy with warnings as errors"
+run = "cargo clippy --workspace --all-targets --locked -- -D warnings"
+
+[tasks.codegen]
+description = "Regenerate the C header and the Dart bindings"
+sources = [
+  "crates/immich_core_ffi/src/**/*.rs",
+  "crates/immich_core_ffi/cbindgen.toml",
+  "immich_native_core/ffigen.yaml",
+]
+outputs = [
+  "crates/immich_core_ffi/include/immich_core.h",
+  "immich_native_core/lib/src/bindings.g.dart",
+]
+run = [
+  "cargo build -p immich_core_ffi",
+  { task = "//mobile:codegen:native" },
+]
