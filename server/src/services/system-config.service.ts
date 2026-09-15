@@ -1,17 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { isEqual } from 'lodash-es';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { OnEvent } from 'src/decorators.js';
 import {
   AdminConfigDto,
+  PublicConfigDto,
+  UserConfigDto,
   defaults,
   mapAdminConfig,
   mapPublicConfig,
   mapUserConfig,
-  PublicConfigDto,
-  UserConfigDto,
 } from 'src/dtos/config.dto.js';
 import { BootstrapEventPriority } from 'src/enum.js';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { clearConfigCache } from 'src/utils/config.js';
 import { toPlainObject } from 'src/utils/object.js';

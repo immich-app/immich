@@ -6,7 +6,7 @@ import {
   ClusterGroupRequestResponseDto,
   mapClusterGroupRequest,
 } from 'src/dtos/cluster-group.dto.js';
-import { mapUser, UserResponseDto } from 'src/dtos/user.dto.js';
+import { UserResponseDto, mapUser } from 'src/dtos/user.dto.js';
 import { JobName, Permission } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';

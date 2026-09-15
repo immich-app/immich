@@ -1,5 +1,5 @@
 import { IntegrityService } from 'src/services/integrity.service.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(IntegrityService.name, () => {
   let sut: IntegrityService;

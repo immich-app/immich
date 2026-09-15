@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { SearchController } from 'src/controllers/search.controller.js';
 import { SearchService } from 'src/services/search.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 

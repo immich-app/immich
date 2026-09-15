@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
+import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
 import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
@@ -7,24 +7,6 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp, { Sharp } from 'sharp';
-import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
-import { Exif } from 'src/database.js';
-import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
-import {
-  AacProfile,
-  Av1Profile,
-  ColorMatrix,
-  ColorPrimaries,
-  Colorspace,
-  ColorTransfer,
-  DvProfile,
-  DvSignalCompatibility,
-  H264Profile,
-  HevcProfile,
-  LogLevel,
-  RawExtractedFormat,
-} from 'src/enum.js';
-import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import type {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
@@ -35,11 +17,30 @@ import type {
   VideoInfo,
   VideoPacketInfo,
 } from 'src/types.js';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
+import { Exif } from 'src/database.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import {
+  AacProfile,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  Colorspace,
+  DvProfile,
+  DvSignalCompatibility,
+  H264Profile,
+  HevcProfile,
+  LogLevel,
+  RawExtractedFormat,
+} from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { handlePromiseError } from 'src/utils/misc.js';
 import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
+    // eslint-disable-next-line import-x/no-named-as-default-member
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
@@ -63,7 +64,9 @@ export type ExtractResult = {
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
+    // eslint-disable-next-line import-x/no-named-as-default-member
     sharp.concurrency(0);
+    // eslint-disable-next-line import-x/no-named-as-default-member
     sharp.cache({ files: 0 });
   }
 

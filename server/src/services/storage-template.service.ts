@@ -3,6 +3,8 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { JobOf, StorageAsset } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto.js';
@@ -16,9 +18,7 @@ import {
   QueueName,
   StorageFolder,
 } from 'src/enum.js';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { JobOf, StorageAsset } from 'src/types.js';
 import { getAssetFile } from 'src/utils/asset.util.js';
 import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file.js';
 

@@ -1,4 +1,5 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
+import type { UserMetadataItem } from 'src/types.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import {
   AlbumUserRole,
@@ -17,7 +18,6 @@ import { AlbumTable } from 'src/schema/tables/album.table.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { PluginTable } from 'src/schema/tables/plugin.table.js';
-import type { UserMetadataItem } from 'src/types.js';
 
 export type AuthUser = {
   id: string;
@@ -140,7 +140,7 @@ export type UserAdmin = User & {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  oauthId: string;
+  oauthId: string | null;
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;
   status: UserStatus;

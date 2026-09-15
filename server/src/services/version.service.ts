@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import semver, { SemVer } from 'semver';
+import { SemVer, diff, intersects, lt } from 'semver';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { VersionCheckMetadata } from 'src/types.js';
 import { serverVersion } from 'src/constants.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { ReleaseEventV1, ReleaseType, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
@@ -14,9 +16,7 @@ import {
   ReleaseChannel,
   SystemMetadataKey,
 } from 'src/enum.js';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { VersionCheckMetadata } from 'src/types.js';
 import { handlePromiseError } from 'src/utils/misc.js';
 
 const asNotification = (
@@ -25,13 +25,13 @@ const asNotification = (
 ): ReleaseEventV1 => {
   return {
     // can't use gt because it's broken for release candidates F https://github.com/npm/node-semver/issues/483
-    isAvailable: semver.intersects(`>${serverVersion}`, releaseVersion, {
+    isAvailable: intersects(`>${serverVersion}`, releaseVersion, {
       includePrerelease: channel === ReleaseChannel.ReleaseCandidate,
     }),
     checkedAt,
     serverVersion: ServerVersionResponseDto.fromSemVer(serverVersion),
     releaseVersion: ServerVersionResponseDto.fromSemVer(new SemVer(releaseVersion)),
-    type: semver.diff(serverVersion, releaseVersion) as ReleaseType,
+    type: diff(serverVersion, releaseVersion) as ReleaseType,
   };
 };
 
@@ -68,7 +68,7 @@ export class VersionService extends BaseService {
         this.logger.log(`Adding ${current} to upgrade history`);
         await this.versionRepository.create({ version: current });
 
-        const isNeedsNewMemories = semver.lt(previousVersion, '1.129.0');
+        const isNeedsNewMemories = lt(previousVersion, '1.129.0');
         if (isNeedsNewMemories) {
           await this.jobRepository.queue({ name: JobName.MemoryGenerate });
         }
@@ -127,7 +127,7 @@ export class VersionService extends BaseService {
 
       // can't use gt because it's broken for release candidates F https://github.com/npm/node-semver/issues/483
       if (
-        semver.intersects(`>${serverVersion}`, releaseVersion, {
+        intersects(`>${serverVersion}`, releaseVersion, {
           includePrerelease: newVersionCheck.channel === ReleaseChannel.ReleaseCandidate,
         })
       ) {

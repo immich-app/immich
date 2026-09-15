@@ -1,5 +1,5 @@
 import { ImmichTelemetry } from 'src/enum.js';
-import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository.js';
+import { ConfigRepository, clearEnvCache } from 'src/repositories/config.repository.js';
 
 const getEnv = () => {
   clearEnvCache();

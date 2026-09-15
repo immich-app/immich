@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { render } from '@react-email/render';
 import { createTransport } from 'nodemailer';
-import React from 'react';
+import React, { createElement } from 'react';
+import type { EmailImageAttachment } from 'src/types.js';
 import { AlbumInviteEmail } from 'src/emails/album-invite.email.js';
 import { AlbumUpdateEmail } from 'src/emails/album-update.email.js';
 import { TestEmail } from 'src/emails/test.email.js';
 import { WelcomeEmail } from 'src/emails/welcome.email.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
-import type { EmailImageAttachment } from 'src/types.js';
 
 export type SendEmailOptions = {
   from: string;
@@ -140,19 +140,19 @@ export class EmailRepository {
   private render({ template, data, customTemplate }: EmailRenderRequest): React.FunctionComponentElement<any> {
     switch (template) {
       case EmailTemplate.TEST_EMAIL: {
-        return React.createElement(TestEmail, { ...data, customTemplate });
+        return createElement(TestEmail, { ...data, customTemplate });
       }
 
       case EmailTemplate.WELCOME: {
-        return React.createElement(WelcomeEmail, { ...data, customTemplate });
+        return createElement(WelcomeEmail, { ...data, customTemplate });
       }
 
       case EmailTemplate.ALBUM_INVITE: {
-        return React.createElement(AlbumInviteEmail, { ...data, customTemplate });
+        return createElement(AlbumInviteEmail, { ...data, customTemplate });
       }
 
       case EmailTemplate.ALBUM_UPDATE: {
-        return React.createElement(AlbumUpdateEmail, { ...data, customTemplate });
+        return createElement(AlbumUpdateEmail, { ...data, customTemplate });
       }
     }
   }

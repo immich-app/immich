@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
-import chokidar, { ChokidarOptions } from 'chokidar';
+import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
 import fastGlob from 'fast-glob';
 import {
+  Dirent,
+  ReadOptionsWithBuffer,
   constants,
   createReadStream,
   createWriteStream,
-  Dirent,
   existsSync,
   mkdirSync,
-  ReadOptionsWithBuffer,
   watch,
 } from 'node:fs';
 import fs from 'node:fs/promises';
@@ -227,6 +227,7 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
+    // eslint-disable-next-line import-x/no-named-as-default-member
     return fastGlob.glob(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
@@ -245,6 +246,7 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
+    // eslint-disable-next-line import-x/no-named-as-default-member
     const stream = fastGlob.globStream(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
@@ -268,7 +270,7 @@ export class StorageRepository {
   }
 
   watch(paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) {
-    const watcher = chokidar.watch(paths, options);
+    const watcher = chokidarWatch(paths, options);
 
     watcher.on('ready', () => events.onReady?.());
     watcher.on('add', (path) => events.onAdd?.(path));
@@ -282,6 +284,7 @@ export class StorageRepository {
   watchDir = watch; // Native fs.watch without chokidar overhead
 
   private asGlob(pathToCrawl: string): string {
+    // eslint-disable-next-line import-x/no-named-as-default-member
     const escapedPath = fastGlob
       .escapePath(pathToCrawl)
       .replaceAll('"', '["]')

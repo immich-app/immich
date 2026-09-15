@@ -10,7 +10,7 @@ import { authStub } from 'test/fixtures/auth.stub.js';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
 import { getForSharedLink } from 'test/mappers.js';
 import { factory } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
