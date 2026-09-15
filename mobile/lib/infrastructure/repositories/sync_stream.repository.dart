@@ -840,7 +840,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
-  Future<void> updateAssetFacesV2(Iterable<SyncAssetFaceV2> data) async {
+  Future<void> updateAssetFacesV2(Iterable<SyncAssetFaceV3> data) async {
     try {
       await _db.batch((batch) {
         for (final assetFace in data) {
