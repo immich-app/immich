@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 
@@ -75,6 +76,10 @@ RemoteAlbum createRemoteAlbum({
     assetCount: 0,
     ownerName: 'Test Owner',
   );
+}
+
+Person createPerson({String id = 'test-person-id', String name = 'Test Person'}) {
+  return Person(id: id, name: name);
 }
 
 void main() {
@@ -609,6 +614,127 @@ void main() {
       });
     });
 
+    group('setFeaturedPhoto button', () {
+      test('should show when owner, not locked, has person (origin) and asset is RemoteAsset', () {
+        final remoteAsset = createRemoteAsset();
+        final person = createPerson();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          currentPerson: person,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.person,
+        );
+
+        expect(ActionButtonType.setFeaturedPhoto.shouldShow(context), isTrue);
+      });
+
+      test('should not show when not owner', () {
+        final remoteAsset = createRemoteAsset();
+        final person = createPerson();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: false,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          currentPerson: person,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.person,
+        );
+
+        expect(ActionButtonType.setFeaturedPhoto.shouldShow(context), isFalse);
+      });
+
+      test('should not show when in locked view', () {
+        final remoteAsset = createRemoteAsset();
+        final person = createPerson();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: true,
+          currentAlbum: null,
+          currentPerson: person,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.person,
+        );
+
+        expect(ActionButtonType.setFeaturedPhoto.shouldShow(context), isFalse);
+      });
+
+      test('should not show when no person', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          currentPerson: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.person,
+        );
+
+        expect(ActionButtonType.setFeaturedPhoto.shouldShow(context), isFalse);
+      });
+
+      test('should not show when not person timeline origin', () {
+        final remoteAsset = createRemoteAsset();
+        final person = createPerson();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          currentPerson: person,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.main,
+        );
+
+        expect(ActionButtonType.setFeaturedPhoto.shouldShow(context), isFalse);
+      });
+
+      test('should not show when asset is not RemoteAsset', () {
+        final localAsset = createLocalAsset();
+        final person = createPerson();
+        final context = ActionButtonContext(
+          asset: localAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          currentPerson: person,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.person,
+        );
+
+        expect(ActionButtonType.setFeaturedPhoto.shouldShow(context), isFalse);
+      });
+    });
+
     group('setProfilePicture button', () {
       test('should show when owner, not locked, and asset is RemoteAsset', () {
         final remoteAsset = createRemoteAsset();
@@ -1026,6 +1152,23 @@ void main() {
             source: ActionSource.timeline,
           );
           final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
+        } else if (buttonType == ActionButtonType.setFeaturedPhoto) {
+          final person = createPerson();
+          final contextWithPerson = ActionButtonContext(
+            asset: createRemoteAsset(),
+            isOwner: true,
+            isArchived: false,
+            isTrashEnabled: true,
+            isInLockedView: false,
+            currentAlbum: null,
+            currentPerson: person,
+            advancedTroubleshooting: false,
+            isStacked: false,
+            source: ActionSource.timeline,
+            timelineOrigin: TimelineOrigin.person,
+          );
+          final widget = buttonType.buildButton(contextWithPerson);
           expect(widget, isA<Widget>());
         } else {
           final widget = buttonType.buildButton(buttonContext);
