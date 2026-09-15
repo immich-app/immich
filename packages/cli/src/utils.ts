@@ -1,4 +1,12 @@
-import { ApiKeyResponseDto, getMyApiKey, getMyUser, init, isHttpError, Permission } from '@immich/sdk';
+import {
+  ApiKeyResponseDto,
+  getMyApiKey,
+  getMyUser,
+  init,
+  isHttpError,
+  isMalformedResponseError,
+  Permission,
+} from '@immich/sdk';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -82,7 +90,7 @@ export const connect = async (url: string, key: string) => {
   init({ baseUrl: url, apiKey: key });
 
   const [error] = await withError(getMyUser());
-  if (isHttpError(error)) {
+  if (isHttpError(error) || isMalformedResponseError(error)) {
     logError(error, `Failed to connect to server ${url}`);
     process.exit(1);
   }
@@ -94,6 +102,11 @@ export const logError = (error: unknown, message: string) => {
   if (isHttpError(error)) {
     console.error(`${message}: ${error.status}`);
     console.error(JSON.stringify(error.data, undefined, 2));
+  } else if (isMalformedResponseError(error)) {
+    console.error(`${message}: ${error.message}`);
+    console.error(
+      'Check that the URL points at the Immich API, and that nothing in front of it (reverse proxy, SSO portal) is answering instead.',
+    );
   } else {
     console.error(`${message} - ${error}`);
   }

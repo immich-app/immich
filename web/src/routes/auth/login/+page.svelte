@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { Route } from '$lib/route';
   import { oauth } from '$lib/utils';
@@ -27,6 +26,7 @@
   let oauthLoading = $state(true);
 
   const serverConfig = $derived(serverConfigManager.value);
+  const publicConfig = $derived(data.publicConfig);
 
   const onSuccess = async (user: LoginResponseDto) => {
     await goto(data.continueUrl, { invalidateAll: true });
@@ -37,7 +37,7 @@
   const onOnboarding = () => goto(Route.onboarding());
 
   onMount(async () => {
-    if (!featureFlagsManager.value.oauth) {
+    if (!publicConfig.oauth.enabled) {
       oauthLoading = false;
       return;
     }
@@ -63,7 +63,7 @@
 
     try {
       if (
-        (featureFlagsManager.value.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(location)) ||
+        (publicConfig.oauth.autoLaunch && !oauth.isAutoLaunchDisabled(location)) ||
         oauth.isAutoLaunchEnabled(location)
       ) {
         await goto(Route.login({ autoLaunch: 0 }), { replaceState: true });
@@ -128,14 +128,14 @@
 
 <AuthPageLayout title={data.meta.title}>
   <Stack gap={4}>
-    {#if serverConfig.loginPageMessage}
+    {#if publicConfig.server.loginPageMessage}
       <Alert color="primary" class="mb-6">
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-        {@html serverConfig.loginPageMessage}
+        {@html publicConfig.server.loginPageMessage}
       </Alert>
     {/if}
 
-    {#if !oauthLoading && featureFlagsManager.value.passwordLogin}
+    {#if !oauthLoading && publicConfig.passwordLogin.enabled}
       <form {onsubmit} class="flex flex-col gap-4">
         {#if errorMessage}
           <Alert color="danger" title={errorMessage} closable />
@@ -153,8 +153,8 @@
       </form>
     {/if}
 
-    {#if featureFlagsManager.value.oauth}
-      {#if featureFlagsManager.value.passwordLogin}
+    {#if publicConfig.oauth.enabled}
+      {#if publicConfig.passwordLogin.enabled}
         <div class="my-4 inline-flex w-full items-center justify-center">
           <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
           <span
@@ -173,14 +173,14 @@
         disabled={loading || oauthLoading}
         size="large"
         fullWidth
-        color={featureFlagsManager.value.passwordLogin ? 'secondary' : 'primary'}
+        color={publicConfig.passwordLogin.enabled ? 'secondary' : 'primary'}
         onclick={handleOAuthLogin}
       >
-        {serverConfig.oauthButtonText}
+        {publicConfig.oauth.buttonText}
       </Button>
     {/if}
 
-    {#if !featureFlagsManager.value.passwordLogin && !featureFlagsManager.value.oauth}
+    {#if !publicConfig.passwordLogin.enabled && !publicConfig.oauth.enabled}
       <Alert color="warning" title={$t('login_has_been_disabled')} />
     {/if}
   </Stack>

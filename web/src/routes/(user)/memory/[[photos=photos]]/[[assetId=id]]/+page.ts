@@ -1,15 +1,5 @@
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { redirect } from '@sveltejs/kit';
+import { Route } from '$lib/route';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ url }) => {
-  const user = await authenticate(url);
-  const $t = await getFormatter();
-
-  return {
-    user,
-    meta: {
-      title: $t('memory'),
-    },
-  };
-}) satisfies PageLoad;
+export const load = (() => redirect(307, Route.memories())) satisfies PageLoad;

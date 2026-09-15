@@ -1,21 +1,18 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/infrastructure/repositories/backup.repository.drift.dart';
 
-final backupRepositoryProvider = Provider<DriftBackupRepository>(
-  (ref) => DriftBackupRepository(ref.watch(driftProvider)),
-);
+@DriftAccessor()
+class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMixin {
+  BackupRepository(super.attachedDatabase);
 
-class DriftBackupRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftBackupRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
   JoinedSelectStatement<$LocalAlbumAssetEntityTable, LocalAlbumAssetEntityData> _getExcludedSubquery() {
     return _db.localAlbumAssetEntity.selectOnly()

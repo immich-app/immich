@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -48,20 +47,6 @@ class MapUtils {
     ],
     heatmapOpacity: 0.7,
   );
-
-  static Map<String, dynamic> _addFeature(MapMarker marker) => {
-    'type': 'Feature',
-    'id': marker.assetRemoteId,
-    'geometry': {
-      'type': 'Point',
-      'coordinates': [marker.latLng.longitude, marker.latLng.latitude],
-    },
-  };
-
-  static Map<String, dynamic> generateGeoJsonForMarkers(List<MapMarker> markers) => {
-    'type': 'FeatureCollection',
-    'features': markers.map(_addFeature).toList(),
-  };
 
   static Future<(Position?, LocationPermission?)> checkPermAndGetLocation({
     required BuildContext context,

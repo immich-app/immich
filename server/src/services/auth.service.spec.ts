@@ -1,21 +1,21 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { SALT_ROUNDS } from 'src/constants';
-import { UserAdmin } from 'src/database';
-import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
-import { AuthType, Permission } from 'src/enum';
-import { AuthService } from 'src/services/auth.service';
-import { UserMetadataItem } from 'src/types';
-import { ApiKeyFactory } from 'test/factories/api-key.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { OAuthProfileFactory } from 'test/factories/oauth-profile.factory';
-import { SessionFactory } from 'test/factories/session.factory';
-import { UserFactory } from 'test/factories/user.factory';
-import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
-import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { userStub } from 'test/fixtures/user.stub';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import type { UserMetadataItem } from 'src/types.js';
+import { SALT_ROUNDS } from 'src/constants.js';
+import { UserAdmin } from 'src/database.js';
+import { AuthDto, SignUpDto } from 'src/dtos/auth.dto.js';
+import { AuthType, Permission } from 'src/enum.js';
+import { AuthService } from 'src/services/auth.service.js';
+import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { OAuthProfileFactory } from 'test/factories/oauth-profile.factory.js';
+import { SessionFactory } from 'test/factories/session.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
+import { userStub } from 'test/fixtures/user.stub.js';
+import { newUuid } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 const email = 'test@immich.com';
 const loginDetails = {
@@ -107,6 +107,22 @@ describe(AuthService.name, () => {
         userId: user.id,
         currentSessionId: auth.session?.id,
         shouldLogoutSessions: undefined,
+      });
+    });
+
+    it('should clear shouldChangePassword', async () => {
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePassword(auth, dto);
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        password: 'new-password (hashed)',
+        shouldChangePassword: false,
       });
     });
 
@@ -995,10 +1011,7 @@ describe(AuthService.name, () => {
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.crypto.randomUUID.mockReturnValue(fileId);
-      mocks.oauth.getProfilePicture.mockResolvedValue({
-        contentType: 'image/jpeg',
-        data: pictureBytes.buffer,
-      });
+      mocks.oauth.getProfilePicture.mockResolvedValue(pictureBytes.buffer);
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
@@ -1027,10 +1040,7 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByOAuthId.mockResolvedValue(user);
-      mocks.oauth.getProfilePicture.mockResolvedValue({
-        contentType: 'text/html',
-        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
-      });
+      mocks.oauth.getProfilePicture.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]).buffer);
       mocks.media.generateThumbnail.mockRejectedValue(new Error('not an image'));
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 

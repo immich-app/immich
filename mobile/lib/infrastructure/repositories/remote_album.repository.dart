@@ -3,21 +3,24 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.drift.dart';
 
 enum SortRemoteAlbumsBy { id, updatedAt }
 
-class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftRemoteAlbumRepository(this._db) : super(_db);
+@DriftAccessor()
+class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRepositoryMixin {
+  RemoteAlbumRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<List<RemoteAlbum>> getAll({Set<SortRemoteAlbumsBy> sortBy = const {SortRemoteAlbumsBy.updatedAt}}) {
     // Count non-trashed assets via the joined asset table. Filtering trashed assets in the
@@ -191,7 +194,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> update(RemoteAlbum album) async {
+  Future<void> updateAlbum(RemoteAlbum album) async {
     await _db.remoteAlbumEntity.update().replace(
       RemoteAlbumEntityCompanion(
         id: Value(album.id),

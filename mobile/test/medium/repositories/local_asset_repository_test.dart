@@ -8,11 +8,11 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftLocalAssetRepository sut;
+  late LocalAssetRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = DriftLocalAssetRepository(ctx.db);
+    sut = LocalAssetRepository(ctx.db);
   });
 
   tearDown(() async {
@@ -559,8 +559,8 @@ void main() {
       final remoteAsset = await ctx.newRemoteAsset(ownerId: userId);
       final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id);
       final localAsset = await ctx.newLocalAsset(
-        checksumOption: const Option.none(),
-        iCloudId: null,
+        checksumOption: const .none(),
+        iCloudIdOption: const .none(),
         createdAt: cloudIdAsset.createdAt,
         adjustmentTime: cloudIdAsset.adjustmentTime,
         latitude: cloudIdAsset.latitude,

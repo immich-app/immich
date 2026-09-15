@@ -323,14 +323,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     super.dispose();
   }
 
-  void onTapUp(TapUpDetails details) {
-    widget.onTapUp?.call(context, details, controller.value);
-  }
-
-  void onTapDown(TapDownDetails details) {
-    widget.onTapDown?.call(context, details, controller.value);
-  }
-
   void _updateScaleBoundaries() {
     final prev = controller.scaleBoundaries;
     if (prev == widget.scaleBoundaries) {

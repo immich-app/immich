@@ -8,7 +8,7 @@ export function maintenanceCreateUrl(url: URL) {
 }
 
 export function maintenanceReturnUrl(searchParams: URLSearchParams) {
-  return searchParams.get('continue') ?? '/';
+  return Route.continue(searchParams.get('continue'), '/');
 }
 
 export function maintenanceShouldRedirect(maintenanceMode: boolean, currentUrl: URL | Location) {

@@ -2,14 +2,14 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
 } from '@immich/sql-tools';
-import { SharedLinkType } from 'src/enum';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { UserTable } from 'src/schema/tables/user.table';
+import { SharedLinkType } from 'src/enum.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('shared_link')
 export class SharedLinkTable {

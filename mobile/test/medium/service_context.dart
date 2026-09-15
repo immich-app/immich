@@ -13,7 +13,6 @@ void _stubPartnerApi(MockPartnerApiRepository api) {
   final partner = UserDto(id: id, email: '$id@example.com', name: 'name $id', profileChangedAt: TestUtils.now());
 
   registerFallbackValue(Direction.sharedByMe);
-  when(() => api.getAll(any())).thenAnswer((_) async => const <UserDto>[]);
   when(() => api.create(any())).thenAnswer((_) async => partner);
   when(() => api.update(any(), inTimeline: any(named: 'inTimeline'))).thenAnswer((_) async => partner);
   when(() => api.delete(any())).thenAnswer((_) async {});

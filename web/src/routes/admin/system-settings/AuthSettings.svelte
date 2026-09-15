@@ -251,6 +251,16 @@
                 isEdited={configToEdit.oauth.buttonText !== config.oauth.buttonText}
               />
 
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label={$t('admin.oauth_account_management_url')}
+                description={$t('admin.oauth_account_management_url_description')}
+                bind:value={configToEdit.oauth.accountManagementUrl}
+                required={false}
+                disabled={disabled || !configToEdit.oauth.enabled}
+                isEdited={configToEdit.oauth.accountManagementUrl !== config.oauth.accountManagementUrl}
+              />
+
               <SettingSwitch
                 title={$t('admin.oauth_auto_register')}
                 subtitle={$t('admin.oauth_auto_register_description')}

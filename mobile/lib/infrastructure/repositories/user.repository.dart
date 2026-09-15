@@ -1,21 +1,29 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
-import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/mapper.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
 
-class UserRepository {
-  final Drift _db;
-  const UserRepository(this._db);
+@DriftAccessor()
+class UserRepository extends DatabaseAccessor<Drift> with $UserRepositoryMixin {
+  UserRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
+
+  Stream<User?> watch(String id) =>
+      (_db.select(_db.userEntity)..where((u) => u.id.equals(id))).map(mapToUser).watchSingleOrNull();
 }
 
-class DriftAuthUserRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftAuthUserRepository(super.db) : _db = db;
+@DriftAccessor()
+class AuthUserRepository extends DatabaseAccessor<Drift> with $AuthUserRepositoryMixin {
+  AuthUserRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<UserDto?> get(String id) async {
     final user = await _db.managers.authUserEntity.filter((user) => user.id.equals(id)).getSingleOrNull();

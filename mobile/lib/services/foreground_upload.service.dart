@@ -15,6 +15,7 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -39,7 +40,7 @@ final foregroundUploadServiceProvider = Provider((ref) {
   return ForegroundUploadService(
     ref.watch(uploadRepositoryProvider),
     ref.watch(storageRepositoryProvider),
-    ref.watch(backupRepositoryProvider),
+    ref.watch(driftProvider).backupRepository,
     ref.watch(connectivityApiProvider),
     ref.watch(assetMediaRepositoryProvider),
   );
@@ -61,7 +62,7 @@ class ForegroundUploadService {
 
   final UploadRepository _uploadRepository;
   final StorageRepository _storageRepository;
-  final DriftBackupRepository _backupRepository;
+  final BackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
   final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('ForegroundUploadService');

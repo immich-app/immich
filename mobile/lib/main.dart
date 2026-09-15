@@ -14,6 +14,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
@@ -25,7 +26,6 @@ import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
@@ -53,13 +53,18 @@ void main() async {
     ImmichWidgetsBinding();
     unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
     await EasyLocalization.ensureInitialized();
-    final (drift, _) = await Bootstrap.initDomain();
+    final (dataController, apiService) = await Bootstrap.initDomain();
     await initApp();
     // Warm-up isolate pool for worker manager
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
-    await migrateDatabaseIfNeeded(drift, NativeSyncApi(), PermissionApi());
+    await migrateDatabaseIfNeeded(dataController.db, NativeSyncApi(), PermissionApi());
 
-    runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
+    runApp(
+      ProviderScope(
+        overrides: Store.overrideWith(dataController: dataController, apiService: apiService),
+        child: const MainWidget(),
+      ),
+    );
   } catch (error, stack) {
     runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
   }
@@ -274,7 +279,11 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         builder: (context, child) => ImmichTranslationProvider(
-          translations: ImmichTranslations(submit: context.t.submit, password: context.t.password),
+          translations: ImmichTranslations(
+            submit: context.t.submit,
+            password: context.t.password,
+            undo: context.t.undo,
+          ),
           child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
         ),
         routerConfig: router.config(
