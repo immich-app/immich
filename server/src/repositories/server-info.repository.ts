@@ -4,9 +4,9 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { ReleaseChannel } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ReleaseChannel } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 export interface VersionResponse {
   version: string;
@@ -119,6 +119,7 @@ export class ServerInfoRepository {
         exiftool.version(),
       ]);
 
+      // eslint-disable-next-line import-x/no-named-as-default-member
       const libvipsVersion = getLockfileVersion('libvips', lockfile) || sharp.versions.vips;
 
       this.buildVersions = {

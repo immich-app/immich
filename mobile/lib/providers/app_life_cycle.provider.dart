@@ -31,12 +31,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
 
-  AppLifeCycleEnum getAppState() {
-    return state;
-  }
-
   Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
+    _log.info("App resumed");
 
     // Prevent overlapping resume operations
     if (_resumeOperation != null && !_resumeOperation!.isCompleted) {
@@ -66,6 +63,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> _performResume() async {
     // no need to resume because app was never really paused
     if (!_wasPaused) {
+      _log.info("Resume skipped, app was never paused");
       return;
     }
     _wasPaused = false;
@@ -128,6 +126,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           syncSuccess = await backgroundManager.syncRemote();
         }, "syncRemote"),
       ]);
+      _ref.invalidate(memoryLaneProvider);
       _ref.invalidate(allMemoriesProvider);
       if (syncSuccess) {
         await Future.wait([
@@ -135,8 +134,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             unawaited(_resumeBackup());
           }),
           _resumeBackup(),
-          // TODO: Bring back when the soft freeze issue is addressed
-          // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
+          _safeRun(backgroundManager.syncCloudIds, "syncCloudIds"),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets, "hashAssets");
@@ -178,6 +176,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> handleAppPause() async {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
+    _log.info("App paused");
 
     // Prevent overlapping pause operations
     if (_pauseOperation != null && !_pauseOperation!.isCompleted) {

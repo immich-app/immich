@@ -161,8 +161,10 @@
   });
 
   $effect(() => {
-    if (tags) {
-      tagsTitle = getSearchTagsTitle(tags, searchManager.filter.tagIds!);
+    if (searchManager.filter.tagIds === null) {
+      tagsTitle = $t('untagged');
+    } else if (tags) {
+      tagsTitle = getSearchTagsTitle(tags, searchManager.filter.tagIds);
     }
   });
 

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.2.0-rc.0
+ * 3.2.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -868,7 +868,7 @@ export type AlbumResponseDto = {
     createdAt: string;
     /** Album description */
     description: string;
-    /** End date (latest asset) */
+    /** UTC representation of (local) end date (latest asset) */
     endDate?: string;
     /** Has shared link */
     hasSharedLink: boolean;
@@ -881,7 +881,7 @@ export type AlbumResponseDto = {
     order?: AssetOrder;
     /** Is shared album */
     shared: boolean;
-    /** Start date (earliest asset) */
+    /** UTC representation of (local) start date (earliest asset) */
     startDate?: string;
     /** Last update date */
     updatedAt: string;
@@ -2001,6 +2001,10 @@ export type PeopleUpdateDto = {
     /** People to update */
     people: PeopleUpdateItem[];
 };
+export type MergePersonDto = {
+    /** Person IDs to merge */
+    ids: string[];
+};
 export type PersonUpdateDto = {
     /** Person date of birth */
     birthDate?: string | null;
@@ -2014,10 +2018,6 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-};
-export type MergePersonDto = {
-    /** Person IDs to merge */
-    ids: string[];
 };
 export type AssetFaceUpdateItem = {
     /** Asset ID */
@@ -3607,6 +3607,33 @@ export type SyncAuthUserV1 = {
     name: string;
     /** User OAuth ID */
     oauthId: string;
+    /** User pin code */
+    pinCode: string | null;
+    /** User profile changed at */
+    profileChangedAt: string;
+    /** Quota size in bytes */
+    quotaSizeInBytes: number | null;
+    /** Quota usage in bytes */
+    quotaUsageInBytes: number;
+    /** User storage label */
+    storageLabel: string | null;
+};
+export type SyncAuthUserV2 = {
+    avatarColor?: (UserAvatarColor) | null;
+    /** User deleted at */
+    deletedAt: string | null;
+    /** User email */
+    email: string;
+    /** User has profile image */
+    hasProfileImage: boolean;
+    /** User ID */
+    id: string;
+    /** User is admin */
+    isAdmin: boolean;
+    /** User name */
+    name: string;
+    /** User OAuth ID */
+    oauthId: string | null;
     /** User pin code */
     pinCode: string | null;
     /** User profile changed at */
@@ -6066,6 +6093,21 @@ export function updatePeople({ peopleUpdateDto }: {
     })));
 }
 /**
+ * Merge people
+ */
+export function mergePeople({ mergePersonDto }: {
+    mergePersonDto: MergePersonDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>("/people/merge", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: mergePersonDto
+    })));
+}
+/**
  * Delete person
  */
 export function deletePerson({ id }: {
@@ -6108,7 +6150,7 @@ export function updatePerson({ id, personUpdateDto }: {
 /**
  * Merge people
  */
-export function mergePerson({ id, mergePersonDto }: {
+export function mergePersonLegacy({ id, mergePersonDto }: {
     id: string;
     mergePersonDto: MergePersonDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -8360,6 +8402,7 @@ export enum AssetIdErrorReason {
 }
 export enum SyncEntityType {
     AuthUserV1 = "AuthUserV1",
+    AuthUserV2 = "AuthUserV2",
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
     AssetV1 = "AssetV1",
@@ -8434,6 +8477,7 @@ export enum SyncRequestType {
     AssetMetadataV1 = "AssetMetadataV1",
     AssetOcrV1 = "AssetOcrV1",
     AuthUsersV1 = "AuthUsersV1",
+    AuthUsersV2 = "AuthUsersV2",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",
     PartnersV1 = "PartnersV1",

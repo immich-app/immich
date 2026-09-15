@@ -485,6 +485,85 @@ describe('TimelineManager', () => {
     });
   });
 
+  describe('live event asset insertion', () => {
+    let timelineManager: TimelineManager;
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+
+      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+    });
+
+    afterEach(() => {
+      timelineManager.destroy();
+    });
+
+    it('does not insert live event assets with a different owner into a user-scoped timeline', async () => {
+      await timelineManager.updateOptions({ userId: 'partner-id', visibility: AssetVisibility.Timeline });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          ownerId: 'current-user-id',
+          visibility: AssetVisibility.Timeline,
+        }),
+      );
+
+      timelineManager.upsertAssetsFromLiveEvent([asset]);
+
+      expect(timelineManager.assetCount).toEqual(0);
+    });
+
+    it('inserts live event assets for the matching owner into a user-scoped timeline', async () => {
+      await timelineManager.updateOptions({ userId: 'partner-id', visibility: AssetVisibility.Timeline });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          ownerId: 'partner-id',
+          visibility: AssetVisibility.Timeline,
+        }),
+      );
+
+      timelineManager.upsertAssetsFromLiveEvent([asset]);
+
+      expect(timelineManager.assetCount).toEqual(1);
+    });
+
+    it('does not insert unknown live event assets into album timelines', async () => {
+      await timelineManager.updateOptions({ albumId: 'album-id' });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
+
+      timelineManager.upsertAssetsFromLiveEvent([asset]);
+
+      expect(timelineManager.assetCount).toEqual(0);
+    });
+
+    it('updates existing live event assets in scoped timelines', async () => {
+      await timelineManager.updateOptions({ albumId: 'album-id' });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          isFavorite: false,
+        }),
+      );
+
+      timelineManager.upsertAssets([asset]);
+      expect(timelineManager.assetCount).toEqual(1);
+      expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(false);
+
+      timelineManager.upsertAssetsFromLiveEvent([
+        {
+          ...asset,
+          isFavorite: true,
+        },
+      ]);
+
+      expect(timelineManager.assetCount).toEqual(1);
+      expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
+    });
+  });
+
   describe('removeAssets', () => {
     let timelineManager: TimelineManager;
 

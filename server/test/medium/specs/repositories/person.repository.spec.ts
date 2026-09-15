@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
-import { AssetFileType } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { DB } from 'src/schema';
-import { BaseService } from 'src/services/base.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetFileType } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { DB } from 'src/schema/index.js';
+import { BaseService } from 'src/services/base.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -226,6 +226,20 @@ describe(PersonRepository.name, () => {
           previewPath: 'preview_unedited.jpg',
         }),
       );
+    });
+  });
+
+  describe('getForFeatureFaceUpdate', () => {
+    it('should ignore soft deleted faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: asset.id, deletedAt: new Date(), personGroupId: person.personGroupId });
+
+      await expect(
+        sut.getForFeatureFaceUpdate({ personGroupId: person.personGroupId, assetId: asset.id }),
+      ).resolves.toEqual(undefined);
     });
   });
 });

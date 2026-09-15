@@ -3,7 +3,7 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { Redis } from 'ioredis';
 import { ServerOptions } from 'socket.io';
-import { ConfigRepository } from 'src/repositories/config.repository';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 
 export class WebSocketAdapter extends IoAdapter {
   constructor(private app: INestApplicationContext) {

@@ -64,8 +64,7 @@ class RknnSession:
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
         input_data: list[NDArray[np.float32]] = [np.ascontiguousarray(v) for v in input_feed.values()]
-        self.rknnpool.put(input_data)
-        res = self.rknnpool.get()
+        res = self.rknnpool.run(input_data)
         if res is None:
             raise RuntimeError("RKNN inference failed!")
         return res

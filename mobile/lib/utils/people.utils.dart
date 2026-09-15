@@ -4,9 +4,13 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_birthday_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 
-String formatAge(DateTime birthDate, DateTime referenceDate) {
+String? formatAge(DateTime birthDate, DateTime referenceDate) {
   final int ageInYears = _calculateAge(birthDate, referenceDate);
   final int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
+
+  if (ageInYears < 0) {
+    return null;
+  }
 
   final t = StaticTranslations.instance;
   if (ageInMonths <= 11) {

@@ -2,11 +2,11 @@ import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
-import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
-import { Colorspace, ImageFormat } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MediaRepository } from 'src/repositories/media.repository';
-import { automock } from 'test/utils';
+import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { Colorspace, ImageFormat } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MediaRepository } from 'src/repositories/media.repository.js';
+import { automock } from 'test/utils.js';
 
 const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
   const metadata = await sharp(buffer).metadata();

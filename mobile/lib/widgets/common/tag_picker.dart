@@ -61,7 +61,7 @@ class _TagPickerModal extends HookWidget {
         height: MediaQuery.of(context).size.height * 0.6,
         child: TagPicker(
           onSelectExistingTag: onSelectExistingTag,
-          filter: selectedTagIds.value,
+          initialSelection: selectedTagIds.value,
           onSelectNewTag: onSelectNewTag,
         ),
       ),
@@ -70,9 +70,9 @@ class _TagPickerModal extends HookWidget {
 }
 
 class TagPicker extends HookConsumerWidget {
-  const TagPicker({super.key, required this.onSelectExistingTag, required this.filter, this.onSelectNewTag});
+  const TagPicker({super.key, required this.onSelectExistingTag, required this.initialSelection, this.onSelectNewTag});
 
-  final Set<String> filter;
+  final Set<String> initialSelection;
 
   /// Callback when existing tags are selected/deselected.
   final Function(Iterable<Tag>) onSelectExistingTag;
@@ -85,7 +85,7 @@ class TagPicker extends HookConsumerWidget {
     final formFocus = useFocusNode();
     final searchQuery = useState('');
     final tags = ref.watch(tagProvider);
-    final selectedTagIds = useState<Set<String>>(filter);
+    final selectedTagIds = useState<Set<String>>(initialSelection);
     const borderRadius = BorderRadius.all(Radius.circular(10));
     final selectedNewTagValues = useState<Set<String>>({});
 

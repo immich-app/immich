@@ -2,17 +2,19 @@ import { FileValidator, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { isIP, isIPRange } from 'validator';
+import validator from 'validator';
 import z from 'zod';
 
 export type IsIPRangeOptions = { requireCIDR?: boolean };
 
 function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   const { requireCIDR = true } = options ?? {};
-  if (isIPRange(value)) {
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  if (validator.isIPRange(value)) {
     return true;
   }
-  return !requireCIDR && isIP(value);
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  return !requireCIDR && validator.isIP(value);
 }
 
 /**
@@ -185,7 +187,7 @@ export const isoDateToDate = z
  * // Pipe (query): coerce string to number then validate range
  * z.coerce.number().pipe(latitudeSchema).describe('Latitude (-90 to 90)')
  */
-export const latitudeSchema = z.number().min(-90).max(90);
+export const latitudeSchema = z.number().meta({ format: 'double' }).min(-90).max(90);
 
 /**
  * Longitude in range [-180, 180]. Reuse for body or query params.
@@ -198,7 +200,7 @@ export const latitudeSchema = z.number().min(-90).max(90);
  * // Pipe (query): coerce string to number then validate range
  * z.coerce.number().pipe(longitudeSchema).describe('Longitude (-180 to 180)')
  */
-export const longitudeSchema = z.number().min(-180).max(180);
+export const longitudeSchema = z.number().meta({ format: 'double' }).min(-180).max(180);
 
 /**
  * Parse string to boolean

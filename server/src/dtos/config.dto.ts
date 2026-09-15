@@ -1,14 +1,16 @@
 import { CronExpression } from '@nestjs/schedule';
 import { validateCronExpression } from 'cron';
 import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
+import type { DeepPartial } from 'src/types.js';
 import {
   AudioCodec,
   AudioCodecSchema,
+  CQMode,
+  CQModeSchema,
   Colorspace,
   ColorspaceSchema,
   ConfigVisibility,
-  CQMode,
-  CQModeSchema,
   HlsVideoResolution,
   HlsVideoResolutionSchema,
   ImageFormat,
@@ -29,9 +31,7 @@ import {
   VideoCodecSchema,
   VideoContainer,
   VideoContainerSchema,
-} from 'src/enum';
-import { DeepPartial } from 'src/types';
-import z from 'zod';
+} from 'src/enum.js';
 
 const { Admin, User, Public } = ConfigVisibility;
 
