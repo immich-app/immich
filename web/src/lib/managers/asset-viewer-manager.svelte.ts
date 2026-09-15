@@ -1,6 +1,6 @@
 import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
-import { cubicOut } from 'svelte/easing';
+import { cubicOut, quadInOut } from 'svelte/easing';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
 import type { ImageLoaderStatus } from '$lib/utils/adaptive-image-loader.svelte';
@@ -139,7 +139,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.#animationFrameId = null;
   }
 
-  animatedZoom(targetZoom: number, duration = 300) {
+  animatedZoom(targetZoom: number, duration = 300, easeInOut = false) {
     this.cancelZoomAnimation();
 
     const startZoom = this.#zoomState.currentZoom;
@@ -148,7 +148,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
     const frame = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const linearProgress = Math.min(elapsed / duration, 1);
-      const easedProgress = cubicOut(linearProgress);
+      const easedProgress = easeInOut ? quadInOut(linearProgress) : cubicOut(linearProgress);
       const interpolatedZoom = startZoom + (targetZoom - startZoom) * easedProgress;
 
       this.zoomState = { ...this.#zoomState, currentZoom: interpolatedZoom };

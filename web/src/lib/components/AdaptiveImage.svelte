@@ -57,7 +57,7 @@
   import Thumbhash from '$lib/components/Thumbhash.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { getAssetUrls } from '$lib/utils';
-  import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
+  import { AdaptiveImageLoader, type ImageQuality, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
   import { scaleToCover, scaleToFit, type Size } from '$lib/utils/container-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -71,7 +71,7 @@
     objectFit?: 'contain' | 'cover';
     container: Size;
     onUrlChange?: (url: string) => void;
-    onImageReady?: () => void;
+    onImageReady?: (quality: ImageQuality) => void;
     onError?: () => void;
     ref?: HTMLDivElement;
     imgRef?: HTMLImageElement;
