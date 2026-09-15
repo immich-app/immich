@@ -60,4 +60,10 @@ class PersonMutations extends StoreMutations {
     await read(personApiRepositoryProvider).update(personId, birthday: birthday);
     return read(_peopleDb).updateBirthday(personId, birthday);
   }
+
+  /// Update a person's favorite status
+  Future<int> updateFavorite(String personId, bool isFavorite) async {
+    await read(personApiRepositoryProvider).update(personId, isFavorite: isFavorite);
+    return read(_peopleDb).updateFavorite(personId, isFavorite);
+  }
 }

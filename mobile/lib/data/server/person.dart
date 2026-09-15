@@ -11,16 +11,22 @@ class PersonApiRepository extends ApiRepository {
 
   const PersonApiRepository(this._api);
 
-  Future<Person> update(String id, {String? name, DateTime? birthday}) async {
+  Future<Person> update(String id, {String? name, DateTime? birthday, bool? isFavorite}) async {
     final birthdayUtc = birthday == null ? null : DateTime.utc(birthday.year, birthday.month, birthday.day);
     final dto = PersonUpdateDto(
       name: name == null ? const Optional.absent() : Optional.present(name),
       birthDate: birthdayUtc == null ? const Optional.absent() : Optional.present(birthdayUtc),
+      isFavorite: isFavorite == null ? const Optional.absent() : Optional.present(isFavorite),
     );
     final response = await checkNull(_api.updatePerson(id, dto));
     return _toPerson(response);
   }
 
-  static Person _toPerson(PersonResponseDto dto) =>
-      .new(birthDate: dto.birthDate, id: dto.id, name: dto.name, updatedAt: dto.updatedAt.orElse(null));
+  static Person _toPerson(PersonResponseDto dto) => .new(
+    birthDate: dto.birthDate,
+    id: dto.id,
+    name: dto.name,
+    isFavorite: dto.isFavorite.orElse(false),
+    updatedAt: dto.updatedAt.orElse(null),
+  );
 }
