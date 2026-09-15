@@ -9,6 +9,7 @@ import {
   type AssetJobsDto,
   type AssetResponseDto,
 } from '@immich/sdk';
+import { MirrorAxis } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountCircleOutline,
@@ -30,8 +31,12 @@ import {
   mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
+  mdiFlipHorizontal,
+  mdiFlipVertical,
   mdiPlus,
   mdiPresentationPlay,
+  mdiRotateLeft,
+  mdiRotateRight,
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
@@ -54,6 +59,7 @@ import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+import { applyQuickTransform } from '$lib/utils/quick-transform';
 
 export const getAssetBulkActions = ($t: MessageFormatter) => {
   const ownedAssets = assetMultiSelectManager.ownedAssets;
@@ -234,18 +240,53 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     shortcuts: { key: 'p' },
   };
 
+  // Quick transforms write through the same edits API as the editor, so they
+  // are valid exactly where the editor is.
+  const isEditable = () =>
+    !sharedLink &&
+    isOwner &&
+    asset.type === AssetTypeEnum.Image &&
+    !asset.livePhotoVideoId &&
+    asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
+    !asset.originalPath.toLowerCase().endsWith('.insp') &&
+    !asset.originalPath.toLowerCase().endsWith('.gif') &&
+    !asset.originalPath.toLowerCase().endsWith('.svg');
+
+  const RotateLeft: ActionItem = {
+    title: $t('rotate_left'),
+    icon: mdiRotateLeft,
+    $if: isEditable,
+    onAction: () => applyQuickTransform(asset.id, { kind: 'rotate', degrees: -90 }),
+    // Same bindings the editor's transform tool uses, so there is one thing to learn.
+    shortcuts: [{ key: '[' }],
+  };
+
+  const RotateRight: ActionItem = {
+    title: $t('rotate_right'),
+    icon: mdiRotateRight,
+    $if: isEditable,
+    onAction: () => applyQuickTransform(asset.id, { kind: 'rotate', degrees: 90 }),
+    shortcuts: [{ key: ']' }],
+  };
+
+  const FlipHorizontal: ActionItem = {
+    title: $t('editor_flip_horizontal'),
+    icon: mdiFlipHorizontal,
+    $if: isEditable,
+    onAction: () => applyQuickTransform(asset.id, { kind: 'mirror', axis: MirrorAxis.Horizontal }),
+  };
+
+  const FlipVertical: ActionItem = {
+    title: $t('editor_flip_vertical'),
+    icon: mdiFlipVertical,
+    $if: isEditable,
+    onAction: () => applyQuickTransform(asset.id, { kind: 'mirror', axis: MirrorAxis.Vertical }),
+  };
+
   const Edit: ActionItem = {
     title: $t('editor'),
     icon: mdiTune,
-    $if: () =>
-      !sharedLink &&
-      isOwner &&
-      asset.type === AssetTypeEnum.Image &&
-      !asset.livePhotoVideoId &&
-      asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
-      !asset.originalPath.toLowerCase().endsWith('.insp') &&
-      !asset.originalPath.toLowerCase().endsWith('.gif') &&
-      !asset.originalPath.toLowerCase().endsWith('.svg'),
+    $if: isEditable,
     onAction: () => assetViewerManager.openEditor(),
     shortcuts: [{ key: 'e' }],
   };
@@ -316,6 +357,10 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     Tag,
     TagPeople,
     Edit,
+    RotateLeft,
+    RotateRight,
+    FlipHorizontal,
+    FlipVertical,
     SetProfilePicture,
     ViewInTimeline,
     ViewSimilar,
