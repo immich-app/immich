@@ -4,16 +4,16 @@ import { OnJob } from 'src/decorators.js';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
-  mapTag,
   TagBulkAddRemoveAssetsDto,
   TagBulkAddRemoveAssetsResponseDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
-  TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
+  TagsForAssetsResponseDto,
+  mapTag,
 } from 'src/dtos/tag.dto.js';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';

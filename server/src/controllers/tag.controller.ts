@@ -10,10 +10,10 @@ import {
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
-  TagsForAssetsDto,
-  TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
+  TagsForAssetsDto,
+  TagsForAssetsResponseDto,
 } from 'src/dtos/tag.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
