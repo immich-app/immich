@@ -50,18 +50,15 @@ void main() {
 
     when(() => mockLocalAssetRepository.get(any())).thenAnswer((_) async => null);
     when(() => assetService.getRemoteAsset(any())).thenAnswer((_) async => null);
-    when(() => assetService.getAllRemoteAssetDebugByChecksum(any())).thenAnswer((_) async => const []);
     when(() => nativeSyncApi.hashAssets(any())).thenAnswer((_) async => const []);
     when(() => mockLocalAssetRepository.updateHashes(any())).thenAnswer((_) async {});
 
-    _mockTimelineFactoryOrigin(timelineFactory, createdTimelineServices, TimelineOrigin.deepLink);
+    _mockDeepLinkTimelineFactory(timelineFactory, createdTimelineServices);
 
     final drift = MockDrift();
     when(() => drift.localAssetRepository).thenReturn(mockLocalAssetRepository);
     when(() => drift.timelineRepository).thenReturn(timelineRepository);
-    when(
-      () => timelineRepository.getViewableRemoteAssetsByChecksum(any(), any()),
-    ).thenAnswer((_) async => const []);
+    when(() => timelineRepository.getViewableRemoteAssetsByChecksum(any(), any())).thenAnswer((_) async => const []);
 
     container = ProviderContainer(
       overrides: [
@@ -146,8 +143,6 @@ void main() {
   });
 
   test('returns transient asset with temp file path when localAssetId has no DB row', () async {
-    when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => null);
-
     final result = await _resolve(container, _payload(localAssetId: 'local-1', path: '/tmp/incoming.jpg'));
 
     expect(result.asset, isA<LocalAsset>());
@@ -160,7 +155,6 @@ void main() {
     when(
       () => nativeSyncApi.hashAssets(['local-1']),
     ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
-    when(() => assetService.getAllRemoteAssetDebugByChecksum('checksum-1')).thenAnswer((_) async => [remoteAsset]);
     when(
       () => timelineRepository.getViewableRemoteAssetsByChecksum(['user-1'], 'checksum-1'),
     ).thenAnswer((_) async => [remoteAsset]);
@@ -172,7 +166,6 @@ void main() {
     expect((result.asset as RemoteAsset).localId, 'local-1');
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
     verify(() => timelineRepository.getViewableRemoteAssetsByChecksum(['user-1'], 'checksum-1')).called(1);
-    verifyNever(() => assetService.getAllRemoteAssetDebugByChecksum(any()));
   });
 
   test('returns transient asset for path-only attachment', () async {
@@ -233,14 +226,10 @@ RemoteAsset _remoteAsset({required String id, String? localId, required String c
   );
 }
 
-void _mockTimelineFactoryOrigin(
-  MockTimelineFactory timelineFactory,
-  List<TimelineService> createdTimelineServices,
-  TimelineOrigin origin,
-) {
-  when(() => timelineFactory.fromAssets(any(), origin)).thenAnswer((invocation) {
+void _mockDeepLinkTimelineFactory(MockTimelineFactory timelineFactory, List<TimelineService> createdTimelineServices) {
+  when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenAnswer((invocation) {
     final assets = List<BaseAsset>.from(invocation.positionalArguments[0] as List<BaseAsset>);
-    final timelineService = _timelineServiceFromAssets(assets, origin);
+    final timelineService = _timelineServiceFromAssets(assets, TimelineOrigin.deepLink);
     createdTimelineServices.add(timelineService);
     return timelineService;
   });

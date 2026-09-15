@@ -50,14 +50,8 @@ void main() {
         id: 'z-current-user',
         ownerId: currentUser.id,
         checksum: checksum,
-        createdAt: DateTime(2026, 1, 1),
       );
-      final partnerAsset = await ctx.newRemoteAsset(
-        id: 'a-partner',
-        ownerId: partner.id,
-        checksum: checksum,
-        createdAt: DateTime(2026, 2, 1),
-      );
+      final partnerAsset = await ctx.newRemoteAsset(id: 'a-partner', ownerId: partner.id, checksum: checksum);
 
       final assets = await sut.getViewableRemoteAssetsByChecksum([currentUser.id, partner.id], checksum);
 

@@ -19,6 +19,9 @@ class AndroidViewIntentHandler {
   final ViewIntentService _viewIntentService;
   final ViewIntentAssetResolver _viewIntentAssetResolver;
   final AppRouter _router;
+
+  int _latestIntentSequence = 0;
+
   static final Logger _logger = Logger('ViewIntentHandler');
 
   AndroidViewIntentHandler(Ref ref)
@@ -32,9 +35,17 @@ class AndroidViewIntentHandler {
     unawaited(onAppResumed());
   }
 
-  Future<void> onAppResumed() => _checkForViewIntent();
+  Future<void> onAppResumed() => _guarded(_checkForViewIntent);
 
-  Future<void> flushDeferredViewIntent() => _flushPending();
+  Future<void> flushDeferredViewIntent() => _guarded(_flushPending);
+
+  Future<void> _guarded(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (error, stackTrace) {
+      _logger.severe('Failed to handle view intent', error, stackTrace);
+    }
+  }
 
   Future<void> _checkForViewIntent() async {
     final attachment = await _viewIntentService.consumeViewIntent();
@@ -61,32 +72,32 @@ class AndroidViewIntentHandler {
       'handle attachment, mimeType:${payload.mimeType}, localAssetId=${payload.localAssetId}, path=${payload.path}, isAuthenticated:${_ref.read(authProvider).isAuthenticated}',
     );
 
+    final sequence = ++_latestIntentSequence;
+
     if (!_ref.read(authProvider).isAuthenticated) {
       _clearCurrentViewIntent();
       _ref.read(viewIntentPendingProvider.notifier).defer(payload);
       return;
     }
 
-    _activateViewIntent(payload);
-
-    final ViewIntentResolution resolvedAsset;
-    try {
-      resolvedAsset = await _viewIntentAssetResolver.resolve(payload);
-    } catch (_) {
-      _ref.read(activeViewIntentPayloadProvider.notifier).clearIfMatch(payload);
-      rethrow;
-    }
-    if (!identical(_ref.read(activeViewIntentPayloadProvider), payload)) {
-      await resolvedAsset.timelineService.dispose();
+    final resolution = await _viewIntentAssetResolver.resolve(payload);
+    if (sequence != _latestIntentSequence) {
+      await resolution.timelineService.dispose();
       return;
     }
 
-    _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
-    await _openAssetViewer(
-      asset: resolvedAsset.asset,
-      timelineService: resolvedAsset.timelineService,
-      attachment: payload,
-      viewIntentFilePath: resolvedAsset.viewIntentFilePath,
+    _activateViewIntent(payload);
+
+    _logger.fine('resolved view intent asset: ${resolution.asset}');
+    unawaited(
+      _guarded(
+        () => _openAssetViewer(
+          asset: resolution.asset,
+          timelineService: resolution.timelineService,
+          attachment: payload,
+          viewIntentFilePath: resolution.viewIntentFilePath,
+        ),
+      ),
     );
   }
 
