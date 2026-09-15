@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import semver from 'semver';
-import { ErrorMessages, EXTENSION_NAMES, VECTOR_EXTENSIONS } from 'src/constants.js';
+import { coerce, eq, gt, lt, satisfies } from 'semver';
+import type { VectorExtension } from 'src/types.js';
+import { EXTENSION_NAMES, ErrorMessages, VECTOR_EXTENSIONS } from 'src/constants.js';
 import { OnEvent } from 'src/decorators.js';
 import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { VectorExtension } from 'src/types.js';
 
 type CreateFailedArgs = { name: string; extension: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
@@ -56,9 +56,9 @@ export class DatabaseService extends BaseService {
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
-    const current = semver.coerce(version);
+    const current = coerce(version);
     const postgresRange = this.databaseRepository.getPostgresVersionRange();
-    if (!current || !semver.satisfies(current, postgresRange)) {
+    if (!current || !satisfies(current, postgresRange)) {
       throw new Error(
         `Invalid PostgreSQL version. Found ${version}, but needed ${postgresRange}. Please use a supported version.`,
       );
@@ -75,11 +75,11 @@ export class DatabaseService extends BaseService {
         throw new Error(messages.notInstalled(name));
       }
 
-      if ([availableVersion, installedVersion].some((version) => version && semver.eq(version, '0.0.0'))) {
+      if ([availableVersion, installedVersion].some((version) => version && eq(version, '0.0.0'))) {
         throw new Error(messages.nightlyVersion({ name, extension, version: '0.0.0' }));
       }
 
-      if (!semver.satisfies(availableVersion, extensionRange)) {
+      if (!satisfies(availableVersion, extensionRange)) {
         throw new Error(messages.outOfRange({ name, extension, version: availableVersion, range: extensionRange }));
       }
 
@@ -87,11 +87,11 @@ export class DatabaseService extends BaseService {
         await this.createExtension(extension);
       }
 
-      if (installedVersion && semver.gt(availableVersion, installedVersion)) {
+      if (installedVersion && gt(availableVersion, installedVersion)) {
         await this.updateExtension(extension, availableVersion);
-      } else if (installedVersion && !semver.satisfies(installedVersion, extensionRange)) {
+      } else if (installedVersion && !satisfies(installedVersion, extensionRange)) {
         throw new Error(messages.outOfRange({ name, extension, version: installedVersion, range: extensionRange }));
-      } else if (installedVersion && semver.lt(availableVersion, installedVersion)) {
+      } else if (installedVersion && lt(availableVersion, installedVersion)) {
         throw new Error(messages.invalidDowngrade({ name, extension, availableVersion, installedVersion }));
       }
 

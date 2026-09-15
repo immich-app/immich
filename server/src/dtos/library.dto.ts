@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 import { Library } from 'src/database.js';
 import { isoDatetimeToDate } from 'src/validation.js';
-import z from 'zod';
 
 const stringArrayMax128 = z
   .array(z.string())

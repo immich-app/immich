@@ -1,9 +1,9 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, Next, Param, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { NextFunction, Response } from 'express';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import { AssetFileResponseDto, AssetFileSearchDto } from 'src/dtos/asset-file.dto.js';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';

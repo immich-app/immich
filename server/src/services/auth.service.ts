@@ -28,6 +28,7 @@ import { isGranted } from 'src/utils/access.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
 import { getUserAgentDetails } from 'src/utils/request.js';
+
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
@@ -134,7 +135,10 @@ export class AuthService extends BaseService {
 
     const hashedPassword = await this.cryptoRepository.hashBcrypt(newPassword, SALT_ROUNDS);
 
-    const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
+    const updatedUser = await this.userRepository.update(user.id, {
+      password: hashedPassword,
+      shouldChangePassword: false,
+    });
 
     await this.eventRepository.emit('AuthChangePassword', {
       userId: user.id,

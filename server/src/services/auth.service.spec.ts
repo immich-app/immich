@@ -1,11 +1,11 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import type { UserMetadataItem } from 'src/types.js';
 import { SALT_ROUNDS } from 'src/constants.js';
 import { UserAdmin } from 'src/database.js';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto.js';
 import { AuthType, Permission } from 'src/enum.js';
 import { AuthService } from 'src/services/auth.service.js';
-import type { UserMetadataItem } from 'src/types.js';
 import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { OAuthProfileFactory } from 'test/factories/oauth-profile.factory.js';
@@ -15,7 +15,7 @@ import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { newUuid } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 const email = 'test@immich.com';
 const loginDetails = {
@@ -107,6 +107,22 @@ describe(AuthService.name, () => {
         userId: user.id,
         currentSessionId: auth.session?.id,
         shouldLogoutSessions: undefined,
+      });
+    });
+
+    it('should clear shouldChangePassword', async () => {
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePassword(auth, dto);
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        password: 'new-password (hashed)',
+        shouldChangePassword: false,
       });
     });
 

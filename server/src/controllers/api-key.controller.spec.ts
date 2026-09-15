@@ -1,7 +1,7 @@
+import request from 'supertest';
 import { ApiKeyController } from 'src/controllers/api-key.controller.js';
 import { Permission } from 'src/enum.js';
 import { ApiKeyService } from 'src/services/api-key.service.js';
-import request from 'supertest';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
