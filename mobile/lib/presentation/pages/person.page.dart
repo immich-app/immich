@@ -4,12 +4,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -61,7 +61,7 @@ class _PersonPageState extends ConsumerState<PersonPage> {
     final shouldFavorite = !isFavorite;
 
     try {
-      final result = await ref.read(peopleServiceProvider).updateFavorite(_person.id, shouldFavorite);
+      final result = await ref.read(Store.people).updateFavorite(_person.id, shouldFavorite);
       if (result != 0 && mounted) {
         setState(() {
           _person = _person.copyWith(isFavorite: shouldFavorite);
