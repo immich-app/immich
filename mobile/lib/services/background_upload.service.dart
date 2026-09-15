@@ -54,6 +54,7 @@ abstract class UploadTaskMetadata with _$UploadTaskMetadata {
     required String localAssetId,
     required bool isLivePhotos,
     required String livePhotoVideoId,
+    String? checksum,
   }) = _UploadTaskMetadata;
 
   Map<String, dynamic> toMap() {
@@ -61,6 +62,7 @@ abstract class UploadTaskMetadata with _$UploadTaskMetadata {
       'localAssetId': localAssetId,
       'isLivePhotos': isLivePhotos,
       'livePhotoVideoId': livePhotoVideoId,
+      'checksum': checksum,
     };
   }
 
@@ -69,6 +71,7 @@ abstract class UploadTaskMetadata with _$UploadTaskMetadata {
       localAssetId: map['localAssetId'] as String,
       isLivePhotos: map['isLivePhotos'] as bool,
       livePhotoVideoId: map['livePhotoVideoId'] as String,
+      checksum: map['checksum'] as String?,
     );
   }
 
@@ -256,7 +259,11 @@ class BackgroundUploadService {
         return;
       }
 
-      await _assetService.stackEditedUpload(metadata.localAssetId, jsonDecode(update.responseBody!)['id'] as String);
+      await _assetService.stackEditedUpload(
+        metadata.localAssetId,
+        jsonDecode(update.responseBody!)['id'] as String,
+        metadata.checksum,
+      );
     } catch (error, stackTrace) {
       dPrint(() => "Error stacking edited asset upload: $error $stackTrace");
     }
@@ -302,6 +309,7 @@ class BackgroundUploadService {
       localAssetId: asset.id,
       isLivePhotos: entity.isLivePhoto,
       livePhotoVideoId: '',
+      checksum: asset.checksum,
     ).toJson();
 
     final requiresWiFi = _shouldRequireWiFi(asset);
@@ -353,6 +361,7 @@ class BackgroundUploadService {
         localAssetId: asset.id,
         isLivePhotos: false,
         livePhotoVideoId: livePhotoVideoId,
+        checksum: asset.checksum,
       ).toJson(),
       fields: fields,
       group: kBackupLivePhotoGroup,

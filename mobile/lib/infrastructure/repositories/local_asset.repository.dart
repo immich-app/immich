@@ -254,4 +254,9 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
 
     return query.map((row) => row.read(_db.remoteAssetEntity.id)).getSingleOrNull();
   }
+
+  Future<void> updatePreviousChecksum(String id, String checksum) async {
+    final query = _db.localAssetEntity.update()..where((row) => row.id.equals(id));
+    await query.write(LocalAssetEntityCompanion(previousChecksum: Value(checksum)));
+  }
 }

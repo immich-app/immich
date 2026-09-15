@@ -198,10 +198,18 @@ class AssetService {
     return _localRepository.get(id);
   }
 
-  Future<void> stackEditedUpload(String localId, String remoteId) async {
-    final previousId = await _localRepository.getPreviousRemoteId(localId);
-    if (previousId != null) {
-      await _apiRepository.stack([remoteId, previousId]);
+  Future<void> stackEditedUpload(String localId, String remoteId, String? checksum) async {
+    try {
+      // previous_checksum still points at the version the server had before this upload
+      final previousId = await _localRepository.getPreviousRemoteId(localId);
+      if (previousId != null) {
+        await _apiRepository.stack([remoteId, previousId]);
+      }
+    } finally {
+      // the upload went through even when the stack call did not, so this version is the new base
+      if (checksum != null) {
+        await _localRepository.updatePreviousChecksum(localId, checksum);
+      }
     }
   }
 }

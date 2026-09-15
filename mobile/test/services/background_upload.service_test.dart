@@ -54,7 +54,7 @@ void main() {
     mockBackupRepository = MockBackupRepository();
     mockAssetMediaRepository = MockAssetMediaRepository();
     mockAssetService = MockAssetService();
-    when(() => mockAssetService.stackEditedUpload(any(), any())).thenAnswer((_) async {});
+    when(() => mockAssetService.stackEditedUpload(any(), any(), any())).thenAnswer((_) async {});
 
     sut = BackgroundUploadService(
       mockUploadRepository,
@@ -416,7 +416,7 @@ void main() {
 
   group('onUploadStatus', () {
     test('stacks a plain photo after its upload', () async {
-      final asset = LocalAssetStub.image1;
+      final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
       final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/photo.jpg');
       final void Function(TaskStatusUpdate) onStatus = verify(
@@ -431,12 +431,12 @@ void main() {
       final task = await sut.getUploadTask(asset);
       onStatus(TaskStatusUpdate(task!, TaskStatus.complete, null, '{"id": "remote"}'));
 
-      verify(() => mockAssetService.stackEditedUpload(asset.id, 'remote')).called(1);
+      verify(() => mockAssetService.stackEditedUpload(asset.id, 'remote', 'sha')).called(1);
       verifyNoMoreInteractions(mockAssetService);
     });
 
     test('stacks the still of a live photo, not its video', () async {
-      final asset = LocalAssetStub.image1;
+      final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
       final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/still.heic');
       final videoFile = File('/path/to/motion.mov');
@@ -456,7 +456,7 @@ void main() {
       onStatus(TaskStatusUpdate(video!, TaskStatus.complete, null, '{"id": "video"}'));
       onStatus(TaskStatusUpdate(still!, TaskStatus.complete, null, '{"id": "still"}'));
 
-      verify(() => mockAssetService.stackEditedUpload(asset.id, 'still')).called(1);
+      verify(() => mockAssetService.stackEditedUpload(asset.id, 'still', 'sha')).called(1);
       verifyNoMoreInteractions(mockAssetService);
     });
   });
