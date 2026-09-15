@@ -116,6 +116,35 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
+  Future<void> updateAuthUsersV2(Iterable<SyncAuthUserV2> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final user in data) {
+          final companion = AuthUserEntityCompanion(
+            name: Value(user.name),
+            email: Value(user.email),
+            hasProfileImage: Value(user.hasProfileImage),
+            profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor.orElse(null)?.toAvatarColor() ?? AvatarColor.primary),
+            isAdmin: Value(user.isAdmin),
+            pinCode: Value(user.pinCode),
+            quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
+            quotaUsageInBytes: Value(user.quotaUsageInBytes),
+          );
+
+          batch.insert(
+            _db.authUserEntity,
+            companion.copyWith(id: Value(user.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncAuthUserV2', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.batch((batch) {

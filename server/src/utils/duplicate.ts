@@ -1,4 +1,4 @@
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
 
 /**
  * Counts all truthy values in the exifInfo object.

@@ -1,14 +1,14 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AdminOnboardingUpdateDto,
   ReverseGeocodingStateResponseDto,
   VersionCheckStateResponseDto,
-} from 'src/dtos/system-metadata.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
-import { SystemMetadataService } from 'src/services/system-metadata.service';
+} from 'src/dtos/system-metadata.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Authenticated } from 'src/middleware/auth.guard.js';
+import { SystemMetadataService } from 'src/services/system-metadata.service.js';
 
 @ApiTags(ApiTag.SystemMetadata)
 @Controller('system-metadata')

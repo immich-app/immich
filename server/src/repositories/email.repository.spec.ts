@@ -1,6 +1,6 @@
-import { EmailRenderRequest, EmailRepository, EmailTemplate } from 'src/repositories/email.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { automock } from 'test/utils';
+import { EmailRenderRequest, EmailRepository, EmailTemplate } from 'src/repositories/email.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { automock } from 'test/utils.js';
 
 describe(EmailRepository.name, () => {
   let sut: EmailRepository;

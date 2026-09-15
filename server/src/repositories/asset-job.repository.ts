@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { type Kysely, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
 import {
   anyUuid,
   asUuid,
@@ -19,8 +19,8 @@ import {
   withFiles,
   withVideoFormat,
   withVideoStream,
-} from 'src/utils/database';
-import { mimeTypes } from 'src/utils/mime-types';
+} from 'src/utils/database.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 
 @Injectable()
 export class AssetJobRepository {

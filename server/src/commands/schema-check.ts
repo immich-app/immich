@@ -1,7 +1,7 @@
 import { asHuman } from '@immich/sql-tools';
 import { Command, CommandRunner } from 'nest-commander';
-import { ErrorMessages } from 'src/constants';
-import { CliService } from 'src/services/cli.service';
+import { ErrorMessages } from 'src/constants.js';
+import { CliService } from 'src/services/cli.service.js';
 
 @Command({
   name: 'schema-check',
