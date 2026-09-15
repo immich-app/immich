@@ -22,6 +22,7 @@ class AssetDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final exifInfo = ref.watch(assetExifProvider(asset)).valueOrNull;
+    final originalPath = ref.watch(assetOriginalPathProvider(asset)).valueOrNull;
 
     return Container(
       constraints: BoxConstraints(minHeight: minHeight),
@@ -48,7 +49,7 @@ class AssetDetails extends ConsumerWidget {
             SheetAssetDescription(asset: asset, exifInfo: exifInfo),
             PeopleDetails(asset: asset),
             LocationDetails(asset: asset, exifInfo: exifInfo),
-            TechnicalDetails(asset: asset, exifInfo: exifInfo),
+            TechnicalDetails(asset: asset, exifInfo: exifInfo, originalPath: originalPath),
             RatingDetails(exifInfo: exifInfo),
             AppearsInDetails(asset: asset),
             SizedBox(height: context.padding.bottom + 48),
