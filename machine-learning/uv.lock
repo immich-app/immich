@@ -1451,7 +1451,7 @@ wheels = [
 
 [[package]]
 name = "onnxruntime-migraphx"
-version = "1.25.0"
+version = "1.27.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "flatbuffers" },
@@ -1460,10 +1460,10 @@ dependencies = [
     { name = "protobuf" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a5/3c/8c142017df701c38c4f5d6cae0294a2891bdd0f719eaff42e87564ac1480/onnxruntime_migraphx-1.25.0-cp311-cp311-manylinux_2_34_x86_64.whl", hash = "sha256:c7f28ddb8eef13fd5e9002d5162bfe848abfd02dcf13ab6a6b8c00380c014f33", size = 21467402, upload-time = "2026-04-21T05:23:52.026Z" },
-    { url = "https://files.pythonhosted.org/packages/1c/0d/21730262547fae9557cb3fc85d891d600158c92399f68e4a760aed59bffc/onnxruntime_migraphx-1.25.0-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:5c1dac156f98a9a20556bbc1e1c69d5ca1f78bad14d4953aa2b3cb2711507166", size = 21477899, upload-time = "2026-04-21T05:24:31.072Z" },
-    { url = "https://files.pythonhosted.org/packages/09/b5/39764a6c87e9f97c0891f194100883192a0ce88725aba6215d499cd714b8/onnxruntime_migraphx-1.25.0-cp313-cp313-manylinux_2_34_x86_64.whl", hash = "sha256:d778d88bfdd8818817618ff3e4d973ed861428f61ba7c8b841690c699cb29ed4", size = 21477896, upload-time = "2026-04-21T05:25:11.969Z" },
-    { url = "https://files.pythonhosted.org/packages/35/97/f8d8f3141c606e14a23e52a035c123524f5b714e15a1f9425a940906dfce/onnxruntime_migraphx-1.25.0-cp314-cp314-manylinux_2_34_x86_64.whl", hash = "sha256:5558a05f4cc1975c9974090337bbc460aae72b29ae20afb42bec93b74df0eae8", size = 21478521, upload-time = "2026-04-21T05:25:52.121Z" },
+    { url = "https://files.pythonhosted.org/packages/12/e9/12aae039e0869827551ad6212a889958b7851ee866fed331c44bfbec5a02/onnxruntime_migraphx-1.27.1-cp311-cp311-manylinux_2_34_x86_64.whl", hash = "sha256:4a178713a67dbcd1a952edb89d60e856ec70538f8f9848c89745ae2328305b6d", size = 21462548, upload-time = "2026-07-12T09:34:16.493Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/b7/7946bd996b95c859162ccd76c7e1e3f01e3627e5bf06a3ae1bf288fe89bd/onnxruntime_migraphx-1.27.1-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:089c992442b6bff9f7786173ce6a31db111b104ae66be34d5467593951d905a4", size = 21474043, upload-time = "2026-07-12T09:34:22.065Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/0b/0c5fb99b151bec12f5fef1fee6a58c628a5a18432805085de7c48fc36813/onnxruntime_migraphx-1.27.1-cp313-cp313-manylinux_2_34_x86_64.whl", hash = "sha256:e4c9aef8479e89eb2a59ca0b51139d8e85723f3f56fbced17c8be1c643466d81", size = 21474520, upload-time = "2026-07-12T09:34:26.884Z" },
+    { url = "https://files.pythonhosted.org/packages/80/53/6c9102d0d611bde225b510def4bbac95e960fd40de03ac2d2a4a45a3c62f/onnxruntime_migraphx-1.27.1-cp314-cp314-manylinux_2_34_x86_64.whl", hash = "sha256:e7d6005b3dd17eff1f81d43318c740f4986548560339d08e8826456124e10b95", size = 21475898, upload-time = "2026-07-12T09:34:31.362Z" },
 ]
 
 [[package]]
