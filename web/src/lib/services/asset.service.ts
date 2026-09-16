@@ -4,6 +4,7 @@ import {
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
+  getStack,
   removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
@@ -57,6 +58,22 @@ import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+
+const expandStackAssetIds = async (assets: TimelineAsset[]): Promise<string[]> => {
+  const results: string[] = [];
+  for (const asset of assets) {
+    if (asset.stack) {
+      const stack = await getStack({ id: asset.stack.id });
+      for (const member of stack.assets) {
+        results.push(member.id);
+      }
+    } else {
+      results.push(asset.id);
+    }
+  }
+  return results;
+};
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
   const ownedAssets = assetMultiSelectManager.ownedAssets;
@@ -71,19 +88,20 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () =>
-      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assetMultiSelectManager.assets);
+      return modalManager.show(AssetAddToAlbumModal, { assetIds });
+    },
   };
 
   const RemoveFromAlbum: ActionItem = {
     title: $t('remove_from_album'),
     icon: mdiImageRemoveOutline,
     $if: () => !!album && (isAlbumOwner || assetMultiSelectManager.isAllUserOwned),
-    onAction: () =>
-      handleBulkRemoveAssetsFromAlbum(
-        assetMultiSelectManager.assets.map((asset) => asset.id),
-        album!,
-      ),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assetMultiSelectManager.assets);
+      return handleBulkRemoveAssetsFromAlbum(assetIds, album!);
+    },
   };
 
   const RefreshFacesJob: ActionItem = {
