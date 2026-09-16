@@ -346,30 +346,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     );
 
     if (asset.isImage && !isPlayingMotionVideo) {
-      return PhotoView(
-        key: Key(asset.heroTag),
-        index: widget.index,
-        imageProvider: imageProvider,
-        heroAttributes: heroAttributes,
-        loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
-        gaplessPlayback: true,
-        filterQuality: FilterQuality.high,
-        tightMode: true,
-        enablePanAlways: true,
-        maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
-        disableScaleGestures: _showingDetails,
-        scaleStateChangedCallback: _onScaleStateChanged,
-        onPageBuild: _onPageBuild,
-        onDragStart: _onDragStart,
-        onDragUpdate: _onDragUpdate,
-        onDragEnd: _onDragEnd,
-        onDragCancel: _onDragCancel,
-        onTapUp: _onTapUp,
-        onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
-        errorBuilder: (_, _, _) => SizedBox(
-          width: size.width,
-          height: size.height,
-          child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
       return ProgressiveImage(
         provider: imageProvider,
         builder: (context, provider) => PhotoView(
@@ -382,6 +358,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           filterQuality: FilterQuality.high,
           tightMode: true,
           enablePanAlways: true,
+          maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
           disableScaleGestures: _showingDetails,
           scaleStateChangedCallback: _onScaleStateChanged,
           onPageBuild: _onPageBuild,
