@@ -96,6 +96,5 @@ Future<void> saveDateTime(BuildContext context, WidgetRef ref, List<String> asse
   final toastService = ref.read(toastServiceProvider);
 
   await ref.read(assetServiceProvider).update(assetIds, dateTime: .some(dateTime));
-  ref.invalidate(assetExifProvider);
   toastService.success(message);
 }
