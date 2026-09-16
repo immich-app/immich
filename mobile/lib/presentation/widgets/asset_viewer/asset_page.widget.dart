@@ -51,8 +51,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   bool _showingDetails = false;
   bool _isZoomed = false;
   // Frozen during dismiss drag + settle to prevent widget tree swap mid-animation.
-  bool _frozenMotionPlaying = false;
-  bool _dismissSettling = false;
+  bool _wasMotionPlayingAtDismiss = false;
+  bool _isDismissAnimating = false;
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
@@ -165,7 +165,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         _ => _DragIntent.none,
       };
       if (_dragIntent == _DragIntent.dismiss) {
-        _frozenMotionPlaying = ref.read(isPlayingMotionVideoProvider);
+        _wasMotionPlayingAtDismiss = ref.read(isPlayingMotionVideoProvider);
       }
     }
 
@@ -209,7 +209,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           return;
         }
         _viewer.setOpacity(1.0);
-        _dismissSettling = true;
+        _isDismissAnimating = true;
         unawaited(
           _viewController
               ?.animateMultiple(
@@ -221,7 +221,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                 if (!mounted) {
                   return;
                 }
-                setState(() => _dismissSettling = false);
+                setState(() => _isDismissAnimating = false);
               }),
         );
     }
@@ -425,8 +425,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final liveMotionPlaying = ref.watch(isPlayingMotionVideoProvider);
-    final isPlayingMotionVideo = (_dragIntent == _DragIntent.dismiss || _dismissSettling)
-        ? _frozenMotionPlaying
+    // Preserve the playback status while dismissing to prevent switching views mid-animation.
+    final isPlayingMotionVideo = (_dragIntent == _DragIntent.dismiss || _isDismissAnimating)
+        ? _wasMotionPlayingAtDismiss
         : liveMotionPlaying;
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
