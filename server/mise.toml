@@ -3,9 +3,7 @@ run = "pnpm install --filter immich --frozen-lockfile"
 
 [tasks.build]
 env._.path = "./node_modules/.bin"
-# TODO we shouldn't technically need tsc-alias, but the nestjs tsconfig paths resolution is broken right now with ESM
-# remove when https://github.com/nestjs/nest-cli/pull/3545 has been released
-run = "nest build && tsc-alias"
+run = "nest build"
 
 [tasks.test]
 env._.path = "./node_modules/.bin"
