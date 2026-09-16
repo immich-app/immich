@@ -1,6 +1,6 @@
 import js from '@eslint/js';
 import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
-import prettier from 'eslint-config-prettier';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import eslintPluginCompat from 'eslint-plugin-compat';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
@@ -10,6 +10,7 @@ import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
 import fs from 'node:fs';
 import path from 'node:path';
+import { defineConfig } from 'eslint/config'
 import './lint-env.js';
 
 const ROUTE_CONTINUE = "CallExpression[callee.object.name='Route'][callee.property.name='continue']";
@@ -19,14 +20,18 @@ const NAVIGATION_PARAM_READ = [
   " [arguments.0.property.name='PREVIOUS_ROUTE'])",
 ].join('');
 
-export default typescriptEslint.config(
+export default defineConfig(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
-  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
+      compat: eslintPluginCompat,
+    },
+    settings: {
+      polyfills: [],
+      lintAllEsApis: true,
     },
     rules: {
       'tscompat/tscompat': [
@@ -39,6 +44,7 @@ export default typescriptEslint.config(
             .filter((line) => line && !line.startsWith('#')),
         },
       ],
+      'compat/compat': 'error',
     },
     languageOptions: {
       parser,
@@ -48,18 +54,6 @@ export default typescriptEslint.config(
       },
     },
     // ignores: ['**/service-worker/**'],
-  },
-  {
-    plugins: {
-      compat: eslintPluginCompat,
-    },
-    settings: {
-      polyfills: [],
-      lintAllEsApis: true,
-    },
-    rules: {
-      'compat/compat': 'error',
-    },
   },
   {
     ignores: [
@@ -201,4 +195,5 @@ export default typescriptEslint.config(
       },
     },
   },
+  eslintPluginPrettierRecommended,
 );

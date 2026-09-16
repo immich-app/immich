@@ -1,6 +1,7 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
 import type { UserMetadataItem } from 'src/types.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { PersonUserRole } from 'src/dtos/person.dto.js';
 import {
   AlbumUserRole,
   AssetFileType,
@@ -253,6 +254,7 @@ export type Person = {
   faceAssetId: string | null;
   isHidden: boolean;
   thumbnailPath: string;
+  otherPeople?: { sharedWithId: string; name: string; birthDate: string | null; role: PersonUserRole }[];
 };
 
 export type AssetFace = {

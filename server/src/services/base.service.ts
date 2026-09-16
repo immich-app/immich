@@ -39,6 +39,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OAuthRepository } from 'src/repositories/oauth.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
@@ -162,6 +163,7 @@ export class BaseService {
     protected ocrRepository: OcrRepository,
     protected partnerRepository: PartnerRepository,
     protected personRepository: PersonRepository,
+    protected personUserRepository: PersonUserRepository,
     protected pluginRepository: PluginRepository,
     protected processRepository: ProcessRepository,
     protected searchRepository: SearchRepository,
@@ -233,6 +235,7 @@ export class BaseService {
       ctx.ocrRepository,
       ctx.partnerRepository,
       ctx.personRepository,
+      ctx.personUserRepository,
       ctx.pluginRepository,
       ctx.processRepository,
       ctx.searchRepository,
