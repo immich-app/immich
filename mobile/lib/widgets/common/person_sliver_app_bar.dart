@@ -12,6 +12,8 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/person_favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -26,13 +28,11 @@ class PersonSliverAppBar extends ConsumerStatefulWidget {
     required this.onNameTap,
     required this.onShowOptions,
     required this.onBirthdayTap,
-    required this.onToggleFavorite,
   });
 
   final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
-  final VoidCallback onToggleFavorite;
   final VoidCallback onShowOptions;
 
   @override
@@ -94,14 +94,8 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
               },
             ),
             actions: [
-              IconButton(
-                icon: Icon(
-                  widget.person.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: actionIconColor,
-                  shadows: actionIconShadows,
-                ),
-                onPressed: widget.onToggleFavorite,
-              ),
+              ActionIconButton(action: PersonFavoriteAction(widget.person)),
+
               IconButton(
                 icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
                 onPressed: widget.onShowOptions,
