@@ -218,6 +218,8 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          // cannot use FK here, so manually cascade
+          batch.deleteWhere(_db.assetFaceEntity, (row) => row.assetId.equals(asset.assetId));
           batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(asset.assetId));
         }
       });
