@@ -63,7 +63,11 @@ class SyncApiRepository {
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
           SyncRequestType.peopleV1,
-          serverVersion.supports(.syncAssetFacesV2) ? SyncRequestType.assetFacesV2 : SyncRequestType.assetFacesV1,
+          serverVersion.supports(.syncAssetFacesV3)
+              ? SyncRequestType.assetFacesV3
+              : serverVersion.supports(.syncAssetFacesV2)
+              ? SyncRequestType.assetFacesV2
+              : SyncRequestType.assetFacesV1,
           if (serverVersion.supports(.syncAssetOcrV1)) SyncRequestType.assetOcrV1,
         ],
       ).toJson(),
@@ -195,6 +199,7 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
   SyncEntityType.assetFaceV2: SyncAssetFaceV3.fromJson,
+  SyncEntityType.assetFaceV3: SyncAssetFaceV3.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
   SyncEntityType.assetOcrV1: SyncAssetOcrV1.fromJson,
   SyncEntityType.assetOcrDeleteV1: SyncAssetOcrDeleteV1.fromJson,
