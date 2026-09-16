@@ -17,6 +17,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widg
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_overlay.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
@@ -369,6 +370,32 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           width: size.width,
           height: size.height,
           child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
+      return ProgressiveImage(
+        provider: imageProvider,
+        builder: (context, provider) => PhotoView(
+          key: Key(asset.heroTag),
+          index: widget.index,
+          imageProvider: provider,
+          heroAttributes: heroAttributes,
+          loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
+          gaplessPlayback: true,
+          filterQuality: FilterQuality.high,
+          tightMode: true,
+          enablePanAlways: true,
+          disableScaleGestures: _showingDetails,
+          scaleStateChangedCallback: _onScaleStateChanged,
+          onPageBuild: _onPageBuild,
+          onDragStart: _onDragStart,
+          onDragUpdate: _onDragUpdate,
+          onDragEnd: _onDragEnd,
+          onDragCancel: _onDragCancel,
+          onTapUp: _onTapUp,
+          onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
+          errorBuilder: (_, _, _) => SizedBox(
+            width: size.width,
+            height: size.height,
+            child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
+          ),
         ),
       );
     }
