@@ -140,15 +140,18 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         }
 
         if (file == null) {
-          throw Exception('No file found for the video');
+          if (videoAsset is! RemoteAsset) {
+            throw Exception('No file found for the video');
+          }
+          _log.warning('Local file missing for ${videoAsset.name} (${videoAsset.localId}), playing the remote copy');
+        } else {
+          // Pass a file:// URI so Android's Uri.parse doesn't
+          // interpret characters like '#' as fragment identifiers.
+          return await VideoSource.init(
+            path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
+            type: VideoSourceType.file,
+          );
         }
-
-        // Pass a file:// URI so Android's Uri.parse doesn't
-        // interpret characters like '#' as fragment identifiers.
-        return await VideoSource.init(
-          path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
-          type: VideoSourceType.file,
-        );
       }
 
       final remoteAsset = videoAsset as RemoteAsset;
