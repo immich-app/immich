@@ -86,6 +86,7 @@ export class AdaptiveImageLoader {
 
     const config = this.qualityConfigs[quality];
 
+    // eslint-disable-next-line unicorn/no-computed-property-existence-check
     if (!this.status.urls[quality]) {
       return;
     }
@@ -129,6 +130,7 @@ export class AdaptiveImageLoader {
       return false;
     }
 
+    // eslint-disable-next-line unicorn/no-computed-property-existence-check
     if (this.status.urls[quality]) {
       return true;
     }

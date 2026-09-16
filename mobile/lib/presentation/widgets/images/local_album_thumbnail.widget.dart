@@ -14,7 +14,7 @@ class LocalAlbumThumbnail extends ConsumerWidget {
     return localAlbumThumbnail.when(
       data: (data) {
         if (data == null) {
-          return Container(
+          return DecoratedBox(
             decoration: BoxDecoration(
               color: context.colorScheme.surfaceContainer,
               borderRadius: const BorderRadius.all(Radius.circular(16)),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class RatingBar extends StatefulWidget {
   final double initialRating;
@@ -64,8 +64,8 @@ class _RatingBarState extends State<RatingBar> {
     } else if (dx >= totalWidth) {
       newRating = widget.itemCount.toDouble();
     } else {
-      double starWithPadding = widget.itemSize + widget.starPadding;
-      int tappedIndex = (dx / starWithPadding).floor().clamp(0, widget.itemCount - 1);
+      final double starWithPadding = widget.itemSize + widget.starPadding;
+      final int tappedIndex = (dx / starWithPadding).floor().clamp(0, widget.itemCount - 1);
       newRating = tappedIndex + 1.0;
 
       if (isTap && newRating == _currentRating && _currentRating != 0) {
@@ -88,7 +88,7 @@ class _RatingBarState extends State<RatingBar> {
   @override
   Widget build(BuildContext context) {
     final isRTL = Directionality.of(context) == TextDirection.rtl;
-    final double visualAlignmentOffset = 5.0;
+    const double visualAlignmentOffset = 5.0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -107,8 +107,8 @@ class _RatingBarState extends State<RatingBar> {
                 if (i.isOdd) {
                   return SizedBox(width: widget.starPadding);
                 }
-                int index = i ~/ 2;
-                bool filled = _currentRating > index;
+                final int index = i ~/ 2;
+                final bool filled = _currentRating > index;
                 return widget.itemBuilder ??
                     Icon(
                       Icons.star_rounded,
@@ -129,10 +129,7 @@ class _RatingBarState extends State<RatingBar> {
                 });
                 widget.onClearRating?.call();
               },
-              child: Text(
-                'rating_clear'.t(context: context),
-                style: TextStyle(color: context.themeData.colorScheme.primary),
-              ),
+              child: Text(context.t.rating_clear, style: TextStyle(color: context.themeData.colorScheme.primary)),
             ),
           ),
       ],

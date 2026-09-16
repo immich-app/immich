@@ -4,6 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'timeline_drag_region.freezed.dart';
 
 class TimelineDragRegion extends StatefulWidget {
   final Widget child;
@@ -206,21 +209,7 @@ class _TimelineAssetIndexProxy extends RenderProxyBox {
   _TimelineAssetIndexProxy({required this.index});
 }
 
-class TimelineAssetIndex {
-  final int assetIndex;
-  final int segmentIndex;
-
-  const TimelineAssetIndex({required this.assetIndex, required this.segmentIndex});
-
-  @override
-  bool operator ==(covariant TimelineAssetIndex other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.assetIndex == assetIndex && other.segmentIndex == segmentIndex;
-  }
-
-  @override
-  int get hashCode => assetIndex.hashCode ^ segmentIndex.hashCode;
+@freezed
+abstract class TimelineAssetIndex with _$TimelineAssetIndex {
+  const factory TimelineAssetIndex({required int assetIndex, required int segmentIndex}) = _TimelineAssetIndex;
 }

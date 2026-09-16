@@ -1,9 +1,10 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import { Icon } from '@immich/ui';
-  import { mdiChevronRight } from '@mdi/js';
+  import { mdiChevronRight, mdiChevronLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import NavigationArea from '../NavigationArea.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
 
   interface Props {
     onNextAsset: () => void;
@@ -20,5 +21,5 @@
 />
 
 <NavigationArea onClick={onNextAsset} label={$t('view_next_asset')}>
-  <Icon icon={mdiChevronRight} size="36" aria-hidden />
+  <Icon icon={languageManager.rtl ? mdiChevronLeft : mdiChevronRight} size="36" aria-hidden />
 </NavigationArea>

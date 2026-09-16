@@ -21,8 +21,8 @@ import micromatch from 'micromatch';
 import { Stats, createReadStream, existsSync } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
-import { Queue } from 'src/queue';
-import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 } from 'src/utils';
+import { Queue } from 'src/queue.js';
+import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 } from 'src/utils.js';
 
 const UPLOAD_WATCH_BATCH_SIZE = 100;
 const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
@@ -56,6 +56,7 @@ class UploadFile extends File {
     super([], basename(filepath));
   }
 
+  // @ts-expect-error size is already a property on the new File interface
   get size() {
     return this._size;
   }
@@ -440,7 +441,7 @@ const uploadFile = async (
     throw new Error(await response.text());
   }
 
-  return response.json();
+  return response.json() as Promise<AssetMediaResponseDto>;
 };
 
 export const findSidecar = (filepath: string): string | undefined => {
@@ -577,7 +578,7 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   albumUpdateProgress.start(assets.length, 0);
 
   try {
-    for (const [albumId, assets] of albumToAssets.entries()) {
+    for (const [albumId, assets] of albumToAssets) {
       for (const assetBatch of chunk(assets, Math.min(1000 * concurrency, 65_000))) {
         await addAssetsToAlbum({ id: albumId, bulkIdsDto: { ids: assetBatch } });
         albumUpdateProgress.increment(assetBatch.length);

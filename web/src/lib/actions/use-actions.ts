@@ -3,10 +3,10 @@
  * https://github.com/hperrin/svelte-material-ui/blob/master/packages/common/src/internal/useActions.ts
  */
 
-export type SvelteActionReturnType<P> = {
+export type SvelteActionReturnType<P> = void | {
   update?: (newParams?: P) => void;
   destroy?: () => void;
-} | void;
+};
 
 export type SvelteHTMLActionType<P> = (node: HTMLElement, params?: P) => SvelteActionReturnType<P>;
 
@@ -40,19 +40,21 @@ export function useActions(node: HTMLElement | SVGElement, actions: ActionArray)
 
   return {
     update(actions: ActionArray) {
-      if ((actions?.length || 0) != actionReturns.length) {
+      if ((actions?.length || 0) !== actionReturns.length) {
         throw new Error('You must not change the length of an actions array.');
       }
 
       if (actions) {
         for (const [i, returnEntry] of actionReturns.entries()) {
-          if (returnEntry && returnEntry.update) {
-            const actionEntry = actions[i];
-            if (Array.isArray(actionEntry) && actionEntry.length > 1) {
-              returnEntry.update(actionEntry[1]);
-            } else {
-              returnEntry.update();
-            }
+          if (!(returnEntry && returnEntry.update)) {
+            continue;
+          }
+
+          const actionEntry = actions[i];
+          if (Array.isArray(actionEntry) && actionEntry.length > 1) {
+            returnEntry.update(actionEntry[1]);
+          } else {
+            returnEntry.update();
           }
         }
       }

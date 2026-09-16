@@ -23,32 +23,25 @@ export const cli = (argv: string[]) => {
         .choices(RELEASE_TYPES)
         .makeOptionMandatory(),
     )
-    .addOption(
-      new Option('-m, --mobile <value>', 'pump mobile build number')
-        .choices(['true', 'false'])
-        .default('false'),
-    )
-    .action(
-      ({ type, mobile }: { type: ReleaseType; mobile: 'true' | 'false' }) => {
-        try {
-          console.log(handleRelease({ type, mobile: mobile === 'true' }));
-        } catch (error) {
-          if (error instanceof ReleaseInputError) {
-            console.log(program.usage());
-            process.exit(1);
-          }
-
-          if (error instanceof ReleaseError) {
-            console.log(
-              `Invalid pump: ${type}. Pumping from ${error.version} to ${error.newVersion} is not allowed.`,
-            );
-            process.exit(1);
-          }
-
-          throw error;
+    .action(({ type }: { type: ReleaseType }) => {
+      try {
+        console.log(handleRelease({ type }));
+      } catch (error) {
+        if (error instanceof ReleaseInputError) {
+          console.log(program.usage());
+          process.exit(1);
         }
-      },
-    );
+
+        if (error instanceof ReleaseError) {
+          console.log(
+            `Invalid pump: ${type}. Pumping from ${error.version} to ${error.newVersion} is not allowed.`,
+          );
+          process.exit(1);
+        }
+
+        throw error;
+      }
+    });
 
   return program.parse(argv);
 };

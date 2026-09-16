@@ -8,15 +8,82 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftLocalAssetRepository sut;
+  late LocalAssetRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = DriftLocalAssetRepository(ctx.db);
+    sut = LocalAssetRepository(ctx.db);
   });
 
   tearDown(() async {
     await ctx.dispose();
+  });
+
+  group('get', () {
+    late String userId;
+
+    setUp(() async {
+      final user = await ctx.newUser();
+      userId = user.id;
+      // Owner-scoped queries resolve the current user via authUserEntity.
+      await ctx.newAuthUser(id: userId);
+    });
+
+    test('allows the same checksum to exist for multiple owners (#29973)', () async {
+      const checksum = 'some-shared-checksum';
+      final mine = await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
+      final partner = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+
+      final result = await sut.get(local.id);
+
+      expect(result, isNotNull);
+      expect(result!.id, local.id);
+      // We must explicitly get OUR asset, not the partner's
+      expect(result.remoteId, mine.id);
+    });
+
+    test('reports local-only when only a partner has a remote copy (#29973)', () async {
+      // The current user has NOT uploaded this file; only a partner owns an identical-checksum remote asset
+      const checksum = 'partner-only';
+      final partner = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+
+      final result = await sut.get(local.id);
+
+      expect(result, isNotNull);
+      expect(result!.remoteId, isNull);
+      expect(result.storage, AssetState.local);
+    });
+
+    test('allows the current user to have access to multiple remote rows for one checksum (#29973)', () async {
+      // A single user can have their own remote asset, a partner's remote asset, and a local asset all with the same checksum
+      const checksum = 'multi-library';
+      final partner = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+      await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+
+      final result = await sut.get(local.id);
+
+      expect(result, isNotNull);
+      expect(result!.id, local.id);
+      expect(result.remoteId, isNotNull);
+    });
+
+    test('attaches remoteId to local asset automatically in simple scenarios', () async {
+      const checksum = 'simple';
+      final remote = await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+
+      final result = await sut.get(local.id);
+
+      expect(result, isNotNull);
+      expect(result!.remoteId, remote.id);
+      expect(result.storage, AssetState.merged);
+    });
   });
 
   group('getRemovalCandidates', () {
@@ -456,7 +523,7 @@ void main() {
 
     test('does not update when longitude does not match', () async {
       final remoteAsset = await ctx.newRemoteAsset(ownerId: userId);
-      final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id, longitude: .fromNullable((-74.006)));
+      final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id, longitude: .fromNullable(-74.006));
       final localAsset = await ctx.newLocalAsset(
         checksumOption: const Option.none(),
         iCloudId: cloudIdAsset.cloudId,
@@ -492,8 +559,8 @@ void main() {
       final remoteAsset = await ctx.newRemoteAsset(ownerId: userId);
       final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id);
       final localAsset = await ctx.newLocalAsset(
-        checksumOption: const Option.none(),
-        iCloudId: null,
+        checksumOption: const .none(),
+        iCloudIdOption: const .none(),
         createdAt: cloudIdAsset.createdAt,
         adjustmentTime: cloudIdAsset.adjustmentTime,
         latitude: cloudIdAsset.latitude,
@@ -565,6 +632,23 @@ void main() {
       await sut.reconcileHashesFromCloudId();
       final updated = await sut.getById(localAsset.id);
       expect(updated?.checksum, isNull);
+    });
+  });
+
+  group('getPreviousRemoteId', () {
+    test('finds the owned remote asset that has the previous checksum', () async {
+      final me = await ctx.newUser();
+      final partner = await ctx.newUser();
+      await ctx.newAuthUser(id: me.id);
+      final original = await ctx.newRemoteAsset(ownerId: me.id, checksum: 'a');
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: 'z');
+      final edited = await ctx.newLocalAsset(checksum: 'b', previousChecksum: 'a');
+      final partnerEdited = await ctx.newLocalAsset(checksum: 'c', previousChecksum: 'z');
+      final untouched = await ctx.newLocalAsset(checksum: 'd');
+
+      expect(await sut.getPreviousRemoteId(edited.id), original.id);
+      expect(await sut.getPreviousRemoteId(partnerEdited.id), isNull);
+      expect(await sut.getPreviousRemoteId(untouched.id), isNull);
     });
   });
 }

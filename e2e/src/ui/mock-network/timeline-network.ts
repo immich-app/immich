@@ -11,7 +11,7 @@ import {
   randomThumbnail,
   TimelineData,
 } from 'src/ui/generators/timeline';
-import { sleep } from 'src/ui/specs/timeline/utils';
+import { sleep } from 'src/ui/specs/timeline/utils.js';
 import { MINIMAL_MP4_BUFFER } from './face-editor-network';
 
 export class TimelineTestContext {
@@ -40,7 +40,8 @@ export const setupTimelineMockApiRoutes = async (
         contentType: 'application/json',
         json: getTimeBuckets(timelineRestData, isTrashed, isArchived, isFavorite, albumId, changes),
       });
-    } else if (pathname === '/api/timeline/bucket') {
+    }
+    if (pathname === '/api/timeline/bucket') {
       const timeBucket = url.searchParams.get('timeBucket');
       if (!timeBucket) {
         return route.continue();

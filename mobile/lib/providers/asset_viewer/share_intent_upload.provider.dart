@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,11 +10,11 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
-  ((ref) => ShareIntentUploadStateNotifier(
+  (ref) => ShareIntentUploadStateNotifier(
     ref.watch(appRouterProvider),
     ref.read(foregroundUploadServiceProvider),
     ref.read(shareIntentServiceProvider),
-  )),
+  ),
 );
 
 class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttachment>> {
@@ -33,7 +34,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
     router.removeWhere((route) => route.name == "ShareIntentRoute");
     clearAttachments();
     addAttachments(attachments);
-    router.push(ShareIntentRoute(attachments: attachments));
+    unawaited(router.push(ShareIntentRoute(attachments: attachments)));
   }
 
   void addAttachments(List<ShareIntentAttachment> attachments) {

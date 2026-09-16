@@ -764,7 +764,6 @@
   "custom_date": "விருப்ப தேதி",
   "custom_locale": "தனிப்பயன் மொழி",
   "custom_locale_description": "தேர்ந்தெடுக்கப்பட்ட மொழி மற்றும் பிராந்தியத்தின் அடிப்படையில் தேதிகள், நேரம் மற்றும் எண்களை வடிவமைக்கவும்",
-  "custom_url": "தனிப்பயன் முகவரி",
   "cutoff_date_description": "கடைசி புகைப்படங்களை வைத்திருங்கள்…",
   "cutoff_day": "{count, plural, one {நாள்} other {நாள்கள்}}",
   "cutoff_year": "{count, plural, one {ஆண்டு} other {ஆண்டுகள்}}",

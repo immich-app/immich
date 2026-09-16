@@ -1,28 +1,13 @@
-class ImageConfig {
-  final bool preferRemote;
-  final bool loadPreview;
-  final bool loadOriginal;
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  const ImageConfig({this.preferRemote = false, this.loadPreview = true, this.loadOriginal = false});
+part 'image_config.freezed.dart';
 
-  ImageConfig copyWith({bool? preferRemote, bool? loadPreview, bool? loadOriginal}) => ImageConfig(
-    preferRemote: preferRemote ?? this.preferRemote,
-    loadPreview: loadPreview ?? this.loadPreview,
-    loadOriginal: loadOriginal ?? this.loadOriginal,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ImageConfig &&
-          other.preferRemote == preferRemote &&
-          other.loadPreview == loadPreview &&
-          other.loadOriginal == loadOriginal);
-
-  @override
-  int get hashCode => Object.hash(preferRemote, loadPreview, loadOriginal);
-
-  @override
-  String toString() =>
-      'ImageConfig(preferRemoteImage: $preferRemote, loadPreview: $loadPreview, loadOriginal: $loadOriginal)';
+@freezed
+abstract class ImageConfig with _$ImageConfig {
+  const factory ImageConfig({
+    @Default(false) bool preferRemote,
+    @Default(true) bool loadPreview,
+    @Default(false) bool loadOriginal,
+  }) = _ImageConfig;
 }

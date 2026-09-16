@@ -1,44 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/constants/colors.dart';
 
-class ThemeConfig {
-  final ThemeMode mode;
-  final ImmichColorPreset primaryColor;
-  final bool dynamicTheme;
-  final bool colorfulInterface;
+part 'theme_config.freezed.dart';
 
-  const ThemeConfig({
-    this.mode = .system,
-    this.primaryColor = .indigo,
-    this.dynamicTheme = false,
-    this.colorfulInterface = true,
-  });
-
-  ThemeConfig copyWith({
-    ThemeMode? mode,
-    ImmichColorPreset? primaryColor,
-    bool? dynamicTheme,
-    bool? colorfulInterface,
-  }) => .new(
-    mode: mode ?? this.mode,
-    primaryColor: primaryColor ?? this.primaryColor,
-    dynamicTheme: dynamicTheme ?? this.dynamicTheme,
-    colorfulInterface: colorfulInterface ?? this.colorfulInterface,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ThemeConfig &&
-          other.mode == mode &&
-          other.primaryColor == primaryColor &&
-          other.dynamicTheme == dynamicTheme &&
-          other.colorfulInterface == colorfulInterface);
-
-  @override
-  int get hashCode => Object.hash(mode, primaryColor, dynamicTheme, colorfulInterface);
-
-  @override
-  String toString() =>
-      'ThemeConfig(mode: $mode, primaryColor: $primaryColor, dynamicTheme: $dynamicTheme, colorfulInterface: $colorfulInterface)';
+@freezed
+abstract class ThemeConfig with _$ThemeConfig {
+  const factory ThemeConfig({
+    @Default(ThemeMode.system) ThemeMode mode,
+    @Default(ImmichColorPreset.indigo) ImmichColorPreset primaryColor,
+    @Default(false) bool dynamicTheme,
+    @Default(true) bool colorfulInterface,
+  }) = _ThemeConfig;
 }

@@ -3,15 +3,15 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetOrder } from 'src/enum';
-import { AssetTable } from 'src/schema/tables/asset.table';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
+import { AssetOrder } from 'src/enum.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table({ name: 'album' })
 @UpdatedAtTrigger('album_updatedAt')
@@ -36,8 +36,8 @@ export class AlbumTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @Column({ type: 'text', default: '' })
-  description!: Generated<string>;
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
 
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;

@@ -13,6 +13,7 @@
   const { point, assetCount, onClose }: Props = $props();
 
   const hasExistingLocations = $derived(
+    // eslint-disable-next-line eqeqeq
     assetMultiSelectManager.assets.some((asset) => asset.latitude != null || asset.longitude != null),
   );
 </script>

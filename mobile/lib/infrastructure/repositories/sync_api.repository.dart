@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -42,27 +43,18 @@ class SyncApiRepository {
     request.body = jsonEncode(
       SyncStreamDto(
         types: [
-          SyncRequestType.authUsersV1,
+          serverVersion.supports(.syncAuthUsersV2) ? SyncRequestType.authUsersV2 : SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
-          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
-              ? SyncRequestType.assetsV2
-              : SyncRequestType.assetsV1,
+          serverVersion.supports(.syncV2) ? SyncRequestType.assetsV2 : SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
-          if (serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetEditsV1,
+          if (serverVersion.supports(.syncAssetEditsV1)) SyncRequestType.assetEditsV1,
           SyncRequestType.assetMetadataV1,
           SyncRequestType.partnersV1,
-          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
-              ? SyncRequestType.partnerAssetsV2
-              : SyncRequestType.partnerAssetsV1,
+          serverVersion.supports(.syncV2) ? SyncRequestType.partnerAssetsV2 : SyncRequestType.partnerAssetsV1,
           SyncRequestType.partnerAssetExifsV1,
-          if (serverVersion < const SemVer(major: 3, minor: 0, patch: 0))
-            SyncRequestType.albumsV1
-          else
-            SyncRequestType.albumsV2,
+          serverVersion.supports(.syncV2) ? SyncRequestType.albumsV2 : SyncRequestType.albumsV1,
           SyncRequestType.albumUsersV1,
-          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
-              ? SyncRequestType.albumAssetsV2
-              : SyncRequestType.albumAssetsV1,
+          serverVersion.supports(.syncV2) ? SyncRequestType.albumAssetsV2 : SyncRequestType.albumAssetsV1,
           SyncRequestType.albumAssetExifsV1,
           SyncRequestType.albumToAssetsV1,
           SyncRequestType.memoriesV1,
@@ -71,16 +63,14 @@ class SyncApiRepository {
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
           SyncRequestType.peopleV1,
-          serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)
-              ? SyncRequestType.assetFacesV2
-              : SyncRequestType.assetFacesV1,
-          if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.assetOcrV1,
+          serverVersion.supports(.syncAssetFacesV2) ? SyncRequestType.assetFacesV2 : SyncRequestType.assetFacesV1,
+          if (serverVersion.supports(.syncAssetOcrV1)) SyncRequestType.assetOcrV1,
         ],
       ).toJson(),
     );
 
     String previousChunk = '';
-    List<String> lines = [];
+    final List<String> lines = [];
 
     bool shouldAbort = false;
 
@@ -105,7 +95,7 @@ class SyncApiRepository {
         }
 
         previousChunk += chunk;
-        final parts = previousChunk.toString().split('\n');
+        final parts = previousChunk.split('\n');
         previousChunk = parts.removeLast();
         lines.addAll(parts);
 
@@ -150,6 +140,7 @@ class SyncApiRepository {
 
 const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.authUserV1: SyncAuthUserV1.fromJson,
+  SyncEntityType.authUserV2: SyncAuthUserV2.fromJson,
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,

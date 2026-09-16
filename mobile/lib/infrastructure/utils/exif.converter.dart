@@ -11,17 +11,17 @@ abstract final class ExifDtoConverter {
       timeZone: dto.timeZone.orElse(null),
       dateTimeOriginal: dto.dateTimeOriginal.orElse(null),
       isFlipped: isOrientationFlipped(dto.orientation.orElse(null)),
-      latitude: dto.latitude.orElse(null)?.toDouble(),
-      longitude: dto.longitude.orElse(null)?.toDouble(),
+      latitude: dto.latitude.orElse(null),
+      longitude: dto.longitude.orElse(null),
       city: dto.city.orElse(null),
       state: dto.state.orElse(null),
       country: dto.country.orElse(null),
       make: dto.make.orElse(null),
       model: dto.model.orElse(null),
       lens: dto.lensModel.orElse(null),
-      f: dto.fNumber.orElse(null)?.toDouble(),
-      mm: dto.focalLength.orElse(null)?.toDouble(),
-      iso: dto.iso.orElse(null)?.toInt(),
+      f: dto.fNumber.orElse(null),
+      mm: dto.focalLength.orElse(null),
+      iso: dto.iso.orElse(null),
       exposureSeconds: exposureTimeToSeconds(dto.exposureTime.orElse(null)),
     );
   }
@@ -40,7 +40,7 @@ abstract final class ExifDtoConverter {
     if (second == null) {
       return null;
     }
-    double? value = double.tryParse(second);
+    final double? value = double.tryParse(second);
     if (value != null) {
       return value;
     }

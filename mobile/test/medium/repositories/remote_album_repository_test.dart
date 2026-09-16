@@ -6,11 +6,11 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftRemoteAlbumRepository sut;
+  late RemoteAlbumRepository sut;
 
   setUp(() async {
     ctx = MediumRepositoryContext();
-    sut = DriftRemoteAlbumRepository(ctx.db);
+    sut = RemoteAlbumRepository(ctx.db);
   });
 
   tearDown(() async {

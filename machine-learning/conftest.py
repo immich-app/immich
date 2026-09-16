@@ -1,11 +1,10 @@
 import json
-from typing import Any, Iterator
+from types import SimpleNamespace
+from typing import Any, Callable, Iterator
 from unittest import mock
 
-import numpy as np
 import pytest
 from fastapi.testclient import TestClient
-from numpy.typing import NDArray
 from PIL import Image
 
 from immich_ml.config import log
@@ -15,11 +14,6 @@ from immich_ml.main import app
 @pytest.fixture
 def pil_image() -> Image.Image:
     return Image.new("RGB", (600, 800))
-
-
-@pytest.fixture
-def cv_image(pil_image: Image.Image) -> NDArray[np.float32]:
-    return np.asarray(pil_image)[:, :, ::-1]  # PIL uses RGB while cv2 uses BGR
 
 
 @pytest.fixture
@@ -127,6 +121,18 @@ def ov_device_ids(request: pytest.FixtureRequest, ort_pybind: mock.Mock) -> Iter
 def ort_session() -> Iterator[mock.Mock]:
     with mock.patch("immich_ml.sessions.ort.ort.InferenceSession") as mocked:
         yield mocked
+
+
+@pytest.fixture(scope="function")
+def stub_session() -> Callable[..., mock.Mock]:
+    def _make(shape: tuple[Any, ...], outputs: Any = None, name: str = "input.1") -> mock.Mock:
+        session = mock.Mock()
+        session.get_inputs.return_value = [SimpleNamespace(name=name, shape=shape)]
+        if outputs is not None:
+            session.run.return_value = outputs
+        return session
+
+    return _make
 
 
 @pytest.fixture(scope="function")

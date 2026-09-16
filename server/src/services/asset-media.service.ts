@@ -1,24 +1,24 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore } from 'src/cores/storage.core';
-import { AuthSharedLink } from 'src/database';
+import type { UploadFile, UploadRequest } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { Asset, AuthSharedLink } from 'src/database.js';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
   AssetMediaStatus,
   AssetRejectReason,
   AssetUploadAction,
-} from 'src/dtos/asset-media-response.dto';
+} from 'src/dtos/asset-media-response.dto.js';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
   AssetMediaSize,
   UploadFieldName,
-} from 'src/dtos/asset-media.dto';
-import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+} from 'src/dtos/asset-media.dto.js';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetFileType,
   AssetVisibility,
@@ -27,16 +27,15 @@ import {
   JobName,
   Permission,
   StorageFolder,
-} from 'src/enum';
-import { AuthRequest } from 'src/middleware/auth.guard';
-import { BaseService } from 'src/services/base.service';
-import { UploadFile, UploadRequest } from 'src/types';
-import { requireUploadAccess } from 'src/utils/access';
-import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
-import { isAssetChecksumConstraint } from 'src/utils/database';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
-import { fromChecksum } from 'src/utils/request';
+} from 'src/enum.js';
+import { AuthRequest } from 'src/middleware/auth.guard.js';
+import { BaseService } from 'src/services/base.service.js';
+import { requireUploadAccess } from 'src/utils/access.js';
+import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util.js';
+import { isAssetChecksumConstraint } from 'src/utils/database.js';
+import { ImmichFileResponse, getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { fromChecksum } from 'src/utils/request.js';
 
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
@@ -92,8 +91,7 @@ export class AssetMediaService extends BaseService {
   getUploadFilename({ auth, fieldName, file, body }: UploadRequest): string {
     requireUploadAccess(auth);
 
-    const extension = extname(body.filename || file.originalName);
-
+    const extension = getFilenameExtension(body.filename || file.originalName);
     const lookup = {
       [UploadFieldName.ASSET_DATA]: extension,
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
@@ -130,6 +128,7 @@ export class AssetMediaService extends BaseService {
     file: UploadFile,
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
+    let asset: Asset | undefined;
     try {
       await this.requireAccess({
         auth,
@@ -147,7 +146,7 @@ export class AssetMediaService extends BaseService {
         );
       }
 
-      const asset = await this.assetRepository.create({
+      asset = await this.assetRepository.create({
         ownerId: auth.user.id,
         libraryId: null,
 
@@ -215,6 +214,11 @@ export class AssetMediaService extends BaseService {
 
         this.logger.debug(`Duplicate asset upload rejected: existing asset ${duplicateId}`);
         return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
+      }
+
+      // clean up the asset row if one was created
+      if (asset) {
+        await this.assetRepository.remove({ id: asset.id });
       }
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
@@ -353,9 +357,12 @@ export class AssetMediaService extends BaseService {
     }
 
     await this.albumRepository.addAssetIds(album.id, [assetId]);
-    for (const { user } of album.albumUsers) {
-      await this.eventRepository.emit('AlbumUpdate', { id: album.id, recipientId: user.id });
-    }
+    const userIds = album.albumUsers.map(({ user }) => user.id);
+    await this.eventRepository.emit('AlbumUpdate', {
+      id: album.id,
+      userIds,
+      recipientIds: userIds,
+    });
   }
 
   private requireQuota(auth: AuthDto, size: number) {

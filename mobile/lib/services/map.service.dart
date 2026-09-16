@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -11,7 +13,7 @@ class MapService with ErrorLoggerMixin {
   final logger = Logger("MapService");
 
   MapService(this._apiService) {
-    _setMapUserAgentHeader();
+    unawaited(_setMapUserAgentHeader());
   }
 
   Future<void> _setMapUserAgentHeader() async {

@@ -18,11 +18,13 @@
   const defaultLangOption = { label: defaultLang.name, value: defaultLang.code };
 
   const handleLanguageChange = async (newLang: string | undefined) => {
-    if (newLang) {
-      $lang = newLang;
-      await i18nLocale.set(convertBCP47(newLang));
-      await invalidateAll();
+    if (!newLang) {
+      return;
     }
+
+    $lang = newLang;
+    await i18nLocale.set(convertBCP47(newLang));
+    await invalidateAll();
   };
 
   let closestLanguage = $derived(getClosestAvailableLocale([$lang], langCodes));

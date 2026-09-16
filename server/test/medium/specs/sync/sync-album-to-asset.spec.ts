@@ -1,10 +1,10 @@
 import { Kysely } from 'kysely';
-import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum';
-import { AlbumRepository } from 'src/repositories/album.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { DB } from 'src/schema';
-import { SyncTestContext } from 'test/medium.factory';
-import { getKyselyDB, wait } from 'test/utils';
+import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { AlbumRepository } from 'src/repositories/album.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { DB } from 'src/schema/index.js';
+import { SyncTestContext } from 'test/medium.factory.js';
+import { getKyselyDB, wait } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -161,12 +161,14 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
 
     // backfill needs assets with an older updateId
     const { asset: sharedAsset1 } = await ctx.newAsset({ ownerId: user2.id });
+    await wait(2);
     const { asset: sharedAsset2 } = await ctx.newAsset({ ownerId: user2.id });
 
     await wait(2);
 
     const { album: sharedAlbum } = await ctx.newAlbum({ ownerId: user2.id });
     await ctx.newAlbumAsset({ albumId: sharedAlbum.id, assetId: sharedAsset1.id });
+    await wait(2);
     await ctx.newAlbumAsset({ albumId: sharedAlbum.id, assetId: sharedAsset2.id });
 
     await wait(2);

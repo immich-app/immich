@@ -5,19 +5,16 @@ import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/sliver_app_bar/item_count_text.widget.dart';
+import 'package:immich_mobile/presentation/widgets/sliver_app_bar/random_asset_background_image.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 
 class PersonSliverAppBar extends ConsumerStatefulWidget {
   const PersonSliverAppBar({
@@ -28,7 +25,7 @@ class PersonSliverAppBar extends ConsumerStatefulWidget {
     required this.onBirthdayTap,
   });
 
-  final DriftPerson person;
+  final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
   final VoidCallback onShowOptions;
@@ -56,8 +53,8 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
   @override
   Widget build(BuildContext context) {
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
-    Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
-    List<Shadow> actionIconShadows = [
+    final Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
+    final List<Shadow> actionIconShadows = [
       if (_scrollProgress < 0.95)
         Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
       else
@@ -137,7 +134,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
 
 class _ExpandedBackground extends ConsumerStatefulWidget {
   final double scrollProgress;
-  final DriftPerson person;
+  final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
 
@@ -169,7 +166,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
-        _slideController.forward();
+        unawaited(_slideController.forward());
       }
     });
   }
@@ -191,7 +188,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
           offset: Offset(0, widget.scrollProgress * 50),
           child: Transform.scale(
             scale: 1.4 - (widget.scrollProgress * 0.2),
-            child: _RandomAssetBackground(timelineService: timelineService),
+            child: RandomAssetBackgroundImage(timelineService: timelineService),
           ),
         ),
         ClipRect(
@@ -230,7 +227,9 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                     elevation: 3,
                     child: CircleAvatar(
                       maxRadius: 84 / 2,
-                      backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(widget.person.id)),
+                      backgroundImage: RemoteImageProvider(
+                        url: getFaceThumbnailUrl(widget.person.id, updatedAt: widget.person.updatedAt),
+                      ),
                     ),
                   ),
                 ),
@@ -259,7 +258,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                                     ),
                                   )
                                 : Text(
-                                    'add_a_name'.tr(),
+                                    context.t.add_a_name,
                                     style: context.textTheme.titleLarge?.copyWith(
                                       color: Colors.grey[400],
                                       fontSize: 36,
@@ -270,7 +269,16 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                           ),
                         ),
                       ),
-                      AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        child: const ItemCountText(
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [Shadow(offset: Offset(0, 1), blurRadius: 6, color: Colors.black45)],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: widget.onBirthdayTap,
@@ -291,7 +299,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                               )
                             else
                               Text(
-                                'add_birthday'.tr(),
+                                context.t.add_birthday,
                                 style: context.textTheme.labelLarge?.copyWith(
                                   color: Colors.grey[400],
                                   height: 1.2,
@@ -311,255 +319,6 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ItemCountText extends ConsumerStatefulWidget {
-  const _ItemCountText();
-
-  @override
-  ConsumerState<_ItemCountText> createState() => _ItemCountTextState();
-}
-
-class _ItemCountTextState extends ConsumerState<_ItemCountText> {
-  StreamSubscription? _reloadSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _reloadSubscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
-
-    return Text(
-      'items_count'.t(context: context, args: {"count": assetCount}),
-      style: context.textTheme.labelLarge?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-        shadows: [const Shadow(offset: Offset(0, 1), blurRadius: 6, color: Colors.black45)],
-      ),
-    );
-  }
-}
-
-class _RandomAssetBackground extends StatefulWidget {
-  final TimelineService timelineService;
-
-  const _RandomAssetBackground({required this.timelineService});
-
-  @override
-  State<_RandomAssetBackground> createState() => _RandomAssetBackgroundState();
-}
-
-class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with TickerProviderStateMixin {
-  late AnimationController _zoomController;
-  late AnimationController _crossFadeController;
-  late Animation<double> _zoomAnimation;
-  late Animation<Offset> _panAnimation;
-  late Animation<double> _crossFadeAnimation;
-  BaseAsset? _currentAsset;
-  BaseAsset? _nextAsset;
-  bool _isZoomingIn = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _zoomController = AnimationController(
-      duration: const Duration(seconds: 12),
-      vsync: this,
-      animationBehavior: AnimationBehavior.preserve,
-    );
-
-    _crossFadeController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-      animationBehavior: AnimationBehavior.preserve,
-    );
-
-    _zoomAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
-
-    _panAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0.5, -0.5),
-    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
-
-    _crossFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _crossFadeController, curve: Curves.easeInOutCubic));
-
-    Future.delayed(Durations.medium1, () => _loadFirstAsset());
-  }
-
-  @override
-  void dispose() {
-    _zoomController.dispose();
-    _crossFadeController.dispose();
-    super.dispose();
-  }
-
-  void _startAnimationCycle() {
-    if (_isZoomingIn) {
-      _zoomController.forward().then((_) {
-        _loadNextAsset();
-      });
-    } else {
-      _zoomController.reverse().then((_) {
-        _loadNextAsset();
-      });
-    }
-  }
-
-  Future<void> _loadFirstAsset() async {
-    if (!mounted) {
-      return;
-    }
-
-    if (widget.timelineService.totalAssets == 0) {
-      setState(() {
-        _currentAsset = null;
-      });
-
-      return;
-    }
-
-    setState(() {
-      _currentAsset = widget.timelineService.getRandomAsset();
-    });
-
-    await _crossFadeController.forward();
-
-    if (_zoomController.status == AnimationStatus.dismissed) {
-      if (_isZoomingIn) {
-        _zoomController.reset();
-      } else {
-        _zoomController.value = 1.0;
-      }
-      _startAnimationCycle();
-    }
-  }
-
-  Future<void> _loadNextAsset() async {
-    if (!mounted) {
-      return;
-    }
-
-    try {
-      if (widget.timelineService.totalAssets > 1) {
-        // Load next asset while keeping current one visible
-        final nextAsset = widget.timelineService.getRandomAsset();
-
-        setState(() {
-          _nextAsset = nextAsset;
-        });
-
-        await _crossFadeController.reverse();
-        setState(() {
-          _currentAsset = _nextAsset;
-          _nextAsset = null;
-        });
-
-        _crossFadeController.value = 1.0;
-
-        _isZoomingIn = !_isZoomingIn;
-
-        _startAnimationCycle();
-      }
-    } catch (e) {
-      _zoomController.reset();
-      _startAnimationCycle();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.timelineService.totalAssets == 0) {
-      return const SizedBox.shrink();
-    }
-
-    return AnimatedBuilder(
-      animation: Listenable.merge([_zoomAnimation, _panAnimation, _crossFadeAnimation]),
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _zoomAnimation.value,
-          child: Transform.translate(
-            offset: _panAnimation.value,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Current image
-                if (_currentAsset != null)
-                  Opacity(
-                    opacity: _crossFadeAnimation.value,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: Image(
-                        alignment: Alignment.topRight,
-                        image: getFullImageProvider(_currentAsset!),
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) {
-                            return child;
-                          }
-                          return Container();
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
-                if (_nextAsset != null)
-                  Opacity(
-                    opacity: 1.0 - _crossFadeAnimation.value,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: Image(
-                        alignment: Alignment.topRight,
-                        image: getFullImageProvider(_nextAsset!),
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) {
-                            return child;
-                          }
-                          return const SizedBox.shrink();
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

@@ -26,39 +26,80 @@ linter:
   # producing the lint.
 
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true # Uncomment to enable the `prefer_single_quotes` rule
+    # Correctness
+    always_declare_return_types: true
+    avoid_type_to_string: true
+    avoid_unused_constructor_parameters: true
+    avoid_void_async: true
+    cancel_subscriptions: true
+    cast_nullable_to_non_nullable: true
+    close_sinks: true
+    collection_methods_unrelated_type: true
+    deprecated_consistency: true
+    discarded_futures: true
+    no_adjacent_strings_in_list: true
+    no_self_assignments: true
+    noop_primitive_operations: true
+    only_throw_errors: true
+    parameter_assignments: true
+    throw_in_finally: true
+    tighten_type_of_initializing_formals: true
     unawaited_futures: true
-    use_build_context_synchronously: false
-    require_trailing_commas: true
+    unnecessary_ignore: true
+    unnecessary_null_checks: true
+    unnecessary_statements: true
     unrelated_type_equality_checks: true
+
+    # Performance
+    avoid_slow_async_io: true
     prefer_const_constructors: true
-    always_use_package_imports: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+
+    # Flutter specific
+    avoid_unnecessary_containers: true
+    sized_box_for_whitespace: true
+    use_build_context_synchronously: true
+    use_colored_box: true
+    use_decorated_box: true
+    use_full_hex_values_for_flutter_colors: true
+
+    # Style
     always_put_control_body_on_new_line: true
+    always_use_package_imports: true
+    avoid_multiple_declarations_per_line: true
+    avoid_print: true
+    combinators_ordering: true
+    directives_ordering: true
+    no_leading_underscores_for_local_identifiers: true
+    prefer_final_locals: true
+    require_trailing_commas: true
+    unnecessary_breaks: true
+    unnecessary_parenthesis: true
+    use_named_constants: true
+    use_super_parameters: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
 analyzer:
   exclude:
-    - openapi/**
+    - generated/openapi/**
     - build/**
     - lib/generated_plugin_registrant.dart
     - lib/**/*.g.dart
     - lib/**/*.drift.dart
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
-  # TODO: Re-enable after upgrading custom_lint
-  # plugins:
-  #   - custom_lint
+  # NOTE: We explicitly do not use riverpod_lint as there are analyzer version conflicts between
+  # our Flutter version and the required old riverpod_lint 2.x
   errors:
     unawaited_futures: warning
     always_put_control_body_on_new_line: warning
-
-custom_lint:
-  rules:
-    - avoid_build_context_in_providers: false
-    - avoid_public_notifier_properties: false
-    - avoid_manual_providers_as_generated_provider_dependency: false
-    - unsupported_provider_value: false
 
 dart_code_metrics:
   rules:
@@ -69,6 +110,18 @@ dart_code_metrics:
             exclude-paths:
               - 'lib/utils/debug_print.dart'
             severity: perf
+          - name: tr
+            description: 'Use context.t.<key> or StaticTranslations.instance.<key> instead of tr().'
+          - type: String
+            entries:
+              - name: tr
+                description: 'Use context.t.<key> or StaticTranslations.instance.<key> instead of String.tr().'
+              - name: plural
+                description: 'Use the generated plural accessor instead of String.plural().'
+          - type: Text
+            entries:
+              - name: tr
+                description: 'Use Text(context.t.<key>) instead of Text(<key>).tr().'
     # All rules from "recommended" preset
     # Show potential errors
   #  - avoid-cascade-after-if-null
@@ -82,3 +135,17 @@ dart_code_metrics:
     - prefer-const-border-radius
     - prefer-declaring-const-constructor
     - prefer-switch-expression
+
+    # Riverpod
+    - avoid-calling-notifier-members-inside-build
+    - avoid-notifier-constructors
+    - avoid-nullable-async-value-pattern
+    - avoid-public-notifier-properties
+    - avoid-ref-inside-state-dispose
+    - avoid-ref-read-inside-build
+    - avoid-ref-watch-outside-build
+    - avoid-unnecessary-consumer-widgets
+    - dispose-provided-instances
+    - prefer-immutable-provider-arguments
+    - use-ref-and-state-synchronously
+    - use-ref-read-synchronously

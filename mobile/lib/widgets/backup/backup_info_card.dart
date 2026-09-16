@@ -1,8 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class BackupInfoCard extends StatelessWidget {
   final String title;
@@ -73,11 +72,11 @@ class BackupInfoCard extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "backup_info_card_assets",
+                  context.t.backup_info_card_assets,
                   style: context.textTheme.labelLarge?.copyWith(
                     color: context.colorScheme.onSurface.withAlpha(isLoading ? 50 : 255),
                   ),
-                ).tr(),
+                ),
               ],
             ),
           ),
@@ -93,7 +92,7 @@ class BackupInfoCard extends StatelessWidget {
               ),
               onTap: onTap,
               title: Text(
-                "view_details".t(context: context),
+                context.t.view_details,
                 style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
               ),
               trailing: Icon(Icons.arrow_forward_ios, size: 16, color: context.colorScheme.onSurfaceVariant),

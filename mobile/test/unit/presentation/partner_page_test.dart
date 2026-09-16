@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/partner.action.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 import '../factories/partner_user_factory.dart';
 import '../factories/user_factory.dart';
@@ -13,16 +15,14 @@ void main() {
   late PresentationContext context;
 
   setUp(() async => context = await PresentationContext.create());
-  tearDown(() => context.dispose());
+  tearDown(() async => await context.dispose());
 
   group('PartnerSharedByList', () {
     testWidgets('shows the empty-state add button when there are no partners', (tester) async {
-      final action = const PartnerAddAction();
-
       await tester.pumpTestWidget(context, const PartnerSharedByList(partners: []));
 
       expect(find.byType(ListView), findsNothing);
-      expect(find.widgetWithIcon(TextButton, action.icon), findsOneWidget);
+      expect(find.descendant(of: find.byType(ActionButton), matching: find.byType(ImmichTextButton)), findsOneWidget);
     });
 
     testWidgets('renders a tile per partner with name and email', (tester) async {
@@ -39,9 +39,11 @@ void main() {
     testWidgets('renders a remove action for each partner', (tester) async {
       final partner1 = PartnerFactory.create(inTimeline: true);
       final partner2 = PartnerFactory.create();
-      final action = const PartnerRemoveAction(sharedWithId: '', partnerName: '');
       await tester.pumpTestWidget(context, PartnerSharedByList(partners: [partner1, partner2]));
-      expect(find.byIcon(action.icon), findsNWidgets(2));
+      expect(
+        find.descendant(of: find.byType(ActionIconButton), matching: find.byType(ImmichIconButton)),
+        findsNWidgets(2),
+      );
     });
   });
 

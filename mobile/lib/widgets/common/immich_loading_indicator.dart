@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
@@ -9,11 +11,12 @@ class ImmichLoadingIndicator extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 6))
-      ..reverse()
-      ..repeat();
+    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 6));
+    unawaited(logoAnimationController.reverse());
+    unawaited(logoAnimationController.repeat());
 
-    final borderAnimationController = useAnimationController(duration: const Duration(seconds: 6))..repeat();
+    final borderAnimationController = useAnimationController(duration: const Duration(seconds: 6));
+    unawaited(borderAnimationController.repeat());
 
     return Container(
       height: 80,

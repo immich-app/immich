@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -25,7 +26,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
   ImageInfo? getInitialImage(CancellableImageProvider provider) {
     final completer = CancelableCompleter<ImageInfo?>(onCancel: provider.cancel);
-    final cachedStream = provider.resolve(const ImageConfiguration());
+    final cachedStream = provider.resolve(ImageConfiguration.empty);
     ImageInfo? cachedImage;
     final listener = ImageStreamListener((image, synchronousCall) {
       if (synchronousCall) {
@@ -43,9 +44,11 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       return cachedImage;
     }
 
-    completer.operation.valueOrCancellation().whenComplete(() {
-      cachedStream.removeListener(listener);
-    });
+    unawaited(
+      completer.operation.valueOrCancellation().whenComplete(() {
+        cachedStream.removeListener(listener);
+      }),
+    );
     cachedOperation = completer.operation;
     return null;
   }
@@ -155,7 +158,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     final operation = cachedOperation;
     if (operation != null) {
       cachedOperation = null;
-      operation.cancel();
+      unawaited(operation.cancel());
     }
 
     if (hasActiveWork) {
@@ -169,6 +172,7 @@ ImageProvider getFullImageProvider(
   Size size = const Size(1080, 1920),
   bool edited = true,
   String? localFilePath,
+  Size? remoteThumbnailSize,
 }) {
   // Create new provider and cache it
   final ImageProvider provider;
@@ -176,7 +180,15 @@ ImageProvider getFullImageProvider(
     provider = FileImage(File(localFilePath));
   } else if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type, isAnimated: asset.isAnimatedImage);
+    provider = LocalFullImageProvider(
+      id: id,
+      size: size,
+      assetType: asset.type,
+      isAnimated: asset.isAnimatedImage,
+      width: asset.width,
+      height: asset.height,
+      checksum: asset.checksum,
+    );
   } else {
     final String assetId;
     final String thumbhash;
@@ -195,21 +207,31 @@ ImageProvider getFullImageProvider(
       assetType: asset.type,
       isAnimated: asset.isAnimatedImage,
       edited: edited,
+      thumbnailSize: remoteThumbnailSize,
     );
   }
 
   return provider;
 }
 
-ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnailResolution, bool edited = true}) {
+ImageProvider? getThumbnailImageProvider(
+  BaseAsset asset, {
+  Size size = kThumbnailResolution,
+
+  /// Physical size to decode for remote thumbnails, or null for the source size.
+  Size? remoteSize,
+  bool edited = true,
+}) {
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    return LocalThumbProvider(id: id, size: size, assetType: asset.type);
+    return LocalThumbProvider(id: id, size: size, assetType: asset.type, checksum: asset.checksum);
   }
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
   final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
-  return assetId != null ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited) : null;
+  return assetId != null
+      ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited, decodeSize: remoteSize)
+      : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>

@@ -1,12 +1,11 @@
 import 'package:collection/collection.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -23,20 +22,22 @@ class LikeActivityActionButton extends ConsumerWidget {
     final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset)) as RemoteAsset?;
     final user = ref.watch(currentUserProvider);
 
-    final activities = ref.watch(albumActivityProvider((album?.id ?? "", asset?.id)));
+    final activities = ref.watch(Store.activity.list(album?.id ?? "", assetId: asset?.id));
 
-    onTap(Activity? liked) async {
+    Future<void> onTap(Activity? liked) async {
       if (user == null) {
         return;
       }
 
-      if (liked != null) {
-        await ref.read(albumActivityProvider((album?.id ?? "", asset?.id)).notifier).removeActivity(liked.id);
-      } else {
-        await ref.read(albumActivityProvider((album?.id ?? "", asset?.id)).notifier).addLike();
+      try {
+        if (liked != null) {
+          await ref.read(Store.activity).remove(liked);
+        } else {
+          await ref.read(Store.activity).addLike(album?.id ?? "", assetId: asset?.id);
+        }
+      } catch (e) {
+        // TODO(rewrite): Actually handle this
       }
-
-      ref.invalidate(albumActivityProvider((album?.id ?? "", asset?.id)));
     }
 
     return activities.when(
@@ -48,7 +49,7 @@ class LikeActivityActionButton extends ConsumerWidget {
         return BaseActionButton(
           maxWidth: 60,
           iconData: liked != null ? Icons.thumb_up : Icons.thumb_up_off_alt,
-          label: "like".t(context: context),
+          label: context.t.like,
           onPressed: () => onTap(liked),
           iconOnly: iconOnly,
           menuItem: menuItem,
@@ -58,11 +59,11 @@ class LikeActivityActionButton extends ConsumerWidget {
       // default to empty heart during loading
       loading: () => BaseActionButton(
         iconData: Icons.thumb_up_off_alt,
-        label: "like".t(context: context),
+        label: context.t.like,
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
-      error: (error, stack) => Text('error_saving_image'.tr(args: [error.toString()])),
+      error: (error, stack) => Text(context.t.error_saving_image(error: error.toString())),
     );
   }
 }

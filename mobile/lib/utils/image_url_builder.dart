@@ -12,7 +12,7 @@ String getThumbnailUrlForRemoteId(
   bool edited = true,
   String? thumbhash,
 }) {
-  final url = '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.value}&edited=$edited';
+  final url = '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=$type&edited=$edited';
   return thumbhash != null ? '$url&c=${Uri.encodeComponent(thumbhash)}' : url;
 }
 
@@ -20,6 +20,7 @@ String getPlaybackUrlForRemoteId(final String id) {
   return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/video/playback?';
 }
 
-String getFaceThumbnailUrl(final String personId) {
-  return '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
+String getFaceThumbnailUrl(final String personId, {DateTime? updatedAt}) {
+  final url = '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
+  return updatedAt != null ? '$url?c=${updatedAt.millisecondsSinceEpoch}' : url;
 }

@@ -20,7 +20,7 @@
       const response = await updateAlbumInfo({
         id,
         updateAlbumDto: {
-          description,
+          description: description || null,
         },
       });
       eventManager.emit('AlbumUpdate', response);

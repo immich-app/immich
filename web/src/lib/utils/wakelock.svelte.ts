@@ -29,14 +29,16 @@ export async function acquireWakeLock() {
 }
 
 export async function releaseWakeLock() {
-  if (sentinel) {
-    const toReleaseSentinel = sentinel;
-    // Unset first to avoid race condition after await
-    sentinel = undefined;
-
-    // eslint-disable-next-line tscompat/tscompat
-    await toReleaseSentinel.release();
+  if (!sentinel) {
+    return;
   }
+
+  const toReleaseSentinel = sentinel;
+  // Unset first to avoid race condition after await
+  sentinel = undefined;
+
+  // eslint-disable-next-line tscompat/tscompat
+  await toReleaseSentinel.release();
 }
 
 if (isSupported) {

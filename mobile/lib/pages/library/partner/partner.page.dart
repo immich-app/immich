@@ -33,7 +33,7 @@ class PartnerPage extends ConsumerWidget {
         title: Text(context.t.partners),
         elevation: 0,
         centerTitle: false,
-        actions: const [ActionIconButtonWidget(action: PartnerAddAction())],
+        actions: const [ActionIconButton(action: PartnerAddAction())],
       ),
       body: sharedByAsync.when(
         data: (partners) => PartnerSharedByList(partners: partners.toList(growable: false)),
@@ -60,7 +60,7 @@ class _EmptyPartners extends StatelessWidget {
           ),
           const Align(
             alignment: .center,
-            child: ActionButtonWidget(action: PartnerAddAction()),
+            child: ActionButton(action: PartnerAddAction()),
           ),
         ],
       ),
@@ -88,7 +88,7 @@ class PartnerSharedByList extends StatelessWidget {
           leading: PartnerUserAvatar(userId: partner.id, name: partner.name),
           title: Text(partner.name),
           subtitle: Text(partner.email),
-          trailing: ActionIconButtonWidget(
+          trailing: ActionIconButton(
             action: PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name),
           ),
         );

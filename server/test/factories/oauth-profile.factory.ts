@@ -1,6 +1,6 @@
-import { OAuthProfile } from 'src/repositories/oauth.repository';
-import { OAuthProfileLike } from 'test/factories/types';
-import { newUuid } from 'test/small.factory';
+import { OAuthProfile } from 'src/repositories/oauth.repository.js';
+import { OAuthProfileLike } from 'test/factories/types.js';
+import { newUuid } from 'test/small.factory.js';
 
 export class OAuthProfileFactory {
   private constructor(private value: OAuthProfile) {}

@@ -1,7 +1,7 @@
 import { Selectable } from 'kysely';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetExifLike } from 'test/factories/types';
-import { factory } from 'test/small.factory';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetExifLike } from 'test/factories/types.js';
+import { factory } from 'test/small.factory.js';
 
 export class AssetExifFactory {
   private constructor(private readonly value: Selectable<AssetExifTable>) {}
@@ -30,8 +30,8 @@ export class AssetExifFactory {
       focalLength: 4.38,
       fps: null,
       iso: 947,
-      latitude: 30.267_334_570_570_195,
-      longitude: -97.789_833_534_282_07,
+      latitude: 30.267334570570195,
+      longitude: -97.78983353428207,
       lensModel: null,
       livePhotoCID: null,
       make: 'Google',

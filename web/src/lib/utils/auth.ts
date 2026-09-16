@@ -28,10 +28,12 @@ export const authenticate = async (url: URL, options?: AuthOptions) => {
 };
 
 export const requestServerInfo = async () => {
-  if (authManager.authenticated) {
-    const data = await getStorage();
-    userInteraction.serverInfo = data;
+  if (!authManager.authenticated) {
+    return;
   }
+
+  const data = await getStorage();
+  userInteraction.serverInfo = data;
 };
 
 export const getAccountAge = (): number => {

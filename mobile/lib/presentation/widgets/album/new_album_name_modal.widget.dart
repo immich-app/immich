@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class NewAlbumNameModal extends StatefulWidget {
   const NewAlbumNameModal({super.key});
@@ -21,31 +21,31 @@ class _NewAlbumNameModalState extends State<NewAlbumNameModal> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("album_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+      title: Text(context.t.album_name, style: const TextStyle(fontWeight: FontWeight.bold)),
       content: SingleChildScrollView(
         child: TextFormField(
           controller: nameController,
           textCapitalization: TextCapitalization.words,
           autofocus: true,
-          decoration: InputDecoration(hintText: 'name'.tr(), border: const OutlineInputBorder()),
+          decoration: InputDecoration(hintText: context.t.name, border: const OutlineInputBorder()),
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => context.pop(null),
           child: Text(
-            "cancel",
+            context.t.cancel,
             style: TextStyle(color: Colors.red[300], fontWeight: FontWeight.bold),
-          ).tr(),
+          ),
         ),
         TextButton(
           onPressed: () {
             context.pop(nameController.text.trim());
           },
           child: Text(
-            "create_album",
+            context.t.create_album,
             style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold),
-          ).tr(),
+          ),
         ),
       ],
     );

@@ -23,7 +23,7 @@ const byteUnits = [ByteUnit.B, ByteUnit.KiB, ByteUnit.MiB, ByteUnit.GiB, ByteUni
 export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, ByteUnit] {
   const magnitude = Math.floor(Math.log(bytes === 0 ? 1 : bytes) / Math.log(1024));
 
-  return [Number.parseFloat((bytes / 1024 ** magnitude).toFixed(maxPrecision)), byteUnits[magnitude]];
+  return [Number((bytes / 1024 ** magnitude).toFixed(maxPrecision)), byteUnits[magnitude]];
 }
 
 /**

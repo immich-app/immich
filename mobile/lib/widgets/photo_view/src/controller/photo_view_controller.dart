@@ -209,7 +209,7 @@ class PhotoViewController implements PhotoViewControllerBase<PhotoViewController
 
   @override
   void dispose() {
-    _outputCtrl.close();
+    unawaited(_outputCtrl.close());
     _valueNotifier.dispose();
   }
 

@@ -17,8 +17,8 @@
       continue;
     }
 
-    const [group] = permission.split('.');
-    if (!permissions[group]) {
+    const [group] = permission.split('.', 1);
+    if (!Object.hasOwn(permissions, group)) {
       permissions[group] = [];
     }
     permissions[group].push(permission);

@@ -34,7 +34,7 @@ class SearchService {
         model: model,
       );
     } catch (e) {
-      dPrint(() => "[ERROR] [getSearchSuggestions] ${e.toString()}");
+      dPrint(() => "[ERROR] [getSearchSuggestions] $e");
       return [];
     }
   }

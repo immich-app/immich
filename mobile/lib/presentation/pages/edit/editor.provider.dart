@@ -1,9 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/aspect_ratios.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/utils/editor.utils.dart';
+
+part 'editor.provider.freezed.dart';
 
 final editorStateProvider = NotifierProvider<EditorProvider, EditorState>(EditorProvider.new);
 
@@ -25,21 +29,21 @@ class EditorProvider extends Notifier<EditorState> {
     final originalWidth = exifInfo.isFlipped ? exifInfo.height : exifInfo.width;
     final originalHeight = exifInfo.isFlipped ? exifInfo.width : exifInfo.height;
 
-    Rect crop = existingCrop != null && originalWidth != null && originalHeight != null
+    final Rect crop = existingCrop != null && originalWidth != null && originalHeight != null
         ? convertCropParametersToRect(existingCrop.parameters, originalWidth, originalHeight)
         : const Rect.fromLTRB(0, 0, 1, 1);
 
     final transform = normalizeTransformEdits(edits);
 
     state = state.copyWith(
-      originalWidth: originalWidth,
-      originalHeight: originalHeight,
+      originalWidth: originalWidth ?? state.originalWidth,
+      originalHeight: originalHeight ?? state.originalHeight,
       crop: crop,
       flipHorizontal: transform.mirrorHorizontal,
       flipVertical: transform.mirrorVertical,
     );
 
-    _animateRotation(transform.rotation.toInt(), duration: Duration.zero);
+    _animateRotation(transform.rotation, duration: Duration.zero);
   }
 
   void _animateRotation(int angle, {Duration duration = const Duration(milliseconds: 300)}) {
@@ -61,8 +65,33 @@ class EditorProvider extends Notifier<EditorState> {
     state = state.copyWith(crop: crop, hasUnsavedEdits: true);
   }
 
+  /// Returns the required shift that has to be done to fit a segment in a given
+  /// constraint
+  double _shiftIntoBounds(double start, double end, {double min = 0.0, double max = 1.0}) {
+    if (start < min) {
+      return min - start;
+    }
+    if (end > max) {
+      return max - end;
+    }
+    return 0.0;
+  }
+
   void setAspectRatio(CropAspectRatio preset) {
-    state = state.copyWith(aspectRatio: preset, hasUnsavedEdits: true);
+    // Expand the initial selection into a square. We have to keep the longest
+    // side the same as before when the user changes the aspect ratio. Otherwise
+    // the selection might shrink
+    Rect startingSquare = Rect.fromCenter(
+      center: state.crop.center,
+      width: state.crop.longestSide,
+      height: state.crop.longestSide,
+    );
+    // If one side of the square is outside of the image border after the
+    // expansion, move it towards the center of the required amount
+    final dx = _shiftIntoBounds(startingSquare.left, startingSquare.right);
+    final dy = _shiftIntoBounds(startingSquare.top, startingSquare.bottom);
+    startingSquare = startingSquare.shift(Offset(dx, dy));
+    state = state.copyWith(aspectRatio: preset, hasUnsavedEdits: true, crop: startingSquare);
   }
 
   void resetEdits() {
@@ -106,104 +135,24 @@ class EditorProvider extends Notifier<EditorState> {
   }
 }
 
-class EditorState {
-  final bool isApplyingEdits;
+@freezed
+abstract class EditorState with _$EditorState {
+  const EditorState._();
 
-  final int rotationAngle;
-  final bool flipHorizontal;
-  final bool flipVertical;
-  final Rect crop;
-  final CropAspectRatio aspectRatio;
-
-  final int originalWidth;
-  final int originalHeight;
-
-  final Duration animationDuration;
-
-  final bool hasUnsavedEdits;
-
-  const EditorState({
-    bool? isApplyingEdits,
-    int? rotationAngle,
-    bool? flipHorizontal,
-    bool? flipVertical,
-    Rect? crop,
-    CropAspectRatio? aspectRatio,
-    int? originalWidth,
-    int? originalHeight,
-    Duration? animationDuration,
-    bool? hasUnsavedEdits,
-  }) : isApplyingEdits = isApplyingEdits ?? false,
-       rotationAngle = rotationAngle ?? 0,
-       flipHorizontal = flipHorizontal ?? false,
-       flipVertical = flipVertical ?? false,
-       animationDuration = animationDuration ?? Duration.zero,
-       originalWidth = originalWidth ?? 0,
-       originalHeight = originalHeight ?? 0,
-       crop = crop ?? const Rect.fromLTRB(0, 0, 1, 1),
-       aspectRatio = aspectRatio ?? CropAspectRatio.free,
-       hasUnsavedEdits = hasUnsavedEdits ?? false;
-
-  EditorState copyWith({
-    bool? isApplyingEdits,
-    int? rotationAngle,
-    bool? flipHorizontal,
-    bool? flipVertical,
-    CropAspectRatio? aspectRatio,
-    int? originalWidth,
-    int? originalHeight,
-    Duration? animationDuration,
-    Rect? crop,
-    bool? hasUnsavedEdits,
-  }) {
-    return EditorState(
-      isApplyingEdits: isApplyingEdits ?? this.isApplyingEdits,
-      rotationAngle: rotationAngle ?? this.rotationAngle,
-      flipHorizontal: flipHorizontal ?? this.flipHorizontal,
-      flipVertical: flipVertical ?? this.flipVertical,
-      aspectRatio: aspectRatio ?? this.aspectRatio,
-      animationDuration: animationDuration ?? this.animationDuration,
-      originalWidth: originalWidth ?? this.originalWidth,
-      originalHeight: originalHeight ?? this.originalHeight,
-      crop: crop ?? this.crop,
-      hasUnsavedEdits: hasUnsavedEdits ?? this.hasUnsavedEdits,
-    );
-  }
+  const factory EditorState({
+    @Default(false) bool isApplyingEdits,
+    @Default(0) int rotationAngle,
+    @Default(false) bool flipHorizontal,
+    @Default(false) bool flipVertical,
+    @Default(Rect.fromLTRB(0, 0, 1, 1)) Rect crop,
+    @Default(CropAspectRatio.free) CropAspectRatio aspectRatio,
+    @Default(0) int originalWidth,
+    @Default(0) int originalHeight,
+    @Default(Duration.zero) Duration animationDuration,
+    @Default(false) bool hasUnsavedEdits,
+  }) = _EditorState;
 
   bool get hasEdits {
     return rotationAngle != 0 || flipHorizontal || flipVertical || crop != const Rect.fromLTRB(0, 0, 1, 1);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is EditorState &&
-        other.isApplyingEdits == isApplyingEdits &&
-        other.rotationAngle == rotationAngle &&
-        other.flipHorizontal == flipHorizontal &&
-        other.flipVertical == flipVertical &&
-        other.crop == crop &&
-        other.aspectRatio == aspectRatio &&
-        other.originalWidth == originalWidth &&
-        other.originalHeight == originalHeight &&
-        other.animationDuration == animationDuration &&
-        other.hasUnsavedEdits == hasUnsavedEdits;
-  }
-
-  @override
-  int get hashCode {
-    return isApplyingEdits.hashCode ^
-        rotationAngle.hashCode ^
-        flipHorizontal.hashCode ^
-        flipVertical.hashCode ^
-        crop.hashCode ^
-        aspectRatio.hashCode ^
-        originalWidth.hashCode ^
-        originalHeight.hashCode ^
-        animationDuration.hashCode ^
-        hasUnsavedEdits.hashCode;
   }
 }

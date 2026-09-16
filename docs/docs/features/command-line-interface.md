@@ -15,7 +15,7 @@ If you are looking to import your Google Photos takeout, we recommend this commu
 
 ## Requirements
 
-- Node.js 20 or above
+- Node.js 22 or above
 - Npm
 
 If you can't install node/npm, there is also a Docker version available below.

@@ -70,7 +70,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
 
   @override
   void dispose() {
-    _assetCountController.close();
+    unawaited(_assetCountController.close());
     super.dispose();
   }
 }
