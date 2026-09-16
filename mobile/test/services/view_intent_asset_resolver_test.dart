@@ -89,7 +89,7 @@ void main() {
     expect(result.viewIntentFilePath, isNull, reason: 'DB-backed assets carry their own source — no temp file needed');
   });
 
-  test('returns remote merged asset when local checksum matches remote asset', () async {
+  test('returns linked remote asset by id', () async {
     final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1', remoteId: 'remote-1');
     final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
     when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => localAsset);
