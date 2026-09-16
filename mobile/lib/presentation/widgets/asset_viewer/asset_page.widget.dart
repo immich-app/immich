@@ -34,7 +34,22 @@ class AssetPage extends ConsumerStatefulWidget {
   final int heroOffset;
   final void Function(int direction)? onTapNavigate;
 
-  const AssetPage({super.key, required this.index, required this.heroOffset, this.onTapNavigate});
+  /// While true: videos show only their poster frame instead of constructing
+  /// a native video player, and images skip the preview/original network
+  /// fetch, staying on the cheap cached thumbnail. Set while the filmstrip is
+  /// being scrubbed aggressively, so a fast flick doesn't spin up native
+  /// players or fire (and near-instantly cancel) network requests for every
+  /// asset it passes over - both patterns have been observed to crash rather
+  /// than just waste work under enough abuse.
+  final bool deferHeavyMedia;
+
+  const AssetPage({
+    super.key,
+    required this.index,
+    required this.heroOffset,
+    this.onTapNavigate,
+    this.deferHeavyMedia = false,
+  });
 
   @override
   ConsumerState createState() => _AssetPageState();
@@ -343,6 +358,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       size: size,
       localFilePath: localFilePath,
       remoteThumbnailSize: remoteThumbnailSize,
+      deferFullResolution: widget.deferHeavyMedia,
     );
 
     if (asset.isImage && !isPlayingMotionVideo) {
@@ -398,13 +414,15 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       tightMode: true,
       onPageBuild: _onPageBuild,
       enablePanAlways: true,
-      child: NativeVideoViewer(
-        key: _NativeVideoViewerKey(asset.heroTag),
-        asset: asset,
-        localFilePath: localFilePath,
-        isCurrent: isCurrent,
-        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
-      ),
+      child: widget.deferHeavyMedia
+          ? Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center)
+          : NativeVideoViewer(
+              key: _NativeVideoViewerKey(asset.heroTag),
+              asset: asset,
+              localFilePath: localFilePath,
+              isCurrent: isCurrent,
+              image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+            ),
     );
   }
 

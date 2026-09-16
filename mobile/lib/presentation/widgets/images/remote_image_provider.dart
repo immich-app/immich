@@ -74,6 +74,15 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   /// Physical size of the thumbnail shown before the preview.
   final Size? thumbnailSize;
 
+  /// When true, only the cheap cached thumbnail is shown - the preview/
+  /// original network fetch is skipped entirely rather than started and
+  /// possibly cancelled moments later. Meant for bursts of rapid navigation
+  /// (e.g. fast-scrubbing a filmstrip), where committing to a full-resolution
+  /// network request per asset can fire and cancel many requests a second -
+  /// a pattern that has been observed to crash the underlying native HTTP
+  /// engine (Cronet) rather than just wasting bandwidth.
+  final bool deferFullResolution;
+
   RemoteFullImageProvider({
     required this.assetId,
     required this.thumbhash,
@@ -81,6 +90,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     required this.isAnimated,
     this.edited = true,
     this.thumbnailSize,
+    this.deferFullResolution = false,
   });
 
   @override
@@ -128,7 +138,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
-    if (isCancelled) {
+    if (isCancelled || key.deferFullResolution) {
       return;
     }
 
@@ -160,7 +170,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
-    if (isCancelled) {
+    if (isCancelled || key.deferFullResolution) {
       return;
     }
 
@@ -201,12 +211,14 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return assetId == other.assetId &&
           thumbhash == other.thumbhash &&
           isAnimated == other.isAnimated &&
-          edited == other.edited;
+          edited == other.edited &&
+          deferFullResolution == other.deferFullResolution;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode ^ thumbhash.hashCode ^ isAnimated.hashCode ^ edited.hashCode;
+  int get hashCode =>
+      assetId.hashCode ^ thumbhash.hashCode ^ isAnimated.hashCode ^ edited.hashCode ^ deferFullResolution.hashCode;
 }

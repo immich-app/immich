@@ -18,6 +18,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/download_statu
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_page.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_preloader.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/filmstrip_scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -95,6 +96,46 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
 
+  // Guards against rapid scrubbing/navigation queuing up stale asset loads:
+  // only the result of the most recent call is ever applied.
+  int _assetChangeRequestId = 0;
+
+  // True while the filmstrip is being scrubbed (plus a short settle delay
+  // reported by the scrubber itself). Only ever used as AssetPage's
+  // deferHeavyMedia - skipping video playback and full-resolution network
+  // fetches for whatever's currently committed - it must never gate whether
+  // a selection is allowed to commit, or interacting with the strip ends up
+  // blocked on that delay.
+  var _isFilmstripScrubbing = false;
+
+  // The page that was current when this scrub gesture began. Deferral is
+  // withheld for that one specific page for as long as the strip hasn't
+  // actually landed on a different asset yet - otherwise merely touching the
+  // strip (a tap, a wiggle that never crosses an item boundary) tears down
+  // and rebuilds whatever's already playing for no reason: AssetPage's
+  // deferHeavyMedia swaps NativeVideoViewer for a plain Image, a different
+  // widget type, which forces Flutter to dispose the native video surface
+  // even though nothing was actually navigated away from.
+  int? _pageAtScrubStart;
+
+  void _onFilmstripScrubbingChanged(bool isScrubbing) {
+    if (isScrubbing == _isFilmstripScrubbing) {
+      return;
+    }
+    setState(() {
+      _isFilmstripScrubbing = isScrubbing;
+      if (isScrubbing) {
+        _pageAtScrubStart = _currentPage;
+      }
+    });
+  }
+
+  // jumpToPage below synchronously drives the PageView's own ScrollEnd path
+  // into _onAssetChanged (see _onScrollEnd) whenever it actually lands on a
+  // different page, which every caller here already guards for - so neither
+  // of these needs to also call _onAssetChanged itself; doing so as well
+  // would just load the same asset twice per commit.
+
   void _onTapNavigate(int direction) {
     final page = _pageController.page?.toInt();
     if (page == null) {
@@ -104,8 +145,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final maxPage = _totalAssets - 1;
     if (target >= 0 && target <= maxPage) {
       _pageController.jumpToPage(target);
-      unawaited(_onAssetChanged(target));
     }
+  }
+
+  void _onFilmstripSelected(int index) {
+    if (index == _currentPage || index < 0 || index >= _totalAssets) {
+      return;
+    }
+    _pageController.jumpToPage(index);
   }
 
   @override
@@ -169,10 +216,18 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   Future<void> _onAssetChanged(int index) async {
-    _currentPage = index;
+    // setState so the filmstrip (which reads _currentPage via widget props)
+    // tracks the on-screen page immediately, without waiting on the asset
+    // fetch below - swiping should move the strip in lockstep, not on a delay.
+    if (index != _currentPage) {
+      setState(() => _currentPage = index);
+    }
+    final requestId = ++_assetChangeRequestId;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
-    if (asset == null) {
+    if (asset == null || requestId != _assetChangeRequestId) {
+      // Either nothing to show, or a newer call has since superseded this one -
+      // don't let a stale scrub/navigation result clobber a fresher one.
       return;
     }
 
@@ -359,11 +414,30 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                       ? const FastScrollPhysics()
                       : const FastClampingScrollPhysics(),
                   itemCount: _totalAssets,
-                  itemBuilder: (context, index) =>
-                      AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
+                  itemBuilder: (context, index) => AssetPage(
+                    index: index,
+                    heroOffset: _heroOffset,
+                    onTapNavigate: _onTapNavigate,
+                    deferHeavyMedia: _isFilmstripScrubbing && index != _pageAtScrubStart,
+                  ),
                 ),
               ),
             ),
+            if (showingControls && !showingDetails && !isZoomed)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: context.padding.bottom + FilmstripScrubber.margin,
+                child: FilmstripScrubber(
+                  timelineService: ref.read(timelineServiceProvider),
+                  currentIndex: _currentPage,
+                  totalAssets: _totalAssets,
+                  onSelected: _onFilmstripSelected,
+                  onScrubbingChanged: _onFilmstripScrubbingChanged,
+                  pageController: _pageController,
+                  thumbnailSize: ref.watch(assetViewerProvider.select((s) => s.thumbnailSize)),
+                ),
+              ),
             if (!CurrentPlatform.isIOS)
               IgnorePointer(
                 child: AnimatedContainer(

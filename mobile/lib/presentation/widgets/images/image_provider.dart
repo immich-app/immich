@@ -156,6 +156,7 @@ ImageProvider getFullImageProvider(
   bool edited = true,
   String? localFilePath,
   Size? remoteThumbnailSize,
+  bool deferFullResolution = false,
 }) {
   // Create new provider and cache it
   final ImageProvider provider;
@@ -191,6 +192,7 @@ ImageProvider getFullImageProvider(
       isAnimated: asset.isAnimatedImage,
       edited: edited,
       thumbnailSize: remoteThumbnailSize,
+      deferFullResolution: deferFullResolution,
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/filmstrip_scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -100,6 +101,10 @@ class ViewerBottomBar extends ConsumerWidget {
                               color: Colors.white,
                               child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                             ),
+                          // Reserves room for the filmstrip scrubber, which floats above
+                          // this bar at a fixed height - this bar's content shifts up to
+                          // make room for it rather than the other way around.
+                          const SizedBox(height: FilmstripScrubber.height + FilmstripScrubber.margin * 2),
                         ],
                       ),
                     ),
