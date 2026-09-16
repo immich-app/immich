@@ -803,9 +803,6 @@ importers:
       '@immich/ui':
         specifier: ^0.86.0
         version: 0.86.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.10(@typescript-eslint/types@8.68.0))(vite@8.2.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.12)(yaml@2.9.0)))(@typescript/typescript6@6.0.2)(svelte@5.56.10(@typescript-eslint/types@8.68.0))(vite@8.2.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.12)(yaml@2.9.0)))(svelte@5.56.10(@typescript-eslint/types@8.68.0))
-      '@mapbox/mapbox-gl-rtl-text':
-        specifier: 0.4.0
-        version: 0.4.0
       '@mdi/js':
         specifier: ^7.4.47
         version: 7.4.47
@@ -879,8 +876,8 @@ importers:
         specifier: ^3.4.4
         version: 3.7.2
       maplibre-gl:
-        specifier: ^6.0.0
-        version: 6.8.0
+        specifier: ^6.9.0
+        version: 6.9.0
       media-chrome:
         specifier: ^4.19.0
         version: 4.19.2(react@19.2.8)
@@ -3620,9 +3617,6 @@ packages:
     resolution: {integrity: sha512-0SElaV0uMxEnxzBhhX9WTuPyUeMsAN/SS0i16tjuba4/mio63MG9khjC1a0JAiPGXAwvwm4UfHJURCN7nyudQg==}
     engines: {node: '>= 22'}
 
-  '@mapbox/mapbox-gl-rtl-text@0.4.0':
-    resolution: {integrity: sha512-WNSgEFxXd2a15Eh2GwZNWBiV7Z8leq8JEGcoHpfrgaBDmFQMW4a1MO5Ol9BNv6APqTbHZ8uq7L8H5q2KCVt1kg==}
-
   '@mapbox/node-pre-gyp@1.0.11':
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
@@ -3642,8 +3636,8 @@ packages:
   '@maplibre/geojson-vt@6.1.1':
     resolution: {integrity: sha512-FVMOcmSP/yqol45t7StApEyTL5/vmqBCuFhH9n+fFuINenhaX+YgHHIt1yJ86S8kln3uJLcMvmEU2cfn6E2eCQ==}
 
-  '@maplibre/maplibre-gl-style-spec@26.4.1':
-    resolution: {integrity: sha512-I/qcIKVFHFSg1Meu/eqHrkSTjIez0gCsSaK56TNPutM3TkE61aSq6F1cZ4Kg4KiNs3cpViLtubDjfyRcQCdEJQ==}
+  '@maplibre/maplibre-gl-style-spec@26.4.3':
+    resolution: {integrity: sha512-rNjb1pPYtdF3aHziWv9v8D1Y8C+sYZtzBX0vwjitPanQi5IuhMvmoHN/GoiLwuY/gssLkJ2/IG6C25Wn77ZdJg==}
     hasBin: true
 
   '@maplibre/mlt@1.2.1':
@@ -6464,6 +6458,9 @@ packages:
   bcrypt@6.0.0:
     resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
     engines: {node: '>= 18'}
+
+  bidi-js@1.1.0:
+    resolution: {integrity: sha512-fX1Onk0tdVPC7obPWB5EbJ1z7NVhLq4m2xZLq2YXBkxzMXIGRpNMU88n0EPgWseKl12J7zXs7qrDxPK4sRs2fg==}
 
   big.js@5.2.2:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
@@ -9729,8 +9726,8 @@ packages:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
 
-  maplibre-gl@6.8.0:
-    resolution: {integrity: sha512-+ZkjKTodsVLY0ewQThvXRxXQsclcsSgOm5LlnrBM3G8AloMJKt6Haw8mY4xrOl8T0WMqH6DTYjktZ9zGQXZd4w==}
+  maplibre-gl@6.9.0:
+    resolution: {integrity: sha512-vFMwMK0Zs+NM/rOMSdtu8bO30DIexhBEVi5KC6f70/XtI+L/K2wC3LsDCAXFZ4s8ik5gAuDugfCNbpllpdJ9bA==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
 
   mark.js@8.11.1:
@@ -16893,8 +16890,6 @@ snapshots:
 
   '@mapbox/jsonlint-lines-primitives@2.0.3': {}
 
-  '@mapbox/mapbox-gl-rtl-text@0.4.0': {}
-
   '@mapbox/node-pre-gyp@1.0.11(supports-color@8.1.1)':
     dependencies:
       detect-libc: 2.1.2
@@ -16926,7 +16921,7 @@ snapshots:
     dependencies:
       kdbush: 4.1.0
 
-  '@maplibre/maplibre-gl-style-spec@26.4.1':
+  '@maplibre/maplibre-gl-style-spec@26.4.3':
     dependencies:
       '@mapbox/jsonlint-lines-primitives': 2.0.3
       '@mapbox/unitbezier': 1.0.0
@@ -19713,6 +19708,10 @@ snapshots:
       node-addon-api: 8.8.0
       node-gyp: 13.0.0
       node-gyp-build: 4.8.4
+
+  bidi-js@1.1.0:
+    dependencies:
+      require-from-string: 2.0.2
 
   big.js@5.2.2: {}
 
@@ -23474,17 +23473,18 @@ snapshots:
     dependencies:
       semver: 7.8.5
 
-  maplibre-gl@6.8.0:
+  maplibre-gl@6.9.0:
     dependencies:
       '@mapbox/point-geometry': 1.1.0
       '@mapbox/tiny-sdf': 2.2.0
       '@mapbox/unitbezier': 1.0.0
       '@mapbox/vector-tile': 3.0.0
       '@maplibre/geojson-vt': 6.1.1
-      '@maplibre/maplibre-gl-style-spec': 26.4.1
+      '@maplibre/maplibre-gl-style-spec': 26.4.3
       '@maplibre/mlt': 1.2.1
       '@maplibre/vt-pbf': 4.3.2
       '@types/geojson': 7946.0.16
+      bidi-js: 1.1.0
       earcut: 3.2.3
       gl-matrix: 3.4.4
       kdbush: 4.1.0
@@ -26798,7 +26798,7 @@ snapshots:
       d3-geo: 3.1.1
       dequal: 2.0.3
       just-compare: 2.3.0
-      maplibre-gl: 6.8.0
+      maplibre-gl: 6.9.0
       pmtiles: 3.2.1
       svelte: 5.56.10(@typescript-eslint/types@8.68.0)
 
