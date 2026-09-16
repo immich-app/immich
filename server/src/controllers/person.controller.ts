@@ -17,17 +17,23 @@ import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import type { NextFunction, Response } from 'express';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto.js';
 import {
   AssetFaceUpdateDto,
   MergePersonDto,
+  PeopleDeleteDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonCreateDto,
+  PersonDeleteDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  PersonUsersCreateDto,
+  PersonUsersDeleteDto,
+  PersonUsersResponseDto,
+  PersonUsersSearchDto,
 } from 'src/dtos/person.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
@@ -87,7 +93,7 @@ export class PersonController {
     description: 'Bulk delete a list of people at once.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  deletePeople(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
+  deletePeople(@Auth() auth: AuthDto, @Body() dto: PeopleDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
@@ -140,8 +146,8 @@ export class PersonController {
     description: 'Delete an individual person.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  deletePerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.delete(auth, id);
+  deletePerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: PersonDeleteDto): Promise<void> {
+    return this.service.delete(auth, id, dto);
   }
 
   @Get(':id/statistics')
@@ -218,5 +224,38 @@ export class PersonController {
     @Body() dto: MergePersonDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.mergePeople(auth, { ids: [id, ...dto.ids] });
+  }
+
+  @Get('users')
+  @Authenticated({ permission: Permission.PersonRead })
+  @Endpoint({
+    summary: 'Get shared users',
+    description: 'Retrieve a list of all shared users and people',
+    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+  })
+  getUsersForPeople(@Auth() auth: AuthDto, @Query() dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {
+    return this.service.getUsersForPeople(auth, dto);
+  }
+
+  @Put('users')
+  @Authenticated({ permission: Permission.PersonUpdate })
+  @Endpoint({
+    summary: 'Create shared users',
+    description: 'Share people with users',
+    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+  })
+  addUsersToPeople(@Auth() auth: AuthDto, @Body() dto: PersonUsersCreateDto): Promise<void> {
+    return this.service.addUsersToPeople(auth, dto);
+  }
+
+  @Delete('users')
+  @Authenticated({ permission: Permission.PersonDelete })
+  @Endpoint({
+    summary: 'Remove users from people',
+    description: 'Remove shared users from a person',
+    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+  })
+  removeUsersFromPeople(@Auth() auth: AuthDto, @Body() dto: PersonUsersDeleteDto): Promise<void> {
+    return this.service.removeUsersFromPeople(auth, dto);
   }
 }

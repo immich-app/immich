@@ -219,6 +219,36 @@ export const person_delete_audit = registerFunction({
     END`,
 });
 
+export const person_user_after_insert = registerFunction({
+  name: 'person_user_after_insert',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO person ("ownerId", "personGroupId", "name", "birthDate")
+      SELECT i."sharedWithId", i."personGroupId", shared."name", shared."birthDate"
+      FROM inserted_rows i
+      INNER JOIN person shared
+        ON shared."ownerId" = i."sharedById" AND shared."personGroupId" = i."personGroupId"
+      ON CONFLICT ("ownerId", "personGroupId") DO NOTHING;
+      RETURN NULL;
+    END`,
+});
+
+export const person_delete_shares = registerFunction({
+  name: 'person_delete_shares',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      DELETE FROM person_user
+      USING deleted_rows
+      WHERE person_user."personGroupId" = deleted_rows."personGroupId"
+        AND person_user."sharedWithId" = deleted_rows."ownerId";
+      RETURN NULL;
+    END`,
+});
+
 export const person_group_delete_audit = registerFunction({
   name: 'person_group_delete_audit',
   returnType: 'TRIGGER',

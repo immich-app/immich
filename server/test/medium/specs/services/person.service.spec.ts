@@ -1,7 +1,8 @@
+import { NotFoundException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
-import { AssetFaceCreateDto } from 'src/dtos/person.dto.js';
+import { AssetFaceCreateDto, PersonUserRole } from 'src/dtos/person.dto.js';
 import { AssetFileType, JobName } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
@@ -12,13 +13,14 @@ import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { DB } from 'src/schema/index.js';
 import { PersonService } from 'src/services/person.service.js';
 import { newMediumService } from 'test/medium.factory.js';
-import { factory } from 'test/small.factory.js';
+import { factory, newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
@@ -32,6 +34,7 @@ const setup = (db?: Kysely<DB>) => {
       ConfigRepository,
       DatabaseRepository,
       PersonRepository,
+      PersonUserRepository,
       AssetRepository,
       AssetEditRepository,
       SystemMetadataRepository,
@@ -45,12 +48,146 @@ beforeAll(async () => {
 });
 
 describe(PersonService.name, () => {
+  describe('reassignFaces', () => {
+    it('should require access to the person the auth user is assigning to', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user2.id });
+
+      await expect(sut.reassignFaces(factory.auth({ user }), person.personGroupId, { data: [] })).rejects.toThrow(
+        'Not found or no person.update access',
+      );
+    });
+
+    it('should allow person owner access', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+
+      await expect(sut.reassignFaces(factory.auth({ user }), person.personGroupId, { data: [] })).resolves.toEqual([]);
+    });
+
+    it('should not allow shared read only access', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user2.id });
+      await ctx.newPersonUser({
+        personGroupId: person.personGroupId,
+        sharedById: user2.id,
+        sharedWithId: user.id,
+        role: PersonUserRole.Read,
+      });
+
+      await expect(
+        sut.reassignFaces(factory.auth({ user }), person.personGroupId, {
+          data: [{ personId: person.personGroupId, userId: user2.id, assetId: newUuid() }],
+        }),
+      ).rejects.toThrow('Not found or no person.update access');
+    });
+
+    it('should allow shared write access', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user2.id });
+      await ctx.newPersonUser({
+        personGroupId: person.personGroupId,
+        sharedById: user2.id,
+        sharedWithId: user.id,
+        role: PersonUserRole.Write,
+      });
+
+      await expect(
+        sut.reassignFaces(factory.auth({ user }), person.personGroupId, {
+          data: [{ personId: person.personGroupId, userId: user2.id, assetId: newUuid() }],
+        }),
+      ).resolves.toEqual([expect.objectContaining({ id: person.personGroupId })]);
+    });
+  });
+
+  describe('getById', () => {
+    it('should require person.read access', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+
+      await expect(sut.getById(factory.auth(), person.personGroupId)).rejects.toThrow(
+        'Not found or no person.read access',
+      );
+    });
+
+    it('should return own version of shared person but copy over a shared name and birth date', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user2.id, name: "User2's person", birthDate: new Date() });
+      await ctx.newPersonUser({ personGroupId: person.personGroupId, sharedById: user2.id, sharedWithId: user.id });
+
+      await expect(sut.getById(factory.auth({ user }), person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({
+          id: person.personGroupId,
+          name: person.name,
+          birthDate: expect.any(String),
+          otherPeople: [expect.objectContaining({ sharedById: user2.id })],
+        }),
+      );
+    });
+  });
+
+  describe('getThumbnail', () => {
+    it('should require person.read access', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+
+      await expect(sut.getThumbnail(factory.auth(), person.personGroupId)).rejects.toThrow(
+        'Not found or no person.read access',
+      );
+    });
+
+    it('should return own thumbnail path', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+
+      await expect(sut.getThumbnail(factory.auth({ user }), person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({ path: person.thumbnailPath }),
+      );
+    });
+
+    it('should fall back to shared thumbnail path', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user2.id });
+      await ctx.newPersonUser({ personGroupId: person.personGroupId, sharedById: user2.id, sharedWithId: user.id });
+
+      await expect(sut.getThumbnail(factory.auth({ user }), person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({ path: person.thumbnailPath }),
+      );
+    });
+
+    it('should fail if there is no (shared) thumbnail available', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, thumbnailPath: undefined });
+      await ctx.newPerson({ ownerId: user2.id, personGroupId: person.personGroupId });
+
+      await expect(sut.getThumbnail(factory.auth({ user }), person.personGroupId)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
   describe('delete', () => {
     it('should throw an error when there is no access', async () => {
       const { sut } = setup();
       const auth = factory.auth();
       const personId = factory.uuid();
-      await expect(sut.delete(auth, personId)).rejects.toThrow('Not found or no person.delete access');
+      await expect(sut.delete(auth, personId, {})).rejects.toThrow('Not found or no person.delete access');
     });
 
     it('should delete the person', async () => {
@@ -65,7 +202,7 @@ describe(PersonService.name, () => {
       await expect(personRepo.getByGroupId(person)).resolves.toEqual(
         expect.objectContaining({ personGroupId: person.personGroupId }),
       );
-      await expect(sut.delete(auth, person.personGroupId)).resolves.toBeUndefined();
+      await expect(sut.delete(auth, person.personGroupId, {})).resolves.toBeUndefined();
       await expect(personRepo.getByGroupId(person)).resolves.toBeUndefined();
 
       expect(storageMock.unlink).toHaveBeenCalledWith(person.thumbnailPath);
@@ -1010,6 +1147,93 @@ describe(PersonService.name, () => {
           }),
         ]),
       );
+    });
+  });
+
+  describe('deleteSharedUsers', () => {
+    it('should work with an empty list', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: sharedWith } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user: owner });
+
+      await sut.addUsersToPeople(auth, {
+        personIds: [person.personGroupId],
+        sharedWithIds: [sharedWith.id],
+        role: PersonUserRole.Read,
+      });
+
+      await sut.removeUsersFromPeople(auth, []);
+
+      await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(1);
+    });
+
+    it('should throw an error when there is no access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: owner } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user });
+
+      await expect(
+        sut.removeUsersFromPeople(auth, [{ personId: person.personGroupId, sharedWithId: user.id }]),
+      ).rejects.toThrow('Not found or no person.update access');
+    });
+
+    it('should delete only the requested person and user pairs', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person: person1 } = await ctx.newPerson({ ownerId: owner.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user: owner });
+
+      await sut.addUsersToPeople(auth, {
+        personIds: [person1.personGroupId, person2.personGroupId],
+        sharedWithIds: [user1.id, user2.id],
+        role: PersonUserRole.Read,
+      });
+
+      await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(4);
+
+      await sut.removeUsersFromPeople(auth, [
+        { personId: person1.personGroupId, sharedWithId: user1.id },
+        { personId: person2.personGroupId, sharedWithId: user2.id },
+      ]);
+
+      const shares = await sut.getUsersForPeople(auth, {});
+      expect(shares).toHaveLength(2);
+      expect(shares).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ personId: person1.personGroupId, sharedWithId: user2.id }),
+          expect.objectContaining({ personId: person2.personGroupId, sharedWithId: user1.id }),
+        ]),
+      );
+    });
+
+    it('should not delete the same pair shared by another user', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: otherOwner } = await ctx.newUser();
+      const { user: sharedWith } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      await ctx.newPerson({ ownerId: otherOwner.id, personGroupId: person.personGroupId });
+
+      const auth = factory.auth({ user: owner });
+      const otherAuth = factory.auth({ user: otherOwner });
+      const dto = { personIds: [person.personGroupId], sharedWithIds: [sharedWith.id], role: PersonUserRole.Read };
+
+      await sut.addUsersToPeople(auth, dto);
+      await sut.addUsersToPeople(otherAuth, dto);
+
+      await sut.removeUsersFromPeople(auth, [{ personId: person.personGroupId, sharedWithId: sharedWith.id }]);
+
+      await expect(sut.getUsersForPeople(auth, {})).resolves.toEqual([]);
+      await expect(sut.getUsersForPeople(otherAuth, {})).resolves.toEqual([
+        expect.objectContaining({ personId: person.personGroupId, sharedWithId: sharedWith.id }),
+      ]);
     });
   });
 });

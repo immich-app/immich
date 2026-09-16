@@ -1216,6 +1216,12 @@ export type ExifResponseDto = {
     /** Time zone */
     timeZone?: string | null;
 };
+export type PersonOtherResponseDto = {
+    birthDate: string | null;
+    name: string;
+    role: PersonUserRole;
+    sharedById: string;
+};
 export type PersonResponseDto = {
     /** Person date of birth */
     birthDate: string | null;
@@ -1229,6 +1235,7 @@ export type PersonResponseDto = {
     isHidden: boolean;
     /** Person name */
     name: string;
+    otherPeople: PersonOtherResponseDto[];
     /** Thumbnail path */
     thumbnailPath: string;
     /** Last update date */
@@ -1700,6 +1707,8 @@ export type AssetFaceCreateDto = {
     imageWidth: number;
     /** Person ID */
     personId: string;
+    /** User ID */
+    userId?: string;
     /** Face bounding box width */
     width: number;
     /** Face bounding box X coordinate */
@@ -1964,6 +1973,11 @@ export type PartnerUpdateDto = {
     /** Show partner assets in timeline */
     inTimeline: boolean;
 };
+export type PeopleDeleteDto = {
+    /** IDs to process */
+    ids: string[];
+    userId?: string;
+};
 export type PeopleResponseDto = {
     /** Whether there are more pages */
     hasNextPage?: boolean;
@@ -2000,6 +2014,8 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** User ID */
+    userId?: string;
 };
 export type PeopleUpdateDto = {
     /** People to update */
@@ -2008,6 +2024,37 @@ export type PeopleUpdateDto = {
 export type MergePersonDto = {
     /** Person IDs to merge */
     ids: string[];
+};
+export type PersonUsersDeleteDto = {
+    /** Person ID */
+    personId: string;
+    /** User ID the person was shared by */
+    sharedById?: string;
+    /** User ID the person was shared with */
+    sharedWithId: string;
+}[];
+export type PersonUsersResponseDto = {
+    /** Person ID */
+    personId: string;
+    /** Sharing role */
+    role: PersonUserRole;
+    /** User ID of the user this is person is shared by */
+    sharedById: string;
+    /** The user response dto for the user that this person is shared with */
+    sharedWith: UserResponseDto;
+    /** User ID of the user this person is shared with */
+    sharedWithId: string;
+}[];
+export type PersonUsersCreateDto = {
+    /** Person IDs */
+    personIds: string[];
+    /** Role that should be applied */
+    role: PersonUserRole;
+    /** User IDs the person should be shared with */
+    sharedWithIds: string[];
+};
+export type PersonDeleteDto = {
+    userId?: string;
 };
 export type PersonUpdateDto = {
     /** Person date of birth */
@@ -2022,12 +2069,16 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** User ID */
+    userId?: string;
 };
 export type AssetFaceUpdateItem = {
     /** Asset ID */
     assetId: string;
     /** Person ID */
     personId: string;
+    /** User ID */
+    userId?: string;
 };
 export type AssetFaceUpdateDto = {
     /** Face update items */
@@ -6010,13 +6061,13 @@ export function updatePartner({ id, partnerUpdateDto }: {
 /**
  * Delete people
  */
-export function deletePeople({ bulkIdsDto }: {
-    bulkIdsDto: BulkIdsDto;
+export function deletePeople({ peopleDeleteDto }: {
+    peopleDeleteDto: PeopleDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/people", oazapfts.json({
         ...opts,
         method: "DELETE",
-        body: bulkIdsDto
+        body: peopleDeleteDto
     })));
 }
 /**
@@ -6088,15 +6139,64 @@ export function mergePeople({ mergePersonDto }: {
     })));
 }
 /**
+ * Remove users from people
+ */
+export function removeUsersFromPeople({ personUsersDeleteDto }: {
+    personUsersDeleteDto: PersonUsersDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people/users", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: personUsersDeleteDto
+    })));
+}
+/**
+ * Get shared users
+ */
+export function getUsersForPeople({ direction, personId, role, sharedById, sharedWithId }: {
+    direction?: SharingDirection;
+    personId?: string;
+    role?: PersonUserRole;
+    sharedById?: string;
+    sharedWithId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PersonUsersResponseDto;
+    }>(`/people/users${QS.query(QS.explode({
+        direction,
+        personId,
+        role,
+        sharedById,
+        sharedWithId
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Create shared users
+ */
+export function addUsersToPeople({ personUsersCreateDto }: {
+    personUsersCreateDto: PersonUsersCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people/users", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: personUsersCreateDto
+    })));
+}
+/**
  * Delete person
  */
-export function deletePerson({ id }: {
+export function deletePerson({ id, personDeleteDto }: {
     id: string;
+    personDeleteDto: PersonDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, {
+    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
-        method: "DELETE"
-    }));
+        method: "DELETE",
+        body: personDeleteDto
+    })));
 }
 /**
  * Get a person
@@ -8145,6 +8245,11 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
+export enum PersonUserRole {
+    Read = "read",
+    Write = "write",
+    Admin = "admin"
+}
 export enum AssetTypeEnum {
     Image = "IMAGE",
     Video = "VIDEO",
@@ -8226,6 +8331,10 @@ export enum MemoryType {
     Birthday = "birthday"
 }
 export enum PartnerDirection {
+    SharedBy = "shared-by",
+    SharedWith = "shared-with"
+}
+export enum SharingDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }

@@ -1669,6 +1669,7 @@
   "person_birthdate": "Born on {date}",
   "person_hidden": "{name}{hidden, select, true { (hidden)} other {}}",
   "person_recognized": "Person recognized",
+  "person_share_no_users": "Every user in your cluster group already has access to this person.",
   "photo_shared_all_users": "Looks like you shared your photos with all users or you don't have any user to share with.",
   "photos": "Photos",
   "photos_and_videos": "Photos & Videos",

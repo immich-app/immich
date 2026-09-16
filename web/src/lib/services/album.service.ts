@@ -32,7 +32,7 @@ import { goto } from '$app/navigation';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
+import AddUsersModal from '$lib/modals/AddUsersModal.svelte';
 import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
 import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
@@ -57,10 +57,15 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
   const isOwned = album.albumUsers[0].user.id === authManager.user.id;
 
   const AddUsers: ActionItem = {
-    title: $t('invite_people'),
+    title: $t('add_user'),
     icon: mdiPlus,
     color: 'primary',
-    onAction: () => modalManager.show(AlbumAddUsersModal, { album }),
+    onAction: () =>
+      modalManager.show(AddUsersModal, {
+        excludedUserIds: album.albumUsers.map(({ user: { id } }) => id),
+        // TODO that explicit UserResponseDto[] shouldn't be necessary, but svelte's types seem to be messed up right now and AlbumAddUsersModal has a bad type
+        onAddUsers: (users: UserResponseDto[]) => handleAddUsersToAlbum(album, users),
+      }),
   };
 
   const CreateSharedLink: ActionItem = {

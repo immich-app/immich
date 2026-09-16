@@ -28,6 +28,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
+  import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getPersonActions } from '$lib/services/person.service';
@@ -36,7 +37,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import { AssetVisibility, PersonUserRole, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
@@ -63,6 +64,7 @@
 
   let numberOfAssets = $derived(data.statistics.assets);
   let person = $derived(data.person);
+  const altItems = $derived(person.otherPeople.filter(({ name }) => !!name));
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -305,7 +307,9 @@
     await updateAssetCount();
   };
 
-  const { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson } = $derived(getPersonActions($t, person));
+  const { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson, Access } = $derived(
+    getPersonActions($t, person),
+  );
   const SelectFeaturePhoto: ActionItem = {
     title: $t('select_featured_photo'),
     icon: mdiAccountBoxOutline,
@@ -373,44 +377,64 @@
                 {thumbnailData}
               />
             {:else}
-              <div class="relative">
-                <button
-                  type="button"
-                  class="flex items-center justify-center"
-                  title={$t('edit_name')}
-                  onclick={() => (isEditingName = true)}
-                >
-                  <ImageThumbnail
-                    circle
-                    shadow
-                    url={thumbnailData}
-                    altText={person.name}
-                    widthStyle="3.375rem"
-                    heightStyle="3.375rem"
-                  />
-                  <div class="flex flex-col justify-center px-4 text-start text-primary">
-                    <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {$t('assets_count', { values: { count: numberOfAssets } })}
+              <div class="relative flex gap-4">
+                <ImageThumbnail
+                  circle
+                  shadow
+                  url={thumbnailData}
+                  altText={person.name}
+                  widthStyle="3.375rem"
+                  heightStyle="3.375rem"
+                />
+                <div class="flex flex-col text-start text-primary">
+                  <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
+                    <p class="w-max-40 sm:w-max-72 truncate text-start font-medium">
+                      {person.name || $t('add_a_name')}
                     </p>
-                    {#if person.birthDate}
-                      <p class="text-sm text-gray-500 dark:text-gray-400">
-                        {$t('person_birthdate', {
-                          values: {
-                            date: DateTime.fromISO(person.birthDate).toLocaleString(
-                              {
-                                month: 'numeric',
-                                day: 'numeric',
-                                year: 'numeric',
-                              },
-                              { locale: $locale },
-                            ),
-                          },
-                        })}
-                      </p>
-                    {/if}
-                  </div>
-                </button>
+                  </button>
+                  {#if altItems.length > 0}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      aka {#each altItems as altItem, i (altItem.sharedById)}
+                        {@const hasEditingPermissions = [PersonUserRole.Write, PersonUserRole.Admin].includes(
+                          altItem.role,
+                        )}
+                        {#if hasEditingPermissions}
+                          <button
+                            type="button"
+                            onclick={() =>
+                              modalManager.show(PersonEditModal, { person, targetUserId: altItem.sharedById })}
+                            class="underline">{altItem.name}</button
+                          >
+                        {:else}
+                          {altItem.name}
+                        {/if}
+                        {altItems.length > 2 ? ',' : ''}
+                        {#if altItems.length > 1 && i === altItems.length - 2}
+                          and
+                        {/if}
+                      {/each}
+                    </p>
+                  {/if}
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {$t('assets_count', { values: { count: numberOfAssets } })}
+                  </p>
+                  {#if person.birthDate}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {$t('person_birthdate', {
+                        values: {
+                          date: DateTime.fromISO(person.birthDate).toLocaleString(
+                            {
+                              month: 'numeric',
+                              day: 'numeric',
+                              year: 'numeric',
+                            },
+                            { locale: $locale },
+                          ),
+                        },
+                      })}
+                    </p>
+                  {/if}
+                </div>
               </div>
             {/if}
           </section>
@@ -498,6 +522,7 @@
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
       <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
+          <ActionButton action={Access} />
           <ContextMenuButton
             items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}
             aria-label={$t('open')}

@@ -1,6 +1,7 @@
-import { updatePerson, type PersonResponseDto } from '@immich/sdk';
+import { updatePerson, type PersonResponseDto, type PersonUpdateDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
+  mdiAccountMultipleOutline,
   mdiCalendarEditOutline,
   mdiEyeOffOutline,
   mdiEyeOutline,
@@ -9,6 +10,7 @@ import {
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import PersonEditAccessModal from '$lib/modals/PersonEditAccessModal.svelte';
 import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -48,7 +50,13 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     onAction: () => handleShowPerson(person),
   };
 
-  return { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson };
+  const Access: ActionItem = {
+    title: 'Manage access',
+    icon: mdiAccountMultipleOutline,
+    onAction: () => modalManager.show(PersonEditAccessModal, { person }),
+  };
+
+  return { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson, Access };
 };
 
 const handleFavoritePerson = async (person: { id: string }) => {
@@ -84,6 +92,17 @@ const handleHidePerson = async (person: { id: string }) => {
     eventManager.emit('PersonUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_hide_person'));
+  }
+};
+
+export const handleUpdatePerson = async (id: string, personUpdateDto: PersonUpdateDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await updatePerson({ id, personUpdateDto });
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
   }
 };
 
