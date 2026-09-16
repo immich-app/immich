@@ -199,6 +199,8 @@ class AssetService {
   }
 
   Future<void> stackEditedUpload(String localId, String remoteId, String? checksum) async {
+    // a manual upload of an asset that was never hashed has no checksum yet, so we need to fetch it from the server
+    final uploadedChecksum = checksum ?? await _apiRepository.getChecksum(remoteId);
     try {
       // previous_checksum still points at the version the server had before this upload
       final previousId = await _localRepository.getPreviousRemoteId(localId);
@@ -207,9 +209,7 @@ class AssetService {
       }
     } finally {
       // the upload went through even when the stack call did not, so this version is the new base
-      if (checksum != null) {
-        await _localRepository.updatePreviousChecksum(localId, checksum);
-      }
+      await _localRepository.updatePreviousChecksum(localId, uploadedChecksum);
     }
   }
 }

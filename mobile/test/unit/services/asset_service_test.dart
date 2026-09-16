@@ -138,6 +138,7 @@ void main() {
         () => apiRepository.stack(['remote', 'previous']),
         () => mocks.localAsset.repo.updatePreviousChecksum('local', 'sha'),
       ]);
+      verifyNever(() => apiRepository.getChecksum(any()));
     });
 
     test('records the uploaded checksum when there is nothing to stack on', () async {
@@ -158,14 +159,15 @@ void main() {
       verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'sha')).called(1);
     });
 
-    test('still stacks but records nothing when the uploaded checksum is unknown', () async {
+    test('asks the server for the checksum when the upload did not know it', () async {
       when(() => mocks.localAsset.repo.getPreviousRemoteId('local')).thenAnswer((_) async => 'previous');
+      when(() => apiRepository.getChecksum('remote')).thenAnswer((_) async => 'srv');
       when(() => apiRepository.stack(any())).thenAnswer((_) async => stack);
 
       await sut.stackEditedUpload('local', 'remote', null);
 
       verify(() => apiRepository.stack(['remote', 'previous'])).called(1);
-      verifyNever(() => mocks.localAsset.repo.updatePreviousChecksum(any(), any()));
+      verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'srv')).called(1);
     });
   });
 }

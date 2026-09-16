@@ -28,8 +28,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().withDefault(const Constant(0))();
 
-  /// Checksum of the last version of this asset the server received, so the upload of
-  /// an edited version can be stacked over the remote asset that still has those bytes.
+  /// Checksum of the last synced version of this asset
   TextColumn get previousChecksum => text().nullable()();
 
   @override
