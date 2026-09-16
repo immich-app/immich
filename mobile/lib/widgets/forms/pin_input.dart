@@ -26,9 +26,9 @@ class PinInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    getPinSize() {
-      final minimumPadding = 18.0;
-      final gapWidth = 3.0;
+    Size getPinSize() {
+      const minimumPadding = 18.0;
+      const gapWidth = 3.0;
       final screenWidth = context.width;
       final pinWidth = (screenWidth - (minimumPadding * 2) - (gapWidth * 5)) / (length ?? 6);
 

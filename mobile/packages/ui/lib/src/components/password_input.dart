@@ -47,11 +47,14 @@ class _ImmichPasswordInputState extends State<ImmichPasswordInput> {
       onSubmit: widget.onSubmit,
       keyboardAction: widget.keyboardAction,
       obscureText: !_visible,
+      autocorrect: false,
+      smartDashesType: .disabled,
+      smartQuotesType: .disabled,
       suffixIcon: IconButton(
         onPressed: _toggleVisibility,
         icon: Icon(_visible ? Icons.visibility_off_rounded : Icons.visibility_rounded),
       ),
-      autofillHints: [AutofillHints.password],
+      autofillHints: const [AutofillHints.password],
     );
   }
 }

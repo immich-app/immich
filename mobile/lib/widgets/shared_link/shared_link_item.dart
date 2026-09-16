@@ -173,13 +173,13 @@ class SharedLinkItem extends ConsumerWidget {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) => ConfirmDialog(
-            title: "delete_shared_link_dialog_title",
-            content: "confirm_delete_shared_link",
+            title: context.t.delete_shared_link_dialog_title,
+            content: context.t.confirm_delete_shared_link,
             onOk: () {},
           ),
         );
 
-        if (confirmed == true) {
+        if (confirmed == true && context.mounted) {
           await ref.read(sharedLinksStateProvider.notifier).deleteLink(sharedLink.id);
           return true;
         }

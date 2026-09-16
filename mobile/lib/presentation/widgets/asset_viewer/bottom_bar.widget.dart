@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_asset.action.dart';
+import 'package:immich_mobile/presentation/actions/restore.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/restore_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
+import 'package:immich_ui/immich_ui.dart';
+
+// Resolved here rather than as an ActionColumnButton so a hidden restore
+// takes no slot in the spaceEvenly row below.
+List<Widget> _actionColumnButtons(BuildContext context, WidgetRef ref, List<ActionBuilder> actions) => actions
+    .map((a) => a.create(context, ref))
+    .nonNulls
+    .map<ImmichColumnButton>(
+      (item) => .new(icon: item.icon, label: item.label, onPressed: item.onAction, onLongPress: item.onSecondaryAction),
+    )
+    .toList(growable: false);
 
 class ViewerBottomBar extends ConsumerWidget {
   const ViewerBottomBar({super.key});
@@ -33,37 +38,24 @@ class ViewerBottomBar extends ConsumerWidget {
     }
 
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
-    final user = ref.watch(currentUserProvider);
-    final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final serverInfo = ref.watch(serverInfoProvider);
-    final isInTrash = ref.read(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final isInTrash = ref.watch(timelineServiceProvider).origin == TimelineOrigin.trash;
 
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      if (isInTrash && isOwner && asset.hasRemote)
-        const RestoreActionButton(source: ActionSource.viewer)
-      else
-        const ShareActionButton(source: ActionSource.viewer),
+      ..._actionColumnButtons(context, ref, const [RestoreAction(source: .viewer), ShareAction(source: .viewer)]),
 
       if (!isInLockedView) ...[
         if (!isInTrash) ...[
-          if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-          // edit sync was added in 2.6.0
-          if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
-            const EditImageActionButton(),
-          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+          ..._actionColumnButtons(context, ref, const [
+            UploadAction(source: .viewer, showProgress: true),
+            EditAssetAction(source: .viewer),
+          ]),
+          if (asset.hasRemote) ImmichColorOverride(color: null, child: AddActionButton(originalTheme: originalTheme)),
         ],
-        if (isOwner) ...[
-          if (asset.isLocalOnly)
-            const DeleteLocalActionButton(source: ActionSource.viewer)
-          else if (asset.isTrashed)
-            const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
-          else
-            const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
-        ],
+        ..._actionColumnButtons(context, ref, const [DeleteAction(source: .viewer)]),
       ],
     ];
 
@@ -73,7 +65,7 @@ class ViewerBottomBar extends ConsumerWidget {
           ? const SizedBox.shrink()
           : Theme(
               data: context.themeData.copyWith(
-                iconTheme: const IconThemeData(size: 22, color: Colors.white),
+                iconTheme: const IconThemeData(size: ImmichIconSize.md, color: Colors.white),
                 textTheme: context.themeData.textTheme.copyWith(
                   labelLarge: context.themeData.textTheme.labelLarge?.copyWith(color: Colors.white),
                 ),
@@ -101,10 +93,13 @@ class ViewerBottomBar extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          OcrToggleButton(asset: asset),
-                          if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
+                          if (asset.isImage) OcrToggleButton(asset: asset),
+                          if (asset.isVideo) VideoControls(videoPlayerName: asset.id),
                           if (!isReadonlyModeEnabled)
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                            ImmichColorOverride(
+                              color: Colors.white,
+                              child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                            ),
                         ],
                       ),
                     ),

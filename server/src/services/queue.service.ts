@@ -1,13 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
-import { OnEvent } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { ConcurrentQueueName, JobItem } from 'src/types.js';
+import { OnEvent } from 'src/decorators.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
 import {
-  mapQueueLegacy,
-  mapQueuesLegacy,
   QueueResponseLegacyDto,
   QueuesResponseLegacyDto,
-} from 'src/dtos/queue-legacy.dto';
+  mapQueueLegacy,
+  mapQueuesLegacy,
+} from 'src/dtos/queue-legacy.dto.js';
 import {
   QueueCommandDto,
   QueueDeleteDto,
@@ -15,7 +17,7 @@ import {
   QueueJobSearchDto,
   QueueResponseDto,
   QueueUpdateDto,
-} from 'src/dtos/queue.dto';
+} from 'src/dtos/queue.dto.js';
 import {
   BootstrapEventPriority,
   CronJob,
@@ -25,11 +27,9 @@ import {
   QueueCleanType,
   QueueCommand,
   QueueName,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { ConcurrentQueueName, JobItem } from 'src/types';
-import { handlePromiseError } from 'src/utils/misc';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { handlePromiseError } from 'src/utils/misc.js';
 
 const asNightlyTasksCron = (config: SystemConfig) => {
   const [hours, minutes] = config.nightlyTasks.startTime.split(':').map(Number);
@@ -93,10 +93,7 @@ export class QueueService extends BaseService {
   private updateConcurrency(config: SystemConfig) {
     this.logger.debug(`Updating queue concurrency settings`);
     for (const queueName of Object.values(QueueName)) {
-      let concurrency = 1;
-      if (this.isConcurrentQueue(queueName)) {
-        concurrency = config.job[queueName].concurrency;
-      }
+      const concurrency = this.isConcurrentQueue(queueName) ? config.job[queueName].concurrency : 1;
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
     }
@@ -161,9 +158,7 @@ export class QueueService extends BaseService {
         throw new BadRequestException(`The BackgroundTask queue cannot be paused`);
       }
       await this.jobRepository.pause(name);
-    }
-
-    if (dto.isPaused === false) {
+    } else if (dto.isPaused === false) {
       await this.jobRepository.resume(name);
     }
 

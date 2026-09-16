@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 
 final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
@@ -9,16 +9,18 @@ final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
   final manager = BackgroundSyncManager(
     onRemoteSyncStart: () {
       syncStatusNotifier.startRemoteSync();
-      final backupProvider = ref.read(driftBackupProvider.notifier);
-      if (backupProvider.mounted) {
-        backupProvider.updateError(BackupError.none);
+      // ignore: dispose-provided-instances
+      final backupNotifier = ref.read(backupProvider.notifier);
+      if (backupNotifier.mounted) {
+        backupNotifier.updateError(BackupError.none);
       }
     },
     onRemoteSyncComplete: (isSuccess) {
       syncStatusNotifier.completeRemoteSync();
-      final backupProvider = ref.read(driftBackupProvider.notifier);
-      if (backupProvider.mounted) {
-        backupProvider.updateError(isSuccess == true ? BackupError.none : BackupError.syncFailed);
+      // ignore: dispose-provided-instances
+      final backupNotifier = ref.read(backupProvider.notifier);
+      if (backupNotifier.mounted) {
+        backupNotifier.updateError(isSuccess == true ? BackupError.none : BackupError.syncFailed);
       }
     },
     onRemoteSyncError: syncStatusNotifier.errorRemoteSync,

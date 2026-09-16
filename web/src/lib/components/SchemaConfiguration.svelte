@@ -1,6 +1,7 @@
 <script lang="ts">
   import SchemaAlbumPicker from '$lib/components/SchemaAlbumPicker.svelte';
   import Self from '$lib/components/SchemaConfiguration.svelte';
+  import SchemaTagPicker from '$lib/components/SchemaTagPicker.svelte';
   import type { JSONSchemaProperty, SchemaConfig } from '$lib/types';
   import {
     CodeBlock,
@@ -28,9 +29,9 @@
   const label = $derived(schema.title ?? key);
   const description = $derived(schema.description);
 
-  const getValue = <T,>(defaultValue?: T) => (root === true ? config : (config?.[key] ?? defaultValue)) as T;
+  const getValue = <T,>(defaultValue?: T) => (root ? config : (config?.[key] ?? defaultValue)) as T;
   const setValue = <T,>(value: T) => {
-    if (root === true) {
+    if (root) {
       config = value;
     } else {
       if (config === undefined) {
@@ -80,6 +81,8 @@
   </div>
 {:else if schema.uiHint?.type === 'AlbumId'}
   <SchemaAlbumPicker {label} {description} array={schema.array} bind:albumIds={getUiHintValue, setUiHintValue} />
+{:else if schema.uiHint?.type === 'TagId'}
+  <SchemaTagPicker bind:tagIds={getUiHintValue, setUiHintValue} />
 {:else if schema.enum && schema.array}
   <Field {label} {description}>
     <MultiSelect options={schema.enum} bind:values={getEnum, setValue} />

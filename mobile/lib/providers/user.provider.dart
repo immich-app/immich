@@ -14,7 +14,7 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
   final UserService _userService;
   late final StreamSubscription<UserDto?> streamSub;
 
-  refresh() async {
+  Future<void> refresh() async {
     try {
       await _userService.refreshMyUser();
     } catch (_) {}
@@ -22,11 +22,19 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
 
   @override
   void dispose() {
-    streamSub.cancel();
+    unawaited(streamSub.cancel());
     super.dispose();
   }
 }
 
 final currentUserProvider = StateNotifierProvider<CurrentUserProvider, UserDto?>((ref) {
   return CurrentUserProvider(ref.watch(userServiceProvider));
+});
+
+final authUserProvider = Provider<UserDto>((ref) {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) {
+    throw Exception('User must be logged in to access this provider');
+  }
+  return user;
 });

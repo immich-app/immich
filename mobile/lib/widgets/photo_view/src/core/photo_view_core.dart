@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
-        PhotoViewScaleState,
         PhotoViewHeroAttributes,
-        PhotoViewImageTapDownCallback,
-        PhotoViewImageTapUpCallback,
-        PhotoViewImageScaleEndCallback,
         PhotoViewImageDragEndCallback,
         PhotoViewImageDragStartCallback,
         PhotoViewImageDragUpdateCallback,
         PhotoViewImageLongPressStartCallback,
+        PhotoViewImageScaleEndCallback,
+        PhotoViewImageTapDownCallback,
+        PhotoViewImageTapUpCallback,
+        PhotoViewScaleState,
         ScaleStateCycle;
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller_delegate.dart';
@@ -199,26 +201,26 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     if (scaleState == PhotoViewScaleState.zoomedOut) {
       scaleStateController.scaleState = PhotoViewScaleState.initial;
     } else if (scaleState == PhotoViewScaleState.zoomedIn) {
-      animateRotation(controller.rotation, 0);
+      unawaited(animateRotation(controller.rotation, 0));
       if (_shouldAllowPanRotate()) {
-        animatePosition(controller.position, Offset.zero);
+        unawaited(animatePosition(controller.position, clampPosition()));
       }
     }
 
     //animate back to maxScale if gesture exceeded the maxScale specified
     if (s > maxScale) {
       final double scaleComebackRatio = maxScale / s;
-      animateScale(s, maxScale);
+      unawaited(animateScale(s, maxScale));
       final Offset clampedPosition = clampPosition(position: p * scaleComebackRatio, scale: maxScale);
-      animatePosition(p, clampedPosition);
+      unawaited(animatePosition(p, clampedPosition));
       return;
     }
 
     //animate back to minScale if gesture fell smaller than the minScale specified
     if (s < minScale) {
       final double scaleComebackRatio = minScale / s;
-      animateScale(s, minScale);
-      animatePosition(p, clampPosition(position: p * scaleComebackRatio, scale: minScale));
+      unawaited(animateScale(s, minScale));
+      unawaited(animatePosition(p, clampPosition(position: p * scaleComebackRatio, scale: minScale)));
       return;
     }
     // get magnitude from gesture velocity
@@ -227,7 +229,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     // animate velocity only if there is no scale change and a significant magnitude
     if (_scaleBefore! / s == 1.0 && magnitude >= 400.0) {
       final Offset direction = details.velocity.pixelsPerSecond / magnitude;
-      animatePosition(p, clampPosition(position: p + direction * 100.0));
+      unawaited(animatePosition(p, clampPosition(position: p + direction * 100.0)));
     }
   }
 
@@ -308,9 +310,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void animateOnScaleStateUpdate(double prevScale, double nextScale) {
-    animateScale(prevScale, nextScale);
-    animatePosition(controller.position, Offset.zero);
-    animateRotation(controller.rotation, 0.0);
+    unawaited(animateScale(prevScale, nextScale));
+    unawaited(animatePosition(controller.position, Offset.zero));
+    unawaited(animateRotation(controller.rotation, 0.0));
   }
 
   @override
@@ -320,14 +322,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     _positionAnimationController.dispose();
     _rotationAnimationController.dispose();
     super.dispose();
-  }
-
-  void onTapUp(TapUpDetails details) {
-    widget.onTapUp?.call(context, details, controller.value);
-  }
-
-  void onTapDown(TapDownDetails details) {
-    widget.onTapDown?.call(context, details, controller.value);
   }
 
   void _updateScaleBoundaries() {
@@ -434,7 +428,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
         ? SizedBox(
             width: scaleBoundaries.childSize.width * scale,
             height: scaleBoundaries.childSize.height * scale,
-            child: widget.customChild!,
+            child: widget.customChild,
           )
         : Image(
             key: widget.heroAttributes?.tag != null ? ObjectKey(widget.heroAttributes!.tag) : null,

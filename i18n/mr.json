@@ -778,7 +778,6 @@
   "custom_date": "सानुकूल तारीख",
   "custom_locale": "भाषा व क्षेत्र",
   "custom_locale_description": "दिनांक व संख्या भाषेनुसार व क्षेत्रानुसार format करा",
-  "custom_url": "सानुकूल URL",
   "cutoff_date_description": "शेवटच्या… पासूनचे फोटो ठेवा…",
   "cutoff_day": "{count, plural, one {दिवस} other {दिवस}}",
   "cutoff_year": "{count, plural, one {वर्ष} other {वर्ष}}",

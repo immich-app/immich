@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
-import { OnJob } from 'src/decorators';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { OnJob } from 'src/decorators.js';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
@@ -11,13 +11,14 @@ import {
   TagUpdateDto,
   TagUpsertDto,
   mapTag,
-} from 'src/dtos/tag.dto';
-import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
-import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
-import { BaseService } from 'src/services/base.service';
-import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { updateLockedColumns } from 'src/utils/database';
-import { upsertTags } from 'src/utils/tag';
+} from 'src/dtos/tag.dto.js';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import { addAssets, removeAssets } from 'src/utils/asset.util.js';
+import { updateLockedColumns } from 'src/utils/database.js';
+import { findOrFail } from 'src/utils/misc.js';
+import { upsertTags } from 'src/utils/tag.js';
 
 @Injectable()
 export class TagService extends BaseService {
@@ -58,8 +59,19 @@ export class TagService extends BaseService {
   async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
     await this.requireAccess({ auth, permission: Permission.TagUpdate, ids: [id] });
 
-    const { color } = dto;
-    const tag = await this.tagRepository.update(id, { color });
+    const { name, color } = dto;
+    const existing = await this.findOrFail(id);
+
+    let value;
+    if (name) {
+      const parts = existing.value.split('/');
+      parts[parts.length - 1] = name;
+      value = parts.join('/');
+    } else {
+      value = existing.value;
+    }
+
+    const tag = await this.tagRepository.update(id, { value, color });
     return mapTag(tag);
   }
 
@@ -92,7 +104,7 @@ export class TagService extends BaseService {
     const results = await this.tagRepository.upsertAssetIds(items);
     for (const assetId of new Set(results.map((item) => item.assetId))) {
       await this.updateTags(assetId);
-      await this.eventRepository.emit('AssetTag', { assetId });
+      await this.eventRepository.emit('AssetTag', { assetId, userId: auth.user.id });
     }
 
     return { count: results.length };
@@ -104,14 +116,16 @@ export class TagService extends BaseService {
     const results = await addAssets(
       auth,
       { access: this.accessRepository, bulk: this.tagRepository },
-      { parentId: id, assetIds: dto.ids },
+      { parentId: id, assetIds: dto.ids, permission: Permission.AssetUpdate },
     );
 
     for (const { id: assetId, success } of results) {
-      if (success) {
-        await this.updateTags(assetId);
-        await this.eventRepository.emit('AssetTag', { assetId });
+      if (!success) {
+        continue;
       }
+
+      await this.updateTags(assetId);
+      await this.eventRepository.emit('AssetTag', { assetId, userId: auth.user.id });
     }
 
     return results;
@@ -127,10 +141,12 @@ export class TagService extends BaseService {
     );
 
     for (const { id: assetId, success } of results) {
-      if (success) {
-        await this.updateTags(assetId);
-        await this.eventRepository.emit('AssetUntag', { assetId });
+      if (!success) {
+        continue;
       }
+
+      await this.updateTags(assetId);
+      await this.eventRepository.emit('AssetUntag', { assetId });
     }
 
     return results;
@@ -142,12 +158,8 @@ export class TagService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async findOrFail(id: string) {
-    const tag = await this.tagRepository.get(id);
-    if (!tag) {
-      throw new BadRequestException('Tag not found');
-    }
-    return tag;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.tagRepository.get(id), 'Tag');
   }
 
   private async updateTags(assetId: string) {

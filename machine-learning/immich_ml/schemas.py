@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from enum import Enum
 from typing import Any, Literal, Protocol, TypeGuard, TypeVar
 
@@ -14,10 +15,7 @@ class ORJSONResponse(JSONResponse):
 
 
 class StrEnum(str, Enum):
-    value: str
-
-    def __str__(self) -> str:
-        return self.value
+    __str__ = str.__str__
 
 
 class BoundingBox(TypedDict):
@@ -63,7 +61,7 @@ ModelIdentity = tuple[ModelType, ModelTask]
 
 class SessionNode(Protocol):
     @property
-    def name(self) -> str | None: ...
+    def name(self) -> str: ...
 
     @property
     def shape(self) -> tuple[int, ...]: ...
@@ -73,13 +71,17 @@ class ModelSession(Protocol):
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, npt.NDArray[np.float32]] | dict[str, npt.NDArray[np.int32]],
+        input_feed: dict[str, npt.NDArray[np.float32]]
+        | dict[str, npt.NDArray[np.int32]]
+        | dict[str, npt.NDArray[np.uint8]],
         run_options: Any = None,
     ) -> list[npt.NDArray[np.float32]]: ...
 
-    def get_inputs(self) -> list[SessionNode]: ...
+    def get_inputs(self) -> Sequence[SessionNode]: ...
 
-    def get_outputs(self) -> list[SessionNode]: ...
+    def get_outputs(self) -> Sequence[SessionNode]: ...
+
+    def get_metadata(self) -> dict[str, str]: ...
 
 
 class HasProfiling(Protocol):

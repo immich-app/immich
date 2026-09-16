@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-
+import 'package:flutter/material.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 

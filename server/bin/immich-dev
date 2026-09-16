@@ -6,4 +6,5 @@ if [[ "$IMMICH_ENV" == "production" ]]; then
 fi
 
 cd /usr/src/app || exit
+pnpm --filter @immich/plugin-sdk build
 pnpm --filter immich exec nest start --debug "0.0.0.0:9230" --watch -- "$@"

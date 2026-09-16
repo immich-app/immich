@@ -1,12 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
-import { StackService } from 'src/services/stack.service';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { StackFactory } from 'test/factories/stack.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { getForStack } from 'test/mappers';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { StackService } from 'src/services/stack.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { StackFactory } from 'test/factories/stack.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { getForStack } from 'test/mappers.js';
+import { newUuid } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(StackService.name, () => {
   let sut: StackService;
@@ -85,8 +85,9 @@ describe(StackService.name, () => {
 
     it('should fail if stack could not be found', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getById.mockResolvedValue(void 0);
 
-      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(Error);
+      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
@@ -124,8 +125,9 @@ describe(StackService.name, () => {
 
     it('should fail if stack could not be found', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getById.mockResolvedValue(void 0);
 
-      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(Error);
+      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
       expect(mocks.stack.update).not.toHaveBeenCalled();

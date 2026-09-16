@@ -5,14 +5,14 @@
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
+  import { type AdminConfigDto, type AdminConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
   import { Button, Icon, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   interface Props {
-    config: SystemConfigDto;
+    config: AdminConfigDto;
   }
 
   let { config = $bindable() }: Props = $props();
@@ -52,7 +52,7 @@
     },
   ];
 
-  const isEdited = (templateKey: keyof SystemConfigTemplateEmailsDto) =>
+  const isEdited = (templateKey: keyof AdminConfigTemplateEmailsDto) =>
     config.templates.email[templateKey] !== systemConfigManager.value.templates.email[templateKey];
 
   const onsubmit = (event: Event) => {

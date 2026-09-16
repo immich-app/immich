@@ -1,26 +1,26 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
-
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-
-import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/archive.action.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_ui/immich_ui.dart';
 
-enum AddToMenuItem { album, archive, unarchive, lockedFolder }
+enum AddToMenuItem { album }
 
 class AddActionButton extends ConsumerStatefulWidget {
   const AddActionButton({super.key, this.originalTheme});
@@ -36,16 +36,6 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
     switch (selected) {
       case AddToMenuItem.album:
         _openAlbumSelector();
-        break;
-      case AddToMenuItem.archive:
-        performArchiveAction(context, ref, source: ActionSource.viewer);
-        break;
-      case AddToMenuItem.unarchive:
-        performUnArchiveAction(context, ref, source: ActionSource.viewer);
-        break;
-      case AddToMenuItem.lockedFolder:
-        performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
-        break;
     }
   }
 
@@ -57,20 +47,15 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final user = ref.read(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
-    final isInLockedView = ref.watch(inLockedViewProvider);
-    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
-    final hasRemote = asset is RemoteAsset;
-    final showArchive = isOwner && !isInLockedView && hasRemote && !isArchived;
-    final showUnarchive = isOwner && !isInLockedView && hasRemote && isArchived;
 
     return [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text("add_to_bottom_bar".tr(), style: context.textTheme.labelMedium),
+        child: Text(context.t.add_to_bottom_bar, style: context.textTheme.labelMedium),
       ),
       BaseActionButton(
         iconData: Icons.photo_album_outlined,
-        label: "album".tr(),
+        label: context.t.album,
         menuItem: true,
         onPressed: () => _handleMenuSelection(AddToMenuItem.album),
       ),
@@ -79,28 +64,10 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         const Divider(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text("move_to".tr(), style: context.textTheme.labelMedium),
+          child: Text(context.t.move_to, style: context.textTheme.labelMedium),
         ),
-        if (showArchive)
-          BaseActionButton(
-            iconData: Icons.archive_outlined,
-            label: "archive".tr(),
-            menuItem: true,
-            onPressed: () => _handleMenuSelection(AddToMenuItem.archive),
-          ),
-        if (showUnarchive)
-          BaseActionButton(
-            iconData: Icons.unarchive_outlined,
-            label: "unarchive".tr(),
-            menuItem: true,
-            onPressed: () => _handleMenuSelection(AddToMenuItem.unarchive),
-          ),
-        BaseActionButton(
-          iconData: Icons.lock_outline,
-          label: "locked_folder".tr(),
-          menuItem: true,
-          onPressed: () => _handleMenuSelection(AddToMenuItem.lockedFolder),
-        ),
+        const ActionMenuItem(action: ArchiveAction(source: .viewer)),
+        const ActionMenuItem(action: LockAction(source: .viewer)),
       ],
     ];
   }
@@ -117,21 +84,23 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album)),
     ];
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return BaseBottomSheet(
-          actions: const [],
-          slivers: slivers,
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.95,
-          expand: false,
-          backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
-        );
-      },
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) {
+          return BaseBottomSheet(
+            actions: const [],
+            slivers: slivers,
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.95,
+            expand: false,
+            backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+          );
+        },
+      ),
     );
   }
 
@@ -145,31 +114,38 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.viewer, album);
 
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
 
     if (!result.success) {
-      ImmichToast.show(context: context, msg: 'scaffold_body_error_occurred'.tr(), toastType: ToastType.error);
+      ImmichToast.show(context: context, msg: context.t.scaffold_body_error_occurred, toastType: ToastType.error);
       return;
     }
 
-    if (result.count == 0) {
+    // Only report the failure when nothing was added; if some succeeded we show "added".
+    if (result.count > 0) {
       ImmichToast.show(
         context: context,
-        msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name}),
-      );
-    } else {
-      ImmichToast.show(
-        context: context,
-        msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+        msg: context.t.add_to_album_bottom_sheet_added(album: album.name),
       );
 
       // Refresh the "Appears in" list on the asset's info panel.
       ref.invalidate(albumsContainingAssetProvider(latest.remoteId!));
+    } else if (result.failedCount > 0) {
+      ImmichToast.show(
+        context: context,
+        msg: context.t.assets_cannot_be_added_to_album_count(count: result.failedCount),
+        toastType: ToastType.error,
+      );
+    } else {
+      ImmichToast.show(
+        context: context,
+        msg: context.t.add_to_album_bottom_sheet_already_exists(album: album.name),
+      );
     }
 
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
     await Navigator.of(context).maybePop();
@@ -184,7 +160,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final themeData = widget.originalTheme ?? context.themeData;
 
-    return MenuAnchor(
+    return ImmichMenu(
       consumeOutsideTap: true,
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(themeData.scaffoldBackgroundColor),
@@ -195,7 +171,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         ),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
       ),
-      menuChildren: widget.originalTheme != null
+      children: widget.originalTheme != null
           ? [
               Theme(
                 data: widget.originalTheme!,
@@ -206,7 +182,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       builder: (context, controller, child) {
         return BaseActionButton(
           iconData: Icons.add,
-          label: "add_to_bottom_bar".tr(),
+          label: context.t.add_to_bottom_bar,
           onPressed: () => controller.isOpen ? controller.close() : controller.open(),
         );
       },

@@ -16,15 +16,16 @@ void main() {
     await StoreService.I.put(StoreKey.advancedTroubleshooting, true);
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   group('AssetDebugAction', () {
     testWidgets('visible for a single asset when advanced troubleshooting is on', (tester) async {
       await tester.pumpTestWidget(
         context,
-        ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
+        const ActionIconButton(action: AssetDebugAction(source: .timeline)),
+        overrides: context.selected({RemoteAssetFactory.create()}),
       );
 
       expect(find.byType(ImmichIconButton), findsOneWidget);
@@ -33,9 +34,8 @@ void main() {
     testWidgets('hidden for multiple assets', (tester) async {
       await tester.pumpTestWidget(
         context,
-        ActionIconButtonWidget(
-          action: AssetDebugAction(assets: [RemoteAssetFactory.create(), RemoteAssetFactory.create()]),
-        ),
+        const ActionIconButton(action: AssetDebugAction(source: .timeline)),
+        overrides: context.selected({RemoteAssetFactory.create(), RemoteAssetFactory.create()}),
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
@@ -43,9 +43,11 @@ void main() {
 
     testWidgets('hidden when advanced troubleshooting is off', (tester) async {
       await StoreService.I.put(StoreKey.advancedTroubleshooting, false);
+
       await tester.pumpTestWidget(
         context,
-        ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
+        const ActionIconButton(action: AssetDebugAction(source: .timeline)),
+        overrides: context.selected({RemoteAssetFactory.create()}),
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);

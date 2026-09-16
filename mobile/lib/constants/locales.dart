@@ -6,10 +6,12 @@ const Map<String, Locale> locales = {
   // Additional locales
   'Arabic (ar)': Locale('ar'),
   'Basque (eu)': Locale('eu'),
-  'Bosnian (bl)': Locale('bn'),
+  'Belarusian (be)': Locale('be'),
+  'Bengali (bn)': Locale('bn'),
   'Brazilian Portuguese (pt_BR)': Locale('pt', 'BR'),
   'Bulgarian (bg)': Locale('bg'),
   'Catalan (ca)': Locale('ca'),
+  'Cantonese (Traditional)': Locale.fromSubtags(languageCode: 'yue', scriptCode: 'Hant'),
   'Chinese Simplified (zh_CN)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
   'Chinese Traditional (zh_TW)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   'Croatian (hr)': Locale('hr'),

@@ -35,6 +35,7 @@ Found Admin:
 - Email=admin@example.com
 - Name=Immich Admin
 ? Please choose a new password (optional) immich-is-cool
+? Invalidate existing sessions? Yes
 The admin password has been updated.
 ```
 

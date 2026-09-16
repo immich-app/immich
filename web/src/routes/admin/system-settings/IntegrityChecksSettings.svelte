@@ -38,10 +38,8 @@
               bind:value={configToEdit.integrityChecks.missingFiles.cronExpression}
               required={true}
               {disabled}
-              isEdited={!(
-                configToEdit.integrityChecks.missingFiles.cronExpression ===
-                config.integrityChecks.missingFiles.cronExpression
-              )}
+              isEdited={configToEdit.integrityChecks.missingFiles.cronExpression !==
+                config.integrityChecks.missingFiles.cronExpression}
             >
               {#snippet descriptionSnippet()}
                 <p class="text-sm dark:text-immich-dark-fg">
@@ -79,10 +77,8 @@
               bind:value={configToEdit.integrityChecks.untrackedFiles.cronExpression}
               required={true}
               {disabled}
-              isEdited={!(
-                configToEdit.integrityChecks.untrackedFiles.cronExpression ===
-                config.integrityChecks.untrackedFiles.cronExpression
-              )}
+              isEdited={configToEdit.integrityChecks.untrackedFiles.cronExpression !==
+                config.integrityChecks.untrackedFiles.cronExpression}
             >
               {#snippet descriptionSnippet()}
                 <p class="text-sm dark:text-immich-dark-fg">
@@ -120,10 +116,8 @@
               bind:value={configToEdit.integrityChecks.checksumFiles.cronExpression}
               required={true}
               {disabled}
-              isEdited={!(
-                configToEdit.integrityChecks.checksumFiles.cronExpression ===
-                config.integrityChecks.checksumFiles.cronExpression
-              )}
+              isEdited={configToEdit.integrityChecks.checksumFiles.cronExpression !==
+                config.integrityChecks.checksumFiles.cronExpression}
             >
               {#snippet descriptionSnippet()}
                 <p class="text-sm dark:text-immich-dark-fg">

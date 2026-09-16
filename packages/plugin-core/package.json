@@ -16,6 +16,6 @@
     "@immich/sdk": "workspace:*",
     "@immich/plugin-sdk": "workspace:*",
     "esbuild": "^0.28.0",
-    "typescript": "^6.0.0"
+    "typescript": "^7.0.0"
   }
 }

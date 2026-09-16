@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { mergePerson, type PersonResponseDto } from '@immich/sdk';
+  import { mergePeople, type PersonResponseDto } from '@immich/sdk';
   import { FormModal, Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
@@ -28,16 +28,14 @@
 
   const changePersonToMerge = (newPerson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newPerson);
+    // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
     [potentialMergePeople[index], personToBeMergedInto] = [personToBeMergedInto, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
 
   const onSubmit = async () => {
     try {
-      await mergePerson({
-        id: personToBeMergedInto.id,
-        mergePersonDto: { ids: [personToMerge.id] },
-      });
+      await mergePeople({ mergePersonDto: { ids: [personToBeMergedInto.id, personToMerge.id] } });
       toastManager.primary($t('merge_people_successfully'));
       onClose([personToMerge, personToBeMergedInto]);
     } catch (error) {
@@ -62,13 +60,16 @@
   <div class="flex items-center justify-center gap-2 py-4 md:h-36">
     {#if !choosePersonToMerge}
       <div class="flex size-20 items-center px-1 md:size-24 md:px-2">
-        <ImageThumbnail
-          circle
-          shadow
-          url={getPeopleThumbnailUrl(personToMerge)}
-          altText={personToMerge.name}
-          widthStyle="100%"
-        />
+        <!-- Trigger a re-render on person change as <Image> captures only the first src -->
+        {#key personToMerge.id}
+          <ImageThumbnail
+            circle
+            shadow
+            url={getPeopleThumbnailUrl(personToMerge)}
+            altText={personToMerge.name}
+            widthStyle="100%"
+          />
+        {/key}
       </div>
 
       <div class="grid grid-rows-3">
@@ -100,14 +101,16 @@
           }
         }}
       >
-        <ImageThumbnail
-          border={potentialMergePeople.length > 0}
-          circle
-          shadow
-          url={getPeopleThumbnailUrl(personToBeMergedInto)}
-          altText={personToBeMergedInto.name}
-          widthStyle="100%"
-        />
+        {#key personToBeMergedInto.id}
+          <ImageThumbnail
+            border={potentialMergePeople.length > 0}
+            circle
+            shadow
+            url={getPeopleThumbnailUrl(personToBeMergedInto)}
+            altText={personToBeMergedInto.name}
+            widthStyle="100%"
+          />
+        {/key}
       </button>
     {:else}
       <div class="grid w-full grid-cols-1 gap-2">
@@ -115,6 +118,7 @@
           <button type="button" onclick={() => (choosePersonToMerge = false)}> <Icon icon={mdiArrowLeft} /></button>
         </div>
         <div class="flex items-center justify-center">
+          <!-- eslint-disable-next-line better-tailwindcss/no-concatenated-classes -->
           <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">
             {#each potentialMergePeople as person (person.id)}
               <div class="size-24 md:size-28">

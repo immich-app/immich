@@ -21,7 +21,7 @@
     let length = 13;
     if (data) {
       const valueLength = data.value.toString().length;
-      length = length - valueLength;
+      length -= valueLength;
     }
 
     return '0'.repeat(length);

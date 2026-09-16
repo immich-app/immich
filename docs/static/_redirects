@@ -1,3 +1,4 @@
+/archived-versions.json https://version.immich.cloud/v1/docs/versions 307
 / /overview/quick-start 307
 /mobile-app-beta-program /features/mobile-app 307
 /contribution-guidelines /overview/support-the-project#contributing 307
@@ -36,3 +37,4 @@
 /overview/welcome /overview/quick-start 307
 /docs/* /:splat 307
 /features/automatic-backup /features/mobile-backup 307
+/privacy-policy https://immich.app/privacy-policy 307

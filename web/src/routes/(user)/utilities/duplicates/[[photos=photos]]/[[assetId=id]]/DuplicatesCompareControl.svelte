@@ -56,7 +56,7 @@
   });
 
   const onRandom = async () => {
-    if (assets.length <= 0) {
+    if (assets.length === 0) {
       return;
     }
     const index = Math.floor(Math.random() * assets.length);

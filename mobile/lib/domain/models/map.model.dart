@@ -1,20 +1,24 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class Marker {
-  final LatLng location;
-  final String assetId;
+part 'map.model.freezed.dart';
 
-  const Marker({required this.location, required this.assetId});
+@freezed
+abstract class Marker with _$Marker {
+  const factory Marker({required LatLng location, required String assetId}) = _Marker;
+}
 
-  @override
-  bool operator ==(covariant Marker other) {
-    if (identical(this, other)) {
-      return true;
-    }
+@Freezed(fromJson: false, toJson: false)
+abstract class TimelineMapOptions with _$TimelineMapOptions {
+  const factory TimelineMapOptions({
+    required LatLngBounds bounds,
 
-    return other.location == location && other.assetId == assetId;
-  }
+    @Default(false) bool onlyFavorites,
+    @Default(false) bool includeArchived,
+    @Default(false) bool withPartners,
+    @Default(0) int relativeDays,
 
-  @override
-  int get hashCode => location.hashCode ^ assetId.hashCode;
+    @Default(TimeRange()) TimeRange timeRange,
+  }) = _TimelineMapOptions;
 }

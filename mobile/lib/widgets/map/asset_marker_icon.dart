@@ -69,15 +69,15 @@ class _PinPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint primaryBrush = Paint()
+    final Paint primaryBrush = Paint()
       ..color = primaryColor
       ..style = PaintingStyle.fill;
 
-    Paint secondaryBrush = Paint()
+    final Paint secondaryBrush = Paint()
       ..color = secondaryColor
       ..style = PaintingStyle.fill;
 
-    Paint lineBrush = Paint()
+    final Paint lineBrush = Paint()
       ..color = primaryColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;

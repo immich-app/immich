@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob, CronTime } from 'cron';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 type CronBase = {
   name: string;

@@ -65,6 +65,7 @@ describe('Route', () => {
   describe(Route.continue.name, () => {
     beforeEach(() => {
       // @ts-expect-error - override location for testing
+      // eslint-disable-next-line unicorn/no-global-object-property-assignment
       globalThis.location = new URL('https://my.immich.server');
       vi.spyOn(document, 'baseURI', 'get').mockReturnValue('https://my.immich.server/');
     });

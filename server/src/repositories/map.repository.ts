@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { getName } from 'i18n-iso-countries';
-import { Expression, Insertable, Kysely, NotNull, sql, SqlBool } from 'kysely';
+import isoCountries from 'i18n-iso-countries';
+import { type Expression, type Insertable, type Kysely, type NotNull, type SqlBool, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetVisibility, SystemMetadataKey } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DB } from 'src/schema';
-import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
-import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
+import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetVisibility, SystemMetadataKey } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { DB } from 'src/schema/index.js';
+import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
+import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -166,7 +166,8 @@ export class MapRepository {
       this.logger.verboseFn(() => `Raw: ${JSON.stringify(response, null, 2)}`);
 
       const { countryCode, name: city, admin1Name } = response;
-      const country = getName(countryCode, 'en') ?? null;
+      // eslint-disable-next-line import-x/no-named-as-default-member
+      const country = isoCountries.getName(countryCode, 'en') ?? null;
       const state = admin1Name;
 
       return { country, state, city };
@@ -194,7 +195,8 @@ export class MapRepository {
     this.logger.verboseFn(() => `Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
 
     const { admin_a3 } = ne_response;
-    const country = getName(admin_a3, 'en') ?? null;
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    const country = isoCountries.getName(admin_a3, 'en') ?? null;
     const state = null;
     const city = null;
 
@@ -291,8 +293,8 @@ export class MapRepository {
         id: Number.parseInt(lineSplit[0]),
         name: lineSplit[1],
         alternateNames: lineSplit[3],
-        latitude: Number.parseFloat(lineSplit[4]),
-        longitude: Number.parseFloat(lineSplit[5]),
+        latitude: Number(lineSplit[4]),
+        longitude: Number(lineSplit[5]),
         countryCode: lineSplit[8],
         admin1Code: lineSplit[10],
         admin2Code: lineSplit[11],
@@ -308,6 +310,7 @@ export class MapRepository {
             .insertInto('geodata_places')
             .values(bufferGeodata)
             .execute()
+
             .then(() => {
               count += curLength;
               if (count % 10_000 === 0) {

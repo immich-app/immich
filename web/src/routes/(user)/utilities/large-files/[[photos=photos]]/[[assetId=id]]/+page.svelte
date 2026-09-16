@@ -28,7 +28,7 @@
   });
 
   const onRandom = async () => {
-    if (assets.length <= 0) {
+    if (assets.length === 0) {
       return undefined;
     }
     const index = Math.floor(Math.random() * assets.length);
@@ -38,7 +38,7 @@
   };
 
   const preAction = async (payload: Action) => {
-    if (payload.type == 'trash') {
+    if (payload.type === 'trash') {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (await navigateToAsset(assetCursor?.nextAsset)) ||
         (await navigateToAsset(assetCursor?.previousAsset)) ||

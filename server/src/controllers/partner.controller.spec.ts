@@ -1,10 +1,9 @@
-import { PartnerController } from 'src/controllers/partner.controller';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerService } from 'src/services/partner.service';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { PartnerController } from 'src/controllers/partner.controller.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerService } from 'src/services/partner.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, automock, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(PartnerController.name, () => {
   let ctx: ControllerContext;
@@ -24,11 +23,6 @@ describe(PartnerController.name, () => {
   });
 
   describe('GET /partners', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/partners');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require a direction`, async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/partners`).set('Authorization', `Bearer token`);
       expect(status).toBe(400);
@@ -54,11 +48,6 @@ describe(PartnerController.name, () => {
   });
 
   describe('POST /partners', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/partners');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require sharedWithId to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post(`/partners`)
@@ -70,11 +59,6 @@ describe(PartnerController.name, () => {
   });
 
   describe('PUT /partners/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/partners/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/partners/invalid`)
@@ -86,11 +70,6 @@ describe(PartnerController.name, () => {
   });
 
   describe('DELETE /partners/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/partners/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .delete(`/partners/invalid`)

@@ -3,9 +3,9 @@
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
+  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
@@ -115,6 +115,7 @@
 
   // TODO move to action + command palette
   const onCopyShortcut = (event: KeyboardEvent) => {
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
     if (globalThis.getSelection()?.type === 'Range') {
       return;
     }
@@ -139,7 +140,7 @@
     if (!url || !castManager.isCasting) {
       return;
     }
-    const fullUrl = new URL(url, globalThis.location.href);
+    const fullUrl = new URL(url, location.href);
 
     try {
       await castManager.loadMedia(fullUrl.href);
@@ -272,7 +273,11 @@
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
-              style="top: {boundingbox.height + 4}px; right: 0;"
+              style="top: {boundingbox.height + 4}px; {assetViewerManager.imgRef
+                ? boundingbox.left >= 0
+                  ? `right: ${Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)}px;`
+                  : `left: ${-boundingbox.left}px;`
+                : ''}"
             >
               {boundingbox.name}
             </div>

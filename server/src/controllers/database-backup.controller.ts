@@ -1,22 +1,22 @@
 import { Body, Controller, Delete, Get, Next, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import type { NextFunction, Response } from 'express';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   DatabaseBackupDeleteDto,
   DatabaseBackupListResponseDto,
   DatabaseBackupUploadDto,
-} from 'src/dtos/database-backup.dto';
-import { ApiTag, ImmichCookie, Permission } from 'src/enum';
-import { Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { LoginDetails } from 'src/services/auth.service';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
-import { sendFile } from 'src/utils/file';
-import { respondWithCookie } from 'src/utils/response';
-import { FilenameParamDto } from 'src/validation';
+} from 'src/dtos/database-backup.dto.js';
+import { ApiTag, ImmichCookie, Permission } from 'src/enum.js';
+import { Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { sendFile } from 'src/utils/file.js';
+import { respondWithCookie } from 'src/utils/response.js';
+import { FilenameParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.DatabaseBackups)
 @Controller('admin/database-backups')
@@ -71,6 +71,7 @@ export class DatabaseBackupController {
     description: 'Put Immich into maintenance mode to restore a backup (Immich must not be configured)',
     history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
+  @Authenticated({ public: true, setup: true })
   async startDatabaseRestoreFlow(
     @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -7,7 +8,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../domain/service.mock.dart';
+import '../../service.mocks.dart';
 import '../../unit/factories/remote_asset_factory.dart';
 
 void main() {
@@ -106,6 +107,21 @@ void main() {
       second.add(updatedTwo);
       await pumpEventQueue();
       expect(container.read(assetViewerProvider).currentAsset, updatedTwo);
+    });
+
+    test('keeps the tapped tile size while swiping', () {
+      final first = RemoteAssetFactory.create();
+      final second = RemoteAssetFactory.create();
+      final notifier = container.read(assetViewerProvider.notifier);
+
+      notifier.setAsset(first, thumbnailSize: const Size.square(642));
+      expect(container.read(assetViewerProvider).thumbnailSize, const Size.square(642));
+
+      notifier.setAsset(second);
+      expect(container.read(assetViewerProvider).thumbnailSize, const Size.square(642));
+
+      notifier.reset();
+      expect(container.read(assetViewerProvider).thumbnailSize, isNull);
     });
   });
 }

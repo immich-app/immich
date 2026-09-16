@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -15,30 +17,11 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
-class WebsocketState {
-  final Socket? socket;
-  final bool isConnected;
+part 'websocket.provider.freezed.dart';
 
-  const WebsocketState({this.socket, required this.isConnected});
-
-  WebsocketState copyWith({Socket? socket, bool? isConnected}) {
-    return WebsocketState(socket: socket ?? this.socket, isConnected: isConnected ?? this.isConnected);
-  }
-
-  @override
-  String toString() => 'WebsocketState(socket: $socket, isConnected: $isConnected)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is WebsocketState && other.socket == socket && other.isConnected == isConnected;
-  }
-
-  @override
-  int get hashCode => socket.hashCode ^ isConnected.hashCode;
+@freezed
+abstract class WebsocketState with _$WebsocketState {
+  const factory WebsocketState({Socket? socket, required bool isConnected}) = _WebsocketState;
 }
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
@@ -56,14 +39,16 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   @override
   void dispose() {
     _batchDebouncer.dispose();
+    state.socket?.dispose();
     super.dispose();
   }
 
-  /// Connects websocket to server unless already connected
+  /// Connects websocket to server unless an active socket already exists
   void connect() {
-    if (state.isConnected) {
+    if (state.socket?.active == true) {
       return;
     }
+    state.socket?.dispose();
     final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
@@ -71,7 +56,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
-        Socket socket = io(
+        final Socket socket = io(
           endpoint.origin,
           OptionBuilder()
               .setPath("${endpoint.path}/socket.io")
@@ -84,29 +69,39 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
               .build(),
         );
 
+        state = WebsocketState(isConnected: false, socket: socket);
+
         socket.onConnect((_) {
           dPrint(() => "Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
+          _refreshServerInfo();
         });
 
         socket.onDisconnect((_) {
           dPrint(() => "Disconnect to Websocket Connection");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('error', (errorMessage) {
           _log.severe("Websocket Error - $errorMessage");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReadyV1);
         socket.on('AssetUploadReadyV2', _handleSyncAssetUploadReadyV2);
         socket.on('AssetEditReadyV1', _handleSyncAssetEditReadyV1);
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
-        socket.on('on_config_update', _handleOnConfigUpdate);
+        socket.on('on_album_update', _handleRemoteChange);
+        socket.on('on_asset_stack_update', _handleRemoteChange);
+        socket.on('on_asset_delete', _handleRemoteChange);
+        socket.on('on_asset_trash', _handleRemoteChange);
+        socket.on('on_asset_restore', _handleRemoteChange);
+        socket.on('on_asset_hidden', _handleRemoteChange);
+        socket.on('on_asset_update', _handleRemoteChange);
+        socket.on('on_config_update', _refreshServerInfo);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
-        dPrint(() => "[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
+        dPrint(() => "[WEBSOCKET] Catch Websocket Error - $e");
       }
     }
   }
@@ -141,12 +136,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     );
   }
 
-  void _handleOnConfigUpdate(dynamic _) {
-    _ref.read(serverInfoProvider.notifier).getServerFeatures();
-    _ref.read(serverInfoProvider.notifier).getServerConfig();
+  void _refreshServerInfo([_]) {
+    unawaited(_ref.read(serverInfoProvider.notifier).getServerFeatures());
+    unawaited(_ref.read(serverInfoProvider.notifier).getServerConfig());
   }
 
-  _handleReleaseUpdates(dynamic data) {
+  void _handleReleaseUpdates(dynamic data) {
     // Json guard
     if (data is! Map) {
       return;
@@ -184,6 +179,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV1(data));
   }
 
+  void _handleRemoteChange(dynamic _) {
+    unawaited(_ref.read(backgroundSyncProvider).syncRemote(enqueue: true));
+  }
+
   void _handleSyncAssetEditReadyV2(dynamic data) {
     unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV2(data));
   }
@@ -198,7 +197,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV1(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );
@@ -219,7 +218,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV2(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );

@@ -1,36 +1,36 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 import { DateTime } from 'luxon';
 import path, { basename } from 'node:path';
-import { PassThrough, Readable, Writable } from 'node:stream';
+import { Duplex, PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import semver from 'semver';
-import { serverVersion } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
-import { CacheControl, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
-import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { CronRepository } from 'src/repositories/cron.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { ArgOf } from 'src/repositories/event.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { ProcessRepository } from 'src/repositories/process.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { getConfig } from 'src/utils/config';
+import { coerce, satisfies } from 'semver';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { serverVersion } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto.js';
+import { CacheControl, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum.js';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { CronRepository } from 'src/repositories/cron.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { getConfig } from 'src/utils/config.js';
 import {
+  UnsupportedPostgresError,
   findDatabaseBackupVersion,
   isFailedDatabaseBackupName,
   isValidDatabaseBackupName,
   isValidDatabaseRoutineBackupName,
-  UnsupportedPostgresError,
-} from 'src/utils/database-backups';
-import { ImmichFileResponse } from 'src/utils/file';
-import { handlePromiseError } from 'src/utils/misc';
+} from 'src/utils/database-backups.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { handlePromiseError } from 'src/utils/misc.js';
 
 @Injectable()
 export class DatabaseBackupService {
@@ -124,11 +124,12 @@ export class DatabaseBackupService {
     const isUrlConnection = databaseConfig.connectionType === 'url';
 
     const databaseVersion = await this.databaseRepository.getPostgresVersion();
-    const databaseSemver = semver.coerce(databaseVersion);
+    const databaseSemver = coerce(databaseVersion);
     const databaseMajorVersion = databaseSemver?.major;
 
     const args: string[] = [];
     let databaseUsername;
+    let databasePassword;
 
     if (isUrlConnection) {
       if (bin !== 'pg_dump') {
@@ -142,16 +143,19 @@ export class DatabaseBackupService {
         parsedUrl.searchParams.delete('uselibpqcompat');
 
         databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
+        databasePassword = parsedUrl.password;
 
-        url = parsedUrl.toString();
+        url = parsedUrl.href;
       }
 
       // assume typical values if we can't parse URL or not present
       databaseUsername ??= 'postgres';
+      databasePassword ??= '';
 
       args.push(url);
     } else {
       databaseUsername = databaseConfig.username;
+      databasePassword = databaseConfig.password;
 
       args.push(
         '--username',
@@ -205,7 +209,7 @@ export class DatabaseBackupService {
       }
     }
 
-    if (!databaseMajorVersion || !databaseSemver || !semver.satisfies(databaseSemver, '>=14.0.0 <19.0.0')) {
+    if (!databaseMajorVersion || !databaseSemver || !satisfies(databaseSemver, '>=14.0.0 <19.0.0')) {
       this.logger.error(`Database Restore Failure: Unsupported PostgreSQL version: ${databaseVersion}`);
       throw new UnsupportedPostgresError(databaseVersion);
     }
@@ -214,7 +218,7 @@ export class DatabaseBackupService {
       bin: `/usr/lib/postgresql/${databaseMajorVersion}/bin/${bin}`,
       args,
       databaseUsername,
-      databasePassword: isUrlConnection ? new URL(databaseConfig.url).password : databaseConfig.password,
+      databasePassword,
       databaseVersion,
       databaseMajorVersion,
     };
@@ -228,27 +232,33 @@ export class DatabaseBackupService {
 
     this.logger.log(`Database Backup Starting. Database Version: ${databaseMajorVersion}`);
 
-    const filename = `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz`;
+    const filename = `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ', 1)[0]}.sql.gz`;
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     const temporaryFilePath = `${backupFilePath}.tmp`;
 
+    let pgdump: Duplex | undefined;
+    let gzip: Duplex | undefined;
+
     try {
-      const pgdump = this.processRepository.spawnDuplexStream(bin, args, {
+      pgdump = this.processRepository.spawnDuplexStream(bin, args, {
         env: {
           PATH: process.env.PATH,
           PGPASSWORD: databasePassword,
         },
       });
 
-      const gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
+      gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
       const fileStream = this.storageRepository.createWriteStream(temporaryFilePath);
 
       await pipeline(pgdump, gzip, fileStream);
       await this.storageRepository.rename(temporaryFilePath, backupFilePath);
     } catch (error) {
       this.logger.error(`Database Backup Failure: ${error}`);
+      pgdump?.destroy();
+      gzip?.destroy();
       await this.storageRepository
         .unlink(temporaryFilePath)
+
         .catch((error) => this.logger.error(`Failed to delete failed backup file: ${error}`));
       throw error;
     }
@@ -354,7 +364,7 @@ export class DatabaseBackupService {
   ): Promise<void> {
     this.logger.debug(`Database Restore Started`);
 
-    let complete = false;
+    let isComplete = false;
     try {
       if (!isValidDatabaseBackupName(filename)) {
         throw new Error('Invalid backup file format!');
@@ -365,7 +375,7 @@ export class DatabaseBackupService {
 
       let isPgClusterDump = false;
       const version = findDatabaseBackupVersion(filename);
-      if (version && semver.satisfies(version, '<= 2.4')) {
+      if (version && satisfies(version, '<= 2.4')) {
         isPgClusterDump = true;
       }
 
@@ -399,7 +409,7 @@ export class DatabaseBackupService {
       });
 
       const [progressSource, progressSink] = createSqlProgressStreams((progress) => {
-        if (complete) {
+        if (isComplete) {
           return;
         }
 
@@ -437,7 +447,7 @@ export class DatabaseBackupService {
         });
 
         const [progressSource, progressSink] = createSqlProgressStreams((progress) => {
-          if (complete) {
+          if (isComplete) {
             return;
           }
 
@@ -453,7 +463,7 @@ export class DatabaseBackupService {
       this.logger.error(`Database Restore Failure: ${error}`);
       throw error;
     } finally {
-      complete = true;
+      isComplete = true;
     }
 
     this.logger.log(`Database Restore Success`);
@@ -507,7 +517,7 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
   const STDIN_START_MARKER = new TextEncoder().encode('FROM stdin');
   const STDIN_END_MARKER = new TextEncoder().encode(String.raw`\.`);
 
-  let readingStdin = false;
+  let isReadingStdin = false;
   let sequenceIdx = 0;
 
   let linesSent = 0;
@@ -532,19 +542,19 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
   const source = new PassThrough({
     transform(chunk, _encoding, callback) {
       for (const byte of chunk) {
-        if (!readingStdin && byte === 10 && lastByte !== 10) {
+        if (!isReadingStdin && byte === 10 && lastByte !== 10) {
           linesSent += 1;
         }
 
         lastByte = byte;
 
-        const sequence = readingStdin ? STDIN_END_MARKER : STDIN_START_MARKER;
+        const sequence = isReadingStdin ? STDIN_END_MARKER : STDIN_START_MARKER;
         if (sequence[sequenceIdx] === byte) {
           sequenceIdx += 1;
 
           if (sequence.length === sequenceIdx) {
             sequenceIdx = 0;
-            readingStdin = !readingStdin;
+            isReadingStdin = !isReadingStdin;
           }
         } else {
           sequenceIdx = 0;
@@ -552,6 +562,7 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
       }
 
       cbDebounced();
+      // eslint-disable-next-line unicorn/no-this-outside-of-class
       this.push(chunk);
       callback();
     },
@@ -578,7 +589,7 @@ function createSqlOwnerTransformStream(databaseUsername: string) {
   const DATA_MARKER_START = new TextEncoder().encode('FROM stdin');
   const LINE_END = new TextEncoder().encode(';');
 
-  const owner = new TextEncoder().encode(databaseUsername);
+  const owner = new TextEncoder().encode(`"${databaseUsername}"`);
 
   let ownerSequenceIndex = 0;
 
@@ -633,6 +644,7 @@ function createSqlOwnerTransformStream(databaseUsername: string) {
         }
       }
 
+      // eslint-disable-next-line unicorn/no-this-outside-of-class
       this.push(result);
       callback();
     },

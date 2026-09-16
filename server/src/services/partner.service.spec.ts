@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { PartnerDirection } from 'src/repositories/partner.repository';
-import { PartnerService } from 'src/services/partner.service';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { PartnerFactory } from 'test/factories/partner.factory';
-import { UserFactory } from 'test/factories/user.factory';
-import { getForPartner } from 'test/mappers';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { PartnerDirection } from 'src/repositories/partner.repository.js';
+import { PartnerService } from 'src/services/partner.service.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { PartnerFactory } from 'test/factories/partner.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { getForPartner } from 'test/mappers.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(PartnerService.name, () => {
   let sut: PartnerService;
@@ -54,6 +54,7 @@ describe(PartnerService.name, () => {
       const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.get.mockResolvedValue(void 0);
+      mocks.user.get.mockResolvedValue(user2);
       mocks.partner.create.mockResolvedValue(getForPartner(partner));
 
       await expect(sut.create(auth, { sharedWithId: user2.id })).resolves.toBeDefined();
@@ -71,6 +72,19 @@ describe(PartnerService.name, () => {
       const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.get.mockResolvedValue(getForPartner(partner));
+
+      await expect(sut.create(auth, { sharedWithId: user2.id })).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.partner.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error when sharedWithId does not resolve to an existing (non-deleted) user', async () => {
+      const user1 = UserFactory.create();
+      const user2 = UserFactory.create();
+      const auth = AuthFactory.create({ id: user1.id });
+
+      mocks.partner.get.mockResolvedValue(void 0);
+      mocks.user.get.mockResolvedValue(void 0);
 
       await expect(sut.create(auth, { sharedWithId: user2.id })).rejects.toBeInstanceOf(BadRequestException);
 

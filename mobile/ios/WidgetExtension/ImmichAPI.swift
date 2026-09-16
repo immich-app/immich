@@ -25,7 +25,7 @@ extension WidgetError: LocalizedError {
       return "Login to Immich"
 
     case .fetchFailed:
-      return "Unable to connect to your Immich instance"
+      return "Unable to connect to Immich"
 
     case .albumNotFound:
       return "Album not found"
@@ -203,7 +203,10 @@ class ImmichAPI {
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
     // get URL
-    let memoryParams = [URLQueryItem(name: "for", value: date.ISO8601Format())]
+    let localDay = date.formatted(
+      Date.ISO8601FormatStyle(timeZone: .current).year().month().day().dateSeparator(.dash)
+    )
+    let memoryParams = [URLQueryItem(name: "for", value: localDay)]
     guard
       let searchURL = buildRequestURL(
         serverConfig: serverConfig,

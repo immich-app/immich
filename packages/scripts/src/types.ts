@@ -11,7 +11,7 @@ export const RELEASE_TYPES = [
 ] as const;
 
 export type ReleaseType = (typeof RELEASE_TYPES)[number];
-export type ReleaseOptions = { type: string; mobile: boolean };
+export type ReleaseOptions = { type: string };
 
 export class TextFile {
   constructor(private file: string) {}

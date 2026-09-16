@@ -2,15 +2,14 @@ import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
-import '../domain/service.mock.dart';
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
 
@@ -29,13 +28,7 @@ void main() {
     apiService = MockApiService();
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
-    sut = AuthService(
-      authApiRepository,
-      authRepository,
-      apiService,
-      networkService,
-      backgroundSyncManager,
-    );
+    sut = AuthService(authApiRepository, authRepository, apiService, networkService, backgroundSyncManager);
 
     registerFallbackValue(Uri());
   });
@@ -43,7 +36,7 @@ void main() {
   setUpAll(() async {
     WidgetsFlutterBinding.ensureInitialized();
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
   });
 
   tearDownAll(() async {
@@ -110,7 +103,7 @@ void main() {
     });
 
     test('Should return null if auto endpoint switching is disabled', () async {
-      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn((false));
+      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(false);
 
       final result = await sut.setOpenApiServiceEndpoint();
 

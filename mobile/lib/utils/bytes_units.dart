@@ -22,6 +22,6 @@ String formatHumanReadableBytes(int bytes, int decimals) {
     return "0 B";
   }
   const suffixes = ["B", "KiB", "MiB", "GiB", "TiB"];
-  var i = (log(bytes) / log(1024)).floor();
+  final i = (log(bytes) / log(1024)).floor();
   return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
 }
