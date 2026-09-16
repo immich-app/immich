@@ -197,4 +197,11 @@ class AssetService {
   Future<LocalAsset?> getLocalAsset(String id) {
     return _localRepository.get(id);
   }
+
+  Future<void> stackEditedUpload(String localId, String remoteId) async {
+    final previousId = await _localRepository.getPreviousRemoteId(localId);
+    if (previousId != null) {
+      await _apiRepository.stack([remoteId, previousId]);
+    }
+  }
 }
