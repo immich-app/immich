@@ -70,7 +70,7 @@ class RepositoryMocks {
   }
 
   void _stubRemoteAssetRepository() {
-    when(remoteAsset.getExif).thenAnswer((_) async => null);
+    when(remoteAsset.watchExif).thenAnswer((_) => Stream.value(null));
     when(remoteAsset.getAssetEdits).thenAnswer((_) async => const []);
     when(remoteAsset.update).thenAnswer((_) async {});
   }
@@ -269,8 +269,8 @@ extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo) imp
 
 extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
     implements Stub<MockRemoteAssetRepository> {
-  Future<ExifInfo?> Function() get getExif =>
-      () => repo.getExif(any());
+  Stream<ExifInfo?> Function() get watchExif =>
+      () => repo.watchExif(any());
 
   Future<List<AssetEdit>> Function() get getAssetEdits =>
       () => repo.getAssetEdits(any());
