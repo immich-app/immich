@@ -7,6 +7,8 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/loaders/remote_image_fetch_scheduler.dart';
+import 'package:immich_mobile/infrastructure/loaders/thumbhash_decode_scheduler.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 
 part 'local_image_request.dart';
