@@ -15,7 +15,15 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
-  import { mdiCheckOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
+  import {
+    mdiCheckOutline,
+    mdiChevronLeft,
+    mdiChevronRight,
+    mdiKeyboard,
+    mdiPageFirst,
+    mdiPageLast,
+    mdiTrashCanOutline,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -266,7 +274,7 @@
             <div class="flex text-xs text-black">
               <Button
                 size="small"
-                leadingIcon={languageManager.mdiPageFirst}
+                leadingIcon={languageManager.rtl ? mdiPageLast : mdiPageFirst}
                 class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleFirst}
                 disabled={duplicatesIndex === 0}
@@ -275,7 +283,7 @@
               </Button>
               <Button
                 size="small"
-                leadingIcon={languageManager.mdiChevronPrevious}
+                leadingIcon={languageManager.rtl ? mdiChevronRight : mdiChevronLeft}
                 class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handlePrevious}
                 disabled={duplicatesIndex === 0}
@@ -289,7 +297,7 @@
             <div class="flex text-xs text-black">
               <Button
                 size="small"
-                trailingIcon={languageManager.mdiChevronNext}
+                trailingIcon={languageManager.rtl ? mdiChevronLeft : mdiChevronRight}
                 class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleNext}
                 disabled={duplicatesIndex === duplicates.length - 1}
@@ -298,7 +306,7 @@
               </Button>
               <Button
                 size="small"
-                trailingIcon={languageManager.mdiPageLast}
+                trailingIcon={languageManager.rtl ? mdiPageFirst : mdiPageLast}
                 class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handleLast}
                 disabled={duplicatesIndex === duplicates.length - 1}

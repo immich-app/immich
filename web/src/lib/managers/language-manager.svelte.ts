@@ -1,4 +1,3 @@
-import { mdiChevronLeft, mdiChevronRight, mdiPageFirst, mdiPageLast } from '@mdi/js';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
 import { langs } from '$lib/utils/i18n';
@@ -12,10 +11,6 @@ class LanguageManager {
 
   initialized = $state(false);
   rtl = $state(false);
-  mdiChevronNext = $derived(this.rtl ? mdiChevronLeft : mdiChevronRight);
-  mdiChevronPrevious = $derived(this.rtl ? mdiChevronRight : mdiChevronLeft);
-  mdiPageFirst = $derived(this.rtl ? mdiPageLast : mdiPageFirst);
-  mdiPageLast = $derived(this.rtl ? mdiPageFirst : mdiPageLast);
 
   init() {
     if (this.initialized) {
