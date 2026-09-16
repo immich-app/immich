@@ -10,6 +10,6 @@ abstract class Person with _$Person {
     required String name,
     DateTime? updatedAt,
     DateTime? birthDate,
-    bool? isFavorite,
+    @Default(false) bool isFavorite,
   }) = _Person;
 }

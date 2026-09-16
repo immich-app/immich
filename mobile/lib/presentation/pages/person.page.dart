@@ -57,8 +57,7 @@ class _PersonPageState extends ConsumerState<PersonPage> {
   }
 
   Future<void> handleToggleFavorite(BuildContext context) async {
-    final isFavorite = _person.isFavorite ?? false;
-    final shouldFavorite = !isFavorite;
+    final shouldFavorite = !_person.isFavorite;
 
     try {
       final result = await ref.read(Store.people).updateFavorite(_person.id, shouldFavorite);

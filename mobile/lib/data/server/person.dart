@@ -26,7 +26,7 @@ class PersonApiRepository extends ApiRepository {
     birthDate: dto.birthDate,
     id: dto.id,
     name: dto.name,
-    isFavorite: dto.isFavorite.orElse(false),
+    isFavorite: dto.isFavorite.orElse(false) ?? false,
     updatedAt: dto.updatedAt.orElse(null),
   );
 }
