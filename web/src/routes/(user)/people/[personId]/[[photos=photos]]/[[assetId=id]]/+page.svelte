@@ -40,6 +40,7 @@
     ActionButton,
     CommandPaletteDefaultProvider,
     ContextMenuButton,
+    Icon,
     IconButton,
     LoadingSpinner,
     modalManager,
@@ -51,6 +52,7 @@
     mdiAccountMultipleCheckOutline,
     mdiArrowLeft,
     mdiDotsVertical,
+    mdiHeart,
     mdiPencilOutline,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -378,14 +380,21 @@
               />
             {:else}
               <div class="relative flex gap-4">
-                <ImageThumbnail
-                  circle
-                  shadow
-                  url={thumbnailData}
-                  altText={person.name}
-                  widthStyle="3.375rem"
-                  heightStyle="3.375rem"
-                />
+                <div class="relative">
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={thumbnailData}
+                    altText={person.name}
+                    widthStyle="3.375rem"
+                    heightStyle="3.375rem"
+                  />
+                  {#if person.isFavorite}
+                    <div class="absolute inset-s-1 top-1">
+                      <Icon icon={mdiHeart} size="18" class="text-white drop-shadow-md" />
+                    </div>
+                  {/if}
+                </div>
                 <div class="flex flex-col text-start text-primary">
                   <div class="flex gap-2">
                     <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
