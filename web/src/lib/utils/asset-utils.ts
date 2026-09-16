@@ -320,6 +320,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     });
 
     asset.isArchived = data.isArchived;
+    asset.visibility = data.visibility;
     if (asset.isArchived) {
       const timelineAsset = toTimelineAsset(asset);
       showUndoArchiveToast($t('added_to_archive'), [timelineAsset]);

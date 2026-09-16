@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
 import { Insertable } from 'kysely';
-import _ from 'lodash';
+import { isUndefined, omitBy, pick } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
-
-import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AssetFile } from 'src/database';
-import { OnEvent, OnJob } from 'src/decorators';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { JobOf } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { Asset, AssetFile } from 'src/database.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
 import {
   AssetFileType,
   AssetType,
@@ -22,22 +23,19 @@ import {
   JobStatus,
   QueueName,
   SourceType,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { ReverseGeocodeResult } from 'src/repositories/map.repository';
-import { ImmichTags } from 'src/repositories/metadata.repository';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { PersonTable } from 'src/schema/tables/person.table';
-import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
-import { isAssetChecksumConstraint } from 'src/utils/database';
-import { mergeTimeZone } from 'src/utils/date';
-import { mimeTypes } from 'src/utils/mime-types';
-import { batched, isFaceImportEnabled } from 'src/utils/misc';
-import { upsertTags } from 'src/utils/tag';
-import { Tasks } from 'src/utils/tasks';
+} from 'src/enum.js';
+import { ReverseGeocodeResult } from 'src/repositories/map.repository.js';
+import { ImmichTags } from 'src/repositories/metadata.repository.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getAssetFiles } from 'src/utils/asset.util.js';
+import { isAssetChecksumConstraint } from 'src/utils/database.js';
+import { mergeTimeZone } from 'src/utils/date.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { batched, isFaceImportEnabled } from 'src/utils/misc.js';
+import { upsertTags } from 'src/utils/tag.js';
+import { Tasks } from 'src/utils/tasks.js';
 
 const POSTGRES_INT_MAX = 2_147_483_647;
 const POSTGRES_INT_MIN = -2_147_483_648;
@@ -485,7 +483,7 @@ export class MetadataService extends BaseService {
     const { sidecarFile } = getAssetFiles(asset.files);
     const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
 
-    const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone } = _.pick(
+    const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone } = pick(
       {
         description: asset.exifInfo.description,
         dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
@@ -498,7 +496,7 @@ export class MetadataService extends BaseService {
       lockedProperties,
     );
 
-    const exif = _.omitBy(
+    const exif = omitBy(
       <Tags>{
         Description: description,
         ImageDescription: description,
@@ -508,7 +506,7 @@ export class MetadataService extends BaseService {
         Rating: rating,
         TagsList: tags,
       },
-      _.isUndefined,
+      isUndefined,
     );
 
     if (Object.keys(exif).length === 0) {
@@ -911,7 +909,7 @@ export class MetadataService extends BaseService {
     const existingNameMap = new Map(
       existingNames.map(({ personGroupId, name }) => [name.toLowerCase(), personGroupId]),
     );
-    const missing: (Insertable<PersonTable> & { name: string; personGroupId: string; clusterGroupId: string })[] = [];
+    const missing: { name: string; ownerId: string; personGroupId: string; clusterGroupId: string }[] = [];
     const missingWithFaceAsset: { personGroupId: string; ownerId: string; faceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
@@ -961,7 +959,9 @@ export class MetadataService extends BaseService {
       await this.personRepository.createGroups(
         missing.map((item) => ({ id: item.personGroupId, clusterGroupId: asset.clusterGroupId })),
       );
-      await this.personRepository.createAll(missing);
+      await this.personRepository.createAll(
+        missing.map(({ name, ownerId, personGroupId }) => ({ name, ownerId, personGroupId })),
+      );
 
       const jobs = missing.map(
         ({ personGroupId, ownerId }) =>

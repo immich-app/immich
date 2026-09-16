@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { ExtraModel } from 'src/decorators';
-import { AssetEditActionSchema } from 'src/dtos/editing.dto';
+import z from 'zod';
+import { ExtraModel } from 'src/decorators.js';
+import { AssetEditActionSchema } from 'src/dtos/editing.dto.js';
 import {
   AlbumUserRole,
   AlbumUserRoleSchema,
@@ -13,9 +14,8 @@ import {
   SyncRequestTypeSchema,
   UserAvatarColorSchema,
   UserMetadataKeySchema,
-} from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
-import z from 'zod';
+} from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const SyncUserV1Schema = z
   .object({
@@ -39,6 +39,10 @@ const SyncAuthUserV1Schema = SyncUserV1Schema.merge(
     quotaUsageInBytes: z.int().describe('Quota usage in bytes'),
   }),
 ).meta({ id: 'SyncAuthUserV1' });
+
+const SyncAuthUserV2Schema = SyncAuthUserV1Schema.extend({
+  oauthId: z.string().nullable().describe('User OAuth ID'),
+}).meta({ id: 'SyncAuthUserV2' });
 
 const SyncUserDeleteV1Schema = z.object({ userId: z.uuidv4().describe('User ID') }).meta({ id: 'SyncUserDeleteV1' });
 
@@ -111,6 +115,8 @@ const SyncAssetV2Schema = z
 class SyncUserV1 extends createZodDto(SyncUserV1Schema) {}
 @ExtraModel()
 class SyncAuthUserV1 extends createZodDto(SyncAuthUserV1Schema) {}
+@ExtraModel()
+class SyncAuthUserV2 extends createZodDto(SyncAuthUserV2Schema) {}
 @ExtraModel()
 class SyncUserDeleteV1 extends createZodDto(SyncUserDeleteV1Schema) {}
 @ExtraModel()
@@ -463,6 +469,7 @@ class SyncCompleteV1 extends createZodDto(SyncCompleteV1Schema) {}
 
 export type SyncItem = {
   [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
+  [SyncEntityType.AuthUserV2]: SyncAuthUserV2;
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;

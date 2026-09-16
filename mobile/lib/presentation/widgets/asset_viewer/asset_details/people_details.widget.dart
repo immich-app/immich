@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -10,7 +11,6 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -28,7 +28,7 @@ class PeopleDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final peopleFuture = ref.watch(peopleAssetProvider(asset.id));
+    final peopleFuture = ref.watch(Store.people.forAsset(asset.id));
 
     Future<void> showNameEditModal(Person person) async {
       await showDialog(
@@ -39,7 +39,8 @@ class PeopleDetails extends ConsumerWidget {
         },
       );
 
-      ref.invalidate(peopleAssetProvider(asset.id));
+      // TODO(agg23): Remove once state is properly reactive
+      ref.invalidate(Store.people.forAsset(asset.id));
     }
 
     return peopleFuture.when(
@@ -106,6 +107,8 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final birthDate = person.birthDate;
+    final formattedAge = birthDate != null ? formatAge(birthDate, assetFileCreatedAt) : null;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 96),
       child: Padding(
@@ -153,11 +156,11 @@ class _Avatar extends StatelessWidget {
                     style: context.textTheme.labelLarge,
                     maxLines: 1,
                   ),
-                  if (person.birthDate != null)
+                  if (formattedAge != null)
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        formatAge(person.birthDate!, assetFileCreatedAt),
+                        formattedAge,
                         textAlign: TextAlign.center,
                         style: context.textTheme.bodyMedium?.copyWith(
                           color: context.textTheme.bodyMedium?.color?.withAlpha(175),

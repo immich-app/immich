@@ -219,11 +219,6 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
     return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
   }
 
-  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
-    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
-  }
-
   Future<void> reconcileHashesFromCloudId() async {
     await _db.customUpdate(
       '''
@@ -242,5 +237,21 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
       updates: {_db.localAssetEntity},
       updateKind: UpdateKind.update,
     );
+  }
+
+  Future<String?> getPreviousRemoteId(String id) {
+    final query = _db.selectOnly(_db.localAssetEntity)
+      ..join([
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.previousChecksum),
+        ),
+        innerJoin(_db.authUserEntity, _db.authUserEntity.id.equalsExp(_db.remoteAssetEntity.ownerId)),
+      ])
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..where(_db.localAssetEntity.id.equals(id))
+      ..limit(1);
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.id)).getSingleOrNull();
   }
 }

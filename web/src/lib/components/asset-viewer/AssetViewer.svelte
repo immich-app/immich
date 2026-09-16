@@ -73,7 +73,6 @@
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
     onClose?: (assetId: string) => void;
-    onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
 
@@ -89,7 +88,6 @@
     onAction,
     onUndoDelete,
     onClose,
-    onRemoveFromAlbum,
     onRandom,
   }: Props = $props();
 
@@ -520,7 +518,6 @@
         onAction={handleAction}
         {onUndoDelete}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
-        {onRemoveFromAlbum}
         {isPlayingOriginalVideo}
         {setPlayOriginalVideo}
       />
@@ -652,9 +649,8 @@
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
-              imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
+              imageClass={stackedAsset.id === asset.id ? 'border-2 border-white' : 'brightness-70'}
               brokenAssetClass="text-xs"
-              dimmed={stackedAsset.id !== asset.id}
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
                 cursor.current = stackedAsset;

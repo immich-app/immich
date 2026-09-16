@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { MemoryService } from 'src/services/memory.service';
-import { OnThisDayData } from 'src/types';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { MemoryFactory } from 'test/factories/memory.factory';
-import { getForMemory } from 'test/mappers';
-import { factory, newUuid, newUuids } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import type { OnThisDayData } from 'src/types.js';
+import { MemoryService } from 'src/services/memory.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { MemoryFactory } from 'test/factories/memory.factory.js';
+import { getForMemory } from 'test/mappers.js';
+import { factory, newUuid, newUuids } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(MemoryService.name, () => {
   let sut: MemoryService;

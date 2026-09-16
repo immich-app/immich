@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { Exif } from 'src/database';
-import { MaybeDehydrated } from 'src/types';
-import { asDateTimeString } from 'src/utils/date';
 import z from 'zod';
+import type { MaybeDehydrated } from 'src/types.js';
+import { Exif } from 'src/database.js';
+import { asDateTimeString } from 'src/utils/date.js';
 
 export const ExifResponseSchema = z
   .object({

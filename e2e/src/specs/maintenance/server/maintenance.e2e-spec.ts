@@ -1,6 +1,6 @@
 import { LoginResponseDto } from '@immich/sdk';
-import { errorDto } from 'src/responses';
-import { app, utils } from 'src/utils';
+import { errorDto } from 'src/responses.js';
+import { app, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
