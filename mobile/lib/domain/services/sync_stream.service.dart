@@ -325,6 +325,8 @@ class SyncStreamService {
         return _syncStreamRepository.updateAssetFacesV1(data.cast());
       case SyncEntityType.assetFaceV2:
         return _syncStreamRepository.updateAssetFacesV2(data.cast());
+      case SyncEntityType.assetFaceV3:
+        throw UnimplementedError('SyncEntityType.assetFaceV3 is not implemented yet');
       case SyncEntityType.assetFaceDeleteV1:
         return _syncStreamRepository.deleteAssetFacesV1(data.cast());
       case SyncEntityType.assetOcrV1:
