@@ -14,8 +14,9 @@ const _kSeparator = '  •  ';
 class TechnicalDetails extends ConsumerWidget {
   final BaseAsset asset;
   final ExifInfo? exifInfo;
+  final String? originalPath;
 
-  const TechnicalDetails({super.key, required this.asset, this.exifInfo});
+  const TechnicalDetails({super.key, required this.asset, this.exifInfo, this.originalPath});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +31,7 @@ class TechnicalDetails extends ConsumerWidget {
           title: context.t.details,
           titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
         ),
-        _buildFileInfoTile(context, ref, asset, exifInfo),
+        _buildFileInfoTile(context, ref, asset, exifInfo, originalPath),
         if (cameraTitle != null) ...[
           const SizedBox(height: 16),
           SheetTile(
@@ -62,7 +63,13 @@ class TechnicalDetails extends ConsumerWidget {
     );
   }
 
-  Widget _buildFileInfoTile(BuildContext context, WidgetRef ref, BaseAsset asset, ExifInfo? exifInfo) {
+  Widget _buildFileInfoTile(
+    BuildContext context,
+    WidgetRef ref,
+    BaseAsset asset,
+    ExifInfo? exifInfo,
+    String? originalPath,
+  ) {
     final icon = Icon(
       asset.isImage ? Icons.image_outlined : Icons.videocam_outlined,
       size: 24,
@@ -71,29 +78,39 @@ class TechnicalDetails extends ConsumerWidget {
     final subtitle = _getFileInfo(asset, exifInfo);
     final subtitleStyle = context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary);
 
-    if (asset is LocalAsset) {
-      final assetMediaRepository = ref.read(assetMediaRepositoryProvider);
-      return FutureBuilder<String?>(
-        future: assetMediaRepository.getOriginalFilename(asset.id),
-        builder: (context, snapshot) {
-          return SheetTile(
-            title: snapshot.data ?? asset.name,
+    Widget buildFileInfo(String title) {
+      return Column(
+        children: [
+          SheetTile(
+            title: title,
             titleStyle: context.textTheme.labelLarge,
             leading: icon,
             subtitle: subtitle,
             subtitleStyle: subtitleStyle,
-          );
-        },
+          ),
+          if (originalPath != null && originalPath.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            SheetTile(
+              title: context.t.folder,
+              titleStyle: context.textTheme.labelLarge,
+              leading: Icon(Icons.folder_outlined, size: 24, color: context.textTheme.labelLarge?.color),
+              subtitle: originalPath,
+              subtitleStyle: subtitleStyle,
+            ),
+          ],
+        ],
       );
     }
 
-    return SheetTile(
-      title: asset.name,
-      titleStyle: context.textTheme.labelLarge,
-      leading: icon,
-      subtitle: subtitle,
-      subtitleStyle: subtitleStyle,
-    );
+    if (asset is LocalAsset) {
+      final assetMediaRepository = ref.read(assetMediaRepositoryProvider);
+      return FutureBuilder<String?>(
+        future: assetMediaRepository.getOriginalFilename(asset.id),
+        builder: (context, snapshot) => buildFileInfo(snapshot.data ?? asset.name),
+      );
+    }
+
+    return buildFileInfo(asset.name);
   }
 
   static String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
