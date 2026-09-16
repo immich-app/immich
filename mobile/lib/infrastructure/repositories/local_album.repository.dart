@@ -20,7 +20,11 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
 
   Drift get _db => attachedDatabase;
 
-  Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
+  Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) => _selectAll(sortBy: sortBy).get();
+
+  Stream<List<LocalAlbum>> watchAll({Set<SortLocalAlbumsBy> sortBy = const {}}) => _selectAll(sortBy: sortBy).watch();
+
+  Selectable<LocalAlbum> _selectAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
 
     final query = _db.localAlbumEntity.select().join([
@@ -49,7 +53,7 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
       query.orderBy(orderings);
     }
 
-    return query.map((row) => row.readTable(_db.localAlbumEntity).toDto(assetCount: row.read(assetCount) ?? 0)).get();
+    return query.map((row) => row.readTable(_db.localAlbumEntity).toDto(assetCount: row.read(assetCount) ?? 0));
   }
 
   Future<List<LocalAlbum>> getBackupAlbums() async {
@@ -280,9 +284,10 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
     // Reset checksum if asset changed
     await _db.batch((batch) async {
       for (final asset in localAssets) {
-        final companion = LocalAssetEntityCompanion(
-          checksum: const Value(null),
-          adjustmentTime: Value(asset.adjustmentTime),
+        final companion = LocalAssetEntityCompanion.custom(
+          checksum: const Constant(null),
+          adjustmentTime: Variable(asset.adjustmentTime),
+          previousChecksum: _db.localAssetEntity.checksum,
         );
         batch.update(
           _db.localAssetEntity,
@@ -343,7 +348,12 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
           companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+          onConflict: DoUpdate(
+            // SET reads the existing row, so this keeps the checksum being cleared
+            (_) =>
+                RawValuesInsertable({...companion.toColumns(true), 'previous_checksum': _db.localAssetEntity.checksum}),
+            where: (old) => old.updatedAt.isNotValue(asset.updatedAt),
+          ),
         );
       }
     });

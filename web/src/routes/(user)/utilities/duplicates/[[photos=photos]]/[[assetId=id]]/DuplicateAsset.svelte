@@ -106,8 +106,8 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    {#each visibleMetadataItems as { icon, title, render, keys } (keys[0])}
-      <InfoRow {icon} {title}>
+    {#each visibleMetadataItems as { icon, title, render, tooltip, keys } (keys[0])}
+      <InfoRow {icon} {title} {tooltip}>
         {render}
       </InfoRow>
     {/each}

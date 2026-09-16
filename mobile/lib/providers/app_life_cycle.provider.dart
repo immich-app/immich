@@ -31,10 +31,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
 
-  AppLifeCycleEnum getAppState() {
-    return state;
-  }
-
   Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
     _log.info("App resumed");
@@ -138,8 +134,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             unawaited(_resumeBackup());
           }),
           _resumeBackup(),
-          // TODO: Bring back when the soft freeze issue is addressed
-          // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
+          _safeRun(backgroundManager.syncCloudIds, "syncCloudIds"),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets, "hashAssets");

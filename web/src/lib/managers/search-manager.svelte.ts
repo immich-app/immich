@@ -28,19 +28,32 @@ class SearchManager {
 
   #fromQuery(searchQuery: MetadataSearchDto | SmartSearchDto): SearchFilter {
     let query = 'query' in searchQuery && searchQuery.query ? searchQuery.query : '';
+    let queryType = query ? QueryType.SMART : this.#defaultQueryType();
 
     if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
       query = searchQuery.originalFileName;
+      queryType = QueryType.METADATA;
     }
 
     if ('originalPath' in searchQuery && searchQuery.originalPath) {
       query = searchQuery.originalPath;
+      queryType = QueryType.FULL_PATH;
+    }
+
+    if ('description' in searchQuery && searchQuery.description) {
+      query = searchQuery.description;
+      queryType = QueryType.DESCRIPTION;
+    }
+
+    if (searchQuery.ocr) {
+      query = searchQuery.ocr;
+      queryType = QueryType.OCR;
     }
 
     return {
       query,
       ocr: searchQuery.ocr,
-      queryType: this.#defaultQueryType(),
+      queryType,
       queryAssetId: 'queryAssetId' in searchQuery ? searchQuery.queryAssetId : undefined,
       personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
       tagIds:

@@ -1,25 +1,25 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
-import { AssetFaceCreateDto } from 'src/dtos/person.dto';
-import { AssetFileType, JobName } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DB } from 'src/schema';
-import { PersonService } from 'src/services/person.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { AssetFaceCreateDto } from 'src/dtos/person.dto.js';
+import { AssetFileType, JobName } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { DB } from 'src/schema/index.js';
+import { PersonService } from 'src/services/person.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -201,13 +201,13 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('mergePerson', () => {
+  describe('mergePeople', () => {
     it('should merge people of multiple users', async () => {
       const { sut, ctx } = setup();
       const storageMock = ctx.getMock(StorageRepository);
       const { user: user1 } = await ctx.newUser();
       const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
-      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id, name: undefined });
       const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
       await ctx.newPerson({
         ownerId: user2.id,
@@ -216,6 +216,7 @@ describe(PersonService.name, () => {
       await ctx.newPerson({
         ownerId: user2.id,
         personGroupId: person2.personGroupId,
+        name: undefined,
       });
       const { asset } = await ctx.newAsset({ ownerId: user2.id });
       await ctx.newAssetFace({ assetId: asset.id, personGroupId: person2.personGroupId });
@@ -223,7 +224,7 @@ describe(PersonService.name, () => {
 
       const auth = factory.auth({ user: user1 });
 
-      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      await sut.mergePeople(auth, { ids: [person1.personGroupId, person2.personGroupId] });
       const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
       const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
       expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
@@ -254,7 +255,7 @@ describe(PersonService.name, () => {
 
       const auth = factory.auth({ user: user1 });
 
-      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      await sut.mergePeople(auth, { ids: [person1.personGroupId, person2.personGroupId] });
       const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
       const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
       expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
@@ -266,7 +267,7 @@ describe(PersonService.name, () => {
       );
     });
 
-    it('should skip people with a different birthdate', async () => {
+    it('should skip people with a different birth date', async () => {
       const { sut, ctx } = setup();
       const storageMock = ctx.getMock(StorageRepository);
       const { user: user1 } = await ctx.newUser();
@@ -287,7 +288,7 @@ describe(PersonService.name, () => {
 
       const auth = factory.auth({ user: user1 });
 
-      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      await sut.mergePeople(auth, { ids: [person1.personGroupId, person2.personGroupId] });
       const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
       const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
       expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
@@ -316,7 +317,7 @@ describe(PersonService.name, () => {
 
       const auth = factory.auth({ user: user1 });
 
-      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      await sut.mergePeople(auth, { ids: [person1.personGroupId, person2.personGroupId] });
       const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
       const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
       expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);

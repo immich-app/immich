@@ -1,4 +1,4 @@
-import { serverVersion } from 'src/constants';
+import { serverVersion } from 'src/constants.js';
 
 export function configureUserAgent() {
   const originalFetch = fetch;

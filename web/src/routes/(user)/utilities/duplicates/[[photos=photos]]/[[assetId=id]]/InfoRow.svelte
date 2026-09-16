@@ -6,12 +6,13 @@
     icon: string;
     children: Snippet;
     title: string;
+    tooltip?: string;
   }
 
-  let { icon, children, title }: Props = $props();
+  let { icon, children, title, tooltip }: Props = $props();
 </script>
 
-<div class="grid w-full grid-cols-[20px_auto_1fr] gap-1 overflow-hidden px-2 py-1.5" {title}>
+<div class="grid w-full grid-cols-[20px_auto_1fr] gap-1 overflow-hidden px-2 py-1.5" title={title ?? tooltip}>
   <Icon {icon} size="16" class="self-center text-dark/25" />
 
   <Text size="tiny" class="self-center truncate pe-1 text-immich-fg/40 dark:text-immich-dark-fg/40">

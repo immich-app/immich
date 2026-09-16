@@ -1,3 +1,4 @@
+import type { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/types.js';
 import {
   AacProfile,
   ColorMatrix,
@@ -7,8 +8,7 @@ import {
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
-} from 'src/enum';
-import { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/types';
+} from 'src/enum.js';
 
 const probeStubDefaultFormat: VideoFormat = {
   formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
