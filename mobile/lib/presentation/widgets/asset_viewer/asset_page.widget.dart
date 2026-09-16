@@ -53,7 +53,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
-  double _maxScaleMultiplier = 20.0;
+  static const double _maxScaleMultiplier = 20.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
