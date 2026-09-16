@@ -18,8 +18,6 @@ import 'package:mocktail/mocktail.dart';
 
 import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
-import '../mocks/asset_entity.mock.dart';
-import '../repository.mocks.dart';
 
 void main() {
   late BackgroundUploadService sut;
@@ -27,7 +25,6 @@ void main() {
   late MockStorageRepository mockStorageRepository;
   late MockLocalAssetRepository mockLocalAssetRepository;
   late MockBackupRepository mockBackupRepository;
-  late MockAssetMediaRepository mockAssetMediaRepository;
   late Drift db;
 
   setUpAll(() async {
@@ -49,14 +46,12 @@ void main() {
     mockStorageRepository = MockStorageRepository();
     mockLocalAssetRepository = MockLocalAssetRepository();
     mockBackupRepository = MockBackupRepository();
-    mockAssetMediaRepository = MockAssetMediaRepository();
 
     sut = BackgroundUploadService(
       mockUploadRepository,
       mockStorageRepository,
       mockLocalAssetRepository,
       mockBackupRepository,
-      mockAssetMediaRepository,
     );
 
     mockUploadRepository.onUploadStatus = (_) {};
@@ -68,69 +63,81 @@ void main() {
   });
 
   group('getUploadTask', () {
-    test('should call getOriginalFilename from AssetMediaRepository for regular photo', () async {
+    test('uses the original filename returned with the file for a regular photo', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/file.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'OriginalPhoto.jpg');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'OriginalPhoto.jpg', isLivePhoto: false));
 
       final task = await sut.getUploadTask(asset);
 
       expect(task, isNotNull);
       expect(task!.fields['filename'], equals('OriginalPhoto.jpg'));
-      verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
 
-    test('should call getOriginalFilename when original filename is null', () async {
+    test('falls back to the asset name when the original filename is null', () async {
       final asset = LocalAssetStub.image2;
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/file.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => null);
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: null, isLivePhoto: false));
 
       final task = await sut.getUploadTask(asset);
 
       expect(task, isNotNull);
       expect(task!.fields['filename'], equals(asset.name));
-      verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
 
-    test('should call getOriginalFilename for live photo', () async {
+    test('uploads the motion file of a live photo hidden', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/file.heic');
       final mockFile = File('/path/to/file.mov');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(true);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => mockFile);
       when(
-        () => mockAssetMediaRepository.getOriginalFilename(asset.id),
-      ).thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'OriginalLivePhoto.HEIC', isLivePhoto: true));
+      when(
+        () => mockStorageRepository.getMotionFileForAsset(asset),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'OriginalLivePhoto.HEIC', isLivePhoto: true));
 
       final task = await sut.getUploadTask(asset);
       expect(task, isNotNull);
       // For live photos, extension should be changed to match the video file
       expect(task!.fields['filename'], equals('OriginalLivePhoto.mov'));
       expect(task.fields['visibility'], equals('hidden'));
-      verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
+    });
+
+    test('deletes the still copy it exported to learn the live photo flag', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final asset = LocalAssetStub.image1;
+      final dir = Directory.systemTemp.createTempSync();
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final stillFile = File('${dir.path}/live.heic')..writeAsStringSync('still');
+
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'live.heic', isLivePhoto: true));
+      when(
+        () => mockStorageRepository.getMotionFileForAsset(asset),
+      ).thenAnswer((_) async => (file: File('/path/to/live.mov'), originalFileName: 'live.mov', isLivePhoto: true));
+
+      final task = await sut.getUploadTask(asset);
+
+      expect(task, isNotNull);
+      expect(stillFile.existsSync(), isFalse);
     });
 
     test('should not set visibility for a regular photo', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/file.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'Regular.jpg');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'Regular.jpg', isLivePhoto: false));
 
       final task = await sut.getUploadTask(asset);
       expect(task, isNotNull);
@@ -139,13 +146,11 @@ void main() {
 
     test('corrects the extension when iOS returns a rendered file for a .dng asset', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/IMG_6499.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_6499.dng');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'IMG_6499.dng', isLivePhoto: false));
 
       final task = await sut.getUploadTask(asset);
       expect(task, isNotNull);
@@ -154,13 +159,11 @@ void main() {
 
     test('keeps the .dng extension for a genuine RAW original', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/IMG_5210.dng');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_5210.dng');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'IMG_5210.dng', isLivePhoto: false));
 
       final task = await sut.getUploadTask(asset);
       expect(task, isNotNull);
@@ -169,13 +172,11 @@ void main() {
 
     test('borrows the extension from the asset name for an extensionless name (DJI/Fusion)', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/DJI_0001');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'DJI_0001');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'DJI_0001', isLivePhoto: false));
 
       final task = await sut.getUploadTask(asset);
       expect(task, isNotNull);
@@ -184,17 +185,13 @@ void main() {
   });
 
   group('getLivePhotoUploadTask', () {
-    test('should call getOriginalFilename for live photo upload task', () async {
-      final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
+    test('uses the original filename returned with the still file', () async {
+      final asset = LocalAssetStub.image1.copyWith(playbackStyle: AssetPlaybackStyle.livePhoto);
       final mockFile = File('/path/to/livephoto.heic');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(true);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
       when(
-        () => mockAssetMediaRepository.getOriginalFilename(asset.id),
-      ).thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'OriginalLivePhoto.HEIC', isLivePhoto: true));
 
       final task = await sut.getLivePhotoUploadTask(asset, 'video-id-123');
 
@@ -202,24 +199,20 @@ void main() {
       expect(task!.fields['filename'], equals('OriginalLivePhoto.HEIC'));
       expect(task.fields['livePhotoVideoId'], equals('video-id-123'));
       expect(task.fields.containsKey('visibility'), isFalse);
-      verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
 
-    test('should call getOriginalFilename when original filename is null', () async {
-      final asset = LocalAssetStub.image2;
-      final mockEntity = MockAssetEntity();
+    test('falls back to the asset name when the original filename is null', () async {
+      final asset = LocalAssetStub.image2.copyWith(playbackStyle: AssetPlaybackStyle.livePhoto);
       final mockFile = File('/path/to/fallback.heic');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(true);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => null);
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: null, isLivePhoto: true));
 
       final task = await sut.getLivePhotoUploadTask(asset, 'video-id-456');
       expect(task, isNotNull);
       // Should fall back to asset.name when original filename is null
       expect(task!.fields['filename'], equals(asset.name));
-      verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
   });
 
@@ -233,7 +226,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -251,13 +243,11 @@ void main() {
         isEdited: false,
       );
 
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/test.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id)).thenAnswer((_) async => 'test.jpg');
+      when(
+        () => mockStorageRepository.getFileForAsset(assetWithCloudId.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'test.jpg', isLivePhoto: false));
 
       final task = await sutWithV24.getUploadTask(assetWithCloudId);
 
@@ -283,7 +273,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAssetMediaRepository,
       );
       addTearDown(() => sutAndroid.dispose());
 
@@ -300,13 +289,11 @@ void main() {
         isEdited: false,
       );
 
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/test.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id)).thenAnswer((_) async => 'test.jpg');
+      when(
+        () => mockStorageRepository.getFileForAsset(assetWithCloudId.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'test.jpg', isLivePhoto: false));
 
       final task = await sutAndroid.getUploadTask(assetWithCloudId);
 
@@ -323,7 +310,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -338,15 +324,11 @@ void main() {
         isEdited: false,
       );
 
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/test.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(assetWithoutCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithoutCloudId.id)).thenAnswer((_) async => mockFile);
       when(
-        () => mockAssetMediaRepository.getOriginalFilename(assetWithoutCloudId.id),
-      ).thenAnswer((_) async => 'test.jpg');
+        () => mockStorageRepository.getFileForAsset(assetWithoutCloudId.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'test.jpg', isLivePhoto: false));
 
       final task = await sutWithV24.getUploadTask(assetWithoutCloudId);
 
@@ -363,7 +345,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -376,19 +357,15 @@ void main() {
         cloudId: 'cloud-id-livephoto',
         latitude: 37.7749,
         longitude: -122.4194,
-        playbackStyle: AssetPlaybackStyle.image,
+        playbackStyle: AssetPlaybackStyle.livePhoto,
         isEdited: false,
       );
 
-      final mockEntity = MockAssetEntity();
       final mockFile = File('/path/to/livephoto.heic');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(true);
-      when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
       when(
-        () => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id),
-      ).thenAnswer((_) async => 'livephoto.heic');
+        () => mockStorageRepository.getFileForAsset(assetWithCloudId.id),
+      ).thenAnswer((_) async => (file: mockFile, originalFileName: 'livephoto.heic', isLivePhoto: true));
 
       final task = await sutWithV24.getLivePhotoUploadTask(assetWithCloudId, 'video-123');
 

@@ -591,7 +591,6 @@
   "asset_list_settings_title": "Photo Grid",
   "asset_not_found_on_device_android": "Asset not found on device",
   "asset_not_found_on_device_ios": "Asset not found on device. If you are using iCloud, the asset may be inaccessible due to bad file stored on iCloud",
-  "asset_not_found_on_icloud": "Asset not found on iCloud. the asset may be inaccessible due to bad file stored on iCloud",
   "asset_offline": "Asset Offline",
   "asset_offline_description": "This external asset is no longer found on disk. Please contact your Immich administrator for help.",
   "asset_skipped": "Skipped",

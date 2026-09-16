@@ -203,7 +203,9 @@ void main() {
     final localFile = File(p.join(tempRoot.path, 'local', 'IMG.jpg'));
     localFile.parent.createSync();
     localFile.writeAsStringSync('local');
-    when(() => storage.getFileForAsset('local-1')).thenAnswer((_) async => localFile);
+    when(
+      () => storage.getFileForAsset('local-1'),
+    ).thenAnswer((_) async => (file: localFile, originalFileName: null, isLivePhoto: false));
     final assets = [
       TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG.jpg'),
       TestUtils.createLocalAsset(id: 'local-1').copyWith(name: 'IMG.jpg'),
@@ -236,7 +238,7 @@ void main() {
     localFile.writeAsStringSync('local');
     when(() => storage.getFileForAsset('local-1')).thenAnswer((_) async {
       cancellation.complete();
-      return localFile;
+      return (file: localFile, originalFileName: null, isLivePhoto: false);
     });
     final asset = TestUtils.createLocalAsset(id: 'local-1').copyWith(name: 'IMG.jpg');
 

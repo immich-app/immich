@@ -7,13 +7,13 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -43,6 +43,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
   NativeVideoPlayerController? _controller;
   late final Future<VideoSource?> _videoSource;
+  File? _file;
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
@@ -79,6 +80,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     WidgetsBinding.instance.removeObserver(this);
     _loadTimer?.cancel();
     _removeListeners();
+    unawaited(_deleteFile(_file));
     super.dispose();
   }
 
@@ -108,6 +110,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return null;
     }
 
+    final storageRepository = ref.read(storageRepositoryProvider);
     try {
       final localFilePath = widget.localFilePath;
       if (localFilePath != null) {
@@ -128,16 +131,18 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
       if (localAsset != null) {
         final file = localAsset.isMotionPhoto
-            ? await StorageRepository().getMotionFileForAsset(localAsset)
-            : await StorageRepository().getFileForAsset(localAsset.id);
+            ? (await storageRepository.getMotionFileForAsset(localAsset))?.file
+            : (await storageRepository.getFileForAsset(localAsset.id))?.file;
 
         if (!mounted) {
+          await _deleteFile(file);
           return null;
         }
 
         if (file == null) {
           throw Exception('No file found for the video');
         }
+        _file = file;
 
         // Pass a file:// URI so Android's Uri.parse doesn't
         // interpret characters like '#' as fragment identifiers.
@@ -167,6 +172,18 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     } catch (error) {
       _log.severe('Error creating video source for asset ${videoAsset.name}: $error');
       return null;
+    }
+  }
+
+  Future<void> _deleteFile(File? file) async {
+    if (file == null || !CurrentPlatform.isIOS) {
+      return;
+    }
+
+    try {
+      await file.delete();
+    } catch (error) {
+      _log.warning('Error deleting ${file.path}: $error');
     }
   }
 
