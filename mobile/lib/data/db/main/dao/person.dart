@@ -18,6 +18,12 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
     return result?.toDto();
   }
 
+  Stream<Person?> watchById(String personId) {
+    final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.watchSingleOrNull().map((row) => row?.toDto());
+  }
+
   Future<List<Person>> getAssetPeople(String assetId) async {
     // An asset can have multiple face records for the same person (e.g., metadata
     // imports alongside ML detections). Use a subquery instead of a join so each

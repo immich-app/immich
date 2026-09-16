@@ -18,6 +18,9 @@ extension type const PersonStore._(Provider<PersonMutations> _provider) implemen
   /// **NOTE:** This is not reactive to changes, and only hits the local DB
   AutoDisposeFutureProvider<Person?> byId(String personId) => _byIdProvider(personId);
 
+  /// Get the person specified by [personId], reactive to local DB changes
+  AutoDisposeStreamProvider<Person?> watch(String personId) => _watchByIdProvider(personId);
+
   /// Get the people present in the asset [assetId]
   ///
   /// **NOTE:** This is not reactive to changes, and only hits the local DB
@@ -35,6 +38,10 @@ final _peopleDb = driftProvider.select((db) => db.peopleDatabaseRepository);
 // Note that the only reactivity here is in going from no data (fetch start) to data (fetch completed), and the DB swapping (basically never)
 final _byIdProvider = FutureProvider.autoDispose.family<Person?, String>(
   (ref, personId) => ref.watch(_peopleDb).get(personId),
+);
+
+final _watchByIdProvider = StreamProvider.autoDispose.family<Person?, String>(
+  (ref, personId) => ref.watch(_peopleDb).watchById(personId),
 );
 
 final _forAssetProvider = FutureProvider.autoDispose.family<List<Person>, String>(

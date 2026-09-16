@@ -14,7 +14,8 @@ class PersonFavoriteAction extends ActionBuilder {
 
   @override
   ActionItem create(BuildContext context, WidgetRef ref) {
-    final shouldFavorite = !person.isFavorite;
+    final isFavorite = ref.watch(Store.people.watch(person.id)).valueOrNull?.isFavorite ?? person.isFavorite;
+    final shouldFavorite = !isFavorite;
     final message = shouldFavorite ? context.t.added_to_favorites : context.t.removed_from_favorites;
     final toastService = ref.read(toastServiceProvider);
 
