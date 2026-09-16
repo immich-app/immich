@@ -41,12 +41,13 @@
     ActionButton,
     CommandPaletteDefaultProvider,
     ContextMenuButton,
+    Icon,
     LoadingSpinner,
     modalManager,
     toastManager,
     type ActionItem,
   } from '@immich/ui';
-  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical } from '@mdi/js';
+  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical, mdiHeart } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -380,14 +381,21 @@
                   title={$t('edit_name')}
                   onclick={() => (isEditingName = true)}
                 >
-                  <ImageThumbnail
-                    circle
-                    shadow
-                    url={thumbnailData}
-                    altText={person.name}
-                    widthStyle="3.375rem"
-                    heightStyle="3.375rem"
-                  />
+                  <div class="relative">
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={thumbnailData}
+                      altText={person.name}
+                      widthStyle="3.375rem"
+                      heightStyle="3.375rem"
+                    />
+                    {#if person.isFavorite}
+                      <div class="absolute inset-s-1 top-1">
+                        <Icon icon={mdiHeart} size="18" class="text-white drop-shadow-md" />
+                      </div>
+                    {/if}
+                  </div>
                   <div class="flex flex-col justify-center px-4 text-start text-primary">
                     <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
