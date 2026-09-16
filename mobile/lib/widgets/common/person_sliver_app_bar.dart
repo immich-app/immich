@@ -17,6 +17,7 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class PersonSliverAppBar extends ConsumerStatefulWidget {
   const PersonSliverAppBar({
@@ -91,8 +92,13 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
               },
             ),
             actions: [
-              ActionIconButton(action: PersonFavoriteAction(widget.person)),
-
+              IconTheme(
+                data: IconThemeData(shadows: actionIconShadows),
+                child: ImmichColorOverride(
+                  color: actionIconColor,
+                  child: ActionIconButton(action: PersonFavoriteAction(widget.person)),
+                ),
+              ),
               IconButton(
                 icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
                 onPressed: widget.onShowOptions,
