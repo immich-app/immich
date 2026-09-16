@@ -20,7 +20,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
 final _stateProvider = Provider.family.autoDispose<RemoteAsset?, ActionSource>((ref, source) {
-  final isSupported = ref.watch(serverInfoProvider.select((state) => state.serverVersion.supports(.assetEdits)));
+  final isSupported = ref.watch(serverInfoProvider.select((state) => state.serverVersion.supports(.syncAssetEditsV1)));
   if (!isSupported) {
     return null;
   }

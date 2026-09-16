@@ -19,6 +19,7 @@ import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
 import '../repository.mocks.dart';
+import '../service.mocks.dart';
 
 void main() {
   late ForegroundUploadService sut;
@@ -27,6 +28,7 @@ void main() {
   late MockBackupRepository mockBackupRepository;
   late MockConnectivityApi mockConnectivityApi;
   late MockAssetMediaRepository mockAssetMediaRepository;
+  late MockAssetService mockAssetService;
   late Drift db;
 
   setUpAll(() async {
@@ -52,6 +54,8 @@ void main() {
     mockBackupRepository = MockBackupRepository();
     mockConnectivityApi = MockConnectivityApi();
     mockAssetMediaRepository = MockAssetMediaRepository();
+    mockAssetService = MockAssetService();
+    when(() => mockAssetService.stackEditedUpload(any(), any())).thenAnswer((_) async {});
 
     sut = ForegroundUploadService(
       mockUploadRepository,
@@ -59,6 +63,7 @@ void main() {
       mockBackupRepository,
       mockConnectivityApi,
       mockAssetMediaRepository,
+      mockAssetService,
     );
   });
 
@@ -195,6 +200,44 @@ void main() {
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
 
       expect(names, equals(['DJI_0001.jpg']));
+    });
+
+    test('stacks a plain photo after its upload', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/photo.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+      captureFields();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote-1')).called(1);
+      verifyNoMoreInteractions(mockAssetService);
+    });
+
+    test('stacks the still of a live photo, not its video', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/still.heic');
+      final videoFile = File('/path/to/motion.mov');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => videoFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.heic');
+      captureFields();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote-2')).called(1);
+      verifyNoMoreInteractions(mockAssetService);
     });
   });
 }
