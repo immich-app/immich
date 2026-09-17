@@ -3,6 +3,7 @@ import {
   AssetBulkUploadCheckResult,
   AssetMediaResponseDto,
   AssetMediaStatus,
+  AssetRejectReason,
   AssetUploadAction,
   AssetVisibility,
   Permission,
@@ -30,6 +31,9 @@ const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
 // TODO figure out why `id` is missing
 type AssetBulkUploadCheckResults = Array<AssetBulkUploadCheckResult & { id: string }>;
 type Asset = { id: string; filepath: string };
+// A file the server refused for a reason other than "we already have it", so there is no
+// server-side copy and the local file must not be deleted.
+type RejectedFile = { filepath: string; reason?: AssetRejectReason };
 
 export interface UploadOptionsDto {
   recursive?: boolean;
@@ -67,10 +71,10 @@ class UploadFile extends File {
 }
 
 const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
-  const { newFiles, duplicates } = await checkForDuplicates(files, options);
+  const { newFiles, duplicates, rejects } = await checkForDuplicates(files, options);
   const newAssets = await uploadFiles(newFiles, options);
   if (options.jsonOutput) {
-    console.log(JSON.stringify({ newFiles, duplicates, newAssets }, undefined, 4));
+    console.log(JSON.stringify({ newFiles, duplicates, rejects, newAssets }, undefined, 4));
   }
   await updateAlbums([...newAssets, ...duplicates], options);
 
@@ -179,7 +183,7 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
 export const checkForDuplicates = async (files: string[], { concurrency, skipHash, progress }: UploadOptionsDto) => {
   if (skipHash) {
     console.log('Skipping hash check, assuming all files are new');
-    return { newFiles: files, duplicates: [] };
+    return { newFiles: files, duplicates: [], rejects: [] };
   }
 
   let multiBar: MultiBar | undefined;
@@ -229,6 +233,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
+  const rejects: RejectedFile[] = [];
 
   const checkBulkUploadQueue = new Queue<AssetBulkUploadCheckItem[], void>(
     async (assets: AssetBulkUploadCheckItem[]) => {
@@ -236,12 +241,16 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
       const results = response.results as AssetBulkUploadCheckResults;
 
-      for (const { id: filepath, assetId, action } of results) {
+      for (const { id: filepath, assetId, action, reason } of results) {
         if (action === AssetUploadAction.Accept) {
           newFiles.push(filepath);
+        } else if (reason === AssetRejectReason.Duplicate && assetId) {
+          // only a confirmed duplicate with a known asset id is safe to delete locally
+          duplicates.push({ id: assetId, filepath });
         } else {
-          // rejects are always duplicates
-          duplicates.push({ id: assetId as string, filepath });
+          // anything else (an unsupported format, or a reason this version does not know
+          // about) has no copy on the server, so it is reported but never deleted
+          rejects.push({ filepath, reason });
         }
       }
 
@@ -297,6 +306,15 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
   console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(duplicates.length)}`);
 
+  if (rejects.length > 0) {
+    console.log(
+      `The server rejected ${rejects.length} file${s(rejects.length)}, which will not be uploaded or deleted:`,
+    );
+    for (const { filepath, reason } of rejects) {
+      console.log(`- ${filepath} - ${reason ?? 'unknown reason'}`);
+    }
+  }
+
   // Report failures
   const failedTasks = queue.tasks.filter((task) => task.status === 'failed');
   if (failedTasks.length > 0) {
@@ -306,7 +324,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     }
   }
 
-  return { newFiles, duplicates };
+  return { newFiles, duplicates, rejects };
 };
 
 export const uploadFiles = async (files: string[], options: UploadOptionsDto): Promise<Asset[]> => {
