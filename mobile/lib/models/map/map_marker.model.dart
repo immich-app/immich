@@ -1,29 +1,14 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
 
-class MapMarker {
-  final LatLng latLng;
-  final String assetRemoteId;
-  const MapMarker({required this.latLng, required this.assetRemoteId});
+part 'map_marker.model.freezed.dart';
 
-  MapMarker copyWith({LatLng? latLng, String? assetRemoteId}) {
-    return MapMarker(latLng: latLng ?? this.latLng, assetRemoteId: assetRemoteId ?? this.assetRemoteId);
-  }
+@freezed
+abstract class MapMarker with _$MapMarker {
+  const factory MapMarker({required LatLng latLng, required String assetRemoteId}) = _MapMarker;
 
-  MapMarker.fromDto(MapMarkerResponseDto dto) : latLng = LatLng(dto.lat, dto.lon), assetRemoteId = dto.id;
-
-  @override
-  String toString() => 'MapMarker(latLng: $latLng, assetRemoteId: $assetRemoteId)';
-
-  @override
-  bool operator ==(covariant MapMarker other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.latLng == latLng && other.assetRemoteId == assetRemoteId;
-  }
-
-  @override
-  int get hashCode => latLng.hashCode ^ assetRemoteId.hashCode;
+  factory MapMarker.fromDto(MapMarkerResponseDto dto) =>
+      MapMarker(latLng: LatLng(dto.lat, dto.lon), assetRemoteId: dto.id);
 }

@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 
 void main() {
   const options = DriftDatabaseOptions(storeDateTimeAsText: true);
@@ -45,7 +45,7 @@ void main() {
   });
 
   test('reads pass stored values through untouched', () {
-    // writes clamp and the v32 migration heals the backlog, so reads never clamp
+    // writes clamp and the v34 migration heals the backlog, so reads never clamp
     final stored = types.mapToSqlVariable(DateTime.utc(2024, 1, 2, 3, 4, 5, 123))!;
     expect(clampedDateTime.read(types, stored), DateTime.utc(2024, 1, 2, 3, 4, 5, 123));
   });

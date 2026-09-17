@@ -6,7 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
@@ -75,7 +75,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SheetTile(
-            title: 'location'.t(context: context),
+            title: context.t.location,
             titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             trailing: hasCoordinates && editLocation != null ? const Icon(Icons.edit_location_alt, size: 20) : null,
             onTap: editLocation?.onAction,
@@ -107,7 +107,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
             ),
           if (!hasCoordinates)
             SheetTile(
-              title: "add_a_location".t(context: context),
+              title: context.t.add_a_location,
               titleStyle: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: context.primaryColor,

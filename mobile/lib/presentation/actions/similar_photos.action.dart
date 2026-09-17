@@ -28,15 +28,15 @@ class SimilarPhotosAction extends ActionBuilder {
         .new(
           assetId: assetId,
           people: {},
-          location: .new(),
-          camera: .new(),
-          date: .new(),
-          display: .new(isNotInAlbum: false, isArchive: false, isFavorite: false),
-          rating: .new(),
+          location: const .new(),
+          camera: const .new(),
+          date: const .new(),
+          display: const .new(isNotInAlbum: false, isArchive: false, isFavorite: false),
+          rating: const .new(),
           mediaType: .other,
         ),
       );
 
-    unawaited(context.navigateTo(const DriftSearchRoute()));
+    unawaited(context.navigateTo(const SearchRoute()));
   }
 }

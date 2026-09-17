@@ -8,11 +8,11 @@ import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftLocalAssetRepository sut;
+  late LocalAssetRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = DriftLocalAssetRepository(ctx.db);
+    sut = LocalAssetRepository(ctx.db);
   });
 
   tearDown(() async {
@@ -559,8 +559,8 @@ void main() {
       final remoteAsset = await ctx.newRemoteAsset(ownerId: userId);
       final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id);
       final localAsset = await ctx.newLocalAsset(
-        checksumOption: const Option.none(),
-        iCloudId: null,
+        checksumOption: const .none(),
+        iCloudIdOption: const .none(),
         createdAt: cloudIdAsset.createdAt,
         adjustmentTime: cloudIdAsset.adjustmentTime,
         latitude: cloudIdAsset.latitude,
@@ -632,6 +632,23 @@ void main() {
       await sut.reconcileHashesFromCloudId();
       final updated = await sut.getById(localAsset.id);
       expect(updated?.checksum, isNull);
+    });
+  });
+
+  group('getPreviousRemoteId', () {
+    test('finds the owned remote asset that has the previous checksum', () async {
+      final me = await ctx.newUser();
+      final partner = await ctx.newUser();
+      await ctx.newAuthUser(id: me.id);
+      final original = await ctx.newRemoteAsset(ownerId: me.id, checksum: 'a');
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: 'z');
+      final edited = await ctx.newLocalAsset(checksum: 'b', previousChecksum: 'a');
+      final partnerEdited = await ctx.newLocalAsset(checksum: 'c', previousChecksum: 'z');
+      final untouched = await ctx.newLocalAsset(checksum: 'd');
+
+      expect(await sut.getPreviousRemoteId(edited.id), original.id);
+      expect(await sut.getPreviousRemoteId(partnerEdited.id), isNull);
+      expect(await sut.getPreviousRemoteId(untouched.id), isNull);
     });
   });
 }

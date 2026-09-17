@@ -97,6 +97,15 @@ const _kIntParamNames = [
   'quantity',
 ];
 
+const _kParamTypeOverrides = <String, String>{
+  'advanced_settings_clear_image_cache_success.size': 'String',
+  'backup_controller_page_storage_format.total': 'String',
+  'backup_controller_page_storage_format.used': 'String',
+  'cleanup_found_assets_with_size.size': 'String',
+};
+
+final _usedParamTypeOverrides = <String>{};
+
 void main() async {
   final sourceFile = File('../i18n/en.json');
   if (!await sourceFile.exists()) {
@@ -142,6 +151,11 @@ class TranslationParam {
 
 Future<void> _generateTranslations(Map<String, dynamic> translations, File output) async {
   final root = _buildTranslationTree('', translations);
+
+  final staleOverrides = _kParamTypeOverrides.keys.toSet().difference(_usedParamTypeOverrides);
+  if (staleOverrides.isNotEmpty) {
+    throw StateError('_kParamTypeOverrides has entries matching no plain {placeholder}: ${staleOverrides.join(', ')}');
+  }
 
   final buffer = StringBuffer('''
 // DO NOT EDIT. This is code generated via generate_keys.dart
@@ -194,21 +208,22 @@ class Translations extends _BaseTranslations {
   await output.writeAsString(buffer.toString());
 }
 
-TranslationNode _buildTranslationTree(String key, dynamic value) {
+TranslationNode _buildTranslationTree(String key, dynamic value, [String parentKey = '']) {
+  final fullKey = parentKey.isEmpty ? key : '$parentKey.$key';
   if (value is Map<String, dynamic>) {
     final children = <String, TranslationNode>{};
     for (final entry in value.entries) {
-      children[entry.key] = _buildTranslationTree(entry.key, entry.value);
+      children[entry.key] = _buildTranslationTree(entry.key, entry.value, fullKey);
     }
     return TranslationNode(key: key, children: children);
   } else {
     final stringValue = value.toString();
-    final params = _extractParams(stringValue);
+    final params = _extractParams(stringValue, fullKey);
     return TranslationNode(key: key, value: stringValue, params: params);
   }
 }
 
-List<TranslationParam> _extractParams(String value) {
+List<TranslationParam> _extractParams(String value, String fullKey) {
   final params = <String, TranslationParam>{};
 
   final icuRegex = RegExp(r'\{(\w+),\s*(plural|select|number|date|time)([^}]*(?:\{[^}]*\}[^}]*)*)\}');
@@ -264,8 +279,11 @@ List<TranslationParam> _extractParams(String value) {
       continue;
     }
 
-    String type;
-    if (_kIntParamNames.contains(name.toLowerCase())) {
+    final String type;
+    if (_kParamTypeOverrides['$fullKey.$name'] case final override?) {
+      type = override;
+      _usedParamTypeOverrides.add('$fullKey.$name');
+    } else if (_kIntParamNames.contains(name.toLowerCase())) {
       type = 'int';
     } else {
       type = 'Object';

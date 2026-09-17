@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -10,6 +9,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
@@ -20,6 +20,7 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:intl/intl.dart';
 
 RecursiveFolder? _findFolderInStructure(RootFolder rootFolder, RecursiveFolder targetFolder) {
   for (final folder in rootFolder.subfolders) {
@@ -81,7 +82,7 @@ class FolderPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentFolder.value?.name ?? tr("folders")),
+        title: Text(currentFolder.value?.name ?? context.t.folders),
         elevation: 0,
         centerTitle: false,
         actions: [IconButton(icon: const Icon(Icons.swap_vert), onPressed: onToggleSortOrder)],
@@ -96,8 +97,8 @@ class FolderPage extends HookConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) {
-          ImmichToast.show(context: context, msg: "failed_to_load_folder".tr(), toastType: ToastType.error);
-          return Center(child: const Text("failed_to_load_folder").tr());
+          ImmichToast.show(context: context, msg: context.t.failed_to_load_folder, toastType: ToastType.error);
+          return Center(child: Text(context.t.failed_to_load_folder));
         },
       ),
     );
@@ -125,16 +126,16 @@ class FolderContent extends HookConsumerWidget {
     }, [folder]);
 
     if (folder == null) {
-      return Center(child: const Text("folder_not_found").tr());
+      return Center(child: Text(context.t.folder_not_found));
     }
 
     String getSubtitle(int subFolderCount) {
       if (subFolderCount > 0) {
-        return "$subFolderCount ${tr("folders")}".toLowerCase();
+        return "$subFolderCount ${context.t.folders}".toLowerCase();
       }
 
       if (subFolderCount == 1) {
-        return "1 ${tr("folder")}".toLowerCase();
+        return "1 ${context.t.folder}".toLowerCase();
       }
 
       return "";
@@ -147,7 +148,7 @@ class FolderContent extends HookConsumerWidget {
           child: folderRenderlist.when(
             data: (folderAssets) {
               if (folder!.subfolders.isEmpty && folderAssets.isEmpty) {
-                return Center(child: const Text("empty_folder").tr());
+                return Center(child: Text(context.t.empty_folder));
               }
 
               return ListView(
@@ -211,8 +212,8 @@ class FolderContent extends HookConsumerWidget {
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) {
-              ImmichToast.show(context: context, msg: "failed_to_load_assets".tr(), toastType: ToastType.error);
-              return Center(child: const Text("failed_to_load_assets").tr());
+              ImmichToast.show(context: context, msg: context.t.failed_to_load_assets, toastType: ToastType.error);
+              return Center(child: Text(context.t.failed_to_load_assets));
             },
           ),
         ),

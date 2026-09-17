@@ -62,7 +62,7 @@
           {
             "name": "profile_changed_at",
             "getter_name": "profileChangedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -130,7 +130,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -140,7 +140,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -240,7 +240,7 @@
           {
             "name": "local_date_time",
             "getter_name": "localDateTime",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -260,7 +260,7 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -270,7 +270,7 @@
           {
             "name": "uploaded_at",
             "getter_name": "uploadedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -368,7 +368,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -378,7 +378,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -466,7 +466,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -476,7 +476,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -570,7 +570,7 @@
           {
             "name": "adjustment_time",
             "getter_name": "adjustmentTime",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -610,6 +610,16 @@
               "dart_expr": "const EnumIndexConverter<AssetPlaybackStyle>(AssetPlaybackStyle.values)",
               "dart_type_name": "AssetPlaybackStyle"
             }
+          },
+          {
+            "name": "previous_checksum",
+            "getter_name": "previousChecksum",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
           }
         ],
         "is_virtual": false,
@@ -664,7 +674,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -674,7 +684,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -778,7 +788,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -1174,7 +1184,7 @@
           {
             "name": "profile_changed_at",
             "getter_name": "profileChangedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -1466,7 +1476,7 @@
           {
             "name": "date_time_original",
             "getter_name": "dateTimeOriginal",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -1864,7 +1874,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -1874,7 +1884,7 @@
           {
             "name": "adjustment_time",
             "getter_name": "adjustmentTime",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -1934,7 +1944,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -1944,7 +1954,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -1954,7 +1964,7 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2028,7 +2038,7 @@
           {
             "name": "memory_at",
             "getter_name": "memoryAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": null,
@@ -2038,7 +2048,7 @@
           {
             "name": "seen_at",
             "getter_name": "seenAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2048,7 +2058,7 @@
           {
             "name": "show_at",
             "getter_name": "showAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2058,7 +2068,7 @@
           {
             "name": "hide_at",
             "getter_name": "hideAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2172,7 +2182,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2182,7 +2192,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2276,7 +2286,7 @@
           {
             "name": "birth_date",
             "getter_name": "birthDate",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2453,7 +2463,7 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2553,7 +2563,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2563,7 +2573,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2818,7 +2828,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "string",
+            "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -3231,7 +3241,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"previous_checksum\" TEXT NULL, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },

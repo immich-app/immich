@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
@@ -18,8 +17,8 @@ Future<void> showFeatureMessageDialog(BuildContext context) {
     barrierLabel: context.t.whats_new,
     barrierColor: Colors.black.withValues(alpha: 0.55),
     transitionDuration: const Duration(milliseconds: 280),
-    pageBuilder: (_, __, ___) => const _FeatureMessageDialog(),
-    transitionBuilder: (_, animation, __, child) {
+    pageBuilder: (_, _, _) => const _FeatureMessageDialog(),
+    transitionBuilder: (_, animation, _, child) {
       final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
       return FadeTransition(
         opacity: animation,
@@ -250,7 +249,7 @@ class _FeaturePage extends StatelessWidget {
                       : Image.asset(
                           highlight.image!,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, _, __) => const FeatureMessagePlaceholder(),
+                          errorBuilder: (context, _, _) => const FeatureMessagePlaceholder(),
                         ),
                 ),
               ),
@@ -263,12 +262,12 @@ class _FeaturePage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  highlight.titleKey.tr(),
+                  highlight.title(context.t),
                   style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 24),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  highlight.bodyKey.tr(),
+                  highlight.body(context.t),
                   style: context.textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
                 ),
               ],

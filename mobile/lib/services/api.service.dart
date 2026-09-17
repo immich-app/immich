@@ -41,10 +41,6 @@ class ApiService {
     // The below line ensures that the api clients are initialized when the service is instantiated
     // This is required to avoid late initialization errors when the clients are access before the endpoint is resolved
     setEndpoint('');
-    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
-    if (endpoint != null && endpoint.isNotEmpty) {
-      setEndpoint(endpoint);
-    }
   }
   final _log = Logger("ApiService");
 
@@ -113,12 +109,10 @@ class ApiService {
   }
 
   Future<bool> _isEndpointAvailable(String serverUrl) async {
-    if (!serverUrl.endsWith('/api')) {
-      serverUrl += '/api';
-    }
+    final endpoint = serverUrl.endsWith('/api') ? serverUrl : '$serverUrl/api';
 
     try {
-      setEndpoint(serverUrl);
+      setEndpoint(endpoint);
       await serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;

@@ -160,8 +160,8 @@ ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
 
-# store matplotlib config in /cache subfolder to enable rootless deployment with a single volume
-ENV MPLCONFIGDIR=/cache/matplotlib
+# store huggingface in /cache subfolder to enable rootless deployment with a single volume
+ENV HF_HOME=/cache/hf-cache
 
 ENTRYPOINT ["tini", "--"]
 CMD ["python", "-m", "immich_ml"]

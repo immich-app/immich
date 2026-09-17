@@ -25,6 +25,9 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
   final bool showControls;
   final Widget image;
 
+  /// Overrides the user's configured loop video setting
+  final bool? loopOverride;
+
   const NativeVideoViewer({
     super.key,
     required this.asset,
@@ -32,6 +35,7 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
     required this.image,
     this.isCurrent = false,
     this.showControls = true,
+    this.loopOverride,
   });
 
   @override
@@ -47,7 +51,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
 
-  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
+  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.id).notifier);
 
   @override
   void initState() {
@@ -117,7 +121,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
           throw Exception('No file found for the video');
         }
 
-        return VideoSource.init(
+        return await VideoSource.init(
           path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
           type: VideoSourceType.file,
         );
@@ -141,7 +145,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
         // Pass a file:// URI so Android's Uri.parse doesn't
         // interpret characters like '#' as fragment identifiers.
-        return VideoSource.init(
+        return await VideoSource.init(
           path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
           type: VideoSourceType.file,
         );
@@ -159,7 +163,11 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;
       final String videoUrl = '$serverEndpoint/assets/$assetId/$postfixUrl';
 
-      return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
+      return await VideoSource.init(
+        path: videoUrl,
+        type: VideoSourceType.network,
+        headers: ApiService.getRequestHeaders(),
+      );
     } catch (error) {
       _log.severe('Error creating video source for asset ${videoAsset.name}: $error');
       return null;
@@ -274,7 +282,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     // Grab refs to prevent reading after dispose
-    final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
+    final loopVideo = widget.loopOverride ?? ref.read(appConfigProvider).viewer.loopVideo;
     final localNotifier = _notifier;
 
     await localNotifier.load(source);
@@ -304,12 +312,12 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   @override
   Widget build(BuildContext context) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
+    final status = ref.watch(videoPlayerProvider(widget.asset.id).select((v) => v.status));
 
     return IgnorePointer(
       child: Stack(
         children: [
-          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Center(child: widget.image),
+          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Positioned.fill(child: widget.image),
           if (!isCasting) ...[
             Visibility.maintain(
               visible: _isVideoReady,

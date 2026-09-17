@@ -29,7 +29,7 @@ void main() {
   setUp(() {
     // Create a fresh, real Flutter ImageCache for every test
     cache = ImageCache();
-    uiListener = ImageStreamListener((_, __) {});
+    uiListener = ImageStreamListener((_, _) {});
   });
 
   group('CacheAwareListenerTrackerMixin with Real ImageCache', () {
@@ -130,7 +130,7 @@ void main() {
 
       final stream = cache.putIfAbsent(key, () => completer)!;
 
-      final uiListener2 = ImageStreamListener((_, __) {});
+      final uiListener2 = ImageStreamListener((_, _) {});
       stream.addListener(uiListener);
       stream.addListener(uiListener2);
 
@@ -157,7 +157,7 @@ void main() {
       expect(completer.wasCancelled, isFalse);
 
       // A second UI listener attaches — must NOT be treated as cache
-      final uiListener2 = ImageStreamListener((_, __) {});
+      final uiListener2 = ImageStreamListener((_, _) {});
       stream.addListener(uiListener2);
 
       // Remove first UI listener; second UI still active → no cancel

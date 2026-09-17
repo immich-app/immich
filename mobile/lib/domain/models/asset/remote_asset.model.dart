@@ -4,6 +4,7 @@ enum AssetVisibility { timeline, hidden, archive, locked }
 
 // Model for an asset stored in the server
 class RemoteAsset extends BaseAsset {
+  @override
   final String id;
   final String? localAssetId;
   final String? thumbHash;

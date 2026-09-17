@@ -15,9 +15,9 @@ const String _kHashCancelledCode = "HASH_CANCELLED";
 
 class HashService {
   final int _batchSize;
-  final DriftLocalAlbumRepository _localAlbumRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final LocalAlbumRepository _localAlbumRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final TrashedLocalAssetRepository _trashedLocalAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final Completer<void>? _cancellation;
   final _log = Logger('HashService');
@@ -42,7 +42,7 @@ class HashService {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       // Migrate hashes from cloud ID to local ID so we don't have to re-hash them
-      // await _localAssetRepository.reconcileHashesFromCloudId();
+      await _localAssetRepository.reconcileHashesFromCloudId();
 
       // Sorted by backupSelection followed by isCloud
       final localAlbums = await _localAlbumRepository.getBackupAlbums();

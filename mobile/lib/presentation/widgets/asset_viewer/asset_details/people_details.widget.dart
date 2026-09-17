@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -28,18 +28,19 @@ class PeopleDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final peopleFuture = ref.watch(driftPeopleAssetProvider(asset.id));
+    final peopleFuture = ref.watch(Store.people.forAsset(asset.id));
 
-    Future<void> showNameEditModal(DriftPerson person) async {
+    Future<void> showNameEditModal(Person person) async {
       await showDialog(
         context: context,
         useRootNavigator: false,
         builder: (BuildContext context) {
-          return DriftPersonNameEditForm(person: person);
+          return PersonNameEditForm(person: person);
         },
       );
 
-      ref.invalidate(driftPeopleAssetProvider(asset.id));
+      // TODO(agg23): Remove once state is properly reactive
+      ref.invalidate(Store.people.forAsset(asset.id));
     }
 
     return peopleFuture.when(
@@ -52,7 +53,7 @@ class PeopleDetails extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
                 child: Text(
-                  "people".t(context: context),
+                  context.t.people,
                   style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ),
@@ -71,12 +72,12 @@ class PeopleDetails extends ConsumerWidget {
                           final previousRouteArgs = previousRouteData?.arguments;
 
                           // Prevent circular navigation
-                          if (previousRouteArgs is DriftPersonRouteArgs && previousRouteArgs.person.id == person.id) {
+                          if (previousRouteArgs is PersonRouteArgs && previousRouteArgs.person.id == person.id) {
                             context.back();
                             return;
                           }
                           ContextHelper(context).pop();
-                          unawaited(context.pushRoute(DriftPersonRoute(person: person)));
+                          unawaited(context.pushRoute(PersonRoute(person: person)));
                         },
                         onNameTap: () => showNameEditModal(person),
                       ),
@@ -89,14 +90,14 @@ class PeopleDetails extends ConsumerWidget {
           duration: Durations.short4,
         );
       },
-      error: (error, stack) => Text("error_loading_people".t(context: context), style: context.textTheme.bodyMedium),
+      error: (error, stack) => Text(context.t.errors.failed_to_load_people, style: context.textTheme.bodyMedium),
       loading: () => const SizedBox.shrink(),
     );
   }
 }
 
 class _Avatar extends StatelessWidget {
-  final DriftPerson person;
+  final Person person;
   final DateTime assetFileCreatedAt;
   final VoidCallback? onTap;
   final VoidCallback? onNameTap;
@@ -106,6 +107,8 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final birthDate = person.birthDate;
+    final formattedAge = birthDate != null ? formatAge(birthDate, assetFileCreatedAt) : null;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 96),
       child: Padding(
@@ -135,7 +138,7 @@ class _Avatar extends StatelessWidget {
               GestureDetector(
                 onTap: () => onNameTap?.call(),
                 child: Text(
-                  "add_a_name".t(context: context),
+                  context.t.add_a_name,
                   style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -153,11 +156,11 @@ class _Avatar extends StatelessWidget {
                     style: context.textTheme.labelLarge,
                     maxLines: 1,
                   ),
-                  if (person.birthDate != null)
+                  if (formattedAge != null)
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        formatAge(person.birthDate!, assetFileCreatedAt),
+                        formattedAge,
                         textAlign: TextAlign.center,
                         style: context.textTheme.bodyMedium?.copyWith(
                           color: context.textTheme.bodyMedium?.color?.withAlpha(175),

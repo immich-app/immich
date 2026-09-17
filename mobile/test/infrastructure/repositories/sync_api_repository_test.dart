@@ -5,9 +5,9 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/utils/semver.dart';
@@ -41,7 +41,7 @@ void main() {
 
   setUpAll(() async {
     final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
   });
 
   setUp(() {
@@ -189,7 +189,7 @@ void main() {
     final Completer<void> firstBatchReceived = Completer<void>();
     final Completer<void> secondBatchReceived = Completer<void>();
 
-    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() _) async {
       onDataCallCount++;
       if (onDataCallCount == 1) {
         receivedEventsBatch1 = events;
@@ -244,7 +244,7 @@ void main() {
     final streamError = Exception("Network Error");
     int onDataCallCount = 0;
 
-    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() _) async {
       onDataCallCount++;
     }
 
@@ -270,7 +270,7 @@ void main() {
     when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(errorBodyController.stream));
 
     int onDataCallCount = 0;
-    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() _) async {
       onDataCallCount++;
     }
 

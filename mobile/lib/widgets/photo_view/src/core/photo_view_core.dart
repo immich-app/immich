@@ -203,7 +203,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     } else if (scaleState == PhotoViewScaleState.zoomedIn) {
       animateRotation(controller.rotation, 0);
       if (_shouldAllowPanRotate()) {
-        animatePosition(controller.position, Offset.zero);
+        animatePosition(controller.position, clampPosition());
       }
     }
 
@@ -321,14 +321,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     _positionAnimationController.dispose();
     _rotationAnimationController.dispose();
     super.dispose();
-  }
-
-  void onTapUp(TapUpDetails details) {
-    widget.onTapUp?.call(context, details, controller.value);
-  }
-
-  void onTapDown(TapDownDetails details) {
-    widget.onTapDown?.call(context, details, controller.value);
   }
 
   void _updateScaleBoundaries() {

@@ -7,9 +7,6 @@ import { getDimensions } from '$lib/utils/asset-utils';
 import { normalizeTransformEdits } from '$lib/utils/editor';
 import { handleError } from '$lib/utils/handle-error';
 
-export type CropAspectRatio =
-  '1:1' | '16:9' | '4:3' | '3:2' | '7:5' | '9:16' | '3:4' | '2:3' | '5:7' | 'free' | 'reset';
-
 type Region = {
   x: number;
   y: number;

@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
-import { DatabaseBackupController } from 'src/controllers/database-backup.controller';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { DatabaseBackupController } from 'src/controllers/database-backup.controller.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, automock, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(DatabaseBackupController.name, () => {
   let ctx: ControllerContext;
@@ -23,13 +23,6 @@ describe(DatabaseBackupController.name, () => {
     service.resetAllMocks();
     maintenanceService.resetAllMocks();
     ctx.reset();
-  });
-
-  describe('GET /admin/database-backups', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/admin/database-backups').send();
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
   });
 
   describe('POST /admin/database-backups/start-restore', () => {

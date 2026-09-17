@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -14,6 +13,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_page.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_preloader.dart';
@@ -65,7 +65,8 @@ class AssetViewer extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _AssetViewerState();
 
-  static void setAsset(WidgetRef ref, BaseAsset asset) {
+  /// Sets the asset and thumbnail size before opening the viewer.
+  static void setAsset(WidgetRef ref, BaseAsset asset, {Size? thumbnailSize}) {
     ref.read(assetViewerProvider.notifier).reset();
 
     // Hide controls by default for videos
@@ -73,11 +74,7 @@ class AssetViewer extends ConsumerStatefulWidget {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
 
-    _setAsset(ref, asset);
-  }
-
-  static void _setAsset(WidgetRef ref, BaseAsset asset) {
-    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    ref.read(assetViewerProvider.notifier).setAsset(asset, thumbnailSize: thumbnailSize);
   }
 }
 
@@ -163,7 +160,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetInit(Duration timeStamp) {
-    _preloader.preload(widget.initialIndex, context.sizeData);
+    _preloader.preload(
+      widget.initialIndex,
+      context.sizeData,
+      thumbnailSize: ref.read(assetViewerProvider).thumbnailSize,
+    );
     _handleCasting();
   }
 
@@ -181,8 +182,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    AssetViewer._setAsset(ref, asset);
-    _preloader.preload(index, context.sizeData);
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    _preloader.preload(index, context.sizeData, thumbnailSize: ref.read(assetViewerProvider).thumbnailSize);
     _handleCasting();
     _stackChildrenKeepAlive?.close();
     _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
@@ -209,7 +210,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       SnackBar(
         duration: const Duration(seconds: 2),
         content: Text(
-          "local_asset_cast_failed".tr(),
+          context.t.local_asset_cast_failed,
           style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
         ),
       ),

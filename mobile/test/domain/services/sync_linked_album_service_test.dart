@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/repositories/album_api_repository.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
 import '../../service.mocks.dart';
@@ -13,11 +14,13 @@ void main() {
   // alone, i.e. the root (main) isolate, where cancellationProvider has no
   // override and throws if read. The UI reads this provider here.
   ProviderContainer rootContainer() {
+    final drift = MockDrift();
+    when(() => drift.localAlbumRepository).thenReturn(MockLocalAlbumRepository());
+    when(() => drift.remoteAlbumRepository).thenReturn(MockRemoteAlbumRepository());
     final container = ProviderContainer(
       overrides: [
-        localAlbumRepository.overrideWithValue(MockLocalAlbumRepository()),
-        remoteAlbumRepository.overrideWithValue(MockRemoteAlbumRepository()),
-        driftAlbumApiRepositoryProvider.overrideWithValue(MockDriftAlbumApiRepository()),
+        driftProvider.overrideWithValue(drift),
+        albumApiRepositoryProvider.overrideWithValue(MockAlbumApiRepository()),
         storeServiceProvider.overrideWithValue(MockStoreService()),
       ],
     );

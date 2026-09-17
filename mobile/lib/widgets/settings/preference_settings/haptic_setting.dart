@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class HapticSetting extends HookWidget {
   const HapticSetting({super.key});
@@ -21,13 +20,10 @@ class HapticSetting extends HookWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingGroupTitle(
-          title: "haptic_feedback_title".t(context: context),
-          icon: Icons.vibration_outlined,
-        ),
+        SettingGroupTitle(title: context.t.haptic_feedback_title, icon: Icons.vibration_outlined),
         SettingsSwitchListTile(
           valueNotifier: isHapticFeedbackEnabled,
-          title: 'enabled'.t(context: context),
+          title: context.t.enabled,
           onChanged: onHapticFeedbackChange,
         ),
       ],

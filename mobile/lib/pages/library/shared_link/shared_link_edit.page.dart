@@ -157,8 +157,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
     Widget buildAllowDownloadButton() {
       return SwitchListTile.adaptive(
-        value: allowDownload.value,
-        onChanged: (value) => allowDownload.value = value,
+        value: allowDownload.value && showMetadata.value,
+        onChanged: showMetadata.value ? (value) => allowDownload.value = value : null,
         dense: true,
         title: Text(
           context.t.allow_public_user_to_download,
@@ -427,8 +427,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return showDialog(
         context: context,
         builder: (BuildContext context) => ConfirmDialog(
-          title: "delete_shared_link_dialog_title",
-          content: "confirm_delete_shared_link",
+          title: context.t.delete_shared_link_dialog_title,
+          content: context.t.confirm_delete_shared_link,
           onOk: () async {
             await ref.read(sharedLinkServiceProvider).deleteSharedLink(existingLink!.id);
             ref.invalidate(sharedLinksStateProvider);

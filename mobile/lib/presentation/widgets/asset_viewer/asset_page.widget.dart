@@ -17,6 +17,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widg
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_overlay.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
@@ -53,6 +54,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
+  static const double _maxScaleMultiplier = 20.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
@@ -333,34 +335,44 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required bool isCurrent,
     required bool isPlayingMotionVideo,
     required String? localFilePath,
+    required Size? remoteThumbnailSize,
   }) {
     final size = context.sizeData;
-    final imageProvider = getFullImageProvider(asset, size: size, localFilePath: localFilePath);
+    final imageProvider = getFullImageProvider(
+      asset,
+      size: size,
+      localFilePath: localFilePath,
+      remoteThumbnailSize: remoteThumbnailSize,
+    );
 
     if (asset.isImage && !isPlayingMotionVideo) {
-      return PhotoView(
-        key: Key(asset.heroTag),
-        index: widget.index,
-        imageProvider: imageProvider,
-        heroAttributes: heroAttributes,
-        loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
-        gaplessPlayback: true,
-        filterQuality: FilterQuality.high,
-        tightMode: true,
-        enablePanAlways: true,
-        disableScaleGestures: _showingDetails,
-        scaleStateChangedCallback: _onScaleStateChanged,
-        onPageBuild: _onPageBuild,
-        onDragStart: _onDragStart,
-        onDragUpdate: _onDragUpdate,
-        onDragEnd: _onDragEnd,
-        onDragCancel: _onDragCancel,
-        onTapUp: _onTapUp,
-        onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
-        errorBuilder: (_, __, ___) => SizedBox(
-          width: size.width,
-          height: size.height,
-          child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
+      return ProgressiveImage(
+        provider: imageProvider,
+        builder: (context, provider) => PhotoView(
+          key: Key(asset.heroTag),
+          index: widget.index,
+          imageProvider: provider,
+          heroAttributes: heroAttributes,
+          loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
+          gaplessPlayback: true,
+          filterQuality: FilterQuality.high,
+          tightMode: true,
+          enablePanAlways: true,
+          maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
+          disableScaleGestures: _showingDetails,
+          scaleStateChangedCallback: _onScaleStateChanged,
+          onPageBuild: _onPageBuild,
+          onDragStart: _onDragStart,
+          onDragUpdate: _onDragUpdate,
+          onDragEnd: _onDragEnd,
+          onDragCancel: _onDragCancel,
+          onTapUp: _onTapUp,
+          onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
+          errorBuilder: (_, _, _) => SizedBox(
+            width: size.width,
+            height: size.height,
+            child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
+          ),
         ),
       );
     }
@@ -381,6 +393,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       basePosition: Alignment.center,
       disableScaleGestures: _showingDetails,
       minScale: PhotoViewComputedScale.contained,
+      maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
       initialScale: PhotoViewComputedScale.contained,
       tightMode: true,
       onPageBuild: _onPageBuild,
@@ -397,7 +410,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    final (currentAsset, thumbnailSize) = ref.watch(
+      assetViewerProvider.select((s) => (s.currentAsset, s.thumbnailSize)),
+    );
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
@@ -454,6 +469,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
                     localFilePath: viewIntentFilePath,
+                    remoteThumbnailSize: thumbnailSize,
                   ),
                 ),
                 if (showingOcr && displayAsset.width != null && displayAsset.height != null)

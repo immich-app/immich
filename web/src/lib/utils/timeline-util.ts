@@ -33,35 +33,11 @@ export type ScrubberListener = (scrubberData: {
 export const fromISODateTime = (isoDateTime: string, timeZone: string): DateTime<true> =>
   DateTime.fromISO(isoDateTime, { zone: timeZone, locale: get(locale) }) as DateTime<true>;
 
-export const fromISODateTimeToObject = (isoDateTime: string, timeZone: string): TimelineDateTime =>
-  (fromISODateTime(isoDateTime, timeZone) as DateTime<true>).toObject();
-
 // used for AssetResponseDto.localDateTime, amongst others
 export const fromISODateTimeUTC = (isoDateTimeUtc: string) => fromISODateTime(isoDateTimeUtc, 'UTC');
 
 export const fromISODateTimeUTCToObject = (isoDateTimeUtc: string): TimelineDateTime =>
   (fromISODateTimeUTC(isoDateTimeUtc) as DateTime<true>).toObject();
-
-// used to create equivalent of AssetResponseDto.localDateTime in UTC, but without timezone information
-export const fromISODateTimeTruncateTZToObject = (
-  isoDateTimeUtc: string,
-  timeZone: string | undefined,
-): TimelineDateTime =>
-  (
-    fromISODateTime(isoDateTimeUtc, timeZone ?? 'UTC').setZone('UTC', { keepLocalTime: true }) as DateTime<true>
-  ).toObject();
-
-// Used to derive a local date time from an ISO string and a UTC offset in hours
-export const fromISODateTimeWithOffsetToObject = (isoDateTimeUtc: string, utcOffsetHours: number): TimelineDateTime => {
-  const utcDateTime = fromISODateTimeUTC(isoDateTimeUtc);
-
-  // Apply the offset to get the local time
-  // Note: offset is in hours (may be fractional), positive for east of UTC, negative for west
-  const localDateTime = utcDateTime.plus({ hours: utcOffsetHours });
-
-  // Return as plain object (keeping the local time but in UTC zone context)
-  return (localDateTime.setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toObject();
-};
 
 export const getTimes = (isoDateTimeUtc: string, localUtcOffsetHours: number) => {
   const utcDateTime = fromISODateTimeUTC(isoDateTimeUtc);
@@ -183,8 +159,8 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
     isTrashed: assetResponse.isTrashed,
-    isVideo: assetResponse.type == AssetTypeEnum.Video,
-    isImage: assetResponse.type == AssetTypeEnum.Image,
+    isVideo: assetResponse.type === AssetTypeEnum.Video,
+    isImage: assetResponse.type === AssetTypeEnum.Image,
     stack: assetResponse.stack || null,
     duration: assetResponse.duration || null,
     projectionType: assetResponse.exifInfo?.projectionType || null,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
@@ -16,6 +17,7 @@ class LockedFolderBottomSheet extends StatelessWidget {
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: <ActionColumnButton>[
+        .new(action: AssetDebugAction(source: .timeline)),
         .new(action: ShareAction(source: .timeline)),
         .new(action: DownloadAction(source: .timeline)),
         .new(action: DeleteAction(source: .timeline)),

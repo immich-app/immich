@@ -1,6 +1,5 @@
 import string
 from io import BytesIO
-from typing import IO
 
 import cv2
 import numpy as np
@@ -12,11 +11,10 @@ _PIL_RESAMPLING_METHODS = {resampling.name.lower(): resampling for resampling in
 _PUNCTUATION_TRANS = str.maketrans("", "", string.punctuation)
 
 
-def resize_pil(img: Image.Image, size: int) -> Image.Image:
+def resize_pil(img: Image.Image, size: int, resample: Image.Resampling = Image.Resampling.BICUBIC) -> Image.Image:
     if img.width < img.height:
-        return img.resize((size, int((img.height / img.width) * size)), resample=Image.Resampling.BICUBIC)
-    else:
-        return img.resize((int((img.width / img.height) * size), size), resample=Image.Resampling.BICUBIC)
+        return img.resize((size, int((img.height / img.width) * size)), resample=resample)
+    return img.resize((int((img.width / img.height) * size), size), resample=resample)
 
 
 # https://stackoverflow.com/a/60883103
@@ -36,7 +34,9 @@ def to_numpy(img: Image.Image) -> NDArray[np.float32]:
 def normalize(
     img: NDArray[np.float32], mean: float | NDArray[np.float32], std: float | NDArray[np.float32]
 ) -> NDArray[np.float32]:
-    return (img - mean) / std
+    img *= 1.0 / std
+    img -= mean / std
+    return img
 
 
 def get_pil_resampling(resample: str) -> Image.Resampling:
@@ -47,24 +47,19 @@ def pil_to_cv2(image: Image.Image) -> NDArray[np.uint8]:
     return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
 
 
-def decode_pil(image_bytes: bytes | IO[bytes] | Image.Image) -> Image.Image:
-    if isinstance(image_bytes, Image.Image):
-        return image_bytes
-    image: Image.Image = Image.open(BytesIO(image_bytes) if isinstance(image_bytes, bytes) else image_bytes)
+def decode_pil(image_bytes: bytes | Image.Image | NDArray[np.uint8]) -> Image.Image:
+    image: Image.Image
+    match image_bytes:
+        case Image.Image():
+            image = image_bytes
+        case np.ndarray():
+            image = Image.fromarray(image_bytes)
+        case bytes():
+            image = Image.open(BytesIO(image_bytes))
     image.load()
     if not image.mode == "RGB":
         image = image.convert("RGB")
     return image
-
-
-def decode_cv2(image_bytes: NDArray[np.uint8] | bytes | Image.Image) -> NDArray[np.uint8]:
-    match image_bytes:
-        case bytes() | memoryview() | bytearray():
-            return pil_to_cv2(decode_pil(image_bytes))  # pillow is much faster than cv2
-        case Image.Image():
-            return pil_to_cv2(image_bytes)
-        case _:
-            return image_bytes
 
 
 def clean_text(text: str, canonicalize: bool = False) -> str:
@@ -78,3 +73,21 @@ def clean_text(text: str, canonicalize: bool = False) -> str:
 # TODO: use this in a less invasive way
 def serialize_np_array(arr: NDArray[np.float32]) -> str:
     return orjson.dumps(arr, option=orjson.OPT_SERIALIZE_NUMPY).decode()
+
+
+def letterbox(image: NDArray[np.uint8] | Image.Image, size: int) -> tuple[NDArray[np.uint8], float]:
+    if isinstance(image, Image.Image):
+        image = np.asarray(image)
+    height, width = image.shape[:2]
+    if height > width:
+        new_height, new_width = size, int(size * width / height)
+    else:
+        new_width, new_height = size, int(size * height / width)
+
+    canvas = np.zeros((size, size, 3), dtype=np.uint8)
+    cv2.resize(image, (new_width, new_height), dst=canvas[:new_height, :new_width])
+    return canvas, new_height / height
+
+
+def ensure_dims(array: NDArray[np.float32], ndim: int) -> NDArray[np.float32]:
+    return array if array.ndim >= ndim else np.expand_dims(array, axis=tuple(range(ndim - array.ndim)))

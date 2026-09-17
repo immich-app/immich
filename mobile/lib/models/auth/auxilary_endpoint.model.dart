@@ -1,34 +1,14 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-class AuxilaryEndpoint {
-  final String url;
-  final AuxCheckStatus status;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  const AuxilaryEndpoint({required this.url, required this.status});
+part 'auxilary_endpoint.model.freezed.dart';
 
-  AuxilaryEndpoint copyWith({String? url, AuxCheckStatus? status}) {
-    return AuxilaryEndpoint(url: url ?? this.url, status: status ?? this.status);
-  }
+@Freezed(fromJson: false, toJson: false)
+abstract class AuxilaryEndpoint with _$AuxilaryEndpoint {
+  const AuxilaryEndpoint._();
 
-  @override
-  String toString() => 'AuxilaryEndpoint(url: $url, status: $status)';
-
-  @override
-  bool operator ==(covariant AuxilaryEndpoint other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.url == url && other.status == status;
-  }
-
-  @override
-  int get hashCode => url.hashCode ^ status.hashCode;
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{'url': url, 'status': status.toMap()};
-  }
+  const factory AuxilaryEndpoint({required String url, required AuxCheckStatus status}) = _AuxilaryEndpoint;
 
   factory AuxilaryEndpoint.fromMap(Map<String, dynamic> map) {
     return AuxilaryEndpoint(
@@ -37,50 +17,23 @@ class AuxilaryEndpoint {
     );
   }
 
-  String toJson() => json.encode(toMap());
-
   factory AuxilaryEndpoint.fromJson(String source) =>
       AuxilaryEndpoint.fromMap(json.decode(source) as Map<String, dynamic>);
 }
 
-class AuxCheckStatus {
-  final String name;
-  const AuxCheckStatus({required this.name});
-  const AuxCheckStatus._(this.name);
+// TODO(agg23): Should be an enum
+@freezed
+abstract class AuxCheckStatus with _$AuxCheckStatus {
+  const AuxCheckStatus._();
 
-  static const loading = AuxCheckStatus._('loading');
-  static const valid = AuxCheckStatus._('valid');
-  static const error = AuxCheckStatus._('error');
-  static const unknown = AuxCheckStatus._('unknown');
+  const factory AuxCheckStatus({required String name}) = _AuxCheckStatus;
 
-  @override
-  bool operator ==(covariant AuxCheckStatus other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.name == name;
-  }
-
-  @override
-  int get hashCode => name.hashCode;
-
-  AuxCheckStatus copyWith({String? name}) {
-    return AuxCheckStatus(name: name ?? this.name);
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{'name': name};
-  }
+  static const loading = AuxCheckStatus(name: 'loading');
+  static const valid = AuxCheckStatus(name: 'valid');
+  static const error = AuxCheckStatus(name: 'error');
+  static const unknown = AuxCheckStatus(name: 'unknown');
 
   factory AuxCheckStatus.fromMap(Map<String, dynamic> map) {
     return AuxCheckStatus(name: map['name'] as String);
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory AuxCheckStatus.fromJson(String source) => AuxCheckStatus.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() => 'AuxCheckStatus(name: $name)';
 }

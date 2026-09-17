@@ -12,8 +12,10 @@ class AuthApiRepository extends ApiRepository {
 
   AuthApiRepository(this._apiService);
 
-  Future<void> changePassword(String newPassword) async {
-    await _apiService.usersApi.updateMyUser(UserUpdateMeDto(password: Optional.present(newPassword)));
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
+    await _apiService.authenticationApi.changePassword(
+      ChangePasswordDto(password: currentPassword, newPassword: newPassword),
+    );
   }
 
   Future<LoginResponse> login(String email, String password) async {
