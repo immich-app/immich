@@ -59,10 +59,11 @@ void main() {
       source: TrashOrigin.localSync,
     );
     when(() => nativeSyncApi.getAssetsForAlbum('album')).thenAnswer((_) async => [_asset('local', platformDate)]);
+    // the generated api hands back a cast view over plain lists
     when(() => nativeSyncApi.getTrashedAssets()).thenAnswer(
-      (_) async => {
-        'album': [_asset('trashed', platformDate)],
-      },
+      (_) async => <Object?, Object?>{
+        'album': <Object?>[_asset('trashed', platformDate)],
+      }.cast<String, List<PlatformAsset>>(),
     );
 
     await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionApi);

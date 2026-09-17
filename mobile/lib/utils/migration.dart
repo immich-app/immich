@@ -76,7 +76,7 @@ Future<void> _migrateTo27(Drift drift, NativeSyncApi nativeSyncApi, PermissionAp
     }
     if (await permissionApi.hasManageMediaPermission()) {
       final trashed = await nativeSyncApi.getTrashedAssets();
-      addDates(trashed.values.flattened);
+      addDates(trashed.cast<String, List<Object?>>().values.flattened.cast<PlatformAsset>());
     }
 
     await drift.transaction(() async {
