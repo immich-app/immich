@@ -7,13 +7,13 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -39,14 +39,15 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<NativeVideoViewer> createState() => _NativeVideoViewerState();
+  ConsumerState<NativeVideoViewer> createState() => NativeVideoViewerState();
 }
 
-class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with WidgetsBindingObserver {
+class NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with WidgetsBindingObserver {
   static final _log = Logger('NativeVideoViewer');
 
   NativeVideoPlayerController? _controller;
-  late final Future<VideoSource?> _videoSource;
+  @visibleForTesting
+  late final Future<VideoSource?> videoSource;
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
@@ -57,7 +58,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _videoSource = _createSource();
+    videoSource = _createSource();
   }
 
   @override
@@ -113,6 +114,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     try {
+      final storageRepository = ref.read(storageRepositoryProvider);
       final localFilePath = widget.localFilePath;
       if (localFilePath != null) {
         final file = File(localFilePath);
@@ -132,26 +134,26 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
       if (localAsset != null) {
         final file = localAsset.isMotionPhoto
-            ? await StorageRepository().getMotionFileForAsset(localAsset)
-            : await StorageRepository().getFileForAsset(localAsset.id);
+            ? await storageRepository.getMotionFileForAsset(localAsset)
+            : await storageRepository.getFileForAsset(localAsset.id);
 
         if (!mounted) {
           return null;
         }
 
-        if (file == null) {
-          if (videoAsset is! RemoteAsset) {
-            throw Exception('No file found for the video');
-          }
-          _log.warning('Local file missing for ${videoAsset.name} (${videoAsset.localId}), playing the remote copy');
-        } else {
-          // Pass a file:// URI so Android's Uri.parse doesn't
-          // interpret characters like '#' as fragment identifiers.
+        // Pass a file:// URI so Android's Uri.parse doesn't
+        // interpret characters like '#' as fragment identifiers.
+        if (file != null) {
           return await VideoSource.init(
             path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
             type: VideoSourceType.file,
           );
         }
+
+        if (videoAsset is! RemoteAsset) {
+          throw Exception('No file found for the video');
+        }
+        _log.warning('Local file missing for ${videoAsset.name} (${videoAsset.localId}), playing the remote copy');
       }
 
       final remoteAsset = videoAsset as RemoteAsset;
@@ -279,7 +281,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    final source = await _videoSource;
+    final source = await videoSource;
     if (source == null || !mounted) {
       return;
     }
