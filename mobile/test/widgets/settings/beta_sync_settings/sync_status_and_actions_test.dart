@@ -25,7 +25,7 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Error occur, reset the local database by tapping the button below'), findsOneWidget);
+    expect(find.text('Something went wrong, reset the local database with the button below'), findsOneWidget);
     expect(find.text('Reset SQLite Database'), findsOneWidget);
   });
 }

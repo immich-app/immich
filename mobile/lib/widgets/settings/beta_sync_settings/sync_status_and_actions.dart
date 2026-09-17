@@ -247,7 +247,7 @@ class _SyncStatsCounts extends ConsumerWidget {
             padding: const EdgeInsets.all(16.0),
             child: Center(
               child: Text(
-                "Error occur, reset the local database by tapping the button below",
+                context.t.reset_sqlite_error_hint,
                 style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.error),
               ),
             ),
