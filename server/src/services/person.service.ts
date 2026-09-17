@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Insertable, Selectable, Updateable } from 'kysely';
+import _ from 'lodash';
 import { Person } from 'src/database';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -35,11 +36,12 @@ import {
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { PersonId, UpdateFacesData } from 'src/repositories/person.repository';
+import { DB } from 'src/schema/index';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import type { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -94,7 +96,12 @@ export class PersonService extends BaseService {
       );
 
       for (const face of faces) {
-        await this.requireAccess({ auth, permission: Permission.PersonCreate, ids: [face.id] });
+        const ids = await this.checkAccess({ auth, permission: Permission.PersonCreate, ids: [face.id] });
+
+        if (ids.size !== 1) {
+          continue;
+        }
+
         if (person.faceAssetId === null) {
           changeFeaturePhoto.set(personKey(person), person);
         }
@@ -296,7 +303,7 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
-      await this.personRepository.vacuum({ reindexVectors: true });
+      await this.vacuum('asset_face', 'person', 'face_search');
     }
 
     for await (const assets of batched(this.assetJobRepository.streamForDetectFacesJob(force))) {
@@ -443,7 +450,7 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.unassignFaces({ clusterGroupId, sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
-      await this.personRepository.vacuum({ reindexVectors: false });
+      await this.vacuum('asset_face', 'person');
     } else if (waiting) {
       this.logger.debug(
         `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,
@@ -577,82 +584,88 @@ export class PersonService extends BaseService {
     return JobStatus.Success;
   }
 
-  async mergePerson(auth: AuthDto, personGroupId: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
-    const mergeIds = dto.ids;
-    if (mergeIds.includes(personGroupId)) {
+  async mergePeople(auth: AuthDto, { ids }: MergePersonDto): Promise<BulkIdResponseDto[]> {
+    if (ids.length < 2) {
+      throw new BadRequestException('At least two people are required for merging');
+    }
+
+    if (new Set(ids).size !== ids.length) {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
-    await this.requireAccess({ auth, permission: Permission.PersonUpdate, ids: [personGroupId] });
-
     const results: BulkIdResponseDto[] = [];
 
-    const allowedIds = await this.checkAccess({
-      auth,
-      permission: Permission.PersonMerge,
-      ids: mergeIds,
-    });
+    const allowedIds = await this.checkAccess({ auth, permission: Permission.PersonMerge, ids });
 
-    let primaryPerson: Selectable<PersonTable> | undefined;
+    const peopleMap: Record<string, Selectable<PersonTable>[]> = {};
 
-    for (const mergePerson of await this.personRepository.getForMergePerson(mergeIds)) {
-      const mergeId = mergePerson.personGroupId;
+    for (const mergePerson of await this.personRepository.getForMergePerson(ids)) {
+      if (!peopleMap[mergePerson.personGroupId]) {
+        peopleMap[mergePerson.personGroupId] = [];
+      }
+      peopleMap[mergePerson.personGroupId].push(mergePerson);
+    }
+
+    const targetPeople: Record<string, Selectable<PersonTable>> = {};
+    for (const mergeId of ids) {
       const hasAccess = allowedIds.has(mergeId);
       if (!hasAccess) {
         results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
-      if (!primaryPerson || primaryPerson.ownerId !== mergePerson.ownerId) {
-        primaryPerson = await this.personRepository.getByGroupId({ ownerId: mergePerson.ownerId, personGroupId });
-        if (!primaryPerson) {
+      for (const mergePerson of peopleMap[mergeId]) {
+        if (!targetPeople[mergePerson.ownerId]) {
+          targetPeople[mergePerson.ownerId] = mergePerson;
           continue;
         }
-      }
 
-      const changes: Updateable<Person> = {};
-      if (!primaryPerson.name && mergePerson.name) {
-        changes.name = mergePerson.name;
-      }
+        const targetPerson = targetPeople[mergePerson.ownerId];
 
-      if (!primaryPerson.birthDate && mergePerson.birthDate) {
-        changes.birthDate = mergePerson.birthDate;
-      }
+        if (
+          mergePerson.ownerId !== auth.user.id &&
+          ((targetPerson.name && mergePerson.name) || (targetPerson.birthDate && mergePerson.birthDate))
+        ) {
+          continue;
+        }
 
-      if (
-        (mergePerson.name && mergePerson.name !== primaryPerson.name) ||
-        (mergePerson.birthDate && mergePerson.birthDate !== primaryPerson.birthDate)
-      ) {
-        continue;
-      }
+        const changes: Updateable<Person> = _.omitBy(
+          {
+            name: mergePerson.name && !targetPerson.name ? mergePerson.name : undefined,
+            birthDate: mergePerson.birthDate && !targetPerson.birthDate ? mergePerson.birthDate : undefined,
+          },
+          _.isUndefined,
+        );
 
-      if (Object.keys(changes).length > 0) {
-        primaryPerson = await this.personRepository.update({
-          ownerId: primaryPerson.ownerId,
-          personGroupId: primaryPerson.personGroupId,
-          ...changes,
-        });
-      }
+        if (Object.keys(changes).length > 0) {
+          targetPeople[mergePerson.ownerId] = await this.personRepository.update({
+            ownerId: targetPerson.ownerId,
+            personGroupId: targetPerson.personGroupId,
+            ...changes,
+          });
+        }
 
-      const mergeName = mergePerson.name || mergePerson.personGroupId;
-      const mergeData: UpdateFacesData = {
-        oldPersonGroupId: mergeId,
-        newPersonGroupId: primaryPerson.personGroupId,
-        ownerId: primaryPerson.ownerId,
-      };
-      this.logger.log(`Merging ${mergeName} into ${primaryPerson.name || primaryPerson.personGroupId}`);
+        const mergeName = mergePerson.name || mergePerson.personGroupId;
+        const mergeData: UpdateFacesData = {
+          oldPersonGroupId: mergeId,
+          newPersonGroupId: targetPerson.personGroupId,
+          ownerId: targetPerson.ownerId,
+        };
+        this.logger.log(`Merging ${mergeName} into ${targetPerson.name || targetPerson.personGroupId}`);
 
-      try {
-        await this.personRepository.reassignFaces(mergeData);
-        await this.removeAllPersonGroups([mergeId], primaryPerson.ownerId);
+        try {
+          await this.personRepository.reassignFaces(mergeData);
+          await this.removeAllPersonGroups([mergeId], targetPerson.ownerId);
 
-        this.logger.log(`Merged ${mergeName} into ${primaryPerson.name || primaryPerson.personGroupId}`);
-        results.push({ id: mergeId, success: true });
-      } catch (error: any) {
-        this.logger.error(`Unable to merge ${mergeId} into ${personGroupId}: ${error}`, error?.stack);
-        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
+          this.logger.log(`Merged ${mergeName} into ${targetPerson.name || targetPerson.personGroupId}`);
+          results.push({ id: mergeId, success: true });
+        } catch (error: any) {
+          this.logger.error(`Unable to merge ${mergeId} into ${targetPerson.personGroupId}: ${error}`, error?.stack);
+          results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
+        }
       }
     }
+
     return results;
   }
 
@@ -737,5 +750,15 @@ export class PersonService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
 
     return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+  }
+
+  private vacuum(...tables: (keyof DB)[]): Promise<unknown> {
+    return Promise.all(
+      tables.map((table) =>
+        this.databaseRepository
+          .vacuum({ analyze: true, table })
+          .then(() => this.databaseRepository.reindex(table, { concurrently: true })),
+      ),
+    );
   }
 }

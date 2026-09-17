@@ -28,7 +28,6 @@ import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
@@ -911,7 +910,7 @@ export class MetadataService extends BaseService {
     const existingNameMap = new Map(
       existingNames.map(({ personGroupId, name }) => [name.toLowerCase(), personGroupId]),
     );
-    const missing: (Insertable<PersonTable> & { name: string; personGroupId: string; clusterGroupId: string })[] = [];
+    const missing: { name: string; ownerId: string; personGroupId: string; clusterGroupId: string }[] = [];
     const missingWithFaceAsset: { personGroupId: string; ownerId: string; faceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
@@ -961,7 +960,9 @@ export class MetadataService extends BaseService {
       await this.personRepository.createGroups(
         missing.map((item) => ({ id: item.personGroupId, clusterGroupId: asset.clusterGroupId })),
       );
-      await this.personRepository.createAll(missing);
+      await this.personRepository.createAll(
+        missing.map(({ name, ownerId, personGroupId }) => ({ name, ownerId, personGroupId })),
+      );
 
       const jobs = missing.map(
         ({ personGroupId, ownerId }) =>

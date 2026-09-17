@@ -813,7 +813,6 @@ const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
 class CustomWritable extends Writable {
   private data = '';
 
-  // determined by Writable interface
   // eslint-disable-next-line unicorn/prefer-private-class-fields
   _write(chunk: any, encoding: string, callback: () => void) {
     this.data += chunk.toString();
