@@ -1,12 +1,10 @@
 import 'package:drift/drift.dart';
 
-// Synced dates can fall outside the year range sqlite date functions handle
-// (1..9999), which turns bucket queries into NULLs and crashes the timeline
-// (#28524). Clamps on write; the v34 heal migration rewrites the backlog.
-const clampedDateTime = DateTimeClampType();
+/// A `TEXT` column designed to store a `DateTime`. Clamps to the same range given by SQLite's `DateTime`, that is, years [1...10000)
+const clampedDateTime = _DateTimeClampType();
 
-final class DateTimeClampType implements DialectAwareSqlType<DateTime> {
-  const DateTimeClampType();
+final class _DateTimeClampType implements DialectAwareSqlType<DateTime> {
+  const _DateTimeClampType();
 
   @override
   DateTime read(SqlTypes types, Object fromSql) => types.read(DriftSqlType.dateTime, fromSql)!;

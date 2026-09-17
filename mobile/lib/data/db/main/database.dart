@@ -365,7 +365,7 @@ class Drift extends $Drift {
                 await m.alterTable(TableMigration(v33.assetFaceEntity));
               },
               from33To34: (m, v34) async {
-                await healOutOfRangeDateTimes(this);
+                await _healV33DateTimes(this);
               },
             ),
           ),
@@ -395,8 +395,7 @@ class Drift extends $Drift {
 
 // every datetime column of the v33 schema, hardcoded: the heal runs once at v33->v34,
 // so the set must not follow later schema changes
-@visibleForTesting
-const healDateTimeColumns = <String, List<String>>{
+const _v33DateTimeColumns = <String, List<String>>{
   'auth_user_entity': ['profile_changed_at'],
   'user_entity': ['profile_changed_at'],
   'local_album_entity': ['updated_at'],
@@ -417,11 +416,10 @@ const healDateTimeColumns = <String, List<String>>{
 // years and year 0000 (pre-clamp syncs), plus anything later than the safe
 // midnight ceiling, which re-overflows sqlite under 'localtime' east of UTC.
 // One statement per table: each column heals only when its own value is out of range
-@visibleForTesting
-Future<void> healOutOfRangeDateTimes(GeneratedDatabase db) async {
+Future<void> _healV33DateTimes(GeneratedDatabase db) async {
   const floor = '0001-01-01T00:00:00.000Z';
   const ceiling = '9999-12-31T00:00:00.000Z';
-  for (final MapEntry(key: table, value: columns) in healDateTimeColumns.entries) {
+  for (final MapEntry(key: table, value: columns) in _v33DateTimeColumns.entries) {
     String low(String c) => "substr($c, 1, 1) = '-' OR substr($c, 1, 4) = '0000'";
     String high(String c) => "substr($c, 1, 1) = '+' OR $c > '$ceiling'";
     final assignments = columns.map(
