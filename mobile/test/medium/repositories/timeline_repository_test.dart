@@ -113,7 +113,7 @@ void main() {
       await ctx.newFace(assetId: asset.id, personId: person.id);
       await ctx.newFace(assetId: asset.id, personId: person.id);
 
-      final query = sut.person(user.id, person.id, .day);
+      final query = sut.person([user.id], person.id, .day);
 
       final buckets = await query.bucketSource().first;
       expect(buckets, hasLength(1));
@@ -140,13 +140,55 @@ void main() {
       await ctx.newFace(assetId: shiftedLater.id, personId: person.id);
       await ctx.newFace(assetId: shiftedEarlier.id, personId: person.id);
 
-      final query = sut.person(user.id, person.id, .day);
+      final query = sut.person([user.id], person.id, .day);
 
       final buckets = await query.bucketSource().first;
       expect(buckets, hasLength(2));
 
       final assets = await query.assetSource(0, 10);
       expect(assets.map((asset) => (asset as RemoteAsset).id), [shiftedLater.id, shiftedEarlier.id]);
+    });
+
+    test('includes assets owned by partners shown in the timeline', () async {
+      final user = await ctx.newUser();
+      final partner = await ctx.newUser();
+      await ctx.newPartner(sharedById: partner.id, sharedWithId: user.id, inTimeline: true);
+      final person = await ctx.newPerson(ownerId: user.id);
+      final ownAsset = await ctx.newRemoteAsset(ownerId: user.id, createdAt: DateTime.utc(2024, 9, 2, 12));
+      final partnerAsset = await ctx.newRemoteAsset(ownerId: partner.id, createdAt: DateTime.utc(2024, 9, 2, 12));
+      await ctx.newFace(assetId: ownAsset.id, personId: person.id);
+      await ctx.newFace(assetId: partnerAsset.id, personId: person.id);
+
+      final timelineUserIds = await sut.watchTimelineUserIds(user.id).first;
+      expect(timelineUserIds, unorderedEquals([user.id, partner.id]));
+
+      final query = sut.person(timelineUserIds, person.id, .day);
+
+      final buckets = await query.bucketSource().first;
+      expect(buckets, hasLength(1));
+      expect(buckets.single.assetCount, 2);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets.map((asset) => (asset as RemoteAsset).id), unorderedEquals([ownAsset.id, partnerAsset.id]));
+    });
+
+    test('excludes assets owned by users outside the given list', () async {
+      final user = await ctx.newUser();
+      final partner = await ctx.newUser();
+      final person = await ctx.newPerson(ownerId: user.id);
+      final ownAsset = await ctx.newRemoteAsset(ownerId: user.id, createdAt: DateTime.utc(2024, 9, 2, 12));
+      final partnerAsset = await ctx.newRemoteAsset(ownerId: partner.id, createdAt: DateTime.utc(2024, 9, 2, 12));
+      await ctx.newFace(assetId: ownAsset.id, personId: person.id);
+      await ctx.newFace(assetId: partnerAsset.id, personId: person.id);
+
+      final query = sut.person([user.id], person.id, .day);
+
+      final buckets = await query.bucketSource().first;
+      expect(buckets, hasLength(1));
+      expect(buckets.single.assetCount, 1);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets.map((asset) => (asset as RemoteAsset).id), [ownAsset.id]);
     });
   });
 
