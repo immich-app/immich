@@ -243,18 +243,14 @@ class _SyncStatsCounts extends ConsumerWidget {
         }
 
         if (snapshot.hasError) {
-          return ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Center(
-                  child: Text(
-                    "Error occur, reset the local database by tapping the button below",
-                    style: context.textTheme.bodyLarge,
-                  ),
-                ),
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                "Error occur, reset the local database by tapping the button below",
+                style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.error),
               ),
-            ],
+            ),
           );
         }
 
