@@ -36,6 +36,10 @@ android {
     compose true
   }
 
+  testOptions {
+    unitTests.includeAndroidResources = true
+  }
+
   defaultConfig {
     applicationId "app.alextran.immich"
     minSdk = 26
@@ -60,7 +64,12 @@ android {
 
   buildTypes {
     debug {
-      applicationIdSuffix '.debug'
+      def prNumber = System.getenv("PR_NUMBER")
+      if (prNumber) {
+        applicationIdSuffix ".pr${prNumber}"
+      } else {
+        applicationIdSuffix '.debug'
+      }
       versionNameSuffix '-DEBUG'
     }
 
@@ -104,6 +113,8 @@ dependencies {
 
   ksp libs.glide.ksp
   coreLibraryDesugaring libs.desugar.jdk.libs
+  testImplementation libs.junit
+  testImplementation libs.robolectric
 
   //Glance Widget
   implementation libs.glance.appwidget
