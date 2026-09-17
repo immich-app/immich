@@ -389,12 +389,14 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 export const memoryLaneTitle = derived(t, ($t) => {
   return (memory: MemoryResponseDto) => {
     if (memory.type === MemoryType.OnThisDay) {
-      const now = new Date();
-      const memoryDate = new Date(memory.memoryAt);
+      // The server pins memoryAt to midnight UTC, so it is a calendar date rather than an instant.
+      // Reading it in the local zone moves the title a day back for anyone behind UTC.
+      const now = DateTime.utc();
+      const memoryDate = DateTime.fromISO(memory.memoryAt, { zone: 'utc' });
 
-      return memoryDate.getUTCDate() === now.getDate() && memoryDate.getUTCMonth() === now.getMonth()
-        ? $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } })
-        : DateTime.fromJSDate(memoryDate).toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
+      return memoryDate.day === now.day && memoryDate.month === now.month
+        ? $t('years_ago', { values: { years: now.year - memory.data.year } })
+        : memoryDate.toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
     }
 
     return $t('unknown');

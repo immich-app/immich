@@ -1,5 +1,9 @@
-import { AssetTypeEnum } from '@immich/sdk';
-import { getAssetUrl, semverToName } from '$lib/utils';
+import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
+import { getAssetUrl, memoryLaneTitle, semverToName } from '$lib/utils';
+import { locale } from '$lib/stores/preferences.store';
+import { Settings } from 'luxon';
+import { get } from 'svelte/store';
+import { init, register, waitLocale } from 'svelte-i18n';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -168,6 +172,47 @@ describe('utils', () => {
 
     it('should append release candidate if set', () => {
       expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0 })).toEqual('v3.0.0-rc.0');
+    });
+  });
+
+  describe('memoryLaneTitle', () => {
+    beforeAll(async () => {
+      await init({ fallbackLocale: 'en-US' });
+      register('en-US', () => import('$i18n/en.json'));
+      await waitLocale('en-US');
+      locale.set('en-US');
+    });
+
+    afterEach(() => {
+      Settings.defaultZone = 'system';
+      vi.useRealTimers();
+    });
+
+    const onThisDay = (memoryAt: string, year: number) =>
+      ({ type: MemoryType.OnThisDay, memoryAt, data: { year } }) as MemoryResponseDto;
+
+    it('should keep the memory date in UTC for a viewer behind UTC', () => {
+      Settings.defaultZone = 'America/Los_Angeles';
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-03-04T12:00:00.000Z'));
+
+      expect(get(memoryLaneTitle)(onThisDay('2022-09-11T00:00:00.000Z', 2022))).toBe('Sep 11, 2022');
+    });
+
+    it('should keep the memory date in UTC for a viewer ahead of UTC', () => {
+      Settings.defaultZone = 'Pacific/Kiritimati';
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-03-04T12:00:00.000Z'));
+
+      expect(get(memoryLaneTitle)(onThisDay('2022-09-11T00:00:00.000Z', 2022))).toBe('Sep 11, 2022');
+    });
+
+    it('should say how long ago when the memory falls on the current UTC day', () => {
+      Settings.defaultZone = 'America/Los_Angeles';
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-09-11T00:30:00.000Z'));
+
+      expect(get(memoryLaneTitle)(onThisDay('2022-09-11T00:00:00.000Z', 2022))).toBe('4 years ago');
     });
   });
 });
