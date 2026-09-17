@@ -113,7 +113,8 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
         putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
       }
 
-      getCursor(volume, queryArgs).use { cursor ->
+      val cursor = getCursor(volume, queryArgs) ?: error("MediaStore trash query failed")
+      cursor.use {
         getAssets(cursor).forEach { res ->
           if (res is AssetResult.ValidAsset) {
             result.getOrPut(res.albumId) { mutableListOf() }.add(res.asset)
