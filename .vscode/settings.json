@@ -37,6 +37,7 @@
   "css.lint.unknownAtRules": "ignore",
   "editor.bracketPairColorization.enabled": true,
   "editor.formatOnSave": true,
+  "eslint.format.enable": true,
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "svelte"],
   "eslint.workingDirectories": [

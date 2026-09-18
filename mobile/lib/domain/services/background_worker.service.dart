@@ -82,7 +82,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     final db = ref.read(driftProvider);
     _localSyncService = LocalSyncService(
       localAlbumRepository: db.localAlbumRepository,
-      localAssetRepository: db.localAssetRepository,
       nativeSyncApi: ref.read(nativeSyncApiProvider),
       trashedLocalAssetRepository: db.trashedLocalAssetRepository,
       assetMediaRepository: ref.read(assetMediaRepositoryProvider),
