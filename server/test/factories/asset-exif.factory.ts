@@ -29,6 +29,7 @@ export class AssetExifFactory {
       fNumber: 1.7,
       focalLength: 4.38,
       fps: null,
+      isSpatial: false,
       iso: 947,
       latitude: 30.267334570570195,
       longitude: -97.78983353428207,

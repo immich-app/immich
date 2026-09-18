@@ -20,6 +20,9 @@
       <SearchButton checked active={filters.isNotInAlbum} onclick={() => (filters.isNotInAlbum = !filters.isNotInAlbum)}
         >{$t('search_filter_display_option_not_in_album')}</SearchButton
       >
+      <SearchButton checked active={filters.isSpatial} onclick={() => (filters.isSpatial = !filters.isSpatial)}
+        >{$t('search_filter_display_option_spatial')}</SearchButton
+      >
     </div>
   </fieldset>
 </div>

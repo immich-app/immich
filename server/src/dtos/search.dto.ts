@@ -28,6 +28,11 @@ const BaseSearchSchema = z.object({
   isEncoded: z.boolean().optional().describe('Filter by encoded status').meta(DEPRECATED_FLAT_FIELD),
   isFavorite: z.boolean().optional().describe('Filter by favorite status').meta(DEPRECATED_FLAT_FIELD),
   isMotion: z.boolean().optional().describe('Filter by motion photo status').meta(DEPRECATED_FLAT_FIELD),
+  isSpatial: z
+    .boolean()
+    .optional()
+    .describe('Filter by spatial (stereoscopic) photo/video status')
+    .meta(DEPRECATED_FLAT_FIELD),
   isOffline: z.boolean().optional().describe('Filter by offline status').meta(DEPRECATED_FLAT_FIELD),
   visibility: AssetVisibilitySchema.optional().meta(DEPRECATED_FLAT_FIELD),
   createdBefore: isoDatetimeToDate.optional().describe('Filter by creation date (before)').meta(DEPRECATED_FLAT_FIELD),
@@ -251,6 +256,7 @@ const searchFilterBranchShape = {
   visibility: EnumFilterAssetVisibilitySchema,
   isFavorite: BoolFilterSchema,
   isMotion: BoolFilterSchema,
+  isSpatial: BoolFilterSchema,
   isOffline: BoolFilterSchema,
   isEncoded: BoolFilterSchema,
   hasAlbums: BoolFilterSchema,
