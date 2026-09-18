@@ -18,6 +18,12 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
     return result?.toDto();
   }
 
+  Stream<Person?> watchById(String personId) {
+    final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.watchSingleOrNull().map((row) => row?.toDto());
+  }
+
   Future<List<Person>> getAssetPeople(String assetId) async {
     // An asset can have multiple face records for the same person (e.g., metadata
     // imports alongside ML detections). Use a subquery instead of a join so each
@@ -55,6 +61,7 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
           )
           ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(minFaces) | people.name.equals('').not())
           ..orderBy([
+            OrderingTerm(expression: people.isFavorite, mode: OrderingMode.desc),
             OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
@@ -76,8 +83,14 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
   }
+
+  Future<int> updateFavorite(String personId, bool isFavorite) {
+    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.write(PersonEntityCompanion(isFavorite: Value(isFavorite), updatedAt: Value(DateTime.now())));
+  }
 }
 
 extension on PersonEntityData {
-  Person toDto() => Person(id: id, updatedAt: updatedAt, name: name, birthDate: birthDate);
+  Person toDto() => Person(id: id, updatedAt: updatedAt, name: name, birthDate: birthDate, isFavorite: isFavorite);
 }

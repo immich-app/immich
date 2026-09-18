@@ -94,4 +94,19 @@ void main() {
     verify(() => api.update(person.id, birthday: birthday)).called(1);
     expect((await byId(person.id))?.birthDate, birthday);
   });
+
+  test('updateFavorite pushes to the server, then saves locally', () async {
+    final user = await ctx.newUser();
+    final person = await ctx.newPerson(ownerId: user.id);
+    const isFavorite = true;
+
+    when(
+      () => api.update(person.id, isFavorite: isFavorite),
+    ).thenAnswer((_) async => Person(id: person.id, name: person.name, isFavorite: isFavorite));
+
+    await container.read(Store.people).updateFavorite(person.id, isFavorite);
+
+    verify(() => api.update(person.id, isFavorite: isFavorite)).called(1);
+    expect((await byId(person.id))?.isFavorite, isFavorite);
+  });
 }
