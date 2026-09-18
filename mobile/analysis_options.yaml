@@ -36,6 +36,7 @@ linter:
     close_sinks: true
     collection_methods_unrelated_type: true
     deprecated_consistency: true
+    deprecated_member_use_from_same_package: true
     discarded_futures: true
     no_adjacent_strings_in_list: true
     no_self_assignments: true
@@ -100,6 +101,7 @@ analyzer:
   errors:
     unawaited_futures: warning
     always_put_control_body_on_new_line: warning
+    deprecated_member_use_from_same_package: error
 
 dart_code_metrics:
   rules:
