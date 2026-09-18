@@ -243,6 +243,7 @@
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(Route.explore()) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
+        { shortcut: { key: 'A', meta: true }, onShortcut: () => selectAllAssets() },
         ...(arrowNavigation
           ? [
               { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
