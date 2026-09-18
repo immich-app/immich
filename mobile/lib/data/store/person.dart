@@ -18,6 +18,11 @@ extension type const PersonStore._(Provider<PersonMutations> _provider) implemen
   /// **NOTE:** This is not reactive to changes, and only hits the local DB
   AutoDisposeFutureProvider<Person?> byId(String personId) => _byIdProvider(personId);
 
+  /// Watch the person specified by [personId], reacting to local DB changes
+  ///
+  /// **NOTE:** This only hits the local DB
+  AutoDisposeStreamProvider<Person?> watchById(String personId) => _watchByIdProvider(personId);
+
   /// Get the people present in the asset [assetId]
   ///
   /// **NOTE:** This is not reactive to changes, and only hits the local DB
@@ -41,6 +46,11 @@ final _forAssetProvider = FutureProvider.autoDispose.family<List<Person>, String
   (ref, assetId) => ref.watch(_peopleDb).getAssetPeople(assetId),
 );
 
+final _watchByIdProvider = StreamProvider.autoDispose.family<Person?, String>(
+  (ref, personId) =>
+      ref.watch(_peopleDb).watch(personId: personId).map((people) => people.isEmpty ? null : people.first),
+);
+
 final _allProvider = StreamProvider.autoDispose<List<Person>>((ref) async* {
   final prefs = await ref.watch(userMetadataPreferencesProvider.future);
   yield* ref.watch(_peopleDb).watch(minFaces: prefs?.minimumFaces ?? 3);
@@ -59,5 +69,12 @@ class PersonMutations extends StoreMutations {
   Future<int> updateBirthday(String personId, DateTime birthday) async {
     await read(personApiRepositoryProvider).update(personId, birthday: birthday);
     return read(_peopleDb).updateBirthday(personId, birthday);
+  }
+
+  /// Merge [mergePersonIds] into [targetPersonId], returning the IDs that were successfully merged
+  Future<List<String>> merge({required String targetPersonId, required List<String> mergePersonIds}) async {
+    final mergedIds = await read(personApiRepositoryProvider).merge(targetPersonId, mergePersonIds);
+    await read(_peopleDb).merge(targetPersonId, mergedIds);
+    return mergedIds;
   }
 }

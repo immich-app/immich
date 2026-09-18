@@ -108,7 +108,7 @@ class _PeopleCollectionPageState extends ConsumerState<PeopleCollectionPage> {
                         ),
                         const SizedBox(height: 12),
                         GestureDetector(
-                          onTap: () => showNameEditModal(context, person),
+                          onTap: () => editPersonName(context, person),
                           child: person.name.isEmpty
                               ? Text(
                                   context.t.add_a_name,
