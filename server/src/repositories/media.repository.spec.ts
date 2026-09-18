@@ -164,6 +164,48 @@ describe(MediaRepository.name, () => {
       // bottom-right should now be top-right (blue)
       expect(await getPixelColor(bufferVertical, 990, 990)).toEqual({ r: 0, g: 255, b: 0 });
     });
+
+    it('should apply brightness and contrast edits using the CSS contrast midpoint', async () => {
+      const result = sut['applyEdits'](
+        sharp({
+          create: {
+            width: 1,
+            height: 1,
+            channels: 4,
+            background: { r: 100, g: 150, b: 200, alpha: 1 },
+          },
+        }).png(),
+        [
+          {
+            action: AssetEditAction.Color,
+            parameters: { brightness: 0, contrast: 50 },
+          },
+        ],
+      );
+
+      expect(await getPixelColor(await result.png().toBuffer(), 0, 0)).toEqual({ r: 86, g: 161, b: 236 });
+    });
+
+    it('should apply brightness before contrast', async () => {
+      const result = sut['applyEdits'](
+        sharp({
+          create: {
+            width: 1,
+            height: 1,
+            channels: 4,
+            background: { r: 100, g: 100, b: 100, alpha: 1 },
+          },
+        }).png(),
+        [
+          {
+            action: AssetEditAction.Color,
+            parameters: { brightness: 25, contrast: 50 },
+          },
+        ],
+      );
+
+      expect(await getPixelColor(await result.png().toBuffer(), 0, 0)).toEqual({ r: 123, g: 123, b: 123 });
+    });
   });
 
   describe('applyEdits (multiple sequential edits)', () => {

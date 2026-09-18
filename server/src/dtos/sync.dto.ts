@@ -177,15 +177,24 @@ const SyncAssetMetadataDeleteV1Schema = z
   })
   .meta({ id: 'SyncAssetMetadataDeleteV1' });
 
-const SyncAssetEditV1Schema = z
-  .object({
-    id: z.uuidv4().describe('Edit ID'),
-    assetId: z.uuidv4().describe('Asset ID'),
-    action: AssetEditActionSchema,
-    parameters: z.record(z.string(), z.unknown()).describe('Edit parameters'),
-    sequence: z.int().describe('Edit sequence'),
-  })
-  .meta({ id: 'SyncAssetEditV1' });
+const SyncAssetEditSchema = z.object({
+  id: z.uuidv4().describe('Edit ID'),
+  assetId: z.uuidv4().describe('Asset ID'),
+  parameters: z.record(z.string(), z.unknown()).describe('Edit parameters'),
+  sequence: z.int().describe('Edit sequence'),
+});
+
+const SyncAssetEditActionV1Schema = AssetEditActionSchema.extract(['Crop', 'Rotate', 'Mirror']).meta({
+  id: 'SyncAssetEditActionV1',
+});
+
+const SyncAssetEditV1Schema = SyncAssetEditSchema.extend({
+  action: SyncAssetEditActionV1Schema,
+}).meta({ id: 'SyncAssetEditV1' });
+
+const SyncAssetEditV2Schema = SyncAssetEditSchema.extend({
+  action: AssetEditActionSchema,
+}).meta({ id: 'SyncAssetEditV2' });
 
 const SyncAssetEditDeleteV1Schema = z
   .object({ editId: z.uuidv4().describe('Edit ID') })
@@ -201,6 +210,8 @@ class SyncAssetMetadataV1 extends createZodDto(SyncAssetMetadataV1Schema) {}
 class SyncAssetMetadataDeleteV1 extends createZodDto(SyncAssetMetadataDeleteV1Schema) {}
 @ExtraModel()
 export class SyncAssetEditV1 extends createZodDto(SyncAssetEditV1Schema) {}
+@ExtraModel()
+export class SyncAssetEditV2 extends createZodDto(SyncAssetEditV2Schema) {}
 @ExtraModel()
 class SyncAssetEditDeleteV1 extends createZodDto(SyncAssetEditDeleteV1Schema) {}
 
@@ -483,6 +494,7 @@ export type SyncItem = {
   [SyncEntityType.AssetOcrV1]: SyncAssetOcrV1;
   [SyncEntityType.AssetOcrDeleteV1]: SyncAssetOcrDeleteV1;
   [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
+  [SyncEntityType.AssetEditV2]: SyncAssetEditV2;
   [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.PartnerAssetV2]: SyncAssetV2;
   [SyncEntityType.PartnerAssetBackfillV2]: SyncAssetV2;
