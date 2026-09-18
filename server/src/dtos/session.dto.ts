@@ -5,8 +5,18 @@ import { Session } from 'src/database.js';
 const SessionCreateSchema = z
   .object({
     duration: z.int().min(1).optional().describe('Session duration in seconds'),
-    deviceType: z.string().optional().describe('Device type'),
-    deviceOS: z.string().optional().describe('Device OS'),
+    // TODO(v4): drop the empty-string-to-null transform (clients should send null)
+    deviceType: z
+      .string()
+      .nullish()
+      .transform((value) => (value === '' ? null : value))
+      .describe('Device type'),
+    // TODO(v4): drop the empty-string-to-null transform (clients should send null)
+    deviceOS: z
+      .string()
+      .nullish()
+      .transform((value) => (value === '' ? null : value))
+      .describe('Device OS'),
   })
   .meta({ id: 'SessionCreateDto' });
 
@@ -46,7 +56,9 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   expiresAt: entity.expiresAt?.toISOString(),
   current: currentId === entity.id,
   appVersion: entity.appVersion,
-  deviceOS: entity.deviceOS,
-  deviceType: entity.deviceType,
+  // TODO(v4): remove the null coercion and make `deviceOS` nullable on the response
+  deviceOS: entity.deviceOS ?? '',
+  // TODO(v4): remove the null coercion and make `deviceType` nullable on the response
+  deviceType: entity.deviceType ?? '',
   isPendingSyncReset: entity.isPendingSyncReset,
 });

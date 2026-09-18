@@ -32,8 +32,8 @@ import { getUserAgentDetails } from 'src/utils/request.js';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
-  deviceType: string;
-  deviceOS: string;
+  deviceType: string | null;
+  deviceOS: string | null;
   appVersion: string | null;
 }
 
