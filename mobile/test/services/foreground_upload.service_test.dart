@@ -204,14 +204,11 @@ void main() {
 
     test('stacks a plain photo after its upload', () async {
       final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/photo.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'photo.jpg', isLivePhoto: false));
       captureFields();
 
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
@@ -222,16 +219,15 @@ void main() {
 
     test('stacks the still of a live photo, not its video', () async {
       final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/still.heic');
       final videoFile = File('/path/to/motion.mov');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(true);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => videoFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.heic');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'live.heic', isLivePhoto: true));
+      when(
+        () => mockStorageRepository.getMotionFileForAsset(asset, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: videoFile, originalFileName: 'live.mov', isLivePhoto: true));
       captureFields();
 
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
