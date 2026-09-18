@@ -62,7 +62,7 @@
           {
             "name": "profile_changed_at",
             "getter_name": "profileChangedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -130,7 +130,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -140,7 +140,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -240,16 +240,6 @@
           {
             "name": "local_date_time",
             "getter_name": "localDateTime",
-            "moor_type": "dateTime",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "group_date",
-            "getter_name": "groupDate",
             "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
@@ -270,7 +260,7 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -280,7 +270,7 @@
           {
             "name": "uploaded_at",
             "getter_name": "uploadedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -378,7 +368,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -388,7 +378,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -476,7 +466,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -486,7 +476,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -580,16 +570,6 @@
           {
             "name": "adjustment_time",
             "getter_name": "adjustmentTime",
-            "moor_type": "dateTime",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "group_date",
-            "getter_name": "groupDate",
             "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
@@ -694,7 +674,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -704,7 +684,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -808,7 +788,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -1040,20 +1020,6 @@
     {
       "id": 11,
       "references": [
-        3
-      ],
-      "type": "index",
-      "data": {
-        "on": 3,
-        "name": "idx_local_asset_group",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_local_asset_group ON local_asset_entity (group_date DESC, created_at DESC)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 12,
-      "references": [
         2
       ],
       "type": "index",
@@ -1066,7 +1032,7 @@
       }
     },
     {
-      "id": 13,
+      "id": 12,
       "references": [
         1
       ],
@@ -1080,7 +1046,7 @@
       }
     },
     {
-      "id": 14,
+      "id": 13,
       "references": [
         1
       ],
@@ -1094,7 +1060,7 @@
       }
     },
     {
-      "id": 15,
+      "id": 14,
       "references": [
         1
       ],
@@ -1108,7 +1074,7 @@
       }
     },
     {
-      "id": 16,
+      "id": 15,
       "references": [
         1
       ],
@@ -1122,7 +1088,7 @@
       }
     },
     {
-      "id": 17,
+      "id": 16,
       "references": [
         1
       ],
@@ -1136,21 +1102,7 @@
       }
     },
     {
-      "id": 18,
-      "references": [
-        1
-      ],
-      "type": "index",
-      "data": {
-        "on": 1,
-        "name": "idx_remote_asset_group",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_group\nON remote_asset_entity (owner_id, visibility, deleted_at, group_date DESC, created_at DESC)\n",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 19,
+      "id": 17,
       "references": [
         1
       ],
@@ -1164,7 +1116,7 @@
       }
     },
     {
-      "id": 20,
+      "id": 18,
       "references": [],
       "type": "table",
       "data": {
@@ -1232,7 +1184,7 @@
           {
             "name": "profile_changed_at",
             "getter_name": "profileChangedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -1294,7 +1246,7 @@
       }
     },
     {
-      "id": 21,
+      "id": 19,
       "references": [
         0
       ],
@@ -1369,7 +1321,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 20,
       "references": [
         0
       ],
@@ -1456,7 +1408,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 21,
       "references": [
         1
       ],
@@ -1524,7 +1476,7 @@
           {
             "name": "date_time_original",
             "getter_name": "dateTimeOriginal",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -1712,7 +1664,7 @@
       }
     },
     {
-      "id": 24,
+      "id": 22,
       "references": [
         1,
         4
@@ -1786,7 +1738,7 @@
       }
     },
     {
-      "id": 25,
+      "id": 23,
       "references": [
         4,
         0
@@ -1874,7 +1826,7 @@
       }
     },
     {
-      "id": 26,
+      "id": 24,
       "references": [
         1
       ],
@@ -1922,7 +1874,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -1932,7 +1884,7 @@
           {
             "name": "adjustment_time",
             "getter_name": "adjustmentTime",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -1970,7 +1922,7 @@
       }
     },
     {
-      "id": 27,
+      "id": 25,
       "references": [
         0
       ],
@@ -1992,7 +1944,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2002,7 +1954,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2012,7 +1964,7 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2086,7 +2038,7 @@
           {
             "name": "memory_at",
             "getter_name": "memoryAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": null,
@@ -2096,7 +2048,7 @@
           {
             "name": "seen_at",
             "getter_name": "seenAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2106,7 +2058,7 @@
           {
             "name": "show_at",
             "getter_name": "showAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2116,7 +2068,7 @@
           {
             "name": "hide_at",
             "getter_name": "hideAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2134,10 +2086,10 @@
       }
     },
     {
-      "id": 28,
+      "id": 26,
       "references": [
         1,
-        27
+        25
       ],
       "type": "table",
       "data": {
@@ -2208,7 +2160,7 @@
       }
     },
     {
-      "id": 29,
+      "id": 27,
       "references": [
         0
       ],
@@ -2230,7 +2182,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2240,7 +2192,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2334,7 +2286,7 @@
           {
             "name": "birth_date",
             "getter_name": "birthDate",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2352,7 +2304,7 @@
       }
     },
     {
-      "id": 30,
+      "id": 28,
       "references": [],
       "type": "table",
       "data": {
@@ -2476,7 +2428,7 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
@@ -2494,7 +2446,7 @@
       }
     },
     {
-      "id": 31,
+      "id": 29,
       "references": [],
       "type": "table",
       "data": {
@@ -2542,7 +2494,7 @@
       }
     },
     {
-      "id": 32,
+      "id": 30,
       "references": [],
       "type": "table",
       "data": {
@@ -2576,7 +2528,7 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2586,7 +2538,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2717,7 +2669,7 @@
       }
     },
     {
-      "id": 33,
+      "id": 31,
       "references": [
         1
       ],
@@ -2811,7 +2763,7 @@
       }
     },
     {
-      "id": 34,
+      "id": 32,
       "references": [],
       "type": "table",
       "data": {
@@ -2841,7 +2793,7 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
@@ -2859,7 +2811,7 @@
       }
     },
     {
-      "id": 35,
+      "id": 33,
       "references": [
         1
       ],
@@ -3039,13 +2991,13 @@
       }
     },
     {
-      "id": 36,
+      "id": 34,
       "references": [
-        22
+        20
       ],
       "type": "index",
       "data": {
-        "on": 22,
+        "on": 20,
         "name": "idx_partner_shared_with_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)",
         "unique": false,
@@ -3053,13 +3005,13 @@
       }
     },
     {
-      "id": 37,
+      "id": 35,
       "references": [
-        23
+        21
       ],
       "type": "index",
       "data": {
-        "on": 23,
+        "on": 21,
         "name": "idx_lat_lng",
         "sql": "CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)",
         "unique": false,
@@ -3067,13 +3019,13 @@
       }
     },
     {
-      "id": 38,
+      "id": 36,
       "references": [
-        23
+        21
       ],
       "type": "index",
       "data": {
-        "on": 23,
+        "on": 21,
         "name": "idx_remote_exif_city",
         "sql": "CREATE INDEX IF NOT EXISTS idx_remote_exif_city\nON remote_exif_entity (city) WHERE city IS NOT NULL\n",
         "unique": false,
@@ -3081,13 +3033,13 @@
       }
     },
     {
-      "id": 39,
+      "id": 37,
       "references": [
-        24
+        22
       ],
       "type": "index",
       "data": {
-        "on": 24,
+        "on": 22,
         "name": "idx_remote_album_asset_album_asset",
         "sql": "CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_asset ON remote_album_asset_entity (album_id, asset_id)",
         "unique": false,
@@ -3095,13 +3047,13 @@
       }
     },
     {
-      "id": 40,
+      "id": 38,
       "references": [
-        26
+        24
       ],
       "type": "index",
       "data": {
-        "on": 26,
+        "on": 24,
         "name": "idx_remote_asset_cloud_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)",
         "unique": false,
@@ -3109,13 +3061,13 @@
       }
     },
     {
-      "id": 41,
+      "id": 39,
       "references": [
-        29
+        27
       ],
       "type": "index",
       "data": {
-        "on": 29,
+        "on": 27,
         "name": "idx_person_owner_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_person_owner_id ON person_entity (owner_id)",
         "unique": false,
@@ -3123,15 +3075,43 @@
       }
     },
     {
-      "id": 42,
+      "id": 40,
       "references": [
-        30
+        28
       ],
       "type": "index",
       "data": {
-        "on": 30,
+        "on": 28,
         "name": "idx_asset_face_person_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 41,
+      "references": [
+        28
+      ],
+      "type": "index",
+      "data": {
+        "on": 28,
+        "name": "idx_asset_face_asset_id",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 42,
+      "references": [
+        28
+      ],
+      "type": "index",
+      "data": {
+        "on": 28,
+        "name": "idx_asset_face_visible_person",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person\nON asset_face_entity (person_id, asset_id)\nWHERE is_visible = 1 AND deleted_at IS NULL\n",
         "unique": false,
         "columns": []
       }
@@ -3144,8 +3124,8 @@
       "type": "index",
       "data": {
         "on": 30,
-        "name": "idx_asset_face_asset_id",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)",
+        "name": "idx_trashed_local_asset_checksum",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)",
         "unique": false,
         "columns": []
       }
@@ -3158,34 +3138,6 @@
       "type": "index",
       "data": {
         "on": 30,
-        "name": "idx_asset_face_visible_person",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person\nON asset_face_entity (person_id, asset_id)\nWHERE is_visible = 1 AND deleted_at IS NULL\n",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 45,
-      "references": [
-        32
-      ],
-      "type": "index",
-      "data": {
-        "on": 32,
-        "name": "idx_trashed_local_asset_checksum",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 46,
-      "references": [
-        32
-      ],
-      "type": "index",
-      "data": {
-        "on": 32,
         "name": "idx_trashed_local_asset_album",
         "sql": "CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)",
         "unique": false,
@@ -3193,13 +3145,13 @@
       }
     },
     {
-      "id": 47,
+      "id": 45,
       "references": [
-        33
+        31
       ],
       "type": "index",
       "data": {
-        "on": 33,
+        "on": 31,
         "name": "idx_asset_edit_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)",
         "unique": false,
@@ -3207,13 +3159,13 @@
       }
     },
     {
-      "id": 48,
+      "id": 46,
       "references": [
-        35
+        33
       ],
       "type": "index",
       "data": {
-        "on": 35,
+        "on": 33,
         "name": "idx_asset_ocr_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_ocr_asset_id ON asset_ocr_entity (asset_id)",
         "unique": false,
@@ -3236,7 +3188,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"remote_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NOT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"owner_id\" TEXT NOT NULL REFERENCES user_entity (id) ON DELETE CASCADE, \"local_date_time\" TEXT NULL, \"group_date\" TEXT NULL, \"thumb_hash\" TEXT NULL, \"deleted_at\" TEXT NULL, \"uploaded_at\" TEXT NULL, \"live_photo_video_id\" TEXT NULL, \"visibility\" INTEGER NOT NULL, \"stack_id\" TEXT NULL, \"library_id\" TEXT NULL, \"is_edited\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_edited\" IN (0, 1)), PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"remote_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NOT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"owner_id\" TEXT NOT NULL REFERENCES user_entity (id) ON DELETE CASCADE, \"local_date_time\" TEXT NULL, \"thumb_hash\" TEXT NULL, \"deleted_at\" TEXT NULL, \"uploaded_at\" TEXT NULL, \"live_photo_video_id\" TEXT NULL, \"visibility\" INTEGER NOT NULL, \"stack_id\" TEXT NULL, \"library_id\" TEXT NULL, \"is_edited\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_edited\" IN (0, 1)), PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3254,7 +3206,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"group_date\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"previous_checksum\" TEXT NULL, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"previous_checksum\" TEXT NULL, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3322,15 +3274,6 @@
       ]
     },
     {
-      "name": "idx_local_asset_group",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_local_asset_group ON local_asset_entity (group_date DESC, created_at DESC)"
-        }
-      ]
-    },
-    {
       "name": "idx_stack_primary_asset_id",
       "sql": [
         {
@@ -3381,15 +3324,6 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)"
-        }
-      ]
-    },
-    {
-      "name": "idx_remote_asset_group",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_group ON remote_asset_entity (owner_id, visibility, deleted_at, group_date DESC, created_at DESC)"
         }
       ]
     },
