@@ -22,7 +22,7 @@ enum AppLifeCycleEnum { active, inactive, paused, resumed, detached, hidden }
 class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   final Ref _ref;
   bool _wasPaused = false;
-  bool _launchChecked = false;
+  bool _firstLaunch = true;
   bool _fullSyncPending = false;
 
   // Add operation coordination
@@ -63,16 +63,16 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   }
 
   Future<void> _performResume() async {
-    // no need to resume because app was never really paused, unless the OS started this process in the background
-    if (!_wasPaused) {
-      if (!_launchChecked) {
-        _launchChecked = true;
-        _fullSyncPending = await _ref.read(backgroundWorkerFgServiceProvider).wasLaunchedInBackground();
-      }
-      if (!_fullSyncPending) {
-        _log.info("Resume skipped, app was never paused");
-        return;
-      }
+    if (_firstLaunch) {
+      // a delta sync can miss photos taken after a background launch
+      _fullSyncPending = await _ref.read(backgroundWorkerFgServiceProvider).wasLaunchedInBackground();
+      _firstLaunch = false;
+    }
+
+    // no need to resume because app was never really paused
+    if (!_wasPaused && !_fullSyncPending) {
+      _log.info("Resume skipped, app was never paused");
+      return;
     }
     _wasPaused = false;
 

@@ -26,6 +26,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     return BackgroundWorkerApiImpl.launchedInBackground
   }
 
+  // Stays false until iOS runs one of the background tasks
   private static var launchedInBackground = false
   private static let taskIDs = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as! [String]
   private static let refreshTaskID = taskIDs.first { $0.hasSuffix(".refreshUpload") }!
