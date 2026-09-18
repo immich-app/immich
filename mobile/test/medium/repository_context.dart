@@ -1,28 +1,28 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/person.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/cloud_id.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:uuid/uuid.dart';
@@ -123,10 +123,11 @@ class MediumRepositoryContext {
     String? stackId,
     String? thumbHash,
     String? libraryId,
+    DateTime? localDateTime,
   }) async {
     id ??= TestUtils.uuid();
     createdAt ??= TestUtils.date();
-    final date = localDateTimeOption?.unwrapOrNull ?? createdAt.toLocal();
+    final date = localDateTimeOption?.unwrapOrNull ?? localDateTime ?? createdAt.toLocal();
     return db
         .into(db.remoteAssetEntity)
         .insertReturning(
@@ -271,10 +272,12 @@ class MediumRepositoryContext {
     String? name,
     String? checksum,
     Option<String>? checksumOption,
+    String? previousChecksum,
     DateTime? createdAt,
     AssetType? type,
     bool? isFavorite,
     String? iCloudId,
+    Option<String>? iCloudIdOption,
     DateTime? adjustmentTime,
     Option<DateTime>? adjustmentTimeOption,
     double? latitude,
@@ -299,11 +302,12 @@ class MediumRepositoryContext {
             orientation: .new(orientation ?? 0),
             updatedAt: .new(TestUtils.date(updatedAt)),
             checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
+            previousChecksum: .new(previousChecksum),
             createdAt: .new(createdAt),
             groupDate: .new(timelineGroupDate(createdAt.toLocal())),
             type: .new(type ?? .image),
             isFavorite: .new(isFavorite ?? false),
-            iCloudId: .new(TestUtils.uuid(iCloudId)),
+            iCloudId: _resolveUndefined(iCloudId, iCloudIdOption, TestUtils.uuid()),
             adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
             latitude: .new(latitude ?? TestUtils.randDouble(-90, 90)),
             longitude: .new(longitude ?? TestUtils.randDouble(-180, 180)),
@@ -319,6 +323,7 @@ class MediumRepositoryContext {
     TrashOrigin? source,
     AssetType? type,
     DateTime? createdAt,
+    DateTime? updatedAt,
     bool? isFavorite,
   }) async {
     id ??= TestUtils.uuid();
@@ -334,6 +339,7 @@ class MediumRepositoryContext {
             source: .new(source ?? TrashOrigin.remoteSync),
             isFavorite: .new(isFavorite ?? false),
             createdAt: .new(TestUtils.date(createdAt)),
+            updatedAt: .new(TestUtils.date(updatedAt)),
           ),
         );
   }

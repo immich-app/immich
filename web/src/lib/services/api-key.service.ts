@@ -1,16 +1,18 @@
 import {
   createApiKey,
   deleteApiKey,
+  rotateApiKey,
   updateApiKey,
   type ApiKeyCreateDto,
   type ApiKeyResponseDto,
   type ApiKeyUpdateDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiPencilOutline, mdiPlus, mdiTrashCanOutline } from '@mdi/js';
+import { mdiAutorenew, mdiPencilOutline, mdiPlus, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
+import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
 import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -32,13 +34,19 @@ export const getApiKeyActions = ($t: MessageFormatter, apiKey: ApiKeyResponseDto
     onAction: () => modalManager.show(ApiKeyUpdateModal, { apiKey }),
   };
 
+  const Rotate: ActionItem = {
+    title: $t('rotate_key'),
+    icon: mdiAutorenew,
+    onAction: () => handleRotateApiKey(apiKey),
+  };
+
   const Delete: ActionItem = {
     title: $t('delete_key'),
     icon: mdiTrashCanOutline,
     onAction: () => handleDeleteApiKey(apiKey),
   };
 
-  return { Update, Delete };
+  return { Update, Rotate, Delete };
 };
 
 export const handleCreateApiKey = async (dto: ApiKeyCreateDto) => {
@@ -56,7 +64,7 @@ export const handleCreateApiKey = async (dto: ApiKeyCreateDto) => {
     }
 
     const response = await createApiKey({ apiKeyCreateDto: dto });
-    eventManager.emit('ApiKeyCreate', response.apiKey);
+    eventManager.emit('ApiKeyCreate', response);
 
     return response;
   } catch (error) {
@@ -84,6 +92,23 @@ export const handleUpdateApiKey = async (apiKey: { id: string }, dto: ApiKeyUpda
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_save_api_key'));
+  }
+};
+
+export const handleRotateApiKey = async (apiKey: ApiKeyResponseDto) => {
+  const $t = await getFormatter();
+
+  const confirmed = await modalManager.showDialog({ prompt: $t('rotate_api_key_prompt') });
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const response = await rotateApiKey({ id: apiKey.id });
+    eventManager.emit('ApiKeyUpdate', response);
+    await modalManager.show(ApiKeySecretModal, { secret: response.secret });
+  } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
   }
 };
 

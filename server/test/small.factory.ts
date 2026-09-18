@@ -1,9 +1,9 @@
-import { AuthApiKey, AuthSharedLink, AuthUser, Library, UserAdmin } from 'src/database';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
 import { expect } from 'vitest';
+import { AuthApiKey, AuthSharedLink, AuthUser, Library, UserAdmin } from 'src/database.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { QueueStatisticsDto } from 'src/dtos/queue.dto.js';
+import { Permission, UserStatus } from 'src/enum.js';
 
 export const newUuid = () => v4();
 export const newUuids = () => Array.from({ length: 100 }, () => 0).map(() => newUuid());
@@ -120,7 +120,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     createdAt = newDate(),
     updatedAt = newDate(),
     deletedAt = null,
-    oauthId = '',
+    oauthId = null,
     quotaSizeInBytes = null,
     quotaUsageInBytes = 0,
     status = UserStatus.Active,
@@ -185,10 +185,12 @@ const assetOcrFactory = (
     textScore?: number;
     text?: string;
     isVisible?: boolean;
+    updatedAt?: Date;
   } = {},
 ) => ({
   id: newUuid(),
   updateId: newUuidV7(),
+  updatedAt: newDate(),
   assetId: newUuid(),
   x1: 0.1,
   y1: 0.2,

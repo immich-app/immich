@@ -8,8 +8,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_group_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_layout_settings.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class AssetListSettings extends HookConsumerWidget {
   const AssetListSettings({super.key});

@@ -62,6 +62,8 @@ export enum AssetFileType {
   EncodedVideo = 'encoded_video',
 }
 
+export const AssetFileTypeSchema = z.enum(AssetFileType).describe('Type of file').meta({ id: 'AssetFileType' });
+
 export enum AlbumUserRole {
   Editor = 'editor',
   Owner = 'owner',
@@ -117,6 +119,7 @@ export enum Permission {
   ApiKeyRead = 'apiKey.read',
   ApiKeyUpdate = 'apiKey.update',
   ApiKeyDelete = 'apiKey.delete',
+  ApiKeyRotate = 'apiKey.rotate',
 
   // ASSET_CREATE = 'asset.create',
   AssetRead = 'asset.read',
@@ -129,6 +132,10 @@ export enum Permission {
   AssetUpload = 'asset.upload',
   AssetCopy = 'asset.copy',
   AssetDerive = 'asset.derive',
+
+  AssetFileRead = 'assetFile.read',
+  AssetFileDelete = 'assetFile.delete',
+  AssetFileDownload = 'assetFile.download',
 
   AssetEditGet = 'asset.edit.get',
   AssetEditCreate = 'asset.edit.create',
@@ -159,6 +166,17 @@ export enum Permission {
   BackupDownload = 'backup.download',
   BackupUpload = 'backup.upload',
   BackupDelete = 'backup.delete',
+
+  ClusterGroupRead = 'clusterGroup.read',
+  ClusterGroupLeave = 'clusterGroup.leave',
+  ClusterGroupRequestCreate = 'clusterGroupRequest.create',
+  ClusterGroupRequestRead = 'clusterGroupRequest.read',
+  ClusterGroupRequestDelete = 'clusterGroupRequest.delete',
+
+  AdminConfigRead = 'adminConfig.read',
+  AdminConfigUpdate = 'adminConfig.update',
+
+  UserConfigRead = 'userConfig.read',
 
   DuplicateRead = 'duplicate.read',
   DuplicateDelete = 'duplicate.delete',
@@ -585,6 +603,7 @@ export enum ApiCustomExtension {
   AdminOnly = 'x-immich-admin-only',
   History = 'x-immich-history',
   State = 'x-immich-state',
+  Required = 'x-immich-required',
 }
 
 export enum MetadataKey {
@@ -1005,6 +1024,7 @@ export enum SyncRequestType {
   AssetMetadataV1 = 'AssetMetadataV1',
   AssetOcrV1 = 'AssetOcrV1',
   AuthUsersV1 = 'AuthUsersV1',
+  AuthUsersV2 = 'AuthUsersV2',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   PartnersV1 = 'PartnersV1',
@@ -1018,7 +1038,9 @@ export enum SyncRequestType {
   PeopleV1 = 'PeopleV1',
   /** @deprecated */
   AssetFacesV1 = 'AssetFacesV1',
+  /** @deprecated */
   AssetFacesV2 = 'AssetFacesV2',
+  AssetFacesV3 = 'AssetFacesV3',
   UserMetadataV1 = 'UserMetadataV1',
 }
 
@@ -1029,6 +1051,7 @@ export const SyncRequestTypeSchema = z
 
 export enum SyncEntityType {
   AuthUserV1 = 'AuthUserV1',
+  AuthUserV2 = 'AuthUserV2',
 
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
@@ -1098,8 +1121,11 @@ export enum SyncEntityType {
   PersonV1 = 'PersonV1',
   PersonDeleteV1 = 'PersonDeleteV1',
 
+  /** @deprecated */
   AssetFaceV1 = 'AssetFaceV1',
+  /** @deprecated */
   AssetFaceV2 = 'AssetFaceV2',
+  AssetFaceV3 = 'AssetFaceV3',
   AssetFaceDeleteV1 = 'AssetFaceDeleteV1',
 
   UserMetadataV1 = 'UserMetadataV1',
@@ -1130,6 +1156,7 @@ export enum NotificationType {
   SystemMessage = 'SystemMessage',
   AlbumInvite = 'AlbumInvite',
   AlbumUpdate = 'AlbumUpdate',
+  ClusterGroupRequest = 'ClusterGroupRequest',
   Custom = 'Custom',
 }
 
@@ -1164,10 +1191,23 @@ export const AssetVisibilitySchema = z
   .describe('Asset visibility')
   .meta({ id: 'AssetVisibility' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+export const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
   VersionCheck = 'VersionCheck',
+}
+
+export enum ConfigVisibility {
+  Public = 'Public',
+  User = 'User',
+  Admin = 'Admin',
 }
 
 export enum ApiTag {
@@ -1177,6 +1217,10 @@ export enum ApiTag {
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
+  AssetFiles = 'Asset files',
+  ConfigUser = 'Config (user)',
+  ConfigAdmin = 'Config (admin)',
+  ConfigPublic = 'Config (public)',
   DatabaseBackups = 'Database Backups (admin)',
   Deprecated = 'Deprecated',
   Download = 'Download',
@@ -1190,6 +1234,7 @@ export enum ApiTag {
   Memories = 'Memories',
   Notifications = 'Notifications',
   NotificationsAdmin = 'Notifications (admin)',
+  ClusterGroups = 'Cluster groups',
   Partners = 'Partners',
   People = 'People',
   Plugins = 'Plugins',

@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/utils/option.dart';
 
-class MapConfig {
-  final int relativeDays;
-  final bool favoritesOnly;
-  final bool includeArchived;
-  final ThemeMode themeMode;
-  final bool withPartners;
-  final DateTime? customFrom;
-  final DateTime? customTo;
+part 'map_config.freezed.dart';
 
-  const MapConfig({
-    this.relativeDays = 0,
-    this.favoritesOnly = false,
-    this.includeArchived = false,
-    this.themeMode = .system,
-    this.withPartners = false,
-    this.customFrom,
-    this.customTo,
-  });
+@Freezed(copyWith: false)
+abstract class MapConfig with _$MapConfig {
+  const MapConfig._();
 
+  const factory MapConfig({
+    @Default(0) int relativeDays,
+    @Default(false) bool favoritesOnly,
+    @Default(false) bool includeArchived,
+    @Default(ThemeMode.system) ThemeMode themeMode,
+    @Default(false) bool withPartners,
+    DateTime? customFrom,
+    DateTime? customTo,
+  }) = _MapConfig;
+
+  // We patch `customFrom` and `customTo`, which prevents us from using Freezed `copyWith`
   MapConfig copyWith({
     int? relativeDays,
     bool? favoritesOnly,
@@ -37,24 +36,4 @@ class MapConfig {
     customFrom: customFrom.patch(this.customFrom),
     customTo: customTo.patch(this.customTo),
   );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is MapConfig &&
-          other.relativeDays == relativeDays &&
-          other.favoritesOnly == favoritesOnly &&
-          other.includeArchived == includeArchived &&
-          other.themeMode == themeMode &&
-          other.withPartners == withPartners &&
-          other.customFrom == customFrom &&
-          other.customTo == customTo);
-
-  @override
-  int get hashCode =>
-      Object.hash(relativeDays, favoritesOnly, includeArchived, themeMode, withPartners, customFrom, customTo);
-
-  @override
-  String toString() =>
-      'MapConfig(relativeDays: $relativeDays, favoritesOnly: $favoritesOnly, includeArchived: $includeArchived, themeMode: $themeMode, withPartners: $withPartners, customFrom: $customFrom, customTo: $customTo)';
 }

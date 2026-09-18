@@ -1,6 +1,6 @@
-import { AssetFace } from 'src/database';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { ImageDimensions } from 'src/types';
+import type { ImageDimensions } from 'src/types.js';
+import { AssetFace } from 'src/database.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 
 type BoundingBox = {
   x1: number;

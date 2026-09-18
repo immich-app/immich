@@ -10,6 +10,14 @@ import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
 import fs from 'node:fs';
 import path from 'node:path';
+import './lint-env.js';
+
+const ROUTE_CONTINUE = "CallExpression[callee.object.name='Route'][callee.property.name='continue']";
+const NAVIGATION_PARAM_READ = [
+  "CallExpression[callee.property.name='get']",
+  ":matches([arguments.0.value='continue'], [arguments.0.value='previousRoute'],",
+  " [arguments.0.property.name='PREVIOUS_ROUTE'])",
+].join('');
 
 export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
@@ -68,6 +76,7 @@ export default typescriptEslint.config(
       '**/yarn.lock',
       '**/svelte.config.js',
       'eslint.config.js',
+      'lint-env.js',
       'tailwind.config.js',
       'coverage',
       'vite.config.ts',
@@ -109,6 +118,14 @@ export default typescriptEslint.config(
       ],
 
       curly: 2,
+      // navigation-target query params must be origin-checked at the read site, not at the goto/redirect sink
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: `${NAVIGATION_PARAM_READ}:not(${ROUTE_CONTINUE} > ${NAVIGATION_PARAM_READ})`,
+          message: 'Pass this navigation-target query param through Route.continue() to reject cross-origin values.',
+        },
+      ],
       'unicorn/no-array-reverse': 'off', // toReversed() is not supported in Chrome 109 or Safari 15.4
       'unicorn/no-useless-undefined': 'off',
       'unicorn/prefer-spread': 'off',
@@ -144,6 +161,7 @@ export default typescriptEslint.config(
       'unicorn/prefer-minimal-ternary': 'off',
       'unicorn/no-empty-file': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',
       '@typescript-eslint/require-array-sort-compare': 'error',

@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
+import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
@@ -67,15 +68,19 @@ class DeleteAction extends AssetActionBuilder {
     }
 
     final (:localIds, :remoteIds, :trash) = state;
+    final assetService = ref.read(assetServiceProvider);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
       final String? message;
+      // Only trashing is reversible; a permanent delete and a device cleanup are not.
+      ToastOption? undo;
       if (remoteIds.isEmpty) {
         message = await _removeLocalAssets(context, ref, localIds);
       } else if (trash) {
         message = await _moveToTrash(context, ref, remoteIds, localIds);
+        undo = .new(onUndo: () => assetService.restoreTrash(remoteIds));
       } else {
         message = await _deletePermanently(context, ref, remoteIds, localIds);
       }
@@ -84,7 +89,7 @@ class DeleteAction extends AssetActionBuilder {
         return;
       }
 
-      toastService.success(message);
+      toastService.success(message, toast: undo);
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to delete assets");

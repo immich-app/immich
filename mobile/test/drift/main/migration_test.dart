@@ -3,8 +3,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -41,15 +41,15 @@ void main() {
     }
   });
 
-  group('v32 group_date backfill', () {
-    Future<List<Bucket>> loadBuckets(Drift db) => DriftTimelineRepository(
+  group('v34 group_date backfill', () {
+    Future<List<Bucket>> loadBuckets(Drift db) => TimelineRepository(
       db,
     ).main(const ['user-1'], GroupAssetsBy.day).bucketSource().first;
 
     test(
       'bad created_at is omitted from the timeline after migration',
       () async {
-        final schema = await verifier.schemaAt(31);
+        final schema = await verifier.schemaAt(33);
         schema.rawDatabase.execute('''
           INSERT INTO local_album_entity (id, name, backup_selection) VALUES ('album-1', 'Camera', 0);
           INSERT INTO local_asset_entity (id, name, type, created_at, updated_at) VALUES ('garbage', 'g.jpg', 1, '57780-01-01T00:00:00.000Z', '57780-01-01T00:00:00.000Z'), ('good', 'ok.jpg', 1, '2026-07-24T10:00:00.000Z', '2026-07-24T10:00:00.000Z');
@@ -57,7 +57,7 @@ void main() {
         ''');
 
         final db = Drift(schema.newConnection());
-        await verifier.migrateAndValidate(db, 32);
+        await verifier.migrateAndValidate(db, 34);
         await backfillAssetGroupDates(db);
 
         final result = await loadBuckets(db);
@@ -71,7 +71,7 @@ void main() {
     test(
       'a created_at heal before the backfill lands in the header day',
       () async {
-        final schema = await verifier.schemaAt(31);
+        final schema = await verifier.schemaAt(33);
         schema.rawDatabase.execute('''
           INSERT INTO local_album_entity (id, name, backup_selection) VALUES ('album-1', 'Camera', 0);
           INSERT INTO local_asset_entity (id, name, type, created_at, updated_at) VALUES ('healed', 'h.jpg', 1, '2027-01-01T00:00:00.000Z', '2026-07-20T10:00:00.000Z');
@@ -79,7 +79,7 @@ void main() {
         ''');
 
         final db = Drift(schema.newConnection());
-        await verifier.migrateAndValidate(db, 32);
+        await verifier.migrateAndValidate(db, 34);
 
         await db.customStatement(
           "UPDATE local_asset_entity SET created_at = updated_at WHERE julianday(created_at) > julianday(updated_at)",
