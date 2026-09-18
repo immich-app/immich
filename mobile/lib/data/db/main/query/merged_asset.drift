@@ -28,7 +28,8 @@ SELECT
 	NULL as adjustmentTime,
 	rae.is_edited,
 	0 as playback_style,
-	rae.uploaded_at
+	rae.uploaded_at,
+	rae.group_date
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -37,6 +38,7 @@ WHERE
 	rae.deleted_at IS NULL
 	AND rae.visibility = 0 -- timeline visibility
 	AND rae.owner_id IN :user_ids
+	AND rae.group_date IS NOT NULL
 	AND (
 		rae.stack_id IS NULL
 		OR rae.id = se.primary_asset_id
@@ -67,7 +69,8 @@ SELECT
 	lae.adjustment_time,
 	0 as is_edited,
 	lae.playback_style,
-	NULL as uploaded_at
+	NULL as uploaded_at,
+	lae.group_date
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (
@@ -83,7 +86,8 @@ AND NOT EXISTS (
     INNER JOIN local_album_entity la on laa.album_id = la.id
     WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
 )
-ORDER BY created_at DESC
+AND lae.group_date IS NOT NULL
+ORDER BY group_date DESC, created_at DESC
 LIMIT $limit;
 
 mergedBucket(:group_by AS INTEGER):
@@ -94,14 +98,8 @@ FROM
 (
 	SELECT
 		CASE
-			WHEN :group_by = 0 THEN COALESCE(
-				STRFTIME('%Y-%m-%d', rae.local_date_time),
-				STRFTIME('%Y-%m-%d', rae.created_at, 'localtime')
-			)
-			WHEN :group_by = 1 THEN COALESCE(
-				STRFTIME('%Y-%m', rae.local_date_time),
-				STRFTIME('%Y-%m', rae.created_at, 'localtime')
-			)
+			WHEN :group_by = 0 THEN rae.group_date
+			WHEN :group_by = 1 THEN SUBSTR(rae.group_date, 1, 7)
 		END as bucket_date
 	FROM
 		remote_asset_entity rae
@@ -111,6 +109,7 @@ FROM
 		rae.deleted_at IS NULL
 		AND rae.visibility = 0 -- timeline visibility
 		AND rae.owner_id in :user_ids
+		AND rae.group_date IS NOT NULL
 		AND (
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
@@ -118,8 +117,8 @@ FROM
 	UNION ALL
 	SELECT
 		CASE
-			WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', lae.created_at, 'localtime')
-			WHEN :group_by = 1 THEN STRFTIME('%Y-%m', lae.created_at, 'localtime')
+			WHEN :group_by = 0 THEN lae.group_date
+			WHEN :group_by = 1 THEN SUBSTR(lae.group_date, 1, 7)
 		END as bucket_date
 	FROM
 		local_asset_entity lae
@@ -136,6 +135,7 @@ FROM
 		INNER JOIN local_album_entity la on laa.album_id = la.id
 		WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
 	)
+	AND lae.group_date IS NOT NULL
 )
 GROUP BY bucket_date
 ORDER BY bucket_date DESC;
