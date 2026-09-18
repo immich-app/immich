@@ -25,6 +25,7 @@ import { goto } from '$app/navigation';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import PasswordResetConfirmModal from '$lib/modals/PasswordResetConfirmModal.svelte';
 import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
@@ -85,7 +86,7 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     icon: mdiLockReset,
     title: $t('reset_password'),
     $if: () => authManager.user.id !== user.id,
-    onAction: () => handleResetPasswordUserAdmin(user),
+    onAction: () => modalManager.show(PasswordResetConfirmModal, { user }),
   };
 
   const ResetPinCode: ActionItem = {
@@ -168,16 +169,11 @@ const generatePassword = (length: number = 16) => {
   return generatedPassword;
 };
 
-const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto) => {
+export const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto, notify: boolean = false) => {
   const $t = await getFormatter();
-  const prompt = $t('admin.confirm_user_password_reset', { values: { user: user.name } });
-  const success = await modalManager.showDialog({ prompt });
-  if (!success) {
-    return;
-  }
 
   try {
-    const dto = { password: generatePassword(), shouldChangePassword: true };
+    const dto = { password: generatePassword(), shouldChangePassword: true, notify };
     const response = await updateUserAdmin({ id: user.id, userAdminUpdateDto: dto });
     eventManager.emit('UserAdminUpdate', response);
     toastManager.primary();
