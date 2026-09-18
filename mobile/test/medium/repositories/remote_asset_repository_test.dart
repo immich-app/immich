@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 
 import '../repository_context.dart';
@@ -62,6 +64,24 @@ void main() {
 
       expect(result.length, 1);
       expect(result[0].id, remote.id);
+    });
+  });
+
+  group('updateAssets', () {
+    Future<String?> groupDate(String id) async =>
+        (await (ctx.db.remoteAssetEntity.select()..where((row) => row.id.equals(id))).getSingle()).groupDate;
+
+    test('a created_at edit moves group_date only for rows without local_date_time', () async {
+      final user = await ctx.newUser();
+      final withLocal = await ctx.newRemoteAsset(ownerId: user.id, localDateTime: DateTime.utc(2024, 1, 5, 12));
+      final noLocal = await ctx.newRemoteAsset(ownerId: user.id, createdAt: DateTime.utc(2024, 1, 1, 12));
+      final clearLocal = ctx.db.update(ctx.db.remoteAssetEntity)..where((row) => row.id.equals(noLocal.id));
+      await clearLocal.write(const RemoteAssetEntityCompanion(localDateTime: Value(null)));
+
+      await sut.updateAssets([withLocal.id, noLocal.id], createdAt: .some(DateTime.utc(2026, 7, 24, 12)));
+
+      expect(await groupDate(withLocal.id), '2024-01-05');
+      expect(await groupDate(noLocal.id), '2026-07-24');
     });
   });
 }

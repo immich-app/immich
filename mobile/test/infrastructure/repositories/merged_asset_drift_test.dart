@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/utils/option.dart';
 
 import '../../medium/repository_context.dart';
 
@@ -19,12 +18,7 @@ void main() {
   });
 
   Future<void> addRemote(String id, {required DateTime createdAt, DateTime? localDateTime}) async {
-    await ctx.newRemoteAsset(
-      id: id,
-      ownerId: userId,
-      createdAt: createdAt,
-      localDateTimeOption: Option.fromNullable(localDateTime),
-    );
+    await ctx.newRemoteAsset(id: id, ownerId: userId, createdAt: createdAt, localDateTime: localDateTime);
   }
 
   // the timeline pairs headers to assets by running offset into one flat list

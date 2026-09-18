@@ -235,6 +235,17 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
       for (final remoteId in remoteIds) {
         batch.update(_db.remoteAssetEntity, companion, where: (e) => e.id.equals(remoteId));
       }
+      if (createdAt.isSome) {
+        batch.update(
+          _db.remoteAssetEntity,
+          RemoteAssetEntityCompanion.custom(
+            groupDate: const CustomExpression(
+              "COALESCE(STRFTIME('%Y-%m-%d', local_date_time), STRFTIME('%Y-%m-%d', created_at, 'localtime'))",
+            ),
+          ),
+          where: (e) => e.id.isIn(remoteIds),
+        );
+      }
     });
   }
 }
