@@ -102,7 +102,6 @@ const _kParamTypeOverrides = <String, String>{
   'backup_controller_page_storage_format.total': 'String',
   'backup_controller_page_storage_format.used': 'String',
   'cleanup_found_assets_with_size.size': 'String',
-  'clear_file_cache_success.size': 'String',
 };
 
 final _usedParamTypeOverrides = <String>{};
