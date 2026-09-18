@@ -1,6 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/data/db/main/table/people/person.dart';
-import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)')
@@ -15,9 +13,9 @@ class AssetFaceEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
 
-  TextColumn get assetId => text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get assetId => text()();
 
-  TextColumn get personId => text().nullable().references(PersonEntity, #id, onDelete: KeyAction.setNull)();
+  TextColumn get personId => text().nullable()();
 
   IntColumn get imageWidth => integer()();
 

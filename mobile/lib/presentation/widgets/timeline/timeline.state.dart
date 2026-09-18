@@ -25,26 +25,44 @@ abstract class TimelineArgs with _$TimelineArgs {
   }) = _TimelineArgs;
 }
 
-@freezed
-abstract class TimelineState with _$TimelineState {
-  const TimelineState._();
+class TimelineState {
+  final bool isScrolling;
 
-  const factory TimelineState({@Default(false) bool isScrubbing, @Default(false) bool isScrolling}) = _TimelineState;
+  /// Indicates whether the timeline is scrolling beyond some configured "high" speed,
+  /// such as when programmatically scrolling to the top or a really fast user fling
+  final bool recommendDeferredLoading;
 
-  bool get isInteracting => isScrubbing || isScrolling;
+  const TimelineState({this.isScrolling = false, this.recommendDeferredLoading = false});
+
+  bool get isInteracting => isScrolling || recommendDeferredLoading;
+
+  @override
+  bool operator ==(covariant TimelineState other) {
+    return isScrolling == other.isScrolling && recommendDeferredLoading == other.recommendDeferredLoading;
+  }
+
+  @override
+  int get hashCode => isScrolling.hashCode ^ recommendDeferredLoading.hashCode;
+
+  TimelineState copyWith({bool? isScrolling, bool? recommendDeferredLoading}) {
+    return TimelineState(
+      isScrolling: isScrolling ?? this.isScrolling,
+      recommendDeferredLoading: recommendDeferredLoading ?? this.recommendDeferredLoading,
+    );
+  }
 }
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
-  void setScrubbing(bool isScrubbing) {
-    state = state.copyWith(isScrubbing: isScrubbing);
-  }
-
   void setScrolling(bool isScrolling) {
     state = state.copyWith(isScrolling: isScrolling);
   }
 
+  void setRecommendDeferredLoading(bool recommendDeferredLoading) {
+    state = state.copyWith(recommendDeferredLoading: recommendDeferredLoading);
+  }
+
   @override
-  TimelineState build() => const TimelineState(isScrubbing: false, isScrolling: false);
+  TimelineState build() => const TimelineState(isScrolling: false, recommendDeferredLoading: false);
 }
 
 // This provider watches the buckets from the timeline service & args and serves the segments.

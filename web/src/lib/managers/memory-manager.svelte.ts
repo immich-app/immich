@@ -321,7 +321,6 @@ class MemoryManager {
   }
 
   private clearCache() {
-    this.#loading = undefined;
     this.#hasNextPage = true;
     this.#page = 1;
     this.#total = undefined;
@@ -338,6 +337,14 @@ class MemoryManager {
 
   private async load(page: number) {
     const items = await searchMemories({ ...this.#filters, page });
+
+    if (this.#queued) {
+      this.#queued = false;
+      this.#loading = this.load(this.#page++);
+      await this.#loading;
+      return;
+    }
+
     for (const item of items) {
       if (!this.#lookup.has(item.id)) {
         this.memories.push(item);
@@ -351,12 +358,6 @@ class MemoryManager {
 
     this.#hasNextPage = this.memories.length < this.#total;
     this.#loading = undefined;
-
-    if (this.#queued) {
-      this.#queued = false;
-      this.#loading = this.load(this.#page++);
-      await this.#loading;
-    }
   }
 
   private scheduleHourlyRefresh() {

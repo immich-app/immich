@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
@@ -18,6 +19,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
+import '../service.mocks.dart';
 
 void main() {
   late BackgroundUploadService sut;
@@ -25,6 +27,7 @@ void main() {
   late MockStorageRepository mockStorageRepository;
   late MockLocalAssetRepository mockLocalAssetRepository;
   late MockBackupRepository mockBackupRepository;
+  late MockAssetService mockAssetService;
   late Drift db;
 
   setUpAll(() async {
@@ -46,12 +49,15 @@ void main() {
     mockStorageRepository = MockStorageRepository();
     mockLocalAssetRepository = MockLocalAssetRepository();
     mockBackupRepository = MockBackupRepository();
+    mockAssetService = MockAssetService();
+    when(() => mockAssetService.stackEditedUpload(any(), any(), any())).thenAnswer((_) async {});
 
     sut = BackgroundUploadService(
       mockUploadRepository,
       mockStorageRepository,
       mockLocalAssetRepository,
       mockBackupRepository,
+      mockAssetService,
     );
 
     mockUploadRepository.onUploadStatus = (_) {};
@@ -226,6 +232,7 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
+        mockAssetService,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -273,6 +280,7 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
+        mockAssetService,
       );
       addTearDown(() => sutAndroid.dispose());
 
@@ -310,6 +318,7 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
+        mockAssetService,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -345,6 +354,7 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
+        mockAssetService,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -378,6 +388,53 @@ void main() {
       expect(metadata, hasLength(1));
       expect(metadata[0]['key'], equals('mobile-app'));
       expect(metadata[0]['value']['iCloudId'], equals('cloud-id-livephoto'));
+    });
+  });
+
+  group('onUploadStatus', () {
+    test('stacks a plain photo after its upload', () async {
+      final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/photo.jpg');
+      final void Function(TaskStatusUpdate) onStatus = verify(
+        () => mockUploadRepository.onUploadStatus = captureAny(),
+      ).captured.first;
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+
+      final task = await sut.getUploadTask(asset);
+      onStatus(TaskStatusUpdate(task!, TaskStatus.complete, null, '{"id": "remote"}'));
+
+      verify(() => mockAssetService.stackEditedUpload(asset.id, 'remote', 'sha')).called(1);
+      verifyNoMoreInteractions(mockAssetService);
+    });
+
+    test('stacks the still of a live photo, not its video', () async {
+      final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/still.heic');
+      final videoFile = File('/path/to/motion.mov');
+      final void Function(TaskStatusUpdate) onStatus = verify(
+        () => mockUploadRepository.onUploadStatus = captureAny(),
+      ).captured.first;
+
+      when(() => mockEntity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => videoFile);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.heic');
+      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => null);
+
+      final video = await sut.getUploadTask(asset);
+      final still = await sut.getLivePhotoUploadTask(asset, 'video');
+      onStatus(TaskStatusUpdate(video!, TaskStatus.complete, null, '{"id": "video"}'));
+      onStatus(TaskStatusUpdate(still!, TaskStatus.complete, null, '{"id": "still"}'));
+
+      verify(() => mockAssetService.stackEditedUpload(asset.id, 'still', 'sha')).called(1);
+      verifyNoMoreInteractions(mockAssetService);
     });
   });
 }

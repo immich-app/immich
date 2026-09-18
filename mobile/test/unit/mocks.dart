@@ -70,7 +70,7 @@ class RepositoryMocks {
   }
 
   void _stubRemoteAssetRepository() {
-    when(remoteAsset.getExif).thenAnswer((_) async => null);
+    when(remoteAsset.watchExif).thenAnswer((_) => Stream.value(null));
     when(remoteAsset.getAssetEdits).thenAnswer((_) async => const []);
     when(remoteAsset.update).thenAnswer((_) async {});
   }
@@ -178,6 +178,7 @@ class ServiceMocks {
   }
 
   void _stubAssetService() {
+    when(asset.getAsset).thenAnswer((_) async => null);
     when(asset.update).thenAnswer((_) async {});
     when(asset.stack).thenAnswer((_) async {});
     when(asset.unstack).thenAnswer((_) async {});
@@ -255,8 +256,7 @@ extension type const LocalAlbumRepositoryStub(MockLocalAlbumRepository repo) imp
       () => repo.getAssetsToHash(any());
 }
 
-extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo)
-    implements Stub<MockLocalAssetRepository> {
+extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo) implements Stub<MockLocalAssetRepository> {
   Future<void> Function() get reconcileHashesFromCloudId =>
       () => repo.reconcileHashesFromCloudId();
 
@@ -269,8 +269,8 @@ extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo)
 
 extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
     implements Stub<MockRemoteAssetRepository> {
-  Future<ExifInfo?> Function() get getExif =>
-      () => repo.getExif(any());
+  Stream<ExifInfo?> Function() get watchExif =>
+      () => repo.watchExif(any());
 
   Future<List<AssetEdit>> Function() get getAssetEdits =>
       () => repo.getAssetEdits(any());
@@ -343,6 +343,9 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 }
 
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
+  Future<BaseAsset?> Function() get getAsset =>
+      () => service.getAsset(any());
+
   Future<void> Function() get update =>
       () => service.update(
         any(),

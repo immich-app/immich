@@ -45,7 +45,6 @@ import 'package:immich_mobile/infrastructure/repositories/partner.repository.dar
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
@@ -97,11 +96,10 @@ import 'package:sqlite_async/sqlite_async.dart';
     MemoryRepository,
     OcrRepository,
     PartnerRepository,
-    PeopleRepository,
+    PeopleDatabaseRepository,
     RemoteAlbumRepository,
     RemoteAssetRepository,
     RemoteExifRepository,
-    StackRepository,
     StoreRepository,
     SyncMigrationRepository,
     SyncStreamRepository,
@@ -161,7 +159,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 33;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -358,6 +356,13 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
+              },
+              from31To32: (m, v32) async {
+                await m.addColumn(v32.localAssetEntity, v32.localAssetEntity.previousChecksum);
+              },
+              from32To33: (m, v33) async {
+                // Removed foreign key constraints on asset_face.assetId and asset_face.personId
+                await m.alterTable(TableMigration(v33.assetFaceEntity));
               },
             ),
           ),

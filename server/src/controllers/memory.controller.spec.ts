@@ -1,9 +1,9 @@
-import { MemoryController } from 'src/controllers/memory.controller';
-import { MemoryService } from 'src/services/memory.service';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { MemoryController } from 'src/controllers/memory.controller.js';
+import { MemoryService } from 'src/services/memory.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(MemoryController.name, () => {
   let ctx: ControllerContext;

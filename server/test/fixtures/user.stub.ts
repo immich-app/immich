@@ -1,6 +1,6 @@
-import { UserAdmin } from 'src/database';
-import { UserStatus } from 'src/enum';
-import { authStub } from 'test/fixtures/auth.stub';
+import { UserAdmin } from 'src/database.js';
+import { UserStatus } from 'src/enum.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
 
 export const userStub = {
   admin: <UserAdmin>{
@@ -11,7 +11,7 @@ export const userStub = {
     name: 'admin_name',
     id: 'admin_id',
     storageLabel: 'admin',
-    oauthId: '',
+    oauthId: null,
     shouldChangePassword: false,
     avatarColor: null,
     profileImagePath: '',
@@ -29,7 +29,7 @@ export const userStub = {
     profileChangedAt: new Date('2021-01-01'),
     name: 'immich_name',
     storageLabel: null,
-    oauthId: '',
+    oauthId: null,
     shouldChangePassword: false,
     avatarColor: null,
     profileImagePath: '',

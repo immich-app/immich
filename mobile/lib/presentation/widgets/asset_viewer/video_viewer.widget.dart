@@ -25,6 +25,9 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
   final bool showControls;
   final Widget image;
 
+  /// Overrides the user's configured loop video setting
+  final bool? loopOverride;
+
   const NativeVideoViewer({
     super.key,
     required this.asset,
@@ -32,6 +35,7 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
     required this.image,
     this.isCurrent = false,
     this.showControls = true,
+    this.loopOverride,
   });
 
   @override
@@ -295,7 +299,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     // Grab refs to prevent reading after dispose
-    final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
+    final loopVideo = widget.loopOverride ?? ref.read(appConfigProvider).viewer.loopVideo;
     final localNotifier = _notifier;
 
     await localNotifier.load(source);
@@ -330,7 +334,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     return IgnorePointer(
       child: Stack(
         children: [
-          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Center(child: widget.image),
+          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Positioned.fill(child: widget.image),
           if (!isCasting) ...[
             Visibility.maintain(
               visible: _isVideoReady,
