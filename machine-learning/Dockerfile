@@ -93,9 +93,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopen
 
 COPY --from=builder-armnn \
     /opt/armnn/libarmnn.so.?? \
-    /opt/armnn/libarmnnOnnxParser.so.?? \
     /opt/armnn/libarmnnDeserializer.so.?? \
-    /opt/armnn/libarmnnTfLiteParser.so.?? \
     /opt/armnn/libprotobuf.so.?.??.?.? \
     /opt/ann/libann.s[o] \
     /opt/ann/build.sh \
