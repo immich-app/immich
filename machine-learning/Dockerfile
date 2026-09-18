@@ -41,8 +41,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS prod-cpu
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS prod-openvino
 
@@ -63,8 +62,7 @@ RUN apt-get update && \
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && \
     # Pascal support was dropped in 9.11
@@ -85,7 +83,6 @@ RUN apt-get update && apt-get install --no-install-recommends -yqq migraphx miop
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn \
-    LD_PRELOAD=/usr/lib/libmimalloc.so \
     MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd libgomp1 && \
@@ -109,8 +106,7 @@ FROM prod-cpu AS prod-rknn
 # renovate: datasource=github-tags depName=airockchip/rknn-toolkit2
 ARG RKNN_TOOLKIT_VERSION="v2.3.0"
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 ADD --chmod=644 --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
 
@@ -118,14 +114,13 @@ FROM prod-${DEVICE} AS prod
 
 ARG DEVICE
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 \
-    $(case "$DEVICE" in cuda) echo "libmimalloc2.0";; openvino|rocm);; *) echo "libmimalloc3";; esac) && \
+RUN MIMALLOC=$(case "$DEVICE" in cuda) echo "libmimalloc2.0";; openvino|rocm);; *) echo "libmimalloc3";; esac); \
+    apt-get update && \
+    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $MIMALLOC && \
     apt-get autoremove -yqq && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN ln -s /usr/lib/"$(arch)"-linux-gnu/libmimalloc.so.? /usr/lib/libmimalloc.so
+    rm -rf /var/lib/apt/lists/* && \
+    [ -z "$MIMALLOC" ] || SO=/usr/lib/libmimalloc.so; ln -s /usr/lib/"$(arch)"-linux-gnu/libmimalloc.so.? "$SO" && echo "$SO" > /etc/ld.so.preload
 
 WORKDIR /usr/src
 ENV TRANSFORMERS_CACHE=/cache \
