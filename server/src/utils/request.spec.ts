@@ -1,4 +1,4 @@
-import { getAppVersionFromUA } from 'src/utils/request.js';
+import { getAppVersionFromUA, getUserAgentDetails } from 'src/utils/request.js';
 
 describe(getAppVersionFromUA.name, () => {
   it('should get the app version for android', () => {
@@ -25,5 +25,47 @@ describe(getAppVersionFromUA.name, () => {
     it('should get the app version from the old unknown format', () => {
       expect(getAppVersionFromUA('Immich_Unknown_1.123.4')).toEqual('1.123.4');
     });
+  });
+});
+
+describe(getUserAgentDetails.name, () => {
+  it('should return null deviceType and deviceOS when no headers are present', () => {
+    const result = getUserAgentDetails({});
+    expect(result.deviceType).toBeNull();
+    expect(result.deviceOS).toBeNull();
+    expect(result.appVersion).toBeNull();
+  });
+
+  it('should return null deviceType and deviceOS for an empty user-agent string', () => {
+    const result = getUserAgentDetails({ 'user-agent': '' });
+    expect(result.deviceType).toBeNull();
+    expect(result.deviceOS).toBeNull();
+  });
+
+  it('should parse a desktop browser user-agent', () => {
+    const result = getUserAgentDetails({
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    });
+    expect(result.deviceType).toEqual('Chrome');
+    expect(result.deviceOS).toEqual('Windows');
+  });
+
+  it('should fall back to the devicemodel/devicetype custom headers when the user-agent has no useful info', () => {
+    const result = getUserAgentDetails({
+      'user-agent': 'immich-android/1.123.4',
+      devicemodel: 'Pixel 8',
+      devicetype: 'Android',
+    });
+    expect(result.deviceType).toEqual('Pixel 8');
+    expect(result.deviceOS).toEqual('Android');
+    expect(result.appVersion).toEqual('1.123.4');
+  });
+
+  it('should return null when no header source resolves a device value', () => {
+    const result = getUserAgentDetails({ 'user-agent': 'immich-unknown/1.0.0' });
+    expect(result.deviceType).toBeNull();
+    expect(result.deviceOS).toBeNull();
+    expect(result.appVersion).toEqual('1.0.0');
   });
 });
