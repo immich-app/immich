@@ -162,7 +162,7 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-const peopleFromFaces = (faces?: MaybeDehydrated<AssetFace>[]): PersonResponseDto[] => {
+const peopleFromFaces = (faces: MaybeDehydrated<AssetFace>[] | undefined, auth: AuthDto): PersonResponseDto[] => {
   if (!faces) {
     return [];
   }
@@ -232,7 +232,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
-    people: peopleFromFaces(entity.faces),
+    people: options.auth ? peopleFromFaces(entity.faces, options.auth) : [],
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,

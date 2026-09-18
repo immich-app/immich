@@ -241,14 +241,38 @@ where
       "user"."id" = $2
   )
 
--- AccessRepository.person.checkOwnerAccess
+-- AccessRepository.person.checkAccess
 select
-  "person"."personGroupId"
+  "personGroupId",
+  "ownerId"
 from
-  "person"
+  (
+    select
+      unnest($1::uuid[]) as "personGroupId",
+      unnest($2::uuid[]) as "ownerId"
+  ) as "people"
 where
-  "person"."personGroupId" in ($1)
-  and "person"."ownerId" = $2
+  (
+    exists (
+      select
+      from
+        "person_group"
+      where
+        "people"."personGroupId" = "person_group"."id"
+        and "people"."ownerId" = $3
+    )
+    or exists (
+      select
+        *
+      from
+        "person_user"
+      where
+        "person_user"."sharedWithId" = $4
+        and "person_user"."role" in ($5)
+        and "people"."personGroupId" = "person_user"."personGroupId"
+        and "people"."ownerId" = "person_user"."sharedById"
+    )
+  )
 
 -- AccessRepository.person.checkFaceOwnerAccess
 select

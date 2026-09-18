@@ -343,7 +343,7 @@ export class StorageCore {
           return;
         }
 
-        return this.personRepository.update({ ownerId, personGroupId: id, thumbnailPath: newPath });
+        return this.personRepository.upsert({ ownerId, personGroupId: id, thumbnailPath: newPath });
       }
 
       case UserPathType.Profile: {

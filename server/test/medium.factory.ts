@@ -49,6 +49,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository.js';
 import { NotificationRepository } from 'src/repositories/notification.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
@@ -484,6 +485,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
+    case PersonUserRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:

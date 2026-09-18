@@ -13,6 +13,7 @@ import {
   Selectable,
   ShallowDehydrateObject,
   SqlBool,
+  WhereInterface,
   sql,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
@@ -40,6 +41,7 @@ import {
   ExifOrientation,
   SearchOrderField,
 } from 'src/enum.js';
+import { PersonId } from 'src/repositories/person.repository.js';
 import {
   AssetSearchBuilderOptions,
   AssetSearchBuilderV3Options,
@@ -286,6 +288,28 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personGroup
     (join) => join.onRef('has_people.assetId', '=', 'asset.id'),
   );
 }
+
+export const withSharedPeople =
+  (personIds: PersonId[]) =>
+  <QB extends WhereInterface<DB, 'person_user'>>(qb: QB): QB => {
+    const personGroupIds = personIds.map(({ personGroupId }) => personGroupId);
+    const ownerIds = personIds.map(({ ownerId }) => ownerId);
+
+    const values = sql<{ personGroupId: string; ownerId: string }>`(
+      select
+        unnest(${personGroupIds}::uuid[]) as "personGroupId",
+        unnest(${ownerIds}::uuid[]) as "ownerId"
+    )`.as('people');
+
+    return qb.where(({ exists, selectFrom }) =>
+      exists(
+        selectFrom(values)
+          .whereRef('people.personGroupId', '=', 'person_user.personGroupId')
+          .whereRef('people.ownerId', '=', 'person_user.sharedWithId')
+          .selectAll(),
+      ),
+    ) as QB;
+  };
 
 export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string) {
   return eb.exists(

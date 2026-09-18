@@ -6,6 +6,7 @@ import { AssetFace, Person } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import { UserResponseSchema } from 'src/dtos/user.dto.js';
 import { SourceTypeSchema } from 'src/enum.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
@@ -30,6 +31,7 @@ const PersonCreateSchema = z
 
 const PersonUpdateSchema = PersonCreateSchema.extend({
   featureFaceAssetId: z.uuidv4().optional().describe('Asset ID used for feature face thumbnail'),
+  userId: z.uuid().optional().describe('User ID'),
 }).meta({ id: 'PersonUpdateDto' });
 
 const PeopleUpdateItemSchema = PersonUpdateSchema.extend({
@@ -58,6 +60,14 @@ const PersonSearchSchema = z
   })
   .meta({ id: 'PersonSearchDto' });
 
+export enum PersonUserRole {
+  Read = 'read',
+  Write = 'write',
+  Admin = 'admin',
+}
+
+const PersonUserRoleSchema = z.enum(PersonUserRole).describe('').meta({ id: 'PersonUserRole' });
+
 export const PersonResponseSchema = z
   .object({
     id: z.uuidv4().describe('Person ID'),
@@ -83,6 +93,17 @@ export const PersonResponseSchema = z
       .optional()
       .describe('Person color (hex)')
       .meta(new HistoryBuilder().added('v1.126.0').stable('v2').getExtensions()),
+    // TODO should maybe be replaced by a permissions array
+    isShared: z.boolean(),
+    // TODO should maybe be a `z.array(BasePersonSchema)`?
+    otherPeople: z.array(
+      z.object({
+        sharedById: z.uuid(),
+        name: z.string(),
+        birthDate: z.string().nullable(),
+        role: PersonUserRoleSchema,
+      }),
+    ),
   })
   .meta({ id: 'PersonResponseDto' });
 
@@ -114,6 +135,7 @@ const AssetFaceUpdateItemSchema = z
   .object({
     personId: z.uuidv4().describe('Person ID'),
     assetId: z.uuidv4().describe('Asset ID'),
+    userId: z.uuidv4().optional().describe('User ID'),
   })
   .meta({ id: 'AssetFaceUpdateItem' });
 
@@ -150,11 +172,38 @@ const PersonStatisticsResponseSchema = z
   })
   .meta({ id: 'PersonStatisticsResponseDto' });
 
+const PersonShareResponseSchema = z
+  .array(
+    z.object({
+      personId: z.uuid(),
+      sharedById: z.uuid(),
+      sharedWithId: z.uuid(),
+      sharedWith: UserResponseSchema,
+      role: PersonUserRoleSchema,
+    }),
+  )
+  .meta({ id: 'PersonShareResponseDto' });
+
+const PersonShareRequestSchema = z
+  .object({
+    personIds: z.array(z.uuid()),
+    sharedWithIds: z.array(z.uuid()),
+    role: PersonUserRoleSchema,
+  })
+  .meta({ id: 'PersonShareRequestDto' });
+
+const PersonUserDeleteRequestSchema = z
+  .array(z.object({ personId: z.uuid(), sharedWithId: z.uuid(), sharedById: z.uuid().optional() }))
+  .meta({ id: 'PersonUserDeleteRequestDto' });
+
 export class AssetFaceUpdateDto extends createZodDto(AssetFaceUpdateSchema) {}
 export class FaceDto extends createZodDto(FaceSchema) {}
 export class AssetFaceCreateDto extends createZodDto(AssetFaceCreateSchema) {}
 export class AssetFaceDeleteDto extends createZodDto(AssetFaceDeleteSchema) {}
 export class PersonStatisticsResponseDto extends createZodDto(PersonStatisticsResponseSchema) {}
+export class PersonShareResponseDto extends createZodDto(PersonShareResponseSchema) {}
+export class PersonShareRequestDto extends createZodDto(PersonShareRequestSchema) {}
+export class PersonUserDeleteRequestDto extends createZodDto(PersonUserDeleteRequestSchema) {}
 
 const PeopleResponseSchema = z
   .object({
@@ -181,6 +230,8 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
     updatedAt: asDateTimeString(person.updatedAt),
+    isShared: false,
+    otherPeople: person.otherPeople ?? [],
   };
 }
 

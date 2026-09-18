@@ -10043,6 +10043,146 @@
         "x-immich-state": "Stable"
       }
     },
+    "/people/shared-users": {
+      "delete": {
+        "description": "Remove shared users from a person",
+        "operationId": "deleteSharedPersonUsers",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonUserDeleteRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete shared users",
+        "tags": [
+          "People"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3",
+            "state": "Added"
+          },
+          {
+            "version": "v3.3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.update",
+        "x-immich-state": "Stable"
+      },
+      "get": {
+        "description": "Retrieve a list of shared users and people",
+        "operationId": "getSharedPersonUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonShareResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get shared users",
+        "tags": [
+          "People"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3",
+            "state": "Added"
+          },
+          {
+            "version": "v3.3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.read",
+        "x-immich-state": "Stable"
+      },
+      "put": {
+        "description": "Share people with users",
+        "operationId": "sharePeopleWithUser",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonShareRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create shared users",
+        "tags": [
+          "People"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3",
+            "state": "Added"
+          },
+          {
+            "version": "v3.3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.update",
+        "x-immich-state": "Stable"
+      }
+    },
     "/people/{id}": {
       "delete": {
         "description": "Delete an individual person.",
@@ -20263,6 +20403,12 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
           "width": {
             "description": "Face bounding box width",
             "maximum": 9007199254740991,
@@ -20400,6 +20546,12 @@
           },
           "personId": {
             "description": "Person ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
@@ -24777,6 +24929,12 @@
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
           }
         },
         "required": [
@@ -25035,9 +25193,41 @@
             "description": "Is hidden",
             "type": "boolean"
           },
+          "isShared": {
+            "type": "boolean"
+          },
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "otherPeople": {
+            "items": {
+              "properties": {
+                "birthDate": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "role": {
+                  "$ref": "#/components/schemas/PersonUserRole"
+                },
+                "sharedById": {
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sharedById",
+                "name",
+                "birthDate",
+                "role"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "thumbnailPath": {
             "description": "Thumbnail path",
@@ -25064,10 +25254,77 @@
           "birthDate",
           "id",
           "isHidden",
+          "isShared",
           "name",
+          "otherPeople",
           "thumbnailPath"
         ],
         "type": "object"
+      },
+      "PersonShareRequestDto": {
+        "properties": {
+          "personIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PersonUserRole"
+          },
+          "sharedWithIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "personIds",
+          "role",
+          "sharedWithIds"
+        ],
+        "type": "object"
+      },
+      "PersonShareResponseDto": {
+        "items": {
+          "properties": {
+            "personId": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "role": {
+              "$ref": "#/components/schemas/PersonUserRole"
+            },
+            "sharedById": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "sharedWith": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            },
+            "sharedWithId": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "personId",
+            "sharedById",
+            "sharedWithId",
+            "sharedWith",
+            "role"
+          ],
+          "type": "object"
+        },
+        "type": "array"
       },
       "PersonStatisticsResponseDto": {
         "properties": {
@@ -25114,9 +25371,51 @@
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
           }
         },
         "type": "object"
+      },
+      "PersonUserDeleteRequestDto": {
+        "items": {
+          "properties": {
+            "personId": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "sharedById": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "sharedWithId": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "personId",
+            "sharedWithId"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "PersonUserRole": {
+        "description": "",
+        "enum": [
+          "read",
+          "write",
+          "admin"
+        ],
+        "type": "string"
       },
       "PinCodeChangeDto": {
         "properties": {

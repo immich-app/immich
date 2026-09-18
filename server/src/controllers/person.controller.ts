@@ -26,8 +26,11 @@ import {
   PersonCreateDto,
   PersonResponseDto,
   PersonSearchDto,
+  PersonShareRequestDto,
+  PersonShareResponseDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  PersonUserDeleteRequestDto,
 } from 'src/dtos/person.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
@@ -218,5 +221,38 @@ export class PersonController {
     @Body() dto: MergePersonDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.mergePeople(auth, { ids: [id, ...dto.ids] });
+  }
+
+  @Get('shared-users')
+  @Authenticated({ permission: Permission.PersonRead })
+  @Endpoint({
+    summary: 'Get shared users',
+    description: 'Retrieve a list of shared users and people',
+    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+  })
+  getSharedPersonUsers(@Auth() auth: AuthDto): Promise<PersonShareResponseDto> {
+    return this.service.getSharedUsers(auth);
+  }
+
+  @Put('shared-users')
+  @Authenticated({ permission: Permission.PersonUpdate })
+  @Endpoint({
+    summary: 'Create shared users',
+    description: 'Share people with users',
+    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+  })
+  sharePeopleWithUser(@Auth() auth: AuthDto, @Body() dto: PersonShareRequestDto): Promise<void> {
+    return this.service.shareWithUsers(auth, dto);
+  }
+
+  @Delete('shared-users')
+  @Authenticated({ permission: Permission.PersonUpdate })
+  @Endpoint({
+    summary: 'Delete shared users',
+    description: 'Remove shared users from a person',
+    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+  })
+  deleteSharedPersonUsers(@Auth() auth: AuthDto, @Body() dto: PersonUserDeleteRequestDto): Promise<void> {
+    return this.service.deleteSharedUsers(auth, dto);
   }
 }
