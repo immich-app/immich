@@ -159,7 +159,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 33;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -356,6 +356,13 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
+              },
+              from31To32: (m, v32) async {
+                await m.addColumn(v32.localAssetEntity, v32.localAssetEntity.previousChecksum);
+              },
+              from32To33: (m, v33) async {
+                // Removed foreign key constraints on asset_face.assetId and asset_face.personId
+                await m.alterTable(TableMigration(v33.assetFaceEntity));
               },
             ),
           ),

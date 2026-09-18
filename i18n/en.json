@@ -1815,6 +1815,7 @@
   "reset_sqlite_confirmation": "Are you sure you want to clear the app data? This will remove all settings and sign you out.",
   "reset_sqlite_confirmation_note": "Note: You will need to restart the app after clearing.",
   "reset_sqlite_done": "App data has been cleared. Please restart Immich and log in again.",
+  "reset_sqlite_error_hint": "Something went wrong, reset the local database with the button below",
   "reset_sqlite_success": "Successfully reset the SQLite database",
   "reset_to_default": "Reset to default",
   "resolution": "Resolution",

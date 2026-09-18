@@ -761,7 +761,7 @@ const userInsert = (user: Partial<Insertable<UserTable>> & { clusterGroupId: str
     shouldChangePassword: true,
     storageLabel: null,
     pinCode: null,
-    oauthId: '',
+    oauthId: null,
     avatarColor: null,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
