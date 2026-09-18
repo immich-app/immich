@@ -5,7 +5,7 @@ import { StorageCore } from 'src/cores/storage.core.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
-import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { DatabaseBackupService, restrict } from 'src/services/database-backup.service.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { AutoMocked, ServiceMocks, automock, getMocks, mockDuplex, mockSpawn } from 'test/utils.js';
 
@@ -944,3 +944,96 @@ describe(DatabaseBackupService.name, () => {
 function* mockData() {
   yield 'SELECT 1;';
 }
+
+const collect = async (input: string, chunkSize?: number) => {
+  const chunks: Buffer[] = [];
+  if (chunkSize) {
+    for (let i = 0; i < input.length; i += chunkSize) {
+      chunks.push(Buffer.from(input.slice(i, i + chunkSize)));
+    }
+  } else {
+    chunks.push(Buffer.from(input));
+  }
+
+  let output = '';
+  for await (const chunk of restrict(Readable.from(chunks))) {
+    output += chunk.toString('utf8');
+  }
+  return output;
+};
+
+// strip the leading, randomly-generated `\restrict <token>` we prepend, to assert on the rest
+const withoutPrefix = (output: string) => output.replace(/^\n\\restrict [\da-f]+\n/, '');
+
+describe('restrict', () => {
+  it('prepends its own \\restrict with an unguessable token', async () => {
+    const output = await collect('SELECT 1;\n');
+    expect(output).toMatch(/^\n\\restrict [\da-f]{48}\n/);
+  });
+
+  it('uses a different token on each run', async () => {
+    const first = await collect('SELECT 1;\n');
+    const second = await collect('SELECT 1;\n');
+    const a = first.match(/\\restrict ([\da-f]+)/)?.[1];
+    const b = second.match(/\\restrict ([\da-f]+)/)?.[1];
+    expect(a).toBeDefined();
+    expect(a).not.toEqual(b);
+  });
+
+  it("drops the dump's own \\restrict / \\unrestrict commands", async () => {
+    const input = ['\\restrict aaaa', 'SELECT 1;', '\\unrestrict aaaa', ''].join('\n');
+    expect(withoutPrefix(await collect(input))).toBe(['SELECT 1;', ''].join('\n'));
+  });
+
+  it('leaves ordinary SQL untouched', async () => {
+    const input = ['SET statement_timeout = 0;', 'CREATE TABLE t (id integer);', ''].join('\n');
+    expect(withoutPrefix(await collect(input))).toBe(input);
+  });
+
+  it('passes other meta-commands through (psql refuses them under our \\restrict)', async () => {
+    // `\!` must reach psql, which rejects it while restricted and aborts the restore.
+    const input = ['\\! id', 'SELECT 1;', ''].join('\n');
+    expect(withoutPrefix(await collect(input))).toBe(input);
+  });
+
+  it('passes COPY ... FROM stdin data through verbatim, then resumes stripping after \\.', async () => {
+    const input = [
+      'COPY public.t (id, note) FROM stdin;',
+      '1\t\\restrict looks-like-a-command-but-is-data',
+      '2\t\\unrestrict also-data',
+      '\\.',
+      '\\unrestrict aaaa', // back outside the COPY block -> dropped
+      'SELECT 2;',
+      '',
+    ].join('\n');
+    const expected = [
+      'COPY public.t (id, note) FROM stdin;',
+      '1\t\\restrict looks-like-a-command-but-is-data',
+      '2\t\\unrestrict also-data',
+      '\\.',
+      'SELECT 2;',
+      '',
+    ].join('\n');
+    expect(withoutPrefix(await collect(input))).toBe(expected);
+  });
+
+  it('aborts on COPY ... FROM/TO PROGRAM (never emitted by pg_dump)', async () => {
+    await expect(collect(["COPY t (a) FROM PROGRAM 'id';", ''].join('\n'))).rejects.toThrow(/PROGRAM/);
+    await expect(collect(["COPY (SELECT 1) TO PROGRAM 'id';", ''].join('\n'))).rejects.toThrow(/PROGRAM/);
+  });
+
+  it('does not treat "FROM PROGRAM" appearing inside COPY data as a command', async () => {
+    const input = ['COPY t (a) FROM stdin;', 'a value mentioning FROM PROGRAM', '\\.', ''].join('\n');
+    expect(withoutPrefix(await collect(input))).toBe(input);
+  });
+
+  it('handles commands split across chunk boundaries', async () => {
+    const input = ['\\restrict aaaa', 'SELECT 1;', '\\unrestrict aaaa', ''].join('\n');
+    expect(withoutPrefix(await collect(input, 3))).toBe(['SELECT 1;', ''].join('\n'));
+  });
+
+  it('handles a trailing line with no final newline', async () => {
+    expect(withoutPrefix(await collect('\\unrestrict aaaa'))).toBe('');
+    expect(withoutPrefix(await collect('SELECT 1;'))).toBe('SELECT 1;');
+  });
+});

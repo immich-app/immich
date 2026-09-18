@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { debounce } from 'lodash-es';
 import { DateTime } from 'luxon';
+import { randomBytes } from 'node:crypto';
 import path, { basename } from 'node:path';
 import { Duplex, PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -499,8 +500,51 @@ async function* sql(inputStream: Readable, databaseUsername: string, isPgCluster
       `
     : SQL_RESET_SCHEMA(databaseUsername);
 
+  yield* restrict(inputStream);
+}
+
+// A `\restrict <token>` / `\unrestrict <token>` meta-command line, as emitted by pg_dump.
+const RESTRICT_COMMAND = /^\s*\\(?:un)?restrict\s+\S+\s*$/;
+// `COPY ... FROM/TO PROGRAM` runs a program on the database server. `pg_dump` never emits it
+// (it uses `COPY ... FROM stdin`), so its presence means a tampered dump.
+const COPY_PROGRAM = /^\s*COPY\b.*\b(?:FROM|TO)\s+PROGRAM\b/i;
+
+// The dump is untrusted input that psql would otherwise interpret for client-side backslash
+// meta-commands (e.g. `\!` runs a shell command). We prepend our own `\restrict` with an
+// unguessable token so psql refuses every meta-command in the dump, and drop the dump's own
+// `\restrict`/`\unrestrict` so they don't clash with ours. `COPY ... FROM stdin` data is
+// passed through untouched.
+export async function* restrict(inputStream: Readable) {
+  yield `\n\\restrict ${randomBytes(24).toString('hex')}\n`;
+
+  let readingStdin = false;
+  const keep = function* (line: Buffer): Generator<Buffer> {
+    const text = line.toString('latin1').replace(/\n$/, '');
+    if (readingStdin) {
+      readingStdin = text.trim() !== String.raw`\.`;
+    } else if (RESTRICT_COMMAND.test(text)) {
+      return;
+    } else if (COPY_PROGRAM.test(text)) {
+      throw new Error('Refusing to restore a backup containing COPY ... FROM/TO PROGRAM');
+    } else if (/\bfrom\s+stdin\b/i.test(text)) {
+      readingStdin = true;
+    }
+    yield line;
+  };
+
+  let pending = Buffer.alloc(0);
   for await (const chunk of inputStream) {
-    yield chunk;
+    let buffer = pending.length > 0 ? Buffer.concat([pending, chunk]) : chunk;
+    let index = buffer.indexOf(10);
+    while (index !== -1) {
+      yield* keep(buffer.subarray(0, index + 1));
+      buffer = buffer.subarray(index + 1);
+      index = buffer.indexOf(10);
+    }
+    pending = buffer;
+  }
+  if (pending.length > 0) {
+    yield* keep(pending);
   }
 }
 
