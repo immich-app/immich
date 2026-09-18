@@ -1,3 +1,4 @@
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:intl/intl.dart';
 
 DateTime? tryFromSecondsSinceEpoch(int? secondsSinceEpoch, {bool isUtc = false}) {
@@ -13,4 +14,5 @@ DateTime? tryFromSecondsSinceEpoch(int? secondsSinceEpoch, {bool isUtc = false})
   }
 }
 
-String timelineGroupDate(DateTime value) => DateFormat('yyyy-MM-dd', 'en_US').format(value);
+// the columns store clamped dates, the group date has to name the same day
+String timelineGroupDate(DateTime value) => DateFormat('yyyy-MM-dd', 'en_US').format(clampDateTime(value));
