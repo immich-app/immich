@@ -1,4 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/asset/edit.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
@@ -236,15 +238,17 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
         batch.update(_db.remoteAssetEntity, companion, where: (e) => e.id.equals(remoteId));
       }
       if (createdAt.isSome) {
-        batch.update(
-          _db.remoteAssetEntity,
-          RemoteAssetEntityCompanion.custom(
-            groupDate: const CustomExpression(
-              "COALESCE(STRFTIME('%Y-%m-%d', local_date_time), STRFTIME('%Y-%m-%d', created_at, 'localtime'))",
+        for (final slice in remoteIds.slices(kDriftMaxChunk)) {
+          batch.update(
+            _db.remoteAssetEntity,
+            RemoteAssetEntityCompanion.custom(
+              groupDate: const CustomExpression(
+                "COALESCE(STRFTIME('%Y-%m-%d', local_date_time), STRFTIME('%Y-%m-%d', created_at, 'localtime'))",
+              ),
             ),
-          ),
-          where: (e) => e.id.isIn(remoteIds),
-        );
+            where: (e) => e.id.isIn(slice),
+          );
+        }
       }
     });
   }
