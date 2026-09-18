@@ -9,7 +9,7 @@ FROM builder-cpu AS builder-cuda
 FROM python:3.13-trixie@sha256:4a0820d8b1b1a1e012a23ff9a1296a3e28b48896a4d27a328a91ee197ce619d9 AS builder-armnn
 
 # renovate: datasource=github-releases depName=ARM-software/armnn
-ARG ARMNN_VERSION="v24.05"
+ARG ARMNN_VERSION="v26.07"
 
 ENV ARMNN_PATH=/opt/armnn
 COPY ann /opt/ann
