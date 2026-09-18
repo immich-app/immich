@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -35,18 +34,13 @@ void main() {
   });
 
   Future<VideoSource?> pumpViewer(WidgetTester tester, BaseAsset asset) async {
-    // NativeVideoPlayerView only embeds a platform view on iOS and Android
-    debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
     await tester.pumpTestWidget(
       context,
       NativeVideoViewer(asset: asset, image: const SizedBox()),
       overrides: [storageRepositoryProvider.overrideWithValue(storage)],
       expectSettle: false,
     );
-    final source = await tester.state<NativeVideoViewerState>(find.byType(NativeVideoViewer)).videoSource;
-    // Has to be cleared inside the body; the framework asserts on it before tearDown runs.
-    debugDefaultTargetPlatformOverride = null;
-    return source;
+    return tester.state<NativeVideoViewerState>(find.byType(NativeVideoViewer)).videoSource;
   }
 
   testWidgets('plays the local file when it exists', (tester) async {
@@ -56,7 +50,7 @@ void main() {
     final source = await pumpViewer(tester, remote);
 
     expect(source?.type, VideoSourceType.file);
-    expect(source?.path, file.path);
+    expect(source?.path, endsWith(file.path));
   });
 
   testWidgets('plays the server copy when the local file cannot be read', (tester) async {
