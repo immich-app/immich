@@ -331,40 +331,40 @@ url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/527747055"
 provenance = "github-attestations"
 
 [[tools.terragrunt]]
-version = "1.1.1"
+version = "1.1.4"
 backend = "aqua:gruntwork-io/terragrunt"
 
 [tools.terragrunt."platforms.linux-arm64"]
-checksum = "sha256:a374a7993ff3d99665a7e014007d3647ec7f0465c9d55c85e9f94c932e73cea2"
-url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.1/terragrunt_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/476786148"
+checksum = "sha256:1059469f7c24776ee4517e9c6bcfef377fec2a8c86227245297fdbb8ea0519ff"
+url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/532663058"
 
 [tools.terragrunt."platforms.linux-arm64-musl"]
-checksum = "sha256:a374a7993ff3d99665a7e014007d3647ec7f0465c9d55c85e9f94c932e73cea2"
-url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.1/terragrunt_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/476786148"
+checksum = "sha256:1059469f7c24776ee4517e9c6bcfef377fec2a8c86227245297fdbb8ea0519ff"
+url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/532663058"
 
 [tools.terragrunt."platforms.linux-x64"]
-checksum = "sha256:ce90077ac31ef17a2ba10d11d45f36c6501997a8f4f79d703bb7daba37032f53"
-url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.1/terragrunt_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/476785968"
+checksum = "sha256:82fd86e106abca0dc3aa9c05bd9b03b1a83f7f8ebb5a17788ccbe93b146aa9bb"
+url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/532662937"
 
 [tools.terragrunt."platforms.linux-x64-musl"]
-checksum = "sha256:ce90077ac31ef17a2ba10d11d45f36c6501997a8f4f79d703bb7daba37032f53"
-url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.1/terragrunt_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/476785968"
+checksum = "sha256:82fd86e106abca0dc3aa9c05bd9b03b1a83f7f8ebb5a17788ccbe93b146aa9bb"
+url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/532662937"
 
 [tools.terragrunt."platforms.macos-arm64"]
-checksum = "sha256:9ec8f678b9ae6c81d5d9d77b94cbf6349ce639d5938694b4adc9dea73e416794"
-url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.1/terragrunt_darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/476785628"
+checksum = "sha256:fbd130d6abda5340a7a7914b77b76b42621e49d5bdcfba699a8f34042a06b7ca"
+url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/532662653"
 
 [tools.terragrunt."platforms.macos-x64"]
-checksum = "sha256:73e768a69fa44a60f9d9174f54aaf179327e08706f633c9c79d5f5c9622c91c2"
-url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.1/terragrunt_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/476785520"
+checksum = "sha256:c11be52b3160cc40041ebf92cb466e776996f43d680c7e48f0dcd37913173953"
+url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/532653386"
 
 [tools.terragrunt."platforms.windows-x64"]
-checksum = "sha256:dd50a324691e072a3ac879e9ec43d6310e2936c929fda658eb2811fefcc75115"
-url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.1/terragrunt_windows_amd64.exe.tar.gz"
-url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/476786421"
+checksum = "sha256:c8247470d530113de42ab18ce590ad83656d440cb3ec6377d443b93901d77ea0"
+url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_windows_amd64.exe.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/532663271"
