@@ -389,12 +389,12 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 export const memoryLaneTitle = derived(t, ($t) => {
   return (memory: MemoryResponseDto) => {
     if (memory.type === MemoryType.OnThisDay) {
-      const now = new Date();
-      const memoryDate = new Date(memory.memoryAt);
+      const now = DateTime.now();
+      const memoryDate = DateTime.fromISO(memory.memoryAt, { zone: 'utc' });
 
-      return memoryDate.getUTCDate() === now.getDate() && memoryDate.getUTCMonth() === now.getMonth()
-        ? $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } })
-        : DateTime.fromJSDate(memoryDate).toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
+      return memoryDate.day === now.day && memoryDate.month === now.month
+        ? $t('years_ago', { values: { years: now.year - memory.data.year } })
+        : memoryDate.toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
     }
 
     return $t('unknown');
