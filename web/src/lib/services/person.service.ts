@@ -1,4 +1,4 @@
-import { updatePerson, type PersonResponseDto } from '@immich/sdk';
+import { updatePerson, type PersonResponseDto, type PersonUpdateDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiCalendarEditOutline,
@@ -6,7 +6,7 @@ import {
   mdiEyeOutline,
   mdiHeartMinusOutline,
   mdiHeartOutline,
-  mdiShareAll,
+  mdiShareVariantOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -52,7 +52,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
 
   const Share: ActionItem = {
     title: $t('share'),
-    icon: mdiShareAll,
+    icon: mdiShareVariantOutline,
     $if: () => !person.isShared,
     onAction: () => modalManager.show(PersonShareModal, { person }),
   };
@@ -93,6 +93,17 @@ const handleHidePerson = async (person: { id: string }) => {
     eventManager.emit('PersonUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_hide_person'));
+  }
+};
+
+export const handleUpdatePerson = async (id: string, personUpdateDto: PersonUpdateDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await updatePerson({ id, personUpdateDto });
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
   }
 };
 

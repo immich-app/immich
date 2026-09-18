@@ -1234,7 +1234,7 @@ export type PersonResponseDto = {
         birthDate: string | null;
         name: string;
         role: PersonUserRole;
-        sharedWithId: string;
+        sharedById: string;
     }[];
     /** Thumbnail path */
     thumbnailPath: string;
@@ -1707,6 +1707,8 @@ export type AssetFaceCreateDto = {
     imageWidth: number;
     /** Person ID */
     personId: string;
+    /** User ID */
+    userId?: string;
     /** Face bounding box width */
     width: number;
     /** Face bounding box X coordinate */
@@ -2003,6 +2005,8 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** User ID */
+    userId?: string;
 };
 export type PeopleUpdateDto = {
     /** People to update */
@@ -2014,6 +2018,7 @@ export type MergePersonDto = {
 };
 export type PersonUserDeleteRequestDto = {
     personId: string;
+    sharedById?: string;
     sharedWithId: string;
 }[];
 export type PersonShareResponseDto = {
@@ -2026,7 +2031,7 @@ export type PersonShareResponseDto = {
 export type PersonShareRequestDto = {
     personIds: string[];
     role: PersonUserRole;
-    sharedWithId: string;
+    sharedWithIds: string[];
 };
 export type PersonUpdateDto = {
     /** Person date of birth */
@@ -2041,12 +2046,16 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** User ID */
+    userId?: string;
 };
 export type AssetFaceUpdateItem = {
     /** Asset ID */
     assetId: string;
     /** Person ID */
     personId: string;
+    /** User ID */
+    userId?: string;
 };
 export type AssetFaceUpdateDto = {
     /** Face update items */

@@ -254,7 +254,7 @@ export type Person = {
   faceAssetId: string | null;
   isHidden: boolean;
   thumbnailPath: string;
-  otherPeople?: { sharedWithId: string; name: string; birthDate: string | null; role: PersonUserRole }[];
+  otherPeople?: { sharedById: string; name: string; birthDate: string | null; role: PersonUserRole }[];
 };
 
 export type AssetFace = {

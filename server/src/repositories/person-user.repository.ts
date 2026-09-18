@@ -6,6 +6,7 @@ import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { PersonUserDeleteRequestDto, PersonUserRole } from 'src/dtos/person.dto.js';
 import { DB } from 'src/schema/index.js';
 import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
+import { withSharedPeople } from 'src/utils/database.js';
 
 @Injectable()
 export class PersonUserRepository {
@@ -54,18 +55,16 @@ export class PersonUserRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, [{ personId: DummyValue.UUID, sharedWithId: DummyValue.UUID }]] })
   async deleteAll(sharedById: string, dto: PersonUserDeleteRequestDto) {
+    if (dto.length === 0) {
+      return;
+    }
+
+    const personIds = dto.map(({ personId, sharedWithId }) => ({ personGroupId: personId, ownerId: sharedWithId }));
+
     await this.db
       .deleteFrom('person_user')
+      .$call(withSharedPeople(personIds))
       .where('person_user.sharedById', '=', sharedById)
-      .where((eb) =>
-        eb.exists(
-          eb
-            .selectFrom(eb.fn<{ personId: string; sharedWithId: string }>('unnest', [eb.val(dto)]).as('people'))
-            .selectAll()
-            .whereRef('people.personId', '=', 'person_user.personGroupId')
-            .whereRef('people.sharedWithId', '=', 'person_user.sharedWithId'),
-        ),
-      )
       .execute();
   }
 }

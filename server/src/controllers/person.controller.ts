@@ -238,7 +238,7 @@ export class PersonController {
   @Authenticated({ permission: Permission.PersonUpdate })
   @Endpoint({
     summary: 'Create shared users',
-    description: 'Share people with a user',
+    description: 'Share people with users',
     history: new HistoryBuilder().added('v3.3').stable('v3.3'),
   })
   sharePeopleWithUser(@Auth() auth: AuthDto, @Body() dto: PersonShareRequestDto): Promise<void> {

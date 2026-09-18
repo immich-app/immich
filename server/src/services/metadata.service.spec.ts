@@ -1391,7 +1391,7 @@ describe(MetadataService.name, () => {
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createGroups.mockResolvedValue([PersonGroupFactory.create({ id: person.personGroupId })]);
       mocks.person.createAll.mockResolvedValue([person]);
-      mocks.person.update.mockResolvedValue(person);
+      mocks.person.upsert.mockResolvedValue(person);
 
       await sut.handleMetadataExtraction({ id: asset.id });
 
@@ -1415,7 +1415,7 @@ describe(MetadataService.name, () => {
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createGroups.mockResolvedValue([PersonGroupFactory.create({ id: person.personGroupId })]);
       mocks.person.createAll.mockResolvedValue([person]);
-      mocks.person.update.mockResolvedValue(person);
+      mocks.person.upsert.mockResolvedValue(person);
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
       expect(mocks.person.getDistinctNames).toHaveBeenCalledWith(asset.ownerId, { withHidden: true });
@@ -1458,7 +1458,7 @@ describe(MetadataService.name, () => {
       mocks.person.getDistinctNames.mockResolvedValue([{ personGroupId: person.personGroupId, name: person.name }]);
       mocks.person.createGroups.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([]);
-      mocks.person.update.mockResolvedValue(person);
+      mocks.person.upsert.mockResolvedValue(person);
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
       expect(mocks.person.getDistinctNames).toHaveBeenCalledWith(asset.ownerId, { withHidden: true });
@@ -1546,7 +1546,7 @@ describe(MetadataService.name, () => {
           mocks.person.getDistinctNames.mockResolvedValue([]);
           mocks.person.createGroups.mockResolvedValue([PersonGroupFactory.create({ id: person.personGroupId })]);
           mocks.person.createAll.mockResolvedValue([person]);
-          mocks.person.update.mockResolvedValue(person);
+          mocks.person.upsert.mockResolvedValue(person);
           await sut.handleMetadataExtraction({ id: asset.id });
           expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
           expect(mocks.person.getDistinctNames).toHaveBeenCalledWith(asset.ownerId, {

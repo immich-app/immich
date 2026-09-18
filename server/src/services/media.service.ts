@@ -97,7 +97,7 @@ export class MediaService extends BaseService {
             continue;
           }
 
-          await this.personRepository.update({ ownerId, personGroupId, faceAssetId: face.id });
+          await this.personRepository.upsert({ ownerId, personGroupId, faceAssetId: face.id });
         }
 
         jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
@@ -446,7 +446,7 @@ export class MediaService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
+    await this.personRepository.upsert({ ownerId, personGroupId, thumbnailPath });
 
     return JobStatus.Success;
   }

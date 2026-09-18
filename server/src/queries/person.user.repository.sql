@@ -41,13 +41,17 @@ set
 -- PersonUserRepository.deleteAll
 delete from "person_user"
 where
-  "person_user"."sharedById" = $1
-  and exists (
+  exists (
     select
       *
     from
-      unnest($2) as "people"
+      (
+        select
+          unnest($1::uuid[]) as "personGroupId",
+          unnest($2::uuid[]) as "ownerId"
+      ) as "people"
     where
-      "people"."personId" = "person_user"."personGroupId"
-      and "people"."sharedWithId" = "person_user"."sharedWithId"
+      "people"."personGroupId" = "person_user"."personGroupId"
+      and "people"."ownerId" = "person_user"."sharedWithId"
   )
+  and "person_user"."sharedById" = $3

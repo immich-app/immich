@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
-import { AssetFaceCreateDto } from 'src/dtos/person.dto.js';
+import { AssetFaceCreateDto, PersonUserRole } from 'src/dtos/person.dto.js';
 import { AssetFileType, JobName } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
@@ -12,6 +12,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
@@ -32,6 +33,7 @@ const setup = (db?: Kysely<DB>) => {
       ConfigRepository,
       DatabaseRepository,
       PersonRepository,
+      PersonUserRepository,
       AssetRepository,
       AssetEditRepository,
       SystemMetadataRepository,
@@ -1010,6 +1012,93 @@ describe(PersonService.name, () => {
           }),
         ]),
       );
+    });
+  });
+
+  describe('deleteSharedUsers', () => {
+    it('should work with an empty list', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: sharedWith } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user: owner });
+
+      await sut.shareWithUsers(auth, {
+        personIds: [person.personGroupId],
+        sharedWithIds: [sharedWith.id],
+        role: PersonUserRole.Read,
+      });
+
+      await sut.deleteSharedUsers(auth, []);
+
+      await expect(sut.getSharedUsers(auth)).resolves.toHaveLength(1);
+    });
+
+    it('should throw an error when there is no access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: owner } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user });
+
+      await expect(
+        sut.deleteSharedUsers(auth, [{ personId: person.personGroupId, sharedWithId: user.id }]),
+      ).rejects.toThrow('Not found or no person.update access');
+    });
+
+    it('should delete only the requested person and user pairs', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person: person1 } = await ctx.newPerson({ ownerId: owner.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user: owner });
+
+      await sut.shareWithUsers(auth, {
+        personIds: [person1.personGroupId, person2.personGroupId],
+        sharedWithIds: [user1.id, user2.id],
+        role: PersonUserRole.Read,
+      });
+
+      await expect(sut.getSharedUsers(auth)).resolves.toHaveLength(4);
+
+      await sut.deleteSharedUsers(auth, [
+        { personId: person1.personGroupId, sharedWithId: user1.id },
+        { personId: person2.personGroupId, sharedWithId: user2.id },
+      ]);
+
+      const shares = await sut.getSharedUsers(auth);
+      expect(shares).toHaveLength(2);
+      expect(shares).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ personId: person1.personGroupId, sharedWithId: user2.id }),
+          expect.objectContaining({ personId: person2.personGroupId, sharedWithId: user1.id }),
+        ]),
+      );
+    });
+
+    it('should not delete the same pair shared by another user', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: otherOwner } = await ctx.newUser();
+      const { user: sharedWith } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      await ctx.newPerson({ ownerId: otherOwner.id, personGroupId: person.personGroupId });
+
+      const auth = factory.auth({ user: owner });
+      const otherAuth = factory.auth({ user: otherOwner });
+      const dto = { personIds: [person.personGroupId], sharedWithIds: [sharedWith.id], role: PersonUserRole.Read };
+
+      await sut.shareWithUsers(auth, dto);
+      await sut.shareWithUsers(otherAuth, dto);
+
+      await sut.deleteSharedUsers(auth, [{ personId: person.personGroupId, sharedWithId: sharedWith.id }]);
+
+      await expect(sut.getSharedUsers(auth)).resolves.toEqual([]);
+      await expect(sut.getSharedUsers(otherAuth)).resolves.toEqual([
+        expect.objectContaining({ personId: person.personGroupId, sharedWithId: sharedWith.id }),
+      ]);
     });
   });
 });

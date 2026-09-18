@@ -1,9 +1,9 @@
 <script lang="ts">
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import { handleUpdatePerson } from '$lib/services/person.service';
   import { getUser, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
-    type ActionItem,
     Card,
     CardHeader,
     Checkbox,
@@ -16,6 +16,7 @@
     Label,
     Text,
     VStack,
+    type ActionItem,
   } from '@immich/ui';
   import { mdiContentPaste, mdiText } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -39,10 +40,20 @@
 
   let applyToEveryone = $state(false);
 
-  const onSubmit = async () => {};
+  const onSubmit = async () => {
+    const success = await handleUpdatePerson(person.id, {
+      name: otherPerson.name,
+      birthDate: otherPerson.birthDate,
+      userId: otherPerson.sharedById,
+    });
+
+    if (success) {
+      onClose();
+    }
+  };
 </script>
 
-{#await getUser({ id: otherPerson.ownerId }) then owner}
+{#await getUser({ id: otherPerson.sharedById }) then owner}
   <FormModal title="Shared person" size="small" icon={mdiText} {onClose} {onSubmit}>
     <Card color="info">
       <CardHeader class="pb-4">

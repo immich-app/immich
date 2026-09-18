@@ -124,7 +124,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
       expect(mocks.person.getRandomFace).toHaveBeenCalled();
-      expect(mocks.person.update).toHaveBeenCalledTimes(1);
+      expect(mocks.person.upsert).toHaveBeenCalledTimes(1);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.PersonGenerateThumbnail,
@@ -1593,7 +1593,7 @@ describe(MediaService.name, () => {
         },
         expect.any(String),
       );
-      expect(mocks.person.update).toHaveBeenCalledWith({
+      expect(mocks.person.upsert).toHaveBeenCalledWith({
         ownerId: person.ownerId,
         personGroupId: person.personGroupId,
         thumbnailPath: expect.any(String),
@@ -1647,7 +1647,7 @@ describe(MediaService.name, () => {
         },
         expect.any(String),
       );
-      expect(mocks.person.update).toHaveBeenCalledWith({
+      expect(mocks.person.upsert).toHaveBeenCalledWith({
         ownerId: person.ownerId,
         personGroupId: person.personGroupId,
         thumbnailPath: expect.any(String),
@@ -1702,7 +1702,7 @@ describe(MediaService.name, () => {
       const person = PersonFactory.create();
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
-      mocks.person.update.mockResolvedValue(person);
+      mocks.person.upsert.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 1000, height: 1000 } as OutputInfo;
@@ -1747,7 +1747,7 @@ describe(MediaService.name, () => {
       const person = PersonFactory.create();
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.negativeCoordinate);
-      mocks.person.update.mockResolvedValue(person);
+      mocks.person.upsert.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 4624, height: 3080 } as OutputInfo;
@@ -1792,7 +1792,7 @@ describe(MediaService.name, () => {
       const person = PersonFactory.create();
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.overflowingCoordinate);
-      mocks.person.update.mockResolvedValue(person);
+      mocks.person.upsert.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 4624, height: 3080 } as OutputInfo;
@@ -1838,7 +1838,7 @@ describe(MediaService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
-      mocks.person.update.mockResolvedValue(person);
+      mocks.person.upsert.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
       const extracted = Buffer.from('');
       const data = Buffer.from('');

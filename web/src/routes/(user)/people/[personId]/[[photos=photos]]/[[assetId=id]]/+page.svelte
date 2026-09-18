@@ -532,8 +532,9 @@
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
       <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
+          <ActionButton action={Share} />
           <ContextMenuButton
-            items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite, Share]}
+            items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}
             aria-label={$t('open')}
           />
         {/snippet}

@@ -10136,7 +10136,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "description": "Share people with a user",
+        "description": "Share people with users",
         "operationId": "sharePeopleWithUser",
         "parameters": [],
         "requestBody": {
@@ -20403,6 +20403,12 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
           "width": {
             "description": "Face bounding box width",
             "maximum": 9007199254740991,
@@ -20540,6 +20546,12 @@
           },
           "personId": {
             "description": "Person ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
@@ -24917,6 +24929,12 @@
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
           }
         },
         "required": [
@@ -25195,14 +25213,14 @@
                 "role": {
                   "$ref": "#/components/schemas/PersonUserRole"
                 },
-                "sharedWithId": {
+                "sharedById": {
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                   "type": "string"
                 }
               },
               "required": [
-                "sharedWithId",
+                "sharedById",
                 "name",
                 "birthDate",
                 "role"
@@ -25256,16 +25274,19 @@
           "role": {
             "$ref": "#/components/schemas/PersonUserRole"
           },
-          "sharedWithId": {
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "type": "string"
+          "sharedWithIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
           "personIds",
           "role",
-          "sharedWithId"
+          "sharedWithIds"
         ],
         "type": "object"
       },
@@ -25350,6 +25371,12 @@
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
           }
         },
         "type": "object"
@@ -25358,6 +25385,11 @@
         "items": {
           "properties": {
             "personId": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "sharedById": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "type": "string"

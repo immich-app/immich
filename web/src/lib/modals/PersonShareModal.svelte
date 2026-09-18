@@ -1,28 +1,17 @@
 <script lang="ts">
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import AddUsersModal from '$lib/modals/AddUsersModal.svelte';
   import {
-    deleteSharedPersonUsers,
-    getSharedPersonUsers,
-    PersonUserRole,
-    sharePeopleWithUser,
-    type PersonResponseDto,
-    type PersonShareResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
-  import {
-    ActionButton,
-    Field,
-    HStack,
-    Modal,
-    ModalBody,
-    modalManager,
-    Select,
-    Text,
-    type ActionItem,
-  } from '@immich/ui';
-  import { mdiPlus, mdiShareVariantOutline, mdiTrashCan, mdiTrashCanOutline } from '@mdi/js';
+    getPersonUserActions,
+    getPersonUsers,
+    getPersonUsersActions,
+    handleUpdatePersonUserRole,
+  } from '$lib/services/person-user.service';
+  import { PersonUserRole, type PersonResponseDto, type PersonShareResponseDto } from '@immich/sdk';
+  import { ActionButton, Field, HStack, Modal, ModalBody, Select, Text } from '@immich/ui';
+  import { mdiShareVariantOutline } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -32,50 +21,24 @@
 
   let { person, onClose }: Props = $props();
 
-  const AddUsers: ActionItem = {
-    title: 'Invite users',
-    icon: mdiPlus,
-    $if: () => !person.isShared,
-    color: 'primary',
-    onAction: () =>
-      modalManager.show(AddUsersModal, {
-        excludedUserIds: sharedWithUsers.map(({ sharedWithId }) => sharedWithId),
-        onAddUsers: async (users) => {
-          try {
-            for (const user of users) {
-              await sharePeopleWithUser({
-                personShareRequestDto: { personIds: [person.id], sharedWithId: user.id, role: PersonUserRole.Read },
-              });
-            }
-          } catch {
-            return;
-          }
-          await loadSharedWith();
-          return true;
-        },
-      }),
+  let personUsers = $state<PersonShareResponseDto>([]);
+
+  const { AddUsers } = $derived(getPersonUsersActions($t, person, personUsers));
+
+  const refreshPersonUsers = async () => {
+    personUsers = await getPersonUsers(person);
   };
 
-  const getDeleteUserAction = (user: UserResponseDto) =>
-    ({
-      title: 'Delete user',
-      icon: mdiTrashCanOutline,
-      $if: () => !person.isShared,
-      onAction: () =>
-        deleteSharedPersonUsers({ personUserDeleteRequestDto: [{ personId: person.id, sharedWithId: user.id }] }),
-    }) satisfies ActionItem;
-
-  let sharedWithUsers = $state<PersonShareResponseDto>([]);
-
-  const loadSharedWith = async () => {
-    const sharedUsers = await getSharedPersonUsers();
-    sharedWithUsers = sharedUsers.filter(({ personId }) => personId === person.id);
-  };
-
-  const handleRoleSelect = async (user: UserResponseDto, role: PersonUserRole) => {
-    await sharePeopleWithUser({ personShareRequestDto: { personIds: [person.id], sharedWithId: user.id, role } });
-  };
+  onMount(async () => {
+    await refreshPersonUsers();
+  });
 </script>
+
+<OnEvents
+  onPersonShare={refreshPersonUsers}
+  onPersonUserUpdate={refreshPersonUsers}
+  onPersonUserDelete={refreshPersonUsers}
+/>
 
 <Modal title="Share person" size="small" icon={mdiShareVariantOutline} {onClose}>
   <ModalBody>
@@ -84,33 +47,32 @@
       <HeaderActionButton action={AddUsers} />
     </HStack>
     <div class="ps-2">
-      {#await loadSharedWith() then}
-        {#each sharedWithUsers as { sharedWith, role } (sharedWith.id)}
-          {@const DeleteUser = getDeleteUserAction(sharedWith)}
-          <div class="flex items-center justify-between gap-4 py-2">
-            <div class="flex items-center justify-between gap-4 w-full">
-              <div class="flex flex-row items-center gap-2">
-                <div>
-                  <UserAvatar user={sharedWith} size="md" />
-                </div>
-                <Text size="small">{sharedWith.name}</Text>
+      {#each personUsers as { sharedWith, role } (sharedWith.id)}
+        {@const { Delete } = getPersonUserActions($t, person, sharedWith)}
+        <div class="flex items-center justify-between gap-4 py-2">
+          <div class="flex items-center justify-between gap-4 w-full">
+            <div class="flex flex-row items-center gap-2">
+              <div>
+                <UserAvatar user={sharedWith} size="md" />
               </div>
-              <Field class="w-32">
-                <Select
-                  value={role}
-                  options={[
-                    { label: 'Read', value: PersonUserRole.Read },
-                    { label: 'Write', value: PersonUserRole.Write },
-                    { label: 'Admin', value: PersonUserRole.Admin },
-                  ]}
-                  onChange={(value) => handleRoleSelect(sharedWith, value)}
-                />
-              </Field>
+              <Text size="small">{sharedWith.name}</Text>
             </div>
-            <ActionButton type="icon" action={DeleteUser} />
+            <Field class="w-32">
+              <Select
+                value={role}
+                options={[
+                  { label: 'Read', value: PersonUserRole.Read },
+                  { label: 'Write', value: PersonUserRole.Write },
+                  { label: 'Admin', value: PersonUserRole.Admin },
+                ]}
+                onChange={(value) =>
+                  handleUpdatePersonUserRole({ personId: person.id, userId: sharedWith.id, role: value })}
+              />
+            </Field>
           </div>
-        {/each}
-      {/await}
+          <ActionButton type="icon" action={Delete} />
+        </div>
+      {/each}
     </div>
   </ModalBody>
 </Modal>
