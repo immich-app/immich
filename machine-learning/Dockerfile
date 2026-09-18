@@ -120,7 +120,7 @@ RUN MIMALLOC=$(case "$DEVICE" in cuda) echo "libmimalloc2.0";; openvino|rocm);; 
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    [ -z "$MIMALLOC" ] || SO=/usr/lib/libmimalloc.so; ln -s /usr/lib/"$(arch)"-linux-gnu/libmimalloc.so.? "$SO" && echo "$SO" > /etc/ld.so.preload
+    { [ -z "$MIMALLOC" ] || ls /usr/lib/*-linux-gnu/libmimalloc.so.? > /etc/ld.so.preload; }
 
 WORKDIR /usr/src
 ENV TRANSFORMERS_CACHE=/cache \
