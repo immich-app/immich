@@ -74,7 +74,7 @@ void main() {
     )..where((row) => row.id.equals('trashed'))).getSingle();
     expect(local.createdAt, platformDate);
     expect(trashed.createdAt, platformDate);
-    expect(Store.tryGet(StoreKey.version), 27);
+    expect(Store.tryGet(StoreKey.version), targetVersion);
   });
 
   test('keeps EXIF date without trash access', () async {
@@ -91,7 +91,7 @@ void main() {
 
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('exif'))).getSingle();
     expect(asset.createdAt, takenAt);
-    expect(Store.tryGet(StoreKey.version), 27);
+    expect(Store.tryGet(StoreKey.version), targetVersion);
     verifyNever(() => nativeSyncApi.getTrashedAssets());
   });
 
@@ -105,7 +105,7 @@ void main() {
 
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     expect(asset.createdAt, wrongDate);
-    expect(Store.tryGet(StoreKey.version), 27);
+    expect(Store.tryGet(StoreKey.version), targetVersion);
     verify(() => nativeSyncApi.getTrashedAssets()).called(1);
   });
 
@@ -119,7 +119,7 @@ void main() {
 
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     expect(asset.createdAt, wrongDate);
-    expect(Store.tryGet(StoreKey.version), 27);
+    expect(Store.tryGet(StoreKey.version), targetVersion);
   });
 
   test('skips out-of-range date and completes migration', () async {
@@ -134,7 +134,7 @@ void main() {
 
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     expect(asset.createdAt, wrongDate);
-    expect(Store.tryGet(StoreKey.version), 27);
+    expect(Store.tryGet(StoreKey.version), targetVersion);
   });
 }
 
