@@ -422,12 +422,12 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
           '''
           SELECT
             raae.album_id,
-            $sqlAgg(rae.local_date_time) AS asset_date
+            $sqlAgg(date(rae.local_date_time)) AS asset_date
           FROM json_each(?) ids
           INNER JOIN remote_album_asset_entity raae
             ON raae.album_id = ids.value
           INNER JOIN remote_asset_entity rae
-            ON rae.id = raae.asset_id
+            ON rae.id = raae.asset_id AND rae.deleted_at IS NULL
           GROUP BY raae.album_id
           ORDER BY asset_date ASC
           ''',
