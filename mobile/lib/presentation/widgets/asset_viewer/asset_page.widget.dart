@@ -50,6 +50,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   late PhotoViewControllerValue _initialPhotoViewState;
 
   bool _showingDetails = false;
+  bool _hasShownDetails = false;
   bool _isZoomed = false;
   // Frozen during dismiss drag + settle to prevent widget tree swap mid-animation.
   bool _wasMotionPlayingAtDismiss = false;
@@ -430,6 +431,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       assetViewerProvider.select((s) => (s.currentAsset, s.thumbnailSize)),
     );
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
+    // Sticky bool to keep the asset details loaded after they got shown once
+    _hasShownDetails = _hasShownDetails || _showingDetails;
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final liveMotionPlaying = ref.watch(isPlayingMotionVideoProvider);
     // Preserve the playback status while dismissing to prevent switching views mid-animation.
@@ -514,7 +517,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         child: AnimatedOpacity(
                           opacity: _showingDetails ? 1.0 : 0.0,
                           duration: Durations.short2,
-                          child: AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget),
+                          child: _hasShownDetails
+                              ? AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget)
+                              : null,
                         ),
                       ),
                     ],
