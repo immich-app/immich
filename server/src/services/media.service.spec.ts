@@ -2201,6 +2201,45 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should scale horizontally when a vertical video is rotated to landscape', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({
+        ...asset,
+        ...probeStub.videoStreamRotatedHorizontal2160p,
+      });
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Optimal } });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=-2:720/)]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it.each([
+      { accel: TranscodeHardwareAcceleration.Nvenc, scaling: 'scale_cuda=-2:720' },
+      { accel: TranscodeHardwareAcceleration.Qsv, scaling: 'scale_qsv=-1:720' },
+      { accel: TranscodeHardwareAcceleration.Vaapi, scaling: 'scale_vaapi=-2:720' },
+      { accel: TranscodeHardwareAcceleration.Rkmpp, scaling: 'scale_rkrga=-2:720' },
+    ])('should scale rotated video by its stored dimensions when decoding with $accel', async ({ accel, scaling }) => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamVertical2160p });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel, accelDecode: true, transcode: TranscodePolicy.Optimal },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining(['-noautorotate']),
+          outputOptions: expect.arrayContaining([expect.stringContaining(scaling)]),
+        }),
+      );
+    });
+
     it('should always scale video if height is uneven', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamOddHeight });
       mocks.systemMetadata.get.mockResolvedValue({
