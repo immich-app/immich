@@ -5,5 +5,9 @@ part 'image_config.freezed.dart';
 
 @freezed
 abstract class ImageConfig with _$ImageConfig {
-  const factory ImageConfig({@Default(false) bool preferRemote, @Default(false) bool loadOriginal}) = _ImageConfig;
+  const factory ImageConfig({
+    @Default(false) bool preferRemote,
+    @Default(true) bool loadPreview,
+    @Default(false) bool loadOriginal,
+  }) = _ImageConfig;
 }
