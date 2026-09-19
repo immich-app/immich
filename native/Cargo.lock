@@ -133,6 +133,7 @@ dependencies = [
  "immich_core",
  "immich_db",
  "jni",
+ "libc",
  "rusqlite",
 ]
 
