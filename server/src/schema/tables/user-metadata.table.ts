@@ -8,11 +8,11 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import type { UserMetadata, UserMetadataItem } from 'src/types.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { UserMetadataKey } from 'src/enum.js';
 import { user_metadata_audit } from 'src/schema/functions.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
-import type { UserMetadata, UserMetadataItem } from 'src/types.js';
 
 @UpdatedAtTrigger('user_metadata_updated_at')
 @Table('user_metadata')

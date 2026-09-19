@@ -2005,6 +2005,10 @@ export type PeopleUpdateDto = {
     /** People to update */
     people: PeopleUpdateItem[];
 };
+export type MergePersonDto = {
+    /** Person IDs to merge */
+    ids: string[];
+};
 export type PersonUpdateDto = {
     /** Person date of birth */
     birthDate?: string | null;
@@ -2018,10 +2022,6 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-};
-export type MergePersonDto = {
-    /** Person IDs to merge */
-    ids: string[];
 };
 export type AssetFaceUpdateItem = {
     /** Asset ID */
@@ -3411,7 +3411,7 @@ export type SyncAssetFaceV1 = {
     /** Source type */
     sourceType: string;
 };
-export type SyncAssetFaceV2 = {
+export type SyncAssetFaceV3 = {
     /** Asset ID */
     assetId: string;
     /** Bounding box X1 */
@@ -3587,6 +3587,33 @@ export type SyncAuthUserV1 = {
     name: string;
     /** User OAuth ID */
     oauthId: string;
+    /** User pin code */
+    pinCode: string | null;
+    /** User profile changed at */
+    profileChangedAt: string;
+    /** Quota size in bytes */
+    quotaSizeInBytes: number | null;
+    /** Quota usage in bytes */
+    quotaUsageInBytes: number;
+    /** User storage label */
+    storageLabel: string | null;
+};
+export type SyncAuthUserV2 = {
+    avatarColor?: (UserAvatarColor) | null;
+    /** User deleted at */
+    deletedAt: string | null;
+    /** User email */
+    email: string;
+    /** User has profile image */
+    hasProfileImage: boolean;
+    /** User ID */
+    id: string;
+    /** User is admin */
+    isAdmin: boolean;
+    /** User name */
+    name: string;
+    /** User OAuth ID */
+    oauthId: string | null;
     /** User pin code */
     pinCode: string | null;
     /** User profile changed at */
@@ -6048,6 +6075,21 @@ export function updatePeople({ peopleUpdateDto }: {
     })));
 }
 /**
+ * Merge people
+ */
+export function mergePeople({ mergePersonDto }: {
+    mergePersonDto: MergePersonDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>("/people/merge", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: mergePersonDto
+    })));
+}
+/**
  * Delete person
  */
 export function deletePerson({ id }: {
@@ -6090,7 +6132,7 @@ export function updatePerson({ id, personUpdateDto }: {
 /**
  * Merge people
  */
-export function mergePerson({ id, mergePersonDto }: {
+export function mergePersonLegacy({ id, mergePersonDto }: {
     id: string;
     mergePersonDto: MergePersonDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -8298,6 +8340,7 @@ export enum AssetIdErrorReason {
 }
 export enum SyncEntityType {
     AuthUserV1 = "AuthUserV1",
+    AuthUserV2 = "AuthUserV2",
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
     AssetV1 = "AssetV1",
@@ -8350,6 +8393,7 @@ export enum SyncEntityType {
     PersonDeleteV1 = "PersonDeleteV1",
     AssetFaceV1 = "AssetFaceV1",
     AssetFaceV2 = "AssetFaceV2",
+    AssetFaceV3 = "AssetFaceV3",
     AssetFaceDeleteV1 = "AssetFaceDeleteV1",
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
@@ -8372,6 +8416,7 @@ export enum SyncRequestType {
     AssetMetadataV1 = "AssetMetadataV1",
     AssetOcrV1 = "AssetOcrV1",
     AuthUsersV1 = "AuthUsersV1",
+    AuthUsersV2 = "AuthUsersV2",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",
     PartnersV1 = "PartnersV1",
@@ -8384,6 +8429,7 @@ export enum SyncRequestType {
     PeopleV1 = "PeopleV1",
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
+    AssetFacesV3 = "AssetFacesV3",
     UserMetadataV1 = "UserMetadataV1"
 }
 export enum AssetOrderBy {

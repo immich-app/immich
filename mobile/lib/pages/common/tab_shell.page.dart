@@ -128,11 +128,6 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
     unawaited(ref.read(remoteAlbumProvider.notifier).refresh());
   }
 
-  // Library page
-  if (index == kLibraryTabIndex) {
-    ref.invalidate(localAlbumProvider);
-  }
-
   ref.read(hapticFeedbackProvider.notifier).selectionClick();
   router.setActiveIndex(index);
   ref.read(tabProvider.notifier).state = TabEnum.values[index];

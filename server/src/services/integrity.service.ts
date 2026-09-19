@@ -3,6 +3,16 @@ import { createHash } from 'node:crypto';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type {
+  IIntegrityDeleteReportTypeJob,
+  IIntegrityDeleteReportsJob,
+  IIntegrityJob,
+  IIntegrityMissingFilesJob,
+  IIntegrityPathWithChecksumJob,
+  IIntegrityPathWithReportJob,
+  IIntegrityUntrackedFilesJob,
+} from 'src/types.js';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -23,17 +33,7 @@ import {
   StorageFolder,
   SystemMetadataKey,
 } from 'src/enum.js';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import type {
-  IIntegrityDeleteReportsJob,
-  IIntegrityDeleteReportTypeJob,
-  IIntegrityJob,
-  IIntegrityMissingFilesJob,
-  IIntegrityPathWithChecksumJob,
-  IIntegrityPathWithReportJob,
-  IIntegrityUntrackedFilesJob,
-} from 'src/types.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { batched, handlePromiseError } from 'src/utils/misc.js';
 

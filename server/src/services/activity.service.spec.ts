@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { buildAssetAdditionId, ReactionType } from 'src/dtos/activity.dto.js';
+import { ReactionType, buildAssetAdditionId } from 'src/dtos/activity.dto.js';
 import { AssetType } from 'src/enum.js';
 import { ActivityService } from 'src/services/activity.service.js';
 import { ActivityFactory } from 'test/factories/activity.factory.js';
@@ -7,7 +7,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { getDehydrated, getForActivity } from 'test/mappers.js';
 import { newUuid, newUuids } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;

@@ -6,11 +6,11 @@ import {
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
-  mapActivity,
-  mapAssetAddition,
   MaybeDuplicate,
   ReactionLevel,
   ReactionType,
+  mapActivity,
+  mapAssetAddition,
 } from 'src/dtos/activity.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { Permission } from 'src/enum.js';

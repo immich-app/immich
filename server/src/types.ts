@@ -1,4 +1,5 @@
 import { ShallowDehydrateObject } from 'kysely';
+import { Mocked } from 'vitest';
 import { VECTOR_EXTENSIONS } from 'src/constants.js';
 import { AssetFile } from 'src/database.js';
 import { UploadFieldName } from 'src/dtos/asset-media.dto.js';
@@ -30,7 +31,6 @@ import {
   TranscodeTarget,
   UserMetadataKey,
 } from 'src/enum.js';
-import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T

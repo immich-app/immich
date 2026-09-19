@@ -9993,6 +9993,65 @@
         "x-immich-state": "Stable"
       }
     },
+    "/people/merge": {
+      "post": {
+        "description": "Merge an ordered list of people together into a single person. The final name and birth date are always the first defined value, following the order. Also automatically merges people for other users in the cluster group, skipping people that would result in overriding a previously set name or birth date.",
+        "operationId": "mergePeople",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergePersonDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Merge people",
+        "tags": [
+          "People"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.1",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.1",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.merge",
+        "x-immich-state": "Stable"
+      }
+    },
     "/people/{id}": {
       "delete": {
         "description": "Delete an individual person.",
@@ -10184,8 +10243,9 @@
     },
     "/people/{id}/merge": {
       "post": {
+        "deprecated": true,
         "description": "Merge a list of people into the person specified in the path parameter.",
-        "operationId": "mergePerson",
+        "operationId": "mergePersonLegacy",
         "parameters": [
           {
             "name": "id",
@@ -10236,7 +10296,8 @@
         ],
         "summary": "Merge people",
         "tags": [
-          "People"
+          "People",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -10250,10 +10311,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.2.1",
+            "state": "Deprecated",
+            "replacementId": "mergePeople"
           }
         ],
         "x-immich-permission": "person.merge",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/people/{id}/reassign": {
@@ -30045,7 +30111,7 @@
         ],
         "type": "object"
       },
-      "SyncAssetFaceV2": {
+      "SyncAssetFaceV3": {
         "properties": {
           "assetId": {
             "description": "Asset ID",
@@ -30666,6 +30732,98 @@
         ],
         "type": "object"
       },
+      "SyncAuthUserV2": {
+        "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
+          "deletedAt": {
+            "description": "User deleted at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "email": {
+            "description": "User email",
+            "type": "string"
+          },
+          "hasProfileImage": {
+            "description": "User has profile image",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "isAdmin": {
+            "description": "User is admin",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "User name",
+            "type": "string"
+          },
+          "oauthId": {
+            "description": "User OAuth ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "pinCode": {
+            "description": "User pin code",
+            "nullable": true,
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "description": "User profile changed at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "quotaSizeInBytes": {
+            "description": "Quota size in bytes",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "quotaUsageInBytes": {
+            "description": "Quota usage in bytes",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "storageLabel": {
+            "description": "User storage label",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "deletedAt",
+          "email",
+          "hasProfileImage",
+          "id",
+          "isAdmin",
+          "name",
+          "oauthId",
+          "pinCode",
+          "profileChangedAt",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes",
+          "storageLabel"
+        ],
+        "type": "object"
+      },
       "SyncCompleteV1": {
         "properties": {},
         "type": "object"
@@ -30674,6 +30832,7 @@
         "description": "Sync entity type",
         "enum": [
           "AuthUserV1",
+          "AuthUserV2",
           "UserV1",
           "UserDeleteV1",
           "AssetV1",
@@ -30726,6 +30885,7 @@
           "PersonDeleteV1",
           "AssetFaceV1",
           "AssetFaceV2",
+          "AssetFaceV3",
           "AssetFaceDeleteV1",
           "UserMetadataV1",
           "UserMetadataDeleteV1",
@@ -31038,6 +31198,7 @@
           "AssetMetadataV1",
           "AssetOcrV1",
           "AuthUsersV1",
+          "AuthUsersV2",
           "MemoriesV1",
           "MemoryToAssetsV1",
           "PartnersV1",
@@ -31050,6 +31211,7 @@
           "PeopleV1",
           "AssetFacesV1",
           "AssetFacesV2",
+          "AssetFacesV3",
           "UserMetadataV1"
         ],
         "type": "string"

@@ -28,7 +28,7 @@ class ArchivePage extends StatelessWidget {
         }),
       ],
       child: Timeline(
-        appBar: MesmerizingSliverAppBar(title: context.t.archive, icon: Icons.archive_outlined),
+        appBar: MesmerizingSliverAppBar(title: context.t.archive),
         bottomSheet: const ArchiveBottomSheet(),
       ),
     );

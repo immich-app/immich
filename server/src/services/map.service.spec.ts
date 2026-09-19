@@ -5,7 +5,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { PartnerFactory } from 'test/factories/partner.factory.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { getForPartner } from 'test/mappers.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(MapService.name, () => {
   let sut: MapService;

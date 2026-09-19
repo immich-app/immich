@@ -616,6 +616,7 @@ from
 where
   "asset_face"."assetId" = $2
   and "asset_face"."personGroupId" = $3
+  and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getForMergePerson
 select
