@@ -1,0 +1,19 @@
+[package]
+name = "immich_core_ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# native_toolchain_rust wants the explicit name and both crate types.
+[lib]
+name = "immich_core_ffi"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+immich_core = { path = "../immich_core" }
+
+[build-dependencies]
+cbindgen = { workspace = true }
+
+[lints]
+workspace = true
