@@ -389,6 +389,7 @@
                       altText={person.name}
                       widthStyle="3.375rem"
                       heightStyle="3.375rem"
+                      hidden={person.isHidden}
                     />
                     {#if person.isFavorite}
                       <div class="absolute inset-s-1 top-1">
