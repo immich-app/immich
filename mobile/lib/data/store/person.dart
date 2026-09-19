@@ -63,4 +63,11 @@ class PersonMutations extends StoreMutations {
     await read(personApiRepositoryProvider).update(personId, birthday: birthday);
     return read(_peopleDb).updateBirthday(personId, birthday);
   }
+
+  /// Set the asset used as a person's featured photo
+  Future<Person> setFeaturedPhoto(String personId, String assetId) async {
+    final person = read(personApiRepositoryProvider).update(personId, featureFaceAssetId: assetId);
+    await read(_peopleDb).touch(personId);
+    return person;
+  }
 }
