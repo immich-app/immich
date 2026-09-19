@@ -1,9 +1,10 @@
 use jni::EnvUnowned;
 use jni::errors::ThrowRuntimeExAndDefault;
-use jni::objects::{JByteBuffer, JClass, JObject, JString};
+use jni::objects::{JByteArray, JByteBuffer, JClass, JIntArray, JObject, JString};
 use jni::sys::{jint, jlong, jobject};
 
 use super::log::ImmichCoreLogLevel;
+use super::thumbhash::immich_core_thumbhash;
 
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_app_alextran_immich_core_NativeCore_nativeLog<'caller>(
@@ -105,6 +106,31 @@ pub extern "system" fn Java_app_alextran_immich_NativeBuffer_createGlobalRef<'ca
     env.with_env(|env| -> jni::errors::Result<_> {
         // Transfer the global reference to the caller without deleting it.
         Ok(env.new_global_ref(obj).map_or(0, |r| r.into_raw() as jlong))
+    })
+    .resolve::<ThrowRuntimeExAndDefault>()
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_app_alextran_immich_images_ThumbHash_decode<'caller>(
+    mut env: EnvUnowned<'caller>,
+    _class: JClass<'caller>,
+    hash: JByteArray<'caller>,
+    info: JIntArray<'caller>,
+) -> jlong {
+    env.with_env(|env| -> jni::errors::Result<jlong> {
+        let hash = env.convert_byte_array(&hash)?;
+        let (mut width, mut height) = (0, 0);
+        // SAFETY: the hash bytes and both output pointers are valid for this call.
+        let rgba =
+            unsafe { immich_core_thumbhash(hash.as_ptr(), hash.len(), &mut width, &mut height) };
+        if !rgba.is_null()
+            && let Err(err) = info.set_region(env, 0, &[width, height, width * 4])
+        {
+            // SAFETY: this malloc buffer has not been transferred to Dart.
+            unsafe { libc::free(rgba.cast()) };
+            return Err(err);
+        }
+        Ok(rgba as jlong)
     })
     .resolve::<ThrowRuntimeExAndDefault>()
 }

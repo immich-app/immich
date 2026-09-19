@@ -5,3 +5,4 @@
 // The function pointer type comes from the declaration, so nothing is retyped here.
 typedef enum ImmichCoreLogLevel ImmichCoreLevel;
 typedef __typeof__(&immich_core_log) ImmichCoreLogFn;
+typedef __typeof__(&immich_core_thumbhash) ImmichCoreThumbhashFn;
