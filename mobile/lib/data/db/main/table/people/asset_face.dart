@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)')
@@ -33,7 +34,7 @@ class AssetFaceEntity extends Table with DriftDefaultsMixin {
 
   BoolColumn get isVisible => boolean().withDefault(const Constant(true))();
 
-  DateTimeColumn get deletedAt => dateTime().nullable()();
+  DateTimeColumn get deletedAt => customType(clampedDateTime).nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

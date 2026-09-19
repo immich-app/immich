@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/data/db/util/asset_mixin.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
@@ -20,7 +21,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   TextColumn get iCloudId => text().nullable()();
 
-  DateTimeColumn get adjustmentTime => dateTime().nullable()();
+  DateTimeColumn get adjustmentTime => customType(clampedDateTime).nullable()();
 
   RealColumn get latitude => real().nullable()();
 
