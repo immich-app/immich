@@ -5,7 +5,7 @@
 import { installMessageListener } from './messaging';
 import { handleFetch as handleAssetFetch } from './request';
 
-const ASSET_REQUEST_REGEX = /^\/api\/assets\/[a-f0-9-]+\/(original|thumbnail)/;
+const ASSET_REQUEST_REGEX = /^\/api\/assets\/[a-f0-9-]+\/thumbnail$/;
 
 const sw = globalThis as unknown as ServiceWorkerGlobalScope;
 
