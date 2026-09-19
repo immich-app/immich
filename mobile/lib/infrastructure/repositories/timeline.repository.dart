@@ -366,10 +366,10 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.place,
   );
 
-  TimelineQuery person(String userId, String personId, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchPersonBucket(userId, personId, groupBy: groupBy),
+  TimelineQuery person(List<String> userIds, String personId, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchPersonBucket(userIds, personId, groupBy: groupBy),
     assetSource: (offset, count) =>
-        _getPersonBucketAssets(userId, personId, groupBy: groupBy, offset: offset, count: count),
+        _getPersonBucketAssets(userIds, personId, groupBy: groupBy, offset: offset, count: count),
     origin: TimelineOrigin.person,
   );
 
@@ -430,7 +430,11 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
-  Stream<List<Bucket>> _watchPersonBucket(String userId, String personId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+  Stream<List<Bucket>> _watchPersonBucket(
+    List<String> userIds,
+    String personId, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
     final idQuery = _db.assetFaceEntity.selectOnly()
       ..addColumns([_db.assetFaceEntity.assetId])
       ..where(
@@ -445,7 +449,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
         ..where(
           _db.remoteAssetEntity.id.isInQuery(idQuery) &
               _db.remoteAssetEntity.deletedAt.isNull() &
-              _db.remoteAssetEntity.ownerId.equals(userId) &
+              _db.remoteAssetEntity.ownerId.isIn(userIds) &
               _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
         );
 
@@ -462,7 +466,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
       ..addColumns([assetCountExp, dateExp])
       ..where(
         _db.remoteAssetEntity.id.isInQuery(idQuery) &
-            _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.ownerId.isIn(userIds) &
             _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
             _db.remoteAssetEntity.deletedAt.isNull(),
       )
@@ -477,7 +481,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   }
 
   Future<List<BaseAsset>> _getPersonBucketAssets(
-    String userId,
+    List<String> userIds,
     String personId, {
     required int offset,
     required int count,
@@ -496,7 +500,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
         (row) =>
             row.id.isInQuery(idQuery) &
             row.deletedAt.isNull() &
-            row.ownerId.equals(userId) &
+            row.ownerId.isIn(userIds) &
             row.visibility.equalsValue(AssetVisibility.timeline),
       )
       ..orderBy(_assetDateOrder(groupBy))
