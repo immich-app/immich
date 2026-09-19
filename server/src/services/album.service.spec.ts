@@ -783,7 +783,7 @@ describe(AlbumService.name, () => {
         },
         owner.id,
       );
-      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id]);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id], owner.id);
     });
 
     it('should not set the thumbnail if the album has one already', async () => {
@@ -838,7 +838,7 @@ describe(AlbumService.name, () => {
         },
         user.id,
       );
-      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id]);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id], user.id);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album.id,
         userIds: album.albumUsers.map(({ user }) => user.id),
@@ -984,12 +984,12 @@ describe(AlbumService.name, () => {
         owner.id,
       );
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
+        { albumId: album1.id, assetId: asset1.id, createdById: owner.id },
+        { albumId: album1.id, assetId: asset2.id, createdById: owner.id },
+        { albumId: album1.id, assetId: asset3.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset1.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset2.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset3.id, createdById: owner.id },
       ]);
     });
 
@@ -1033,12 +1033,12 @@ describe(AlbumService.name, () => {
         owner.id,
       );
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
+        { albumId: album1.id, assetId: asset1.id, createdById: owner.id },
+        { albumId: album1.id, assetId: asset2.id, createdById: owner.id },
+        { albumId: album1.id, assetId: asset3.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset1.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset2.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset3.id, createdById: owner.id },
       ]);
     });
 
@@ -1083,12 +1083,12 @@ describe(AlbumService.name, () => {
         user.id,
       );
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
+        { albumId: album1.id, assetId: asset1.id, createdById: user.id },
+        { albumId: album1.id, assetId: asset2.id, createdById: user.id },
+        { albumId: album1.id, assetId: asset3.id, createdById: user.id },
+        { albumId: album2.id, assetId: asset1.id, createdById: user.id },
+        { albumId: album2.id, assetId: asset2.id, createdById: user.id },
+        { albumId: album2.id, assetId: asset3.id, createdById: user.id },
       ]);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album1.id,
@@ -1169,12 +1169,12 @@ describe(AlbumService.name, () => {
         owner.id,
       );
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
+        { albumId: album1.id, assetId: asset1.id, createdById: owner.id },
+        { albumId: album1.id, assetId: asset2.id, createdById: owner.id },
+        { albumId: album1.id, assetId: asset3.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset1.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset2.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset3.id, createdById: owner.id },
       ]);
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(
         owner.id,
@@ -1214,9 +1214,9 @@ describe(AlbumService.name, () => {
         owner.id,
       );
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
+        { albumId: album2.id, assetId: asset1.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset2.id, createdById: owner.id },
+        { albumId: album2.id, assetId: asset3.id, createdById: owner.id },
       ]);
     });
 

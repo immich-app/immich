@@ -72,6 +72,14 @@ export type Activity = {
   updateId: string;
 };
 
+export type AssetAddition = {
+  albumId: string;
+  assetId: string;
+  assetType: AssetType;
+  createdAt: Date;
+  user: ShallowDehydrateObject<User>;
+};
+
 export type ApiKey = {
   id: string;
   name: string;
