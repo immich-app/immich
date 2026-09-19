@@ -7,6 +7,21 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+enum ImmichCoreLogLevel
+#if __STDC_VERSION__ >= 202311L
+  : int32_t
+#endif // __STDC_VERSION__ >= 202311L
+ {
+  ImmichCoreLogLevel_Info = 0,
+  ImmichCoreLogLevel_Warning = 1,
+  ImmichCoreLogLevel_Severe = 2,
+};
+#if __STDC_VERSION__ >= 202311L
+typedef enum ImmichCoreLogLevel ImmichCoreLogLevel;
+#else
+typedef int32_t ImmichCoreLogLevel;
+#endif // __STDC_VERSION__ >= 202311L
+
 /**
  * Returns the core version as a C string. Free it with `immich_core_free_string`.
  */
@@ -19,3 +34,16 @@ char *immich_core_version(void);
  * `ptr` must come from this library and must not be freed twice.
  */
 void immich_core_free_string(char *ptr);
+
+/**
+ * Writes one app log entry unless it is below the app's log level setting.
+ * Returns zero on success, nonzero on failure.
+ *
+ * # Safety
+ * String pointers must be null or valid NUL-terminated strings.
+ * `level` must be a valid `ImmichCoreLogLevel` variant.
+ */
+int32_t immich_core_log(const char *app_dir,
+                        ImmichCoreLogLevel level,
+                        const char *logger,
+                        const char *message);
