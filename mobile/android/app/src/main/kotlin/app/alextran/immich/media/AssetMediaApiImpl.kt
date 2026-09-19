@@ -4,11 +4,14 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
 import android.content.IntentSender
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
@@ -27,6 +30,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.UUID
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
@@ -197,12 +201,124 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
       targets.keys - remaining
     }
 
+  override fun saveFile(
+    path: String,
+    name: String,
+    isVideo: Boolean,
+    relativePath: String?,
+    callback: (Result<String>) -> Unit,
+  ) = respond(callback, "SAVE") {
+    val file = File(path)
+    if (!file.exists()) {
+      throw FlutterError(kSaveError, "No file to save at $path", null)
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      insertIntoMediaStore(file, name, isVideo, relativePath)
+    } else {
+      copyAndScan(file, name, relativePath, guessMimeType(name) ?: guessMimeType(path))
+    }
+  }
+
+  override fun saveLivePhoto(
+    imagePath: String,
+    videoPath: String,
+    name: String,
+    callback: (Result<String>) -> Unit,
+  ) = respond(callback, "SAVE") {
+    throw FlutterError(kUnsupportedOs, "Live Photos are an iOS concept", null)
+  }
+
+  private suspend fun insertIntoMediaStore(
+    file: File,
+    name: String,
+    isVideo: Boolean,
+    relativePath: String?,
+  ): String = withContext(Dispatchers.IO) {
+    val resolver = ctx.contentResolver
+    val collection = if (isVideo) {
+      MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+    } else {
+      MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+
+    val values = ContentValues().apply {
+      put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+      if (!relativePath.isNullOrBlank()) {
+        put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+      }
+      put(MediaStore.MediaColumns.IS_PENDING, 1)
+    }
+
+    val uri = resolver.insert(collection, values)
+      ?: throw FlutterError(kSaveError, "MediaStore rejected the new ${file.name} entry", null)
+
+    try {
+      val written = resolver.openOutputStream(uri)?.use { output ->
+        file.inputStream().use { it.copyTo(output) }
+      }
+      if (written == null) {
+        throw FlutterError(kSaveError, "Cannot write to $uri", null)
+      }
+      resolver.update(
+        uri,
+        ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) },
+        null,
+        null
+      )
+    } catch (e: Exception) {
+      runCatching { resolver.delete(uri, null, null) }
+      throw e
+    }
+
+    resolver.notifyChange(uri, null)
+    ContentUris.parseId(uri).toString()
+  }
+
+  private suspend fun copyAndScan(
+    file: File,
+    name: String,
+    relativePath: String?,
+    mimeType: String?,
+  ): String {
+    val target = withContext(Dispatchers.IO) {
+      val dir = File(
+        Environment.getExternalStorageDirectory(),
+        relativePath?.takeIf { it.isNotBlank() } ?: Environment.DIRECTORY_DCIM,
+      )
+      dir.mkdirs()
+      val target = reserveUniqueFile(dir, name)
+      try {
+        file.inputStream().use { input -> target.outputStream().use { input.copyTo(it) } }
+      } catch (e: Exception) {
+        runCatching { target.delete() }
+        throw e
+      }
+      target
+    }
+
+    val uri = scanFile(target.absolutePath, mimeType)
+      ?: throw FlutterError(kSaveError, "Scanner did not index ${target.absolutePath}", null)
+    return ContentUris.parseId(uri).toString()
+  }
+
+  private suspend fun scanFile(path: String, mimeType: String?): Uri? =
+    suspendCancellableCoroutine { continuation ->
+      MediaScannerConnection.scanFile(ctx, arrayOf(path), mimeType?.let { arrayOf(it) }) { _, uri ->
+        if (continuation.isActive) {
+          continuation.resume(uri)
+        }
+      }
+    }
+
   private fun <T> respond(callback: (Result<T>) -> Unit, action: String, work: suspend () -> T) {
     scope.launch {
       try {
         completeWhenActive(callback, Result.success(work()))
       } catch (e: CancellationException) {
         throw e
+      } catch (e: FlutterError) {
+        completeWhenActive(callback, Result.failure(e))
       } catch (e: Exception) {
         val error = FlutterError(
           "${action.uppercase()}_FAILED",
