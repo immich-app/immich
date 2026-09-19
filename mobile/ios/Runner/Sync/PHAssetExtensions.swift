@@ -75,6 +75,21 @@ extension PHAsset {
     return nil
   }
 
+  func getLivePhotoResource() -> PHAssetResource? {
+    let resources = PHAssetResource.assetResources(for: self)
+    return resources.first(where: { $0.type == .fullSizePairedVideo })
+      ?? resources.first(where: { $0.type == .pairedVideo })
+  }
+
+  func getRawResource() -> PHAssetResource? {
+    let resources = PHAssetResource.assetResources(for: self)
+    switch mediaType {
+    case .image: return resources.first(where: { $0.type == .photo })
+    case .video: return resources.first(where: { $0.type == .video })
+    default: return nil
+    }
+  }
+
   private func isValidResourceType(_ type: PHAssetResourceType) -> Bool {
     switch mediaType {
     case .image:

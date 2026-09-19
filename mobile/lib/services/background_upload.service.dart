@@ -20,7 +20,6 @@ import 'package:immich_mobile/infrastructure/repositories/storage.repository.dar
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -37,7 +36,6 @@ final backgroundUploadServiceProvider = Provider((ref) {
     ref.watch(storageRepositoryProvider),
     db.localAssetRepository,
     db.backupRepository,
-    ref.watch(assetMediaRepositoryProvider),
     ref.watch(assetServiceProvider),
   );
 
@@ -91,7 +89,6 @@ class BackgroundUploadService {
     this._storageRepository,
     this._localAssetRepository,
     this._backupRepository,
-    this._assetMediaRepository,
     this._assetService,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
@@ -102,7 +99,6 @@ class BackgroundUploadService {
   final StorageRepository _storageRepository;
   final LocalAssetRepository _localAssetRepository;
   final BackupRepository _backupRepository;
-  final AssetMediaRepository _assetMediaRepository;
   final AssetService _assetService;
   final Logger _logger = Logger('BackgroundUploadService');
 
@@ -147,7 +143,6 @@ class BackgroundUploadService {
   /// Finds backup candidates, builds upload tasks, and enqueues them
   /// for background processing.
   Future<void> uploadBackupCandidates(String userId) async {
-    await _storageRepository.clearCache();
     shouldAbortQueuingTasks = false;
 
     final candidates = await _backupRepository.getCandidates(userId);
@@ -181,7 +176,6 @@ class BackgroundUploadService {
   Future<int> cancel() async {
     shouldAbortQueuingTasks = true;
 
-    await _storageRepository.clearCache();
     await _uploadRepository.reset(kBackupGroup);
     await _uploadRepository.deleteDatabaseRecords(kBackupGroup);
 
@@ -271,13 +265,8 @@ class BackgroundUploadService {
 
   @visibleForTesting
   Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
-    final entity = await _storageRepository.getAssetEntityForAsset(asset);
-    if (entity == null) {
-      _logger.warning("Asset entity not found for ${asset.id} - ${asset.name}");
-      return null;
-    }
-
-    File? file;
+    var assetFile = await _storageRepository.getFileForAsset(asset.id);
+    final isLivePhoto = assetFile?.isLivePhoto ?? false;
 
     /// iOS LivePhoto has two files: a photo and a video.
     /// They are uploaded separately, with video file being upload first, then returned with the assetId
@@ -289,25 +278,31 @@ class BackgroundUploadService {
     /// The cancel operation will only cancel the video group (normal group), the photo group will not
     /// be touched, as the video file is already uploaded.
 
-    if (entity.isLivePhoto) {
-      file = await _storageRepository.getMotionFileForAsset(asset);
-    } else {
-      file = await _storageRepository.getFileForAsset(asset.id);
+    if (isLivePhoto) {
+      if (CurrentPlatform.isIOS) {
+        try {
+          await assetFile?.file.delete();
+        } catch (e) {
+          _logger.severe('Error deleting still file for iOS: $e');
+        }
+      }
+      assetFile = await _storageRepository.getMotionFileForAsset(asset);
     }
 
-    if (file == null) {
+    if (assetFile == null) {
       _logger.warning("Failed to get file for asset ${asset.id} - ${asset.name}");
       return null;
     }
 
-    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    final file = assetFile.file;
+    final fileName = assetFile.originalFileName ?? asset.name;
     // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
     final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
     final originalFileName = p.setExtension(fileName, extension);
 
     final String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
-      isLivePhotos: entity.isLivePhoto,
+      isLivePhotos: isLivePhoto,
       livePhotoVideoId: '',
       checksum: asset.checksum,
     ).toJson();
@@ -326,33 +321,28 @@ class BackgroundUploadService {
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
       // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
-      fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.toString()} : null,
-      cloudId: entity.isLivePhoto ? null : asset.cloudId,
-      adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
-      latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),
-      longitude: entity.isLivePhoto ? null : asset.longitude?.toString(),
+      fields: isLivePhoto ? {'visibility': api.AssetVisibility.hidden.toString()} : null,
+      cloudId: isLivePhoto ? null : asset.cloudId,
+      adjustmentTime: isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
+      latitude: isLivePhoto ? null : asset.latitude?.toString(),
+      longitude: isLivePhoto ? null : asset.longitude?.toString(),
     );
   }
 
   @visibleForTesting
   Future<UploadTask?> getLivePhotoUploadTask(LocalAsset asset, String livePhotoVideoId) async {
-    final entity = await _storageRepository.getAssetEntityForAsset(asset);
-    if (entity == null) {
-      return null;
-    }
-
-    final file = await _storageRepository.getFileForAsset(asset.id);
-    if (file == null) {
+    final assetFile = await _storageRepository.getFileForAsset(asset.id);
+    if (assetFile == null) {
       return null;
     }
 
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     final requiresWiFi = _shouldRequireWiFi(asset);
-    final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    final originalFileName = assetFile.originalFileName ?? asset.name;
 
     return buildUploadTask(
-      file,
+      assetFile.file,
       createdAt: asset.createdAt,
       modifiedAt: asset.updatedAt,
       originalFileName: originalFileName,

@@ -20,12 +20,10 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
-import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 /// Callbacks for upload progress and status updates
 class UploadCallbacks {
@@ -44,7 +42,6 @@ final foregroundUploadServiceProvider = Provider((ref) {
     ref.watch(storageRepositoryProvider),
     ref.watch(driftProvider).backupRepository,
     ref.watch(connectivityApiProvider),
-    ref.watch(assetMediaRepositoryProvider),
     ref.watch(assetServiceProvider),
   );
 });
@@ -60,7 +57,6 @@ class ForegroundUploadService {
     this._storageRepository,
     this._backupRepository,
     this._connectivityApi,
-    this._assetMediaRepository,
     this._assetService,
   );
 
@@ -68,7 +64,6 @@ class ForegroundUploadService {
   final StorageRepository _storageRepository;
   final BackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
-  final AssetMediaRepository _assetMediaRepository;
   final AssetService _assetService;
   final Logger _logger = Logger('ForegroundUploadService');
 
@@ -120,7 +115,6 @@ class ForegroundUploadService {
     required bool hasWifi,
     required UploadCallbacks callbacks,
   }) async {
-    await _storageRepository.clearCache();
     shouldAbortUpload = false;
 
     for (final asset in items) {
@@ -206,7 +200,6 @@ class ForegroundUploadService {
     bool Function(T item)? shouldSkip,
     int concurrentWorkers = 3,
   }) async {
-    await _storageRepository.clearCache();
     shouldAbortUpload = false;
 
     int currentIndex = 0;
@@ -255,63 +248,26 @@ class ForegroundUploadService {
     File? livePhotoFile;
 
     try {
-      final entity = await _storageRepository.getAssetEntityForAsset(asset);
-      if (entity == null) {
+      void onICloudProgress(double progress) => callbacks.onICloudProgress?.call(asset.localId!, progress);
+
+      final assetFile = await _storageRepository.getFileForAsset(asset.id, onProgress: onICloudProgress);
+      if (assetFile == null) {
+        _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
         callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
         return;
       }
+      file = assetFile.file;
 
-      final isAvailableLocally = await _storageRepository.isAssetAvailableLocally(asset.id);
-
-      if (!isAvailableLocally && CurrentPlatform.isIOS) {
-        _logger.info("Loading iCloud asset ${asset.id} - ${asset.name}");
-
-        // Create progress handler for iCloud download
-        PMProgressHandler? progressHandler;
-        StreamSubscription? progressSubscription;
-
-        progressHandler = PMProgressHandler();
-        progressSubscription = progressHandler.stream.listen((event) {
-          callbacks.onICloudProgress?.call(asset.localId!, event.progress);
-        });
-
-        try {
-          file = await _storageRepository.loadFileFromCloud(asset.id, progressHandler: progressHandler);
-          if (entity.isLivePhoto) {
-            livePhotoFile = await _storageRepository.loadMotionFileFromCloud(
-              asset.id,
-              progressHandler: progressHandler,
-            );
-          }
-        } finally {
-          await progressSubscription.cancel();
-        }
-      } else {
-        // Get files locally
-        file = await _storageRepository.getFileForAsset(asset.id);
-        if (file == null) {
-          _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
+      // For live photos, get the motion video file
+      if (assetFile.isLivePhoto) {
+        livePhotoFile = (await _storageRepository.getMotionFileForAsset(asset, onProgress: onICloudProgress))?.file;
+        if (livePhotoFile == null) {
+          _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
           callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
-          return;
-        }
-
-        // For live photos, get the motion video file
-        if (entity.isLivePhoto) {
-          livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
-          if (livePhotoFile == null) {
-            _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
-            callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
-          }
         }
       }
 
-      if (file == null) {
-        _logger.warning("Failed to obtain file from iCloud for asset ${asset.id} - ${asset.name}");
-        callbacks.onError?.call(asset.localId!, t.asset_not_found_on_icloud);
-        return;
-      }
-
-      final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+      final fileName = assetFile.originalFileName ?? asset.name;
       // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
       final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
       final originalFileName = p.setExtension(fileName, extension);
@@ -329,7 +285,7 @@ class ForegroundUploadService {
 
       // Upload live photo video first if available
       String? livePhotoVideoId;
-      if (entity.isLivePhoto && livePhotoFile != null) {
+      if (livePhotoFile != null) {
         final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
 
         final onProgress = callbacks.onProgress;

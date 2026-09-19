@@ -128,7 +128,7 @@ class AssetMediaRepository {
   bool _isCancelled(Completer<void>? cancelCompleter) => cancelCompleter?.isCompleted ?? false;
 
   Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId, String displayName) async {
-    final file = await _storageRepository.getFileForAsset(localId);
+    final file = (await _storageRepository.getFileForAsset(localId))?.file;
     if (file == null) {
       _log.warning("Local original file not found for sharing: $asset");
       return null;
