@@ -64,7 +64,11 @@ export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
     sharp.concurrency(0);
-    sharp.cache({ files: 0 });
+    // Disable libvips' operation/pixel cache entirely (not just the file cache). The job
+    // queue processes a long tail of unique images sequentially, so cache hits are rare,
+    // but the cached buffers were observed contributing to gradual RSS growth in the
+    // microservices process over many hours of continuous thumbnail generation.
+    sharp.cache({ files: 0, memory: 0, items: 0 });
   }
 
   /**
@@ -414,6 +418,36 @@ export class MediaRepository {
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
     const { width = 0, height = 0, hasAlpha = false } = await sharp(input, { unlimited: true }).metadata();
     return { width, height, isTransparent: hasAlpha };
+  }
+
+  /**
+   * Detects unambiguous video-container magic bytes (ISO-BMFF/MP4/QuickTime "ftyp",
+   * Matroska/WebM EBML, classic RIFF/AVI) in a file that was routed into the image
+   * thumbnail pipeline based on its extension. A file misnamed with an image extension
+   * (e.g. a multi-gigabyte video renamed to .jpg) is not caught by the pixel-limit check
+   * - reported dimensions can be small or absent - and sharp attempting to parse
+   * arbitrary container bytes as image data is a known source of unbounded memory use.
+   * Only reads the first 16 bytes, so this is safe to call even on very large files.
+   */
+  async isVideoContainer(path: string): Promise<boolean> {
+    const buffer = Buffer.alloc(16);
+    const handle = await fs.open(path, 'r');
+    try {
+      await handle.read(buffer, 0, 16, 0);
+    } finally {
+      await handle.close();
+    }
+
+    if (buffer.length >= 8 && buffer.toString('ascii', 4, 8) === 'ftyp') {
+      return true;
+    }
+    if (buffer[0] === 0x1a && buffer[1] === 0x45 && buffer[2] === 0xdf && buffer[3] === 0xa3) {
+      return true;
+    }
+    if (buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'AVI ') {
+      return true;
+    }
+    return false;
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {

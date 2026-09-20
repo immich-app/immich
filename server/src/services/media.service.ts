@@ -210,6 +210,25 @@ export class MediaService extends BaseService {
       this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
       generated = await this.generateVideoThumbnails(asset, config);
     } else if (asset.type === AssetType.Image) {
+      // Guard against files that carry an image extension but are actually a video
+      // container (e.g. a multi-gigabyte .mp4 renamed to .jpg during an export/backup).
+      // The pixel-limit safety check only looks at reported dimensions, which are
+      // meaningless or absent for non-image bytes, so it does not catch this case -
+      // and letting sharp attempt to parse an arbitrary, potentially huge container as
+      // image data is a real source of unbounded memory use. HEIF-family images are
+      // legitimately ISO-BMFF/"ftyp"-based, so they're exempted from this check.
+      const isMisnamedVideo =
+        !mimeTypes.isHeifImage(asset.originalFileName) &&
+        (await this.mediaRepository.isVideoContainer(asset.originalPath));
+      if (isMisnamedVideo) {
+        this.logger.error(
+          `Thumbnail generation skipped for asset ${id}: ${asset.originalPath} has an image extension ` +
+            `but its contents look like a video container. The file is likely misnamed; rename it with the ` +
+            `correct extension so it can be reprocessed as a video.`,
+        );
+        return JobStatus.Skipped;
+      }
+
       this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
       generated = await this.generateImageThumbnails(asset, config);
     } else {
@@ -258,6 +277,15 @@ export class MediaService extends BaseService {
   private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
     const isExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
     const extracted = isExtractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
+
+    // Read header-only metadata first, before the unlimited full-buffer decode below.
+    // getImageMetadata() enforces sharp's pixel-limit safety check; decodeImage() does
+    // not (limitInputPixels is explicitly disabled there). Checking metadata first means
+    // an oversized/malformed original throws here - cheaply - instead of only being
+    // rejected afterwards, by which point decodeImage() has already fully decoded (and
+    // held in memory) the entire image.
+    const metadata = extracted ? undefined : await this.mediaRepository.getImageMetadata(asset.originalPath);
+
     const isGenerateFullsize =
       ((image.fullsize.enabled || asset.exifInfo.projectionType === 'EQUIRECTANGULAR') &&
         !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
@@ -276,7 +304,7 @@ export class MediaService extends BaseService {
 
     let isTransparent = false;
     if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
-      ({ isTransparent } = await this.mediaRepository.getImageMetadata(asset.originalPath));
+      isTransparent = metadata!.isTransparent;
     }
 
     return {
