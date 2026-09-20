@@ -2,8 +2,6 @@
 
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -13,7 +11,6 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
@@ -65,16 +62,6 @@ class ActionNotifier extends Notifier<void> {
         null => const {},
       },
     };
-  }
-
-  Future<ActionResult> troubleshoot(ActionSource source, BuildContext context) async {
-    final assets = _getAssets(source);
-    if (assets.length > 1) {
-      return ActionResult(count: assets.length, success: false, error: 'Cannot troubleshoot multiple assets');
-    }
-    unawaited(context.pushRoute(AssetTroubleshootRoute(asset: assets.first)));
-
-    return ActionResult(count: assets.length, success: true);
   }
 
   Future<ActionResult> emptyTrash(String userId) async {

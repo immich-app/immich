@@ -1,5 +1,5 @@
-import { latitudeSchema, longitudeSchema } from 'src/validation';
 import z from 'zod';
+import { latitudeSchema, longitudeSchema } from 'src/validation.js';
 
 export const BBoxSchema = z
   .object({

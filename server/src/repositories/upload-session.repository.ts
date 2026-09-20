@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { UploadSessionTable } from 'src/schema/tables/upload-session.table';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import { UploadSessionTable } from 'src/schema/tables/upload-session.table.js';
 
 @Injectable()
 export class UploadSessionRepository {

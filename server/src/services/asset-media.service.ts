@@ -4,22 +4,23 @@ import { createHash, randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import sanitize from 'sanitize-filename';
-import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AuthSharedLink } from 'src/database';
+import type { UploadFile, UploadRequest } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { Asset, AuthSharedLink } from 'src/database.js';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
   AssetMediaStatus,
   AssetRejectReason,
   AssetUploadAction,
-} from 'src/dtos/asset-media-response.dto';
+} from 'src/dtos/asset-media-response.dto.js';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
   AssetMediaSize,
   UploadFieldName,
-} from 'src/dtos/asset-media.dto';
+} from 'src/dtos/asset-media.dto.js';
 import {
   AssetUploadChunkResponseDto,
   AssetUploadCompleteDto,
@@ -27,9 +28,9 @@ import {
   AssetUploadInitResponseDto,
   AssetUploadStatusResponseDto,
   UploadStatus,
-} from 'src/dtos/asset-upload.dto';
-import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+} from 'src/dtos/asset-upload.dto.js';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetFileType,
   AssetVisibility,
@@ -38,17 +39,17 @@ import {
   JobName,
   Permission,
   StorageFolder,
-} from 'src/enum';
-import { AuthRequest } from 'src/middleware/auth.guard';
-import { UploadSessionTable } from 'src/schema/tables/upload-session.table';
-import { BaseService } from 'src/services/base.service';
-import { UploadFile, UploadRequest } from 'src/types';
-import { requireUploadAccess } from 'src/utils/access';
-import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
-import { isAssetChecksumConstraint } from 'src/utils/database';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
-import { fromChecksum } from 'src/utils/request';
+} from 'src/enum.js';
+import { AuthRequest } from 'src/middleware/auth.guard.js';
+import { UploadSessionTable } from 'src/schema/tables/upload-session.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import { UploadFile, UploadRequest } from 'src/types.js';
+import { requireUploadAccess } from 'src/utils/access.js';
+import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util.js';
+import { isAssetChecksumConstraint } from 'src/utils/database.js';
+import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { fromChecksum } from 'src/utils/request.js';
 
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';

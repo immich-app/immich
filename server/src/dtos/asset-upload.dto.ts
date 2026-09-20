@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { AssetMetadataUpsertItemSchema } from 'src/dtos/asset.dto';
-import { AssetVisibilitySchema } from 'src/enum';
-import { isoDatetimeToDate, JsonParsed, stringToBool } from 'src/validation';
+import { AssetMetadataUpsertItemSchema } from 'src/dtos/asset.dto.js';
+import { AssetVisibilitySchema } from 'src/enum.js';
+import { isoDatetimeToDate, JsonParsed, stringToBool } from 'src/validation.js';
 import z from 'zod';
 
 export enum UploadStatus {

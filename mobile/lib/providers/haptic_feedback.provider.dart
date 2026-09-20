@@ -10,7 +10,6 @@ final hapticFeedbackProvider = StateNotifierProvider<HapticNotifier, void>((ref)
 });
 
 class HapticNotifier extends StateNotifier<void> {
-  void build() {}
   final Ref _ref;
 
   HapticNotifier(this._ref) : super(null);
@@ -18,12 +17,6 @@ class HapticNotifier extends StateNotifier<void> {
   void selectionClick() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
       unawaited(HapticFeedback.selectionClick());
-    }
-  }
-
-  void lightImpact() {
-    if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
-      unawaited(HapticFeedback.lightImpact());
     }
   }
 
@@ -36,12 +29,6 @@ class HapticNotifier extends StateNotifier<void> {
   void heavyImpact() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
       unawaited(HapticFeedback.heavyImpact());
-    }
-  }
-
-  void vibrate() {
-    if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
-      unawaited(HapticFeedback.vibrate());
     }
   }
 }

@@ -7,8 +7,8 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
-import { UserTable } from 'src/schema/tables/user.table';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('upload_session')
 export class UploadSessionTable {
