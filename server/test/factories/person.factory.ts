@@ -1,7 +1,7 @@
 import { Selectable } from 'kysely';
-import { PersonTable } from 'src/schema/tables/person.table';
-import { PersonLike } from 'test/factories/types';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { PersonTable } from 'src/schema/tables/person.table.js';
+import { PersonLike } from 'test/factories/types.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class PersonFactory {
   private constructor(private readonly value: Selectable<PersonTable>) {}

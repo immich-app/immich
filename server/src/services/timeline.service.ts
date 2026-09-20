@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto';
-import { AssetVisibility, Permission } from 'src/enum';
-import { TimeBucketOptions } from 'src/repositories/asset.repository';
-import { BaseService } from 'src/services/base.service';
-import { requireElevatedPermission } from 'src/utils/access';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto.js';
+import { AssetVisibility, Permission } from 'src/enum.js';
+import { TimeBucketOptions } from 'src/repositories/asset.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { requireElevatedPermission } from 'src/utils/access.js';
+import { getMyPartnerIds } from 'src/utils/asset.util.js';
 
 @Injectable()
 export class TimelineService extends BaseService {

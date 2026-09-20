@@ -1,5 +1,5 @@
-import { AacProfile, AudioCodec, ColorTransfer, DvSignalCompatibility, HevcProfile, VideoCodec } from 'src/enum';
-import { AudioStreamInfo, VideoPacketInfo, VideoStreamInfo } from 'src/types';
+import type { AudioStreamInfo, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
+import { AacProfile, AudioCodec, ColorTransfer, DvSignalCompatibility, HevcProfile, VideoCodec } from 'src/enum.js';
 
 type VideoRange = 'SDR' | 'PQ' | 'HLG';
 

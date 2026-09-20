@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import {
   HLS_BACKPRESSURE_PAUSE_SEGMENTS,
   HLS_BACKPRESSURE_RESUME_SEGMENTS,
@@ -5,13 +6,12 @@ import {
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
   HLS_ORIGINAL_VARIANT_INDEX,
-} from 'src/constants';
-import { DvProfile, DvSignalCompatibility } from 'src/enum';
-import { TranscodingService } from 'src/services/transcoding.service';
-import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database';
-import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
-import { mockSpawn, newTestService, ServiceMocks } from 'test/utils';
-import { vi } from 'vitest';
+} from 'src/constants.js';
+import { DvProfile, DvSignalCompatibility } from 'src/enum.js';
+import { TranscodingService } from 'src/services/transcoding.service.js';
+import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database.js';
+import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub.js';
+import { ServiceMocks, mockSpawn, newTestService } from 'test/utils.js';
 
 describe(TranscodingService.name, () => {
   let sut: TranscodingService;

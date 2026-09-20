@@ -1,5 +1,10 @@
 # SMTP settings using Microsoft 365
 
+:::info Deprecated by Microsoft
+Microsoft has announced the [deprecation](https://techcommunity.microsoft.com/blog/exchange/updated-exchange-online-smtp-auth-basic-authentication-deprecation-timeline/4489835) of SMTP Basic Auth.
+We no longer recommend using this setup method. Alternate methods are available but not within the scope of the Immich docs.
+:::
+
 This guide walks you through how to get the information you need to set up your Immich instance to send emails using Microsoft's SMTP server.
 
 ## Create an app password

@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { Route } from '$lib/route';
   import { handleError } from '$lib/utils/handle-error';
-  import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
+  import { getAllPeople, getPerson, mergePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -67,10 +67,7 @@
     }
 
     try {
-      let results = await mergePerson({
-        id: person.id,
-        mergePersonDto: { ids: selectedPeople.map(({ id }) => id) },
-      });
+      let results = await mergePeople({ mergePersonDto: { ids: [person.id, ...selectedPeople.map(({ id }) => id)] } });
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       toastManager.primary($t('merged_people_count', { values: { count } }));

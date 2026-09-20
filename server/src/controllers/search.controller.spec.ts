@@ -1,8 +1,8 @@
-import { SearchController } from 'src/controllers/search.controller';
-import { SearchService } from 'src/services/search.service';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { SearchController } from 'src/controllers/search.controller.js';
+import { SearchService } from 'src/services/search.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(SearchController.name, () => {
   let ctx: ControllerContext;
