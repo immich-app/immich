@@ -2,9 +2,9 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   Table,
-  Timestamp,
+  type Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';

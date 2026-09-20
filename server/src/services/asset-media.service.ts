@@ -43,11 +43,10 @@ import {
 import { AuthRequest } from 'src/middleware/auth.guard.js';
 import { UploadSessionTable } from 'src/schema/tables/upload-session.table.js';
 import { BaseService } from 'src/services/base.service.js';
-import { UploadFile, UploadRequest } from 'src/types.js';
 import { requireUploadAccess } from 'src/utils/access.js';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file.js';
+import { ImmichFileResponse, getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { fromChecksum } from 'src/utils/request.js';
 

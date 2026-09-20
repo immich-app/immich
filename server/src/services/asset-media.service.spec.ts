@@ -10,7 +10,7 @@ import { AssetFile } from 'src/database.js';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto.js';
 import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
-import { DEFAULT_UPLOAD_CHUNK_SIZE_BYTES, UploadStatus } from 'src/dtos/asset-upload.dto.js';
+import { UploadStatus } from 'src/dtos/asset-upload.dto.js';
 import { AssetEditAction } from 'src/dtos/editing.dto.js';
 import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum.js';
 import { AuthRequest } from 'src/middleware/auth.guard.js';
@@ -536,7 +536,7 @@ describe(AssetMediaService.name, () => {
       expect(result).toEqual(
         expect.objectContaining({
           uploadId: expect.any(String),
-          chunkSize: DEFAULT_UPLOAD_CHUNK_SIZE_BYTES,
+          chunkSize: 99 * 1024 * 1024,
           status: UploadStatus.INITIALIZED,
         }),
       );
@@ -625,11 +625,11 @@ describe(AssetMediaService.name, () => {
 
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
-      mocks.asset.create.mockImplementation(async (dto: any) => {
+      mocks.asset.create.mockImplementation((dto: any) => {
         // The asset's originalPath is the assembled session path; capture it to verify
         // the file is preserved (not unlinked) on success.
         expect(dto.originalPath).toBeDefined();
-        return asset;
+        return Promise.resolve(asset);
       });
 
       await expect(sut.completeUpload(authStub.admin, uploadId, {})).resolves.toEqual({

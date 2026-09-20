@@ -251,6 +251,7 @@ export class BaseService {
       ctx.tagRepository,
       ctx.telemetryRepository,
       ctx.trashRepository,
+      ctx.uploadSessionRepository,
       ctx.userRepository,
       ctx.versionRepository,
       ctx.videoStreamRepository,
