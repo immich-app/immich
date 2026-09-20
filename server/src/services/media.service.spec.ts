@@ -934,16 +934,22 @@ describe(MediaService.name, () => {
       });
     });
 
-    it('should not check transparency metadata for raw files without extracted images', async () => {
+    it('should check original file metadata (for the pixel-limit guard) but not use it for transparency for raw files without extracted images', async () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: true });
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.getImageMetadata).not.toHaveBeenCalled();
+      // getImageMetadata() is called unconditionally on the original file so its
+      // pixel-limit check runs before the unlimited decodeImage() call, but its
+      // isTransparent result is only used for formats that can actually be
+      // transparent, which raw formats like .dng are not.
+      expect(mocks.media.getImageMetadata).toHaveBeenCalledOnce();
+      expect(mocks.media.getImageMetadata).toHaveBeenCalledWith(asset.originalPath);
     });
 
     it('should not check transparency metadata for raw files with extracted images', async () => {
