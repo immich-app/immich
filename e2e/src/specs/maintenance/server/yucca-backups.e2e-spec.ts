@@ -170,18 +170,16 @@ describe('/yucca', () => {
     it.sequential('creates a snapshot', async () => {
       const event = waitForMessage('TaskEnd');
 
-      const {
-        repositories: [{ id }],
-      } = await sdk.getRepositories(requestOpts);
+      const { repositories } = await sdk.getRepositories(requestOpts);
+      const { id } = repositories[0];
 
       filename = await utils.createBackup(admin.accessToken);
 
       await sdk.createBackup(id, requestOpts);
       await event;
 
-      const {
-        snapshots: [{ id: snapshotId }],
-      } = await sdk.getSnapshots(id, requestOpts);
+      const { snapshots } = await sdk.getSnapshots(id, requestOpts);
+      const { id: snapshotId } = snapshots[0];
 
       await expect(sdk.getSnapshotListing(id, snapshotId, {}, requestOpts)).resolves.toMatchInlineSnapshot(`
         {
@@ -260,7 +258,7 @@ describe('/yucca', () => {
       async () => {
         const { status, headers } = await request(app).post('/admin/database-backups/start-restore').send();
         expect(status).toBe(201);
-        cookie = headers['set-cookie'][0].split(';')[0];
+        cookie = headers['set-cookie'][0].split(';', 1)[0];
 
         await expect
           .poll(
@@ -300,9 +298,9 @@ describe('/yucca', () => {
           maintenanceRequestOpts,
         );
 
-        const {
-          repositories: [{ id: repositoryId, snapshots: [{ id: snapshotId }] = [] }],
-        } = await sdk.inspectRepositories({}, maintenanceRequestOpts);
+        const { repositories } = await sdk.inspectRepositories({}, maintenanceRequestOpts);
+        const { id: repositoryId, snapshots } = repositories[0];
+        const { id: snapshotId } = (snapshots ?? [])[0];
 
         socket = io(baseUrl, {
           path: '/api/yucca/socket.io',
