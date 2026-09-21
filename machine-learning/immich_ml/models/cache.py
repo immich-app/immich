@@ -17,7 +17,7 @@ class ModelCache:
         self, model_name: str, model_type: ModelType, model_task: ModelTask, ttl: int | None = None, **options: Any
     ) -> InferenceModel:
         model_cls = get_model_class(model_name, model_type, model_task)
-        key = (model_name, model_type, model_task)
+        key = (model_name, model_type, model_task, *(options.get(option) for option in model_cls.graph_options))
         if key not in self._models:
             self._models[key] = model_cls(model_name, **options)
         elif key not in self._expiries:

@@ -1,78 +1,82 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any
 
 import numpy as np
+import orjson
 from numpy.typing import NDArray
 
 from immich_ml.config import log, settings
-from immich_ml.schemas import SessionNode
+from immich_ml.schemas import ModelInput, ModelTensor, SessionNode, Shape
 
-from .rknnpool import RknnPoolExecutor, is_available, soc_name
+from .rknnpool import RknnNode, RknnPoolExecutor, is_available, soc_name
 
 is_available = is_available and settings.rknn
 model_prefix = Path("rknpu") / soc_name if is_available and soc_name is not None else None
 
 
-def run_inference(rknn_lite: Any, input: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
-    outputs: list[NDArray[np.float32]] = rknn_lite.inference(inputs=input, data_format="nchw")
+def model_path(model_dir: Path, variant: str = "") -> Path:
+    return (model_dir / model_prefix if model_prefix else model_dir) / variant / "model.rknn"
+
+
+def run_inference(rknn_lite: Any, inputs: list[ModelTensor], data_format: str | None) -> list[NDArray[np.float32]]:
+    outputs: list[NDArray[np.float32]] = rknn_lite.inference(inputs=inputs, data_format=data_format)
     return outputs
 
 
-input_output_mapping: dict[str, dict[str, Any]] = {
-    "detection": {
-        "input": {"norm_tensor:0": (1, 3, 640, 640)},
-        "output": {
-            "norm_tensor:1": (12800, 1),
-            "norm_tensor:2": (3200, 1),
-            "norm_tensor:3": (800, 1),
-            "norm_tensor:4": (12800, 4),
-            "norm_tensor:5": (3200, 4),
-            "norm_tensor:6": (800, 4),
-            "norm_tensor:7": (12800, 10),
-            "norm_tensor:8": (3200, 10),
-            "norm_tensor:9": (800, 10),
-        },
-    },
-    "recognition": {"input": {"norm_tensor:0": (1, 3, 112, 112)}, "output": {"norm_tensor:1": (1, 512)}},
-}
+def input_layout(compiled: tuple[int, ...], array: ModelTensor) -> str | None:
+    if array.ndim != 4:
+        return None  # token ids carry no layout
+    if array.shape[3] == compiled[3]:
+        return "nhwc"
+    if array.shape[1] == compiled[3]:
+        return "nchw"
+    raise ValueError(f"binary takes {compiled[3]} channels, fed {list(array.shape)}")
 
 
 class RknnSession:
     def __init__(self, model_path: Path) -> None:
-        self.model_type = "detection" if "detection" in model_path.parts else "recognition"
         self.tpe = settings.rknn_threads
 
         log.info(f"Loading RKNN model from {model_path} with {self.tpe} threads.")
         self.rknnpool = RknnPoolExecutor(model_path=model_path.as_posix(), tpes=self.tpe, func=run_inference)
         log.info(f"Loaded RKNN model from {model_path} with {self.tpe} threads.")
+        # the shapes the binary was compiled for, among which the runtime routes itself
+        batch = self.rknnpool.inputs[0].shape[0]
+        declared = orjson.loads(self.rknnpool.custom_string)["dims"] if self.rknnpool.custom_string else [{}]
+        self.shapes = tuple(Shape(batch, **dims) for dims in declared)
+        self.batches = (batch,)
 
-    def get_inputs(self) -> list[SessionNode]:
-        return [RknnNode(name=k, shape=v) for k, v in input_output_mapping[self.model_type]["input"].items()]
+    def for_shape(self, shape: Shape) -> RknnSession:
+        return self
 
-    def get_outputs(self) -> list[SessionNode]:
-        return [RknnNode(name=k, shape=v) for k, v in input_output_mapping[self.model_type]["output"].items()]
+    def get_inputs(self) -> Sequence[SessionNode]:
+        return self.rknnpool.inputs
+
+    def get_outputs(self) -> Sequence[SessionNode]:
+        return self.rknnpool.outputs
 
     def get_metadata(self) -> dict[str, str]:
         return {}
 
+    @property
+    def normalizes_input(self) -> bool:
+        # the compiler transposes and casts every binary, so only what the exporter declared can say
+        return bool(self.rknnpool.custom_string)
+
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]] | dict[str, NDArray[np.uint8]],
+        input_feed: ModelInput,
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
-        input_data: list[NDArray[np.float32]] = [np.ascontiguousarray(v) for v in input_feed.values()]
-        res = self.rknnpool.run(input_data)
+        inputs = [array if array.flags.c_contiguous else array.copy() for array in input_feed.values()]
+        res = self.rknnpool.run(inputs, input_layout(self.rknnpool.inputs[0].shape, inputs[0]))
         if res is None:
             raise RuntimeError("RKNN inference failed!")
         return res
 
 
-class RknnNode(NamedTuple):
-    name: str
-    shape: tuple[int, ...]
-
-
-__all__ = ["RknnSession", "RknnNode", "is_available", "soc_name", "model_prefix"]
+__all__ = ["RknnSession", "RknnNode", "is_available", "soc_name", "model_path"]
