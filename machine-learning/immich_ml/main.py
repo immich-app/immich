@@ -7,7 +7,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import Any, AsyncGenerator, Callable, Iterator
+from typing import Any, AsyncGenerator, Callable
 from zipfile import BadZipFile
 
 import orjson
@@ -18,6 +18,7 @@ from PIL.Image import Image
 from pydantic import ValidationError
 from starlette.formparsers import MultiPartParser
 
+from immich_ml import allocator
 from immich_ml.models import get_model_deps
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_pil
@@ -44,6 +45,7 @@ thread_pool: ThreadPoolExecutor | None = None
 lock = threading.Lock()
 active_requests = 0
 last_called: float | None = None
+release: asyncio.TimerHandle | None = None
 
 
 @asynccontextmanager
@@ -65,6 +67,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             asyncio.ensure_future(idle_shutdown_task())
         if settings.preload is not None:
             await preload_models(settings.preload)
+            allocator.release()
         yield
     finally:
         log.handlers.clear()
@@ -119,14 +122,19 @@ async def preload_models(preload: PreloadModelData) -> None:
         )
 
 
-def update_state() -> Iterator[None]:
-    global active_requests, last_called
+async def update_state() -> AsyncGenerator[None, None]:
+    global active_requests, last_called, release
     active_requests += 1
     last_called = time.time()
+    if release is not None:
+        release.cancel()
+        release = None
     try:
         yield
     finally:
         active_requests -= 1
+        if not active_requests:
+            release = asyncio.get_running_loop().call_later(5, allocator.release)
 
 
 def get_entries(entries: str = Form()) -> InferenceEntries:
