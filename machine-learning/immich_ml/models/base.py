@@ -82,6 +82,11 @@ class InferenceModel(ABC):
                 del self.session
                 self.loaded = False
 
+    def build(self) -> None:
+        self.load()
+        for shape in self.session.shapes:
+            self.session.for_shape(shape)
+
     def predict(self, *inputs: Any, **model_kwargs: Any) -> Any:
         self.load()
         return self._predict(*inputs, **model_kwargs)
