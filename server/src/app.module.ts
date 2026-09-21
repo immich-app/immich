@@ -61,6 +61,7 @@ const { bull, cls, database, environment, otel, storage } = configRepository.get
 
 const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
 const yuccaStatePath = getBackupsStatePath(storage.mediaLocation);
+const yuccaCachePath = '/data/restic-cache';
 
 /*
   TODO[YUCCA]: remove this whole block of code
@@ -141,6 +142,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       inject: [AuthService, WebsocketRepository],
       useFactory: (authService: AuthService, websocketRepository: WebsocketRepository) => ({
         statePath: yuccaStatePath,
+        cachePath: yuccaCachePath,
         requireWsAuth: true,
         requireLock: true,
         developmentMode: isYuccaDevelopmentMode,
@@ -173,6 +175,7 @@ export class ApiModule extends BaseModule {}
         websocketRepository: MaintenanceWebsocketRepository,
       ) => ({
         statePath: yuccaStatePath,
+        cachePath: yuccaCachePath,
         externalBaseUrl: 'https://my.immich.app',
         requireWsAuth: true,
         requireLock: true,
