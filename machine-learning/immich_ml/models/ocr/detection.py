@@ -5,27 +5,22 @@ import numpy as np
 from immich_model.constants import ocr_canvases
 from numpy.typing import NDArray
 from PIL import Image
-from rapidocr.inference_engine.base import FileInfo, InferSession
-from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
-from rapidocr.utils.typings import EngineType, LangDet, OCRVersion, TaskType
-from rapidocr.utils.typings import ModelType as RapidModelType
 
-from immich_ml.config import log
-from immich_ml.models.base import InferenceModel
-from immich_ml.models.ocr.postprocess import DBPostProcess
-from immich_ml.models.ocr.schemas import TextDetectionOutput
-from immich_ml.schemas import ModelFormat, ModelGraph, ModelSession, ModelTask, ModelType, Shape
-from immich_ml.sessions.ort import OrtSession
+from immich_ml.schemas import ModelGraph, ModelTask, ModelType, Shape
 from immich_ml.sessions.policy import ShapePolicy
 
+from .legacy import TextModel
+from .postprocess import DBPostProcess
+from .schemas import TextDetectionOutput
 
-class TextDetector(InferenceModel):
+
+class TextDetector(TextModel):
     depends = []
     identity = (ModelType.DETECTION, ModelTask.OCR)
     graph_options = ("maxResolution",)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
+        super().__init__(model_name, **model_kwargs)
         short_side = model_kwargs.get("maxResolution", 736)
         # RKNPU ships a binary per short side, which the label picks
         canvases = tuple(Shape(batch=1, **canvas) for canvas in ocr_canvases(short_side))
@@ -36,28 +31,6 @@ class TextDetector(InferenceModel):
             "scores": np.empty(0, dtype=np.float32),
         }
         self.postprocess = DBPostProcess(thresh=0.3, max_candidates=1000, unclip_ratio=1.6, use_dilation=True)
-
-    def _download(self) -> None:
-        model_info = InferSession.get_model_url(
-            FileInfo(
-                engine_type=EngineType.ONNXRUNTIME,
-                ocr_version=OCRVersion.PPOCRV5,
-                task_type=TaskType.DET,
-                lang_type=LangDet.CH,
-                model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
-            )
-        )
-        download_params = DownloadFileInput(
-            file_url=model_info["model_dir"],
-            sha256=model_info["SHA256"],
-            save_path=self.model_path,
-            logger=log,
-        )
-        DownloadFile.run(download_params)
-
-    def _load(self) -> ModelSession:
-        # TODO: support other runtime sessions
-        return OrtSession(self.model_path, self.shape_policy, self.model_task)
 
     def _predict(
         self, inputs: Image.Image, maxResolution: int = 736, minScore: float = 0.5, scoreMode: str = "fast"
