@@ -71,9 +71,17 @@ class OpenClipVisualEncoder(BaseCLIPVisualEncoder):
         return super()._load()
 
     def transform(self, session: ModelGraph, image: Image.Image) -> ModelInput:
-        image = resize_pil(image, self.size, self.resampling)
-        image = crop_pil(image, self.size)
+        image = self._resize(image)
         if session.normalizes_input:
             rgb: NDArray[np.uint8] = np.asarray(image if image.mode == "RGB" else image.convert("RGB"))
             return {"image": rgb[None]}
         return {"image": normalize(to_numpy(image), self.mean, self.std).transpose(2, 0, 1)[None]}
+
+    def _resize(self, image: Image.Image) -> Image.Image:
+        match self.preprocess_cfg.get("resize_mode", "shortest"):  # open_clip's default for older configs
+            case "squash":
+                return image.resize((self.size, self.size), resample=self.resampling)
+            case "shortest":
+                return crop_pil(resize_pil(image, self.size, self.resampling), self.size)
+            case mode:
+                raise ValueError(f"Unsupported resize_mode {mode!r} in {self.preprocess_cfg_path}")
