@@ -1,11 +1,12 @@
 import numpy as np
+from immich_model.constants import FACE_DETECTION_SIZE as DET_SIZE
 from numpy.typing import NDArray
 
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_pil, letterbox, normalize
 from immich_ml.schemas import FaceDetectionOutput, ModelTask, ModelType
 
-from ._ops import DET_SIZE, decode_scrfd, nms
+from ._ops import decode_scrfd, nms
 
 
 class FaceDetector(InferenceModel):

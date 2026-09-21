@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.95.2,<1.0",
     "gunicorn>=21.1.0",
     "huggingface-hub>=1.0,<2.0",
+    "immich-model",
     "numpy>=2.4.0,<3.0",
     "onnx>=1.22.0",
     "opencv-python-headless>=4.7.0.72,<5.0",
@@ -58,6 +59,7 @@ compile-bytecode = true
 override-dependencies = ["opencv-python ; sys_platform == 'never'"] # only install the headless version
 
 [tool.uv.sources]
+immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "88d2b64ff95ce7117760660681d95e0e1308819b" }
 onnxruntime-gpu = { index = "onnxruntime-cuda-12" }
 
 [[tool.uv.index]]
