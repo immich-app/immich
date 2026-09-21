@@ -6,6 +6,7 @@ import { SALT_ROUNDS } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { UserAdmin } from 'src/database.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
+import { Permission } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { ActivityRepository } from 'src/repositories/activity.repository.js';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
@@ -281,11 +282,11 @@ export class BaseService {
     return updateConfig(this.configRepos, newConfig);
   }
 
-  requireAccess(request: AccessRequest) {
+  requireAccess<T extends Permission>(request: AccessRequest<T>) {
     return requireAccess(this.accessRepository, request);
   }
 
-  checkAccess(request: AccessRequest) {
+  checkAccess<T extends Permission>(request: AccessRequest<T>) {
     return checkAccess(this.accessRepository, request);
   }
 

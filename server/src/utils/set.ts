@@ -1,3 +1,5 @@
+import stableJsonStringify from 'json-stable-stringify';
+
 // NOTE: The following Set utils have been added here, to easily determine where they are used.
 //       They should be replaced with native Set operations, when they are added to the language.
 //       Proposal reference: https://github.com/tc39/proposal-set-methods
@@ -23,11 +25,18 @@ export const setDifference = <T>(setA: Set<T>, ...sets: Set<T>[]): Set<T> => {
 };
 
 export const isSetSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
+  if (!set.values().some((value) => typeof value === 'object')) {
+    return set.isSupersetOf(subset);
+  }
+
+  const map = new Map(set.values().map((value) => [stableJsonStringify(value) as string, value]));
+
   for (const element of subset) {
-    if (!set.has(element)) {
+    if (!map.has(stableJsonStringify(element) as string)) {
       return false;
     }
   }
+
   return true;
 };
 
