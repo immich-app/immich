@@ -13,7 +13,7 @@ from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
-from .schemas import ModelOrganization, ModelPrecision
+from .schemas import ModelOrganization
 
 
 class ClipSettings(BaseModel):
@@ -73,8 +73,6 @@ class Settings(BaseSettings):
     rknn_threads: int = 1
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize = MaxBatchSize()
-    openvino_precision: ModelPrecision = ModelPrecision.FP32
-    rocm_precision: ModelPrecision = ModelPrecision.FP32
     model_organization: ModelOrganization = ModelOrganization.APP
     model_revision: str = "main"
 

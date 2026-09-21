@@ -45,11 +45,6 @@ class ModelSource(StrEnum):
     PADDLE = "paddle"
 
 
-class ModelPrecision(StrEnum):
-    FP16 = "FP16"
-    FP32 = "FP32"
-
-
 class ModelOrganization(StrEnum):
     APP = "immich-app"
     TESTING = "immich-testing"

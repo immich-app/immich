@@ -7,6 +7,7 @@ from typing import Any
 
 import onnx
 from google.protobuf.message import DecodeError
+from immich_model.onnx.f16 import derive
 from immich_model.runtime import apply_rewrites
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 
@@ -28,13 +29,21 @@ def main() -> None:
 def prepare(spec: GraphSpec) -> None:
     rmtree(spec.directory, ignore_errors=True)  # whatever is here was made under other facts, or not finished
     spec.directory.mkdir(parents=True)
-    graph = rewritten(spec, spec.model_path)
+    graph = rewritten(spec, narrowed(spec))
     if spec.cpu_only:
         graph = prepacked(spec, graph)  # allows mmap'ing the file instead of prepacking to dirty heap memory
     elif spec.directory.as_posix() in spec.provider_options[0].values():
         spec.session(graph)  # the provider keeps what it compiles, in the directory it was given
     manifest = Manifest(facts=spec.facts, graph=graph.relative_to(spec.model_path.parent).as_posix())
     spec.manifest.write_text(manifest.model_dump_json())  # last, so that it means complete
+
+
+def narrowed(spec: GraphSpec) -> Path:
+    if not spec.half:
+        return spec.model_path
+    destination = spec.directory / "model_fp16.onnx"
+    derive(spec.model_path, destination)
+    return destination
 
 
 def rewritten(spec: GraphSpec, graph: Path) -> Path:
