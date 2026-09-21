@@ -163,6 +163,10 @@ ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE
 # store huggingface in /cache subfolder to enable rootless deployment with a single volume
 ENV HF_HOME=/cache/hf-cache
 
+ENV CUDA_CACHE_PATH=/cache/jit/cuda \
+    AMD_COMGR_CACHE_DIR=/cache/jit/comgr \
+    NEO_CACHE_DIR=/cache/jit/neo
+
 ENTRYPOINT ["tini", "--"]
 CMD ["python", "-m", "immich_ml"]
 
