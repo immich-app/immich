@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 import platform
 import sys
 import threading
@@ -17,10 +18,12 @@ import orjson
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
 from PIL import Image
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
+import immich_ml.sessions.prepare as prepare_module
 from immich_ml import allocator
 from immich_ml.config import MaxBatchSize, PreloadModelData, Settings, settings
 from immich_ml.main import (
@@ -43,7 +46,7 @@ from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelTask, ModelType, Shape
 from immich_ml.sessions.ann import AnnSession
-from immich_ml.sessions.ort import OrtSession, flush_denormals
+from immich_ml.sessions.ort import GraphSpec, OrtSession, flush_denormals, fresh, prepared
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 from immich_ml.sessions.rknn import RknnSession, run_inference
 from immich_ml.sessions.rknn import model_path as rknn_model_path
@@ -509,6 +512,24 @@ class TestOrtSessions:
 
         assert not given_sess_options(ort_session).enable_cpu_mem_arena
 
+    def test_feeds_channels_first_where_the_rewriter_moved_the_layout_out_of_the_graph(
+        self, ort_session: mock.Mock
+    ) -> None:
+        # CoreML's plan retypes the image input, and the models go on handing over frames as they decoded them
+        ort_session.return_value.get_inputs.return_value = [
+            SimpleNamespace(name="image", type="tensor(uint8)", shape=["batch", 3, 224, 224])
+        ]
+        session = ort_sessions("ViT-B-32__openai", providers=["CoreMLExecutionProvider"]).for_shape(Shape(batch=1))
+        frame = np.zeros((1, 224, 224, 3), dtype=np.uint8)
+        frame[0, 5, 7] = (1, 2, 3)
+
+        session.run(None, {"image": frame})
+
+        fed = ort_session.return_value.run.call_args.args[1]["image"]
+        assert fed.shape == (1, 3, 224, 224)
+        assert fed[0, :, 5, 7].tolist() == [1, 2, 3]
+        assert np.shares_memory(fed, frame)  # a view: ORT copies it once, as it would have copied the frame
+
     @pytest.mark.parametrize(
         "image",
         [
@@ -554,6 +575,164 @@ class TestOrtSessions:
         ort_sessions("ViT-B-32__openai", providers=providers)
 
         assert ort_session.call_args.kwargs["disabled_optimizers"] == disabled
+
+    def test_opens_the_graph_that_was_prepared_for_it(self, ort_session: mock.Mock, mocker: MockerFixture) -> None:
+        mocker.patch("immich_ml.sessions.ort.prepared", return_value=Path("/cache/visual/cpu/free/model.onnx"))
+
+        ort_sessions("/cache/visual/model.onnx", providers=["CPUExecutionProvider"])
+
+        assert ort_session.call_args.args == ("/cache/visual/cpu/free/model.onnx",)
+
+
+def linear_graph(directory: Path) -> Path:
+    import onnx
+    from onnx import TensorProto, helper, numpy_helper
+
+    weight = numpy_helper.from_array(np.random.default_rng(0).random((64, 64), dtype=np.float32), name="weight")
+    graph = helper.make_graph(
+        [helper.make_node("MatMul", ["input", "weight"], ["output"])],
+        "linear",
+        [helper.make_tensor_value_info("input", TensorProto.FLOAT, ["batch", 64])],
+        [helper.make_tensor_value_info("output", TensorProto.FLOAT, ["batch", 64])],
+        [weight],
+    )
+    directory.mkdir(parents=True, exist_ok=True)
+    onnx.save(
+        helper.make_model(graph, opset_imports=[helper.make_opsetid("", 17)], ir_version=9), directory / "model.onnx"
+    )
+    return directory / "model.onnx"
+
+
+def graph_spec(model_path: Path, providers: list[str] | None = None, **fields: Any) -> GraphSpec:
+    fields = {"pins": {}, "overrides": [], "disabled_optimizers": [], **fields}
+    return GraphSpec(model_path, providers=providers or ["CPUExecutionProvider"], **fields)
+
+
+class TestPreparedGraphs:
+    def test_opens_what_a_child_prepared_until_the_facts_change(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        graph = linear_graph(tmp_path)
+
+        def spec() -> GraphSpec:  # a graph is opened once, so what holds while it is cannot change under it
+            return graph_spec(graph, overrides=[("batch", 2)])
+
+        def stand_in(*args: Any, **kwargs: Any) -> SimpleNamespace:
+            prepare_module.prepare(pickle.loads(kwargs["input"]))
+            return SimpleNamespace(returncode=0)
+
+        child = mocker.patch("immich_ml.sessions.ort.subprocess.run", side_effect=stand_in)
+
+        assert prepared(spec()) == prepared(spec()) == tmp_path / "cpu/model.onnx"
+        child.assert_called_once()
+        assert child.call_args.args[0][1:] == ["-m", "immich_ml.sessions.prepare"]
+
+        mocker.patch("immich_ml.sessions.ort.ort.__version__", "9.9.9")  # what it packed may not be read back the same
+        prepared(spec())
+        assert child.call_count == 2
+
+    def test_shares_what_it_prepared_between_workers_on_different_devices(self, monkeypatch: MonkeyPatch) -> None:
+        facts = []
+        for device in ("0", "1"):
+            monkeypatch.setenv("MACHINE_LEARNING_DEVICE_ID", device)
+            facts.append(graph_spec(Path("/cache/model.onnx"), ["CUDAExecutionProvider"]).facts)
+
+        assert facts[0] == facts[1]
+
+    @pytest.mark.parametrize(("returncode", "error"), [(3, InvalidProtobuf), (1, RuntimeError)])
+    def test_tells_an_unreadable_source_from_a_failed_preparation(
+        self, tmp_path: Path, mocker: MockerFixture, returncode: int, error: type[Exception]
+    ) -> None:
+        mocker.patch("immich_ml.sessions.ort.subprocess.run", return_value=SimpleNamespace(returncode=returncode))
+
+        with pytest.raises(error):  # the first has the download cleared and fetched again
+            prepared(graph_spec(linear_graph(tmp_path)))
+
+    def test_the_child_reports_an_unreadable_source(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        tmp_path.joinpath("model.onnx").write_bytes(b"not a graph")
+        request = pickle.dumps(graph_spec(tmp_path / "model.onnx"))
+        mocker.patch(
+            "immich_ml.sessions.prepare.sys.stdin", SimpleNamespace(buffer=SimpleNamespace(read=lambda: request))
+        )
+
+        with pytest.raises(SystemExit) as left:
+            prepare_module.main()
+
+        assert left.value.code == 3
+
+    def test_packs_the_weights_into_an_artifact_that_gives_the_same_answer(self, tmp_path: Path) -> None:
+        spec = graph_spec(linear_graph(tmp_path))
+        feed = {"input": np.random.default_rng(1).random((2, 64), dtype=np.float32)}
+        expected = ort.InferenceSession(spec.model_path.as_posix(), providers=spec.providers).run(None, feed)
+        spec.directory.mkdir(parents=True)
+        spec.directory.joinpath("left-by-a-child-that-did-not-finish").touch()
+
+        prepare_module.prepare(spec)
+
+        assert sorted(file.name for file in spec.directory.iterdir()) == ["manifest.json", "model.data", "model.onnx"]
+        np.testing.assert_array_equal(spec.session(tmp_path / "cpu/model.onnx").run(None, feed)[0], expected[0])
+
+    def test_compiles_where_the_provider_keeps_the_result(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        session = mocker.patch("immich_ml.sessions.ort.ort.InferenceSession")
+        spec = graph_spec(linear_graph(tmp_path), ["CoreMLExecutionProvider", "CPUExecutionProvider"])
+
+        prepare_module.prepare(spec)
+
+        assert session.call_args.args == (spec.model_path.as_posix(),)
+        assert (
+            session.call_args.kwargs["provider_options"][0]["ModelCacheDirectory"] == (tmp_path / "coreml").as_posix()
+        )
+        assert fresh(spec) == spec.model_path
+
+    def test_rewrites_only_the_exports_the_rewriter_was_written_for(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
+        apply = mocker.patch("immich_ml.sessions.prepare.apply_rewrites")
+        apply.side_effect = lambda source, plan: source.with_name("model.rw-abc.onnx")
+        spec = graph_spec(linear_graph(tmp_path), ["CUDAExecutionProvider"])
+
+        assert prepare_module.rewritten(spec, spec.model_path) == spec.model_path
+        mocker.patch.object(settings, "model_revision", "v2")
+        assert prepare_module.rewritten(spec, spec.model_path) == tmp_path / "model.rw-abc.onnx"
+        assert apply.call_args.args[1] is spec.plan
+
+    def test_moves_skewed_regions_onto_the_boundary_without_losing_a_byte(self, tmp_path: Path) -> None:
+        import onnx
+        from onnx import TensorProto, helper, numpy_helper
+        from onnx.external_data_helper import set_external_data
+
+        # an odd-length region first, which is what skews every region after it
+        arrays: dict[str, np.ndarray[Any, Any]] = {
+            "odd": np.arange(7, dtype=np.uint8),
+            "weight": np.arange(256, dtype=np.float32),
+        }
+        packed = bytes(range(200))  # the form MLAS packed `weight` into, which ORT files under the weight
+        data, tensors = b"", []
+        for name, array in arrays.items():
+            tensor = numpy_helper.from_array(array, name=name)
+            set_external_data(tensor, location="model.data", offset=len(data), length=array.nbytes)
+            tensor.ClearField("raw_data")
+            tensors.append(tensor)
+            data += array.tobytes()
+        tensors[1].external_data.add(key="prepacked_0", value=f"MatMul+hash|{len(data)};{len(packed)};checksum")
+        (tmp_path / "model.data").write_bytes(data + packed)
+        graph = helper.make_graph(
+            [helper.make_node("Identity", ["weight"], ["output"])],
+            "skewed",
+            [],
+            [helper.make_tensor_value_info("output", TensorProto.FLOAT, [256])],
+            tensors,
+        )
+        onnx.save(helper.make_model(graph), (tmp_path / "model.onnx").as_posix())
+
+        prepare_module.align(tmp_path / "model.onnx")
+
+        moved = onnx.load((tmp_path / "model.onnx").as_posix(), load_external_data=False)
+        entries = [{entry.key: entry.value for entry in tensor.external_data} for tensor in moved.graph.initializer]
+        assert [entry["offset"] for entry in entries] == ["0", "64"]  # 0 and 7 before
+        assert entries[1]["prepacked_0"] == "MatMul+hash|1088;200;checksum"  # at 1031 before
+        written = (tmp_path / "model.data").read_bytes()
+        assert written[0:7] == arrays["odd"].tobytes()
+        assert written[64 : 64 + 1024] == arrays["weight"].tobytes()
+        assert written[1088:] == packed and not any(written[7:64])
 
 
 class TestAnnSession:

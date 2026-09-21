@@ -130,7 +130,11 @@ def ov_device_ids(request: pytest.FixtureRequest, ort_pybind: mock.Mock) -> Iter
 
 @pytest.fixture(scope="function")
 def ort_session() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.sessions.ort.ort.InferenceSession") as mocked:
+    # a graph is opened as it is: preparing one takes a child process and real files
+    with (
+        mock.patch("immich_ml.sessions.ort.ort.InferenceSession") as mocked,
+        mock.patch("immich_ml.sessions.ort.prepared", side_effect=lambda spec: spec.model_path),
+    ):
         yield mocked
 
 

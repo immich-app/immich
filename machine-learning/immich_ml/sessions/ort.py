@@ -1,20 +1,24 @@
 from __future__ import annotations
 
 import ctypes
+import pickle
 import platform
+import subprocess
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from functools import cached_property
+from functools import cache, cached_property
 from pathlib import Path
 from threading import Lock
 from typing import Any
 
 import numpy as np
 import onnxruntime as ort
+from immich_model.runtime import RewriteContext, RewritePlan, plan_rewrites
 from numpy.typing import NDArray
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
+from pydantic import BaseModel
 
-from immich_ml.models.constants import SUPPORTED_PROVIDERS  # here, as the preparing child has no use for the models
 from immich_ml.schemas import ModelInput, ModelPrecision, SessionNode, Shape
 
 from ..config import log, settings
@@ -29,12 +33,17 @@ def _label(pins: Mapping[str, int]) -> str:
     return "_".join(f"{name}{size}" for name, size in pins.items())
 
 
+UNREADABLE = 3  # how the preparing child says its source does not parse
+
+
 class OrtGraph:
     def __init__(self, spec: GraphSpec) -> None:
-        self.session = spec.session(spec.model_path)
+        self.session = spec.session(prepared(spec))
         image = self.session.get_inputs()[0]
         # whether the graph scales and shifts the image itself, so the host hands over raw pixels
         self.normalizes_input = image.type == "tensor(uint8)"
+        # CoreML's rewrite moves the layout change out of the graph, so whoever applied it performs it
+        self.channels_first = self.normalizes_input and len(image.shape) == 4 and image.shape[1] == 3
 
     def get_inputs(self) -> Sequence[SessionNode]:
         inputs: Sequence[SessionNode] = self.session.get_inputs()
@@ -54,6 +63,8 @@ class OrtGraph:
         input_feed: ModelInput,
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
+        if self.channels_first:
+            input_feed = {name: frames.transpose(0, 3, 1, 2) for name, frames in input_feed.items()}
         outputs: list[NDArray[Any]] = self.session.run(output_names, input_feed, run_options)
         return outputs
 
@@ -73,8 +84,28 @@ class GraphSpec:
         return self.model_path.parent / provider / _label(self.pins)
 
     @cached_property
+    def manifest(self) -> Path:
+        return self.directory / "manifest.json"
+
+    @cached_property
     def cpu_only(self) -> bool:
         return self.providers == ["CPUExecutionProvider"]
+
+    @property
+    def plan(self) -> RewritePlan:
+        return _plan(self.providers[0])
+
+    @cached_property
+    def facts(self) -> Facts:
+        return Facts(
+            onnxruntime=ort.__version__,
+            # workers on different devices share what is prepared
+            options={key: value for key, value in self.provider_options[0].items() if not key.startswith("device")},
+            overrides=list(self.overrides),
+            disabled_optimizers=self.disabled_optimizers,
+            rewrite=None if settings.legacy_models else self.plan.digest,  # which were never tested with the rewriter
+            cpu=_cpu() if self.cpu_only else None,  # a prepack built for other instruction sets fails once it runs
+        )
 
     def session(self, graph: Path, sess_options: ort.SessionOptions | None = None) -> ort.InferenceSession:
         return ort.InferenceSession(
@@ -95,8 +126,6 @@ class GraphSpec:
                 case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "MIGraphXExecutionProvider":
-                    # MIGraphX does not create the underlying folder and will crash if it does not exist
-                    self.directory.mkdir(parents=True, exist_ok=True)
                     options = {
                         "device_id": settings.device_id,
                         "migraphx_model_cache_dir": self.directory.as_posix(),
@@ -163,6 +192,55 @@ class GraphSpec:
         return sess_options
 
 
+class Facts(BaseModel):
+    onnxruntime: str
+    options: dict[str, Any]
+    overrides: list[tuple[str, int]]
+    disabled_optimizers: list[str]
+    rewrite: str | None = None
+    cpu: str | None = None
+
+
+class Manifest(BaseModel):
+    facts: Facts
+    graph: str  # relative to the artifact's directory
+
+
+def fresh(spec: GraphSpec) -> Path | None:
+    try:
+        manifest = Manifest.model_validate_json(spec.manifest.read_bytes())
+    except (OSError, ValueError):
+        return None
+    return spec.model_path.parent / manifest.graph if manifest.facts == spec.facts else None
+
+
+def prepared(spec: GraphSpec) -> Path:
+    if (graph := fresh(spec)) is None:
+        log.info(f"Preparing {spec.model_path} for {spec.providers[0]} {dict(spec.pins)}")
+        # child process prepares the graph to avoid memory overhead in the main process
+        child = subprocess.run([sys.executable, "-m", "immich_ml.sessions.prepare"], input=pickle.dumps(spec))
+        if (graph := fresh(spec)) is None:
+            if child.returncode == UNREADABLE:
+                raise InvalidProtobuf(f"{spec.model_path} could not be read")
+            raise RuntimeError(f"Preparing {spec.model_path} failed; the output above says why")
+    return graph
+
+
+@cache
+def _plan(provider: str) -> RewritePlan:
+    version = tuple(int(piece) for piece in ort.__version__.split(".")[:3])
+    return plan_rewrites(RewriteContext(target=provider, ort_version=version))
+
+
+@cache
+def _cpu() -> str:
+    try:
+        cpuinfo = Path("/proc/cpuinfo").read_text()
+    except OSError:
+        return platform.machine()
+    return next(line for line in cpuinfo.splitlines() if line.startswith(("flags", "Features")))
+
+
 class OrtSession:
     def __init__(
         self, model_path: Path | str, policy: ShapePolicy, providers: list[str] | None = None, threads: int = 2
@@ -227,6 +305,8 @@ def flush_denormals() -> None:
 
 
 def _providers_default() -> list[str]:
+    from immich_ml.models.constants import SUPPORTED_PROVIDERS  # here, as the preparing child has no use for the models
+
     available_providers = set(ort.get_available_providers())
     log.debug(f"Available ORT providers: {available_providers}")
     return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
