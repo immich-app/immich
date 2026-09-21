@@ -56,6 +56,11 @@ class ModelPrecision(StrEnum):
     FP32 = "FP32"
 
 
+class ModelOrganization(StrEnum):
+    APP = "immich-app"
+    TESTING = "immich-testing"
+
+
 ModelIdentity = tuple[ModelType, ModelTask]
 
 

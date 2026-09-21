@@ -13,7 +13,7 @@ from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
-from .schemas import ModelPrecision
+from .schemas import ModelOrganization, ModelPrecision
 
 
 class ClipSettings(BaseModel):
@@ -74,6 +74,12 @@ class Settings(BaseSettings):
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32
     rocm_precision: ModelPrecision = ModelPrecision.FP32
+    model_organization: ModelOrganization = ModelOrganization.APP
+    model_revision: str = "main"
+
+    @property
+    def legacy_models(self) -> bool:
+        return self.model_revision == "main"
 
     @property
     def device_id(self) -> str:
