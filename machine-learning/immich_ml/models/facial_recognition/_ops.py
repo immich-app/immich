@@ -8,11 +8,11 @@ from functools import lru_cache
 
 import cv2
 import numpy as np
+from immich_model.constants import FACE_DETECTION_SIZE as DET_SIZE
 from numpy.typing import NDArray
 
 from immich_ml.models.transforms import ensure_dims
 
-DET_SIZE = 640
 ALIGNED_SIZE = 112
 
 # the FPN levels for which the fused detector emits a (scores, boxes, kps) triple,
