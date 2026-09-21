@@ -1,10 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/person.dart';
+import 'package:immich_mobile/data/store/user_metadata.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-// TODO(rewrite): Remove once user metadata is a store entry of its own
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 
 /// People representing collections of faces and assets
 ///
@@ -42,7 +41,7 @@ final _forAssetProvider = FutureProvider.autoDispose.family<List<Person>, String
 );
 
 final _allProvider = StreamProvider.autoDispose<List<Person>>((ref) async* {
-  final prefs = await ref.watch(userMetadataPreferencesProvider.future);
+  final prefs = await ref.watch(UserMetadataStore.instance.preferences().future);
   yield* ref.watch(_peopleDb).watch(minFaces: prefs?.minimumFaces ?? 3);
 });
 

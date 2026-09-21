@@ -6,7 +6,9 @@ import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart' show StreamQueryStore;
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/data/db/main/dao/ocr.dart';
 import 'package:immich_mobile/data/db/main/dao/person.dart';
+import 'package:immich_mobile/data/db/main/dao/user_metadata.dart';
 import 'package:immich_mobile/data/db/main/database.drift.dart';
 import 'package:immich_mobile/data/db/main/database.steps.dart';
 import 'package:immich_mobile/data/db/main/table/app/settings.dart';
@@ -40,7 +42,6 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/memory.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/ocr.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
@@ -51,7 +52,6 @@ import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';

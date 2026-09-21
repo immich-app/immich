@@ -4,7 +4,6 @@ import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../medium/repository_context.dart';
@@ -24,7 +23,7 @@ void main() {
         driftProvider.overrideWithValue(ctx.db),
         personApiRepositoryProvider.overrideWithValue(api),
         // No stored preferences: the default minimum face count applies
-        userMetadataPreferencesProvider.overrideWith((ref) => Future.value(null)),
+        Store.userMetadata.preferences().overrideWith((ref) => Stream.value(null)),
       ],
     );
     addTearDown(container.dispose);
