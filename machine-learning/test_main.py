@@ -651,6 +651,22 @@ class TestCLIP:
         assert len(embedding) == clip_model_cfg["embed_dim"]
         mocked.run.assert_called_once()
 
+    def test_visual_squashes_when_the_tower_was_calibrated_that_way(
+        self, mocker: MockerFixture, clip_model_cfg: dict[str, Any], clip_preprocess_cfg: dict[str, Any]
+    ) -> None:
+        mocker.patch.object(OpenClipVisualEncoder, "download")
+        mocker.patch.object(OpenClipVisualEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenClipVisualEncoder, "preprocess_cfg", clip_preprocess_cfg | {"resize_mode": "squash"})
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.run.return_value = [[self.embedding]]
+
+        # a stripe far enough left that a shortest-side crop of this frame would discard it
+        image = Image.new("RGB", (600, 200), "black")
+        image.paste(Image.new("RGB", (20, 200), "white"), (0, 0))
+        OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache").predict(image)
+
+        assert (session.run.call_args.args[1]["image"][0, :, 0, 0] > 0).all()  # white, where black normalizes below 0
+
     def test_basic_text(
         self,
         mocker: MockerFixture,
