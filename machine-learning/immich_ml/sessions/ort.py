@@ -59,6 +59,8 @@ class OrtSession:
     ):
         self.model_path = Path(model_path)
         self.providers = providers if providers is not None else self._providers_default
+        self.disabled_optimizers = _disabled_optimizers_default(self.providers)
+        log.debug(f"Setting disabled_optimizers to {self.disabled_optimizers}")
         self.provider_options = provider_options if provider_options is not None else self._provider_options_default
         self.sess_options = sess_options if sess_options is not None else self._sess_options_default
         self.session = ort.InferenceSession(
@@ -66,6 +68,7 @@ class OrtSession:
             providers=self.providers,
             provider_options=self.provider_options,
             sess_options=self.sess_options,
+            disabled_optimizers=self.disabled_optimizers,
         )
 
     def get_inputs(self) -> Sequence[SessionNode]:
@@ -209,6 +212,18 @@ class OrtSession:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
         return sess_options
+
+
+def _disabled_optimizers_default(providers: list[str]) -> list[str]:
+    disabled_optimizers: list[str] = []
+    if platform.machine() in ("arm64", "aarch64"):  # as macOS and Linux name the same architecture
+        disabled_optimizers.append("ConvAddActivationFusion")
+
+    # the Gemm it makes runs slower than the pair it replaces there, and on CUDA it also keeps BiasGelu from fusing
+    if "CoreMLExecutionProvider" in providers or "CUDAExecutionProvider" in providers:
+        disabled_optimizers.append("MatMulAddFusion")
+
+    return disabled_optimizers
 
 
 def flush_denormals() -> None:

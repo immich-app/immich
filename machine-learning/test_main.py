@@ -381,6 +381,36 @@ class TestOrtSession:
 
         assert session.provider_options == []
 
+    @pytest.mark.parametrize(
+        ("machine", "disabled"),
+        [("arm64", ["ConvAddActivationFusion"]), ("aarch64", ["ConvAddActivationFusion"]), ("x86_64", [])],
+    )
+    def test_disables_the_fusion_that_is_slower_on_arm_whatever_the_os_calls_it(
+        self, ort_session: mock.Mock, mocker: MockerFixture, machine: str, disabled: list[str]
+    ) -> None:
+        mocker.patch("immich_ml.sessions.ort.platform.machine", return_value=machine)
+
+        OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
+
+        assert ort_session.call_args.kwargs["disabled_optimizers"] == disabled
+
+    @pytest.mark.parametrize(
+        ("providers", "disabled"),
+        [
+            (["CUDAExecutionProvider", "CPUExecutionProvider"], ["MatMulAddFusion"]),
+            (["CoreMLExecutionProvider", "CPUExecutionProvider"], ["MatMulAddFusion"]),
+            (["CPUExecutionProvider"], []),
+        ],
+    )
+    def test_disables_the_fusion_that_is_slower_on_cuda_and_coreml(
+        self, ort_session: mock.Mock, mocker: MockerFixture, providers: list[str], disabled: list[str]
+    ) -> None:
+        mocker.patch("immich_ml.sessions.ort.platform.machine", return_value="x86_64")
+
+        OrtSession("ViT-B-32__openai", providers=providers)
+
+        assert ort_session.call_args.kwargs["disabled_optimizers"] == disabled
+
     def test_sets_default_sess_options_if_cpu(self) -> None:
         session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
 
