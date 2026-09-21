@@ -33,10 +33,10 @@ class FaceRecognizer(InferenceModel):
         self.batch_size = max_batch_size if max_batch_size else self._batch_size_default
 
     def _load(self) -> ModelSession:
-        session = self._make_session(self.model_path)
+        session = self._make_session()
         if (not self.batch_size or self.batch_size > 1) and str(session.get_inputs()[0].shape[0]) != "batch":
             self._add_batch_axis(self.model_path)
-            session = self._make_session(self.model_path)
+            session = self._make_session()
         return session
 
     def _predict(

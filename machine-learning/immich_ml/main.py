@@ -243,6 +243,7 @@ async def attempt(model: InferenceModel, func: Callable[[], T], corrupt: tuple[t
                 f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it.",
                 exc_info=e,
             )
+            model.unload()
             model.model_format = ModelFormat.ONNX
             return func()
 
@@ -250,6 +251,7 @@ async def attempt(model: InferenceModel, func: Callable[[], T], corrupt: tuple[t
         return await run(_attempt)
     except corrupt:
         log.warning(f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache.")
+        model.unload()
         model.clear_cache()
         return await run(_attempt)
 
