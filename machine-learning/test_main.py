@@ -190,6 +190,13 @@ class TestBase:
         assert not encoder.loaded
         assert not hasattr(encoder, "session")
 
+    def test_builds_a_graph_for_every_shape_it_runs(self, stub_session: Callable[..., mock.Mock]) -> None:
+        session = stub_session((1, 112, 112, 3), shapes=(Shape(batch=1), Shape(batch=4)))
+
+        FaceRecognizer("buffalo_l", session=session).build()
+
+        assert session.for_shape.call_args_list == [mock.call(Shape(batch=1)), mock.call(Shape(batch=4))]
+
     @pytest.mark.parametrize(
         ("symbols", "called"), [(["mi_collect", "malloc_trim"], "mi_collect"), (["malloc_trim"], "malloc_trim")]
     )
@@ -1802,6 +1809,7 @@ class TestCache:
             ],
             any_order=True,
         )
+        mock_get_model.return_value.return_value.build.assert_called()  # so that no request waits on a graph
 
     async def test_preloads_all_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
