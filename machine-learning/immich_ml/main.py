@@ -2,7 +2,6 @@ import asyncio
 import gc
 import os
 import signal
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -40,9 +39,9 @@ from .schemas import (
 
 MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
-model_cache = ModelCache(revalidate=settings.model_ttl > 0)
+model_cache = ModelCache()
 thread_pool: ThreadPoolExecutor | None = None
-lock = threading.Lock()
+MODEL_FILE_ERRORS = (InvalidProtobuf, NoSuchFile)
 active_requests = 0
 last_called: float | None = None
 release: asyncio.TimerHandle | None = None
@@ -71,8 +70,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         yield
     finally:
         log.handlers.clear()
-        for model in model_cache.cache._cache.values():
-            del model
+        model_cache.clear()
         if thread_pool is not None:
             thread_pool.shutdown()
         gc.collect()
@@ -81,10 +79,10 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 async def preload_models(preload: PreloadModelData) -> None:
     log.info(f"Preloading models: clip:{preload.clip} facial_recognition:{preload.facial_recognition}")
 
-    async def load_models(model_string: str, model_type: ModelType, model_task: ModelTask) -> None:
+    async def load_models(model_string: str, model_type: ModelType, model_task: ModelTask, **options: Any) -> None:
         for model_name in model_string.split(","):
             model_name = model_name.strip()
-            model = await model_cache.get(model_name, model_type, model_task)
+            model = model_cache.get(model_name, model_type, model_task, **options)
             await load(model)
 
     if preload.clip.textual is not None:
@@ -195,9 +193,7 @@ async def run_inference(payload: Image | str, entries: InferenceEntries) -> Infe
     response: InferenceResponse = {}
 
     async def _run_inference(entry: InferenceEntry) -> None:
-        model = await model_cache.get(
-            entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **entry["options"]
-        )
+        model = model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **entry["options"])
         inputs = [payload]
         for dep in model.depends:
             try:
@@ -206,14 +202,15 @@ async def run_inference(payload: Image | str, entries: InferenceEntries) -> Infe
                 message = f"Task {entry['task']} of type {entry['type']} depends on output of {dep}"
                 raise HTTPException(400, message)
         model = await load(model)
-        output = await run(model.predict, *inputs, **entry["options"])
+        output = await attempt(model, partial(model.predict, *inputs, **entry["options"]), MODEL_FILE_ERRORS)
         outputs[model.identity] = output
         response[entry["task"]] = output
 
-    without_deps, with_deps = entries
-    await asyncio.gather(*[_run_inference(entry) for entry in without_deps])
-    if with_deps:
-        await asyncio.gather(*[_run_inference(entry) for entry in with_deps])
+    for stage in entries:  # those that depend on another's output run after it
+        results = await asyncio.gather(*[_run_inference(entry) for entry in stage], return_exceptions=True)
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
     if isinstance(payload, Image):
         response["imageHeight"], response["imageWidth"] = payload.height, payload.width
 
@@ -228,42 +225,38 @@ async def run(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
 
 
 async def load(model: InferenceModel) -> InferenceModel:
-    if model.loaded:
-        return model
+    if not model.loaded:
+        await attempt(model, model.load, (OSError, BadZipFile, *MODEL_FILE_ERRORS))
+    return model
 
-    def _load(model: InferenceModel) -> InferenceModel:
-        if model.load_attempts > 1:
+
+async def attempt(model: InferenceModel, func: Callable[[], T], corrupt: tuple[type[Exception], ...]) -> T:
+    def _attempt() -> T:
+        if not model.loaded and model.load_attempts > 1:
             raise HTTPException(500, f"Failed to load model '{model.model_name}'")
-        with lock:
-            try:
-                model.load()
-            except FileNotFoundError as e:
-                if model.model_format == ModelFormat.ONNX:
-                    raise e
-                log.warning(
-                    f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it.",
-                    exc_info=e,
-                )
-                model.model_format = ModelFormat.ONNX
-                model.load()
-        return model
+        try:
+            return func()
+        except FileNotFoundError as e:
+            if model.model_format == ModelFormat.ONNX:
+                raise e
+            log.warning(
+                f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it.",
+                exc_info=e,
+            )
+            model.model_format = ModelFormat.ONNX
+            return func()
 
     try:
-        return await run(_load, model)
-    except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
+        return await run(_attempt)
+    except corrupt:
         log.warning(f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache.")
         model.clear_cache()
-        return await run(_load, model)
+        return await run(_attempt)
 
 
 async def idle_shutdown_task() -> None:
     while True:
-        if (
-            last_called is not None
-            and not active_requests
-            and not lock.locked()
-            and time.time() - last_called > settings.model_ttl
-        ):
+        if last_called is not None and not active_requests and time.time() - last_called > settings.model_ttl:
             log.info("Shutting down due to inactivity.")
             os.kill(os.getpid(), signal.SIGINT)
             break
