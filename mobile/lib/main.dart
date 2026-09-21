@@ -28,6 +28,7 @@ import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
@@ -153,6 +154,9 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
+    if (Platform.isIOS) {
+      await ref.read(storageRepositoryProvider).clearCache();
+    }
     // Draw the app from edge to edge
     unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
     await _setNavigationBarColor();

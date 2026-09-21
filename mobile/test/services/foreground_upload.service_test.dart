@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -17,8 +18,6 @@ import 'package:mocktail/mocktail.dart';
 import '../api.mocks.dart';
 import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
-import '../mocks/asset_entity.mock.dart';
-import '../repository.mocks.dart';
 import '../service.mocks.dart';
 
 void main() {
@@ -27,7 +26,6 @@ void main() {
   late MockStorageRepository mockStorageRepository;
   late MockBackupRepository mockBackupRepository;
   late MockConnectivityApi mockConnectivityApi;
-  late MockAssetMediaRepository mockAssetMediaRepository;
   late MockAssetService mockAssetService;
   late Drift db;
 
@@ -53,7 +51,6 @@ void main() {
     mockStorageRepository = MockStorageRepository();
     mockBackupRepository = MockBackupRepository();
     mockConnectivityApi = MockConnectivityApi();
-    mockAssetMediaRepository = MockAssetMediaRepository();
     mockAssetService = MockAssetService();
     when(() => mockAssetService.stackEditedUpload(any(), any(), any())).thenAnswer((_) async {});
 
@@ -62,7 +59,6 @@ void main() {
       mockStorageRepository,
       mockBackupRepository,
       mockConnectivityApi,
-      mockAssetMediaRepository,
       mockAssetService,
     );
   });
@@ -106,17 +102,16 @@ void main() {
 
   group('uploadSingleAsset', () {
     test('should upload the motion part hidden and keep the still image visible', () async {
-      final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
+      final asset = LocalAssetStub.image1.copyWith(playbackStyle: AssetPlaybackStyle.livePhoto);
       final stillFile = File('/path/to/still.heic');
       final videoFile = File('/path/to/motion.mov');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(true);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => videoFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.heic');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'live.heic', isLivePhoto: true));
+      when(
+        () => mockStorageRepository.getMotionFileForAsset(asset, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: videoFile, originalFileName: 'live.mov', isLivePhoto: true));
 
       final captured = captureFields();
 
@@ -129,16 +124,30 @@ void main() {
       expect(captured[1]['livePhotoVideoId'], equals('remote-1'));
     });
 
+    test('uploads a motion photo whose file result is not live as one file', () async {
+      final asset = LocalAssetStub.image1.copyWith(playbackStyle: AssetPlaybackStyle.livePhoto);
+      final file = File('/path/to/motion.jpg');
+
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: file, originalFileName: 'motion.jpg', isLivePhoto: false));
+
+      final captured = captureFields();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      expect(captured, hasLength(1));
+      expect(captured[0].containsKey('visibility'), isFalse);
+      verifyNever(() => mockStorageRepository.getMotionFileForAsset(asset, onProgress: any(named: 'onProgress')));
+    });
+
     test('should not set visibility for a regular photo', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/photo.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'photo.jpg', isLivePhoto: false));
 
       final captured = captureFields();
 
@@ -150,14 +159,11 @@ void main() {
 
     test('corrects the extension when iOS returns a rendered file for a .dng asset', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/IMG_6499.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_6499.dng');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'IMG_6499.dng', isLivePhoto: false));
 
       final names = captureOriginalFileNames();
 
@@ -168,14 +174,11 @@ void main() {
 
     test('keeps the .dng extension for a genuine RAW original', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/IMG_5210.dng');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_5210.dng');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'IMG_5210.dng', isLivePhoto: false));
 
       final names = captureOriginalFileNames();
 
@@ -186,14 +189,11 @@ void main() {
 
     test('borrows the extension from the asset name for an extensionless name (DJI/Fusion)', () async {
       final asset = LocalAssetStub.image1;
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/DJI_0001');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'DJI_0001');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'DJI_0001', isLivePhoto: false));
 
       final names = captureOriginalFileNames();
 
@@ -204,14 +204,11 @@ void main() {
 
     test('stacks a plain photo after its upload', () async {
       final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/photo.jpg');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'photo.jpg', isLivePhoto: false));
       captureFields();
 
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
@@ -222,16 +219,15 @@ void main() {
 
     test('stacks the still of a live photo, not its video', () async {
       final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
-      final mockEntity = MockAssetEntity();
       final stillFile = File('/path/to/still.heic');
       final videoFile = File('/path/to/motion.mov');
 
-      when(() => mockEntity.isLivePhoto).thenReturn(true);
-      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
-      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => videoFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.heic');
+      when(
+        () => mockStorageRepository.getFileForAsset(asset.id, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: stillFile, originalFileName: 'live.heic', isLivePhoto: true));
+      when(
+        () => mockStorageRepository.getMotionFileForAsset(asset, onProgress: any(named: 'onProgress')),
+      ).thenAnswer((_) async => (file: videoFile, originalFileName: 'live.mov', isLivePhoto: true));
       captureFields();
 
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
