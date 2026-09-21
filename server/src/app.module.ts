@@ -42,7 +42,7 @@ import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
 import { configureUserAgent } from 'src/utils/fetch';
-import { getBackupsStatePath } from 'src/utils/storage';
+import { detectMediaLocation, getBackupsStatePath } from 'src/utils/storage';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -61,7 +61,7 @@ const { bull, cls, database, environment, otel, storage } = configRepository.get
 
 const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
 const yuccaStatePath = getBackupsStatePath(storage.mediaLocation);
-const yuccaCachePath = '/data/restic-cache';
+const yuccaCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
 
 /*
   TODO[YUCCA]: remove this whole block of code

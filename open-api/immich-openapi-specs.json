@@ -18038,7 +18038,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18090,7 +18090,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18186,7 +18186,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18266,6 +18266,37 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RunResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "RunHistory"
+        ]
+      }
+    },
+    "/yucca/logs/{id}/download": {
+      "get": {
+        "operationId": "downloadRunLog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/jsonl": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
                 }
               }
             },
@@ -18461,7 +18492,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18588,7 +18619,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18702,7 +18733,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18792,7 +18823,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18876,7 +18907,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -18978,7 +19009,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -19028,7 +19059,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -22830,6 +22861,9 @@
           },
           "paused": {
             "type": "boolean"
+          },
+          "repositoryId": {
+            "type": "string"
           },
           "retentionPolicy": {
             "allOf": [
@@ -28432,6 +28466,14 @@
             },
             "type": "array"
           },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          },
           "site": {
             "description": "Internal site code from environment metadata",
             "type": "string"
@@ -28517,10 +28559,24 @@
           "lastBackupDuration": {
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
+            "nullable": true,
             "type": "integer"
           },
           "lastBackupStatus": {
-            "$ref": "#/components/schemas/TaskStatus"
+            "enum": [
+              "incomplete",
+              "complete",
+              "warn",
+              "failed",
+              "cancelled",
+              null
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "lastStarted": {
+            "nullable": true,
+            "type": "string"
           },
           "sizeBytes": {
             "maximum": 9007199254740991,
@@ -28733,7 +28789,8 @@
           "incomplete",
           "complete",
           "warn",
-          "failed"
+          "failed",
+          "cancelled"
         ],
         "type": "string"
       },
@@ -28791,6 +28848,10 @@
           },
           "name": {
             "type": "string"
+          },
+          "paused": {
+            "default": false,
+            "type": "boolean"
           },
           "repositories": {
             "items": {
@@ -33933,7 +33994,8 @@
           "incomplete",
           "complete",
           "warn",
-          "failed"
+          "failed",
+          "cancelled"
         ],
         "type": "string"
       },
