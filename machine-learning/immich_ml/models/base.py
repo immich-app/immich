@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import rmtree
+from threading import Lock
 from typing import Any, ClassVar
 
 from huggingface_hub import snapshot_download
@@ -14,6 +15,12 @@ from immich_ml.sessions.ort import OrtSession
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
 from ..sessions.ann import AnnSession
+
+_IGNORED_PATTERNS: dict[ModelFormat, list[str]] = {
+    ModelFormat.ONNX: ["*.armnn", "*.rknn"],
+    ModelFormat.ARMNN: ["*.rknn"],
+    ModelFormat.RKNN: ["*.armnn"],
+}
 
 
 class InferenceModel(ABC):
@@ -30,6 +37,7 @@ class InferenceModel(ABC):
     ) -> None:
         self.loaded = session is not None
         self.load_attempts = 0
+        self._load_lock = Lock()
         self.model_name = clean_name(model_name)
         self.cache_dir = Path(cache_dir) if cache_dir is not None else self._cache_dir_default
         self.model_format = model_format if model_format is not None else self._model_format_default
@@ -37,50 +45,47 @@ class InferenceModel(ABC):
             self.session = session
 
     def download(self) -> None:
-        if not self.cached:
-            model_type = self.model_type.replace("-", " ")
-            log.info(f"Downloading {model_type} model '{self.model_name}' to {self.model_path}. This may take a while.")
-            self._download()
+        if self.cached:
+            return
+        model_type = self.model_type.replace("-", " ")
+        log.info(f"Downloading {model_type} model '{self.model_name}' to {self.model_dir}. This may take a while.")
+        snapshot_download(
+            f"{settings.model_organization}/{self.model_name}",
+            revision=settings.model_revision,
+            cache_dir=self.cache_dir,
+            local_dir=self.cache_dir,
+            ignore_patterns=_IGNORED_PATTERNS.get(self.model_format, []),
+        )
+        if not self.cached:  # the repository has nothing in this format, which is what sends a model back to ONNX
+            raise FileNotFoundError(f"Model file not found: {self.model_path}")
 
     def load(self) -> None:
-        if self.loaded:
-            return
-        self.load_attempts += 1
+        with self._load_lock:  # two requests may arrive for a model neither has loaded
+            if self.loaded:
+                return
+            self.load_attempts += 1
 
-        self.download()
-        attempt = f"Attempt #{self.load_attempts} to load" if self.load_attempts > 1 else "Loading"
-        log.info(f"{attempt} {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
-        self.session = self._load()
-        self.loaded = True
+            self.download()
+            attempt = f"Attempt #{self.load_attempts} to load" if self.load_attempts > 1 else "Loading"
+            log.info(f"{attempt} {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
+            self.session = self._load()
+            self.loaded = True
+
+    def unload(self) -> None:
+        with self._load_lock:
+            if self.loaded:
+                del self.session
+                self.loaded = False
 
     def predict(self, *inputs: Any, **model_kwargs: Any) -> Any:
         self.load()
-        if model_kwargs:
-            self.configure(**model_kwargs)
         return self._predict(*inputs, **model_kwargs)
 
     @abstractmethod
     def _predict(self, *inputs: Any, **model_kwargs: Any) -> Any: ...
 
-    def configure(self, **kwargs: Any) -> None:
-        pass
-
-    def _download(self) -> None:
-        ignored_patterns: dict[ModelFormat, list[str]] = {
-            ModelFormat.ONNX: ["*.armnn", "*.rknn"],
-            ModelFormat.ARMNN: ["*.rknn"],
-            ModelFormat.RKNN: ["*.armnn"],
-        }
-
-        snapshot_download(
-            f"immich-app/{clean_name(self.model_name)}",
-            cache_dir=self.cache_dir,
-            local_dir=self.cache_dir,
-            ignore_patterns=ignored_patterns.get(self.model_format, []),
-        )
-
     def _load(self) -> ModelSession:
-        return self._make_session(self.model_path)
+        return self._make_session()
 
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
@@ -104,20 +109,14 @@ class InferenceModel(ABC):
             self.cache_dir.unlink()
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-    def _make_session(self, model_path: Path) -> ModelSession:
-        if not model_path.is_file():
-            raise FileNotFoundError(f"Model file not found: {model_path}")
-
-        match model_path.suffix:
-            case ".armnn":
-                session: ModelSession = AnnSession(model_path)
-            case ".onnx":
-                session = OrtSession(model_path)
-            case ".rknn":
-                session = rknn.RknnSession(model_path)
-            case _:
-                raise ValueError(f"Unsupported model file type: {model_path.suffix}")
-        return session
+    def _make_session(self) -> ModelSession:
+        match self.model_format:
+            case ModelFormat.ARMNN:
+                return AnnSession(self.model_path)
+            case ModelFormat.ONNX:
+                return OrtSession(self.model_path)
+            case ModelFormat.RKNN:
+                return rknn.RknnSession(self.model_path)
 
     def model_path_for_format(self, model_format: ModelFormat) -> Path:
         model_path_prefix = rknn.model_prefix if model_format == ModelFormat.RKNN else None
