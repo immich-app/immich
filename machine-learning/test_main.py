@@ -46,6 +46,7 @@ from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession, flush_denormals
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 from immich_ml.sessions.rknn import RknnSession, run_inference
+from immich_ml.sessions.rknn import model_path as rknn_model_path
 
 
 class TestBase:
@@ -108,6 +109,19 @@ class TestBase:
         FaceDetector("buffalo_l", cache_dir=path)._make_session()
 
         assert session.call_args.args[1].dims == (Shape(batch=1, height=640, width=640),)
+
+    def test_opens_the_rknn_binary_compiled_for_the_requested_shapes(self, mocker: MockerFixture) -> None:
+        mocker.patch("immich_ml.sessions.rknn.model_prefix", Path("rknpu/rk3588"))
+
+        assert rknn_model_path(Path("/cache/detection"), "res1088") == Path(
+            "/cache/detection/rknpu/rk3588/res1088/model.rknn"
+        )
+        assert rknn_model_path(Path("/cache/visual")) == Path("/cache/visual/rknpu/rk3588/model.rknn")
+        mocker.patch.object(settings, "model_revision", "v2")  # the older exports come as ONNX alone
+        detector = TextDetector(
+            "PP-OCRv5_mobile", cache_dir="/cache", model_format=ModelFormat.RKNN, maxResolution=1088
+        )
+        assert detector.model_path == Path("/cache/detection/rknpu/rk3588/res1088/model.rknn")
 
     def test_sets_default_model_format_to_rknn_if_available(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "rknn", True)
@@ -1249,6 +1263,40 @@ class TestOcr:
         # the default must be unaffected by the request that just ran
         assert len(text_detector._predict(image)["boxes"]) == 1
 
+    def test_fetches_the_older_exports_from_where_rapidocr_hosts_them(
+        self, tmp_path: Path, snapshot_download: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        fetch = mocker.patch("rapidocr.utils.download_file.DownloadFile.run")
+
+        TextRecognizer("EN__PP-OCRv5_mobile", cache_dir=tmp_path).download()
+
+        fetched = fetch.call_args.args[0]
+        assert fetched.file_url.endswith("/onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx")
+        assert fetched.save_path == tmp_path / "recognition/model.onnx"
+        snapshot_download.assert_not_called()
+
+        mocker.patch.object(settings, "model_revision", "v2")
+        TextDetector("PP-OCRv5_mobile", cache_dir=tmp_path).download()
+        snapshot_download.assert_called_once()
+
+    def test_rec_feeds_raw_rgb_padded_to_the_batch_width(
+        self, path: mock.Mock, mocker: MockerFixture, stub_session: Callable[..., mock.Mock]
+    ) -> None:
+        session = stub_session((1, 48, 224, 3), outputs=[np.zeros((1, 4, 8), np.float32)], normalizes_input=True)
+        text_recognizer = loaded(TextRecognizer("PP-OCRv5_mobile", cache_dir=path), session, mocker)
+        text_recognizer.decoder = mock.Mock()
+        text_recognizer.decoder.decode.return_value = (["hi"], np.array([0.95], dtype=np.float32))
+        image = Image.new("RGB", (200, 100), (7, 8, 9))
+        box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
+        texts: Any = {"boxes": box, "scores": np.array([0.9], dtype=np.float32)}
+
+        text_recognizer._predict(image, texts)
+
+        fed = session.run.call_args.args[1]["input.1"]
+        assert fed.dtype == np.uint8 and fed.shape == (1, 48, 224, 3)  # a crop 96 wide, padded to the floor
+        assert fed[0, 0, 0].tolist() == [7, 8, 9]  # the crop, unnormalized
+        assert fed[0, 0, -1].tolist() == [127, 127, 127]  # and the pad the batch was filled with
+
     def test_det_letterboxes_onto_the_canvas_the_session_takes(
         self, path: mock.Mock, stub_session: Callable[..., mock.Mock]
     ) -> None:
@@ -1268,6 +1316,48 @@ class TestOcr:
         assert fed[0, :, :64].all() and not fed[0, :, 64:].any()  # in the corner, with the rest left black
         # the legacy path swaps to BGR on the way in; the fused graph does its own
         assert fed[0, 0, 0].tolist() == [10, 20, 30]
+
+    def test_rec_runs_the_batch_at_a_compiled_width(
+        self, path: mock.Mock, mocker: MockerFixture, stub_session: Callable[..., mock.Mock]
+    ) -> None:
+        session = stub_session(
+            (1, 48, 400, 3),
+            outputs=[np.zeros((1, 4, 8), np.float32)],
+            normalizes_input=True,
+            shapes=(Shape(batch=1, width=512), Shape(batch=1, width=400)),  # as a binary declares them, widest first
+        )
+        text_recognizer = loaded(TextRecognizer("PP-OCRv5_mobile", cache_dir=path), session, mocker)
+        text_recognizer.decoder = mock.Mock()
+        text_recognizer.decoder.decode.return_value = (["hi"], np.array([0.95], dtype=np.float32))
+        image = Image.new("RGB", (500, 100), (7, 8, 9))
+        box = np.array([[[0, 0], [384, 0], [384, 48], [0, 48]]], dtype=np.float32)
+        texts: Any = {"boxes": box, "scores": np.array([0.9], dtype=np.float32)}
+
+        text_recognizer._predict(image, texts)
+
+        fed = session.run.call_args.args[1]["input.1"]
+        assert fed.shape == (1, 48, 400, 3)  # 384 wide in its own right, run at the compiled width above it
+
+    def test_rec_min_score_is_per_request(
+        self, path: mock.Mock, mocker: MockerFixture, stub_session: Callable[..., mock.Mock]
+    ) -> None:
+        text_recognizer = loaded(
+            TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache"),
+            stub_session((1, 3, 48, 96), outputs=[np.zeros((1, 4, 8), dtype=np.float32)]),
+            mocker,
+        )
+        text_recognizer.decoder = mock.Mock()
+        text_recognizer.decoder.decode.return_value = (["hello"], np.array([0.8], dtype=np.float32))
+        mocker.patch.object(text_recognizer, "_crop", return_value=np.zeros((48, 96, 3), dtype=np.uint8))
+        image = Image.new("RGB", (100, 50))
+        box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
+
+        def texts() -> Any:  # _predict normalizes the boxes in place, so each call needs its own
+            return {"boxes": box.copy(), "scores": np.array([0.9], dtype=np.float32)}
+
+        assert text_recognizer._predict(image, texts(), minScore=0.7)["text"] == ["hello"]
+        # the default (0.9) rejects a 0.8 score, and must be unaffected by the 0.7 request
+        assert text_recognizer._predict(image, texts())["text"] == []
 
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture

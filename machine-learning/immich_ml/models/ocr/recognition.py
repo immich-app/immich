@@ -7,65 +7,39 @@ import numpy as np
 from immich_model.constants import OCR_RECOGNITION_WIDTHS
 from numpy.typing import NDArray
 from PIL import Image
-from rapidocr import LangRec
-from rapidocr.inference_engine.base import FileInfo, InferSession
-from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
-from rapidocr.utils.typings import EngineType, OCRVersion, TaskType
-from rapidocr.utils.typings import ModelType as RapidModelType
 
-from immich_ml.config import log, settings
-from immich_ml.models.base import InferenceModel
-from immich_ml.schemas import ModelFormat, ModelGraph, ModelSession, ModelTask, ModelType, Shape
-from immich_ml.sessions.ort import OrtSession
+from immich_ml.config import settings
+from immich_ml.schemas import ModelGraph, ModelSession, ModelTask, ModelType, Shape
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 
 from .ctc import CtcDecoder, greedy
+from .legacy import TextModel
 from .schemas import TextDetectionOutput, TextRecognitionOutput
 
 REC_HEIGHT = 48
 SCALE = np.float32(1.0 / 127.5)
 
 
-class TextRecognizer(InferenceModel):
+class TextRecognizer(TextModel):
     depends = [(ModelType.DETECTION, ModelTask.OCR)]
     identity = (ModelType.RECOGNITION, ModelTask.OCR)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        self.language = LangRec[model_name.split("__")[0]] if "__" in model_name else LangRec.CH
         self._empty: TextRecognitionOutput = {
             "box": np.empty(0, dtype=np.float32),
             "boxScore": np.empty(0, dtype=np.float32),
             "text": [],
             "textScore": np.empty(0, dtype=np.float32),
         }
-        super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
+        super().__init__(model_name, **model_kwargs)
         self.decoder: CtcDecoder | None = None
         sizes = batches(settings.max_batch_size.ocr)
         self.shape_policy = ShapePolicy(
             dims=tuple(Shape(batch, width=width) for width in OCR_RECOGNITION_WIDTHS for batch in sizes)
         )
 
-    def _download(self) -> None:
-        model_info = InferSession.get_model_url(
-            FileInfo(
-                engine_type=EngineType.ONNXRUNTIME,
-                ocr_version=OCRVersion.PPOCRV5,
-                task_type=TaskType.REC,
-                lang_type=self.language,
-                model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
-            )
-        )
-        download_params = DownloadFileInput(
-            file_url=model_info["model_dir"],
-            sha256=model_info["SHA256"],
-            save_path=self.model_path,
-            logger=log,
-        )
-        DownloadFile.run(download_params)
-
     def _load(self) -> ModelSession:
-        # TODO: support other runtimes
-        session = OrtSession(self.model_path, self.shape_policy)
+        session = super()._load()
         # the widths it was compiled for, narrowest first: none where it takes any
         self.widths = tuple(sorted({shape.width for shape in session.shapes if shape.width is not None}))
         return session

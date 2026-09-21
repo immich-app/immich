@@ -43,10 +43,6 @@ def get_pil_resampling(resample: str) -> Image.Resampling:
     return _PIL_RESAMPLING_METHODS[resample.lower()]
 
 
-def pil_to_cv2(image: Image.Image) -> NDArray[np.uint8]:
-    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
-
-
 def decode_pil(image_bytes: bytes | Image.Image | NDArray[np.uint8]) -> Image.Image:
     image: Image.Image
     match image_bytes:
