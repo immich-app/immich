@@ -69,6 +69,5 @@ def umeyama(src: NDArray[np.float32], dst: NDArray[np.float32]) -> NDArray[np.fl
     return np.hstack([scale * rotation, translation[:, None]], dtype=np.float32)
 
 
-def align_face(image: NDArray[np.uint8], kps: NDArray[np.float32]) -> NDArray[np.float32]:
-    matrix = umeyama(kps, ARCFACE_DST)
-    return cv2.warpAffine(image, matrix, (ALIGNED_SIZE, ALIGNED_SIZE)).astype(np.float32)
+def align_face(image: NDArray[np.uint8], kps: NDArray[np.float32], crop: NDArray[np.uint8]) -> None:
+    cv2.warpAffine(image, umeyama(kps, ARCFACE_DST), (ALIGNED_SIZE, ALIGNED_SIZE), dst=crop)

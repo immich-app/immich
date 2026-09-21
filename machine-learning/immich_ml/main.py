@@ -115,6 +115,7 @@ async def preload_models(preload: PreloadModelData) -> None:
             preload.ocr.detection,
             ModelType.DETECTION,
             ModelTask.OCR,
+            maxResolution=preload.ocr.max_resolution,
         )
 
     if preload.ocr.recognition is not None:

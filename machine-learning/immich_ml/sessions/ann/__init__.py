@@ -7,7 +7,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from immich_ml.config import log, settings
-from immich_ml.schemas import SessionNode
+from immich_ml.schemas import ModelInput, SessionNode, Shape
 
 from .loader import Ann
 
@@ -29,6 +29,9 @@ class AnnSession:
             fp16=settings.ann_fp16_turbo,
         )
         log.info("Loaded ANN model with ID %d", self.model)
+        batch = self.ann.input_shapes[self.model][0][0]
+        self.shapes = (Shape(batch),)  # the artifact is compiled for one shape
+        self.batches = (batch,)
 
     def __del__(self) -> None:
         self.ann.unload(self.model)
@@ -46,10 +49,17 @@ class AnnSession:
     def get_metadata(self) -> dict[str, str]:
         return {}
 
+    @property
+    def normalizes_input(self) -> bool:
+        return False  # no ARM-NN artifact is built from a graph that carries its own preprocessing
+
+    def for_shape(self, shape: Shape) -> AnnSession:
+        return self
+
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]] | dict[str, NDArray[np.uint8]],
+        input_feed: ModelInput,
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
         inputs: list[NDArray[np.float32]] = [np.ascontiguousarray(v) for v in input_feed.values()]

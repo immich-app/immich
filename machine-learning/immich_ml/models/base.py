@@ -15,6 +15,7 @@ from immich_ml.sessions.ort import OrtSession
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
 from ..sessions.ann import AnnSession
+from ..sessions.policy import ShapePolicy
 
 _IGNORED_PATTERNS: dict[ModelFormat, list[str]] = {
     ModelFormat.ONNX: ["*.armnn", "*.rknn"],
@@ -26,6 +27,10 @@ _IGNORED_PATTERNS: dict[ModelFormat, list[str]] = {
 class InferenceModel(ABC):
     depends: ClassVar[list[ModelIdentity]]
     identity: ClassVar[ModelIdentity]
+    # options a graph is built for, so one instance cannot serve two values of them
+    graph_options: ClassVar[tuple[str, ...]] = ()
+    # the shapes this model feeds, which pick the artifact and tell the engine what it may pin
+    shape_policy: ShapePolicy = ShapePolicy()
 
     def __init__(
         self,
@@ -114,15 +119,9 @@ class InferenceModel(ABC):
             case ModelFormat.ARMNN:
                 return AnnSession(self.model_path)
             case ModelFormat.ONNX:
-                return OrtSession(self.model_path)
+                return OrtSession(self.model_path, self.shape_policy, self.model_task)
             case ModelFormat.RKNN:
                 return rknn.RknnSession(self.model_path)
-
-    def model_path_for_format(self, model_format: ModelFormat) -> Path:
-        model_path_prefix = rknn.model_prefix if model_format == ModelFormat.RKNN else None
-        if model_path_prefix:
-            return self.model_dir / model_path_prefix / f"model.{model_format}"
-        return self.model_dir / f"model.{model_format}"
 
     @property
     def model_dir(self) -> Path:
@@ -130,7 +129,9 @@ class InferenceModel(ABC):
 
     @property
     def model_path(self) -> Path:
-        return self.model_path_for_format(self.model_format)
+        if self.model_format == ModelFormat.RKNN:
+            return rknn.model_path(self.model_dir, self.shape_policy.label)
+        return self.model_dir / f"model.{self.model_format}"
 
     @property
     def model_task(self) -> ModelTask:
@@ -150,7 +151,8 @@ class InferenceModel(ABC):
 
     @property
     def _cache_dir_default(self) -> Path:
-        return settings.cache_folder / self.model_task.value / self.model_name
+        cache_dir = settings.cache_folder / self.model_task.value / self.model_name
+        return cache_dir if settings.legacy_models else cache_dir / settings.model_revision
 
     @property
     def cached(self) -> bool:
