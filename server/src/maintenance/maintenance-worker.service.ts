@@ -33,7 +33,6 @@ import { type ServerService as _ServerService } from 'src/services/server.servic
 import { type VersionService as _VersionService } from 'src/services/version.service';
 import { MaintenanceModeState } from 'src/types';
 import { getConfig } from 'src/utils/config';
-import { getLatestDatabaseBackup } from 'src/utils/database-backups';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 import { detectMediaLocation } from 'src/utils/storage';

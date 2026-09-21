@@ -90,7 +90,7 @@ export class ServerService extends BaseService {
       reverseGeocoding,
       metadata,
       map,
-      backup,
+      backup: _backup,
       machineLearning,
       trash,
       oauth,

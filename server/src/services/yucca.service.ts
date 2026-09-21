@@ -1,8 +1,8 @@
 import { GatewayEvent, YuccaService as YuccaOrchestratorService } from '@futo-org/backups-orchestrator-api';
 import { Injectable, Optional } from '@nestjs/common';
-import { SystemConfig } from 'src/dtos/config.dto';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { DatabaseLock, ImmichWorker, MaintenanceAction, StorageFolder } from 'src/enum';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { ArgOf } from 'src/repositories/event.repository';
