@@ -420,12 +420,53 @@ class TestOrtSessions:
 
         assert given_providers(ort_session) == providers
 
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    def test_sets_default_provider_options(self, ort_session: mock.Mock, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+
+        ort_sessions(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
+
+        assert given_options(ort_session) == [
+            {"device_type": "GPU.0", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1"},
+            {"arena_extend_strategy": "kSameAsRequested"},
+        ]
+
+    @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
+    def test_sets_provider_options_for_openvino(self, ort_session: mock.Mock, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        ort_sessions(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert given_options(ort_session) == [
+            {"device_type": "GPU.1", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1"}
+        ]
+
+    @pytest.mark.ov_device_ids(["CPU"])
+    def test_sets_provider_options_for_openvino_cpu(self, ort_session: mock.Mock, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        ort_sessions(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert given_options(ort_session) == [
+            {"device_type": "CPU", "cache_dir": "/cache/ViT-B-32__openai/openvino/batch1"}
+        ]
+
     def test_sets_provider_options_for_cuda(self, ort_session: mock.Mock) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
         ort_sessions("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
 
         assert given_options(ort_session) == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+
+    def test_sets_provider_options_for_rocm(self, ort_session: mock.Mock, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        ort_sessions(model_path, providers=["MIGraphXExecutionProvider"])
+
+        assert given_options(ort_session) == [
+            {"device_id": "1", "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx/batch1"}
+        ]
 
     @pytest.mark.skipif(sys.platform != "linux" or platform.machine() != "x86_64", reason="an x86 register")
     def test_flushes_denormals_on_the_calling_thread(self) -> None:
@@ -545,6 +586,14 @@ class TestOrtSessions:
         session.run(None, feed)
 
         assert ort_session.return_value.run.call_args.args[1] is feed
+
+    def test_answers_in_full_precision_whatever_the_graph_computes_in(self, ort_session: mock.Mock) -> None:
+        ort_session.return_value.run.return_value = [np.ones((1, 4), np.float16), np.ones((1, 4), np.int32)]
+        session = ort_sessions("ViT-B-32__openai", providers=["CPUExecutionProvider"]).for_shape(Shape(batch=1))
+
+        outputs = session.run(None, {"image": np.zeros((1, 224, 224, 3), dtype=np.uint8)})
+
+        assert [output.dtype for output in outputs] == [np.float32, np.int32]
 
     @pytest.mark.parametrize(
         ("machine", "disabled"),
@@ -693,6 +742,27 @@ class TestPreparedGraphs:
         mocker.patch.object(settings, "model_revision", "v2")
         assert prepare_module.rewritten(spec, spec.model_path) == tmp_path / "model.rw-abc.onnx"
         assert apply.call_args.args[1] is spec.plan
+
+    @pytest.mark.parametrize(
+        ("providers", "revision", "half"),
+        [
+            (["CUDAExecutionProvider", "CPUExecutionProvider"], "v2", True),
+            (["CPUExecutionProvider"], "v2", False),
+            (["CUDAExecutionProvider", "CPUExecutionProvider"], "main", False),
+        ],
+    )
+    def test_narrows_to_half_precision_for_an_accelerator(
+        self, tmp_path: Path, mocker: MockerFixture, providers: list[str], revision: str, half: bool
+    ) -> None:
+        mocker.patch.object(settings, "model_revision", revision)
+        derive = mocker.patch("immich_ml.sessions.prepare.derive")
+        spec = graph_spec(tmp_path / "model.onnx", providers)
+
+        narrowed = prepare_module.narrowed(spec)
+
+        assert spec.facts.half is half
+        assert narrowed == (spec.directory / "model_fp16.onnx" if half else spec.model_path)
+        assert derive.called is half
 
     def test_moves_skewed_regions_onto_the_boundary_without_losing_a_byte(self, tmp_path: Path) -> None:
         import onnx

@@ -19,7 +19,7 @@ from numpy.typing import NDArray
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
 from pydantic import BaseModel
 
-from immich_ml.schemas import ModelInput, ModelPrecision, SessionNode, Shape
+from immich_ml.schemas import ModelInput, SessionNode, Shape
 
 from ..config import log, settings
 from .policy import ShapePolicy
@@ -66,7 +66,8 @@ class OrtGraph:
         if self.channels_first:
             input_feed = {name: frames.transpose(0, 3, 1, 2) for name, frames in input_feed.items()}
         outputs: list[NDArray[Any]] = self.session.run(output_names, input_feed, run_options)
-        return outputs
+        # a graph narrowed to half precision answers in it, which is too coarse for what a model does next
+        return [output.astype(np.float32) if output.dtype == np.float16 else output for output in outputs]
 
 
 @dataclass(frozen=True)
@@ -96,8 +97,13 @@ class GraphSpec:
         return _plan(self.providers[0])
 
     @cached_property
+    def half(self) -> bool:
+        return not (settings.legacy_models or self.cpu_only)  # the older exports are not what the narrowing reads
+
+    @cached_property
     def facts(self) -> Facts:
         return Facts(
+            half=self.half,
             onnxruntime=ort.__version__,
             # workers on different devices share what is prepared
             options={key: value for key, value in self.provider_options[0].items() if not key.startswith("device")},
@@ -126,11 +132,7 @@ class GraphSpec:
                 case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "MIGraphXExecutionProvider":
-                    options = {
-                        "device_id": settings.device_id,
-                        "migraphx_model_cache_dir": self.directory.as_posix(),
-                        "migraphx_fp16_enable": "1" if settings.rocm_precision == ModelPrecision.FP16 else "0",
-                    }
+                    options = {"device_id": settings.device_id, "migraphx_model_cache_dir": self.directory.as_posix()}
                 case "OpenVINOExecutionProvider":
                     device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
                     # Check for available devices, preferring GPU over CPU
@@ -141,11 +143,7 @@ class GraphSpec:
                     else:
                         device_type = "CPU"
                         log.debug("OpenVINO: No GPU found, using CPU")
-                    options = {
-                        "device_type": device_type,
-                        "precision": settings.openvino_precision.value,
-                        "cache_dir": self.directory.as_posix(),
-                    }
+                    options = {"device_type": device_type, "cache_dir": self.directory.as_posix()}
                 case "CoreMLExecutionProvider":
                     options = {
                         "ModelFormat": "MLProgram",
@@ -199,6 +197,7 @@ class Facts(BaseModel):
     disabled_optimizers: list[str]
     rewrite: str | None = None
     cpu: str | None = None
+    half: bool = False
 
 
 class Manifest(BaseModel):
