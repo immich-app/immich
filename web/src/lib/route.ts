@@ -148,6 +148,9 @@ export const Route = {
 
   // backups
   backups: () => '/admin/backups',
+  backupSettings: () => '/admin/backups/settings',
+  backupAttempts: () => '/admin/backups/attempts',
+  backupSnapshots: () => '/admin/backups/snapshots',
 
   // queues
   queues: () => '/admin/queues',

@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { ImmichBackupsPage, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import HideBackupsReminder from '$lib/components/backups/HideBackupsReminder.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import { Route } from '$lib/route';
 
   const questions = [
     {
@@ -41,6 +43,9 @@
       price="$1"
       includedStorage="0gb"
       questions={[{ title: 'Already back up your library elsewhere?', answer: hideReminder }, ...questions]}
+      onConfigure={() => goto(Route.backupSettings())}
+      onViewAttempts={() => goto(Route.backupAttempts())}
+      onViewSnapshots={() => goto(Route.backupSnapshots())}
     />
   </AdminPageLayout>
 </YuccaContext>
