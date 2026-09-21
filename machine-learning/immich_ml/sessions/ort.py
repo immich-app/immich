@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import platform
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from functools import cached_property
@@ -61,6 +62,7 @@ class GraphSpec:
     pins: Mapping[str, int]
     overrides: Sequence[tuple[str, int]]
     providers: list[str]
+    disabled_optimizers: list[str]
 
     @cached_property
     def directory(self) -> Path:
@@ -77,6 +79,7 @@ class GraphSpec:
             providers=self.providers,
             provider_options=self.provider_options,
             sess_options=sess_options or self.sess_options(),
+            disabled_optimizers=self.disabled_optimizers,
         )
 
     @cached_property
@@ -163,6 +166,8 @@ class OrtSession:
         self.policy = policy
         self.providers = providers if providers is not None else _providers_default()
         log.info(f"Setting execution providers to {self.providers}, in descending order of preference")
+        self.disabled_optimizers = _disabled_optimizers_default(self.providers)
+        log.debug(f"Setting disabled_optimizers to {self.disabled_optimizers}")
         self.dynamic = self.providers[0] in DYNAMIC_PROVIDERS
         # OpenVINO runs CLIP's towers slower at a fixed size than with nothing pinned
         self.pins = not (self.providers[0] == "OpenVINOExecutionProvider" and task == ModelTask.SEARCH)
@@ -185,7 +190,9 @@ class OrtSession:
             if (graph := self.graphs.get(shape)) is None:
                 log.debug(f"Building a graph for {shape}")
                 pins = shape.pins if self.pins else {}
-                spec = GraphSpec(self.model_path, pins, _overrides(self.policy, pins), self.providers)
+                spec = GraphSpec(
+                    self.model_path, pins, _overrides(self.policy, pins), self.providers, self.disabled_optimizers
+                )
                 graph = self.graphs[shape] = OrtGraph(spec)
             return graph
 
@@ -204,3 +211,14 @@ def _providers_default() -> list[str]:
     available_providers = set(ort.get_available_providers())
     log.debug(f"Available ORT providers: {available_providers}")
     return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
+
+
+def _disabled_optimizers_default(providers: list[str]) -> list[str]:
+    disabled_optimizers: list[str] = []
+    if platform.machine() in ("arm64", "aarch64"):  # as macOS and Linux name the same architecture
+        disabled_optimizers.append("ConvAddActivationFusion")
+
+    if "CoreMLExecutionProvider" in providers:
+        disabled_optimizers.append("MatMulAddFusion")
+
+    return disabled_optimizers
