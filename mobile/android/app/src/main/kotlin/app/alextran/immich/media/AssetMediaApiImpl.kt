@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.webkit.MimeTypeMap
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -239,13 +240,25 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
     val collection = if (isVideo) {
       MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     } else {
-      MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+      val extension = name.substringAfterLast('.', "").lowercase()
+      val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+      if (mimeType?.startsWith("image/") == true) {
+        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+      } else {
+        // Android has no MIME type for some raw formats (e.g. cr3) and Images rejects those
+        MediaStore.Downloads.EXTERNAL_CONTENT_URI
+      }
+    }
+    val directory = if (collection == MediaStore.Downloads.EXTERNAL_CONTENT_URI) {
+      relativePath?.replaceBefore('/', Environment.DIRECTORY_DOWNLOADS)
+    } else {
+      relativePath
     }
 
     val values = ContentValues().apply {
       put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-      if (!relativePath.isNullOrBlank()) {
-        put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+      if (!directory.isNullOrBlank()) {
+        put(MediaStore.MediaColumns.RELATIVE_PATH, directory)
       }
       put(MediaStore.MediaColumns.IS_PENDING, 1)
     }
