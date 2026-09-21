@@ -1,0 +1,29 @@
+// Xcode Signing Constants
+//
+// These are integrated into the Xcode project at build time to allow for dynamic signing configs
+// across our many targets.
+//
+// Create `Signing.local.xcconfig` overriding each variable to provide your own personal signing
+// overrides during local development:
+//     IMMICH_TEAM_ID = ABCDE12345
+//     IMMICH_BUNDLE_ID_PROD = com.customuniqueid.immich
+//     IMMICH_BUNDLE_ID_DEV = com.customuniqueid.immichdev
+//     IMMICH_GROUP_ID = group.com.customuniqueid.immich
+
+// Apple Developer Team ID used for automatically provisioning signing credentials
+IMMICH_TEAM_ID = 2W7AC6T8T5
+
+// Root bundle identifier for the Release configuration.
+// Extension suffixes (`.ShareExtension`/`.Widget`) will be appended
+IMMICH_BUNDLE_ID_PROD = app.alextran.immich
+
+// Root bundle identifier for the Debug and Profile configurations.
+// Build scheme suffixes (`.debug`/`.profile`) will be appended
+IMMICH_BUNDLE_ID_DEV = app.futo.immich
+
+// Root App Group identifier.
+// Build scheme suffixes (`.debug`/`.profile`) will be appended
+IMMICH_GROUP_ID = group.app.immich.share
+
+// Optional per-developer configuration override
+#include? "Signing.local.xcconfig"

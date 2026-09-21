@@ -35,6 +35,8 @@ jobs:
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Find translation PR
         id: find_pr

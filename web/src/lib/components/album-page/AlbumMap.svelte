@@ -30,10 +30,12 @@
   });
 
   $effect(() => {
-    if (!assetViewerManager.isViewing && returnToMap) {
-      returnToMap = false;
-      void onClick();
+    if (assetViewerManager.isViewing || !returnToMap) {
+      return;
     }
+
+    returnToMap = false;
+    void onClick();
   });
 
   const loadMapMarkers = async () => {

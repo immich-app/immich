@@ -6,14 +6,18 @@ sidebar_position: 100
 
 A config file can be provided as an alternative to the UI configuration.
 
+:::note Interaction with the web UI
+While the config file does not need to include all keys from the below example, specifying `IMMICH_CONFIG_FILE` will disable the ability to edit other properties from the Immich web UI.
+:::
+
 ### Step 1 - Create a new config file
 
-In JSON format, create a new config file (e.g. `immich.json`) and put it in a location mounted in the container that can be accessed by Immich.
+In JSON format, create a new config file (e.g. `immich-config.json`) and put it in a location mounted in the container that can be accessed by Immich.
 YAML-formatted config files are also supported.
 The default configuration looks like this:
 
 <details>
-<summary>immich.json</summary>
+<summary>immich-config.json</summary>
 
 ```json
 {
@@ -250,6 +254,10 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 
 ### Step 2 - Specify the file location
 
+:::note
+If you have any `microservices` workers, they will also need to have the config file mounted to their container.
+:::
+
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
 For more information, refer to the [Environment Variables](/install/environment-variables.md) section.
 
@@ -261,7 +269,7 @@ It is recommended to reuse this variable in your `docker-compose.yml`:
 
 ```yaml
 volumes:
-  - ./configuration.yml:${IMMICH_CONFIG_FILE}
+  - ./immich-config.json:${IMMICH_CONFIG_FILE}
 ```
 
 :::

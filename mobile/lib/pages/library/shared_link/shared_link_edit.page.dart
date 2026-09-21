@@ -132,10 +132,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         textInputAction: TextInputAction.done,
         autofocus: false,
         decoration: InputDecoration(
-          labelText: slugController.text.isNotEmpty ? context.t.custom_url : null,
+          labelText: slugController.text.isNotEmpty ? context.t.shared_link_custom_url_title : null,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           border: const OutlineInputBorder(),
-          hintText: context.t.custom_url,
+          hintText: context.t.shared_link_custom_url_title,
           prefixText: slugController.text.isNotEmpty ? '/s/' : null,
           prefixStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ),
@@ -157,8 +157,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
     Widget buildAllowDownloadButton() {
       return SwitchListTile.adaptive(
-        value: allowDownload.value,
-        onChanged: (value) => allowDownload.value = value,
+        value: allowDownload.value && showMetadata.value,
+        onChanged: showMetadata.value ? (value) => allowDownload.value = value : null,
         dense: true,
         title: Text(
           context.t.allow_public_user_to_download,
@@ -427,8 +427,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return showDialog(
         context: context,
         builder: (BuildContext context) => ConfirmDialog(
-          title: "delete_shared_link_dialog_title",
-          content: "confirm_delete_shared_link",
+          title: context.t.delete_shared_link_dialog_title,
+          content: context.t.confirm_delete_shared_link,
           onOk: () async {
             await ref.read(sharedLinkServiceProvider).deleteSharedLink(existingLink!.id);
             ref.invalidate(sharedLinksStateProvider);

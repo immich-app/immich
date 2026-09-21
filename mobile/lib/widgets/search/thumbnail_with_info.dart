@@ -22,7 +22,7 @@ class ThumbnailWithInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var textAndIconColor = context.isDarkTheme ? Colors.grey[100] : Colors.grey[700];
+    final textAndIconColor = context.isDarkTheme ? Colors.grey[100] : Colors.grey[700];
     return ThumbnailWithInfoContainer(
       onTap: onTap,
       borderRadius: borderRadius,

@@ -16,6 +16,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   const ThumbnailTile(
     this.asset, {
     this.size = kThumbnailResolution,
+    this.remoteSize,
     this.fit = BoxFit.cover,
     this.showStorageIndicator = false,
     this.lockSelection = false,
@@ -26,6 +27,9 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 
   final BaseAsset? asset;
   final Size size;
+
+  /// Physical size to decode for remote thumbnails.
+  final Size? remoteSize;
   final BoxFit fit;
   final bool showStorageIndicator;
   final bool lockSelection;
@@ -108,7 +112,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     // but other solutions have failed thus far.
                     key: ValueKey(isCurrentAsset),
                     tag: '${asset?.heroTag}_$heroIndex',
-                    child: Thumbnail.fromAsset(asset: asset, size: widget.size),
+                    child: Thumbnail.fromAsset(asset: asset, size: widget.size, remoteSize: widget.remoteSize),
                     // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
                     placeholderBuilder: (context, heroSize, child) {
                       if (!_hideIndicators) {
@@ -285,7 +289,7 @@ class _TileOverlayIcon extends StatelessWidget {
       icon,
       color: Colors.white,
       size: 16,
-      shadows: [const Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+      shadows: const [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset.zero)],
     );
   }
 }
@@ -297,8 +301,7 @@ class _AssetTypeIcons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
-    final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
+    final isLivePhoto = asset.isMotionPhoto;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -347,7 +350,7 @@ class _UploadProgressOverlay extends StatelessWidget {
     final percentage = isError ? 0 : (progress * 100).toInt();
 
     return Positioned.fill(
-      child: Container(
+      child: ColoredBox(
         color: isError ? Colors.red.withValues(alpha: 0.6) : Colors.black54,
         child: Center(
           child: Column(

@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
@@ -18,7 +21,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     final entries = useState([const AuxilaryEndpoint(url: '', status: AuxCheckStatus.unknown)]);
     final canSave = useState(false);
 
-    saveEndpointList() {
+    Future<void> saveEndpointList() {
       canSave.value = entries.value.every((e) => e.status == AuxCheckStatus.valid);
 
       final urls = entries.value
@@ -26,27 +29,30 @@ class ExternalNetworkPreference extends HookConsumerWidget {
           .map((e) => e.url)
           .toList();
 
-      ref.read(settingsProvider).write(SettingsKey.networkExternalEndpointList, urls);
+      return ref.read(settingsProvider).write(SettingsKey.networkExternalEndpointList, urls);
     }
 
-    updateValidationStatus(String url, int index, AuxCheckStatus status) {
+    Future<void> updateValidationStatus(String url, int index, AuxCheckStatus status) async {
       entries.value[index] = entries.value[index].copyWith(url: url, status: status);
 
-      saveEndpointList();
+      await saveEndpointList();
+      if (status == AuxCheckStatus.valid && context.mounted) {
+        await ref.read(apiServiceProvider).updateHeaders();
+      }
     }
 
-    handleReorder(int oldIndex, int newIndex) {
+    void handleReorder(int oldIndex, int newIndex) {
       final entry = entries.value.removeAt(oldIndex);
       entries.value.insert(newIndex, entry);
       entries.value = [...entries.value];
 
-      saveEndpointList();
+      unawaited(saveEndpointList());
     }
 
-    handleDismiss(int index) {
+    void handleDismiss(int index) {
       entries.value = [...entries.value..removeAt(index)];
 
-      saveEndpointList();
+      unawaited(saveEndpointList());
     }
 
     Widget proxyDecorator(Widget child, int _, Animation<double> animation) {
@@ -97,7 +103,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 24),
-                  child: Text("external_network_sheet_info".t(context: context), style: context.textTheme.bodyMedium),
+                  child: Text(context.t.external_network_sheet_info, style: context.textTheme.bodyMedium),
                 ),
                 const SizedBox(height: 4),
                 Divider(color: context.colorScheme.surfaceContainerHighest),
@@ -129,7 +135,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     height: 48,
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: Text('add_endpoint'.t(context: context)),
+                      label: Text(context.t.add_endpoint),
                       onPressed: enabled
                           ? () {
                               entries.value = [

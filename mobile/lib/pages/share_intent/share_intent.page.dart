@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
@@ -35,7 +37,7 @@ class ShareIntentPage extends ConsumerWidget {
       ref.read(shareIntentUploadProvider.notifier).addAttachments(attachments);
     }
 
-    void upload() async {
+    Future<void> upload() async {
       final files = candidates.map((candidate) => candidate.file).toList();
       await ref.read(shareIntentUploadProvider.notifier).uploadAll(files);
     }
@@ -56,7 +58,7 @@ class ShareIntentPage extends ConsumerWidget {
       appBar: AppBar(
         title: Column(
           children: [
-            const Text('upload_to_immich').tr(namedArgs: {'count': candidates.length.toString()}),
+            Text(context.t.upload_to_immich(count: candidates.length)),
             Text(
               currentEndpoint,
               style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
@@ -65,7 +67,7 @@ class ShareIntentPage extends ConsumerWidget {
         ),
         leading: IconButton(
           onPressed: () {
-            context.navigateTo(const TabShellRoute());
+            unawaited(context.navigateTo(const TabShellRoute()));
           },
           icon: const Icon(Icons.arrow_back),
         ),
@@ -102,7 +104,7 @@ class ShareIntentPage extends ConsumerWidget {
                         Icons.image,
                         color: Colors.white,
                         size: 20,
-                        shadows: [Shadow(offset: Offset(0, 0), blurRadius: 8.0, color: Colors.black45)],
+                        shadows: [Shadow(offset: Offset.zero, blurRadius: 8.0, color: Colors.black45)],
                       ),
                     ),
                 ],
@@ -128,7 +130,7 @@ class ShareIntentPage extends ConsumerWidget {
             height: 48,
             child: ElevatedButton(
               onPressed: (isUploading || isUploaded) ? null : upload,
-              child: (isUploading || isUploaded) ? UploadingText(candidates: candidates) : const Text('upload').tr(),
+              child: (isUploading || isUploaded) ? UploadingText(candidates: candidates) : Text(context.t.upload),
             ),
           ),
         ),
@@ -147,9 +149,7 @@ class UploadingText extends StatelessWidget {
       return element.status == UploadStatus.complete;
     }).length;
 
-    return const Text(
-      "shared_intent_upload_button_progress_text",
-    ).tr(namedArgs: {'current': uploadedCount.toString(), 'total': candidates.length.toString()});
+    return Text(context.t.shared_intent_upload_button_progress_text(current: uploadedCount, total: candidates.length));
   }
 }
 
@@ -166,7 +166,7 @@ class UploadStatusIcon extends StatelessWidget {
       return Icon(
         Icons.check_circle_outline_rounded,
         color: context.colorScheme.onSurface.withAlpha(100),
-        semanticLabel: 'not_selected'.tr(),
+        semanticLabel: context.t.not_selected,
       );
     }
 
@@ -174,7 +174,7 @@ class UploadStatusIcon extends StatelessWidget {
       UploadStatus.enqueued => Icon(
         Icons.check_circle_rounded,
         color: context.primaryColor,
-        semanticLabel: 'enqueued'.tr(),
+        semanticLabel: context.t.enqueued,
       ),
       UploadStatus.running => Stack(
         alignment: AlignmentDirectional.center,
@@ -189,7 +189,7 @@ class UploadStatusIcon extends StatelessWidget {
                 backgroundColor: context.colorScheme.surfaceContainerLow,
                 strokeWidth: 3,
                 value: value,
-                semanticsLabel: 'uploading'.tr(),
+                semanticsLabel: context.t.uploading,
               ),
             ),
           ),
@@ -199,8 +199,12 @@ class UploadStatusIcon extends StatelessWidget {
           ),
         ],
       ),
-      UploadStatus.complete => Icon(Icons.check_circle_rounded, color: Colors.green, semanticLabel: 'completed'.tr()),
-      UploadStatus.failed => Icon(Icons.error_rounded, color: Colors.red, semanticLabel: 'failed'.tr()),
+      UploadStatus.complete => Icon(
+        Icons.check_circle_rounded,
+        color: Colors.green,
+        semanticLabel: context.t.completed,
+      ),
+      UploadStatus.failed => Icon(Icons.error_rounded, color: Colors.red, semanticLabel: context.t.failed),
     };
 
     return statusIcon;

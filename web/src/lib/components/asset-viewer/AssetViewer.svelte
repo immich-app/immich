@@ -14,6 +14,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -22,6 +23,7 @@
   import { getSharedLink, handlePromiseError } from '$lib/utils';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -69,7 +71,6 @@
     preAction?: PreAction;
     onAction?: OnAction;
     onClose?: (assetId: string) => void;
-    onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
 
@@ -84,7 +85,6 @@
     preAction,
     onAction,
     onClose,
-    onRemoveFromAlbum,
     onRandom,
   }: Props = $props();
 
@@ -94,6 +94,7 @@
     slideshowNavigation,
     slideshowState,
     slideshowRepeat,
+    slideshowAutoplay,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -107,11 +108,11 @@
   let sharedLink = getSharedLink();
   let fullscreenElement = $state<Element>();
 
-  let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+  let isPlayingOriginalVideo = $state($alwaysLoadOriginalVideo);
   let slideshowStartAssetId = $state<string>();
 
   const setPlayOriginalVideo = (value: boolean) => {
-    playOriginalVideo = value;
+    isPlayingOriginalVideo = value;
   };
 
   const refreshStack = async () => {
@@ -146,6 +147,15 @@
     }
   };
 
+  const onAssetsUndoArchive = async (assets: TimelineAsset[]) => {
+    if (assets.length === 0) {
+      return;
+    }
+    const restoredAsset = assets[0];
+    await assetViewerManager.setAssetId(restoredAsset.id);
+    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
   onMount(() => {
     syncAssetViewerOpenClass(true);
     const slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -159,10 +169,12 @@
     });
 
     const slideshowNavigationUnsubscribe = slideshowNavigation.subscribe((value) => {
-      if (value === SlideshowNavigation.Shuffle) {
-        slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
+      if (value !== SlideshowNavigation.Shuffle) {
+        return;
       }
+
+      slideshowHistory.reset();
+      slideshowHistory.queue(toTimelineAsset(asset));
     });
 
     return () => {
@@ -280,6 +292,9 @@
 
   const handlePlaySlideshow = async () => {
     slideshowStartAssetId = asset.id;
+    if (!$slideshowAutoplay) {
+      $slideshowState = SlideshowState.PauseSlideshow;
+    }
     try {
       await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
@@ -458,16 +473,14 @@
 
     if (event.detail.direction === 'left') {
       navigateAsset('next');
-    }
-
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       navigateAsset('previous');
     }
   };
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} />
+<OnEvents {onAssetUpdate} {onAssetsUndoArchive} />
 
 <svelte:document
   bind:fullscreenElement
@@ -494,14 +507,13 @@
         preAction={handlePreAction}
         onAction={handleAction}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
-        {onRemoveFromAlbum}
-        {playOriginalVideo}
+        {isPlayingOriginalVideo}
         {setPlayOriginalVideo}
       />
     </div>
   {/if}
 
-  {#if $slideshowState != SlideshowState.None}
+  {#if $slideshowState !== SlideshowState.None}
     <div class="absolute inset-s-0 top-0 flex w-full justify-start">
       <SlideshowBar
         {isFullScreen}
@@ -533,7 +545,7 @@
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
@@ -545,7 +557,7 @@
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
         onVideoEnded={() => (assetViewerManager.isPlayingMotionPhoto = false)}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
       <ImagePanoramaViewer {asset} />
@@ -565,7 +577,7 @@
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {/if}
 
@@ -616,7 +628,7 @@
     </div>
   {/if}
 
-  {#if stack && withStacked && !assetViewerManager.isShowEditor}
+  {#if stack && withStacked && !assetViewerManager.isShowEditor && $slideshowState === SlideshowState.None}
     {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-fit max-w-full">
       <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">
@@ -626,9 +638,8 @@
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
-              imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
+              imageClass={stackedAsset.id === asset.id ? 'border-2 border-white' : 'brightness-70'}
               brokenAssetClass="text-xs"
-              dimmed={stackedAsset.id !== asset.id}
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
                 cursor.current = stackedAsset;

@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
 
-enum AspectRatioPreset {
-  free(ratio: null, label: 'Free', icon: Icons.crop_free_rounded),
-  square(ratio: 1.0, label: '1:1', icon: Icons.crop_square_rounded),
-  ratio16x9(ratio: 16 / 9, label: '16:9', icon: Icons.crop_16_9_rounded),
-  ratio3x2(ratio: 3 / 2, label: '3:2', icon: Icons.crop_3_2_rounded),
-  ratio7x5(ratio: 7 / 5, label: '7:5', icon: Icons.crop_7_5_rounded),
-  ratio9x16(ratio: 9 / 16, label: '9:16', icon: Icons.crop_16_9_rounded, iconRotated: true),
-  ratio2x3(ratio: 2 / 3, label: '2:3', icon: Icons.crop_3_2_rounded, iconRotated: true),
-  ratio5x7(ratio: 5 / 7, label: '5:7', icon: Icons.crop_7_5_rounded, iconRotated: true);
+enum CropAspectRatio {
+  free(icon: Icons.crop_free),
+  original(icon: Icons.crop_original),
+  ratio1x1(numerator: 1, denominator: 1),
+  ratio16x9(numerator: 16, denominator: 9),
+  ratio3x2(numerator: 3, denominator: 2),
+  ratio7x5(numerator: 7, denominator: 5),
+  ratio4x3(numerator: 4, denominator: 3),
+  ratio9x16(numerator: 9, denominator: 16),
+  ratio2x3(numerator: 2, denominator: 3),
+  ratio5x7(numerator: 5, denominator: 7),
+  ratio3x4(numerator: 3, denominator: 4);
 
-  final double? ratio;
-  final String label;
-  final IconData icon;
-  final bool iconRotated;
+  final int? numerator;
+  final int? denominator;
+  final IconData? icon;
 
-  const AspectRatioPreset({required this.ratio, required this.label, required this.icon, this.iconRotated = false});
+  const CropAspectRatio({this.numerator, this.denominator, this.icon});
+
+  double? get ratio => (numerator != null && denominator != null) ? numerator! / denominator! : null;
+  CropAspectRatio get flipped {
+    if (numerator == denominator) {
+      return this;
+    }
+    for (final value in CropAspectRatio.values) {
+      if (value.numerator == denominator && value.denominator == numerator) {
+        return value;
+      }
+    }
+    return this;
+  }
 }

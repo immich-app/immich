@@ -6,15 +6,19 @@ import {
   deleteAssets,
   getAssetInfo,
   restoreAssets,
+  removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
+  type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
+  mdiAccountCircleOutline,
   mdiAlertOutline,
   mdiCogRefreshOutline,
+  mdiCompare,
   mdiContentCopy,
   mdiDatabaseRefreshOutline,
   mdiDeleteForeverOutline,
@@ -27,6 +31,8 @@ import {
   mdiHeartOutline,
   mdiHistory,
   mdiImageRefreshOutline,
+  mdiImageRemoveOutline,
+  mdiImageSearch,
   mdiInformationOutline,
   mdiMagnifyMinusOutline,
   mdiMagnifyPlusOutline,
@@ -40,6 +46,7 @@ import {
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { goto } from '$app/navigation';
 import { ProjectionType } from '$lib/constants';
 import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -49,7 +56,9 @@ import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte'
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { Route } from '$lib/route';
 import { showDeleteModal } from '$lib/stores/preferences.store';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
@@ -57,8 +66,9 @@ import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
-export const getAssetBulkActions = ($t: MessageFormatter) => {
+export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
   const ownedAssets = assetMultiSelectManager.ownedAssets;
+  const isAlbumOwner = album?.albumUsers[0].user.id === authManager.user.id;
 
   const onAction = async (name: AssetJobName) => {
     await handleRunAssetJob({ name, assetIds: ownedAssets.map(({ id }) => id) });
@@ -71,6 +81,17 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     shortcuts: [{ key: 'l' }],
     onAction: () =>
       modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
+  };
+
+  const RemoveFromAlbum: ActionItem = {
+    title: $t('remove_from_album'),
+    icon: mdiImageRemoveOutline,
+    $if: () => !!album && (isAlbumOwner || assetMultiSelectManager.isAllUserOwned),
+    onAction: () =>
+      handleBulkRemoveAssetsFromAlbum(
+        assetMultiSelectManager.assets.map((asset) => asset.id),
+        album!,
+      ),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -98,13 +119,26 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     $if: () => ownedAssets.every((asset) => asset.isVideo),
   };
 
-  return { AddToAlbum, RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
+  return {
+    AddToAlbum,
+    RemoveFromAlbum,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
+  };
 };
 
-export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
+export const getAssetActions = (
+  $t: MessageFormatter,
+  asset: AssetResponseDto & { stackPrimaryAssetId?: string },
+  album?: AlbumResponseDto,
+) => {
   const sharedLink = getSharedLink();
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
+  const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers[0].user.id);
+  const smartSearchEnabled = featureFlagsManager.value.smartSearch;
   const isDeletionPermanent = asset.isTrashed || !featureFlagsManager.value.trash;
 
   const Share: ActionItem = {
@@ -181,6 +215,13 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: [{ key: 'l' }],
     $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
     onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
+  };
+
+  const RemoveFromAlbum: ActionItem = {
+    title: $t('remove_from_album'),
+    icon: mdiImageRemoveOutline,
+    $if: () => !!album && (isOwner || isAlbumOwner),
+    onAction: () => handleRemoveAssetsFromAlbum([asset.id], album!),
   };
 
   const Offline: ActionItem = {
@@ -275,6 +316,28 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     onAction: () => handleRestore(asset),
   };
 
+  const SetProfilePicture: ActionItem = {
+    title: $t('set_as_profile_picture'),
+    icon: mdiAccountCircleOutline,
+    $if: () => asset.type === AssetTypeEnum.Image && asset.visibility !== AssetVisibility.Locked,
+    onAction: () => modalManager.show(ProfileImageCropperModal, { asset }),
+  };
+
+  const ViewInTimeline: ActionItem = {
+    title: $t('view_in_timeline'),
+    icon: mdiImageSearch,
+    $if: () => isOwner && asset.visibility !== AssetVisibility.Locked && !asset.isArchived && !asset.isTrashed,
+    onAction: () => goto(Route.photos({ at: asset.stackPrimaryAssetId ?? asset.id })),
+  };
+
+  const ViewSimilar: ActionItem = {
+    title: $t('view_similar_photos'),
+    icon: mdiCompare,
+    $if: () =>
+      asset.visibility !== AssetVisibility.Locked && !asset.isArchived && !asset.isTrashed && smartSearchEnabled,
+    onAction: () => goto(Route.search({ queryAssetId: asset.stackPrimaryAssetId ?? asset.id })),
+  };
+
   const RefreshFacesJob: ActionItem = {
     title: $t('refresh_faces'),
     icon: mdiHeadSyncOutline,
@@ -313,6 +376,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     StopMotionPhoto,
     PlaySlideshow,
     AddToAlbum,
+    RemoveFromAlbum,
     ZoomIn,
     ZoomOut,
     Copy,
@@ -322,6 +386,9 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Delete,
     PermanentlyDelete,
     Restore,
+    SetProfilePicture,
+    ViewInTimeline,
+    ViewSimilar,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -441,6 +508,39 @@ const handleRestore = async (asset: AssetResponseDto) => {
     toastManager.primary($t('restored_asset'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_restore_assets'));
+  }
+};
+
+const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
+  const $t = await getFormatter();
+
+  const isConfirmed = await modalManager.showDialog({
+    prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }),
+  });
+
+  if (!isConfirmed) {
+    return;
+  }
+
+  await handleRemoveAssetsFromAlbum(assetIds, album);
+  assetMultiSelectManager.clear();
+};
+
+const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const results = await removeAssetFromAlbum({
+      id: album.id,
+      bulkIdsDto: { ids: assetIds },
+    });
+
+    const count = results.filter(({ success }) => success).length;
+
+    toastManager.primary($t('assets_removed_count', { values: { count } }));
+    eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
+  } catch (error) {
+    handleError(error, $t('errors.error_removing_assets_from_album'));
   }
 };
 

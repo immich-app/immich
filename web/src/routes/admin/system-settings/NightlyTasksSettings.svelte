@@ -24,7 +24,7 @@
           bind:value={configToEdit.nightlyTasks.startTime}
           required={true}
           {disabled}
-          isEdited={!(configToEdit.nightlyTasks.startTime === config.nightlyTasks.startTime)}
+          isEdited={configToEdit.nightlyTasks.startTime !== config.nightlyTasks.startTime}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_database_cleanup_setting')}

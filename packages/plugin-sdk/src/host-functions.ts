@@ -4,16 +4,15 @@ import {
   type BulkIdResponseDto,
   type BulkIdsDto,
   type CreateAlbumDto,
+  type TagBulkAssetsDto,
+  type TagBulkAssetsResponseDto,
 } from '@immich/sdk';
 
-// keep in sync with plugin-core/src/index.d.ts';
 declare module 'extism:host' {
-  interface user {
-    searchAlbums(ptr: PTR): I64;
-    createAlbum(ptr: PTR): I64;
-    addAssetsToAlbum(ptr: PTR): I64;
-    addAssetsToAlbums(ptr: PTR): I64;
-  }
+  interface user extends Record<
+    (typeof availableFunctions)[number],
+    (ptr: PTR) => I64
+  > {}
 }
 
 type AlbumsToAssets = {
@@ -33,6 +32,25 @@ type HostFunctionResult<T> =
 
 type QueryParams<T extends (...args: any) => any> = Parameters<T>[0];
 type AlbumSearchDto = QueryParams<typeof getAllAlbums>;
+type HttpRequestOptions = {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+};
+type HttpResponse = {
+  ok: string;
+  status: number;
+  body: string;
+};
+
+export const availableFunctions = [
+  'searchAlbums',
+  'createAlbum',
+  'addAssetsToAlbum',
+  'addAssetsToAlbums',
+  'httpRequest',
+  'bulkTagAssets',
+] as const;
 
 export const hostFunctions = (authToken: string) => {
   const host = Host.getFunctions();
@@ -75,5 +93,17 @@ export const hostFunctions = (authToken: string) => {
       ),
     addAssetsToAlbums: ({ assetIds, albumIds }: AlbumsToAssets) =>
       call('addAssetsToAlbums', authToken, [{ albumIds, assetIds }]),
-  };
+    httpRequest: (url: string, options?: HttpRequestOptions) =>
+      call<[string, HttpRequestOptions | undefined], HttpResponse>(
+        'httpRequest',
+        authToken,
+        [url, options],
+      ),
+    bulkTagAssets: (dto: TagBulkAssetsDto) =>
+      call<[TagBulkAssetsDto], TagBulkAssetsResponseDto>(
+        'bulkTagAssets',
+        authToken,
+        [dto],
+      ),
+  } satisfies Record<(typeof availableFunctions)[number], unknown>;
 };

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 class DismissibleActivity extends StatelessWidget {
@@ -23,9 +24,9 @@ class DismissibleActivity extends StatelessWidget {
               context: context,
               builder: (context) => ConfirmDialog(
                 onOk: () {},
-                title: "shared_album_activity_remove_title",
-                content: "shared_album_activity_remove_content",
-                ok: "delete",
+                title: context.t.shared_album_activity_remove_title,
+                content: context.t.shared_album_activity_remove_content,
+                ok: context.t.delete,
               ),
             )
           : Future.value(false),

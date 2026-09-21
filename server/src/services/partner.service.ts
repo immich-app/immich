@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Partner } from 'src/database';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto';
-import { mapUser } from 'src/dtos/user.dto';
-import { Permission } from 'src/enum';
-import { PartnerDirection, PartnerIds } from 'src/repositories/partner.repository';
-import { BaseService } from 'src/services/base.service';
+import { Partner } from 'src/database.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto.js';
+import { mapUser } from 'src/dtos/user.dto.js';
+import { Permission } from 'src/enum.js';
+import { PartnerDirection, PartnerIds } from 'src/repositories/partner.repository.js';
+import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
 export class PartnerService extends BaseService {
@@ -14,6 +14,12 @@ export class PartnerService extends BaseService {
     const exists = await this.partnerRepository.get(partnerId);
     if (exists) {
       throw new BadRequestException(`Partner already exists`);
+    }
+
+    const user = await this.userRepository.get(sharedWithId, {});
+    if (!user) {
+      this.logger.debug('Partner creation failed: user not found');
+      throw new BadRequestException('Invalid user');
     }
 
     const partner = await this.partnerRepository.create(partnerId);

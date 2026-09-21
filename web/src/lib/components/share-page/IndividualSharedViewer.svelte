@@ -36,14 +36,16 @@
   let assets = $derived(sharedLink.assets);
 
   dragAndDropFilesStore.subscribe((value) => {
-    if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(handleUploadAssets(value.files));
-      dragAndDropFilesStore.set({ isDragging: false, files: [] });
+    if (!(value.isDragging && value.files.length > 0)) {
+      return;
     }
+
+    handlePromiseError(handleUploadAssets(value.files));
+    dragAndDropFilesStore.set({ isDragging: false, files: [] });
   });
 
   const downloadAssets = async () => {
-    await downloadArchive(`immich-shared.zip`, { assetIds: assets.map((asset) => asset.id) });
+    await downloadArchive(`immich-shared`, { assetIds: assets.map((asset) => asset.id) });
   };
 
   const handleUploadAssets = async (files: File[] = []) => {
@@ -97,7 +99,7 @@
           onclick={handleSelectAll}
         />
         {#if sharedLink?.allowDownload}
-          <DownloadAction filename="immich-shared.zip" />
+          <DownloadAction filename="immich-shared" />
         {/if}
         {#if isOwned}
           <RemoveFromSharedLink bind:sharedLink />

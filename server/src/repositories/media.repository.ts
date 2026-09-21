@@ -1,32 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
+import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
-import _ from 'lodash';
+import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
-import { execFile as execFileCb } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
-import { promisify } from 'node:util';
-import sharp from 'sharp';
-import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
-import { Exif } from 'src/database';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import {
-  AacProfile,
-  Av1Profile,
-  ColorMatrix,
-  ColorPrimaries,
-  Colorspace,
-  ColorTransfer,
-  DvProfile,
-  DvSignalCompatibility,
-  H264Profile,
-  HevcProfile,
-  LogLevel,
-  RawExtractedFormat,
-} from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import {
+import sharp, { Sharp } from 'sharp';
+import type {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
@@ -35,21 +16,35 @@ import {
   TranscodeCommand,
   VideoInfo,
   VideoPacketInfo,
-} from 'src/types';
-import { handlePromiseError } from 'src/utils/misc';
-import { createAffineMatrix } from 'src/utils/transform';
+} from 'src/types.js';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
+import { Exif } from 'src/database.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import {
+  AacProfile,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  Colorspace,
+  DvProfile,
+  DvSignalCompatibility,
+  H264Profile,
+  HevcProfile,
+  LogLevel,
+  RawExtractedFormat,
+} from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { handlePromiseError } from 'src/utils/misc.js';
+import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
+    // eslint-disable-next-line import-x/no-named-as-default-member
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
-const execFile = promisify(execFileCb);
-
-sharp.concurrency(0);
-sharp.cache({ files: 0 });
-
-const pascalCase = (str: string) => _.upperFirst(_.camelCase(str.toLowerCase()));
+const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
 
 type ProgressEvent = {
   frames: number;
@@ -69,6 +64,10 @@ export type ExtractResult = {
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    sharp.concurrency(0);
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    sharp.cache({ files: 0 });
   }
 
   /**
@@ -85,6 +84,7 @@ export class MediaRepository {
     ]) {
       try {
         const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        this.logger.debug(`Successfully extracted ${tag} buffer from image`);
         return { buffer, format };
       } catch (error: any) {
         this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
@@ -152,7 +152,7 @@ export class MediaRepository {
     return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }
 
-  private applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): sharp.Sharp {
+  private applyEdits(pipeline: Sharp, edits: AssetEditActionItem[]): Sharp {
     const crop = edits.find((edit) => edit.action === 'crop');
     if (crop) {
       pipeline = pipeline.extract({
@@ -190,6 +190,7 @@ export class MediaRepository {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
+      limitInputChannels: false,
       limitInputPixels: false,
       raw: options.raw,
       unlimited: true,
@@ -291,33 +292,37 @@ export class MediaRepository {
    * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
    * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
    */
-  async probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
-    const { stdout } = await execFile('ffprobe', [
-      '-v',
-      'error',
-      '-select_streams',
-      String(streamIndex),
-      '-show_entries',
-      'packet=pts,duration,flags',
-      '-of',
-      'csv=p=0',
-      input,
-    ]);
+  probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
+    const ffprobe = spawn(
+      'ffprobe',
+      [
+        '-v',
+        'error',
+        '-select_streams',
+        String(streamIndex),
+        '-show_entries',
+        'packet=pts,duration,flags',
+        '-of',
+        'csv=p=0',
+        input,
+      ],
+      { stdio: ['ignore', 'pipe', 'pipe'] },
+    );
 
     let totalDuration = 0;
     const keyframePts: number[] = [];
     const keyframeAccDuration: number[] = [];
     const keyframeOwnDuration: number[] = [];
     const postDiscard: { pts: number; duration: number }[] = [];
-    for (const line of stdout.split('\n')) {
+    const parseLine = (line: string) => {
       if (!line) {
-        continue;
+        return;
       }
-      const [ptsStr, durationStr, flags] = line.split(',');
+      const [ptsStr, durationStr, flags] = line.split(',', 3);
       const pts = Number.parseInt(ptsStr);
       const duration = Number.parseInt(durationStr);
-      if (Number.isNaN(pts) || Number.isNaN(duration)) {
-        continue;
+      if (Number.isNaN(pts) || Number.isNaN(duration) || !flags) {
+        return;
       }
       // Discarded packets don't contribute to packet count, but still contribute to video duration
       totalDuration += duration;
@@ -332,20 +337,43 @@ export class MediaRepository {
         // Non-keyframes are accounted for in totalDuration.
         keyframeOwnDuration.push(duration);
       }
-    }
-
-    if (postDiscard.length === 0) {
-      return null;
-    }
-
-    return {
-      totalDuration,
-      packetCount: postDiscard.length,
-      outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / totalDuration),
-      keyframePts,
-      keyframeAccDuration,
-      keyframeOwnDuration,
     };
+
+    let stderr = '';
+    let remainder = '';
+    ffprobe.stderr.setEncoding('utf8');
+    ffprobe.stderr.on('data', (chunk: string) => (stderr += chunk));
+    ffprobe.stdout.setEncoding('utf8');
+    ffprobe.stdout.on('data', (chunk: string) => {
+      const lines = chunk.split('\n');
+      lines[0] = remainder + lines[0];
+      remainder = lines.pop() as string;
+      for (const line of lines) {
+        parseLine(line);
+      }
+    });
+
+    return new Promise<VideoPacketInfo | null>((resolve, reject) => {
+      ffprobe.on('error', reject);
+      ffprobe.on('close', (code) => {
+        if (code !== 0) {
+          return reject(new Error(`ffprobe exited with code ${code}: ${stderr.trim()}`));
+        }
+        parseLine(remainder);
+        if (postDiscard.length === 0) {
+          return resolve(null);
+        }
+
+        resolve({
+          totalDuration,
+          packetCount: postDiscard.length,
+          outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / totalDuration),
+          keyframePts,
+          keyframeAccDuration,
+          keyframeOwnDuration,
+        });
+      });
+    });
   }
 
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
@@ -387,7 +415,7 @@ export class MediaRepository {
   }
 
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
-    const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input, { unlimited: true }).metadata();
     return { width, height, isTransparent: hasAlpha };
   }
 
@@ -427,6 +455,7 @@ export class MediaRepository {
   }
 
   private parseFloat(value: string | number | undefined): number {
+    // eslint-disable-next-line unicorn/prefer-number-coercion
     return Number.parseFloat(value as string) || 0;
   }
 

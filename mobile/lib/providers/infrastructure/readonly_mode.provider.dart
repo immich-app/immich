@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -16,11 +18,11 @@ class ReadOnlyModeNotifier extends Notifier<bool> {
 
   void setMode(bool value) {
     final isLoggedIn = ref.read(authProvider).isAuthenticated;
-    _appSettingService.setSetting(AppSettingsEnum.readonlyModeEnabled, value);
+    unawaited(_appSettingService.setSetting(AppSettingsEnum.readonlyModeEnabled, value));
     state = value;
 
     if (value && isLoggedIn) {
-      ref.read(appRouterProvider).navigate(const MainTimelineRoute());
+      unawaited(ref.read(appRouterProvider).navigate(const MainTimelineRoute()));
     }
   }
 

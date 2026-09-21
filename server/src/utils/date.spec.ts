@@ -1,5 +1,5 @@
-import { asDateString, asDateTimeString } from 'src/utils/date';
 import { describe, expect, it } from 'vitest';
+import { asDateString, asDateTimeString } from 'src/utils/date.js';
 
 describe('asDateString', () => {
   it('should return null for null input', () => {
@@ -13,6 +13,10 @@ describe('asDateString', () => {
   it('should return the local calendar date, not the UTC date', () => {
     const date = new Date(2000, 0, 15); // 15 Jan 2000, local midnight
     expect(asDateString(date)).toBe('2000-01-15');
+  });
+
+  it('should correctly pad years with a leading 0', () => {
+    expect(asDateString(new Date('280-12-12'))).toBe('0280-12-12');
   });
 });
 

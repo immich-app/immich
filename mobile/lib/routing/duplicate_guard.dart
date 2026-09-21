@@ -5,7 +5,7 @@ import 'package:immich_mobile/utils/debug_print.dart';
 class DuplicateGuard extends AutoRouteGuard {
   const DuplicateGuard();
   @override
-  void onNavigation(NavigationResolver resolver, StackRouter router) async {
+  Future<void> onNavigation(NavigationResolver resolver, StackRouter router) async {
     // Duplicate navigation
     if (resolver.route.name == router.current.name) {
       dPrint(() => 'DuplicateGuard: Preventing duplicate route navigation for ${resolver.route.name}');

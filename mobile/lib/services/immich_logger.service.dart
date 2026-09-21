@@ -39,6 +39,10 @@ abstract final class ImmichLogger {
       await io.close();
     }
 
+    if (!context.mounted) {
+      return;
+    }
+
     final box = context.findRenderObject() as RenderBox?;
 
     // Share file

@@ -1,4 +1,4 @@
-import { AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetOrderBy, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { tick } from 'svelte';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -70,7 +70,7 @@ describe('TimelineManager', () => {
     });
 
     it('should load months in viewport', () => {
-      expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBuckets).toHaveBeenCalledOnce();
       expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
@@ -133,13 +133,13 @@ describe('TimelineManager', () => {
     it('loads a month', async () => {
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
     it('ignores invalid months', async () => {
       await timelineManager.loadTimelineMonth({ year: 2023, month: 1 });
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
+      expect(sdkMock.getTimeBucket).not.toHaveBeenCalled();
     });
 
     it('cancels month loading', async () => {
@@ -147,7 +147,7 @@ describe('TimelineManager', () => {
       void timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       const abortSpy = vi.spyOn(month!.loader!.cancelToken!, 'abort');
       month?.cancel();
-      expect(abortSpy).toBeCalledTimes(1);
+      expect(abortSpy).toHaveBeenCalledOnce();
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
@@ -157,10 +157,10 @@ describe('TimelineManager', () => {
         timelineManager.loadTimelineMonth({ year: 2024, month: 1 }),
         timelineManager.loadTimelineMonth({ year: 2024, month: 1 }),
       ]);
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
 
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
     });
 
     it('allows loading a canceled month', async () => {
@@ -283,7 +283,7 @@ describe('TimelineManager', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
       timelineManager.upsertAssets([asset]);
 
-      expect(updateAssetsSpy).toBeCalledWith([asset]);
+      expect(updateAssetsSpy).toHaveBeenCalledWith([asset]);
       expect(timelineManager.assetCount).toEqual(1);
     });
 
@@ -485,6 +485,85 @@ describe('TimelineManager', () => {
     });
   });
 
+  describe('live event asset insertion', () => {
+    let timelineManager: TimelineManager;
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+
+      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+    });
+
+    afterEach(() => {
+      timelineManager.destroy();
+    });
+
+    it('does not insert live event assets with a different owner into a user-scoped timeline', async () => {
+      await timelineManager.updateOptions({ userId: 'partner-id', visibility: AssetVisibility.Timeline });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          ownerId: 'current-user-id',
+          visibility: AssetVisibility.Timeline,
+        }),
+      );
+
+      timelineManager.upsertAssetsFromLiveEvent([asset]);
+
+      expect(timelineManager.assetCount).toEqual(0);
+    });
+
+    it('inserts live event assets for the matching owner into a user-scoped timeline', async () => {
+      await timelineManager.updateOptions({ userId: 'partner-id', visibility: AssetVisibility.Timeline });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          ownerId: 'partner-id',
+          visibility: AssetVisibility.Timeline,
+        }),
+      );
+
+      timelineManager.upsertAssetsFromLiveEvent([asset]);
+
+      expect(timelineManager.assetCount).toEqual(1);
+    });
+
+    it('does not insert unknown live event assets into album timelines', async () => {
+      await timelineManager.updateOptions({ albumId: 'album-id' });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
+
+      timelineManager.upsertAssetsFromLiveEvent([asset]);
+
+      expect(timelineManager.assetCount).toEqual(0);
+    });
+
+    it('updates existing live event assets in scoped timelines', async () => {
+      await timelineManager.updateOptions({ albumId: 'album-id' });
+
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          isFavorite: false,
+        }),
+      );
+
+      timelineManager.upsertAssets([asset]);
+      expect(timelineManager.assetCount).toEqual(1);
+      expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(false);
+
+      timelineManager.upsertAssetsFromLiveEvent([
+        {
+          ...asset,
+          isFavorite: true,
+        },
+      ]);
+
+      expect(timelineManager.assetCount).toEqual(1);
+      expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
+    });
+  });
+
   describe('removeAssets', () => {
     let timelineManager: TimelineManager;
 
@@ -642,8 +721,8 @@ describe('TimelineManager', () => {
       const previousMonthSpy = vi.spyOn(previousMonth!.loader!, 'execute');
       const previous = await timelineManager.getLaterAsset(a);
       expect(previous).toEqual(b);
-      expect(loadTimelineMonthSpy).toBeCalledTimes(0);
-      expect(previousMonthSpy).toBeCalledTimes(0);
+      expect(loadTimelineMonthSpy).not.toHaveBeenCalled();
+      expect(previousMonthSpy).not.toHaveBeenCalled();
     });
 
     it('skips removed assets', async () => {
@@ -806,6 +885,46 @@ describe('TimelineManager', () => {
       a.setShowAssetOwners(true);
       const b = new TimelineManager();
       expect(b.showAssetOwners).toBe(true);
+    });
+  });
+
+  describe('retrieveRange', () => {
+    it('uses createdAt ordering in the Recently Added view (orderBy=CreatedAt)', async () => {
+      // Simulate the "Recently Added" bug: two assets whose localDateTime order is
+      // the reverse of their createdAt (upload) order. Before the fix, retrieveRange
+      // compared localDateTime and selected the wrong range direction.
+      const timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      await timelineManager.updateOptions({ orderBy: AssetOrderBy.CreatedAt });
+
+      // assetA was taken recently (2024) but uploaded first (2025-01)
+      const assetA = timelineAssetFactory.build({
+        localDateTime: fromISODateTimeUTCToObject('2024-06-01T00:00:00.000Z'),
+        createdAt: fromISODateTimeUTCToObject('2025-01-20T00:00:00.000Z'),
+        fileCreatedAt: fromISODateTimeUTCToObject('2025-01-20T00:00:00.000Z'),
+      });
+      // assetB was taken long ago (2018) but uploaded second (2025-02)
+      const assetB = timelineAssetFactory.build({
+        localDateTime: fromISODateTimeUTCToObject('2018-03-15T00:00:00.000Z'),
+        createdAt: fromISODateTimeUTCToObject('2025-02-10T00:00:00.000Z'),
+        fileCreatedAt: fromISODateTimeUTCToObject('2025-02-10T00:00:00.000Z'),
+      });
+      // assetC is an unrelated asset that should not appear in the selection
+      const assetC = timelineAssetFactory.build({
+        localDateTime: fromISODateTimeUTCToObject('2022-01-01T00:00:00.000Z'),
+        createdAt: fromISODateTimeUTCToObject('2025-03-01T00:00:00.000Z'),
+        fileCreatedAt: fromISODateTimeUTCToObject('2025-03-01T00:00:00.000Z'),
+      });
+
+      timelineManager.upsertAssets([assetA, assetB, assetC]);
+
+      // Shift-click from assetB (uploaded most recently) to assetA — the range
+      // between them in the "Recently Added" timeline should contain only those two.
+      const range = await timelineManager.retrieveRange({ id: assetB.id }, { id: assetA.id });
+      const ids = range.map((a) => a.id);
+      expect(ids).toContain(assetA.id);
+      expect(ids).toContain(assetB.id);
+      expect(ids).not.toContain(assetC.id);
     });
   });
 });

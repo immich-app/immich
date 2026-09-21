@@ -1,6 +1,6 @@
 <script lang="ts">
   import SharedLinkExpiration from '$lib/components/SharedLinkExpiration.svelte';
-  import { Field, Input, PasswordInput, Switch, Text } from '@immich/ui';
+  import { Field, HelperText, Input, PasswordInput, Switch, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -32,8 +32,11 @@
 
 <div class="mt-4 flex flex-col gap-4">
   <div>
-    <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
+    <Field label={$t('shared_link_custom_url_title')} description={$t('shared_link_custom_url_description')}>
       <Input bind:value={slug} autocomplete="off" />
+      {#if slug.includes('/')}
+        <HelperText class="text-warning">{$t('shared_link_custom_url_warning')}</HelperText>
+      {/if}
     </Field>
     {#if slug}
       <Text size="tiny" color="muted" class="pt-2 break-all">/s/{encodeURIComponent(slug)}</Text>

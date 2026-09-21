@@ -1,17 +1,17 @@
 [project]
 name = "immich-ml"
-version = "3.0.0rc2"
+version = "3.2.0"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.12,<4.0"
 readme = "README.md"
 dependencies = [
     "aiocache>=0.12.1,<1.0",
     "fastapi>=0.95.2,<1.0",
     "gunicorn>=21.1.0",
     "huggingface-hub>=1.0,<2.0",
-    "insightface>=0.7.3,<2.0",
     "numpy>=2.4.0,<3.0",
+    "onnx>=1.22.0",
     "opencv-python-headless>=4.7.0.72,<5.0",
     "orjson>=3.9.5",
     "pillow>=12.2,<13",
@@ -68,7 +68,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 plugins = "pydantic.mypy"
 follow_imports = "silent"
 warn_redundant_casts = true
@@ -85,7 +85,7 @@ warn_untyped_fields = true
 
 [tool.ruff]
 line-length = 120
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]

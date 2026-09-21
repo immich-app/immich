@@ -1,24 +1,24 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
-import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
-import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetFileType, SharedLinkType } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AlbumRepository } from 'src/repositories/album.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { AssetMediaService } from 'src/services/asset-media.service';
-import { AssetService } from 'src/services/asset.service';
-import { ImmichFileResponse } from 'src/utils/file';
-import { mediumFactory, newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto.js';
+import { AssetMediaSize } from 'src/dtos/asset-media.dto.js';
+import { AssetFileType, SharedLinkType } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AlbumRepository } from 'src/repositories/album.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AssetMediaService } from 'src/services/asset-media.service.js';
+import { AssetService } from 'src/services/asset.service.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { mediumFactory, newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -213,6 +213,12 @@ describe(AssetService.name, () => {
       const assets = [...result];
       expect(assets).toHaveLength(1);
       expect(assets[0]).toEqual(response.id);
+
+      expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('AlbumUpdate', {
+        id: album.id,
+        userIds: [user.id],
+        recipientIds: [user.id],
+      });
     });
 
     it('should handle adding a duplicate asset to an album shared link', async () => {

@@ -39,11 +39,10 @@
 
   let peopleToNotShow = $derived(selectedPerson ? [personAssets, selectedPerson] : [personAssets]);
 
-  const selectedPeople: AssetFaceUpdateItem[] = [];
-
-  for (const assetId of assetIds) {
-    selectedPeople.push({ assetId, personId: personAssets.id });
-  }
+  const selectedPeople: AssetFaceUpdateItem[] = Array.from(assetIds, (assetId) => ({
+    assetId,
+    personId: personAssets.id,
+  }));
 
   onMount(async () => {
     const data = await getAllPeople({ withHidden: false });

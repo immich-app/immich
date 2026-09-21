@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -97,7 +98,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
 
     await _router.replaceAll([
       const TabShellRoute(),
-      AssetViewerRoute(initialIndex: 0, timelineService: timelineService),
+      AssetViewerRoute(key: UniqueKey(), initialIndex: 0, timelineService: timelineService),
     ]);
   }
 }

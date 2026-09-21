@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
-import { IMMICH_SERVER_START } from 'src/constants';
+import { IMMICH_SERVER_START } from 'src/constants.js';
 
 @Injectable()
 export class MaintenanceHealthRepository {
   checkApiHealth(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      // eslint-disable-next-line unicorn/prefer-module
-      const basePath = dirname(__filename);
+      const basePath = dirname(import.meta.filename);
       const workerFile = join(basePath, '..', 'workers', `api.js`);
 
       const worker = fork(workerFile, [], {
@@ -42,10 +41,12 @@ export class MaintenanceHealthRepository {
       worker.on('error', (error) => reject(new Error(`Server health check failed, process threw: ${error}`)));
 
       setTimeout(() => {
-        if (worker.exitCode === null) {
-          reject(new Error('Server health check failed, took too long to start.'));
-          worker.kill('SIGTERM');
+        if (worker.exitCode !== null) {
+          return;
         }
+
+        reject(new Error('Server health check failed, took too long to start.'));
+        worker.kill('SIGTERM');
       }, 180_000);
     });
   }

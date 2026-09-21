@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/search_filter.provider.dart';
 import 'package:immich_mobile/widgets/search/search_filter/common/dropdown.dart';
@@ -61,7 +61,7 @@ class LocationPicker extends HookConsumerWidget {
             AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
             _ => [],
           },
-          label: const Text('country').tr(),
+          label: Text(context.t.country),
           controller: countryTextController,
           onSelected: (value) {
             if (value.toString() == selectedCountry.value) {
@@ -80,7 +80,7 @@ class LocationPicker extends HookConsumerWidget {
             AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
             _ => [],
           },
-          label: const Text('state').tr(),
+          label: Text(context.t.state),
           controller: stateTextController,
           onSelected: (value) {
             if (value.toString() == selectedState.value) {
@@ -98,7 +98,7 @@ class LocationPicker extends HookConsumerWidget {
             AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
             _ => [],
           },
-          label: const Text('city').tr(),
+          label: Text(context.t.city),
           controller: cityTextController,
           onSelected: (value) {
             selectedCity.value = value.toString();

@@ -11,9 +11,9 @@ import {
   TimelineData,
   toAssetResponseDto,
 } from 'src/ui/generators/timeline';
-import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
-import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network';
-import { utils } from 'src/utils';
+import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network.js';
+import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network.js';
+import { utils } from 'src/utils.js';
 
 export type AssetViewerTestFixture = {
   adminUserId: string;
@@ -110,6 +110,7 @@ export async function enableTagsPreference(context: BrowserContext) {
         download: { archiveSize: 4_294_967_296, includeEmbeddedVideos: false },
         purchase: { showSupportBadge: true, hideBuyButtonUntil: '2100-02-12T00:00:00.000Z' },
         cast: { gCastEnabled: false },
+        recentlyAdded: { sidebarWeb: false },
       },
     });
   });

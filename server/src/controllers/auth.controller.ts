@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import type { Request, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
-  AuthDto,
+  type AuthDto,
   AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
@@ -15,12 +15,12 @@ import {
   SessionUnlockDto,
   SignUpDto,
   ValidateAccessTokenResponseDto,
-} from 'src/dtos/auth.dto';
-import { UserAdminResponseDto } from 'src/dtos/user.dto';
-import { ApiTag, AuthType, ImmichCookie, Permission } from 'src/enum';
-import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
-import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
+} from 'src/dtos/auth.dto.js';
+import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
+import { ApiTag, AuthType, ImmichCookie, Permission } from 'src/enum.js';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { AuthService, type LoginDetails } from 'src/services/auth.service.js';
+import { respondWithCookie, respondWithoutCookie } from 'src/utils/response.js';
 
 @ApiTags(ApiTag.Authentication)
 @Controller('auth')
@@ -33,6 +33,7 @@ export class AuthController {
     description: 'Login with username and password and receive a session token.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @Authenticated({ public: true })
   async login(
     @Res({ passthrough: true }) res: Response,
     @Body() loginCredential: LoginCredentialDto,
@@ -55,6 +56,7 @@ export class AuthController {
     description: 'Create the first admin user in the system.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @Authenticated({ public: true, setup: true })
   signUpAdmin(@Body() dto: SignUpDto): Promise<UserAdminResponseDto> {
     return this.service.adminSignUp(dto);
   }

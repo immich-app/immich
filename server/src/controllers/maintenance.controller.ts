@@ -1,20 +1,20 @@
 import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { Response } from 'express';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
-} from 'src/dtos/maintenance.dto';
-import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
-import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
-import { LoginDetails } from 'src/services/auth.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
-import { respondWithCookie } from 'src/utils/response';
+} from 'src/dtos/maintenance.dto.js';
+import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum.js';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { respondWithCookie } from 'src/utils/response.js';
 
 @ApiTags(ApiTag.Maintenance)
 @Controller('admin/maintenance')
@@ -27,6 +27,7 @@ export class MaintenanceController {
     description: 'Fetch information about the currently running maintenance action.',
     history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
+  @Authenticated({ public: true })
   getMaintenanceStatus(): MaintenanceStatusResponseDto {
     return this.service.getMaintenanceStatus();
   }
@@ -48,6 +49,7 @@ export class MaintenanceController {
     description: 'Login with maintenance token or cookie to receive current information and perform further actions.',
     history: new HistoryBuilder().added('v2.3.0').alpha('v2.3.0'),
   })
+  @Authenticated({ public: true })
   maintenanceLogin(@Body() _dto: MaintenanceLoginDto): MaintenanceAuthDto {
     throw new BadRequestException('Not in maintenance mode');
   }
@@ -65,12 +67,14 @@ export class MaintenanceController {
     @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    if (dto.action !== MaintenanceAction.End) {
-      const { jwt } = await this.service.startMaintenance(dto, auth.user.name);
-      return respondWithCookie(res, undefined, {
-        isSecure: loginDetails.isSecure,
-        values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
-      });
+    if (dto.action === MaintenanceAction.End) {
+      return;
     }
+
+    const { jwt } = await this.service.startMaintenance(dto, auth.user.name);
+    return respondWithCookie(res, undefined, {
+      isSecure: loginDetails.isSecure,
+      values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
+    });
   }
 }

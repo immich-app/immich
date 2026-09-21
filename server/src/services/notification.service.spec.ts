@@ -1,17 +1,15 @@
-import { defaults, SystemConfig } from 'src/config';
-import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
-import { NotificationService } from 'src/services/notification.service';
-import { INotifyAlbumUpdateJob } from 'src/types';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { AssetFileFactory } from 'test/factories/asset-file.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { UserFactory } from 'test/factories/user.factory';
-import { notificationStub } from 'test/fixtures/notification.stub';
-import { userStub } from 'test/fixtures/user.stub';
-import { getForAlbum } from 'test/mappers';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
+import { NotificationService } from 'src/services/notification.service.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { notificationStub } from 'test/fixtures/notification.stub.js';
+import { userStub } from 'test/fixtures/user.stub.js';
+import { getForAlbum } from 'test/mappers.js';
+import { newUuid } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 const configs = {
   smtpDisabled: Object.freeze<SystemConfig>({
@@ -101,7 +99,7 @@ describe(NotificationService.name, () => {
 
     it('skips smtp validation with DTO when there are no changes', async () => {
       const oldConfig = { ...configs.smtpEnabled };
-      const newConfig = configs.smtpEnabled as SystemConfigDto;
+      const newConfig = configs.smtpEnabled as AdminConfigDto;
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(mocks.email.verifySmtp).not.toHaveBeenCalled();
@@ -157,12 +155,20 @@ describe(NotificationService.name, () => {
   });
 
   describe('onAlbumUpdateEvent', () => {
-    it('should queue notify album update event', async () => {
-      await sut.onAlbumUpdate({ id: 'album', recipientId: '42' });
-      expect(mocks.job.queue).toHaveBeenCalledWith({
+    it('should send a websocket event to every user and queue notify jobs for recipients', async () => {
+      await sut.onAlbumUpdate({ id: 'album', userIds: ['1', '42'], recipientIds: ['42'] });
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_album_update', '1', 'album');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_album_update', '42', 'album');
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
         name: JobName.NotifyAlbumUpdate,
         data: { id: 'album', recipientId: '42', delay: 300_000 },
       });
+    });
+
+    it('should not queue email jobs when there are no recipients', async () => {
+      await sut.onAlbumUpdate({ id: 'album', userIds: ['1'], recipientIds: [] });
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_album_update', '1', 'album');
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
 
@@ -522,7 +528,7 @@ describe(NotificationService.name, () => {
     });
 
     it('should add new recipients for new images if job is already queued', async () => {
-      await sut.onAlbumUpdate({ id: '1', recipientId: '2' } as INotifyAlbumUpdateJob);
+      await sut.onAlbumUpdate({ id: '1', userIds: ['2'], recipientIds: ['2'] });
       expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, '1/2');
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NotifyAlbumUpdate,

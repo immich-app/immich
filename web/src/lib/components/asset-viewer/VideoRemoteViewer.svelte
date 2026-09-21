@@ -51,7 +51,7 @@
     if (!url || !castManager.isCasting) {
       return;
     }
-    const fullUrl = new URL(url, globalThis.location.href);
+    const fullUrl = new URL(url, location.href);
 
     try {
       await castManager.loadMedia(fullUrl.href, force);
@@ -63,7 +63,7 @@
   };
 
   function handleSeek(event: Event) {
-    const newTime = Number.parseFloat((event.target as HTMLInputElement).value);
+    const newTime = Number((event.target as HTMLInputElement).value);
     castManager.seekTo(newTime);
   }
 </script>
@@ -76,7 +76,7 @@
 <img src={poster} alt="poster" class="m-4 rounded-xl" />
 
 <div class="flex place-content-center place-items-center">
-  {#if castManager.castState == CastState.BUFFERING}
+  {#if castManager.castState === CastState.BUFFERING}
     <div class="p-3">
       <LoadingSpinner />
     </div>
@@ -85,9 +85,9 @@
       color="primary"
       shape="round"
       variant="ghost"
-      icon={castManager.castState == CastState.PLAYING ? mdiPause : mdiPlay}
+      icon={castManager.castState === CastState.PLAYING ? mdiPause : mdiPlay}
       onclick={() => handlePlayPauseButton()}
-      aria-label={castManager.castState == CastState.PLAYING ? 'Pause' : 'Play'}
+      aria-label={castManager.castState === CastState.PLAYING ? 'Pause' : 'Play'}
     />
   {/if}
 

@@ -114,7 +114,11 @@
     });
   };
 
-  const handleRemoveFromAlbum = async (assetIds: string[]) => {
+  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
+    if (!album || !albumIds.includes(album.id)) {
+      return;
+    }
+
     timelineManager.removeAssets(assetIds);
 
     if (assetIds.includes(assetCursor.current.id)) {
@@ -237,7 +241,7 @@
   });
 </script>
 
-<OnEvents {onAssetsDelete} {onAssetsRestore} />
+<OnEvents {onAssetsDelete} {onAssetsRestore} {onAlbumRemoveAssets} />
 
 {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
@@ -255,7 +259,6 @@
       assetCacheManager.invalidate();
     }}
     onRandom={handleRandom}
-    onRemoveFromAlbum={handleRemoveFromAlbum}
     onClose={handleClose}
   />
 {/await}

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -8,13 +10,19 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
+// iOS GPU textures max out at 16384px; larger images squish.
+const _kMaxPixelSize = 16384;
+
 class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
     with CancellableImageProviderMixin<LocalThumbProvider> {
   final String id;
   final Size size;
   final AssetType assetType;
 
-  LocalThumbProvider({required this.id, required this.assetType, this.size = kThumbnailResolution});
+  // an edit on the device keeps the id and changes the bytes, so the checksum is what separates two renders
+  final String? checksum;
+
+  LocalThumbProvider({required this.id, required this.assetType, this.checksum, this.size = kThumbnailResolution});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -44,13 +52,13 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
       return true;
     }
     if (other is LocalThumbProvider) {
-      return id == other.id;
+      return id == other.id && checksum == other.checksum;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(id, checksum);
 }
 
 class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
@@ -59,8 +67,38 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final Size size;
   final AssetType assetType;
   final bool isAnimated;
+  final int? width;
+  final int? height;
+  final String? checksum;
 
-  LocalFullImageProvider({required this.id, required this.assetType, required this.size, required this.isAnimated});
+  LocalFullImageProvider({
+    required this.id,
+    required this.assetType,
+    required this.size,
+    required this.isAnimated,
+    this.width,
+    this.height,
+    this.checksum,
+  });
+
+  Size _previewTarget(double dpr, bool previewIsFinal) =>
+      previewTargetSize(size.width * dpr, size.height * dpr, width, height, previewIsFinal: previewIsFinal);
+
+  // Use an aspect-correct target when aspectFill would exceed the texture limit.
+  @visibleForTesting
+  static Size previewTargetSize(double boxW, double boxH, int? width, int? height, {required bool previewIsFinal}) {
+    if (width == null || height == null || width <= 0 || height <= 0) {
+      return Size(boxW, boxH);
+    }
+    final imgLong = math.max(width, height).toDouble();
+    final coverLong = imgLong * math.max(boxW / width, boxH / height);
+    if (coverLong <= _kMaxPixelSize) {
+      return Size(boxW, boxH);
+    }
+    final bound = previewIsFinal ? _kMaxPixelSize.toDouble() : math.max(boxW, boxH);
+    final scale = math.min(1.0, bound / imgLong);
+    return Size(math.max(1.0, width * scale), math.max(1.0, height * scale));
+  }
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -73,7 +111,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       return AnimatedImageStreamCompleter(
         stream: _animatedCodec(key, decode),
         scale: 1.0,
-        initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+        initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
           DiagnosticsProperty<String>('Id', key.id),
@@ -86,7 +124,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
@@ -108,7 +146,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     var request = this.request = LocalImageRequest(
       localId: key.id,
-      size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+      size: _previewTarget(devicePixelRatio, !loadOriginal),
       assetType: key.assetType,
     );
     yield* loadRequest(request, decode, isFinal: !loadOriginal);
@@ -136,7 +174,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     final previewRequest = request = LocalImageRequest(
       localId: key.id,
-      size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+      size: _previewTarget(devicePixelRatio, false),
       assetType: key.assetType,
     );
     yield* loadRequest(previewRequest, decode, isFinal: false);
@@ -163,11 +201,16 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       return true;
     }
     if (other is LocalFullImageProvider) {
-      return id == other.id && size == other.size && isAnimated == other.isAnimated;
+      return id == other.id &&
+          size == other.size &&
+          isAnimated == other.isAnimated &&
+          width == other.width &&
+          height == other.height &&
+          checksum == other.checksum;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode ^ isAnimated.hashCode;
+  int get hashCode => Object.hash(id, size, isAnimated, width, height, checksum);
 }

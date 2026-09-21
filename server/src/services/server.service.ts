@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { serverVersion } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
+import { serverVersion } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent } from 'src/decorators.js';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
 import {
   ServerAboutResponseDto,
   ServerApkLinksDto,
@@ -13,18 +13,18 @@ import {
   ServerStatsResponseDto,
   ServerStorageResponseDto,
   UsageByUserDto,
-} from 'src/dtos/server.dto';
-import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { UserStatsQueryResponse } from 'src/repositories/user.repository';
-import { BaseService } from 'src/services/base.service';
-import { asHumanReadable } from 'src/utils/bytes';
-import { mimeTypes } from 'src/utils/mime-types';
+} from 'src/dtos/server.dto.js';
+import { StorageFolder, SystemMetadataKey } from 'src/enum.js';
+import { UserStatsQueryResponse } from 'src/repositories/user.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { asHumanReadable } from 'src/utils/bytes.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 import {
   isDuplicateDetectionEnabled,
   isFacialRecognitionEnabled,
   isOcrEnabled,
   isSmartSearchEnabled,
-} from 'src/utils/misc';
+} from 'src/utils/misc.js';
 
 @Injectable()
 export class ServerService extends BaseService {
@@ -77,7 +77,7 @@ export class ServerService extends BaseService {
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
-    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
+    serverInfo.diskUsagePercentage = Number(usagePercentage);
     return serverInfo;
   }
 
@@ -111,9 +111,8 @@ export class ServerService extends BaseService {
   }
 
   async getSystemConfig(): Promise<ServerConfigDto> {
-    const { setup } = this.configRepository.getEnv();
     const config = await this.getConfig({ withCache: false });
-    const isInitialized = !setup.allow || (await this.userRepository.hasAdmin());
+    const isInitialized = !(await this.isSetupAvailable());
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
 
     return {
@@ -121,6 +120,7 @@ export class ServerService extends BaseService {
       trashDays: config.trash.days,
       userDeleteDelay: config.user.deleteDelay,
       oauthButtonText: config.oauth.buttonText,
+      oauthAccountManagementUrl: config.oauth.accountManagementUrl,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
@@ -190,8 +190,12 @@ export class ServerService extends BaseService {
       throw new BadRequestException('Invalid license key');
     }
     const { licensePublicKey } = this.configRepository.getEnv();
-    const licenseValid = this.cryptoRepository.verifySha256(dto.licenseKey, dto.activationKey, licensePublicKey.server);
-    if (!licenseValid) {
+    const isLicenseValid = this.cryptoRepository.verifySha256(
+      dto.licenseKey,
+      dto.activationKey,
+      licensePublicKey.server,
+    );
+    if (!isLicenseValid) {
       throw new BadRequestException('Invalid license key');
     }
 

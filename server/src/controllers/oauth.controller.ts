@@ -1,20 +1,20 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import type { Request, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
-  AuthDto,
+  type AuthDto,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-} from 'src/dtos/auth.dto';
-import { UserAdminResponseDto } from 'src/dtos/user.dto';
-import { ApiTag, AuthType, ImmichCookie } from 'src/enum';
-import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
-import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { respondWithCookie } from 'src/utils/response';
+} from 'src/dtos/auth.dto.js';
+import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
+import { ApiTag, AuthType, ImmichCookie } from 'src/enum.js';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { AuthService, type LoginDetails } from 'src/services/auth.service.js';
+import { respondWithCookie } from 'src/utils/response.js';
 
 @ApiTags(ApiTag.Authentication)
 @Controller('oauth')
@@ -22,6 +22,7 @@ export class OAuthController {
   constructor(private service: AuthService) {}
 
   @Get('mobile-redirect')
+  @Authenticated({ public: true })
   @Redirect()
   @Endpoint({
     summary: 'Redirect OAuth to mobile',
@@ -37,6 +38,7 @@ export class OAuthController {
   }
 
   @Post('authorize')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Start OAuth',
     description: 'Initiate the OAuth authorization process.',
@@ -62,6 +64,7 @@ export class OAuthController {
   }
 
   @Post('callback')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Finish OAuth',
     description: 'Complete the OAuth authorization process by exchanging the authorization code for a session token.',
@@ -115,6 +118,7 @@ export class OAuthController {
   }
 
   @Post('backchannel-logout')
+  @Authenticated({ public: true })
   @HttpCode(HttpStatus.OK)
   @ApiConsumes('application/x-www-form-urlencoded')
   @Endpoint({

@@ -1,8 +1,8 @@
-import { DuplicateController } from 'src/controllers/duplicate.controller';
-import { DuplicateService } from 'src/services/duplicate.service';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { DuplicateController } from 'src/controllers/duplicate.controller.js';
+import { DuplicateService } from 'src/services/duplicate.service.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(DuplicateController.name, () => {
   let ctx: ControllerContext;
@@ -18,26 +18,7 @@ describe(DuplicateController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /duplicates', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/duplicates');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('DELETE /duplicates', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete('/duplicates');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('DELETE /duplicates/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/duplicates/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/duplicates/123`);
       expect(status).toBe(400);

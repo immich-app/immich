@@ -12,13 +12,15 @@ struct ImageEntry: TimelineEntry {
     var subtitle: String? = nil
     var error: WidgetError? = nil
     var deepLink: URL? = nil
+    var forceFullColor: Bool = true
   }
 
   static func build(
     api: ImmichAPI,
     asset: Asset,
     dateOffset: Int,
-    subtitle: String? = nil
+    subtitle: String? = nil,
+    forceFullColor: Bool = true
   )
     async throws -> Self
   {
@@ -34,7 +36,8 @@ struct ImageEntry: TimelineEntry {
       image: image,
       metadata: EntryMetadata(
         subtitle: subtitle,
-        deepLink: asset.deepLink
+        deepLink: asset.deepLink,
+        forceFullColor: forceFullColor
       )
     )
   }
@@ -111,12 +114,26 @@ struct ImageEntry: TimelineEntry {
 
 }
 
+// Required so that we can decode older versions of the metadata
+extension ImageEntry.Metadata {
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    subtitle = try container.decodeIfPresent(String.self, forKey: .subtitle)
+    error = try container.decodeIfPresent(WidgetError.self, forKey: .error)
+    deepLink = try container.decodeIfPresent(URL.self, forKey: .deepLink)
+
+    forceFullColor =
+      try container.decodeIfPresent(Bool.self, forKey: .forceFullColor) ?? true
+  }
+}
+
 func generateRandomEntries(
   api: ImmichAPI,
   now: Date,
   count: Int,
   filter: SearchFilter = Album.NONE.filter,
-  subtitle: String? = nil
+  subtitle: String? = nil,
+  forceFullColor: Bool = true
 )
   async throws -> [ImageEntry]
 {
@@ -132,7 +149,8 @@ func generateRandomEntries(
           api: api,
           asset: asset,
           dateOffset: dateOffset,
-          subtitle: subtitle
+          subtitle: subtitle,
+          forceFullColor: forceFullColor
         )
       }
     }

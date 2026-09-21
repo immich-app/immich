@@ -1,17 +1,17 @@
 import { CallContext, Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { Injectable } from '@nestjs/common';
-import { createPool, Pool } from 'generic-pool';
-import { Insertable, Kysely } from 'kysely';
+import { Pool, createPool } from 'generic-pool';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { PluginMethodSearchDto, PluginSearchDto } from 'src/dtos/plugin.dto';
-import { LogLevel, WorkflowType } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { DB } from 'src/schema';
-import { PluginMethodTable } from 'src/schema/tables/plugin-method.table';
-import { PluginTable } from 'src/schema/tables/plugin.table';
+import type { Insertable, Kysely } from 'kysely';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { PluginMethodSearchDto, PluginSearchDto } from 'src/dtos/plugin.dto.js';
+import { LogLevel, WorkflowType } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { DB } from 'src/schema/index.js';
+import { PluginMethodTable } from 'src/schema/tables/plugin-method.table.js';
+import { PluginTable } from 'src/schema/tables/plugin.table.js';
 
 type PluginMethod = { pluginKey: string; methodName: string };
 type PluginLoad = { key: string; label: string; wasmBytes: Buffer };
@@ -190,6 +190,7 @@ export class PluginRepository {
                   description: ref('excluded.description'),
                   types: ref('excluded.types'),
                   hostFunctions: ref('excluded.hostFunctions'),
+                  allowedHosts: ref('excluded.allowedHosts'),
                   uiHints: ref('excluded.uiHints'),
                   schema: ref('excluded.schema'),
                 })),
@@ -224,6 +225,7 @@ export class PluginRepository {
                 error: (message) => logger.error(message),
               } as Console,
               logLevel: asExtismLogLevel(logger.getLogLevel()),
+              enableWasiOutput: true,
             },
           ),
         destroy: (plugin) => plugin.close(),
@@ -239,7 +241,7 @@ export class PluginRepository {
     }
   }
 
-  async callMethod<T>({ pluginKey, methodName }: PluginMethod, input: unknown) {
+  async callMethod<T>({ pluginKey, methodName }: PluginMethod, input: unknown, context?: unknown) {
     const item = this.pluginMap.get(pluginKey);
     if (!item) {
       throw new Error(`No loaded plugin found for ${pluginKey}`);
@@ -250,7 +252,7 @@ export class PluginRepository {
     try {
       const plugin = await pool.acquire();
       try {
-        const result = await plugin.call(methodName, JSON.stringify(input));
+        const result = await plugin.call(methodName, JSON.stringify(input), context);
         return (result ? result.json() : result) as T;
       } finally {
         await pool.release(plugin);

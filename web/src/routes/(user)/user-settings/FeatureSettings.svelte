@@ -18,6 +18,7 @@
   // Memories
   let memoriesEnabled = $state(authManager.preferences.memories?.enabled ?? true);
   let memoriesDuration = $state(authManager.preferences.memories?.duration ?? 5);
+  let memoriesSidebar = $state(authManager.preferences.memories?.sidebarWeb ?? false);
 
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
@@ -38,18 +39,22 @@
   // Cast
   let gCastEnabled = $state(authManager.preferences.cast?.gCastEnabled ?? false);
 
+  // Recently added
+  let recentlyAddedSidebar = $state(authManager.preferences.recentlyAdded?.sidebarWeb ?? false);
+
   const handleSave = async () => {
     try {
       const response = await updateMyPreferences({
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
-          memories: { enabled: memoriesEnabled, duration: memoriesDuration },
+          memories: { enabled: memoriesEnabled, duration: memoriesDuration, sidebarWeb: memoriesSidebar },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar, minimumFaces: peopleMinFaces },
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
           cast: { gCastEnabled },
+          recentlyAdded: { sidebarWeb: recentlyAddedSidebar },
         },
       });
 
@@ -102,6 +107,12 @@
             <Field label={$t('enable')}>
               <Switch bind:checked={memoriesEnabled} />
             </Field>
+
+            {#if memoriesEnabled}
+              <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
+                <Switch bind:checked={memoriesSidebar} />
+              </Field>
+            {/if}
 
             <Field label={$t('duration')} description={$t('time_based_memories_duration')}>
               <NumberInput bind:value={memoriesDuration} />
@@ -166,6 +177,14 @@
           <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
+            </Field>
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="recentlyAdded" title={$t('recently_added')} subtitle={$t('recently_added_description')}>
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
+            <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
+              <Switch bind:checked={recentlyAddedSidebar} />
             </Field>
           </div>
         </SettingAccordion>

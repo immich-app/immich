@@ -14,7 +14,7 @@ export const installMessageListener = () => {
 
     switch (event.data.type) {
       case 'cancel': {
-        const url = event.data.url ? new URL(event.data.url, self.location.origin) : undefined;
+        const url = event.data.url ? new URL(event.data.url, globalThis.location.origin) : undefined;
         if (!url) {
           return;
         }

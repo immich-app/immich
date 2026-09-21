@@ -7,6 +7,7 @@
   import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
@@ -54,6 +55,7 @@
   };
 
   let duplicates = $state(data.duplicates);
+  let showMore = $state(false);
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -62,7 +64,7 @@
   let duplicatesIndex = $derived(
     (() => {
       const indexParam = page.url.searchParams.get('index') ?? '0';
-      const parsedIndex = Number.parseInt(indexParam, 10);
+      const parsedIndex = Math.trunc(Number(indexParam));
       return correctDuplicatesIndex(Number.isNaN(parsedIndex) ? 0 : parsedIndex);
     })(),
   );
@@ -254,13 +256,15 @@
   <div>
     {#if duplicates && duplicates.length > 0}
       <Text size="small" color="muted" class="mb-4">
-        <p>{$t('duplicates_description')} <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" /></p>
+        {$t('duplicates_description')}
+        <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" />
       </Text>
 
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
           suggestedKeepAssetIds={duplicates[duplicatesIndex].suggestedKeepAssetIds}
+          bind:showMore
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
@@ -270,8 +274,7 @@
             <div class="flex text-xs text-black">
               <Button
                 size="small"
-                leadingIcon={mdiPageFirst}
-                color="primary"
+                leadingIcon={languageManager.rtl ? mdiPageLast : mdiPageFirst}
                 class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleFirst}
                 disabled={duplicatesIndex === 0}
@@ -280,8 +283,7 @@
               </Button>
               <Button
                 size="small"
-                leadingIcon={mdiChevronLeft}
-                color="primary"
+                leadingIcon={languageManager.rtl ? mdiChevronRight : mdiChevronLeft}
                 class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handlePrevious}
                 disabled={duplicatesIndex === 0}
@@ -295,8 +297,7 @@
             <div class="flex text-xs text-black">
               <Button
                 size="small"
-                trailingIcon={mdiChevronRight}
-                color="primary"
+                trailingIcon={languageManager.rtl ? mdiChevronLeft : mdiChevronRight}
                 class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleNext}
                 disabled={duplicatesIndex === duplicates.length - 1}
@@ -305,8 +306,7 @@
               </Button>
               <Button
                 size="small"
-                trailingIcon={mdiPageLast}
-                color="primary"
+                trailingIcon={languageManager.rtl ? mdiPageFirst : mdiPageLast}
                 class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handleLast}
                 disabled={duplicatesIndex === duplicates.length - 1}

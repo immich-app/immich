@@ -1,16 +1,12 @@
 <script lang="ts">
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/Combobox.svelte';
-  import type { SearchCameraFilter } from '$lib/types';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  type Props = {
-    filters: SearchCameraFilter;
-  };
-
-  let { filters = $bindable() }: Props = $props();
+  let filters = $derived(searchManager.filter.camera);
 
   let makes: string[] = $state([]);
   let models: string[] = $state([]);
@@ -75,8 +71,8 @@
 </script>
 
 <div id="camera-selection">
-  <Text fontWeight="medium">{$t('camera')}</Text>
-  <div class="mt-1 grid grid-auto-fit-40 gap-5">
+  <Text fontWeight="medium" class="pb-5">{$t('camera')}</Text>
+  <div class="grid grid-auto-fit-40 gap-2">
     <div class="w-full">
       <Combobox
         label={$t('make')}

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 
 class BackupToggleButton extends ConsumerStatefulWidget {
@@ -55,13 +55,13 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
   @override
   Widget build(BuildContext context) {
-    final uploadTasks = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
+    final uploadTasks = ref.watch(backupProvider.select((state) => state.uploadItems));
 
-    final isSyncing = ref.watch(driftBackupProvider.select((state) => state.isSyncing));
+    final isSyncing = ref.watch(backupProvider.select((state) => state.isSyncing));
 
-    final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
+    final iCloudProgress = ref.watch(backupProvider.select((state) => state.iCloudDownloadProgress));
 
-    final errorCount = ref.watch(driftBackupProvider.select((state) => state.errorCount));
+    final errorCount = ref.watch(backupProvider.select((state) => state.errorCount));
 
     final isProcessing = uploadTasks.isNotEmpty || isSyncing || iCloudProgress.isNotEmpty;
 
@@ -106,65 +106,57 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
               borderRadius: const BorderRadius.all(Radius.circular(18.5)),
               color: context.colorScheme.surfaceContainerLow,
             ),
-            child: Material(
-              color: context.colorScheme.surfaceContainerLow,
-              borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-              child: InkWell(
-                borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-                onTap: () => _onToggle(!_isEnabled),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              context.primaryColor.withValues(alpha: 0.2),
-                              context.primaryColor.withValues(alpha: 0.1),
-                            ],
-                          ),
-                        ),
-                        child: isProcessing
-                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                            : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          context.primaryColor.withValues(alpha: 0.2),
+                          context.primaryColor.withValues(alpha: 0.1),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    child: isProcessing
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    "enable_backup".t(context: context),
-                                    style: context.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (errorCount > 0)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
-                                  style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
+                            Flexible(
+                              child: Text(
+                                context.t.enable_backup,
+                                style: context.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: context.primaryColor,
                                 ),
                               ),
+                            ),
                           ],
                         ),
-                      ),
-                      Switch.adaptive(value: _isEnabled, onChanged: (value) => _onToggle(value)),
-                    ],
+                        if (errorCount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              context.t.upload_error_with_count(count: errorCount),
+                              style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
+                  Switch.adaptive(value: _isEnabled, onChanged: (value) => _onToggle(value)),
+                ],
               ),
             ),
           ),

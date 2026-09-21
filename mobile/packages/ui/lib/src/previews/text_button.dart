@@ -15,16 +15,6 @@ Widget previewTextButtonVariants() => const Wrap(
   ],
 );
 
-@ImmichPreview(group: 'TextButton', name: 'Colors')
-Widget previewTextButtonColors() => const Wrap(
-  spacing: 12,
-  runSpacing: 12,
-  children: [
-    ImmichTextButton(onPressed: _previewNoop, labelText: 'Primary', expanded: false),
-    ImmichTextButton(onPressed: _previewNoop, labelText: 'Secondary', color: ImmichColor.secondary, expanded: false),
-  ],
-);
-
 @ImmichPreview(group: 'TextButton', name: 'With Icons')
 Widget previewTextButtonWithIcons() => const Wrap(
   spacing: 12,
@@ -42,7 +32,11 @@ Widget previewTextButtonWithIcons() => const Wrap(
 );
 
 @ImmichPreview(group: 'TextButton', name: 'Loading')
-Widget previewTextButtonLoading() => const _PreviewLoadingDemo();
+Widget previewTextButtonLoading() => ImmichTextButton(
+  onPressed: () => Future<void>.delayed(const Duration(seconds: 2)),
+  labelText: 'Click me',
+  expanded: false,
+);
 
 @ImmichPreview(group: 'TextButton', name: 'Disabled')
 Widget previewTextButtonDisabled() => const Wrap(
@@ -59,30 +53,3 @@ Widget previewTextButtonDisabled() => const Wrap(
     ),
   ],
 );
-
-class _PreviewLoadingDemo extends StatefulWidget {
-  const _PreviewLoadingDemo();
-
-  @override
-  State<_PreviewLoadingDemo> createState() => _PreviewLoadingDemoState();
-}
-
-class _PreviewLoadingDemoState extends State<_PreviewLoadingDemo> {
-  bool _isLoading = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ImmichTextButton(
-      onPressed: () async {
-        setState(() => _isLoading = true);
-        await Future<void>.delayed(const Duration(seconds: 2));
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-      },
-      labelText: _isLoading ? 'Loading...' : 'Click Me',
-      loading: _isLoading,
-      expanded: false,
-    );
-  }
-}

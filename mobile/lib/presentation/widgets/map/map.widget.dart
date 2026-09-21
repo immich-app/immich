@@ -10,13 +10,12 @@ import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -40,16 +39,16 @@ class CustomSourceProperties implements SourceProperties {
   }
 }
 
-class DriftMap extends ConsumerStatefulWidget {
+class MapView extends ConsumerStatefulWidget {
   final LatLng? initialLocation;
 
-  const DriftMap({super.key, this.initialLocation});
+  const MapView({super.key, this.initialLocation});
 
   @override
-  ConsumerState<DriftMap> createState() => _DriftMapState();
+  ConsumerState<MapView> createState() => _MapViewState();
 }
 
-class _DriftMapState extends ConsumerState<DriftMap> {
+class _MapViewState extends ConsumerState<MapView> {
   MapLibreMapController? mapController;
   final _reloadMutex = AsyncMutex();
   final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
@@ -67,7 +66,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   void dispose() {
     _debouncer.dispose();
     bottomSheetOffset.dispose();
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
   }
 
@@ -133,8 +132,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     // When the AssetViewer is open, the DriftMap route stays alive in the background.
     // If we continue to update bounds, the map-scoped timeline service gets recreated and the previous one disposed,
     // which can invalidate the TimelineService instance that was passed into AssetViewerRoute (causing "loading forever").
-    final currentRoute = ref.read(currentRouteNameProvider);
-    if (currentRoute == AssetViewerRoute.name) {
+    if (ref.read(isAssetViewerOpenProvider)) {
       return;
     }
 
@@ -166,7 +164,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
           context: context,
           gravity: ToastGravity.BOTTOM,
           toastType: ToastType.error,
-          msg: "map_cannot_get_user_location".t(context: context),
+          msg: context.t.map_cannot_get_user_location,
         );
       }
       return;
@@ -183,6 +181,11 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(isAssetViewerOpenProvider, (previous, current) {
+      if (previous == true && !current) {
+        _debouncer.run(() => setBounds(forceReload: true));
+      }
+    });
     return Stack(
       children: [
         _Map(initialLocation: widget.initialLocation, onMapCreated: onMapCreated, onMapReady: onMapReady),

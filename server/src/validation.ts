@@ -1,20 +1,20 @@
-import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
+import { FileValidator, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { isIP, isIPRange } from 'validator';
+import validator from 'validator';
 import z from 'zod';
 
 export type IsIPRangeOptions = { requireCIDR?: boolean };
 
 function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   const { requireCIDR = true } = options ?? {};
-  if (isIPRange(value)) {
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  if (validator.isIPRange(value)) {
     return true;
   }
-  if (!requireCIDR && isIP(value)) {
-    return true;
-  }
-  return false;
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  return !requireCIDR && validator.isIP(value);
 }
 
 /**
@@ -44,7 +44,7 @@ export function nonEmptyPartial<T extends z.ZodRawShape>(shape: T) {
     .object(shape)
     .partial()
     .refine((data) => Object.values(data as Record<string, unknown>).some((value) => value !== undefined), {
-      message: 'At least one field must be provided',
+      message: `At least one of the following fields is required: ${Object.keys(shape).join(', ')}`,
     });
 }
 
@@ -62,7 +62,7 @@ export function IsNotSiblingOf<
   TKey extends z.infer<ReturnType<TSchema['keyof']>> & keyof z.infer<TSchema>,
 >(_schema: TSchema, property: TKey, siblings: TKey[]) {
   type T = z.infer<TSchema>;
-  const message = `${String(property)} cannot exist alongside ${siblings.join(' or ')}`;
+  const message = `${property} cannot exist alongside ${siblings.join(' or ')}`;
   return z.custom<T>().refine(
     (data) => {
       if (data[property] === undefined) {
@@ -72,16 +72,6 @@ export function IsNotSiblingOf<
     },
     { message },
   );
-}
-
-@Injectable()
-export class ParseMeUUIDPipe extends ParseUUIDPipe {
-  async transform(value: string, metadata: ArgumentMetadata) {
-    if (value == 'me') {
-      return value;
-    }
-    return super.transform(value, metadata);
-  }
 }
 
 @Injectable()
@@ -132,13 +122,21 @@ const FilenameParamSchema = z.object({
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
 /**
+ * The HTML5 email regex, but with unicode support, so that international email addresses
+ * (unicode local parts and internationalized domain names) are accepted.
+ * @see {@link z.regexes.html5Email}
+ */
+const unicodeEmail =
+  /^[\p{L}\p{M}\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]{0,61}[\p{L}\p{M}\p{N}])?(?:\.[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]{0,61}[\p{L}\p{M}\p{N}])?)*$/u;
+
+/**
  * Unified email validation
- * Converts email strings to lowercase and validates against HTML5 email regex
+ * Converts email strings to lowercase and validates against a unicode aware email regex
  * @docs https://zod.dev/api?id=email
  */
 export const toEmail = z
   .email({
-    pattern: z.regexes.html5Email,
+    pattern: unicodeEmail,
     error: (iss) => `Invalid input: expected email, received ${typeof iss.input}`,
   })
   .transform((val) => val.toLowerCase());
@@ -173,12 +171,7 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      },
+      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });
@@ -194,7 +187,7 @@ export const isoDateToDate = z
  * // Pipe (query): coerce string to number then validate range
  * z.coerce.number().pipe(latitudeSchema).describe('Latitude (-90 to 90)')
  */
-export const latitudeSchema = z.number().min(-90).max(90);
+export const latitudeSchema = z.number().meta({ format: 'double' }).min(-90).max(90);
 
 /**
  * Longitude in range [-180, 180]. Reuse for body or query params.
@@ -207,7 +200,7 @@ export const latitudeSchema = z.number().min(-90).max(90);
  * // Pipe (query): coerce string to number then validate range
  * z.coerce.number().pipe(longitudeSchema).describe('Longitude (-180 to 180)')
  */
-export const longitudeSchema = z.number().min(-180).max(180);
+export const longitudeSchema = z.number().meta({ format: 'double' }).min(-180).max(180);
 
 /**
  * Parse string to boolean

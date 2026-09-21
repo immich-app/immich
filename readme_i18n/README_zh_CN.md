@@ -2,7 +2,7 @@
   <br/>  
   <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
   <a href="https://discord.immich.app">
-    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
+    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
   </a>
   <br/>  
   <br/>   
@@ -12,9 +12,6 @@
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
 <h3 align="center">高性能的照片和视频自托管解决方案</h3>
-<p align="center">  
-请注意: 此 README 不是由 Immich 团队维护, 而是依靠贡献者来更新的，这意味着它可能并不会被及时更新。感谢理解。
-</p>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="界面截图">
@@ -35,11 +32,13 @@
   <a href="README_zh_TW.md">正體中文</a>
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_bg_BG.md">Български</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_vi_VN.md">Tiếng Việt</a>
   <a href="README_th_TH.md">ภาษาไทย</a>
+  <a href="README_ml_IN.md">മലയാളം</a>
 
 </p>
 
@@ -52,7 +51,7 @@
 
 ## 目录
 
-- [官方文档](https://docs.immich.app)
+- [官方文档](https://docs.immich.app/)
 - [项目总览](https://docs.immich.app/overview/introduction)
 - [安装教程](https://docs.immich.app/install/requirements)
 - [路线图](https://immich.app/roadmap)
@@ -118,18 +117,8 @@
 
 ![活跃度](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
-## Star增长曲线
-
-<a href="https://star-history.com/#immich-app/immich&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
- </picture>
-</a>
-
 ## 贡献者
 
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
+<a href="https://github.com/immich-app/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

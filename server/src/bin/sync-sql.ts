@@ -9,20 +9,21 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { format } from 'sql-formatter';
-import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
-import { repositories } from 'src/repositories';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
-import { SyncRepository } from 'src/repositories/sync.repository';
-import { AuthService } from 'src/services/auth.service';
-import { getKyselyConfig } from 'src/utils/database';
+import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { repositories } from 'src/repositories/index.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { SyncRepository } from 'src/repositories/sync.repository.js';
+import { AuthService } from 'src/services/auth.service.js';
+import { getKyselyConfig } from 'src/utils/database.js';
 
 const handleError = (label: string, error: Error | any) => {
   console.error(`${label} error: ${error}`);
 };
 
+// eslint-disable-next-line unicorn/no-exports-in-scripts
 export class SqlLogger {
   queries: string[] = [];
   errors: Array<{ error: string | Error; query: string }> = [];
@@ -109,10 +110,12 @@ class SqlGenerator {
     const instance = this.app.get<Repository>(Repository);
 
     // normal repositories
-    data.push(...(await this.runTargets(instance, `${Repository.name}`)));
+    data.push(...(await this.runTargets(instance, Repository.name)));
 
     // nested repositories
     if (Repository.name === AccessRepository.name || Repository.name === SyncRepository.name) {
+      // probably a bug that this fails linting?
+      // eslint-disable-next-line unicorn/prefer-object-iterable-methods
       for (const key of Object.keys(instance)) {
         const subInstance = (instance as any)[key];
         data.push(...(await this.runTargets(subInstance, `${Repository.name}.${key}`)));
@@ -127,7 +130,7 @@ class SqlGenerator {
 
     for (const key of this.getPropertyNames(instance)) {
       const target = instance[key];
-      if (!(typeof target === 'function')) {
+      if (typeof target !== 'function') {
         continue;
       }
 

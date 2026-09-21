@@ -1,21 +1,22 @@
 import { Kysely } from 'kysely';
+import { DateTime } from 'luxon';
 import { createHash, randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import { text } from 'node:stream/consumers';
-import { StorageCore } from 'src/cores/storage.core';
-import { AssetFileType, IntegrityReport, JobName, JobStatus } from 'src/enum';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { IntegrityRepository } from 'src/repositories/integrity.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DB } from 'src/schema';
-import { IntegrityService } from 'src/services/integrity.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB, makeStream } from 'test/utils';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { AssetFileType, IntegrityReport, JobName, JobStatus, SystemMetadataKey } from 'src/enum.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { IntegrityRepository } from 'src/repositories/integrity.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { DB } from 'src/schema/index.js';
+import { IntegrityService } from 'src/services/integrity.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB, makeStream } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -407,7 +408,7 @@ describe(IntegrityService.name, () => {
       } = await ctx.newAsset({ ownerId, originalPath: '/path/to/file2' });
 
       const { id: reportId } = await ctx.get(IntegrityRepository).create({
-        type: IntegrityReport.UntrackedFile,
+        type: IntegrityReport.MissingFile,
         path: '/path/to/file2',
         assetId: assetId2,
       });
@@ -685,6 +686,46 @@ describe(IntegrityService.name, () => {
         items: [],
         nextCursor: undefined,
       });
+    });
+
+    it('should skip external library files', async () => {
+      const { sut, ctx } = setup();
+      const job = ctx.getMock(JobRepository);
+      job.queue.mockResolvedValue(void 0);
+
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId: user.id, isExternal: true });
+
+      await sut.handleChecksumFiles({ refreshOnly: false });
+
+      await expect(
+        ctx.get(IntegrityRepository).getIntegrityReport({ limit: 100 }, IntegrityReport.ChecksumFail),
+      ).resolves.toEqual({ items: [], nextCursor: undefined });
+    });
+
+    it('should continue from checkpoint', async () => {
+      const { sut, ctx } = setup();
+      const job = ctx.getMock(JobRepository);
+      job.queue.mockResolvedValue();
+
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({
+        ownerId: user.id,
+        createdAt: DateTime.now().minus({ days: 1 }).toISO(),
+        originalPath: '/foo/bar',
+      });
+      await ctx.newAsset({ ownerId: user.id, originalPath: '/foo/baz' });
+
+      await ctx
+        .get(SystemMetadataRepository)
+        .set(SystemMetadataKey.IntegrityChecksumCheckpoint, { date: DateTime.now().minus({ minutes: 5 }).toISO() });
+
+      await sut.handleChecksumFiles({ refreshOnly: false });
+
+      expect(ctx.getMock(StorageRepository).createPlainReadStream).not.toHaveBeenCalledWith('/foo/bar');
+      expect(ctx.getMock(StorageRepository).createPlainReadStream).toHaveBeenCalledWith('/foo/baz');
     });
   });
 

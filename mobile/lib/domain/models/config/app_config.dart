@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
+import 'package:immich_mobile/domain/models/config/feature_message_config.dart';
 import 'package:immich_mobile/domain/models/config/image_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/network_config.dart';
@@ -16,90 +19,31 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/semver.dart';
+
+part 'app_config.freezed.dart';
 
 const defaultConfig = AppConfig();
 
-class AppConfig {
-  final LogLevel logLevel;
-  final ThemeConfig theme;
-  final CleanupConfig cleanup;
-  final MapConfig map;
-  final TimelineConfig timeline;
-  final ImageConfig image;
-  final ViewerConfig viewer;
-  final SlideshowConfig slideshow;
-  final AlbumConfig album;
-  final BackupConfig backup;
-  final NetworkConfig network;
-  final ShareConfig share;
+@freezed
+abstract class AppConfig with _$AppConfig {
+  const AppConfig._();
 
-  const AppConfig({
-    this.logLevel = .info,
-    this.theme = const .new(),
-    this.cleanup = const .new(),
-    this.map = const .new(),
-    this.timeline = const .new(),
-    this.image = const .new(),
-    this.viewer = const .new(),
-    this.slideshow = const .new(),
-    this.album = const .new(),
-    this.backup = const .new(),
-    this.network = const .new(),
-    this.share = const .new(),
-  });
-
-  AppConfig copyWith({
-    LogLevel? logLevel,
-    ThemeConfig? theme,
-    CleanupConfig? cleanup,
-    MapConfig? map,
-    TimelineConfig? timeline,
-    ImageConfig? image,
-    ViewerConfig? viewer,
-    SlideshowConfig? slideshow,
-    AlbumConfig? album,
-    BackupConfig? backup,
-    NetworkConfig? network,
-    ShareConfig? share,
-  }) => .new(
-    logLevel: logLevel ?? this.logLevel,
-    theme: theme ?? this.theme,
-    cleanup: cleanup ?? this.cleanup,
-    map: map ?? this.map,
-    timeline: timeline ?? this.timeline,
-    image: image ?? this.image,
-    viewer: viewer ?? this.viewer,
-    slideshow: slideshow ?? this.slideshow,
-    album: album ?? this.album,
-    backup: backup ?? this.backup,
-    network: network ?? this.network,
-    share: share ?? this.share,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is AppConfig &&
-          other.logLevel == logLevel &&
-          other.theme == theme &&
-          other.cleanup == cleanup &&
-          other.map == map &&
-          other.timeline == timeline &&
-          other.image == image &&
-          other.viewer == viewer &&
-          other.slideshow == slideshow &&
-          other.album == album &&
-          other.backup == backup &&
-          other.network == network &&
-          other.share == share);
-
-  @override
-  int get hashCode =>
-      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network, share);
-
-  @override
-  String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share)';
+  const factory AppConfig({
+    @Default(LogLevel.info) LogLevel logLevel,
+    @Default(ThemeConfig()) ThemeConfig theme,
+    @Default(CleanupConfig()) CleanupConfig cleanup,
+    @Default(MapConfig()) MapConfig map,
+    @Default(TimelineConfig()) TimelineConfig timeline,
+    @Default(ImageConfig()) ImageConfig image,
+    @Default(ViewerConfig()) ViewerConfig viewer,
+    @Default(SlideshowConfig()) SlideshowConfig slideshow,
+    @Default(AlbumConfig()) AlbumConfig album,
+    @Default(BackupConfig()) BackupConfig backup,
+    @Default(NetworkConfig()) NetworkConfig network,
+    @Default(ShareConfig()) ShareConfig share,
+    @Default(FeatureMessageConfig()) FeatureMessageConfig featureMessage,
+  }) = _AppConfig;
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -133,6 +77,8 @@ class AppConfig {
             .timelineStorageIndicator => timeline.storageIndicator,
             .mapShowFavoriteOnly => map.favoritesOnly,
             .mapRelativeDate => map.relativeDays,
+            .mapCustomFrom => map.customFrom,
+            .mapCustomTo => map.customTo,
             .mapIncludeArchived => map.includeArchived,
             .mapThemeMode => map.themeMode,
             .mapWithPartners => map.withPartners,
@@ -146,6 +92,7 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .featureMessageSeenRelease => featureMessage.seenRelease,
           })
           as T;
 
@@ -167,9 +114,9 @@ class AppConfig {
       .viewerTapToNavigate => copyWith(viewer: viewer.copyWith(tapToNavigate: value as bool)),
       .networkAutoEndpointSwitching => copyWith(network: network.copyWith(autoEndpointSwitching: value as bool)),
       .networkPreferredWifiName => copyWith(
-        network: network.copyWith(preferredWifiName: .fromNullable((value as String?))),
+        network: network.copyWith(preferredWifiName: .fromNullable(value as String?)),
       ),
-      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable((value as String?)))),
+      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable(value as String?))),
       .networkExternalEndpointList => copyWith(network: network.copyWith(externalEndpointList: value as List<String>)),
       .networkCustomHeaders => copyWith(network: network.copyWith(customHeaders: value as Map<String, String>)),
       .albumSortMode => copyWith(album: album.copyWith(sortMode: value as AlbumSortMode)),
@@ -186,6 +133,8 @@ class AppConfig {
       .timelineStorageIndicator => copyWith(timeline: timeline.copyWith(storageIndicator: value as bool)),
       .mapShowFavoriteOnly => copyWith(map: map.copyWith(favoritesOnly: value as bool)),
       .mapRelativeDate => copyWith(map: map.copyWith(relativeDays: value as int)),
+      .mapCustomFrom => copyWith(map: map.copyWith(customFrom: .fromNullable(value as DateTime?))),
+      .mapCustomTo => copyWith(map: map.copyWith(customTo: .fromNullable(value as DateTime?))),
       .mapIncludeArchived => copyWith(map: map.copyWith(includeArchived: value as bool)),
       .mapThemeMode => copyWith(map: map.copyWith(themeMode: value as ThemeMode)),
       .mapWithPartners => copyWith(map: map.copyWith(withPartners: value as bool)),
@@ -199,6 +148,7 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
     };
   }
 }

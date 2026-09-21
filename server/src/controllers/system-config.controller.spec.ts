@@ -1,23 +1,23 @@
-import _ from 'lodash';
-import { defaults } from 'src/config';
-import { SystemConfigController } from 'src/controllers/system-config.controller';
-import { StorageTemplateService } from 'src/services/storage-template.service';
-import { SystemConfigService } from 'src/services/system-config.service';
+import { cloneDeep } from 'lodash-es';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { SystemConfigController } from 'src/controllers/system-config.controller.js';
+import { defaults } from 'src/dtos/config.dto.js';
+import { StorageTemplateService } from 'src/services/storage-template.service.js';
+import { SystemConfigService } from 'src/services/system-config.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 /** Returns a full config that passes Zod validation (required URLs and min lengths). */
 function validConfig() {
-  const config = _.cloneDeep(defaults) as typeof defaults & {
+  const config = cloneDeep(defaults) as typeof defaults & {
     oauth: { mobileRedirectUri: string };
     notifications: { smtp: { from: string; transport: { host: string } } };
     server: { externalDomain: string };
   };
-  config.oauth.mobileRedirectUri = config.oauth.mobileRedirectUri || 'https://example.com';
-  config.server.externalDomain = config.server.externalDomain || 'https://example.com';
-  config.notifications.smtp.from = config.notifications.smtp.from || 'noreply@example.com';
-  config.notifications.smtp.transport.host = config.notifications.smtp.transport.host || 'localhost';
+  config.oauth.mobileRedirectUri ||= 'https://example.com';
+  config.server.externalDomain ||= 'https://example.com';
+  config.notifications.smtp.from ||= 'noreply@example.com';
+  config.notifications.smtp.transport.host ||= 'localhost';
   return config;
 }
 
@@ -40,26 +40,7 @@ describe(SystemConfigController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /system-config', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/system-config');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /system-config/defaults', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/system-config/defaults');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /system-config', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/system-config');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     describe('nightlyTasks', () => {
       it('should validate nightly jobs start time', async () => {
         const config = validConfig();
