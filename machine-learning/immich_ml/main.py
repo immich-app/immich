@@ -11,7 +11,7 @@ from zipfile import BadZipFile
 
 import orjson
 from fastapi import Depends, FastAPI, File, Form, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
 from pydantic import ValidationError
@@ -32,10 +32,15 @@ from .schemas import (
     ModelIdentity,
     ModelTask,
     ModelType,
-    ORJSONResponse,
     PipelineRequest,
     T,
 )
+
+
+class ORJSONResponse(JSONResponse):
+    def render(self, content: Any) -> bytes:
+        return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY)
+
 
 MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
