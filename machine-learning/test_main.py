@@ -965,6 +965,14 @@ class TestRknnSession:
             Shape(batch=1, height=736, width=736),
         )
 
+    def test_names_the_token_table_the_binary_left_to_the_host(self, rknn_session: mock.Mock) -> None:
+        rknn_session.return_value.custom_string = '{"dims":[{}],"embedding":"token_embedding.weight_fp16"}'
+
+        session = RknnSession(Path("ViT-B-32__openai"))
+
+        assert session.get_metadata() == {"embedding": "token_embedding.weight_fp16"}
+        assert session.shapes == (Shape(batch=1),)
+
     def test_offers_no_choice_of_shape_when_the_binary_has_one(self, rknn_session: mock.Mock) -> None:
         # a graph the exporter left no dim free in is stamped with one empty set
         rknn_session.return_value.custom_string = '{"dims":[{}]}'
@@ -1058,6 +1066,8 @@ class TestCLIP:
 
         mocked = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
         mocked.for_shape.return_value = mocked
+        mocked.get_metadata.return_value = {}
+        mocked.get_inputs.return_value = [SimpleNamespace(name="text")]
         mocked.run.return_value = [[self.embedding]]
         mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True)
 
@@ -1068,6 +1078,45 @@ class TestCLIP:
         assert isinstance(embedding, list)
         assert len(embedding) == clip_model_cfg["embed_dim"]
         mocked.run.assert_called_once()
+
+    def test_feeds_the_token_rows_a_graph_left_to_the_host(
+        self,
+        mocker: MockerFixture,
+        tmp_path: Path,
+        clip_model_cfg: dict[str, Any],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        import onnx
+        from onnx.external_data_helper import set_external_data
+
+        table = np.arange(40, dtype=np.float16).reshape(10, 4)
+        (tmp_path / "textual").mkdir()
+        (tmp_path / "textual/model.safetensors").write_bytes(b"\0" * 16 + table.tobytes())  # the table past a header
+        weights = onnx.numpy_helper.from_array(table, "tok")
+        set_external_data(weights, "model.safetensors", offset=16, length=table.nbytes)
+        weights.ClearField("raw_data")  # only the file holds it, as in an export
+        onnx.save(
+            onnx.helper.make_model(onnx.helper.make_graph([], "textual", [], [], [weights])),
+            tmp_path / "textual/model.onnx",
+        )
+        mocker.patch.object(OpenClipTextualEncoder, "download")
+        mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True)
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value = session
+        session.get_metadata.return_value = {"embedding": "tok"}
+        session.get_inputs.return_value = [SimpleNamespace(name="text"), SimpleNamespace(name="token_embeds")]
+        session.run.return_value = [[self.embedding]]
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=tmp_path)
+        mocker.patch.object(encoder, "tokenize", return_value={"text": np.array([[1, 3, 2]], np.int32)})
+
+        encoder.predict("test search query")
+
+        feed = session.run.call_args.args[1]
+        assert list(feed) == ["text", "token_embeds"]  # a binary reads its inputs in order
+        assert feed["token_embeds"].dtype == np.float16
+        assert feed["token_embeds"].tolist() == [[[4, 5, 6, 7], [12, 13, 14, 15], [8, 9, 10, 11]]]
 
     def test_reads_model_configs_as_utf8(self, mocker: MockerFixture, tmp_path: Path) -> None:
         original_open = Path.open
@@ -1110,7 +1159,8 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "download")
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value.get_metadata.return_value = {}  # no table left to the host
         mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
@@ -1136,7 +1186,8 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "download")
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value.get_metadata.return_value = {}  # no table left to the host
         mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
@@ -1161,7 +1212,8 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "download")
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value.get_metadata.return_value = {}  # no table left to the host
         mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
@@ -1181,7 +1233,8 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "download")
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value.get_metadata.return_value = {}  # no table left to the host
         mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
@@ -1202,7 +1255,8 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "download")
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value.get_metadata.return_value = {}  # no table left to the host
         mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
@@ -1223,7 +1277,8 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "download")
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value.get_metadata.return_value = {}  # no table left to the host
         mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
@@ -1243,7 +1298,8 @@ class TestCLIP:
         mocker.patch.object(MClipTextualEncoder, "download")
         mocker.patch.object(MClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(MClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.for_shape.return_value.get_metadata.return_value = {}  # no table left to the host
         mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_attention_mask = [randint(0, 1) for _ in range(77)]

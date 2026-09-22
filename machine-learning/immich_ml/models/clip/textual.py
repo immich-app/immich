@@ -15,18 +15,33 @@ from immich_ml.models.transforms import clean_text, serialize_np_array
 from immich_ml.schemas import ModelSession, ModelTask, ModelType
 
 
+def _mapped(model_path: Path, name: str) -> NDArray[Any]:
+    import onnx
+
+    initializer = next(i for i in onnx.load(model_path, load_external_data=False).graph.initializer if i.name == name)
+    data = {entry.key: entry.value for entry in initializer.external_data}
+    dtype = onnx.helper.tensor_dtype_to_np_dtype(initializer.data_type)
+    offset, shape = int(data.get("offset", 0)), tuple(initializer.dims)
+    return np.memmap(model_path.parent / data["location"], dtype=dtype, mode="r", offset=offset, shape=shape)
+
+
 class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
     threads = 4  # a search waits on it, often while bulk jobs hold the other cores
 
     def _predict(self, inputs: str, language: str | None = None) -> str:
-        tokens = self.tokenize(inputs, language=language)
-        res: NDArray[np.float32] = self.session.for_shape(self.shape_policy.dims[0]).run(None, tokens)[0][0]
+        tokens: dict[str, NDArray[Any]] = self.tokenize(inputs, language=language)
+        graph = self.session.for_shape(self.shape_policy.dims[0])
+        if self.embedding is not None:  # a graph that left its token table to the host
+            tokens["token_embeds"] = self.embedding[next(iter(tokens.values()))]
+        res: NDArray[np.float32] = graph.run(None, {node.name: tokens[node.name] for node in graph.get_inputs()})[0][0]
         return serialize_np_array(res)
 
     def _load(self) -> ModelSession:
         session = super()._load()
+        table = session.for_shape(self.shape_policy.dims[0]).get_metadata().get("embedding")
+        self.embedding = _mapped(self.model_dir / "model.onnx", table) if table is not None else None
         log.debug(f"Loading tokenizer for CLIP model '{self.model_name}'")
         self.tokenizer = self._load_tokenizer()
         tokenizer_kwargs: dict[str, Any] | None = self.text_cfg.get("tokenizer_kwargs")

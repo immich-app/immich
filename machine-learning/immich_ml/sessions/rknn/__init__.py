@@ -46,8 +46,9 @@ class RknnSession:
         log.info(f"Loaded RKNN model from {model_path} with {self.tpe} threads.")
         # the shapes the binary was compiled for, among which the runtime routes itself
         batch = self.rknnpool.inputs[0].shape[0]
-        declared = orjson.loads(self.rknnpool.custom_string)["dims"] if self.rknnpool.custom_string else [{}]
-        self.shapes = tuple(Shape(batch, **dims) for dims in declared)
+        declared = orjson.loads(self.rknnpool.custom_string) if self.rknnpool.custom_string else {}
+        self.shapes = tuple(Shape(batch, **dims) for dims in declared.get("dims", [{}]))
+        self.metadata = {key: value for key, value in declared.items() if key != "dims"}
         self.batches = (batch,)
 
     def for_shape(self, shape: Shape) -> RknnSession:
@@ -63,7 +64,7 @@ class RknnSession:
         return self.rknnpool.outputs
 
     def get_metadata(self) -> dict[str, str]:
-        return {}
+        return self.metadata
 
     @property
     def normalizes_input(self) -> bool:
