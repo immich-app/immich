@@ -324,6 +324,9 @@ jobs:
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
+      - name: Lint
+        run: pnpm lint:i18n
+
   e2e-tests-lint:
     name: End-to-End Lint
     needs: pre-job

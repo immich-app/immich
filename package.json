@@ -6,13 +6,15 @@
   "private": true,
   "scripts": {
     "format": "prettier --cache --check i18n/",
-    "format:fix": "prettier --cache --write --list-different i18n"
+    "format:fix": "prettier --cache --write --list-different i18n",
+    "lint:i18n": "eloqnt lint"
   },
   "packageManager": "pnpm@11.24.0",
   "engines": {
     "pnpm": ">=10.0.0"
   },
   "devDependencies": {
+    "@eloqnt/cli": "^0.6.30",
     "prettier": "^3.8.3",
     "prettier-plugin-sort-json": "^4.2.0"
   }
