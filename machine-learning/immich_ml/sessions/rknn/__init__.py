@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 from immich_ml.config import log, settings
 from immich_ml.schemas import ModelInput, ModelTensor, SessionNode, Shape
 
-from .rknnpool import RknnNode, RknnPoolExecutor, is_available, soc_name
+from .rknnpool import RknnNode, RknnPoolExecutor, is_available, native_outputs, soc_name
 
 is_available = is_available and settings.rknn
 model_prefix = Path("rknpu") / soc_name if is_available and soc_name is not None else None
@@ -22,8 +22,9 @@ def model_path(model_dir: Path, variant: str = "") -> Path:
 
 
 def run_inference(rknn_lite: Any, inputs: list[ModelTensor], data_format: str | None) -> list[NDArray[np.float32]]:
-    outputs: list[NDArray[np.float32]] = rknn_lite.inference(inputs=inputs, data_format=data_format)
-    return outputs
+    rknn_lite.rknn_runtime.set_inputs(inputs, None, data_format)
+    rknn_lite.rknn_runtime.run(False)
+    return native_outputs(rknn_lite)
 
 
 def input_layout(compiled: tuple[int, ...], array: ModelTensor) -> str | None:
@@ -76,10 +77,7 @@ class RknnSession:
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
         inputs = [array if array.flags.c_contiguous else array.copy() for array in input_feed.values()]
-        res = self.rknnpool.run(inputs, input_layout(self.rknnpool.inputs[0].shape, inputs[0]))
-        if res is None:
-            raise RuntimeError("RKNN inference failed!")
-        return res
+        return self.rknnpool.run(inputs, input_layout(self.rknnpool.inputs[0].shape, inputs[0]))
 
 
 __all__ = ["RknnSession", "RknnNode", "is_available", "soc_name", "model_path"]

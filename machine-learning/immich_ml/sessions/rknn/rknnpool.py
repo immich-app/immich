@@ -32,7 +32,7 @@ def get_soc(device_tree_path: Path | str) -> str | None:
 soc_name = None
 is_available = False
 try:
-    from rknnlite.api import RKNNLite
+    from rknnlite.api import RKNNLite, rknn_runtime
 
     soc_name = get_soc("/proc/device-tree/compatible")
     is_available = soc_name is not None
@@ -46,10 +46,54 @@ class RknnNode(NamedTuple):
 
 
 _CUSTOM_STRING_QUERY = 7  # RKNN_QUERY_CUSTOM_STRING
+# RKNN_QUERY_OUTPUT_ATTR, and RKNN_QUERY_CURRENT_OUTPUT_ATTR for the shape a dynamic binary last produced
+_OUTPUT_QUERY, _CURRENT_OUTPUT_QUERY = 2, 15
+_DTYPES = {0: np.float32, 1: np.float16}  # rknn_tensor_type
 
 
 class _CustomString(ctypes.Structure):
     _fields_ = [("string", ctypes.c_char * 1024)]
+
+
+class _TensorAttr(ctypes.Structure):  # rknn_tensor_attr
+    _fields_ = [
+        ("index", ctypes.c_uint32),
+        ("n_dims", ctypes.c_uint32),
+        ("dims", ctypes.c_uint32 * 16),
+        ("name", ctypes.c_char * 256),
+        ("n_elems", ctypes.c_uint32),
+        ("size", ctypes.c_uint32),
+        ("fmt", ctypes.c_int),
+        ("type", ctypes.c_int),
+        ("qnt_type", ctypes.c_int),
+        ("fl", ctypes.c_int8),
+        ("zp", ctypes.c_int32),
+        ("scale", ctypes.c_float),
+        ("w_stride", ctypes.c_uint32),
+        ("size_with_stride", ctypes.c_uint32),
+        ("pass_through", ctypes.c_uint8),
+        ("h_stride", ctypes.c_uint32),
+    ]
+
+
+def native_outputs(rknn_lite: "RKNNLite") -> list[NDArray[Any]]:
+    """The outputs in the precision the NPU computed them in, which RKNNLite would widen to fp32 on the CPU."""
+    runtime: Any = rknn_lite.rknn_runtime
+    count = runtime.get_in_out_num()[1]
+    buffers = (rknn_runtime.RKNNOutput * count)()
+    for index, buffer in enumerate(buffers):
+        buffer.index = index
+    if runtime.lib.rknn_outputs_get(runtime.context, count, buffers, None) != 0:
+        raise RuntimeError("RKNN inference failed!")
+    query = _CURRENT_OUTPUT_QUERY if runtime.is_dynamic_shape else _OUTPUT_QUERY
+    outputs = []
+    for buffer in buffers:
+        attr = _TensorAttr(index=buffer.index)
+        runtime.lib.rknn_query(runtime.context, query, ctypes.byref(attr), ctypes.sizeof(attr))
+        data = ctypes.cast(buffer.buf, ctypes.POINTER(ctypes.c_char * buffer.size)).contents
+        outputs.append(np.frombuffer(data, _DTYPES[attr.type]).reshape(attr.dims[: attr.n_dims]).copy())
+    runtime.lib.rknn_outputs_release(runtime.context, count, buffers)
+    return outputs
 
 
 def tensor_nodes(rknn_lite: "RKNNLite") -> tuple[list[RknnNode], list[RknnNode]]:
