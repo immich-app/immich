@@ -244,6 +244,7 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
 
     val values = ContentValues().apply {
       put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+      guessMimeType(name)?.let { put(MediaStore.MediaColumns.MIME_TYPE, it) }
       if (!relativePath.isNullOrBlank()) {
         put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
       }
