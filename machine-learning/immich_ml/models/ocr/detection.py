@@ -6,6 +6,7 @@ from immich_model.constants import ocr_canvases
 from numpy.typing import NDArray
 from PIL import Image
 
+from immich_ml.models.transforms import widen
 from immich_ml.schemas import ModelGraph, ModelTask, ModelType, Shape
 from immich_ml.sessions.policy import ShapePolicy
 
@@ -40,7 +41,7 @@ class TextDetector(TextModel):
             return self._empty
 
         session, image, content = self._transform(inputs, maxResolution)
-        probs = session.run(None, {session.get_inputs()[0].name: image})[0][0]
+        probs = widen(session.run(None, {session.get_inputs()[0].name: image})[0][0])
         if probs.ndim == 3:
             probs = probs[0]
         boxes, scores = self.postprocess(probs[: content[0], : content[1]], (height, width), minScore, scoreMode)

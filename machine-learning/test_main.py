@@ -40,6 +40,7 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
+from immich_ml.models.ocr.ctc import greedy
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelTask, ModelType, Shape
@@ -612,14 +613,6 @@ class TestOrtSessions:
         session.run(None, feed)
 
         assert ort_session.return_value.run.call_args.args[1] is feed
-
-    def test_answers_in_full_precision_whatever_the_graph_computes_in(self, ort_session: mock.Mock) -> None:
-        ort_session.return_value.run.return_value = [np.ones((1, 4), np.float16), np.ones((1, 4), np.int32)]
-        session = ort_sessions("ViT-B-32__openai", providers=["CPUExecutionProvider"]).for_shape(Shape(batch=1))
-
-        outputs = session.run(None, {"image": np.zeros((1, 224, 224, 3), dtype=np.uint8)})
-
-        assert [output.dtype for output in outputs] == [np.float32, np.int32]
 
     @pytest.mark.parametrize(
         ("machine", "disabled"),
@@ -1274,11 +1267,15 @@ def expected_landmarks(cell_x: int, cell_y: int) -> np.ndarray:
 
 
 class TestFaceRecognition:
-    def test_detection(self, stub_session: Callable[..., mock.Mock], mocker: MockerFixture) -> None:
+    @pytest.mark.parametrize("dtype", [np.float32, np.float16])  # a graph narrowed to half answers in it
+    def test_detection(
+        self, stub_session: Callable[..., mock.Mock], mocker: MockerFixture, dtype: type[np.generic]
+    ) -> None:
         mocker.patch.object(FaceDetector, "load")
         face_detector = FaceDetector("buffalo_s", cache_dir="test_cache")
 
-        session = stub_session((1, 3, 640, 640), outputs=make_scrfd_heads([(10, 10, 0.9), (50, 50, 0.8)]))
+        heads = [head.astype(dtype) for head in make_scrfd_heads([(10, 10, 0.9), (50, 50, 0.8)])]
+        session = stub_session((1, 3, 640, 640), outputs=heads)
         face_detector.session = session
 
         faces = face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.7)
@@ -1287,7 +1284,7 @@ class TestFaceRecognition:
         assert set(faces) == {"boxes", "scores", "landmarks"}
         # NMS returns highest score first
         assert faces["boxes"].tolist() == [expected_box(10, 10), expected_box(50, 50)]
-        assert np.allclose(faces["scores"], [0.9, 0.8])
+        assert np.allclose(faces["scores"], [0.9, 0.8], atol=1e-3)
         assert faces["landmarks"].shape == (2, 5, 2)
         assert np.allclose(faces["landmarks"][0], expected_landmarks(10, 10))
         assert np.allclose(faces["landmarks"][1], expected_landmarks(50, 50))
@@ -1509,9 +1506,12 @@ class TestFaceRecognition:
 
 
 class TestOcr:
-    def test_det_min_score_is_per_request(self, path: mock.Mock, stub_session: Callable[..., mock.Mock]) -> None:
+    @pytest.mark.parametrize("dtype", [np.float32, np.float16])  # a graph narrowed to half answers in it
+    def test_det_min_score_is_per_request(
+        self, path: mock.Mock, stub_session: Callable[..., mock.Mock], dtype: type[np.generic]
+    ) -> None:
         text_detector = TextDetector("PP-OCRv5_mobile", cache_dir="test_cache")
-        probs = np.zeros((1, 1, 64, 64), dtype=np.float32)
+        probs = np.zeros((1, 1, 64, 64), dtype=dtype)
         probs[..., 16:32, 8:56] = 0.6
         text_detector.session = stub_session((1, 3, 64, 64), outputs=[probs])
         image = Image.new("RGB", (64, 64))
@@ -1617,6 +1617,17 @@ class TestOcr:
         assert text_recognizer._predict(image, texts(), minScore=0.7)["text"] == ["hello"]
         # the default (0.9) rejects a 0.8 score, and must be unaffected by the 0.7 request
         assert text_recognizer._predict(image, texts())["text"] == []
+
+    def test_rec_decodes_the_half_precision_probabilities_a_host_decode_graph_emits(self) -> None:
+        probs = np.zeros((1, 3, 4), dtype=np.float16)
+        probs[0, 0, 2] = 0.75
+        probs[0, 1, 3] = 2**-20  # subnormal in half precision, and still the likeliest class
+        probs[0, 2, 1] = 0.5
+
+        indices, picked = greedy([probs])
+
+        assert indices.tolist() == [[2, 3, 1]]
+        assert picked.dtype == np.float32 and picked.tolist() == [[0.75, 2**-20, 0.5]]
 
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
