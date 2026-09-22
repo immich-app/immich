@@ -522,6 +522,7 @@ class TestOrtSessions:
         assert given_sess_options(ort_session).execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
         assert given_sess_options(ort_session).inter_op_num_threads == 1
         assert given_sess_options(ort_session).intra_op_num_threads == 2
+        assert given_sess_options(ort_session).get_session_config_entry("session.set_denormal_as_zero") == "1"
 
     @pytest.mark.ov_device_ids(["CPU"])
     def test_sets_default_sess_options_if_openvino_cpu(self, ort_session: mock.Mock, ov_device_ids: list[str]) -> None:

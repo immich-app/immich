@@ -167,6 +167,8 @@ class GraphSpec:
     def sess_options(self) -> ort.SessionOptions:
         sess_options = ort.SessionOptions()
         sess_options.enable_cpu_mem_arena = settings.model_arena
+        # some CPUs slow down many times over on subnormal operands, and ORT clears the flush in its threads otherwise
+        sess_options.add_session_config_entry("session.set_denormal_as_zero", "1")
 
         # avoid thread contention between models
         # Set inter_op threads
