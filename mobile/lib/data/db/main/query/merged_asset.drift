@@ -99,7 +99,7 @@ FROM
 	SELECT
 		CASE
 			WHEN :group_by = 0 THEN rae.group_date
-			WHEN :group_by = 1 THEN SUBSTR(rae.group_date, 1, 7)
+			WHEN :group_by = 1 THEN STRFTIME('%Y-%m', rae.group_date)
 		END as bucket_date
 	FROM
 		remote_asset_entity rae
@@ -118,7 +118,7 @@ FROM
 	SELECT
 		CASE
 			WHEN :group_by = 0 THEN lae.group_date
-			WHEN :group_by = 1 THEN SUBSTR(lae.group_date, 1, 7)
+			WHEN :group_by = 1 THEN STRFTIME('%Y-%m', lae.group_date)
 		END as bucket_date
 	FROM
 		local_asset_entity lae

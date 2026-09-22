@@ -258,11 +258,18 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             isEdited: Value(asset.isEdited),
           );
 
-          batch.insert(
+          // no server dates, so the day follows created_at, which defaults to now on insert
+          final insert = companion.copyWith(id: Value(asset.id)).toColumns(true);
+          final update = companion.toColumns(true);
+          if (groupDate == null) {
+            insert['group_date'] = currentDateAndTime.modify(const DateTimeModifier.localTime()).date;
+            update['group_date'] = _db.remoteAssetEntity.createdAt.modify(const DateTimeModifier.localTime()).date;
+          }
+          batch.insert<$RemoteAssetEntityTable, RemoteAssetEntityData>(
             _db.remoteAssetEntity,
-            companion.copyWith(id: Value(asset.id)),
+            RawValuesInsertable(insert),
             mode: InsertMode.insertOrReplace,
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate((_) => RawValuesInsertable(update)),
           );
         }
       });
@@ -300,11 +307,17 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             isEdited: Value(asset.isEdited),
           );
 
-          batch.insert(
+          final insert = companion.copyWith(id: Value(asset.id)).toColumns(true);
+          final update = companion.toColumns(true);
+          if (groupDate == null) {
+            insert['group_date'] = currentDateAndTime.modify(const DateTimeModifier.localTime()).date;
+            update['group_date'] = _db.remoteAssetEntity.createdAt.modify(const DateTimeModifier.localTime()).date;
+          }
+          batch.insert<$RemoteAssetEntityTable, RemoteAssetEntityData>(
             _db.remoteAssetEntity,
-            companion.copyWith(id: Value(asset.id)),
+            RawValuesInsertable(insert),
             mode: InsertMode.insertOrReplace,
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate((_) => RawValuesInsertable(update)),
           );
         }
       });

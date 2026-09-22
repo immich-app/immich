@@ -1,6 +1,4 @@
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/asset/edit.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
@@ -233,22 +231,17 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
       isFavorite: isFavorite.toDriftValue(),
       createdAt: createdAt.toDriftValue(),
     );
+    final columns = companion.toColumns(true);
+    if (createdAt case Some(:final value)) {
+      columns['group_date'] = coalesce([
+        _db.remoteAssetEntity.localDateTime.strftime('%Y-%m-%d'),
+        Variable(value).modify(const DateTimeModifier.localTime()).date,
+      ]);
+    }
+    final row = RawValuesInsertable<RemoteAssetEntityData>(columns);
     return _db.batch((batch) {
       for (final remoteId in remoteIds) {
-        batch.update(_db.remoteAssetEntity, companion, where: (e) => e.id.equals(remoteId));
-      }
-      if (createdAt.isSome) {
-        for (final slice in remoteIds.slices(kDriftMaxChunk)) {
-          batch.update(
-            _db.remoteAssetEntity,
-            RemoteAssetEntityCompanion.custom(
-              groupDate: const CustomExpression(
-                "COALESCE(STRFTIME('%Y-%m-%d', local_date_time), STRFTIME('%Y-%m-%d', created_at, 'localtime'))",
-              ),
-            ),
-            where: (e) => e.id.isIn(slice),
-          );
-        }
+        batch.update(_db.remoteAssetEntity, row, where: (e) => e.id.equals(remoteId));
       }
     });
   }

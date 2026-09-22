@@ -83,5 +83,16 @@ void main() {
       expect(await groupDate(withLocal.id), '2024-01-05');
       expect(await groupDate(noLocal.id), '2026-07-24');
     });
+
+    test('a favorite edit leaves group_date alone', () async {
+      final user = await ctx.newUser();
+      final asset = await ctx.newRemoteAsset(ownerId: user.id, createdAt: DateTime.utc(2024, 1, 1, 12));
+      final clearLocal = ctx.db.update(ctx.db.remoteAssetEntity)..where((row) => row.id.equals(asset.id));
+      await clearLocal.write(const RemoteAssetEntityCompanion(localDateTime: Value(null)));
+
+      await sut.updateAssets([asset.id], isFavorite: const .some(true));
+
+      expect(await groupDate(asset.id), '2024-01-01');
+    });
   });
 }
