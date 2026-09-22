@@ -40,7 +40,7 @@
   );
 </script>
 
-<div class="min-w-60 flex-1 rounded-lg border transition-colors">
+<div class="min-w-60 flex-1 overflow-hidden rounded-lg border transition-colors">
   <div class="relative w-full">
     <button
       type="button"
@@ -53,7 +53,7 @@
       <img
         src={getAssetMediaUrl({ id: asset.id })}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-60 w-full rounded-t-md object-cover"
+        class="h-60 w-full object-cover"
         draggable="false"
       />
 
@@ -102,7 +102,7 @@
   </div>
 
   <div
-    class="grid place-items-start gap-y-2 rounded-b-lg py-2 text-sm transition-colors {isSelected
+    class="grid place-items-start divide-y text-sm transition-colors {isSelected
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
@@ -113,7 +113,7 @@
     {/each}
 
     <!-- Albums always shown -->
-    <InfoRow icon={mdiBookmarkOutline} borderBottom={false} title={$t('albums')}>
+    <InfoRow icon={mdiBookmarkOutline} title={$t('albums')}>
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}
       {:then albums}

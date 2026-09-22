@@ -28,7 +28,6 @@ import { ReverseGeocodeResult } from 'src/repositories/map.repository.js';
 import { ImmichTags } from 'src/repositories/metadata.repository.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
-import { PersonTable } from 'src/schema/tables/person.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getAssetFiles } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
@@ -910,7 +909,7 @@ export class MetadataService extends BaseService {
     const existingNameMap = new Map(
       existingNames.map(({ personGroupId, name }) => [name.toLowerCase(), personGroupId]),
     );
-    const missing: (Insertable<PersonTable> & { name: string; personGroupId: string; clusterGroupId: string })[] = [];
+    const missing: { name: string; ownerId: string; personGroupId: string; clusterGroupId: string }[] = [];
     const missingWithFaceAsset: { personGroupId: string; ownerId: string; faceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
@@ -960,7 +959,9 @@ export class MetadataService extends BaseService {
       await this.personRepository.createGroups(
         missing.map((item) => ({ id: item.personGroupId, clusterGroupId: asset.clusterGroupId })),
       );
-      await this.personRepository.createAll(missing);
+      await this.personRepository.createAll(
+        missing.map(({ name, ownerId, personGroupId }) => ({ name, ownerId, personGroupId })),
+      );
 
       const jobs = missing.map(
         ({ personGroupId, ownerId }) =>
