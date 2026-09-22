@@ -12,7 +12,7 @@ from immich_ml.config import settings
 from immich_ml.schemas import ModelGraph, ModelSession, ModelTask, ModelType, Shape
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 
-from .ctc import CtcDecoder, greedy
+from .ctc import GREEDY, CtcDecoder, probabilities
 from .legacy import TextModel
 from .schemas import TextDetectionOutput, TextRecognitionOutput
 
@@ -44,12 +44,13 @@ class TextRecognizer(TextModel):
         self.widths = tuple(sorted({shape.width for shape in session.shapes if shape.width is not None}))
         return session
 
-    def _charset(self, session: ModelGraph) -> CtcDecoder:
+    def _decoder(self, session: ModelGraph) -> CtcDecoder:
         character = session.get_metadata().get("character")
+        greedy = GREEDY.get(session.get_outputs()[0].name, probabilities)
         return (
-            CtcDecoder(character.splitlines())
+            CtcDecoder(character.splitlines(), greedy)
             if character is not None
-            else CtcDecoder.from_file(self.model_dir / "charset.txt")
+            else CtcDecoder.from_file(self.model_dir / "charset.txt", greedy)
         )
 
     def _predict(self, img: Image.Image, texts: TextDetectionOutput, minScore: float = 0.9) -> TextRecognitionOutput:
@@ -89,10 +90,10 @@ class TextRecognizer(TextModel):
                 view -= 1.0
                 images[i, :, :, resized_w:] = 0
 
-            out_indices, out_probs = greedy(session.run(None, {session.get_inputs()[0].name: images}))
+            outputs = session.run(None, {session.get_inputs()[0].name: images})
             if self.decoder is None:
-                self.decoder = self._charset(session)
-            chunk_texts, chunk_scores = self.decoder.decode(out_indices, out_probs)
+                self.decoder = self._decoder(session)
+            chunk_texts, chunk_scores = self.decoder(outputs)
             for index, text, score in zip(chunk, chunk_texts, chunk_scores):
                 text_list[index] = text
                 score_list[index] = score
