@@ -31,6 +31,8 @@ class InferenceModel(ABC):
     graph_options: ClassVar[tuple[str, ...]] = ()
     # the shapes this model feeds, which pick the artifact and tell the engine what it may pin
     shape_policy: ShapePolicy = ShapePolicy()
+    # how many threads one run takes on the CPU
+    threads: ClassVar[int] = 2
 
     def __init__(
         self,
@@ -123,7 +125,7 @@ class InferenceModel(ABC):
             case ModelFormat.ARMNN:
                 return AnnSession(self.model_path)
             case ModelFormat.ONNX:
-                return OrtSession(self.model_path, self.shape_policy, self.model_task)
+                return OrtSession(self.model_path, self.shape_policy, threads=self.threads)
             case ModelFormat.RKNN:
                 return rknn.RknnSession(self.model_path)
 

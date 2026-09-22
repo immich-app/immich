@@ -1,6 +1,8 @@
 import json
 import os
 import pickle
+import platform
+import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -45,7 +47,7 @@ from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelTask, ModelType, Shape
 from immich_ml.sessions.ann import AnnSession
-from immich_ml.sessions.ort import GraphSpec, OrtSession, fresh, prepared
+from immich_ml.sessions.ort import GraphSpec, OrtSession, flush_denormals, fresh, prepared
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 from immich_ml.sessions.rknn import RknnSession, run_inference
 from immich_ml.sessions.rknn import model_path as rknn_model_path
@@ -442,16 +444,16 @@ class TestOrtSessions:
         assert len(set(caches)) == 2  # CoreML keys its compiled model on the path, so variants cannot share one
 
     @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
-    @pytest.mark.parametrize(("task", "pinned"), [(ModelTask.SEARCH, False), (ModelTask.FACIAL_RECOGNITION, True)])
-    def test_pins_nothing_for_clip_on_openvino(
-        self, ort_session: mock.Mock, ov_device_ids: list[str], mocker: MockerFixture, task: ModelTask, pinned: bool
+    def test_pins_clip_on_openvino(
+        self, ort_session: mock.Mock, ov_device_ids: list[str], mocker: MockerFixture
     ) -> None:
         sess_options = mocker.patch("immich_ml.sessions.ort.ort.SessionOptions").return_value
         sess_options.inter_op_num_threads = 0
 
-        ort_sessions("/cache/model.onnx", providers=["OpenVINOExecutionProvider"], task=task)
+        # older Intel GPUs compute garbage for a free dim, and CLIP is the only model that would leave one
+        ort_sessions("/cache/ViT-B-32__openai/textual/model.onnx", providers=["OpenVINOExecutionProvider"])
 
-        assert sess_options.add_free_dimension_override_by_name.called == pinned
+        assert sess_options.add_free_dimension_override_by_name.called
 
     def test_sets_provider_kwarg(self, ort_session: mock.Mock) -> None:
         providers = ["CUDAExecutionProvider"]
@@ -466,7 +468,11 @@ class TestOrtSessions:
         ort_sessions(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_type": "GPU.0", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino", "precision": "FP32"},
+            {
+                "device_type": "GPU.0",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1",
+                "precision": "FP32",
+            },
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -487,7 +493,7 @@ class TestOrtSessions:
         ort_sessions(model_path, providers=["OpenVINOExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_type": "GPU.1", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino", **precision}
+            {"device_type": "GPU.1", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1", **precision}
         ]
 
     @pytest.mark.ov_device_ids(["CPU"])
@@ -496,7 +502,7 @@ class TestOrtSessions:
         ort_sessions(model_path, providers=["OpenVINOExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_type": "CPU", "cache_dir": "/cache/ViT-B-32__openai/openvino", "precision": "FP32"}
+            {"device_type": "CPU", "cache_dir": "/cache/ViT-B-32__openai/openvino/batch1", "precision": "FP32"}
         ]
 
     def test_sets_provider_options_for_cuda(self, ort_session: mock.Mock) -> None:
@@ -516,6 +522,20 @@ class TestOrtSessions:
             {"device_id": "1", "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx/batch1"}
         ]
 
+    @pytest.mark.skipif(sys.platform != "linux" or platform.machine() != "x86_64", reason="an x86 register")
+    def test_flushes_denormals_on_the_calling_thread(self) -> None:
+        results: list[float] = []
+
+        def probe() -> None:  # a fresh thread, as a request thread is
+            flush_denormals()
+            results.append(float((np.array([1e-39], np.float32) * np.float32(1))[0]))
+
+        thread = threading.Thread(target=probe)
+        thread.start()
+        thread.join()
+
+        assert results == [0.0]
+
     def test_sets_default_sess_options_if_cpu(self, ort_session: mock.Mock) -> None:
         ort_sessions("ViT-B-32__openai", providers=["CPUExecutionProvider"])
 
@@ -523,6 +543,12 @@ class TestOrtSessions:
         assert given_sess_options(ort_session).inter_op_num_threads == 1
         assert given_sess_options(ort_session).intra_op_num_threads == 2
         assert given_sess_options(ort_session).get_session_config_entry("session.set_denormal_as_zero") == "1"
+
+    def test_gives_a_model_the_cpu_threads_it_asks_for(self, ort_session: mock.Mock) -> None:
+        ort_sessions("ViT-B-32__openai", providers=["CPUExecutionProvider"], threads=4)
+
+        assert given_sess_options(ort_session).intra_op_num_threads == 4
+        assert OpenClipTextualEncoder.threads == 4 and OpenClipVisualEncoder.threads == 2
 
     @pytest.mark.ov_device_ids(["CPU"])
     def test_sets_default_sess_options_if_openvino_cpu(self, ort_session: mock.Mock, ov_device_ids: list[str]) -> None:
@@ -688,6 +714,22 @@ class TestPreparedGraphs:
             facts.append(graph_spec(Path("/cache/model.onnx"), ["CUDAExecutionProvider"]).facts)
 
         assert facts[0] == facts[1]
+
+    def test_prepares_again_for_another_rocm_release_or_gpu(self, tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+        version, node = tmp_path / "version", tmp_path / "nodes/1/properties"
+        node.parent.mkdir(parents=True)
+        (tmp_path / "nodes/0").mkdir()
+        (tmp_path / "nodes/0/properties").write_text("cpu_cores_count 16\ngfx_target_version 0\n")
+        monkeypatch.setattr("immich_ml.sessions.ort.ROCM_VERSION", version)
+        monkeypatch.setattr("immich_ml.sessions.ort.GPU_NODES", tmp_path / "nodes")
+
+        def facts(release: str, target: str) -> Any:
+            version.write_text(release)
+            node.write_text(f"simd_count 128\ngfx_target_version {target}\n")
+            return graph_spec(Path("/cache/model.onnx"), ["MIGraphXExecutionProvider"]).facts
+
+        assert facts("7.2.0", "120001").rocm == "7.2.0 120001"
+        assert facts("7.2.0", "120001") != facts("7.3.0", "120001") != facts("7.3.0", "110000")
 
     @pytest.mark.parametrize(("returncode", "error"), [(3, InvalidProtobuf), (1, RuntimeError)])
     def test_tells_an_unreadable_source_from_a_failed_preparation(
@@ -1257,9 +1299,9 @@ def ort_sessions(
     model_path: str,
     providers: list[str] | None = None,
     shape_policy: ShapePolicy = ShapePolicy(),
-    task: ModelTask = ModelTask.SEARCH,
+    threads: int = 2,
 ) -> OrtSession:
-    return OrtSession(model_path, shape_policy, task, providers=providers)
+    return OrtSession(model_path, shape_policy, providers=providers, threads=threads)
 
 
 def expected_landmarks(cell_x: int, cell_y: int) -> np.ndarray:

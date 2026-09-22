@@ -19,7 +19,7 @@ from numpy.typing import NDArray
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
 from pydantic import BaseModel
 
-from immich_ml.schemas import ModelInput, ModelTask, SessionNode, Shape
+from immich_ml.schemas import ModelInput, SessionNode, Shape
 
 from ..config import log, settings
 from .policy import ShapePolicy
@@ -34,6 +34,8 @@ def _label(pins: Mapping[str, int]) -> str:
 
 
 UNREADABLE = 3  # how the preparing child says its source does not parse
+ROCM_VERSION = Path("/opt/rocm/.info/version")
+GPU_NODES = Path("/sys/class/kfd/kfd/topology/nodes")
 DTYPES = {
     "tensor(float)": np.float32,
     "tensor(float16)": np.float16,
@@ -83,6 +85,7 @@ class GraphSpec:
     overrides: Sequence[tuple[str, int]]
     providers: list[str]
     disabled_optimizers: list[str]
+    threads: int = 2  # for the CPU, where they are not configured
 
     @cached_property
     def directory(self) -> Path:
@@ -116,6 +119,8 @@ class GraphSpec:
             disabled_optimizers=self.disabled_optimizers,
             rewrite=None if settings.legacy_models else self.plan.digest,  # which were never tested with the rewriter
             cpu=_cpu() if self.cpu_only else None,  # a prepack built for other instruction sets fails once it runs
+            # MIGraphX only warns when it reads a program compiled by another release or for another GPU
+            rocm=_rocm() if self.providers[0] == "MIGraphXExecutionProvider" else None,
         )
 
     def session(self, graph: Path, sess_options: ort.SessionOptions | None = None) -> ort.InferenceSession:
@@ -183,7 +188,7 @@ class GraphSpec:
         if settings.model_intra_op_threads > 0:
             sess_options.intra_op_num_threads = settings.model_intra_op_threads
         elif settings.model_intra_op_threads == 0 and self.cpu_only:
-            sess_options.intra_op_num_threads = 2
+            sess_options.intra_op_num_threads = self.threads
 
         if sess_options.inter_op_num_threads > 1:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
@@ -204,6 +209,7 @@ class Facts(BaseModel):
     disabled_optimizers: list[str]
     rewrite: str | None = None
     cpu: str | None = None
+    rocm: str | None = None
     half: bool = False
 
 
@@ -249,7 +255,7 @@ def _cpu() -> str:
 
 class OrtSession:
     def __init__(
-        self, model_path: Path | str, policy: ShapePolicy, task: ModelTask, providers: list[str] | None = None
+        self, model_path: Path | str, policy: ShapePolicy, providers: list[str] | None = None, threads: int = 2
     ) -> None:
         self.model_path = Path(model_path)
         self.policy = policy
@@ -257,9 +263,8 @@ class OrtSession:
         log.info(f"Setting execution providers to {self.providers}, in descending order of preference")
         self.disabled_optimizers = _disabled_optimizers_default(self.providers)
         log.debug(f"Setting disabled_optimizers to {self.disabled_optimizers}")
+        self.threads = threads
         self.dynamic = self.providers[0] in DYNAMIC_PROVIDERS
-        # OpenVINO runs CLIP's towers slower at a fixed size than with nothing pinned
-        self.pins = not (self.providers[0] == "OpenVINOExecutionProvider" and task == ModelTask.SEARCH)
         # the shapes to snap onto, where a dim a shape leaves out takes any size
         self.shapes = (policy.pinned,) if self.dynamic else policy.dims
         self.batches = tuple(sorted({shape.batch for shape in self.shapes}, reverse=True))
@@ -278,9 +283,13 @@ class OrtSession:
         with self.locks.setdefault(shape, Lock()):  # requests arrive together for a graph none of them has
             if (graph := self.graphs.get(shape)) is None:
                 log.debug(f"Building a graph for {shape}")
-                pins = shape.pins if self.pins else {}
                 spec = GraphSpec(
-                    self.model_path, pins, _overrides(self.policy, pins), self.providers, self.disabled_optimizers
+                    self.model_path,
+                    shape.pins,
+                    _overrides(self.policy, shape.pins),
+                    self.providers,
+                    self.disabled_optimizers,
+                    self.threads,
                 )
                 graph = self.graphs[shape] = OrtGraph(spec)
             return graph

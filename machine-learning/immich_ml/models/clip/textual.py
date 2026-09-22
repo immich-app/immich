@@ -18,6 +18,7 @@ from immich_ml.schemas import ModelSession, ModelTask, ModelType
 class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
+    threads = 4  # a search waits on it, often while bulk jobs hold the other cores
 
     def _predict(self, inputs: str, language: str | None = None) -> str:
         tokens = self.tokenize(inputs, language=language)
