@@ -9,7 +9,6 @@ import {
   type AssetJobsDto,
   type AssetResponseDto,
 } from '@immich/sdk';
-import { MirrorAxis } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountCircleOutline,
@@ -31,8 +30,6 @@ import {
   mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
-  mdiFlipHorizontal,
-  mdiFlipVertical,
   mdiPlus,
   mdiPresentationPlay,
   mdiRotateLeft,
@@ -240,8 +237,8 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     shortcuts: { key: 'p' },
   };
 
-  // Quick transforms write through the same edits API as the editor, so they
-  // are valid exactly where the editor is.
+  // Rotation writes through the same edits API as the editor, so it is valid
+  // exactly where the editor is.
   const isEditable = () =>
     !sharedLink &&
     isOwner &&
@@ -257,7 +254,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     icon: mdiRotateLeft,
     $if: isEditable,
     onAction: () => applyQuickTransform(asset.id, { kind: 'rotate', degrees: -90 }),
-    // Same bindings the editor's transform tool uses, so there is one thing to learn.
     shortcuts: [{ key: '[' }],
   };
 
@@ -267,20 +263,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     $if: isEditable,
     onAction: () => applyQuickTransform(asset.id, { kind: 'rotate', degrees: 90 }),
     shortcuts: [{ key: ']' }],
-  };
-
-  const FlipHorizontal: ActionItem = {
-    title: $t('editor_flip_horizontal'),
-    icon: mdiFlipHorizontal,
-    $if: isEditable,
-    onAction: () => applyQuickTransform(asset.id, { kind: 'mirror', axis: MirrorAxis.Horizontal }),
-  };
-
-  const FlipVertical: ActionItem = {
-    title: $t('editor_flip_vertical'),
-    icon: mdiFlipVertical,
-    $if: isEditable,
-    onAction: () => applyQuickTransform(asset.id, { kind: 'mirror', axis: MirrorAxis.Vertical }),
   };
 
   const Edit: ActionItem = {
@@ -359,8 +341,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     Edit,
     RotateLeft,
     RotateRight,
-    FlipHorizontal,
-    FlipVertical,
     SetProfilePicture,
     ViewInTimeline,
     ViewSimilar,

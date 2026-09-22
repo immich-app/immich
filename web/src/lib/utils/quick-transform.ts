@@ -5,15 +5,15 @@ import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
-export type QuickTransform = { kind: 'rotate'; degrees: number } | { kind: 'mirror'; axis: MirrorAxis };
+export type QuickTransform = { kind: 'rotate'; degrees: number };
 
 /**
  * Fold a new transform into the asset's existing edits.
  *
  * Rotations are summed and normalised so repeatedly rotating does not grow the
- * edit list, and a full turn collapses back to no rotation at all. Mirrors
- * toggle, so applying the same flip twice is an undo. Any other edit (a crop,
- * for example) is preserved untouched and stays ahead of the transforms.
+ * edit list, and a full turn collapses back to no rotation at all. Mirrors are
+ * applied in the editor rather than here, but an existing one is carried
+ * through, as is any other edit such as a crop.
  */
 export const foldTransform = (
   existing: AssetEditActionItemDto[],
@@ -46,13 +46,7 @@ export const foldTransform = (
     }
   }
 
-  if (transform.kind === 'rotate') {
-    rotation += transform.degrees;
-  } else if (mirrors.has(transform.axis)) {
-    mirrors.delete(transform.axis);
-  } else {
-    mirrors.add(transform.axis);
-  }
+  rotation += transform.degrees;
 
   rotation = ((rotation % 360) + 360) % 360;
 
@@ -67,7 +61,7 @@ export const foldTransform = (
 };
 
 /**
- * Apply a single rotate/flip to an asset without opening the editor.
+ * Apply a single rotation to an asset without opening the editor.
  *
  * This goes through the same non-destructive edits API the editor uses, so the
  * change is visible there and can be reverted from there.

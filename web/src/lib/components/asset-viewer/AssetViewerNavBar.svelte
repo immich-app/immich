@@ -174,8 +174,6 @@
         {#if isOwner && !isLocked}
           <ActionMenuItem action={Actions.RotateLeft} />
           <ActionMenuItem action={Actions.RotateRight} />
-          <ActionMenuItem action={Actions.FlipHorizontal} />
-          <ActionMenuItem action={Actions.FlipVertical} />
         {/if}
         <ActionMenuItem action={Actions.SetProfilePicture} />
 

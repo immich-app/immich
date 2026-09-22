@@ -23,14 +23,10 @@ describe('foldTransform', () => {
     expect(foldTransform([], { kind: 'rotate', degrees: -90 })).toEqual([rotate(270)]);
   });
 
-  it('toggles a mirror off when the same axis is applied twice', () => {
-    expect(foldTransform([mirror(MirrorAxis.Horizontal)], { kind: 'mirror', axis: MirrorAxis.Horizontal })).toEqual([]);
-  });
-
-  it('keeps mirrors on different axes independent', () => {
-    expect(foldTransform([mirror(MirrorAxis.Horizontal)], { kind: 'mirror', axis: MirrorAxis.Vertical })).toEqual([
+  it('carries an existing mirror through a rotation', () => {
+    expect(foldTransform([mirror(MirrorAxis.Horizontal)], { kind: 'rotate', degrees: 90 })).toEqual([
       mirror(MirrorAxis.Horizontal),
-      mirror(MirrorAxis.Vertical),
+      rotate(90),
     ]);
   });
 
