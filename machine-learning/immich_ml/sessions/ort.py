@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import pickle
 import platform
 import subprocess
@@ -307,6 +308,27 @@ def _overrides(policy: ShapePolicy, pins: Mapping[str, int]) -> list[tuple[str, 
         named += [(dimension, size), (f"DynamicDimension.{position}", size)]
         named.append(("None", size) if position == 0 else ("?", size))
     return named
+
+
+def _rocm() -> str:
+    targets = {
+        line.split()[1]
+        for node in GPU_NODES.glob("*/properties")
+        for line in node.read_text().splitlines()
+        if line.startswith("gfx_target_version") and line.split()[1] != "0"  # a CPU node has none
+    }
+    return " ".join([ROCM_VERSION.read_text().strip(), *sorted(targets)])
+
+
+def flush_denormals() -> None:
+    """Reads subnormal floats as zero on the calling thread, which ORT does only on its own threads."""
+    if sys.platform != "linux" or platform.machine() != "x86_64":
+        return
+    libm = ctypes.CDLL("libm.so.6")
+    env = (ctypes.c_uint32 * 8)()  # glibc's fenv_t here: the x87 environment, then MXCSR
+    libm.fegetenv(env)
+    env[7] |= 0x8040  # denormals are zero, flush to zero
+    libm.fesetenv(env)
 
 
 def _providers_default() -> list[str]:
