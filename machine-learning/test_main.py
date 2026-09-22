@@ -1689,15 +1689,18 @@ class TestOcr:
         assert indices.tolist() == [[2, 3, 1]]
         assert picked.dtype == np.float32 and picked.tolist() == [[0.75, 2**-20, 0.5]]
 
-    def test_rec_decodes_the_raw_logits_a_binary_emits(self) -> None:
-        raw = np.full((1, 2, 1, 3), -5.0, dtype=np.float32)  # steps, then a unit axis, then the classes
+    @pytest.mark.parametrize("dtype", [np.float32, np.float16])  # a binary hands back what the NPU computed in
+    def test_rec_decodes_the_raw_logits_a_binary_emits(self, dtype: type[np.generic]) -> None:
+        raw = np.full((1, 4, 1, 3), -5.0, dtype=dtype)  # steps, then a unit axis, then the classes
         raw[0, 0, 0, 2] = 5.0
-        raw[0, 1, 0] = [1.0, 1.0, 0.0]  # a tie goes to the first class, as numpy takes it
+        raw[0, 1, 0] = [-3.0, -1.0, -2.0]  # no logit above zero, which the half's bits order backwards
+        raw[0, 2, 0] = [-3.0, -1.0, -2.0]  # a repeat, which the decode does not read
+        raw[0, 3, 0] = [1.0, 1.0, 0.0]  # a tie goes to the first class, here the blank
 
         indices, confidence = logits(raw)
 
-        assert indices.tolist() == [[2, 0]]
-        assert np.allclose(confidence, [[1 / (1 + 2 * np.exp(-10)), 1 / (2 + np.exp(-1))]])
+        assert indices.tolist() == [[2, 1, 1, 0]]
+        assert np.allclose(confidence, [[1 / (1 + 2 * np.exp(-10)), 1 / (1 + np.exp(-1) + np.exp(-2)), 0, 0]])
 
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
