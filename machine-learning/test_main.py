@@ -467,19 +467,32 @@ class TestOrtSessions:
         ort_sessions(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_type": "GPU.0", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1"},
+            {
+                "device_type": "GPU.0",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1",
+                "precision": "FP32",
+            },
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
     @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
-    def test_sets_provider_options_for_openvino(self, ort_session: mock.Mock, ov_device_ids: list[str]) -> None:
+    @pytest.mark.parametrize(("revision", "precision"), [("main", {"precision": "FP32"}), ("v2", {})])
+    def test_sets_provider_options_for_openvino(
+        self,
+        ort_session: mock.Mock,
+        ov_device_ids: list[str],
+        mocker: MockerFixture,
+        revision: str,
+        precision: dict[str, str],
+    ) -> None:
+        mocker.patch.object(settings, "model_revision", revision)  # the older exports are fp32, the others fp16
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
         ort_sessions(model_path, providers=["OpenVINOExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_type": "GPU.1", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1"}
+            {"device_type": "GPU.1", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1", **precision}
         ]
 
     @pytest.mark.ov_device_ids(["CPU"])
@@ -488,7 +501,7 @@ class TestOrtSessions:
         ort_sessions(model_path, providers=["OpenVINOExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_type": "CPU", "cache_dir": "/cache/ViT-B-32__openai/openvino/batch1"}
+            {"device_type": "CPU", "cache_dir": "/cache/ViT-B-32__openai/openvino/batch1", "precision": "FP32"}
         ]
 
     def test_sets_provider_options_for_cuda(self, ort_session: mock.Mock) -> None:
