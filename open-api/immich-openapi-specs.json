@@ -25244,6 +25244,7 @@
         "type": "object"
       },
       "PersonDeleteDto": {
+        "default": {},
         "properties": {
           "userId": {
             "type": "string"

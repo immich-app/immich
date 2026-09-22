@@ -112,6 +112,7 @@ export const PersonResponseSchema = z
 
 const PersonDeleteSchema = z
   .object({ userId: z.string().optional() })
+  .default({})
   .meta({ id: 'PersonDeleteDto', ...new HistoryBuilder().added('v3.3').stable('v3.3').getExtensions() });
 // TODO(v4) change to {userId: string, personId: string}[]
 const PeopleDeleteSchema = BulkIdsSchema.extend({ userId: z.string().optional() }).meta({
