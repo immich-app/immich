@@ -353,7 +353,8 @@ def _disabled_optimizers_default(providers: list[str]) -> list[str]:
     if platform.machine() in ("arm64", "aarch64"):  # as macOS and Linux name the same architecture
         disabled_optimizers.append("ConvAddActivationFusion")
 
-    if "CoreMLExecutionProvider" in providers:
+    # the Gemm it makes runs slower than the pair it replaces there, and on CUDA it also keeps BiasGelu from fusing
+    if "CoreMLExecutionProvider" in providers or "CUDAExecutionProvider" in providers:
         disabled_optimizers.append("MatMulAddFusion")
 
     return disabled_optimizers

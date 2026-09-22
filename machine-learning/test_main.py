@@ -654,6 +654,23 @@ class TestOrtSessions:
 
         assert ort_session.call_args.kwargs["disabled_optimizers"] == disabled
 
+    @pytest.mark.parametrize(
+        ("providers", "disabled"),
+        [
+            (["CUDAExecutionProvider", "CPUExecutionProvider"], ["MatMulAddFusion"]),
+            (["CoreMLExecutionProvider", "CPUExecutionProvider"], ["MatMulAddFusion"]),
+            (["CPUExecutionProvider"], []),
+        ],
+    )
+    def test_disables_the_fusion_that_is_slower_on_cuda_and_coreml(
+        self, ort_session: mock.Mock, mocker: MockerFixture, providers: list[str], disabled: list[str]
+    ) -> None:
+        mocker.patch("immich_ml.sessions.ort.platform.machine", return_value="x86_64")
+
+        ort_sessions("ViT-B-32__openai", providers=providers)
+
+        assert ort_session.call_args.kwargs["disabled_optimizers"] == disabled
+
     def test_opens_the_graph_that_was_prepared_for_it(self, ort_session: mock.Mock, mocker: MockerFixture) -> None:
         mocker.patch("immich_ml.sessions.ort.prepared", return_value=Path("/cache/visual/cpu/free/model.onnx"))
 
