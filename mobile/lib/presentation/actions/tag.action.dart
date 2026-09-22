@@ -71,7 +71,8 @@ Future<void> tagAssets(
     final tags = await ref.read(Store.tags).upsert(created.toList());
     tagIds.addAll(tags.map((tag) => tag.id));
   }
-  if (tagIds.isEmpty) {
+
+  if (tagIds.isEmpty || !context.mounted) {
     return;
   }
 
