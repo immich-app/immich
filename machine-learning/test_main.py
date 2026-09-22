@@ -1537,21 +1537,22 @@ class TestOcr:
         TextDetector("PP-OCRv5_mobile", cache_dir=tmp_path).download()
         snapshot_download.assert_called_once()
 
+    @pytest.mark.parametrize(("crop", "fed_width"), [(96, 224), (384, 480)])  # the floor, then a quarter past the text
     def test_rec_feeds_raw_rgb_padded_to_the_batch_width(
-        self, path: mock.Mock, mocker: MockerFixture, stub_session: Callable[..., mock.Mock]
+        self, path: mock.Mock, mocker: MockerFixture, stub_session: Callable[..., mock.Mock], crop: int, fed_width: int
     ) -> None:
         session = stub_session((1, 48, 224, 3), outputs=[np.zeros((1, 4, 8), np.float32)], normalizes_input=True)
         text_recognizer = loaded(TextRecognizer("PP-OCRv5_mobile", cache_dir=path), session, mocker)
         text_recognizer.decoder = mock.Mock()
         text_recognizer.decoder.decode.return_value = (["hi"], np.array([0.95], dtype=np.float32))
-        image = Image.new("RGB", (200, 100), (7, 8, 9))
-        box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
+        image = Image.new("RGB", (500, 100), (7, 8, 9))
+        box = np.array([[[0, 0], [crop, 0], [crop, 48], [0, 48]]], dtype=np.float32)
         texts: Any = {"boxes": box, "scores": np.array([0.9], dtype=np.float32)}
 
         text_recognizer._predict(image, texts)
 
         fed = session.run.call_args.args[1]["input.1"]
-        assert fed.dtype == np.uint8 and fed.shape == (1, 48, 224, 3)  # a crop 96 wide, padded to the floor
+        assert fed.dtype == np.uint8 and fed.shape == (1, 48, fed_width, 3)
         assert fed[0, 0, 0].tolist() == [7, 8, 9]  # the crop, unnormalized
         assert fed[0, 0, -1].tolist() == [127, 127, 127]  # and the pad the batch was filled with
 

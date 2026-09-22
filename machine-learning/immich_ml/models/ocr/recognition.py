@@ -110,8 +110,8 @@ class TextRecognizer(TextModel):
         }
 
     def _width(self, width: int) -> int:
-        if not self.widths:
-            return max(width, OCR_RECOGNITION_WIDTHS[0])
+        if not self.widths:  # room past the text in proportion to it, as the recognizer reads a line worse without
+            return min(OCR_RECOGNITION_WIDTHS[-1], max(OCR_RECOGNITION_WIDTHS[0], math.ceil(width * 1.25)))
         return self.widths[min(bisect_left(self.widths, width), len(self.widths) - 1)]
 
     def _crop_geometry(
