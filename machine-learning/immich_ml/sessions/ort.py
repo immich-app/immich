@@ -149,6 +149,8 @@ class GraphSpec:
                         device_type = "CPU"
                         log.debug("OpenVINO: No GPU found, using CPU")
                     options = {"device_type": device_type, "cache_dir": self.directory.as_posix()}
+                    if not self.half:  # the GPU would otherwise run an fp32 graph at fp16
+                        options["precision"] = "FP32"
                 case "CoreMLExecutionProvider":
                     options = {
                         "ModelFormat": "MLProgram",
