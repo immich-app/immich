@@ -4,10 +4,12 @@ class AssetMediaApiImpl: ImmichPlugin, AssetMediaApi, FlutterPlugin {
   static let name = "AssetMediaApi"
 
   private var messenger: FlutterBinaryMessenger?
+  private var flutterApi: AssetMediaFlutterApi?
 
   static func register(with registrar: FlutterPluginRegistrar) {
     let instance = AssetMediaApiImpl()
     instance.messenger = registrar.messenger()
+    instance.flutterApi = AssetMediaFlutterApi(binaryMessenger: registrar.messenger())
     AssetMediaApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
     registrar.publish(instance)
   }
@@ -21,6 +23,7 @@ class AssetMediaApiImpl: ImmichPlugin, AssetMediaApi, FlutterPlugin {
       AssetMediaApiSetup.setUp(binaryMessenger: messenger, api: nil)
     }
     messenger = nil
+    flutterApi = nil
     super.detachFromEngine()
   }
 
@@ -165,6 +168,64 @@ class AssetMediaApiImpl: ImmichPlugin, AssetMediaApi, FlutterPlugin {
           return
         }
         self.completeWhenActive(for: completion, with: .success(createdId))
+      }
+    }
+  }
+
+  func getFile(id: String, kind: AssetMediaFileKind, completion: @escaping (Result<AssetMediaFile?, Error>) -> Void) {
+    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+      guard let self, !self.detached else { return }
+
+      guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [id], options: nil).firstObject,
+        let resource = kind == .livePhotoVideo ? asset.getLivePhotoResource() : asset.getResource()
+      else {
+        self.completeWhenActive(for: completion, with: .success(nil))
+        return
+      }
+
+      let fileManager = FileManager.default
+      let directory = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
+        .first!
+        .appendingPathComponent("immich/originals", isDirectory: true)
+      var name = UUID().uuidString
+      let ext = (resource.originalFilename as NSString).pathExtension
+      if !ext.isEmpty {
+        name += ".\(ext)"
+      }
+      let file = directory.appendingPathComponent(name)
+      let result = AssetMediaFile(
+        path: file.path,
+        originalFileName: (asset.getRawResource() ?? resource).originalFilename,
+        isLivePhoto: asset.mediaSubtypes.contains(.photoLive)
+      )
+
+      do {
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+      } catch {
+        self.completeWhenActive(
+          for: completion,
+          with: .failure(PigeonError(code: kFetchError, message: error.localizedDescription, details: nil))
+        )
+        return
+      }
+
+      let options = PHAssetResourceRequestOptions()
+      options.isNetworkAccessAllowed = true
+      options.progressHandler = { progress in
+        DispatchQueue.main.async {
+          self.flutterApi?.onFileProgress(id: id, progress: progress) { _ in }
+        }
+      }
+      PHAssetResourceManager.default().writeData(for: resource, toFile: file, options: options) { error in
+        guard let error else {
+          self.completeWhenActive(for: completion, with: .success(result))
+          return
+        }
+        try? fileManager.removeItem(at: file)
+        self.completeWhenActive(
+          for: completion,
+          with: .failure(PigeonError(code: kFetchError, message: error.localizedDescription, details: nil))
+        )
       }
     }
   }

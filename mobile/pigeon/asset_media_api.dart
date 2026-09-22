@@ -13,6 +13,7 @@ import 'package:pigeon/pigeon.dart';
 )
 const String kUnsupportedOs = 'UNSUPPORTED_OS';
 const String kSaveError = 'SAVE_ERROR';
+const String kFetchError = 'FETCH_ERROR';
 
 enum AssetMediaActionStatus { done, alreadyInState, notFound, failed }
 
@@ -21,6 +22,16 @@ class AssetMediaActionResult {
   final AssetMediaActionStatus status;
 
   const AssetMediaActionResult({required this.id, required this.status});
+}
+
+enum AssetMediaFileKind { original, livePhotoVideo }
+
+class AssetMediaFile {
+  final String path;
+  final String? originalFileName;
+  final bool isLivePhoto;
+
+  const AssetMediaFile({required this.path, this.originalFileName, required this.isLivePhoto});
 }
 
 @HostApi()
@@ -41,4 +52,12 @@ abstract class AssetMediaApi {
   /// should use saveFile as both the video is already embedded in the still photo
   @async
   String saveLivePhoto(String imagePath, String videoPath, String name);
+
+  @async
+  AssetMediaFile? getFile(String id, AssetMediaFileKind kind);
+}
+
+@FlutterApi()
+abstract class AssetMediaFlutterApi {
+  void onFileProgress(String id, double progress);
 }
