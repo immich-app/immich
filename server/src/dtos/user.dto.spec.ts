@@ -1,4 +1,4 @@
-import { UserAdminCreateSchema, UserUpdateMeSchema } from 'src/dtos/user.dto';
+import { UserAdminCreateSchema, UserUpdateMeSchema } from 'src/dtos/user.dto.js';
 
 describe('update user DTO', () => {
   it('should allow emails without a tld', () => {

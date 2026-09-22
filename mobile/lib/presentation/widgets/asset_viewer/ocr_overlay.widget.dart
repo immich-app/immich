@@ -110,7 +110,7 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

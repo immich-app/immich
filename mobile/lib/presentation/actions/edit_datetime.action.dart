@@ -6,7 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/utils/timezone.dart';
@@ -46,7 +46,7 @@ class EditDateTimeAction extends AssetActionBuilder {
     }
 
     final (:assetIds, :origin) = state;
-    final remoteAssetRepository = ref.read(remoteAssetRepositoryProvider);
+    final remoteAssetRepository = ref.read(driftProvider).remoteAssetRepository;
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
@@ -55,7 +55,7 @@ class EditDateTimeAction extends AssetActionBuilder {
       Duration? offset;
 
       if (origin != null) {
-        final exif = await remoteAssetRepository.getExif(origin.id);
+        final exif = await remoteAssetRepository.watchExif(origin.id).first;
 
         // Prefer the EXIF timezone, so the picker opens on what the asset actually shows.
         DateTime dateTime = origin.createdAt.toLocal();
@@ -95,6 +95,5 @@ Future<void> saveDateTime(BuildContext context, WidgetRef ref, List<String> asse
   final toastService = ref.read(toastServiceProvider);
 
   await ref.read(assetServiceProvider).update(assetIds, dateTime: .some(dateTime));
-  ref.invalidate(assetExifProvider);
   toastService.success(message);
 }

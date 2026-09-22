@@ -1,6 +1,7 @@
 part of 'base_asset.model.dart';
 
 class LocalAsset extends BaseAsset {
+  @override
   final String id;
   final String? remoteAssetId;
   final String? cloudId;

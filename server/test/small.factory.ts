@@ -1,9 +1,9 @@
-import { AuthApiKey, AuthSharedLink, AuthUser, Exif, Library, UserAdmin } from 'src/database';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetFileType, Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
 import { expect } from 'vitest';
+import { AuthApiKey, AuthSharedLink, AuthUser, Library, UserAdmin } from 'src/database.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { QueueStatisticsDto } from 'src/dtos/queue.dto.js';
+import { Permission, UserStatus } from 'src/enum.js';
 
 export const newUuid = () => v4();
 export const newUuids = () => Array.from({ length: 100 }, () => 0).map(() => newUuid());
@@ -120,7 +120,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     createdAt = newDate(),
     updatedAt = newDate(),
     deletedAt = null,
-    oauthId = '',
+    oauthId = null,
     quotaSizeInBytes = null,
     quotaUsageInBytes = 0,
     status = UserStatus.Active,
@@ -168,31 +168,6 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = () => {
-  const id = newUuid();
-  return {
-    id,
-    originalPath: '/path/to/original-path.jpg.xmp',
-    tags: [],
-    files: [
-      {
-        id: newUuid(),
-        path: '/path/to/original-path.jpg.xmp',
-        type: AssetFileType.Sidecar,
-        isEdited: false,
-      },
-    ],
-    exifInfo: {
-      assetId: id,
-      description: 'this is a description',
-      latitude: 12,
-      longitude: 12,
-      dateTimeOriginal: '2023-11-22T04:56:12.196Z',
-      timeZone: 'UTC-6',
-    } as unknown as Exif,
-  };
-};
-
 const assetOcrFactory = (
   ocr: {
     id?: string;
@@ -210,10 +185,12 @@ const assetOcrFactory = (
     textScore?: number;
     text?: string;
     isVisible?: boolean;
+    updatedAt?: Date;
   } = {},
 ) => ({
   id: newUuid(),
   updateId: newUuidV7(),
+  updatedAt: newDate(),
   assetId: newUuid(),
   x1: 0.1,
   y1: 0.2,
@@ -236,9 +213,6 @@ export const factory = {
   library: libraryFactory,
   queueStatistics: queueStatisticsFactory,
   versionHistory: versionHistoryFactory,
-  jobAssets: {
-    sidecarWrite: assetSidecarWriteFactory,
-  },
   uuid: newUuid,
   buffer: () => Buffer.from('this is a fake buffer'),
   date: newDate,

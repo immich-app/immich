@@ -1,15 +1,16 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
-class PendingAlbumUpload {
-  final LocalAsset asset;
-  final double progress;
-  final bool failed;
+part 'pending_album_uploads.provider.freezed.dart';
 
-  const PendingAlbumUpload({required this.asset, this.progress = 0.0, this.failed = false});
-
-  PendingAlbumUpload copyWith({double? progress, bool? failed}) =>
-      PendingAlbumUpload(asset: asset, progress: progress ?? this.progress, failed: failed ?? this.failed);
+@freezed
+abstract class PendingAlbumUpload with _$PendingAlbumUpload {
+  const factory PendingAlbumUpload({
+    required LocalAsset asset,
+    @Default(0.0) double progress,
+    @Default(false) bool failed,
+  }) = _PendingAlbumUpload;
 }
 
 class AlbumPendingUploadsNotifier extends AutoDisposeFamilyNotifier<List<PendingAlbumUpload>, String> {

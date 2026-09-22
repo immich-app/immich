@@ -1,15 +1,16 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
+import 'package:intl/intl.dart';
 
 @RoutePage()
 class AppLogPage extends HookWidget {
@@ -50,7 +51,7 @@ class AppLogPage extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('logs'.tr(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)),
+        title: Text(context.t.logs, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)),
         scrolledUnderElevation: 1,
         elevation: 2,
         actions: [

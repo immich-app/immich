@@ -65,7 +65,7 @@ class ViewerBottomBar extends ConsumerWidget {
           ? const SizedBox.shrink()
           : Theme(
               data: context.themeData.copyWith(
-                iconTheme: const IconThemeData(size: 22, color: Colors.white),
+                iconTheme: const IconThemeData(size: ImmichIconSize.md, color: Colors.white),
                 textTheme: context.themeData.textTheme.copyWith(
                   labelLarge: context.themeData.textTheme.labelLarge?.copyWith(color: Colors.white),
                 ),
@@ -94,7 +94,7 @@ class ViewerBottomBar extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (asset.isImage) OcrToggleButton(asset: asset),
-                          if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
+                          if (asset.isVideo) VideoControls(videoPlayerName: asset.id),
                           if (!isReadonlyModeEnabled)
                             ImmichColorOverride(
                               color: Colors.white,

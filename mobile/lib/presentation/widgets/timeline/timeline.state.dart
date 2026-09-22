@@ -12,67 +12,57 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 part 'timeline.state.freezed.dart';
 
-class TimelineArgs {
-  final double maxWidth;
-  final double maxHeight;
-  final double spacing;
-  final int columnCount;
-  final bool showStorageIndicator;
-  final bool withStack;
-  final GroupAssetsBy? groupBy;
+@freezed
+abstract class TimelineArgs with _$TimelineArgs {
+  const factory TimelineArgs({
+    required double maxWidth,
+    required double maxHeight,
+    @Default(kTimelineSpacing) double spacing,
+    @Default(kTimelineColumnCount) int columnCount,
+    @Default(false) bool showStorageIndicator,
+    @Default(false) bool withStack,
+    GroupAssetsBy? groupBy,
+  }) = _TimelineArgs;
+}
 
-  const TimelineArgs({
-    required this.maxWidth,
-    required this.maxHeight,
-    this.spacing = kTimelineSpacing,
-    this.columnCount = kTimelineColumnCount,
-    this.showStorageIndicator = false,
-    this.withStack = false,
-    this.groupBy,
-  });
+class TimelineState {
+  final bool isScrolling;
+
+  /// Indicates whether the timeline is scrolling beyond some configured "high" speed,
+  /// such as when programmatically scrolling to the top or a really fast user fling
+  final bool recommendDeferredLoading;
+
+  const TimelineState({this.isScrolling = false, this.recommendDeferredLoading = false});
+
+  bool get isInteracting => isScrolling || recommendDeferredLoading;
 
   @override
-  bool operator ==(covariant TimelineArgs other) {
-    return spacing == other.spacing &&
-        maxWidth == other.maxWidth &&
-        maxHeight == other.maxHeight &&
-        columnCount == other.columnCount &&
-        showStorageIndicator == other.showStorageIndicator &&
-        withStack == other.withStack &&
-        groupBy == other.groupBy;
+  bool operator ==(covariant TimelineState other) {
+    return isScrolling == other.isScrolling && recommendDeferredLoading == other.recommendDeferredLoading;
   }
 
   @override
-  int get hashCode =>
-      maxWidth.hashCode ^
-      maxHeight.hashCode ^
-      spacing.hashCode ^
-      columnCount.hashCode ^
-      showStorageIndicator.hashCode ^
-      withStack.hashCode ^
-      groupBy.hashCode;
-}
+  int get hashCode => isScrolling.hashCode ^ recommendDeferredLoading.hashCode;
 
-@freezed
-abstract class TimelineState with _$TimelineState {
-  const TimelineState._();
-
-  const factory TimelineState({@Default(false) bool isScrubbing, @Default(false) bool isScrolling}) = _TimelineState;
-
-  bool get isInteracting => isScrubbing || isScrolling;
+  TimelineState copyWith({bool? isScrolling, bool? recommendDeferredLoading}) {
+    return TimelineState(
+      isScrolling: isScrolling ?? this.isScrolling,
+      recommendDeferredLoading: recommendDeferredLoading ?? this.recommendDeferredLoading,
+    );
+  }
 }
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
-  void setScrubbing(bool isScrubbing) {
-    state = state.copyWith(isScrubbing: isScrubbing);
-  }
-
   void setScrolling(bool isScrolling) {
     state = state.copyWith(isScrolling: isScrolling);
   }
 
+  void setRecommendDeferredLoading(bool recommendDeferredLoading) {
+    state = state.copyWith(recommendDeferredLoading: recommendDeferredLoading);
+  }
+
   @override
-  TimelineState build() => const TimelineState(isScrubbing: false, isScrolling: false);
+  TimelineState build() => const TimelineState(isScrolling: false, recommendDeferredLoading: false);
 }
 
 // This provider watches the buckets from the timeline service & args and serves the segments.

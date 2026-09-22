@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 
@@ -66,7 +66,7 @@ class _MotionButton extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                CurrentPlatform.isAndroid ? 'motion'.t(context: context) : 'live'.t(context: context),
+                CurrentPlatform.isAndroid ? context.t.motion : context.t.live,
                 style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ],

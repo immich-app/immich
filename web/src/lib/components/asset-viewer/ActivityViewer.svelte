@@ -99,7 +99,7 @@
   };
 
   $effect(() => {
-    if (assetId && previousAssetId != assetId) {
+    if (assetId && previousAssetId !== assetId) {
       previousAssetId = assetId;
     }
   });
@@ -168,7 +168,7 @@
               {/if}
             </div>
 
-            {#if (index != activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
+            {#if (index !== activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
               <div
                 class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
@@ -217,7 +217,7 @@
                   </div>
                 {/if}
               </div>
-              {#if (index != activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
+              {#if (index !== activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
                 <div
                   class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}

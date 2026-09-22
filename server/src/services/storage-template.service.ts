@@ -3,9 +3,11 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { JobOf, StorageAsset } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto.js';
 import {
   AssetFileType,
   AssetPathType,
@@ -15,12 +17,10 @@ import {
   JobStatus,
   QueueName,
   StorageFolder,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { JobOf, StorageAsset } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
-import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getAssetFile } from 'src/utils/asset.util.js';
+import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file.js';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],
@@ -129,7 +129,7 @@ export class StorageTemplateService extends BaseService {
     }
   }
 
-  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+  getStorageTemplateOptions(): ConfigTemplateStorageOptionDto {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 
@@ -402,8 +402,8 @@ export class StorageTemplateService extends BaseService {
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
-      filetype: asset.type == AssetType.Image ? 'IMG' : 'VID',
-      filetypefull: asset.type == AssetType.Image ? 'IMAGE' : 'VIDEO',
+      filetype: asset.type === AssetType.Image ? 'IMG' : 'VID',
+      filetypefull: asset.type === AssetType.Image ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album

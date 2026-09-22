@@ -1,25 +1,15 @@
-import 'package:collection/collection.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
-class SearchResult {
-  final List<BaseAsset> assets;
-  final int? nextPage;
+part 'search_result.model.freezed.dart';
 
-  const SearchResult({required this.assets, this.nextPage});
+@Freezed(toStringOverride: false)
+abstract class SearchResult with _$SearchResult {
+  const SearchResult._();
 
+  const factory SearchResult({required List<BaseAsset> assets, int? nextPage}) = _SearchResult;
+
+  // Explicitly don't log results, only attributes
   @override
   String toString() => 'SearchResult(assets: ${assets.length}, nextPage: $nextPage)';
-
-  @override
-  bool operator ==(covariant SearchResult other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    final listEquals = const DeepCollectionEquality().equals;
-
-    return listEquals(other.assets, assets) && other.nextPage == nextPage;
-  }
-
-  @override
-  int get hashCode => assets.hashCode ^ nextPage.hashCode;
 }

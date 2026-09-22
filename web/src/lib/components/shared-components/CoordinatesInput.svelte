@@ -15,7 +15,7 @@
   const id = generateId();
 
   const onInput = () => {
-    if (lat != null && lng != null) {
+    if (lat !== undefined && lng !== undefined) {
       onUpdate(lat, lng);
     }
   };

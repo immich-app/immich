@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 
@@ -16,7 +16,7 @@ class MotionPhotoActionButton extends ConsumerWidget {
 
     return BaseActionButton(
       iconData: isPlaying ? Icons.motion_photos_pause_outlined : Icons.play_circle_outline_rounded,
-      label: "play_motion_photo".t(context: context),
+      label: context.t.play_motion_photo,
       onPressed: ref.watch(isPlayingMotionVideoProvider.notifier).toggle,
       iconOnly: iconOnly,
       menuItem: menuItem,

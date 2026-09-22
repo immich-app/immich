@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
 
@@ -25,8 +25,8 @@ class AlbumAssetCandidates {
 class RemoteAlbumService {
   static final _logger = Logger('RemoteAlbumService');
 
-  final DriftRemoteAlbumRepository _repository;
-  final DriftAlbumApiRepository _albumApiRepository;
+  final RemoteAlbumRepository _repository;
+  final AlbumApiRepository _albumApiRepository;
   final ForegroundUploadService _uploadService;
 
   const RemoteAlbumService(this._repository, this._albumApiRepository, this._uploadService);
@@ -152,7 +152,7 @@ class RemoteAlbumService {
     );
 
     // Update the local database
-    await _repository.update(updatedAlbum);
+    await _repository.updateAlbum(updatedAlbum);
 
     return updatedAlbum;
   }

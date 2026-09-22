@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -33,10 +34,10 @@ class SyncStreamService {
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final TrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
-  final IPermissionRepository _permissionRepository;
+  final DevicePermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
   final Completer<void>? _cancellation;
@@ -122,7 +123,7 @@ class SyncStreamService {
     }
 
     if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name) &&
-        semVer >= const SemVer(major: 2, minor: 5, patch: 0)) {
+        semVer.supports(.assetPayloadChange20260128)) {
       _logger.info("Running pre-sync task: v20260128_ResetAssetV1");
       await _syncApiRepository.deleteSyncAck([
         SyncEntityType.assetV1,
@@ -139,7 +140,7 @@ class SyncStreamService {
     }
 
     if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name) &&
-        semVer > const SemVer(major: 2, minor: 7, patch: 5)) {
+        semVer.supports(.assetPayloadChange20260597)) {
       _logger.info("Running pre-sync task: v20260597_ResetAssetV1AssetV2");
       await _syncApiRepository.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]);
       migrations.add(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name);
@@ -193,6 +194,8 @@ class SyncStreamService {
     switch (type) {
       case SyncEntityType.authUserV1:
         return _syncStreamRepository.updateAuthUsersV1(data.cast());
+      case SyncEntityType.authUserV2:
+        return _syncStreamRepository.updateAuthUsersV2(data.cast());
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
       case SyncEntityType.userDeleteV1:
@@ -321,7 +324,8 @@ class SyncStreamService {
       case SyncEntityType.assetFaceV1:
         return _syncStreamRepository.updateAssetFacesV1(data.cast());
       case SyncEntityType.assetFaceV2:
-        return _syncStreamRepository.updateAssetFacesV2(data.cast());
+      case SyncEntityType.assetFaceV3:
+        return _syncStreamRepository.updateAssetFacesV3(data.cast());
       case SyncEntityType.assetFaceDeleteV1:
         return _syncStreamRepository.deleteAssetFacesV1(data.cast());
       case SyncEntityType.assetOcrV1:

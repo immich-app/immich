@@ -16,7 +16,7 @@
     {$t('onboarding_welcome_user', { values: { user: authManager.user.name } })}
   </p>
   <p class="pb-6 text-3xl font-light">
-    {userRole == OnboardingRole.SERVER
+    {userRole === OnboardingRole.SERVER
       ? $t('onboarding_server_welcome_description')
       : $t('onboarding_user_welcome_description')}
   </p>

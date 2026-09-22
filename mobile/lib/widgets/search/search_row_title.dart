@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class SearchRowTitle extends StatelessWidget {
   const SearchRowTitle({super.key, required this.onViewAllPressed, required this.title});
@@ -17,9 +17,9 @@ class SearchRowTitle extends StatelessWidget {
         TextButton(
           onPressed: onViewAllPressed,
           child: Text(
-            'search_page_view_all_button',
+            context.t.search_page_view_all_button,
             style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
-          ).tr(),
+          ),
         ),
       ],
     );

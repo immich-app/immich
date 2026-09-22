@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/primary_color_setting.dart';
-import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class ThemeSetting extends HookConsumerWidget {
   const ThemeSetting({super.key});
@@ -52,26 +51,23 @@ class ThemeSetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingGroupTitle(
-          title: "theme".t(context: context),
-          icon: Icons.color_lens_outlined,
-        ),
+        SettingGroupTitle(title: context.t.theme, icon: Icons.color_lens_outlined),
         SettingsSwitchListTile(
           valueNotifier: isSystemTheme,
-          title: 'theme_setting_system_theme_switch'.t(context: context),
+          title: context.t.theme_setting_system_theme_switch,
           onChanged: onSystemThemeChange,
         ),
         if (currentTheme.value != ThemeMode.system)
           SettingsSwitchListTile(
             valueNotifier: isDarkTheme,
-            title: 'map_settings_dark_mode'.t(context: context),
+            title: context.t.map_settings_dark_mode,
             onChanged: onThemeChange,
           ),
         const PrimaryColorSetting(),
         SettingsSwitchListTile(
           valueNotifier: colorfulInterface,
-          title: "theme_setting_colorful_interface_title".t(context: context),
-          subtitle: 'theme_setting_colorful_interface_subtitle'.t(context: context),
+          title: context.t.theme_setting_colorful_interface_title,
+          subtitle: context.t.theme_setting_colorful_interface_subtitle,
           onChanged: onSurfaceColorSettingChange,
         ),
       ],

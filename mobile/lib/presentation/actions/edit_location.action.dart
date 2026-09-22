@@ -6,7 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
@@ -46,13 +46,13 @@ class EditLocationAction extends AssetActionBuilder {
     }
 
     final (:assetIds, :origin) = state;
-    final remoteAssetRepository = ref.read(remoteAssetRepositoryProvider);
+    final remoteAssetRepository = ref.read(driftProvider).remoteAssetRepository;
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
       LatLng? initialLatLng;
       if (origin != null) {
-        final exif = await remoteAssetRepository.getExif(origin.id);
+        final exif = await remoteAssetRepository.watchExif(origin.id).first;
         if (exif?.latitude != null && exif?.longitude != null) {
           initialLatLng = LatLng(exif!.latitude!, exif.longitude!);
         }
@@ -80,6 +80,5 @@ Future<void> saveLocation(BuildContext context, WidgetRef ref, List<String> asse
   final toastService = ref.read(toastServiceProvider);
 
   await ref.read(assetServiceProvider).update(assetIds, location: .some(location));
-  ref.invalidate(assetExifProvider);
   toastService.success(message);
 }

@@ -74,6 +74,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.onConnect((_) {
           dPrint(() => "Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
+          _refreshServerInfo();
         });
 
         socket.onDisconnect((_) {
@@ -97,7 +98,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_restore', _handleRemoteChange);
         socket.on('on_asset_hidden', _handleRemoteChange);
         socket.on('on_asset_update', _handleRemoteChange);
-        socket.on('on_config_update', _handleOnConfigUpdate);
+        socket.on('on_config_update', _refreshServerInfo);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
         dPrint(() => "[WEBSOCKET] Catch Websocket Error - $e");
@@ -135,7 +136,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     );
   }
 
-  void _handleOnConfigUpdate(dynamic _) {
+  void _refreshServerInfo([_]) {
     unawaited(_ref.read(serverInfoProvider.notifier).getServerFeatures());
     unawaited(_ref.read(serverInfoProvider.notifier).getServerConfig());
   }

@@ -8,7 +8,7 @@ final networkServiceProvider = Provider((ref) {
 
 class NetworkService {
   final NetworkRepository _repository;
-  final IPermissionRepository _permissionRepository;
+  final DevicePermissionRepository _permissionRepository;
 
   const NetworkService(this._repository, this._permissionRepository);
 
