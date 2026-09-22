@@ -21,6 +21,7 @@ export class YuccaService {
     @Optional() private readonly yuccaService: YuccaOrchestratorService,
   ) {
     this.createDatabaseBackup = this.createDatabaseBackup.bind(this);
+    this.cleanupDatabaseBackups = this.cleanupDatabaseBackups.bind(this);
     this.enterMaintenanceRollback = this.enterMaintenanceRollback.bind(this);
   }
 
@@ -39,6 +40,7 @@ export class YuccaService {
         .map(({ id, name, importPaths, exclusionPatterns }) => ({ id, name, importPaths, exclusionPatterns })),
       hooks: {
         createDatabaseBackup: this.createDatabaseBackup,
+        cleanupDatabaseBackups: this.cleanupDatabaseBackups,
         enterMaintenanceRollback: this.enterMaintenanceRollback,
       },
     });
@@ -46,6 +48,10 @@ export class YuccaService {
 
   private createDatabaseBackup() {
     return this.databaseBackupService.createDatabaseBackup();
+  }
+
+  private cleanupDatabaseBackups() {
+    return this.databaseBackupService.cleanupDatabaseBackups();
   }
 
   private enterMaintenanceRollback(repositoryId: string, snapshotId: string) {
