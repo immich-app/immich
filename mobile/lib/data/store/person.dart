@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/person.dart';
 import 'package:immich_mobile/data/store/user_metadata.dart';
@@ -14,13 +15,13 @@ extension type const PersonStore._(Provider<PersonMutations> _provider) implemen
 
   /// Get the person specified by [personId]
   ///
-  /// **NOTE:** This is not reactive to changes, and only hits the local DB
-  AutoDisposeFutureProvider<Person?> byId(String personId) => _byIdProvider(personId);
+  /// **NOTE:** This is only reactive to the local DB
+  AutoDisposeStreamProvider<Person?> byId(String personId) => _byIdProvider(personId);
 
   /// Get the people present in the asset [assetId]
   ///
-  /// **NOTE:** This is not reactive to changes, and only hits the local DB
-  AutoDisposeFutureProvider<List<Person>> forAsset(String assetId) => _forAssetProvider(assetId);
+  /// **NOTE:** This is only reactive to the local DB
+  AutoDisposeStreamProvider<List<Person>> forAsset(String assetId) => _forAssetProvider(assetId);
 
   /// Get all known people, honoring the user's minimum detected face count preference
   ///
@@ -30,19 +31,21 @@ extension type const PersonStore._(Provider<PersonMutations> _provider) implemen
 
 final _peopleDb = driftProvider.select((db) => db.peopleDatabaseRepository);
 
-// We have to map from non-reactive existing Drift queries to Riverpod reactivity, so we wrap each call in a provider family
-// Note that the only reactivity here is in going from no data (fetch start) to data (fetch completed), and the DB swapping (basically never)
-final _byIdProvider = FutureProvider.autoDispose.family<Person?, String>(
-  (ref, personId) => ref.watch(_peopleDb).get(personId),
+final _byIdProvider = StreamProvider.autoDispose.family<Person?, String>(
+  (ref, personId) => ref.watch(_peopleDb).watchPerson(personId).distinct(),
 );
 
-final _forAssetProvider = FutureProvider.autoDispose.family<List<Person>, String>(
-  (ref, assetId) => ref.watch(_peopleDb).getAssetPeople(assetId),
+final _forAssetProvider = StreamProvider.autoDispose.family<List<Person>, String>(
+  (ref, assetId) => ref.watch(_peopleDb).watchPeopleForAsset(assetId).distinct(const ListEquality<Person>().equals),
 );
 
 final _allProvider = StreamProvider.autoDispose<List<Person>>((ref) async* {
   final prefs = await ref.watch(UserMetadataStore.instance.preferences().future);
-  yield* ref.watch(_peopleDb).watch(minFaces: prefs?.minimumFaces ?? 3);
+
+  yield* ref
+      .watch(_peopleDb)
+      .watchAll(minFaces: prefs?.minimumFaces ?? 3)
+      .distinct(const ListEquality<Person>().equals);
 });
 
 class PersonMutations extends StoreMutations {

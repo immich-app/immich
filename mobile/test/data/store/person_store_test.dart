@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/person.dart';
@@ -55,6 +57,48 @@ void main() {
     final people = await container.read(Store.people.all().future);
 
     expect(people.map((p) => p.id), [named.id]);
+  });
+
+  test('forAsset re-emits when a person is renamed', () async {
+    final user = await ctx.newUser();
+    final asset = await ctx.newRemoteAsset(ownerId: user.id);
+    final person = await ctx.newPerson(ownerId: user.id, name: 'Old');
+    await ctx.newFace(assetId: asset.id, personId: person.id);
+
+    when(() => api.update(person.id, name: 'New')).thenAnswer((_) async => Person(id: person.id, name: 'New'));
+
+    final renamed = Completer<void>();
+
+    final provider = Store.people.forAsset(asset.id);
+    container.listen(provider, (_, next) {
+      if (next.valueOrNull?.single.name == 'New' && !renamed.isCompleted) {
+        renamed.complete();
+      }
+    });
+    await container.read(provider.future);
+
+    await container.read(Store.people).updateName(person.id, 'New');
+
+    await expectLater(renamed.future, completes);
+  });
+
+  test('forAsset does not push updates unnecessarily', () async {
+    final user = await ctx.newUser();
+    final asset = await ctx.newRemoteAsset(ownerId: user.id);
+    final person = await ctx.newPerson(ownerId: user.id, name: 'Old');
+    await ctx.newFace(assetId: asset.id, personId: person.id);
+
+    var emissions = 0;
+
+    final provider = Store.people.forAsset(asset.id);
+    container.listen(provider, (_, _) => emissions += 1);
+    await container.read(provider.future);
+
+    await ctx.newPerson(ownerId: user.id, name: 'Unrelated');
+
+    await pumpEventQueue();
+    // Only should have received the first, loaded event
+    expect(emissions, 1);
   });
 
   test('updateName pushes to the server, then saves locally', () async {
