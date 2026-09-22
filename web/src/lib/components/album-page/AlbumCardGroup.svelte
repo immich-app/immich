@@ -1,47 +1,50 @@
 <script lang="ts">
   import AlbumCard from '$lib/components/album-page/AlbumCard.svelte';
+  import Portal from '$lib/elements/Portal.svelte';
   import { Route } from '$lib/route';
+  import { getAlbumActions } from '$lib/services/album.service';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { type AlbumGroup, isAlbumGroupCollapsed, toggleAlbumGroupCollapsing } from '$lib/utils/album-utils';
-  import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import type { AlbumResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
+  import { Icon, menuManager, type ActionItem } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
   import { slide } from 'svelte/transition';
 
-  interface Props {
+  type Props = {
     albums: AlbumResponseDto[];
     group?: AlbumGroup | undefined;
     showOwner?: boolean;
     showDateRange?: boolean;
     showItemCount?: boolean;
-    onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
-  }
+  };
 
-  let {
+  const {
     albums,
     group = undefined,
     showOwner = false,
     showDateRange = false,
     showItemCount = false,
-    onShowContextMenu = undefined,
   }: Props = $props();
 
   let isCollapsed = $derived(!!group && isAlbumGroupCollapsed($albumViewSettings, group.id));
-
-  const showContextMenu = (position: ContextMenuPosition, album: AlbumResponseDto) => {
-    onShowContextMenu?.(position, album);
-  };
-
   let iconRotation = $derived(isCollapsed ? 'rotate-0' : 'rotate-90');
+  let contextMenuAnchor: HTMLDivElement | undefined = $state();
 
-  const oncontextmenu = (event: MouseEvent, album: AlbumResponseDto) => {
+  const oncontextmenu = async (event: MouseEvent, items: ActionItem[]) => {
     event.preventDefault();
-    showContextMenu({ x: event.x, y: event.y }, album);
+    contextMenuAnchor?.setAttribute('style', `left: ${event.x}px; top: ${event.y}px;`);
+    await menuManager.show({
+      target: contextMenuAnchor ?? (event.currentTarget as HTMLElement),
+      items,
+    });
   };
 </script>
+
+<Portal>
+  <div bind:this={contextMenuAnchor} class="absolute"></div>
+</Portal>
 
 {#if group}
   <div class="grid">
@@ -63,11 +66,13 @@
   {#if !isCollapsed}
     <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
+        {@const { Edit, Share, Download, Delete } = getAlbumActions($t, album)}
+        {@const items = [Edit, Share, Download, Delete]}
         <a
           href={Route.viewAlbum(album)}
           class="h-fit"
           animate:flip={{ duration: 400 }}
-          oncontextmenu={(event) => oncontextmenu(event, album)}
+          oncontextmenu={(event) => oncontextmenu(event, items)}
         >
           <AlbumCard
             {album}
@@ -75,7 +80,7 @@
             {showDateRange}
             {showItemCount}
             preload={index < 20}
-            onShowContextMenu={onShowContextMenu ? (position) => showContextMenu(position, album) : undefined}
+            contextMenuItems={items}
           />
         </a>
       {/each}
