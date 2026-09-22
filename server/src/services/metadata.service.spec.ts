@@ -1841,6 +1841,41 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should use QuickTime Rotation over Exif Orientation for HEIF images', async () => {
+      const asset = AssetFactory.create({ originalFileName: 'IMG_1234.heic' });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      // Rotation: 3 -> Rotate90CW; conflicting Orientation must be ignored in favor of Rotation.
+      mockReadTags({ ImageWidth: 1000, ImageHeight: 2000, Orientation: 1, Rotation: 3 });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 2000,
+          height: 1000,
+        }),
+      );
+    });
+
+    it('should keep a valid Exif Orientation for HEIF images when Rotation is absent', async () => {
+      const asset = AssetFactory.create({ originalFileName: 'IMG_1234.heic' });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ ImageWidth: 4032, ImageHeight: 1816, Orientation: 6 });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 1816,
+          height: 4032,
+        }),
+      );
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({ orientation: ExifOrientation.Rotate90CW.toString() }),
+          lockedPropertiesBehavior: 'skip',
+        }),
+      );
+    });
+
     it('should overwrite existing width/height for unedited assets', async () => {
       const asset = AssetFactory.create({ width: 1920, height: 1080, isEdited: false });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));

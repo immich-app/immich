@@ -599,13 +599,14 @@ export class MetadataService extends BaseService {
     // never use duration from sidecar
     delete sidecarTags?.Duration;
 
-    // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
-    // prefer irot (ExifTool QuickTime:Rotation) mapped to ExifOrientation.
+    // HEIF images: prefer irot (ExifTool QuickTime:Rotation) over Exif Orientation, since some
+    // encoders leave a stale/invalid Orientation while Rotation reflects the true pixel layout.
+    // When Rotation is absent, keep the Exif Orientation exiftool already found instead of
+    // discarding it - deleting a valid Orientation stores un-swapped (landscape) dimensions
+    // for a portrait asset.
     if (mimeTypes.isHeifImage(asset.originalPath)) {
       const orientation = this.getHeifOrientation(mediaTags);
-      if (orientation === null) {
-        delete mediaTags.Orientation;
-      } else {
+      if (orientation !== null) {
         mediaTags.Orientation = orientation;
       }
     }
