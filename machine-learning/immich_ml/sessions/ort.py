@@ -33,6 +33,13 @@ def _label(pins: Mapping[str, int]) -> str:
 
 
 UNREADABLE = 3  # how the preparing child says its source does not parse
+DTYPES = {
+    "tensor(float)": np.float32,
+    "tensor(float16)": np.float16,
+    "tensor(uint8)": np.uint8,
+    "tensor(int32)": np.int32,
+    "tensor(int64)": np.int64,
+}
 
 
 class OrtGraph:
@@ -273,6 +280,20 @@ class OrtSession:
                 )
                 graph = self.graphs[shape] = OrtGraph(spec)
             return graph
+
+    def warm(self) -> None:
+        """Opens a graph for every shape and runs it once before opening the next: OpenVINO defers work to the first
+        run of a graph it imports from its cache, which importing another graph first can corrupt."""
+        for shape in self.policy.dims[:1] if self.dynamic else self.policy.dims:
+            session = self.for_shape(shape).session
+            sizes = dict(_overrides(self.policy, shape.pins))  # for a dim the graph leaves free
+            feed = {
+                node.name: np.zeros(
+                    [dim if isinstance(dim, int) else sizes.get(dim, 1) for dim in node.shape], DTYPES[node.type]
+                )
+                for node in session.get_inputs()
+            }
+            session.run(None, feed)
 
 
 def _overrides(policy: ShapePolicy, pins: Mapping[str, int]) -> list[tuple[str, int]]:

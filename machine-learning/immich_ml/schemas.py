@@ -103,6 +103,8 @@ class ModelSession(Protocol):
 
     def for_shape(self, shape: Shape) -> ModelGraph: ...
 
+    def warm(self) -> None: ...
+
 
 class FaceDetectionOutput(TypedDict):
     boxes: npt.NDArray[np.float32]

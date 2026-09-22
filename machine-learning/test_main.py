@@ -188,12 +188,12 @@ class TestBase:
         assert not encoder.loaded
         assert not hasattr(encoder, "session")
 
-    def test_builds_a_graph_for_every_shape_it_runs(self, stub_session: Callable[..., mock.Mock]) -> None:
+    def test_builds_by_warming_every_graph(self, stub_session: Callable[..., mock.Mock]) -> None:
         session = stub_session((1, 112, 112, 3), shapes=(Shape(batch=1), Shape(batch=4)))
 
         FaceRecognizer("buffalo_l", session=session).build()
 
-        assert session.for_shape.call_args_list == [mock.call(Shape(batch=1)), mock.call(Shape(batch=4))]
+        session.warm.assert_called_once()
 
     @pytest.mark.parametrize(
         ("symbols", "called"), [(["mi_collect", "malloc_trim"], "mi_collect"), (["malloc_trim"], "malloc_trim")]
@@ -373,6 +373,39 @@ class TestOrtSessions:
 
         assert first is second
         ort_session.assert_called_once()
+
+    @pytest.mark.parametrize(
+        ("provider", "expected"),
+        [
+            ("CoreMLExecutionProvider", ["open", "run at 64", "open", "run at 128"]),
+            ("CPUExecutionProvider", ["run at 64"]),  # the one graph, opened when the session is
+        ],
+    )
+    def test_warms_each_graph_before_opening_the_next(
+        self, ort_session: mock.Mock, provider: str, expected: list[str]
+    ) -> None:
+        policy = ShapePolicy(dims=(Shape(batch=1, height=64, width=64), Shape(batch=1, height=64, width=128)))
+        events: list[str] = []
+
+        def open_graph(*args: Any, **kwargs: Any) -> Any:
+            events.append("open")
+            return mock.DEFAULT
+
+        def run(output_names: Any, feed: dict[str, np.ndarray]) -> list[np.ndarray]:
+            events.append(f"run at {feed['image'].shape[2]}")  # a dim the graph leaves free takes the shape's size
+            return [np.zeros(1)]
+
+        ort_session.side_effect = open_graph
+        ort_session.return_value.get_inputs.return_value = [
+            SimpleNamespace(name="image", shape=[1, 64, "width", 3], type="tensor(uint8)")
+        ]
+        ort_session.return_value.run.side_effect = run
+        session = ort_sessions("PP-OCRv5_mobile", providers=[provider], shape_policy=policy)
+        events.clear()
+
+        session.warm()
+
+        assert events == expected
 
     def test_opens_a_shape_while_another_is_still_being_built(self, ort_session: mock.Mock) -> None:
         policy = ShapePolicy(dims=(Shape(batch=1, height=64, width=64), Shape(batch=1, height=64, width=128)))

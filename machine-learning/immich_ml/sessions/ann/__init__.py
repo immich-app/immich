@@ -56,6 +56,9 @@ class AnnSession:
     def for_shape(self, shape: Shape) -> AnnSession:
         return self
 
+    def warm(self) -> None:
+        pass  # the artifact is loaded whole when the session opens
+
     def run(
         self,
         output_names: list[str] | None,

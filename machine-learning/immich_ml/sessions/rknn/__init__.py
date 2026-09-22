@@ -52,6 +52,9 @@ class RknnSession:
     def for_shape(self, shape: Shape) -> RknnSession:
         return self
 
+    def warm(self) -> None:
+        pass  # the binary is loaded whole when the session opens
+
     def get_inputs(self) -> Sequence[SessionNode]:
         return self.rknnpool.inputs
 
