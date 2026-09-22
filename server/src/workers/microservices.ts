@@ -8,6 +8,7 @@ import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository.js';
 import { isStartUpError } from 'src/utils/misc.js';
+import { handleConnectionErrors } from 'src/utils/socket.js';
 
 export async function bootstrap() {
   const { telemetry } = new ConfigRepository().getEnv();
@@ -26,7 +27,7 @@ export async function bootstrap() {
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await (host ? app.listen(0, host) : app.listen(0));
+  await (host ? app.listen(0, host) : app.listen(0)).then((server) => handleConnectionErrors(server, logger));
 
   logger.log(`Immich Microservices is running [v${serverVersion}] [${environment}] `);
 }

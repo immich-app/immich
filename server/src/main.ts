@@ -10,6 +10,16 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { type DB } from 'src/schema/index.js';
 import { getKyselyConfig } from 'src/utils/database.js';
 
+// A crashed worker used to take the whole server down: `onExit` killed the API
+// worker and exited the supervisor, so a single aborted client connection (for
+// example a mobile upload that lost its network) stopped Immich for every user
+// until the service manager restarted it. Restart just the crashed worker
+// instead, but keep a budget so a permanent failure (broken migration,
+// unreachable database, ...) still ends as an exited service rather than a
+// crash loop.
+const CRASH_RESTART_WINDOW_MS = 5 * 60 * 1000;
+const CRASH_RESTART_LIMIT = 5;
+
 /**
  * Manages worker lifecycle
  */
@@ -23,6 +33,12 @@ class Workers {
    * Fail-safe in case anything dies during restart
    */
   restarting = false;
+
+  /**
+   * Timestamps of recent crash restarts, so a worker that keeps dying is given
+   * up on instead of being restarted forever.
+   */
+  private crashRestarts: Partial<Record<ImmichWorker, number[]>> = {};
 
   /**
    * Boot all enabled workers
@@ -129,6 +145,22 @@ class Workers {
     console.error(`${name} worker error: ${error}, stack: ${error.stack}`);
   }
 
+  /**
+   * Whether this worker may be restarted after a crash, and records the attempt.
+   */
+  private canRestartAfterCrash(name: ImmichWorker) {
+    const now = Date.now();
+    const recent = (this.crashRestarts[name] ?? []).filter((time) => now - time < CRASH_RESTART_WINDOW_MS);
+    if (recent.length >= CRASH_RESTART_LIMIT) {
+      this.crashRestarts[name] = recent;
+      return false;
+    }
+
+    recent.push(now);
+    this.crashRestarts[name] = recent;
+    return true;
+  }
+
   onExit(name: ImmichWorker, exitCode: number | null) {
     // restart immich server
     if (exitCode === ExitCode.AppRestart || this.restarting) {
@@ -146,9 +178,15 @@ class Workers {
       return;
     }
 
-    // shutdown the entire process
     delete this.workers[name];
 
+    if (exitCode !== 0 && this.canRestartAfterCrash(name)) {
+      console.error(`${name} worker crashed with code ${exitCode}, restarting it`);
+      this.startWorker(name);
+      return;
+    }
+
+    // shutdown the entire process
     if (exitCode !== 0) {
       console.error(`${name} worker exited with code ${exitCode}`);
 

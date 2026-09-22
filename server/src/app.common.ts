@@ -13,6 +13,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository.js';
 import { ApiService } from 'src/services/api.service.js';
 import { useSwagger } from 'src/utils/misc.js';
+import { handleConnectionErrors } from 'src/utils/socket.js';
 
 export function configureTelemetry() {
   const { telemetry } = new ConfigRepository().getEnv();
@@ -90,6 +91,7 @@ export async function configureExpress(
 
   const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 24 * 60 * 60 * 1000;
+  handleConnectionErrors(server, logger);
 
   logger.log(`${IMMICH_SERVER_START} on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }
