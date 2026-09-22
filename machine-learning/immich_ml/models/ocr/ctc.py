@@ -13,10 +13,13 @@ def picked(indices: NDArray[np.int32], confidence: NDArray[Any]) -> tuple[NDArra
 
 
 def logits(raw: NDArray[np.float32]) -> tuple[NDArray[np.int32], NDArray[np.float32]]:
-    raw = raw.reshape(*raw.shape[:2], -1)  # a binary keeps a unit axis between the steps and the classes
-    indices = raw.argmax(axis=2)
-    confidence = 1 / np.exp(raw - np.take_along_axis(raw, indices[:, :, None], axis=2)).sum(axis=2)
-    return indices.astype(np.int32), confidence.astype(np.float32)
+    steps = raw.reshape(-1, raw.shape[-1])  # a binary keeps a unit axis between the steps and the classes
+    indices = steps.argmax(axis=1)
+    best = steps[np.arange(len(steps)), indices]
+    # the winner's softmax, summing only the few classes within exp(-16) of it rather than every class of every step
+    step, near = np.nonzero(steps > (best - 16)[:, None])
+    total = np.bincount(step, weights=np.exp(steps[step, near] - best[step]), minlength=len(steps))
+    return indices.reshape(raw.shape[:2]).astype(np.int32), (1 / total).reshape(raw.shape[:2]).astype(np.float32)
 
 
 def probabilities(probs: NDArray[Any]) -> tuple[NDArray[np.int32], NDArray[np.float32]]:
