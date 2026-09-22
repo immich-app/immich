@@ -122,7 +122,7 @@ All `REDIS_` variables must be provided to all Immich workers, including `api` a
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
 More information can be found in the upstream [ioredis] documentation.
 
-When `REDIS_URL` or `REDIS_SOCKET` are defined, the `REDIS_HOSTNAME`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, and `REDIS_DBINDEX` variables are ignored.
+When `REDIS_URL` (with the `ioredis://` prefix) is defined, it is used as the complete Redis configuration and the `REDIS_HOSTNAME`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, and `REDIS_DBINDEX` variables are ignored. `REDIS_SOCKET` can be used alongside these variables to specify a Unix socket path; it does not override other Redis variables.
 :::
 
 Redis (Sentinel) URL example JSON before encoding:
