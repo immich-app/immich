@@ -27,7 +27,7 @@ export class UserFactory {
       shouldChangePassword: false,
       avatarColor: null,
       deletedAt: null,
-      oauthId: '',
+      oauthId: null,
       updatedAt: newDate(),
       storageLabel: null,
       name: 'Test User',

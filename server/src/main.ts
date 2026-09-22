@@ -4,7 +4,6 @@ import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { PostgresError } from 'postgres';
-import { ImmichAdminModule } from 'src/app.module.js';
 import { DatabaseLock, ExitCode, ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
@@ -84,7 +83,9 @@ class Workers {
         return isLocked;
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!isLocked) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
 
     await kysely.destroy();
@@ -161,7 +162,7 @@ class Workers {
   }
 }
 
-function main() {
+async function main() {
   const immichApp = process.argv[2];
   if (immichApp) {
     process.argv.splice(2, 1);
@@ -170,6 +171,10 @@ function main() {
   if (immichApp === 'immich-admin') {
     process.title = 'immich_admin_cli';
     process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
+
+    // imported lazily, so that the supervisor process does not build the whole application
+    // graph on every start.
+    const { ImmichAdminModule } = await import('./app.module.js');
 
     return CommandFactory.run(ImmichAdminModule);
   }
