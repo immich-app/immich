@@ -73,8 +73,7 @@ class OrtGraph:
         if self.channels_first:
             input_feed = {name: frames.transpose(0, 3, 1, 2) for name, frames in input_feed.items()}
         outputs: list[NDArray[Any]] = self.session.run(output_names, input_feed, run_options)
-        # a graph narrowed to half precision answers in it, which is too coarse for what a model does next
-        return [output.astype(np.float32) if output.dtype == np.float16 else output for output in outputs]
+        return outputs
 
 
 @dataclass(frozen=True)
