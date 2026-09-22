@@ -40,7 +40,7 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
-from immich_ml.models.ocr.ctc import greedy
+from immich_ml.models.ocr.ctc import logits, probabilities
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelTask, ModelType, Shape
@@ -1545,7 +1545,7 @@ class TestOcr:
         session = stub_session((1, 48, 224, 3), outputs=[np.zeros((1, 4, 8), np.float32)], normalizes_input=True)
         text_recognizer = loaded(TextRecognizer("PP-OCRv5_mobile", cache_dir=path), session, mocker)
         text_recognizer.decoder = mock.Mock()
-        text_recognizer.decoder.decode.return_value = (["hi"], np.array([0.95], dtype=np.float32))
+        text_recognizer.decoder.return_value = (["hi"], np.array([0.95], dtype=np.float32))
         image = Image.new("RGB", (500, 100), (7, 8, 9))
         box = np.array([[[0, 0], [crop, 0], [crop, 48], [0, 48]]], dtype=np.float32)
         texts: Any = {"boxes": box, "scores": np.array([0.9], dtype=np.float32)}
@@ -1588,7 +1588,7 @@ class TestOcr:
         )
         text_recognizer = loaded(TextRecognizer("PP-OCRv5_mobile", cache_dir=path), session, mocker)
         text_recognizer.decoder = mock.Mock()
-        text_recognizer.decoder.decode.return_value = (["hi"], np.array([0.95], dtype=np.float32))
+        text_recognizer.decoder.return_value = (["hi"], np.array([0.95], dtype=np.float32))
         image = Image.new("RGB", (500, 100), (7, 8, 9))
         box = np.array([[[0, 0], [384, 0], [384, 48], [0, 48]]], dtype=np.float32)
         texts: Any = {"boxes": box, "scores": np.array([0.9], dtype=np.float32)}
@@ -1607,7 +1607,7 @@ class TestOcr:
             mocker,
         )
         text_recognizer.decoder = mock.Mock()
-        text_recognizer.decoder.decode.return_value = (["hello"], np.array([0.8], dtype=np.float32))
+        text_recognizer.decoder.return_value = (["hello"], np.array([0.8], dtype=np.float32))
         mocker.patch.object(text_recognizer, "_crop", return_value=np.zeros((48, 96, 3), dtype=np.uint8))
         image = Image.new("RGB", (100, 50))
         box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
@@ -1625,10 +1625,20 @@ class TestOcr:
         probs[0, 1, 3] = 2**-20  # subnormal in half precision, and still the likeliest class
         probs[0, 2, 1] = 0.5
 
-        indices, picked = greedy([probs])
+        indices, picked = probabilities(probs)
 
         assert indices.tolist() == [[2, 3, 1]]
         assert picked.dtype == np.float32 and picked.tolist() == [[0.75, 2**-20, 0.5]]
+
+    def test_rec_decodes_the_raw_logits_a_binary_emits(self) -> None:
+        raw = np.full((1, 2, 1, 3), -5.0, dtype=np.float32)  # steps, then a unit axis, then the classes
+        raw[0, 0, 0, 2] = 5.0
+        raw[0, 1, 0] = [1.0, 1.0, 0.0]  # a tie goes to the first class, as numpy takes it
+
+        indices, confidence = logits(raw)
+
+        assert indices.tolist() == [[2, 0]]
+        assert np.allclose(confidence, [[1 / (1 + 2 * np.exp(-10)), 1 / (2 + np.exp(-1))]])
 
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture

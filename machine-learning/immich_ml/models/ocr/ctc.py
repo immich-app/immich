@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, Self
 
@@ -8,28 +8,43 @@ from numpy.typing import NDArray
 from immich_ml.models.transforms import widen
 
 
-def greedy(outputs: Sequence[NDArray[Any]]) -> tuple[NDArray[np.int32], NDArray[np.float32]]:
-    """Models with an in-graph argmax head emit (indices, probs); the rest emit raw logits."""
-    if len(outputs) == 2:
-        return outputs[0], widen(outputs[1])
-    (probs,) = outputs
+def picked(indices: NDArray[np.int32], confidence: NDArray[Any]) -> tuple[NDArray[np.int32], NDArray[np.float32]]:
+    return indices, widen(confidence)
+
+
+def logits(raw: NDArray[np.float32]) -> tuple[NDArray[np.int32], NDArray[np.float32]]:
+    raw = raw.reshape(*raw.shape[:2], -1)  # a binary keeps a unit axis between the steps and the classes
+    indices = raw.argmax(axis=2)
+    confidence = 1 / np.exp(raw - np.take_along_axis(raw, indices[:, :, None], axis=2)).sum(axis=2)
+    return indices.astype(np.int32), confidence.astype(np.float32)
+
+
+def probabilities(probs: NDArray[Any]) -> tuple[NDArray[np.int32], NDArray[np.float32]]:
     # probabilities are non-negative, so half-precision bits order like their values and need no widening to compare
     indices = (probs.view(np.uint16) if probs.dtype == np.float16 else probs).argmax(axis=2)
     return indices.astype(np.int32), widen(np.take_along_axis(probs, indices[:, :, None], axis=2)[:, :, 0])
 
 
+Greedy = Callable[..., tuple[NDArray[np.int32], NDArray[np.float32]]]
+GREEDY: dict[str, Greedy] = {"ctc_indices": picked, "ctc_logits": logits, "logits_softmax": probabilities}
+
+
 class CtcDecoder:
-    def __init__(self, charset: list[str]):
+    def __init__(self, charset: list[str], greedy: Greedy):
         self.charset = ["", *charset, " "]  # PP-OCR: blank at 0, space last
+        self.greedy = greedy
 
     @classmethod
-    def from_file(cls, charset_path: Path) -> Self:
+    def from_file(cls, charset_path: Path, greedy: Greedy) -> Self:
         if not charset_path.is_file():
             raise FileNotFoundError(f"Recognition charset not found: {charset_path}")
-        return cls(charset_path.read_text(encoding="utf-8").splitlines())
+        return cls(charset_path.read_text(encoding="utf-8").splitlines(), greedy)
 
     def __len__(self) -> int:
         return len(self.charset)
+
+    def __call__(self, outputs: Sequence[NDArray[Any]]) -> tuple[list[str], NDArray[np.float32]]:
+        return self.decode(*self.greedy(*outputs))
 
     def decode(self, indices: NDArray[np.int32], probs: NDArray[np.float32]) -> tuple[list[str], NDArray[np.float32]]:
         keep = np.empty(indices.shape, dtype=bool)
