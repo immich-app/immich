@@ -27,8 +27,8 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
+  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getPersonActions } from '$lib/services/person.service';
@@ -42,12 +42,19 @@
     ActionButton,
     CommandPaletteDefaultProvider,
     ContextMenuButton,
+    IconButton,
     LoadingSpinner,
     modalManager,
     toastManager,
     type ActionItem,
   } from '@immich/ui';
-  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical } from '@mdi/js';
+  import {
+    mdiAccountBoxOutline,
+    mdiAccountMultipleCheckOutline,
+    mdiArrowLeft,
+    mdiDotsVertical,
+    mdiPencilOutline,
+  } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -435,6 +442,13 @@
                     </p>
                   {/if}
                 </div>
+                <IconButton
+                  aria-label={$t('edit')}
+                  icon={mdiPencilOutline}
+                  onclick={() => modalManager.show(PersonEditModal, { person })}
+                  size="small"
+                  variant="ghost"
+                />
               </div>
             {/if}
           </section>
