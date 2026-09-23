@@ -64,7 +64,7 @@
 
   let numberOfAssets = $derived(data.statistics.assets);
   let person = $derived(data.person);
-  const altItems = $derived(person.otherPeople.filter(({ name }) => !!name));
+  const altItems = $derived(person.otherPeople.filter(({ name }) => !!name && name !== person.name));
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
