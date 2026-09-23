@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { mimeTypes } from 'src/utils/mime-types';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 
 interface ExifDuration {
   Value: number;
@@ -90,6 +90,7 @@ export class MetadataRepository {
     useMWG: true,
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
+    // eslint-disable-next-line import-x/no-named-as-default-member
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     geolocation: true,
     readArgs: [

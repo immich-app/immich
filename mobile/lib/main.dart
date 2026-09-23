@@ -14,6 +14,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
@@ -21,9 +22,10 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
@@ -44,20 +46,32 @@ import 'package:immich_mobile/wm_executor.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:timezone/data/latest.dart';
 
 void main() async {
   try {
+    // https://github.com/flutter/flutter/issues/118384
+    // Android only: Render maps into a TextureView
+    // By default, MapLibre will embed them into platform views, using Virtual Display. For some reason Flutter has a bug
+    // that leaks a presentation window and SurfaceFlinger layer for every map built, and it is never discarded
+    MapLibreMap.useHybridComposition = true;
+
     ImmichWidgetsBinding();
     unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
     await EasyLocalization.ensureInitialized();
-    final (drift, _) = await Bootstrap.initDomain();
+    final (dataController, apiService) = await Bootstrap.initDomain();
     await initApp();
     // Warm-up isolate pool for worker manager
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
-    await migrateDatabaseIfNeeded(drift);
+    await migrateDatabaseIfNeeded(dataController.db, NativeSyncApi(), PermissionApi());
 
-    runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
+    runApp(
+      ProviderScope(
+        overrides: Store.overrideWith(dataController: dataController, apiService: apiService),
+        child: const MainWidget(),
+      ),
+    );
   } catch (error, stack) {
     runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
   }

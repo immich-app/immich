@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
+import { type ExpressionBuilder, type Insertable, type Kysely, type Updateable, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFace } from 'src/database';
-import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum';
-import { DB } from 'src/schema';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { FaceSearchTable } from 'src/schema/tables/face-search.table';
-import { PersonGroupTable } from 'src/schema/tables/person-group.table';
-import { PersonTable } from 'src/schema/tables/person.table';
-import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database';
-import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
+import { AssetFace } from 'src/database.js';
+import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum.js';
+import { type YearMonthDay } from 'src/repositories/asset.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
+import { PersonTable } from 'src/schema/tables/person.table.js';
+import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database.js';
+import { isLeapDayObserved } from 'src/utils/date.js';
+import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.js';
 
 export interface PersonSearchOptions {
   withHidden: boolean;
@@ -58,9 +60,10 @@ export interface GetAllFacesOptions {
   personGroupId?: string | null;
   assetId?: string;
   sourceType?: SourceType;
+  clusterGroupId?: string;
 }
 
-export type UnassignFacesOptions = DeleteFacesOptions;
+export type UnassignFacesOptions = DeleteFacesOptions & { clusterGroupId?: string };
 
 export type GetFacesOptions = WithPersonOptions & { isVisible?: boolean };
 
@@ -99,24 +102,28 @@ export class PersonRepository {
   async reassignFaces({ oldPersonGroupId, faceIds, ownerId, newPersonGroupId }: UpdateFacesData): Promise<number> {
     const result = await this.db
       .updateTable('asset_face')
+      .from('asset')
+      .whereRef('asset_face.assetId', '=', 'asset.id')
       .set({ personGroupId: newPersonGroupId })
       .$if(!!oldPersonGroupId, (qb) => qb.where('asset_face.personGroupId', '=', oldPersonGroupId!))
       .$if(!!faceIds, (qb) => qb.where('asset_face.id', 'in', faceIds!))
-      .$if(!!ownerId, (qb) =>
-        qb.where('asset_face.personGroupId', 'in', (eb) =>
-          eb.selectFrom('person').select('person.personGroupId').where('person.ownerId', '=', ownerId!),
-        ),
-      )
+      .$if(!!ownerId, (qb) => qb.where('asset.ownerId', '=', ownerId!))
       .executeTakeFirst();
 
-    return Number(result.numChangedRows ?? 0);
+    return Number(result.numUpdatedRows ?? 0);
   }
 
-  async unassignFaces({ sourceType }: UnassignFacesOptions): Promise<void> {
+  @GenerateSql({ params: [{ sourceType: SourceType.MachineLearning, clusterGroupId: DummyValue.UUID }] })
+  async unassignFaces({ sourceType, clusterGroupId }: UnassignFacesOptions): Promise<void> {
     await this.db
       .updateTable('asset_face')
       .set({ personGroupId: null })
+      .from('asset')
+      .whereRef('asset_face.assetId', '=', 'asset.id')
       .where('asset_face.sourceType', '=', sourceType)
+      .$if(!!clusterGroupId, (qb) =>
+        qb.innerJoin('user', 'user.id', 'asset.ownerId').where('user.clusterGroupId', '=', clusterGroupId!),
+      )
       .execute();
   }
 
@@ -179,6 +186,10 @@ export class PersonRepository {
     await this.db.deleteFrom('asset_face').where('asset_face.sourceType', '=', sourceType).execute();
   }
 
+  @GenerateSql({
+    params: [{ personGroupId: null, sourceType: SourceType.MachineLearning, clusterGroupId: DummyValue.UUID }],
+    stream: true,
+  })
   getAllFaces(options: GetAllFacesOptions = {}) {
     return this.db
       .selectFrom('asset_face')
@@ -187,6 +198,12 @@ export class PersonRepository {
       .$if(!!options.personGroupId, (qb) => qb.where('asset_face.personGroupId', '=', options.personGroupId!))
       .$if(!!options.sourceType, (qb) => qb.where('asset_face.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_face.assetId', '=', options.assetId!))
+      .$if(!!options.clusterGroupId, (qb) =>
+        qb
+          .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+          .innerJoin('user', 'user.id', 'asset.ownerId')
+          .where('user.clusterGroupId', '=', options.clusterGroupId!),
+      )
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .stream();
@@ -202,6 +219,42 @@ export class PersonRepository {
       .$if(!!options.faceAssetId, (qb) => qb.where('person.faceAssetId', '=', options.faceAssetId!))
       .$if(options.isHidden !== undefined, (qb) => qb.where('person.isHidden', '=', options.isHidden!))
       .stream();
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, { year: 2025, month: 1, day: 1 }] },
+    { name: 'leap day fallback', params: [DummyValue.UUID, { year: 2025, month: 2, day: 28 }] },
+  )
+  async forBirthdayMemories(ownerId: string, { year, month, day }: YearMonthDay) {
+    const isLeapDayBirthday = isLeapDayObserved({ year, month, day });
+
+    const people = await this.db
+      .selectFrom('person')
+      .select(['person.personGroupId', 'person.name'])
+      .select(sql<number>`date_part('year', person."birthDate")::int`.as('birthYear'))
+      .select(sql<number>`date_part('month', person."birthDate")::int`.as('birthMonth'))
+      .select(sql<number>`date_part('day', person."birthDate")::int`.as('birthDay'))
+      .where('person.ownerId', '=', ownerId)
+      .where('person.isHidden', '=', false)
+      .where('person.name', '!=', '')
+      .where('person.birthDate', 'is not', null)
+      .where((eb) => {
+        const bornOn = (month: number, day: number) =>
+          eb.and([
+            eb(sql`date_part('month', person."birthDate")::int`, '=', month),
+            eb(sql`date_part('day', person."birthDate")::int`, '=', day),
+          ]);
+
+        return isLeapDayBirthday ? eb.or([bornOn(month, day), bornOn(2, 29)]) : bornOn(month, day);
+      })
+      .where(sql`date_part('year', person."birthDate")::int`, '<', year)
+      .execute();
+
+    return people.map(({ personGroupId, name, birthYear, birthMonth, birthDay }) => ({
+      personGroupId,
+      name,
+      birthDate: { year: birthYear, month: birthMonth, day: birthDay },
+    }));
   }
 
   @GenerateSql()
@@ -288,7 +341,7 @@ export class PersonRepository {
       .selectAll('person')
       .leftJoin('asset_face', 'asset_face.personGroupId', 'person.personGroupId')
       .where('asset_face.deletedAt', 'is', null)
-      .where('asset_face.isVisible', 'is', true)
+      .where((eb) => eb.or([eb('asset_face.isVisible', 'is', null), eb('asset_face.isVisible', '=', true)]))
       .having((eb) => eb.fn.count('asset_face.assetId'), '=', 0)
       .groupBy(['person.ownerId', 'person.personGroupId'])
       .execute();
@@ -712,15 +765,6 @@ export class PersonRepository {
     await this.db.updateTable('asset_face').set({ deletedAt: new Date() }).where('asset_face.id', '=', id).execute();
   }
 
-  async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
-    await sql`VACUUM ANALYZE asset_face, face_search, person`.execute(this.db);
-    await sql`REINDEX TABLE asset_face`.execute(this.db);
-    await sql`REINDEX TABLE person`.execute(this.db);
-    if (reindexVectors) {
-      await sql`REINDEX TABLE face_search`.execute(this.db);
-    }
-  }
-
   @GenerateSql({ params: [[], []] })
   async updateVisibility(visible: AssetFace[], hidden: AssetFace[]): Promise<void> {
     if (visible.length === 0 && hidden.length === 0) {
@@ -761,6 +805,7 @@ export class PersonRepository {
       .select('asset_face.id')
       .where('asset_face.assetId', '=', assetId)
       .where('asset_face.personGroupId', '=', personGroupId)
+      .where('asset_face.deletedAt', 'is', null)
       .innerJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.isOffline', '=', false))
       .executeTakeFirst();
   }

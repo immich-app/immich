@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AdminConfigDto } from 'src/dtos/config.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
-import { SystemConfigService } from 'src/services/system-config.service';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AdminConfigDto } from 'src/dtos/config.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Authenticated } from 'src/middleware/auth.guard.js';
+import { SystemConfigService } from 'src/services/system-config.service.js';
 
 @ApiTags(ApiTag.ConfigAdmin)
 @Controller('admin/config')

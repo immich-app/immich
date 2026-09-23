@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { DateTime } from 'luxon';
-import { TimelineAssetConfig } from 'src/ui/generators/timeline';
+import { TimelineAssetConfig } from 'src/ui/generators/timeline.js';
 
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -132,6 +132,7 @@ export const timelineUtils = {
     return page.locator('#asset-grid');
   },
   async waitForTimelineLoad(page: Page) {
+    await expect(timelineUtils.locator(page)).toHaveCount(1);
     await expect(timelineUtils.locator(page)).toBeInViewport();
     await expect.poll(() => thumbnailUtils.locator(page).count()).toBeGreaterThan(0);
   },

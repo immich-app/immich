@@ -2,7 +2,7 @@
 java = "21.0.2"
 
 [tools."aqua:flutter/flutter"]
-version = "3.47.1"
+version = "3.47.2"
 postinstall = "bash {{config_root}}/ios/scripts/xcode_flutter_patch.sh"
 
 [tools."github:CQLabs/homebrew-dcm"]
@@ -16,6 +16,15 @@ linux-arm64 = { asset_pattern = "dcm-linux-arm-release.zip" }
 macos-x64 = { asset_pattern = "dcm-macos-x64-release.zip" }
 macos-arm64 = { asset_pattern = "dcm-macos-arm-release.zip" }
 windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
+
+[tasks.clean]
+description = "Clean all build/codegen artifacts"
+run = [
+    "flutter clean",
+    "rm -rf generated lib/generated test/drift/main/generated ios/build ios/Pods android/.gradle",
+    "rm -f ios/Build.log lib/routing/router.gr.dart",
+    "find lib \\( -name '*.g.dart' -o -name '*.drift.dart' -o -name '*.freezed.dart' \\) -delete",
+]
 
 [tasks.codegen]
 alias = "codegen"
@@ -37,7 +46,7 @@ sources = [
   "lib/**/*.dart",
   "lib/**/*.drift",
 ]
-outputs = { auto = true }
+outputs = ["lib/**/*.g.dart", "lib/**/*.drift.dart", "lib/**/*.freezed.dart", "lib/routing/router.gr.dart"]
 run = [
   "dart run build_runner build",
   "dart format lib/routing/router.gr.dart",
@@ -61,7 +70,7 @@ depends = ["//:open-api-dart"]
 [tasks."codegen:drift:schema"]
 description = "Generate Drift migration schema test code"
 sources = ["drift_schemas/main/*.json"]
-outputs = { auto = true }
+outputs = ["test/drift/main/generated/"]
 run = "dart run drift_dev schema generate --data-classes --companions drift_schemas/main/ test/drift/main/generated/"
 depends = ["//:open-api-dart"]
 wait_for = ["codegen:drift:migration"]

@@ -4,8 +4,23 @@
 update "asset_face"
 set
   "personGroupId" = $1
+from
+  "asset"
 where
-  "asset_face"."personGroupId" = $2
+  "asset_face"."assetId" = "asset"."id"
+  and "asset_face"."personGroupId" = $2
+
+-- PersonRepository.unassignFaces
+update "asset_face"
+set
+  "personGroupId" = $1
+from
+  "asset"
+  inner join "user" on "user"."id" = "asset"."ownerId"
+where
+  "asset_face"."assetId" = "asset"."id"
+  and "asset_face"."sourceType" = $2
+  and "user"."clusterGroupId" = $3
 
 -- PersonRepository.delete
 delete from "person"
@@ -45,6 +60,66 @@ where
     where
       "user"."clusterGroupId" = "cluster_group"."id"
   )
+
+-- PersonRepository.getAllFaces
+select
+  "asset_face".*
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  inner join "user" on "user"."id" = "asset"."ownerId"
+where
+  "asset_face"."personGroupId" is null
+  and "asset_face"."sourceType" = $1
+  and "user"."clusterGroupId" = $2
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+
+-- PersonRepository.forBirthdayMemories
+select
+  "person"."personGroupId",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    date_part('month', person."birthDate")::int = $4
+    and date_part('day', person."birthDate")::int = $5
+  )
+  and date_part('year', person."birthDate")::int < $6
+
+-- PersonRepository.forBirthdayMemories (leap day fallback)
+select
+  "person"."personGroupId",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    (
+      date_part('month', person."birthDate")::int = $4
+      and date_part('day', person."birthDate")::int = $5
+    )
+    or (
+      date_part('month', person."birthDate")::int = $6
+      and date_part('day', person."birthDate")::int = $7
+    )
+  )
+  and date_part('year', person."birthDate")::int < $8
 
 -- PersonRepository.getFileSamples
 select
@@ -112,12 +187,15 @@ from
   left join "asset_face" on "asset_face"."personGroupId" = "person"."personGroupId"
 where
   "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
+  and (
+    "asset_face"."isVisible" is null
+    or "asset_face"."isVisible" = $1
+  )
 group by
   "person"."ownerId",
   "person"."personGroupId"
 having
-  count("asset_face"."assetId") = $1
+  count("asset_face"."assetId") = $2
 
 -- PersonRepository.getFaces
 select
@@ -584,6 +662,7 @@ from
 where
   "asset_face"."assetId" = $2
   and "asset_face"."personGroupId" = $3
+  and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getForMergePerson
 select

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import { shortcuts } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
@@ -172,7 +173,8 @@
     galleryInView = false;
     // only call play after the first page load. When page first loads the gallery will not be visible
     // and calling play here will result in duplicate invocation.
-    if (!galleryFirstLoad) {
+    // also check if the element is visible to avoid playback in the background
+    if (!galleryFirstLoad && videoPlayer?.checkVisibility()) {
       handlePromiseError(handleAction('galleryOutOfView', 'play'));
     }
     galleryFirstLoad = false;
@@ -230,7 +232,7 @@
   });
 
   $effect(() => {
-    if (current || memoryManager.loading !== undefined) {
+    if (current) {
       return;
     }
 
@@ -299,6 +301,7 @@
   id="memory-viewer"
   data-sveltekit-noscroll
   class="dark w-full bg-immich-dark-gray text-white"
+  use:scrollMemoryClearer={{ routeStartsWith: Route.memories() }}
   bind:this={memoryWrapper}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}

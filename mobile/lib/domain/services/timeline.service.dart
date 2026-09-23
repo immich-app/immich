@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
@@ -85,8 +86,12 @@ class TimelineFactory {
   TimelineService fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssetsWithBuckets(assets, type));
 
-  TimelineService map(List<String> userIds, TimelineMapOptions options) =>
-      TimelineService(_timelineRepository.map(userIds, options, groupBy));
+  /// Creates a TimelineService for serving geographical map queries, such assets within bounded locations
+  TimelineService geographicMap(
+    List<String> userIds,
+    TimelineMapOptions Function() currentOptions,
+    Stream<TimelineMapOptions> optionsStream,
+  ) => TimelineService(_timelineRepository.geographicMap(userIds, currentOptions, optionsStream, groupBy));
 }
 
 class TimelineService {
@@ -188,15 +193,6 @@ class TimelineService {
   Future<void> preloadAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
   BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
-
-  BaseAsset getAsset(int index) {
-    if (!hasRange(index, 1)) {
-      throw RangeError(
-        'TimelineService::getAsset Index $index not in buffer range [$_bufferOffset, ${_bufferOffset + _buffer.length})',
-      );
-    }
-    return _buffer.elementAt(index - _bufferOffset);
-  }
 
   /// Gets an asset at the given index, automatically loading the buffer if needed.
   /// This is an async version that can handle out-of-range indices by loading the appropriate buffer.

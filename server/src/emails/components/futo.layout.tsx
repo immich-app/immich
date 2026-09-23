@@ -13,7 +13,7 @@ import {
   Text,
 } from '@react-email/components';
 import * as React from 'react';
-import { ImmichFooter } from './footer.template';
+import { ImmichFooter } from './footer.template.js';
 
 interface FutoLayoutProps {
   children: React.ReactNode;

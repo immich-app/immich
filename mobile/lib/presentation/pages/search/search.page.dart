@@ -1,11 +1,11 @@
 import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
@@ -19,7 +19,6 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_s
 import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -75,7 +74,7 @@ class SearchPage extends HookConsumerWidget {
     final ratingCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
-    final userPreferences = ref.watch(userMetadataPreferencesProvider);
+    final userPreferences = ref.watch(Store.userMetadata.preferences()).valueOrNull;
 
     void search(SearchFilter f) {
       if (f == filter.value) {
@@ -155,7 +154,7 @@ class SearchPage extends HookConsumerWidget {
               expanded: true,
               onSearch: handleApply,
               onClear: handleClear,
-              child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+              child: PeoplePicker(onSelect: handleOnSelect, initialSelection: filter.value.people),
             ),
           ),
         ),
@@ -192,7 +191,10 @@ class SearchPage extends HookConsumerWidget {
               expanded: true,
               onSearch: handleApply,
               onClear: handleClear,
-              child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+              child: TagPicker(
+                onSelectExistingTag: handleOnSelect,
+                initialSelection: (filter.value.tagIds ?? []).toSet(),
+              ),
             ),
           ),
         ),
@@ -666,7 +668,7 @@ class SearchPage extends HookConsumerWidget {
                       label: context.t.search_filter_location,
                       currentFilter: locationCurrentFilterWidget.value,
                     ),
-                    if (userPreferences.valueOrNull?.tagsEnabled ?? false)
+                    if (userPreferences?.tagsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.sell_outlined,
                         onTap: showTagPicker,
@@ -692,7 +694,7 @@ class SearchPage extends HookConsumerWidget {
                       label: context.t.search_filter_media_type,
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
-                    if (userPreferences.valueOrNull?.ratingsEnabled ?? false)
+                    if (userPreferences?.ratingsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.star_outline_rounded,
                         onTap: showStarRatingPicker,
