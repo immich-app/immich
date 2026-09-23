@@ -33,7 +33,7 @@
     "@immich/sdk": "workspace:*",
     "@types/node": "^24.13.5",
     "esbuild": "^0.28.0",
-    "tsc-alias": "^1.8.16",
+    "tsc-alias": "1.9.2",
     "typescript": "^7.0.0"
   },
   "peerDependencies": {
