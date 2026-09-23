@@ -22,6 +22,7 @@ import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+import type { OnFavorite } from '$lib/utils/actions';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -317,6 +318,35 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
     return { stack: undefined, toDeleteIds: [] };
   }
 };
+
+export const toggleFavoriteAssets = async (
+  assets: AssetResponseDto[], 
+  isFavorite: boolean, 
+  onFavorite?: OnFavorite
+) => {
+  const ids = assets.map(a => a.id);
+  const $t = get(t);
+
+  try {
+    if(ids.length > 0){
+      await updateAssets({ assetBulkUpdateDto: { ids, isFavorite }});
+    }
+
+    for (const asset of assets){
+      asset.isFavorite = isFavorite;
+    }
+
+    onFavorite?.(ids, isFavorite);
+
+    toastManager.primary(
+      isFavorite
+          ? $t('added_to_favorites_count', { values: { count: ids.length } })
+          : $t('removed_from_favorites_count', { values: { count: ids.length } }),
+    );
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
+  }
+}
 
 export const deleteStack = async (stackIds: string[]) => {
   const ids = [...new Set(stackIds)];

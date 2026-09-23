@@ -20,7 +20,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, selectAllAssets, stackAssets, toggleFavoriteAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
 
@@ -65,6 +65,16 @@
 
     onEscape?.();
   };
+
+  const toggleFavoriteSelected = async () => {
+    const allAssets = assetInteraction.ownedAssets;
+    const isFavorite = allAssets.some((a) => !a.isFavorite);
+    const assetsToUpdate = allAssets.filter(
+      (asset) => asset.isFavorite !== isFavorite
+    );
+    await toggleFavoriteAssets(assetsToUpdate, isFavorite);
+    assetInteraction.clear();
+  }
 
   const toggleArchive = async () => {
     const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
@@ -138,6 +148,7 @@
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
         { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+        { shortcut: { key: 'f' }, onShortcut: () => toggleFavoriteSelected() },
       );
     } else {
       // conflicting shortcuts
