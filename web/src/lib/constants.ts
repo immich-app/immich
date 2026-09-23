@@ -3,13 +3,8 @@ export const UUID_REGEX = /^[\dA-Fa-f]{8}(?:\b-[\dA-Fa-f]{4}){3}\b-[\dA-Fa-f]{12
 export enum AssetAction {
   ARCHIVE = 'archive',
   UNARCHIVE = 'unarchive',
-  STACK = 'stack',
-  UNSTACK = 'unstack',
-  SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
-  REMOVE_ASSET_FROM_STACK = 'remove-asset-from-stack',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
-  SET_PERSON_FEATURED_PHOTO = 'set-person-featured-photo',
   RATING = 'rating',
 }
 

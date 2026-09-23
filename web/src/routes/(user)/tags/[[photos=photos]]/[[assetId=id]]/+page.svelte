@@ -3,7 +3,7 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import Breadcrumbs from '$lib/components/shared-components/tree/Breadcrumbs.svelte';
+  import TreeBreadcrumbs from '$lib/components/shared-components/tree/TreeBreadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/TreeItemThumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
   import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
@@ -97,7 +97,7 @@
     </Sidebar>
   {/snippet}
 
-  <Breadcrumbs node={tag} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
+  <TreeBreadcrumbs node={tag} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] immich-scrollbar overflow-auto">
     {#if tag.hasAssets}

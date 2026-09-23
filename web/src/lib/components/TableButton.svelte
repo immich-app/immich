@@ -11,5 +11,12 @@
 </script>
 
 {#if icon && (action.$if?.() ?? true)}
-  <IconButton {size} shape="round" color="primary" {icon} aria-label={title} onclick={() => onAction(action)} />
+  <IconButton
+    {size}
+    shape="round"
+    color="primary"
+    {icon}
+    aria-label={title}
+    onclick={(event: MouseEvent) => onAction({ event, action })}
+  />
 {/if}
