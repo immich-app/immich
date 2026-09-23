@@ -30,6 +30,22 @@ external int immich_core_log(
   ffi.Pointer<ffi.Char> message,
 );
 
+/// Decodes a thumbhash to RGBA. The caller frees the returned buffer with free().
+/// Returns null on failure.
+///
+/// # Safety
+/// `hash` must be null or readable for `len` bytes, at most `isize::MAX`.
+/// `width` and `height` must be null or valid writable pointers, outside `hash`.
+@ffi.Native<
+  ffi.Pointer<ffi.Uint8> Function(ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Int32>, ffi.Pointer<ffi.Int32>)
+>()
+external ffi.Pointer<ffi.Uint8> immich_core_thumbhash(
+  ffi.Pointer<ffi.Uint8> hash,
+  int len,
+  ffi.Pointer<ffi.Int32> width,
+  ffi.Pointer<ffi.Int32> height,
+);
+
 /// Returns the core version as a C string. Free it with `immich_core_free_string`.
 @ffi.Native<ffi.Pointer<ffi.Char> Function()>()
 external ffi.Pointer<ffi.Char> immich_core_version();

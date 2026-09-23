@@ -10,6 +10,7 @@ mod bitmap;
 mod convert;
 mod log;
 mod rotate;
+mod thumbhash;
 
 pub use log::ImmichCoreLogLevel;
 
