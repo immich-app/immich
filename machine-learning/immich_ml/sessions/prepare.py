@@ -30,7 +30,7 @@ def prepare(spec: GraphSpec) -> None:
     rmtree(spec.directory, ignore_errors=True)  # whatever is here was made under other facts, or not finished
     spec.directory.mkdir(parents=True)
     graph = rewritten(spec, narrowed(spec))
-    if spec.cpu_only:
+    if spec.provider == "CPUExecutionProvider":
         graph = prepacked(spec, graph)  # allows mmap'ing the file instead of prepacking to dirty heap memory
     elif spec.directory.as_posix() in spec.provider_options[0].values():
         spec.session(graph)  # the provider keeps what it compiles, in the directory it was given
