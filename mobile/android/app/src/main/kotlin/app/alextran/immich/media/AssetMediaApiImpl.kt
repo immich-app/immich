@@ -229,6 +229,31 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
     throw FlutterError(kUnsupportedOs, "Live Photos are an iOS concept", null)
   }
 
+  override fun getFile(
+    id: String,
+    kind: AssetMediaFileKind,
+    callback: (Result<AssetMediaFile?>) -> Unit,
+  ) = respond(callback, "FETCH") {
+    withContext(Dispatchers.IO) {
+      val columns = arrayOf(MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.DISPLAY_NAME)
+      val args = Bundle().apply {
+        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Files.FileColumns._ID} = ?")
+        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(id))
+      }
+
+      ctx.contentResolver.query(filesUri, columns, args, null)?.use { cursor ->
+        if (cursor.moveToNext()) {
+          return@withContext AssetMediaFile(
+            path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)),
+            originalFileName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME)),
+            isLivePhoto = false,
+          )
+        }
+      }
+      null
+    }
+  }
+
   private suspend fun insertIntoMediaStore(
     file: File,
     name: String,

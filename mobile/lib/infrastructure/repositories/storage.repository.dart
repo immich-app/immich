@@ -4,153 +4,90 @@ import 'dart:io';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/platform/asset_media_api.g.dart';
 import 'package:logging/logging.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:path_provider/path_provider.dart';
 
-class StorageRepository {
+typedef AssetFile = ({File file, String? originalFileName, bool isLivePhoto});
+
+class StorageRepository extends AssetMediaFlutterApi {
+  final AssetMediaApi _assetMediaApi;
+  final Future<Directory> Function() _cacheDirectory;
+  final Directory _temporaryDirectory;
+  final _progress = <String, void Function(double)>{};
   final log = Logger('StorageRepository');
 
-  StorageRepository();
+  StorageRepository(this._assetMediaApi, {Future<Directory> Function()? cacheDirectory, Directory? temporaryDirectory})
+    : _cacheDirectory = cacheDirectory ?? getApplicationCacheDirectory,
+      _temporaryDirectory = temporaryDirectory ?? Directory.systemTemp;
 
-  Future<File?> getFileForAsset(String assetId) async {
-    File? file;
-    final log = Logger('StorageRepository');
+  @override
+  void onFileProgress(String id, double progress) => _progress[id]?.call(progress);
+
+  Future<AssetFile?> getFileForAsset(String assetId, {void Function(double)? onProgress}) =>
+      _getFile(assetId, AssetMediaFileKind.original, "file for asset $assetId", onProgress);
+
+  Future<AssetFile?> getMotionFileForAsset(LocalAsset asset, {void Function(double)? onProgress}) => _getFile(
+    asset.id,
+    AssetMediaFileKind.livePhotoVideo,
+    "motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
+    onProgress,
+  );
+
+  Future<AssetFile?> _getFile(
+    String id,
+    AssetMediaFileKind kind,
+    String label,
+    void Function(double)? onProgress,
+  ) async {
+    if (onProgress != null) {
+      // the sync isolates build this repository too and cannot register message handlers
+      AssetMediaFlutterApi.setUp(this);
+      _progress[id] = onProgress;
+    }
 
     try {
-      final entity = await AssetEntity.fromId(assetId);
-      file = await entity?.originFile;
-      if (file == null) {
-        log.warning("Cannot get file for asset $assetId");
+      final result = await _assetMediaApi.getFile(id, kind);
+      if (result == null) {
+        log.warning("Cannot get $label");
         return null;
       }
 
+      final file = File(result.path);
       final exists = await file.exists();
       if (!exists) {
-        log.warning("File for asset $assetId does not exist");
+        log.warning("$label does not exist");
         return null;
       }
+      return (file: file, originalFileName: result.originalFileName?.nullIfEmpty, isLivePhoto: result.isLivePhoto);
     } catch (error, stackTrace) {
-      log.warning("Error getting file for asset $assetId", error, stackTrace);
-    }
-    return file;
-  }
-
-  // TODO(agg23): Unify these methods
-  Future<File?> getMotionFileForAsset(LocalAsset asset) async {
-    File? file;
-    final log = Logger('StorageRepository');
-
-    try {
-      final entity = await AssetEntity.fromId(asset.id);
-      file = await entity?.originFileWithSubtype;
-      if (file == null) {
-        log.warning(
-          "Cannot get motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        );
-        return null;
-      }
-
-      final exists = await file.exists();
-      if (!exists) {
-        log.warning("Motion file for asset ${asset.id} does not exist");
-        return null;
-      }
-    } catch (error, stackTrace) {
-      log.warning(
-        "Error getting motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        error,
-        stackTrace,
-      );
-    }
-    return file;
-  }
-
-  Future<AssetEntity?> getAssetEntityForAsset(LocalAsset asset) async {
-    final log = Logger('StorageRepository');
-
-    AssetEntity? entity;
-
-    try {
-      entity = await AssetEntity.fromId(asset.id);
-      if (entity == null) {
-        log.warning(
-          "Cannot get AssetEntity for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        );
-      }
-    } catch (error, stackTrace) {
-      log.warning(
-        "Error getting AssetEntity for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        error,
-        stackTrace,
-      );
-    }
-    return entity;
-  }
-
-  Future<bool> isAssetAvailableLocally(String assetId) async {
-    try {
-      final entity = await AssetEntity.fromId(assetId);
-      if (entity == null) {
-        log.warning("Cannot get AssetEntity for asset $assetId");
-        return false;
-      }
-
-      return await entity.isLocallyAvailable(isOrigin: true);
-    } catch (error, stackTrace) {
-      log.warning("Error checking if asset is locally available $assetId", error, stackTrace);
-      return false;
-    }
-  }
-
-  Future<File?> loadFileFromCloud(String assetId, {PMProgressHandler? progressHandler}) async {
-    try {
-      final entity = await AssetEntity.fromId(assetId);
-      if (entity == null) {
-        log.warning("Cannot get AssetEntity for asset $assetId");
-        return null;
-      }
-
-      return await entity.loadFile(progressHandler: progressHandler);
-    } catch (error, stackTrace) {
-      log.warning("Error loading file from cloud for asset $assetId", error, stackTrace);
+      log.warning("Error getting $label", error, stackTrace);
       return null;
-    }
-  }
-
-  Future<File?> loadMotionFileFromCloud(String assetId, {PMProgressHandler? progressHandler}) async {
-    try {
-      final entity = await AssetEntity.fromId(assetId);
-      if (entity == null) {
-        log.warning("Cannot get AssetEntity for asset $assetId");
-        return null;
+    } finally {
+      if (onProgress != null) {
+        _progress.remove(id);
       }
-
-      return await entity.loadFile(withSubtype: true, progressHandler: progressHandler);
-    } catch (error, stackTrace) {
-      log.warning("Error loading motion file from cloud for asset $assetId", error, stackTrace);
-      return null;
     }
   }
 
   Future<void> clearCache() async {
-    final log = Logger('StorageRepository');
-
-    try {
-      await PhotoManager.clearFileCache();
-    } catch (error, stackTrace) {
-      log.warning("Error clearing cache", error, stackTrace);
-    }
-
     if (!CurrentPlatform.isIOS) {
       return;
     }
 
     try {
-      if (await Directory.systemTemp.exists()) {
-        await Directory.systemTemp.delete(recursive: true);
+      // older builds wiped tmp itself and background_downloader writes every upload body in it
+      await _temporaryDirectory.create();
+      final cache = await _cacheDirectory();
+      final originals = Directory('${cache.path}/immich/originals');
+      if (await originals.exists()) {
+        await for (final file in originals.list()) {
+          await file.delete();
+        }
       }
     } catch (error, stackTrace) {
-      log.warning("Error deleting temporary directory", error, stackTrace);
+      log.warning("Error clearing cache", error, stackTrace);
     }
   }
 }
