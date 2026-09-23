@@ -1,7 +1,5 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -14,8 +12,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { AssetTypeEnum, ReactionType, type ActivityResponseDto, type AlbumUserResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
-  import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiPlayCircleOutline, mdiSend, mdiThumbUp } from '@mdi/js';
+  import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
+  import { mdiClose, mdiPlayCircleOutline, mdiSend, mdiThumbUp, mdiTrashCanOutline } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
@@ -145,6 +143,25 @@
   {/if}
 {/snippet}
 
+{#snippet reactionMenu(reaction: ActivityResponseDto, title: string)}
+  {#if reaction.user.id === authManager.user.id || isAlbumOwner}
+    <ContextMenuButton
+      translations={{ open_menu: title }}
+      position="top-right"
+      class="shrink-0"
+      size="small"
+      items={[
+        {
+          icon: mdiTrashCanOutline,
+          title: $t('remove'),
+          color: 'danger',
+          onAction: () => handleDeleteReaction(reaction),
+        },
+      ]}
+    />
+  {/if}
+{/snippet}
+
 <div class="relative h-full overflow-y-hidden border-l border-subtle bg-subtle" bind:offsetHeight={innerHeight}>
   <div class="size-full">
     <div class="flex h-fit w-full bg-subtle p-2 dark:text-immich-dark-fg" bind:clientHeight={activityHeight}>
@@ -169,7 +186,7 @@
         {#each groups as group, index (group[0].id)}
           {@const item = group[0]}
           {#if item.type === ReactionType.Comment}
-            <div class="mt-3 flex justify-start gap-4 rounded-lg bg-gray-200 py-3 ps-3 dark:bg-gray-800">
+            <div class="mt-3 flex justify-start gap-4 rounded-lg bg-gray-200 p-3 dark:bg-gray-800">
               <div class="flex items-center">
                 <UserAvatar user={item.user} size="sm" />
               </div>
@@ -184,24 +201,7 @@
                   />
                 </a>
               {/if}
-              {#if item.user.id === authManager.user.id || isAlbumOwner}
-                <div class="me-4">
-                  <ButtonContextMenu
-                    icon={mdiDotsVertical}
-                    title={$t('comment_options')}
-                    align="top-right"
-                    direction="left"
-                    size="small"
-                  >
-                    <MenuOption
-                      activeColor="bg-red-200"
-                      icon={mdiDeleteOutline}
-                      text={$t('remove')}
-                      onClick={() => handleDeleteReaction(item)}
-                    />
-                  </ButtonContextMenu>
-                </div>
-              {/if}
+              {@render reactionMenu(item, $t('comment_options'))}
             </div>
 
             {@render timestampFooter(
@@ -210,7 +210,7 @@
             )}
           {:else if item.type === ReactionType.Like}
             <div class="relative">
-              <div class="mt-3 flex items-center gap-4 py-3 ps-3 text-sm">
+              <div class="mt-3 flex items-center gap-4 p-3 text-sm">
                 <div class="text-primary"><Icon icon={mdiThumbUp} size="20" /></div>
 
                 <div class="w-full" title={`${item.user.name} (${item.user.email})`}>
@@ -230,31 +230,14 @@
                     />
                   </a>
                 {/if}
-                {#if item.user.id === authManager.user.id || isAlbumOwner}
-                  <div class="me-4">
-                    <ButtonContextMenu
-                      icon={mdiDotsVertical}
-                      title={$t('reaction_options')}
-                      align="top-right"
-                      direction="left"
-                      size="small"
-                    >
-                      <MenuOption
-                        activeColor="bg-red-200"
-                        icon={mdiDeleteOutline}
-                        text={$t('remove')}
-                        onClick={() => handleDeleteReaction(item)}
-                      />
-                    </ButtonContextMenu>
-                  </div>
-                {/if}
+                {@render reactionMenu(item, $t('reaction_options'))}
               </div>
               {@render timestampFooter(item.createdAt, showTimestamp(index, isTenMinutesApart))}
             </div>
           {:else if item.type === ReactionType.AssetAdded}
             {@const addedBy = item.user}
             <div class="relative">
-              <div class="mt-3 flex items-center gap-4 py-3 ps-3 text-sm">
+              <div class="mt-3 flex items-center gap-4 p-3 text-sm">
                 <div class="flex items-center">
                   <UserAvatar user={addedBy} size="sm" />
                 </div>

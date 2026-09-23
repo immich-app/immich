@@ -1,13 +1,9 @@
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { renderWithTooltips } from '$tests/helpers';
 import { albumFactory } from '@test-data/factories/album-factory';
 import AlbumCard from '../AlbumCard.svelte';
-
-const onShowContextMenu = vi.fn();
 
 describe('AlbumCard component', () => {
   let sut: RenderResult<typeof AlbumCard>;
@@ -74,49 +70,14 @@ describe('AlbumCard component', () => {
     expect(albumImgElement).toHaveAttribute('src');
 
     expect(albumNameElement).toHaveTextContent('some album name');
-    expect(albumDetailsElement).toHaveTextContent('0 item');
+    expect(albumDetailsElement).toHaveTextContent(`${album.assetCount} item`);
   });
 
-  it('hides context menu when "onShowContextMenu" is undefined', () => {
+  it('hides context menu when "contextMenuItems" is undefined', () => {
     const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
     sut = render(AlbumCard, { album });
 
     const contextButtonParent = sut.queryByTestId('context-button-parent');
     expect(contextButtonParent).not.toBeInTheDocument();
-  });
-
-  describe('with rendered component - no thumbnail', () => {
-    const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
-
-    beforeEach(async () => {
-      sut = renderWithTooltips(AlbumCard, { album, onShowContextMenu });
-
-      const albumImgElement = sut.getByTestId('album-image');
-      await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
-    });
-
-    it('dispatches "onShowContextMenu" event on context menu click with mouse coordinates', async () => {
-      const contextMenuButton = sut.getByTestId('context-button-parent').firstElementChild!;
-      expect(contextMenuButton).toBeDefined();
-
-      // Mock getBoundingClientRect to return a bounding rectangle that will result in the expected position
-      contextMenuButton.getBoundingClientRect = () => ({
-        x: 123,
-        y: 456,
-        width: 0,
-        height: 0,
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-        toJSON: () => ({}),
-      });
-
-      const user = userEvent.setup();
-      await user.click(contextMenuButton);
-
-      expect(onShowContextMenu).toHaveBeenCalledTimes(1);
-      expect(onShowContextMenu).toHaveBeenCalledWith(expect.objectContaining({ x: 123, y: 456 }));
-    });
   });
 });

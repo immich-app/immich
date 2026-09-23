@@ -23077,7 +23077,7 @@
             "type": "array"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "$ref": "#/components/schemas/MemoryDataDto"
           },
           "hideAt": {
             "description": "Date when memory should be hidden",
@@ -23144,6 +23144,30 @@
         ],
         "type": "object"
       },
+      "MemoryDataDto": {
+        "properties": {
+          "personId": {
+            "description": "Person ID (birthday memories)",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "personName": {
+            "description": "Name of the person when the memory was created (birthday memories)",
+            "type": "string"
+          },
+          "year": {
+            "description": "Year of the memory",
+            "maximum": 9999,
+            "minimum": 1000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year"
+        ],
+        "type": "object"
+      },
       "MemoryResponseDto": {
         "properties": {
           "assets": {
@@ -23160,7 +23184,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "$ref": "#/components/schemas/MemoryDataDto"
           },
           "deletedAt": {
             "description": "Deletion date",
@@ -23263,7 +23287,8 @@
       "MemoryType": {
         "description": "Memory type",
         "enum": [
-          "on_this_day"
+          "on_this_day",
+          "birthday"
         ],
         "type": "string"
       },
@@ -24541,20 +24566,6 @@
           "client_secret_basic"
         ],
         "type": "string"
-      },
-      "OnThisDayDto": {
-        "properties": {
-          "year": {
-            "description": "Year for on this day memory",
-            "maximum": 9999,
-            "minimum": 1000,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "year"
-        ],
-        "type": "object"
       },
       "OnboardingDto": {
         "properties": {
