@@ -1,0 +1,19 @@
+name: immich_native_core
+publish_to: none
+
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+
+dependencies:
+  code_assets: ^1.2.1
+  ffi: ^2.2.0
+  flutter:
+    sdk: flutter
+  hooks: ^2.2.0
+  native_toolchain_rust: ^1.0.6
+
+dev_dependencies:
+  ffigen: ^21.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
