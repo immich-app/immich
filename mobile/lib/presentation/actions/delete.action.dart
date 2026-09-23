@@ -16,7 +16,7 @@ import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
-typedef _State = ({List<String> localIds, List<String> remoteIds, bool trash, bool notBackedUp});
+typedef _State = ({List<String> localIds, List<String> remoteIds, bool trash, bool isLocalOnly});
 
 final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, source) {
   final assets = ref.watch(assetsActionProvider(source));
@@ -42,9 +42,9 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
   final trash =
       ownedRemote.isEmpty || (trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked));
   final remoteIds = ownedRemote.map((asset) => asset.id).toList(growable: false);
-  final notBackedUp = assets.any((asset) => asset.isLocalOnly);
+  final isLocalOnly = assets.any((asset) => asset.isLocalOnly);
 
-  return (localIds: localIds, remoteIds: remoteIds, trash: trash, notBackedUp: notBackedUp);
+  return (localIds: localIds, remoteIds: remoteIds, trash: trash, isLocalOnly: isLocalOnly);
 }, dependencies: [assetsActionProvider]);
 
 class DeleteAction extends AssetActionBuilder {
@@ -70,7 +70,7 @@ class DeleteAction extends AssetActionBuilder {
       return;
     }
 
-    final (:localIds, :remoteIds, :trash, :notBackedUp) = state;
+    final (:localIds, :remoteIds, :trash, :isLocalOnly) = state;
     final assetService = ref.read(assetServiceProvider);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
@@ -80,9 +80,9 @@ class DeleteAction extends AssetActionBuilder {
       // Only trashing is reversible; a permanent delete and a device cleanup are not.
       ToastOption? undo;
       if (remoteIds.isEmpty) {
-        message = await _removeLocalAssets(context, ref, localIds, notBackedUp: notBackedUp);
+        message = await _removeLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
       } else if (trash) {
-        message = await _moveToTrash(context, ref, remoteIds, localIds, notBackedUp: notBackedUp);
+        message = await _moveToTrash(context, ref, remoteIds, localIds, isLocalOnly: isLocalOnly);
         undo = .new(onUndo: () => assetService.restoreTrash(remoteIds));
       } else {
         message = await _deletePermanently(context, ref, remoteIds, localIds);
@@ -103,9 +103,9 @@ class DeleteAction extends AssetActionBuilder {
     BuildContext context,
     WidgetRef ref,
     List<String> localIds, {
-    required bool notBackedUp,
+    required bool isLocalOnly,
   }) async {
-    final count = await _cleanupLocalAssets(context, ref, localIds, notBackedUp: notBackedUp);
+    final count = await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
     if (count <= 0 || !context.mounted) {
       return null;
     }
@@ -118,11 +118,11 @@ class DeleteAction extends AssetActionBuilder {
     WidgetRef ref,
     List<String> remoteIds,
     List<String> localIds, {
-    required bool notBackedUp,
+    required bool isLocalOnly,
   }) async {
     final assetService = ref.read(assetServiceProvider);
     if (localIds.isNotEmpty) {
-      await _cleanupLocalAssets(context, ref, localIds, notBackedUp: notBackedUp);
+      await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
       if (!context.mounted) {
         return null;
       }
@@ -215,14 +215,14 @@ Future<int> _cleanupLocalAssets(
   WidgetRef ref,
   List<String> assetIds, {
   bool requestCustomPrompt = true,
-  bool notBackedUp = false,
+  bool isLocalOnly = false,
 }) async {
   if (assetIds.isEmpty) {
     return 0;
   }
 
   final cleanupService = ref.read(cleanupServiceProvider);
-  if (!await _allowsDeletion(context, ref, requestCustomPrompt: requestCustomPrompt, notBackedUp: notBackedUp)) {
+  if (!await _allowsDeletion(context, ref, requestCustomPrompt: requestCustomPrompt, isLocalOnly: isLocalOnly)) {
     return 0;
   }
 
@@ -239,7 +239,7 @@ Future<bool> _allowsDeletion(
   BuildContext context,
   WidgetRef ref, {
   required bool requestCustomPrompt,
-  required bool notBackedUp,
+  required bool isLocalOnly,
 }) async {
   if (!requestCustomPrompt || !CurrentPlatform.isAndroid) {
     return true;
@@ -251,25 +251,23 @@ Future<bool> _allowsDeletion(
     return false;
   }
 
-  if (manageMedia || versionRequiresPrompt) {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => !manageMedia
-          ? ConfirmDialog(
-              title: context.t.delete_dialog_title,
-              content: notBackedUp
-                  ? context.t.delete_dialog_alert_local_non_backed_up
-                  : context.t.delete_dialog_alert_local,
-              ok: notBackedUp ? context.t.delete_local_dialog_ok_force : context.t.delete_permanently,
-            )
-          : ConfirmDialog(
-              title: context.t.move_to_device_trash,
-              content: context.t.free_up_space_description,
-              ok: context.t.ok,
-            ),
+  final ConfirmDialog dialog;
+  if (versionRequiresPrompt) {
+    dialog = ConfirmDialog(
+      title: context.t.delete_dialog_title,
+      content: isLocalOnly ? context.t.delete_dialog_alert_local_non_backed_up : context.t.delete_dialog_alert_local,
+      ok: isLocalOnly ? context.t.delete_local_dialog_ok_force : context.t.delete_permanently,
     );
-    return confirmed == true;
+  } else if (manageMedia) {
+    dialog = ConfirmDialog(
+      title: context.t.move_to_device_trash,
+      content: context.t.free_up_space_description,
+      ok: context.t.ok,
+    );
+  } else {
+    return true;
   }
 
-  return true;
+  final confirmed = await showDialog<bool>(context: context, builder: (_) => dialog);
+  return confirmed == true;
 }
