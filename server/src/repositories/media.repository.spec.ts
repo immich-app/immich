@@ -68,6 +68,38 @@ describe(MediaRepository.name, () => {
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
+  describe('resolvePacketTiming', () => {
+    it('should use DTS when PTS is missing', () => {
+      expect(sut['resolvePacketTiming']({ pts: null, dts: 0, duration: 1 }, { pts: null, dts: 1 }, null)).toEqual({
+        pts: 0,
+        duration: 1,
+      });
+    });
+
+    it('should derive a missing duration from consecutive DTS values', () => {
+      expect(
+        sut['resolvePacketTiming']({ pts: 600_000, dts: -150_000, duration: null }, { pts: 300_000, dts: 0 }, 150_000),
+      ).toEqual({ pts: 600_000, duration: 150_000 });
+    });
+
+    it('should prefer DTS deltas when B-frame PTS values are non-monotonic', () => {
+      expect(
+        sut['resolvePacketTiming']({ pts: 600_000, dts: -150_000, duration: null }, { pts: 300_000, dts: 0 }, null),
+      ).toEqual({ pts: 600_000, duration: 150_000 });
+    });
+
+    it('should use the previous duration for the final packet', () => {
+      expect(sut['resolvePacketTiming']({ pts: 900_000, dts: 750_000, duration: null }, undefined, 150_000)).toEqual({
+        pts: 900_000,
+        duration: 150_000,
+      });
+    });
+
+    it('should reject a packet when its timing cannot be resolved', () => {
+      expect(sut['resolvePacketTiming']({ pts: null, dts: null, duration: null }, undefined, null)).toBeNull();
+    });
+  });
+
   describe('applyEdits (single actions)', () => {
     it('should apply crop edit correctly', async () => {
       const result = sut['applyEdits'](
