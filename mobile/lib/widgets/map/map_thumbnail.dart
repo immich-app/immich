@@ -106,7 +106,7 @@ class MapThumbnail extends HookWidget {
                   alignment: Alignment.bottomCenter,
                   child: SizedBox.square(
                     dimension: height / 2.5,
-                    child: AssetMarkerIcon(id: assetMarkerRemoteId!, thumbhash: assetThumbhash!),
+                    child: AssetMarkerIcon(id: assetMarkerRemoteId!),
                   ),
                 ),
             ],

@@ -1,3 +1,5 @@
+// ignore_for_file: unused-code
+
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/services/partner.service.dart';

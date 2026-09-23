@@ -56,6 +56,7 @@ class BackgroundWorkerFgService {
     );
   }
 
+  // ignore: unused-code
   Future<void> disable() => _foregroundHostApi.disable();
 }
 

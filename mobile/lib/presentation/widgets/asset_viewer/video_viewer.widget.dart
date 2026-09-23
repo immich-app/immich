@@ -22,7 +22,6 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
   final BaseAsset asset;
   final String? localFilePath;
   final bool isCurrent;
-  final bool showControls;
   final Widget image;
 
   /// Overrides the user's configured loop video setting
@@ -34,7 +33,6 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
     this.localFilePath,
     required this.image,
     this.isCurrent = false,
-    this.showControls = true,
     this.loopOverride,
   });
 

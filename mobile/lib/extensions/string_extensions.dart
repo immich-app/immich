@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:diacritic/diacritic.dart' as diacritic;
 
 extension StringExtension on String {
@@ -30,13 +28,5 @@ extension DurationExtension on String {
 
   int toInt() {
     return int.parse(this);
-  }
-}
-
-Map<String, dynamic>? tryJsonDecode(dynamic json) {
-  try {
-    return jsonDecode(json) as Map<String, dynamic>;
-  } catch (e) {
-    return null;
   }
 }

@@ -7,6 +7,7 @@ import 'package:sqlite_async/sqlite_async.dart';
 
 @DriftDatabase(tables: [LogMessageEntity])
 class DriftLogger extends $DriftLogger {
+  // ignore: unused-code
   DriftLogger.fromExecutor(super.executor);
 
   DriftLogger.sqlite(SqliteConnection db) : super(SqliteAsyncDriftConnection(db));
