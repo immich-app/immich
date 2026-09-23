@@ -17,7 +17,7 @@
     size="small"
     {color}
     leadingIcon={icon}
-    onclick={() => onAction(action)}
+    onclick={(event: MouseEvent) => onAction({ event, action })}
     title={action.data?.title}
   >
     {title}
