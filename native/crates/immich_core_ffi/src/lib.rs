@@ -2,6 +2,12 @@ use std::ffi::{CString, c_char};
 use std::panic::{self, UnwindSafe};
 use std::ptr;
 
+#[cfg(target_os = "android")]
+mod android;
+mod log;
+
+pub use log::ImmichCoreLogLevel;
+
 /// Returns the core version as a C string. Free it with `immich_core_free_string`.
 #[unsafe(no_mangle)]
 pub extern "C" fn immich_core_version() -> *mut c_char {

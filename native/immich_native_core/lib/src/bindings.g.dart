@@ -14,6 +14,41 @@ import 'dart:ffi' as ffi;
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>)>()
 external void immich_core_free_string(ffi.Pointer<ffi.Char> ptr);
 
+/// Writes one app log entry unless it is below the app's log level setting.
+/// Returns zero on success, nonzero on failure.
+///
+/// # Safety
+/// String pointers must be null or valid NUL-terminated strings.
+/// `level` must be a valid `ImmichCoreLogLevel` variant.
+@ffi.Native<
+  ffi.Int32 Function(ffi.Pointer<ffi.Char>, ImmichCoreLogLevel$1, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+>()
+external int immich_core_log(
+  ffi.Pointer<ffi.Char> app_dir,
+  int level,
+  ffi.Pointer<ffi.Char> logger,
+  ffi.Pointer<ffi.Char> message,
+);
+
 /// Returns the core version as a C string. Free it with `immich_core_free_string`.
 @ffi.Native<ffi.Pointer<ffi.Char> Function()>()
 external ffi.Pointer<ffi.Char> immich_core_version();
+
+enum ImmichCoreLogLevel {
+  ImmichCoreLogLevel_Info(0),
+  ImmichCoreLogLevel_Warning(1),
+  ImmichCoreLogLevel_Severe(2);
+
+  final int value;
+  const ImmichCoreLogLevel(this.value);
+
+  static ImmichCoreLogLevel fromValue(int value) => switch (value) {
+    0 => ImmichCoreLogLevel_Info,
+    1 => ImmichCoreLogLevel_Warning,
+    2 => ImmichCoreLogLevel_Severe,
+    _ => throw ArgumentError('Unknown value for ImmichCoreLogLevel: $value'),
+  };
+}
+
+typedef ImmichCoreLogLevel$1 = ffi.Int32;
+typedef DartImmichCoreLogLevel = int;
