@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/data/server/person.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/data/store/user_metadata.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
@@ -53,13 +53,13 @@ class PersonMutations extends StoreMutations {
 
   /// Update a person's name
   Future<int> updateName(String personId, String name) async {
-    await read(personApiRepositoryProvider).update(personId, name: name);
-    return read(_peopleDb).updateName(personId, name);
+    await ref.watchData().personApi.update(personId, name: name);
+    return ref.read(_peopleDb).updateName(personId, name);
   }
 
   /// Update a person's birthday
   Future<int> updateBirthday(String personId, DateTime birthday) async {
-    await read(personApiRepositoryProvider).update(personId, birthday: birthday);
-    return read(_peopleDb).updateBirthday(personId, birthday);
+    await ref.watchData().personApi.update(personId, birthday: birthday);
+    return ref.read(_peopleDb).updateBirthday(personId, birthday);
   }
 }

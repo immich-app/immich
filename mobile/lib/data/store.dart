@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/data_controller.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
@@ -26,6 +27,12 @@ abstract final class Store {
     _apiServiceProvider.overrideWithValue(apiService),
   ];
 
+  @visibleForTesting
+  static List<Override> overrideForTest({DataController? dataController, ApiService? apiService}) => [
+    if (dataController != null) _dataControllerProvider.overrideWithValue(dataController),
+    if (apiService != null) _apiServiceProvider.overrideWithValue(apiService),
+  ];
+
   /// Direct database access for the repositories that have not yet been migrated to `Store`
   // TODO(rewrite): Remove this provider once all repositories have migrated to `Store`
   static final db = Provider<Drift>((ref) => ref.watch(_dataControllerProvider).db);
@@ -45,4 +52,8 @@ abstract final class Store {
   static final tags = TagStore.instance;
 
   static final userMetadata = UserMetadataStore.instance;
+}
+
+extension DataControllerAccessor on Ref<Object?> {
+  DataController watchData() => watch(_dataControllerProvider);
 }

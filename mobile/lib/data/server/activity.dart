@@ -1,13 +1,7 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
-
-final activityApiRepositoryProvider = Provider(
-  (ref) => ActivityApiRepository(ref.watch(apiServiceProvider).activitiesApi),
-);
 
 class ActivityApiRepository extends ApiRepository {
   final ActivitiesApi _api;

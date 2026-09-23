@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/data/db/logger/database.dart';
-import 'package:immich_mobile/data/db/main/dao/person.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/server/activity.dart';
 import 'package:immich_mobile/data/server/person.dart';
+import 'package:immich_mobile/data/server/tag.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:openapi/api.dart';
@@ -61,13 +61,9 @@ class DataController {
     return (logDb, false);
   }
 
-  // ignore: unused-code
-  late final PeopleDatabaseRepository peopleDb = PeopleDatabaseRepository(_db);
-  // ignore: unused-code
-  late final PersonApiRepository personApi = PersonApiRepository(PeopleApi(_apiClient));
-
-  // ignore: unused-code
   late final ActivityApiRepository activityApi = ActivityApiRepository(ActivitiesApi(_apiClient));
+  late final PersonApiRepository personApi = PersonApiRepository(PeopleApi(_apiClient));
+  late final TagApiRepository tagApi = TagApiRepository(TagsApi(_apiClient));
 
   /// Direct database access for the logic that has not yet been migrated
   // TODO(rewrite): Remove once all repositories have been migrated

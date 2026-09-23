@@ -1,10 +1,6 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
-
-final tagApiRepositoryProvider = Provider((ref) => TagApiRepository(ref.watch(apiServiceProvider).tagsApi));
 
 class TagApiRepository extends ApiRepository {
   final TagsApi _api;

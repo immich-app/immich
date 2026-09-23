@@ -110,13 +110,9 @@ class CacheNotifier<T, Arg> extends AutoDisposeFamilyAsyncNotifier<List<T>, Arg>
 
 /// Base for a store entry's mutations, to be exposed by the entry's provider via `ref.read(Store.x).doMutation()`
 abstract class StoreMutations {
-  final Ref _ref;
+  final Ref ref;
 
-  const StoreMutations(this._ref);
-
-  /// Read the state associated with a [provider]
-  @protected
-  T read<T>(ProviderListenable<T> provider) => _ref.read(provider);
+  const StoreMutations(this.ref);
 }
 
 /// Mutations for a store entry whose reads are backed by a [StoreCache]
@@ -129,11 +125,11 @@ abstract class CachedStoreMutations<T, Arg> extends StoreMutations {
 
   /// Insert or update [item] in every live scope that [StoreCache.shouldContain] it
   @protected
-  void cacheUpsert(T item) => _cache._upsert(_ref, item);
+  void cacheUpsert(T item) => _cache._upsert(ref, item);
 
   /// Remove the item with identity [id] from every live scope
   @protected
-  void cacheRemove(Object id) => _cache._remove(_ref, id);
+  void cacheRemove(Object id) => _cache._remove(ref, id);
 }
 
 /// Identity-preserving list edits

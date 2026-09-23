@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../medium/repository_context.dart';
+import '../../store.mocks.dart';
 
 class _MockPersonApi extends Mock implements PersonApiRepository {}
 
@@ -20,14 +21,18 @@ void main() {
   setUp(() {
     ctx = MediumRepositoryContext();
     api = _MockPersonApi();
+    final dataController = MockDataController();
+    when(() => dataController.personApi).thenReturn(api);
+
     container = ProviderContainer(
       overrides: [
         driftProvider.overrideWithValue(ctx.db),
-        personApiRepositoryProvider.overrideWithValue(api),
+        ...Store.overrideForTest(dataController: dataController),
         // No stored preferences: the default minimum face count applies
         Store.userMetadata.preferences().overrideWith((ref) => Stream.value(null)),
       ],
     );
+
     addTearDown(container.dispose);
     addTearDown(ctx.dispose);
   });
