@@ -12,6 +12,7 @@ from immich_ml.config import log
 from immich_ml.main import app
 from immich_ml.models.base import InferenceModel
 from immich_ml.schemas import Shape
+from immich_ml.sessions.ort import Device
 
 TEST_ASSETS = Path(__file__).parent.parent / "e2e/test-assets"
 
@@ -111,6 +112,15 @@ def providers(request: pytest.FixtureRequest) -> Iterator[mock.Mock]:
     with mock.patch("immich_ml.sessions.ort.ort.get_available_providers") as mocked:
         mocked.return_value = providers
         yield providers
+
+
+@pytest.fixture(autouse=True)
+def gpus() -> Iterator[None]:
+    with (
+        mock.patch("immich_ml.sessions.ort._intel_gpu", return_value=Device("12.71.4-128eu", "26.22.38646.4")),
+        mock.patch("immich_ml.sessions.ort._amd_gpu", return_value=Device("gfx1100", "7.2.0")),
+    ):
+        yield
 
 
 @pytest.fixture(scope="function")

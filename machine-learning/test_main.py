@@ -47,7 +47,7 @@ from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelTask, ModelType, Shape
 from immich_ml.sessions.ann import AnnSession
-from immich_ml.sessions.ort import GraphSpec, OrtSession, flush_denormals, fresh, prepared
+from immich_ml.sessions.ort import Device, GraphSpec, OrtSession, flush_denormals, fresh, prepared
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 from immich_ml.sessions.rknn import RknnSession, run_inference
 from immich_ml.sessions.rknn import model_path as rknn_model_path
@@ -470,7 +470,7 @@ class TestOrtSessions:
         assert given_options(ort_session) == [
             {
                 "device_type": "GPU.0",
-                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/12.71.4-128eu/batch1",
                 "precision": "FP32",
             },
             {"arena_extend_strategy": "kSameAsRequested"},
@@ -493,7 +493,11 @@ class TestOrtSessions:
         ort_sessions(model_path, providers=["OpenVINOExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_type": "GPU.1", "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/batch1", **precision}
+            {
+                "device_type": "GPU.1",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino/12.71.4-128eu/batch1",
+                **precision,
+            }
         ]
 
     @pytest.mark.ov_device_ids(["CPU"])
@@ -519,7 +523,7 @@ class TestOrtSessions:
         ort_sessions(model_path, providers=["MIGraphXExecutionProvider"])
 
         assert given_options(ort_session) == [
-            {"device_id": "1", "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx/batch1"}
+            {"device_id": "1", "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx/gfx1100/batch1"}
         ]
 
     @pytest.mark.skipif(sys.platform != "linux" or platform.machine() != "x86_64", reason="an x86 register")
@@ -716,7 +720,7 @@ class TestPreparedGraphs:
 
         child = mocker.patch("immich_ml.sessions.ort.subprocess.run", side_effect=stand_in)
 
-        assert prepared(spec()) == prepared(spec()) == tmp_path / "cpu/model.onnx"
+        assert prepared(spec()) == prepared(spec()) == tmp_path / "cpu" / platform.machine() / "model.onnx"
         child.assert_called_once()
         assert child.call_args.args[0][1:] == ["-m", "immich_ml.sessions.prepare"]
 
@@ -732,21 +736,21 @@ class TestPreparedGraphs:
 
         assert facts[0] == facts[1]
 
-    def test_prepares_again_for_another_rocm_release_or_gpu(self, tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
-        version, node = tmp_path / "version", tmp_path / "nodes/1/properties"
-        node.parent.mkdir(parents=True)
-        (tmp_path / "nodes/0").mkdir()
-        (tmp_path / "nodes/0/properties").write_text("cpu_cores_count 16\ngfx_target_version 0\n")
-        monkeypatch.setattr("immich_ml.sessions.ort.ROCM_VERSION", version)
-        monkeypatch.setattr("immich_ml.sessions.ort.GPU_NODES", tmp_path / "nodes")
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    @pytest.mark.parametrize(
+        ("provider", "reader"),
+        [("OpenVINOExecutionProvider", "_intel_gpu"), ("MIGraphXExecutionProvider", "_amd_gpu")],
+    )
+    def test_prepares_once_per_kind_of_device_and_again_for_another_version(
+        self, provider: str, reader: str, ov_device_ids: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        mocker.patch(
+            f"immich_ml.sessions.ort.{reader}", side_effect=[Device("a", "1"), Device("a", "2"), Device("b", "1")]
+        )
+        first, updated, other = [graph_spec(Path("/cache/model.onnx"), [provider]) for _ in range(3)]
 
-        def facts(release: str, target: str) -> Any:
-            version.write_text(release)
-            node.write_text(f"simd_count 128\ngfx_target_version {target}\n")
-            return graph_spec(Path("/cache/model.onnx"), ["MIGraphXExecutionProvider"]).facts
-
-        assert facts("7.2.0", "120001").rocm == "7.2.0 120001"
-        assert facts("7.2.0", "120001") != facts("7.3.0", "120001") != facts("7.3.0", "110000")
+        assert first.directory == updated.directory and first.facts != updated.facts
+        assert first.directory != other.directory
 
     @pytest.mark.parametrize(("returncode", "error"), [(3, InvalidProtobuf), (1, RuntimeError)])
     def test_tells_an_unreadable_source_from_a_failed_preparation(
@@ -779,7 +783,9 @@ class TestPreparedGraphs:
         prepare_module.prepare(spec)
 
         assert sorted(file.name for file in spec.directory.iterdir()) == ["manifest.json", "model.data", "model.onnx"]
-        np.testing.assert_array_equal(spec.session(tmp_path / "cpu/model.onnx").run(None, feed)[0], expected[0])
+        np.testing.assert_array_equal(
+            spec.session(tmp_path / "cpu" / platform.machine() / "model.onnx").run(None, feed)[0], expected[0]
+        )
 
     def test_compiles_where_the_provider_keeps_the_result(self, tmp_path: Path, mocker: MockerFixture) -> None:
         session = mocker.patch("immich_ml.sessions.ort.ort.InferenceSession")

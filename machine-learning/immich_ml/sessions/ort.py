@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from functools import cache, cached_property
 from pathlib import Path
 from threading import Lock
-from typing import Any
+from typing import Any, NamedTuple
 
 import numpy as np
 import onnxruntime as ort
@@ -34,8 +34,6 @@ def _label(pins: Mapping[str, int]) -> str:
 
 
 UNREADABLE = 3  # how the preparing child says its source does not parse
-ROCM_VERSION = Path("/opt/rocm/.info/version")
-GPU_NODES = Path("/sys/class/kfd/kfd/topology/nodes")
 DTYPES = {
     "tensor(float)": np.float32,
     "tensor(float16)": np.float16,
@@ -78,6 +76,11 @@ class OrtGraph:
         return outputs
 
 
+class Device(NamedTuple):
+    kind: str  # what the provider compiles for, which names the directory
+    version: str  # what the facts go stale under
+
+
 @dataclass(frozen=True)
 class GraphSpec:
     model_path: Path
@@ -87,40 +90,55 @@ class GraphSpec:
     disabled_optimizers: list[str]
     threads: int = 2  # for the CPU, where they are not configured
 
+    @property
+    def provider(self) -> str:
+        return self.providers[0]  # the rest take only what it cannot run
+
     @cached_property
     def directory(self) -> Path:
-        provider = self.providers[0].removesuffix("ExecutionProvider").lower()
-        return self.model_path.parent / provider / _label(self.pins)
+        provider = self.provider.removesuffix("ExecutionProvider").lower()
+        kind = self.device.kind if self.device else ""
+        return self.model_path.parent / provider / kind / _label(self.pins)
+
+    @cached_property
+    def device(self) -> Device | None:
+        match self.provider:
+            case "CPUExecutionProvider":
+                return Device(platform.machine(), _cpu())  # a prepack built for other instruction sets fails at runtime
+            case "OpenVINOExecutionProvider" if self.openvino_device.startswith("GPU"):
+                return _intel_gpu(self.openvino_device)
+            case "MIGraphXExecutionProvider":
+                return _amd_gpu(int(settings.device_id))
+        return None
+
+    @cached_property
+    def openvino_device(self) -> str:
+        device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+        return f"GPU.{settings.device_id}" if any(d.startswith("GPU") for d in device_ids) else "CPU"
 
     @cached_property
     def manifest(self) -> Path:
         return self.directory / "manifest.json"
 
-    @cached_property
-    def cpu_only(self) -> bool:
-        return self.providers == ["CPUExecutionProvider"]
-
     @property
     def plan(self) -> RewritePlan:
-        return _plan(self.providers[0])
+        return _plan(self.provider)
 
     @cached_property
     def half(self) -> bool:
-        return not (settings.legacy_models or self.cpu_only)  # the older exports are not what the narrowing reads
+        return not (settings.legacy_models or self.provider == "CPUExecutionProvider")
 
     @cached_property
     def facts(self) -> Facts:
         return Facts(
             half=self.half,
             onnxruntime=ort.__version__,
-            # workers on different devices share what is prepared
+            # workers on devices of one kind share what is prepared
             options={key: value for key, value in self.provider_options[0].items() if not key.startswith("device")},
             overrides=list(self.overrides),
             disabled_optimizers=self.disabled_optimizers,
             rewrite=None if settings.legacy_models else self.plan.digest,  # which were never tested with the rewriter
-            cpu=_cpu() if self.cpu_only else None,  # a prepack built for other instruction sets fails once it runs
-            # MIGraphX only warns when it reads a program compiled by another release or for another GPU
-            rocm=_rocm() if self.providers[0] == "MIGraphXExecutionProvider" else None,
+            device=self.device.version if self.device else None,
         )
 
     def session(self, graph: Path, sess_options: ort.SessionOptions | None = None) -> ort.InferenceSession:
@@ -144,16 +162,7 @@ class GraphSpec:
                 case "MIGraphXExecutionProvider":
                     options = {"device_id": settings.device_id, "migraphx_model_cache_dir": self.directory.as_posix()}
                 case "OpenVINOExecutionProvider":
-                    device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-                    # Check for available devices, preferring GPU over CPU
-                    gpu_devices = [d for d in device_ids if d.startswith("GPU")]
-                    if gpu_devices:
-                        device_type = f"GPU.{settings.device_id}"
-                        log.debug(f"OpenVINO: Using GPU device {device_type}")
-                    else:
-                        device_type = "CPU"
-                        log.debug("OpenVINO: No GPU found, using CPU")
-                    options = {"device_type": device_type, "cache_dir": self.directory.as_posix()}
+                    options = {"device_type": self.openvino_device, "cache_dir": self.directory.as_posix()}
                     if not self.half:  # the GPU would otherwise run an fp32 graph at fp16
                         options["precision"] = "FP32"
                 case "CoreMLExecutionProvider":
@@ -181,13 +190,13 @@ class GraphSpec:
         if settings.model_inter_op_threads > 0:
             sess_options.inter_op_num_threads = settings.model_inter_op_threads
         # these defaults work well for CPU, but bottleneck GPU
-        elif settings.model_inter_op_threads == 0 and self.cpu_only:
+        elif settings.model_inter_op_threads == 0 and self.provider == "CPUExecutionProvider":
             sess_options.inter_op_num_threads = 1
 
         # Set intra_op threads
         if settings.model_intra_op_threads > 0:
             sess_options.intra_op_num_threads = settings.model_intra_op_threads
-        elif settings.model_intra_op_threads == 0 and self.cpu_only:
+        elif settings.model_intra_op_threads == 0 and self.provider == "CPUExecutionProvider":
             sess_options.intra_op_num_threads = self.threads
 
         if sess_options.inter_op_num_threads > 1:
@@ -208,8 +217,7 @@ class Facts(BaseModel):
     overrides: list[tuple[str, int]]
     disabled_optimizers: list[str]
     rewrite: str | None = None
-    cpu: str | None = None
-    rocm: str | None = None
+    device: str | None = None
     half: bool = False
 
 
@@ -228,7 +236,7 @@ def fresh(spec: GraphSpec) -> Path | None:
 
 def prepared(spec: GraphSpec) -> Path:
     if (graph := fresh(spec)) is None:
-        log.info(f"Preparing {spec.model_path} for {spec.providers[0]} {dict(spec.pins)}")
+        log.info(f"Preparing {spec.model_path} for {spec.provider} {dict(spec.pins)}")
         # child process prepares the graph to avoid memory overhead in the main process
         child = subprocess.run([sys.executable, "-m", "immich_ml.sessions.prepare"], input=pickle.dumps(spec))
         if (graph := fresh(spec)) is None:
@@ -319,14 +327,58 @@ def _overrides(policy: ShapePolicy, pins: Mapping[str, int]) -> list[tuple[str, 
     return named
 
 
-def _rocm() -> str:
-    targets = {
-        line.split()[1]
-        for node in GPU_NODES.glob("*/properties")
-        for line in node.read_text().splitlines()
-        if line.startswith("gfx_target_version") and line.split()[1] != "0"  # a CPU node has none
-    }
-    return " ".join([ROCM_VERSION.read_text().strip(), *sorted(targets)])
+@cache
+def _intel_gpu(device: str) -> Device:
+    """The IP version and execution units OpenVINO keys its blobs by, and the driver it checks them against."""
+    ov = ctypes.CDLL(str(Path(ort.__file__).parent / "capi" / "libopenvino_c.so"))
+    core, wanted = ctypes.c_void_p(), ctypes.c_char_p()
+    ov.ov_core_create(ctypes.byref(core))
+    ov.ov_core_get_property(core, device.encode(), b"DEVICE_UUID", ctypes.byref(wanted))
+    uuid = wanted.value
+    ov.ov_free(wanted)
+    ov.ov_core_free(core)
+    cl, gpu = ctypes.CDLL("libOpenCL.so.1"), ctypes.c_uint64(1 << 2)  # CL_DEVICE_TYPE_GPU
+    platforms, devices, count = (ctypes.c_void_p * 8)(), (ctypes.c_void_p * 8)(), ctypes.c_uint32()
+    cl.clGetPlatformIDs(8, platforms, ctypes.byref(count))
+    for vendor in platforms[: count.value]:
+        found = ctypes.c_uint32()
+        cl.clGetDeviceIDs(ctypes.c_void_p(vendor), gpu, 8, devices, ctypes.byref(found))
+        for handle in devices[: found.value]:
+            own, driver = (ctypes.c_ubyte * 16)(), ctypes.create_string_buffer(64)
+            ip, units = ctypes.c_uint32(), ctypes.c_uint32()
+            # CL_DEVICE_UUID_KHR, CL_DRIVER_VERSION, CL_DEVICE_IP_VERSION_INTEL, CL_DEVICE_MAX_COMPUTE_UNITS
+            for key, value in ((0x106A, own), (0x102D, driver), (0x4250, ip), (0x1002, units)):
+                cl.clGetDeviceInfo(ctypes.c_void_p(handle), key, ctypes.sizeof(value), ctypes.byref(value), None)
+            if bytes(own).hex().encode() == uuid:
+                version = f"{ip.value >> 22}.{ip.value >> 14 & 0xFF}.{ip.value & 0x3FFF}"
+                return Device(f"{version}-{units.value}eu", driver.value.decode())
+    raise LookupError(f"OpenCL has no GPU with the UUID of OpenVINO's {device}")
+
+
+@cache
+def _amd_gpu(index: int) -> Device:
+    """The arch MIGraphX keys its programs by, and the MIGraphX and HIP it loads, which its keys leave out."""
+    # the provider finds ROCm through its runpath
+    ctypes.CDLL(str(Path(ort.__file__).parent / "capi" / "libonnxruntime_providers_migraphx.so"))
+    with open("/proc/self/maps") as maps:
+        loaded = {Path(path).name.split(".so")[0]: Path(path) for *_, path in map(str.split, maps) if ".so" in path}
+    hip, hsa = ctypes.CDLL(str(loaded["libamdhip64"])), ctypes.CDLL(str(loaded["libhsa-runtime64"]))
+    wanted, arches = ctypes.create_string_buffer(64), {}
+    hip.hipDeviceGetPCIBusId(wanted, 64, index)  # honors HIP_VISIBLE_DEVICES, unlike HSA
+
+    @ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_uint64, ctypes.c_void_p)
+    def visit(agent: int, _: int | None) -> int:
+        name, bdf, domain = ctypes.create_string_buffer(64), ctypes.c_uint32(), ctypes.c_uint32()
+        # HSA_AGENT_INFO_NAME, HSA_AMD_AGENT_INFO_BDFID, HSA_AMD_AGENT_INFO_DOMAIN
+        for key, value in ((0, name), (0xA006, bdf), (0xA00F, domain)):
+            hsa.hsa_agent_get_info(ctypes.c_uint64(agent), key, ctypes.byref(value))
+        bus, device, function = bdf.value >> 8 & 0xFF, bdf.value >> 3 & 0x1F, bdf.value & 0x7
+        arches[f"{domain.value:04x}:{bus:02x}:{device:02x}.{function:01x}"] = name.value.decode()
+        return 0
+
+    hsa.hsa_init()
+    hsa.hsa_iterate_agents(visit, None)
+    return Device(arches[wanted.value.decode()], f"{loaded['libmigraphx'].name} {loaded['libamdhip64'].name}")
 
 
 def flush_denormals() -> None:
