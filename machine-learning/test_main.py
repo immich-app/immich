@@ -433,6 +433,12 @@ class TestOrtSession:
 
         assert results == [0.0]
 
+    def test_gives_a_model_the_cpu_threads_it_asks_for(self) -> None:
+        session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"], threads=4)
+
+        assert session.sess_options.intra_op_num_threads == 4
+        assert OpenClipTextualEncoder.threads == 4 and OpenClipVisualEncoder.threads == 2
+
     @pytest.mark.ov_device_ids(["CPU"])
     def test_sets_default_sess_options_if_openvino_cpu(self, ov_device_ids: list[str]) -> None:
         model_path = "/cache/ViT-B-32__openai/model.onnx"

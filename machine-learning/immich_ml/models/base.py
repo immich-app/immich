@@ -26,6 +26,7 @@ _IGNORED_PATTERNS: dict[ModelFormat, list[str]] = {
 class InferenceModel(ABC):
     depends: ClassVar[list[ModelIdentity]]
     identity: ClassVar[ModelIdentity]
+    threads: ClassVar[int] = 2  # how many threads one run takes for CPU inference
 
     def __init__(
         self,
@@ -114,7 +115,7 @@ class InferenceModel(ABC):
             case ModelFormat.ARMNN:
                 return AnnSession(self.model_path)
             case ModelFormat.ONNX:
-                return OrtSession(self.model_path)
+                return OrtSession(self.model_path, threads=self.threads)
             case ModelFormat.RKNN:
                 return rknn.RknnSession(self.model_path)
 

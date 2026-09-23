@@ -18,6 +18,7 @@ from immich_ml.schemas import ModelSession, ModelTask, ModelType
 class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
+    threads = 4  # lower search latency
 
     def _predict(self, inputs: str, language: str | None = None) -> str:
         tokens = self.tokenize(inputs, language=language)

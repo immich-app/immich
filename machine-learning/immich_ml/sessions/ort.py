@@ -56,8 +56,10 @@ class OrtSession:
         providers: list[str] | None = None,
         provider_options: list[dict[str, Any]] | None = None,
         sess_options: ort.SessionOptions | None = None,
+        threads: int = 2,
     ):
         self.model_path = Path(model_path)
+        self.threads = threads
         self.providers = providers if providers is not None else self._providers_default
         self.disabled_optimizers = _disabled_optimizers_default(self.providers)
         log.debug(f"Setting disabled_optimizers to {self.disabled_optimizers}")
@@ -206,7 +208,7 @@ class OrtSession:
         if settings.model_intra_op_threads > 0:
             sess_options.intra_op_num_threads = settings.model_intra_op_threads
         elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
-            sess_options.intra_op_num_threads = 2
+            sess_options.intra_op_num_threads = self.threads
 
         if sess_options.inter_op_num_threads > 1:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
