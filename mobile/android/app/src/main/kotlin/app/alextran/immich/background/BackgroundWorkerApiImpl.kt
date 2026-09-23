@@ -111,9 +111,11 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun enqueueBackgroundWorkerWhenConnected(ctx: Context) {
+      val settings = BackgroundWorkerPreferences(ctx).getSettings()
       val constraints = Constraints.Builder().apply {
         setRequiredNetworkType(NetworkType.CONNECTED)
         setRequiresBatteryNotLow(true)
+        setRequiresCharging(settings.requiresCharging)
       }.build()
       val work = OneTimeWorkRequestBuilder<BackgroundWorker>()
         .setConstraints(constraints)
