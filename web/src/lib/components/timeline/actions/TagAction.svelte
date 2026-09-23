@@ -13,7 +13,7 @@
 
   let { menuItem = false }: Props = $props();
 
-  const text = $t('tag');
+  const text = $t('tag_add_edit');
   const icon = mdiTagMultipleOutline;
 
   const handleTagAssets = async () => {

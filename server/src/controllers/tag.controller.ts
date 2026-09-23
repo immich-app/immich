@@ -4,12 +4,16 @@ import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import {
+  TagBulkAddRemoveAssetsDto,
+  TagBulkAddRemoveAssetsResponseDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
   TagUpdateDto,
   TagUpsertDto,
+  TagsForAssetsDto,
+  TagsForAssetsResponseDto,
 } from 'src/dtos/tag.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
@@ -63,6 +67,43 @@ export class TagController {
   })
   bulkTagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     return this.service.bulkTagAssets(auth, dto);
+  }
+
+  @Delete('assets')
+  @Authenticated({ permission: Permission.TagAsset })
+  @Endpoint({
+    summary: 'Untag assets',
+    description: 'Remove multiple tags from multiple assets in a single request.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  bulkUntagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    return this.service.bulkUntagAssets(auth, dto);
+  }
+
+  @Post('assets')
+  @Authenticated({ permission: Permission.TagAsset })
+  @Endpoint({
+    summary: 'Tag/Untag assets',
+    description: 'Add or remove multiple tags from multiple assets in a single request.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  bulkTagUntagAssets(
+    @Auth() auth: AuthDto,
+    @Body() dto: TagBulkAddRemoveAssetsDto,
+  ): Promise<TagBulkAddRemoveAssetsResponseDto> {
+    return this.service.bulkTagUntagAssets(auth, dto);
+  }
+
+  @Post('assets/queryTags')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated({ permission: Permission.TagRead })
+  @Endpoint({
+    summary: 'Retrieve tags for assets',
+    description: 'Retrieve all tags associated with the specified assets.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  queryTagsForAssets(@Auth() auth: AuthDto, @Body() dto: TagsForAssetsDto): Promise<TagsForAssetsResponseDto[]> {
+    return this.service.getAllForAssets(auth, dto.assetIds);
   }
 
   @Get(':id')
