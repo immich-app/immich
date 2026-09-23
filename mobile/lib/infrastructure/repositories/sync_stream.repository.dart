@@ -3,6 +3,25 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/asset/edit.drift.dart';
+import 'package:immich_mobile/data/db/main/table/asset/ocr.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/person.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/cloud_id.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/stack.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
@@ -10,25 +29,6 @@ import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
@@ -116,6 +116,35 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
+  Future<void> updateAuthUsersV2(Iterable<SyncAuthUserV2> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final user in data) {
+          final companion = AuthUserEntityCompanion(
+            name: Value(user.name),
+            email: Value(user.email),
+            hasProfileImage: Value(user.hasProfileImage),
+            profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor.orElse(null)?.toAvatarColor() ?? AvatarColor.primary),
+            isAdmin: Value(user.isAdmin),
+            pinCode: Value(user.pinCode),
+            quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
+            quotaUsageInBytes: Value(user.quotaUsageInBytes),
+          );
+
+          batch.insert(
+            _db.authUserEntity,
+            companion.copyWith(id: Value(user.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncAuthUserV2', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.batch((batch) {
@@ -189,6 +218,8 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          // cannot use FK here, so manually cascade
+          batch.deleteWhere(_db.assetFaceEntity, (row) => row.assetId.equals(asset.assetId));
           batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(asset.assetId));
         }
       });
@@ -227,6 +258,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -266,6 +298,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -809,7 +842,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
-  Future<void> updateAssetFacesV2(Iterable<SyncAssetFaceV2> data) async {
+  Future<void> updateAssetFacesV3(Iterable<SyncAssetFaceV3> data) async {
     try {
       await _db.batch((batch) {
         for (final assetFace in data) {
@@ -835,7 +868,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateAssetFacesV2', error, stack);
+      _logger.severe('Error: updateAssetFacesV3', error, stack);
       rethrow;
     }
   }
@@ -898,40 +931,6 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
       rethrow;
     }
   }
-
-  Future<void> pruneAssets() async {
-    try {
-      await _db.transaction(() async {
-        final authQuery = _db.authUserEntity.selectOnly()
-          ..addColumns([_db.authUserEntity.id])
-          ..limit(1);
-        final currentUserId = await authQuery.map((row) => row.read(_db.authUserEntity.id)).getSingleOrNull();
-        if (currentUserId == null) {
-          _logger.warning('No authenticated user found during pruneAssets. Skipping asset pruning.');
-          return;
-        }
-
-        final partnerQuery = _db.partnerEntity.selectOnly()
-          ..addColumns([_db.partnerEntity.sharedById])
-          ..where(_db.partnerEntity.sharedWithId.equals(currentUserId));
-        final partnerIds = await partnerQuery.map((row) => row.read(_db.partnerEntity.sharedById)).get();
-
-        final validUsers = {currentUserId, ...partnerIds.nonNulls};
-
-        // Asset is not owned by the current user or any of their partners and is not part of any (shared) album
-        // Likely a stale asset that was previously shared but has been removed
-        await _db.remoteAssetEntity.deleteWhere((asset) {
-          return asset.ownerId.isNotIn(validUsers) &
-              asset.id.isNotInQuery(
-                _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]),
-              );
-        });
-      });
-    } catch (error, stack) {
-      _logger.severe('Error: pruneAssets', error, stack);
-      // We do not rethrow here as this is a client-only cleanup and should not affect the sync process
-    }
-  }
 }
 
 extension on AssetTypeEnum {
@@ -953,6 +952,7 @@ extension on AssetOrder {
 extension on MemoryType {
   MemoryTypeEnum toMemoryType() => switch (this) {
     MemoryType.onThisDay => MemoryTypeEnum.onThisDay,
+    MemoryType.birthday => MemoryTypeEnum.birthday,
   };
 }
 

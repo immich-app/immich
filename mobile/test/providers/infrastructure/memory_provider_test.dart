@@ -1,9 +1,9 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/memory.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
@@ -52,11 +52,11 @@ void main() {
     when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
   });
 
-  group('driftMemoryFutureProvider', () {
+  group('memoryLaneProvider', () {
     test('re-queries after local midnight', () {
       fakeAsync((async) {
         final container = makeContainer();
-        container.listen(driftMemoryFutureProvider, (_, _) {});
+        container.listen(memoryLaneProvider, (_, _) {});
         async.flushMicrotasks();
 
         verify(() => memoryRepository.getAll('user-1')).called(1);
@@ -74,7 +74,7 @@ void main() {
     test('cancels the midnight timer when disposed', () {
       fakeAsync((async) {
         final container = makeContainer();
-        final subscription = container.listen(driftMemoryFutureProvider, (_, _) {});
+        final subscription = container.listen(memoryLaneProvider, (_, _) {});
         async.flushMicrotasks();
         verify(() => memoryRepository.getAll('user-1')).called(1);
 
@@ -91,7 +91,7 @@ void main() {
 
       fakeAsync((async) {
         final container = makeContainer();
-        container.listen(driftMemoryFutureProvider, (_, _) {});
+        container.listen(memoryLaneProvider, (_, _) {});
         async.flushMicrotasks();
 
         async.elapse(const Duration(hours: 25));

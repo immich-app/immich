@@ -1,5 +1,5 @@
-import { AuthSession } from 'src/database';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthSession } from 'src/database.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 
 const authUser = {
   admin: {

@@ -4,4 +4,4 @@ The mobile app can be downloaded from the following places:
 - [Google Play Store](https://play.google.com/store/apps/details?id=app.alextran.immich)
 - [GitHub Releases (APK)](https://github.com/immich-app/immich/releases)
 - Obtainium: You can get your Obtainium config link from the [Utilities page of your Immich server](https://my.immich.app/utilities).
-- [F-Droid](https://app.futo.org/fdroid/repo/)
+- [FUTO F-Droid](https://get.immich.app/fdroid)

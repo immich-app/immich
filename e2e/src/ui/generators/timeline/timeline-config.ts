@@ -1,5 +1,5 @@
 import type { AssetVisibility } from '@immich/sdk';
-import { DayPattern, MonthDistribution } from 'src/ui/generators/timeline/distribution-patterns';
+import { DayPattern, MonthDistribution } from 'src/ui/generators/timeline/distribution-patterns.js';
 
 // Constants for generation parameters
 export const GENERATION_CONSTANTS = {

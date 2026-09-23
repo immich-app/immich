@@ -2,9 +2,9 @@
 # Following Apache License 2.0
 
 import logging
-from concurrent.futures import Future, ThreadPoolExecutor
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from queue import Queue
 from typing import Callable
 
 import numpy as np
@@ -66,20 +66,18 @@ class RknnPoolExecutor:
         func: Callable[["RKNNLite", list[NDArray[np.float32]]], list[NDArray[np.float32]]],
     ) -> None:
         self.tpes = tpes
-        self.queue: Queue[Future[list[NDArray[np.float32]]]] = Queue()
         self.rknn_pool = [init_rknn(model_path) for _ in range(tpes)]
         self.pool = ThreadPoolExecutor(max_workers=tpes)
         self.func = func
         self.num = 0
+        self.lock = threading.Lock()
 
-    def put(self, inputs: list[NDArray[np.float32]]) -> None:
-        self.queue.put(self.pool.submit(self.func, self.rknn_pool[self.num % self.tpes], inputs))
-        self.num += 1
+    def run(self, inputs: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
+        with self.lock:
+            idx = self.num % self.tpes
+            self.num += 1
 
-    def get(self) -> list[NDArray[np.float32]] | None:
-        if self.queue.empty():
-            return None
-        fut = self.queue.get()
+        fut = self.pool.submit(self.func, self.rknn_pool[idx], inputs)
         return fut.result()
 
     def release(self) -> None:

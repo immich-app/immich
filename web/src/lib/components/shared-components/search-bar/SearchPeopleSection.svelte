@@ -1,65 +1,43 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import { getPeople, getSearchPeopleTitle } from './search-bar-utils';
   import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, LoadingSpinner, Text } from '@immich/ui';
-  import { mdiArrowRight, mdiClose } from '@mdi/js';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { Button, Icon, LoadingSpinner, Text } from '@immich/ui';
+  import { mdiArrowRight, mdiCheck, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { SvelteSet } from 'svelte/reactivity';
-  import { tv } from 'tailwind-variants';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
 
   interface Props {
-    selectedPeople: SvelteSet<string>;
+    title: string | undefined;
+    parentPromise: Promise<PersonResponseDto[]> | undefined;
   }
 
-  let { selectedPeople = $bindable() }: Props = $props();
+  // eslint-disable-next-line no-useless-assignment
+  let { title = $bindable(), parentPromise }: Props = $props();
 
-  let peoplePromise = getPeople();
+  let selectedPeople = $derived(searchManager.filter.personIds);
+  let peoplePromise = parentPromise ?? getPeople(selectedPeople);
   let showAllPeople = $state(false);
   let name = $state('');
   let numberOfPeople = $state(1);
 
-  function orderBySelectedPeopleFirst(people: PersonResponseDto[]) {
-    return [
-      ...people.filter((p) => selectedPeople.has(p.id)), //
-      ...people.filter((p) => !selectedPeople.has(p.id)),
-    ];
-  }
-
-  async function getPeople() {
-    try {
-      const res = await getAllPeople({ withHidden: false });
-      return orderBySelectedPeopleFirst(res.people);
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_get_people'));
-    }
-  }
-
-  function togglePersonSelection(id: string) {
+  function togglePersonSelection(id: string, people: PersonResponseDto[]) {
     if (selectedPeople.has(id)) {
       selectedPeople.delete(id);
     } else {
       selectedPeople.add(id);
     }
+
+    title = getSearchPeopleTitle(people, selectedPeople);
   }
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {
     const nameLower = name.toLowerCase();
     return name ? list.filter((p) => p.name.toLowerCase().includes(nameLower)) : list;
   };
-
-  const styles = tv({
-    base: 'flex flex-col items-center rounded-3xl border-2 p-2 transition-all hover:bg-subtle dark:hover:bg-immich-dark-primary/20',
-    variants: {
-      selected: {
-        true: 'border-slate-400 bg-slate-200 dark:border-slate-500 dark:bg-slate-800 dark:text-white',
-        false: 'border-transparent',
-      },
-    },
-  });
 </script>
 
 {#await peoplePromise}
@@ -72,23 +50,36 @@
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="-mb-4 max-h-60 immich-scrollbar overflow-y-auto">
-      <div class="flex w-full items-center justify-between gap-6">
-        <Text class="py-3" fontWeight="medium">{$t('people')}</Text>
-        <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
-      </div>
+    <div id="people-selection" class="max-h-80 immich-scrollbar overflow-y-auto">
+      <Text class="pb-5">{$t('people_search_description')}</Text>
+      <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
 
       <SingleGridRow
-        class="space-between mt-2 grid immich-scrollbar grid-auto-fill-20 gap-1 overflow-y-auto"
+        class="space-between grid immich-scrollbar grid-auto-fill-20 gap-5 overflow-y-auto pt-5"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class={styles({ selected: selectedPeople.has(person.id) })}
-            onclick={() => togglePersonSelection(person.id)}
+            class="flex flex-col items-center rounded-3xl border-none p-0 transition-all"
+            onclick={() => togglePersonSelection(person.id, people)}
           >
-            <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
+            <div class="relative w-full">
+              <ImageThumbnail
+                circle
+                shadow
+                url={getPeopleThumbnailUrl(person)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              {#if selectedPeople.has(person.id)}
+                <div
+                  class="absolute top-0 flex size-full items-center justify-center rounded-full bg-primary opacity-75"
+                >
+                  <Icon icon={mdiCheck} size="32" color="white" />
+                </div>
+              {/if}
+            </div>
             <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
           </button>
         {/each}
@@ -97,6 +88,7 @@
       {#if showAllPeople || people.length > peopleList.length}
         <div class="mt-2 flex justify-center">
           <Button
+            size="small"
             color="primary"
             variant="ghost"
             shape="round"

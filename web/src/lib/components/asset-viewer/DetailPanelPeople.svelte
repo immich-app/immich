@@ -57,45 +57,49 @@
   );
 </script>
 
-{#if !authManager.isSharedLink && isOwner}
+{#if !authManager.isSharedLink}
   <section class="px-4 pt-4 text-sm">
-    <div class="flex h-10 w-full items-center justify-between">
-      <Text size="small" color="muted">{$t('people')}</Text>
-      <div class="flex items-center gap-2">
-        {#if people.some((person) => person.isHidden)}
-          <IconButton
-            aria-label={$t('show_hidden_people')}
-            icon={assetViewerManager.isShowingHiddenPeople ? mdiEyeOff : mdiEye}
-            size="medium"
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            onclick={() => assetViewerManager.toggleHiddenPeople()}
-          />
-        {/if}
-        <IconButton
-          aria-label={$t('tag_people')}
-          icon={mdiPlus}
-          size="medium"
-          shape="round"
-          color="secondary"
-          variant="ghost"
-          onclick={() => assetViewerManager.toggleFaceEditMode()}
-        />
+    {#if isOwner || visiblePeople.length > 0}
+      <div class="flex h-10 w-full items-center justify-between">
+        <Text size="small" color="muted">{$t('people')}</Text>
+        <div class="flex items-center gap-2">
+          {#if isOwner}
+            {#if people.some((person) => person.isHidden)}
+              <IconButton
+                aria-label={$t('show_hidden_people')}
+                icon={assetViewerManager.isShowingHiddenPeople ? mdiEyeOff : mdiEye}
+                size="medium"
+                shape="round"
+                color="secondary"
+                variant="ghost"
+                onclick={() => assetViewerManager.toggleHiddenPeople()}
+              />
+            {/if}
+            <IconButton
+              aria-label={$t('tag_people')}
+              icon={mdiPlus}
+              size="medium"
+              shape="round"
+              color="secondary"
+              variant="ghost"
+              onclick={() => assetViewerManager.toggleFaceEditMode()}
+            />
 
-        {#if faceManager.data.length > 0}
-          <IconButton
-            aria-label={$t('edit_people')}
-            icon={mdiPencil}
-            size="medium"
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            onclick={() => assetViewerManager.openEditFacesPanel()}
-          />
-        {/if}
+            {#if faceManager.data.length > 0}
+              <IconButton
+                aria-label={$t('edit_people')}
+                icon={mdiPencil}
+                size="medium"
+                shape="round"
+                color="secondary"
+                variant="ghost"
+                onclick={() => assetViewerManager.openEditFacesPanel()}
+              />
+            {/if}
+          {/if}
+        </div>
       </div>
-    </div>
+    {/if}
 
     <div class="mt-2 grid {visiblePeople.length <= 6 ? 'grid-cols-3 gap-3' : 'grid-cols-4 gap-2'}">
       {#each visiblePeople as person (person.id)}

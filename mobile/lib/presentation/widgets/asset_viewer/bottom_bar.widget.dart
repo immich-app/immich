@@ -65,7 +65,7 @@ class ViewerBottomBar extends ConsumerWidget {
           ? const SizedBox.shrink()
           : Theme(
               data: context.themeData.copyWith(
-                iconTheme: const IconThemeData(size: 22, color: Colors.white),
+                iconTheme: const IconThemeData(size: ImmichIconSize.md, color: Colors.white),
                 textTheme: context.themeData.textTheme.copyWith(
                   labelLarge: context.themeData.textTheme.labelLarge?.copyWith(color: Colors.white),
                 ),

@@ -1,9 +1,9 @@
-import { AssetController } from 'src/controllers/asset.controller';
-import { AssetMetadataKey } from 'src/enum';
-import { AssetService } from 'src/services/asset.service';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { AssetController } from 'src/controllers/asset.controller.js';
+import { AssetMetadataKey } from 'src/enum.js';
+import { AssetService } from 'src/services/asset.service.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(AssetController.name, () => {
   let ctx: ControllerContext;

@@ -11,6 +11,10 @@ class LocalAlbumService {
     return _repository.getAll(sortBy: sortBy);
   }
 
+  Stream<List<LocalAlbum>> watchAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
+    return _repository.watchAll(sortBy: sortBy);
+  }
+
   Future<LocalAsset?> getThumbnail(String albumId) {
     return _repository.getThumbnail(albumId);
   }
@@ -21,17 +25,5 @@ class LocalAlbumService {
 
   Future<int> getCount() {
     return _repository.getCount();
-  }
-
-  Future<void> unlinkRemoteAlbum(String id) async {
-    return _repository.unlinkRemoteAlbum(id);
-  }
-
-  Future<void> linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {
-    return _repository.linkRemoteAlbum(localAlbumId, remoteAlbumId);
-  }
-
-  Future<List<LocalAlbum>> getBackupAlbums() {
-    return _repository.getBackupAlbums();
   }
 }

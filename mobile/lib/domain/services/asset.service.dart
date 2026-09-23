@@ -63,13 +63,13 @@ class AssetService {
     return [asset, ...stack];
   }
 
-  Future<ExifInfo?> getExif(BaseAsset asset) async {
+  Stream<ExifInfo?> watchExif(BaseAsset asset) {
     if (!asset.hasRemote) {
-      return null;
+      return Stream.value(null);
     }
 
     final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
-    return _remoteRepository.getExif(id);
+    return _remoteRepository.watchExif(id);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {
@@ -176,17 +176,17 @@ class AssetService {
     }
   }
 
-  Future<int> deleteLocal(List<String> localIds) async {
+  Future<int> deleteLocal(List<String> localIds, {bool trash = true}) async {
     if (localIds.isEmpty) {
       return 0;
     }
 
-    final deletedIds = await _mediaRepository.deleteAll(localIds);
+    final deletedIds = await _mediaRepository.deleteAll(localIds, trash: trash);
     if (deletedIds.isEmpty) {
       return 0;
     }
 
-    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+    if (trash && CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
       await _trashedLocalRepository.applyTrashedAssets(deletedIds);
     } else {
       await _localRepository.deleteAssets(deletedIds);
@@ -196,5 +196,20 @@ class AssetService {
 
   Future<LocalAsset?> getLocalAsset(String id) {
     return _localRepository.get(id);
+  }
+
+  Future<void> stackEditedUpload(String localId, String remoteId, String? checksum) async {
+    // a manual upload of an asset that was never hashed has no checksum yet, so we need to fetch it from the server
+    final uploadedChecksum = checksum ?? await _apiRepository.getChecksum(remoteId);
+    try {
+      // previous_checksum still points at the version the server had before this upload
+      final previousId = await _localRepository.getPreviousRemoteId(localId);
+      if (previousId != null) {
+        await _apiRepository.stack([remoteId, previousId]);
+      }
+    } finally {
+      // the upload went through even when the stack call did not, so this version is the new base
+      await _localRepository.updatePreviousChecksum(localId, uploadedChecksum);
+    }
   }
 }

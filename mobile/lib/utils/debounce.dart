@@ -26,17 +26,6 @@ class Debouncer {
     _timer = Timer(interval, _callAndRest);
   }
 
-  Future<void>? drain() {
-    final timer = _timer;
-    if (timer != null && timer.isActive) {
-      timer.cancel();
-      if (_lastAction != null) {
-        _callAndRest();
-      }
-    }
-    return _actionFuture;
-  }
-
   @pragma('vm:prefer-inline')
   void _callAndRest() {
     _lastActionTime = DateTime.now();

@@ -1,57 +1,46 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
   import { type AlbumResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { ContextMenuButton, type MenuItems } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     album: AlbumResponseDto;
     showOwner?: boolean;
     showDateRange?: boolean;
     showItemCount?: boolean;
     preload?: boolean;
-    onShowContextMenu?: ((position: ContextMenuPosition) => unknown) | undefined;
-  }
+    contextMenuItems?: MenuItems;
+  };
 
-  let {
+  const {
     album,
     showOwner = false,
     showDateRange = false,
     showItemCount = false,
     preload = false,
-    onShowContextMenu,
+    contextMenuItems,
   }: Props = $props();
-
-  const showAlbumContextMenu = (e: MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    onShowContextMenu?.(getContextMenuPositionFromEvent(e));
-  };
 </script>
 
 <div
   class="group relative rounded-2xl border border-transparent p-5 hover:border-gray-200 hover:bg-gray-100 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   data-testid="album-card"
 >
-  {#if onShowContextMenu}
+  {#if contextMenuItems}
     <div
       id="icon-{album.id}"
       class="absolute inset-e-6 top-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
       data-testid="context-button-parent"
     >
-      <IconButton
-        color="secondary"
-        aria-label={$t('show_album_options')}
-        icon={mdiDotsVertical}
-        shape="round"
+      <ContextMenuButton
+        translations={{ open_menu: $t('show_album_options') }}
+        position="top-left"
         variant="filled"
-        size="medium"
         class="icon-white-drop-shadow"
-        onclick={showAlbumContextMenu}
+        items={contextMenuItems}
       />
     </div>
   {/if}
@@ -60,7 +49,7 @@
 
   <div class="mt-4">
     <p
-      class="line-clamp-2 w-full text-lg/6 font-semibold text-black group-hover:text-primary dark:text-white"
+      class="line-clamp-2 w-full text-lg/6 font-semibold wrap-break-word text-black group-hover:text-primary dark:text-white"
       data-testid="album-name"
       title={album.albumName}
     >

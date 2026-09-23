@@ -35,96 +35,31 @@ enum AvatarColor {
 }
 
 // TODO: Rename to User once Isar is removed
-class UserDto {
-  final String id;
-  final String email;
-  final String name;
-  final bool isAdmin;
-  final DateTime? updatedAt;
+@Freezed(equal: false)
+abstract class UserDto with _$UserDto {
+  const UserDto._();
 
-  final AvatarColor avatarColor;
-
-  final bool memoryEnabled;
-  final bool inTimeline;
-
-  final bool isPartnerSharedBy;
-  final bool isPartnerSharedWith;
-
-  final int quotaUsageInBytes;
-  final int quotaSizeInBytes;
+  const factory UserDto({
+    required String id,
+    required String email,
+    required String name,
+    @Default(false) bool isAdmin,
+    DateTime? updatedAt,
+    required DateTime profileChangedAt,
+    @Default(AvatarColor.primary) AvatarColor avatarColor,
+    @Default(true) bool memoryEnabled,
+    @Default(false) bool inTimeline,
+    @Default(false) bool isPartnerSharedBy,
+    @Default(false) bool isPartnerSharedWith,
+    @Default(false) bool hasProfileImage,
+    @Default(0) int quotaUsageInBytes,
+    @Default(0) int quotaSizeInBytes,
+  }) = _UserDto;
 
   bool get hasQuota => quotaSizeInBytes > 0;
 
-  final bool hasProfileImage;
-  final DateTime profileChangedAt;
-
-  const UserDto({
-    required this.id,
-    required this.email,
-    required this.name,
-    this.isAdmin = false,
-    this.updatedAt,
-    required this.profileChangedAt,
-    this.avatarColor = AvatarColor.primary,
-    this.memoryEnabled = true,
-    this.inTimeline = false,
-    this.isPartnerSharedBy = false,
-    this.isPartnerSharedWith = false,
-    this.hasProfileImage = false,
-    this.quotaUsageInBytes = 0,
-    this.quotaSizeInBytes = 0,
-  });
-
-  @override
-  String toString() {
-    return '''User: {
-id: $id,
-email: $email,
-name: $name,
-isAdmin: $isAdmin,
-updatedAt: $updatedAt,
-avatarColor: $avatarColor,
-memoryEnabled: $memoryEnabled,
-inTimeline: $inTimeline,
-isPartnerSharedBy: $isPartnerSharedBy,
-isPartnerSharedWith: $isPartnerSharedWith,
-hasProfileImage: $hasProfileImage
-profileChangedAt: $profileChangedAt
-}''';
-  }
-
-  UserDto copyWith({
-    String? id,
-    String? email,
-    String? name,
-    bool? isAdmin,
-    DateTime? updatedAt,
-    AvatarColor? avatarColor,
-    bool? memoryEnabled,
-    bool? inTimeline,
-    bool? isPartnerSharedBy,
-    bool? isPartnerSharedWith,
-    bool? hasProfileImage,
-    DateTime? profileChangedAt,
-    int? quotaSizeInBytes,
-    int? quotaUsageInBytes,
-  }) => UserDto(
-    id: id ?? this.id,
-    email: email ?? this.email,
-    name: name ?? this.name,
-    isAdmin: isAdmin ?? this.isAdmin,
-    updatedAt: updatedAt ?? this.updatedAt,
-    avatarColor: avatarColor ?? this.avatarColor,
-    memoryEnabled: memoryEnabled ?? this.memoryEnabled,
-    inTimeline: inTimeline ?? this.inTimeline,
-    isPartnerSharedBy: isPartnerSharedBy ?? this.isPartnerSharedBy,
-    isPartnerSharedWith: isPartnerSharedWith ?? this.isPartnerSharedWith,
-    hasProfileImage: hasProfileImage ?? this.hasProfileImage,
-    profileChangedAt: profileChangedAt ?? this.profileChangedAt,
-    quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
-    quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
-  );
-
+  // We use [DateTime.isAtSameMomentAs] for comparing across timezones. As Freezed doesn't support custom equality, we need to have our own `==` for now
+  // TODO(agg23): Switch to newtypes to fix equality
   @override
   bool operator ==(covariant UserDto other) {
     if (identical(this, other)) {
@@ -183,7 +118,7 @@ class User {
   final String email;
   final DateTime profileChangedAt;
   final bool hasProfileImage;
-  final AvatarColor? avatarColor;
+  final AvatarColor avatarColor;
 
   const User({
     required this.id,
@@ -191,7 +126,7 @@ class User {
     required this.email,
     required this.profileChangedAt,
     required this.hasProfileImage,
-    this.avatarColor = AvatarColor.primary,
+    this.avatarColor = .primary,
   });
 
   @override
