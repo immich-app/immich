@@ -103,7 +103,7 @@
   const stackSelectedThumbnailSize = 65;
 
   let previewStackedAsset: AssetResponseDto | undefined = $state();
-  let stack: StackResponseDto | null = $state(null);
+  let stack: StackResponseDto | undefined = $state();
 
   const asset = $derived(previewStackedAsset ?? cursor.current);
   const nextAsset = $derived(cursor.nextAsset);
@@ -128,7 +128,7 @@
     }
 
     if (!stack?.assets.some(({ id }) => id === asset.id)) {
-      stack = null;
+      stack = undefined;
     }
   };
 
@@ -157,6 +157,24 @@
     const restoredAsset = assets[0];
     await assetViewerManager.setAssetId(restoredAsset.id);
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
+  const onStackCreate = (createdStack: StackResponseDto) => {
+    if (createdStack.assets.map((a) => a.id).includes(asset.id)) {
+      stack = createdStack;
+    }
+  };
+
+  const onStackUpdate = (updatedStack: StackResponseDto) => {
+    if (stack?.id !== updatedStack.id) {
+      return;
+    }
+
+    stack = updatedStack;
+    if (!stack.assets.map((a) => a.id).includes(asset.id)) {
+      // current asset was removed from stack, go to primary
+      cursor.current = stack.assets[0];
+    }
   };
 
   const onPersonThumbnailReady = async ({ id: personId }: { id: string }) => {
@@ -342,18 +360,6 @@
         eventManager.emit('AssetsDelete', [asset.id]);
         break;
       }
-      case AssetAction.REMOVE_ASSET_FROM_STACK: {
-        stack = action.stack;
-        if (stack) {
-          cursor.current = stack.assets[0];
-        }
-        break;
-      }
-      case AssetAction.STACK:
-      case AssetAction.SET_STACK_PRIMARY_ASSET: {
-        stack = action.stack;
-        break;
-      }
       case AssetAction.RATING: {
         cursor.current = {
           ...asset,
@@ -362,10 +368,6 @@
             rating: action.rating,
           },
         };
-        break;
-      }
-      case AssetAction.UNSTACK: {
-        closeViewer();
         break;
       }
       // no default
@@ -490,7 +492,14 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} {onAssetsUndoArchive} {onPersonThumbnailReady} />
+<OnEvents
+  {onAssetUpdate}
+  {onAssetsUndoArchive}
+  {onStackCreate}
+  onStackDelete={() => closeViewer()}
+  {onStackUpdate}
+  {onPersonThumbnailReady}
+/>
 
 <svelte:document
   bind:fullscreenElement

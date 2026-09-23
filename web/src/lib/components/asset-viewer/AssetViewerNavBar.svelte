@@ -1,16 +1,11 @@
 <script lang="ts">
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
-  import AddToStackAction from '$lib/components/asset-viewer/actions/AddToStackAction.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/ArchiveAction.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/DeleteAction.svelte';
-  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/KeepThisDeleteOthers.svelte';
   import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
-  import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/RemoveAssetFromStack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
-  import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
-  import UnstackAction from '$lib/components/asset-viewer/actions/UnstackAction.svelte';
   import LoadingDots from '$lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -20,6 +15,7 @@
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
   import { getPersonAssetActions } from '$lib/services/person.service';
+  import { getStackActions } from '$lib/services/stack.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -39,7 +35,7 @@
     asset: AssetResponseDto;
     album?: AlbumResponseDto;
     person?: PersonResponseDto | null;
-    stack?: StackResponseDto | null;
+    stack?: StackResponseDto;
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
@@ -52,7 +48,7 @@
     asset,
     album,
     person = null,
-    stack = null,
+    stack,
     preAction,
     onAction,
     onUndoDelete = undefined,
@@ -82,6 +78,7 @@
   });
 
   const Actions = $derived(getAssetActions($t, { ...asset, stackPrimaryAssetId: stack?.primaryAssetId }, album));
+  const StackActions = $derived(getStackActions($t, stack, asset));
   const sharedLink = getSharedLink();
 </script>
 
@@ -144,19 +141,12 @@
         <ActionMenuItem action={Actions.AddToAlbum} />
         <ActionMenuItem action={Actions.RemoveFromAlbum} />
 
-        {#if isOwner}
-          <AddToStackAction {asset} {stack} {onAction} />
-          {#if stack}
-            <UnstackAction {stack} {onAction} />
-            <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
-            {#if stack?.primaryAssetId !== asset.id}
-              <SetStackPrimaryAsset {stack} {asset} {onAction} />
-              {#if stack?.assets?.length > 2}
-                <RemoveAssetFromStack {asset} {stack} {onAction} />
-              {/if}
-            {/if}
-          {/if}
-        {/if}
+        <ActionMenuItem action={StackActions.AddUploads} />
+        <ActionMenuItem action={StackActions.Unstack} />
+        <ActionMenuItem action={StackActions.KeepThisDeleteOthers} />
+        <ActionMenuItem action={StackActions.SetPrimaryAsset} />
+        <ActionMenuItem action={StackActions.RemoveAsset} />
+
         {#if album}
           {@const { SetCover } = getAlbumAssetActions($t, album, asset)}
           <ActionMenuItem action={SetCover} />
