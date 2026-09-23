@@ -177,6 +177,14 @@
     }
   };
 
+  const onPersonThumbnailReady = async ({ id: personId }: { id: string }) => {
+    if (person && person.id !== personId) {
+      return;
+    }
+    faceManager.clear();
+    await faceManager.getAssetFaces(asset.id);
+  };
+
   onMount(() => {
     syncAssetViewerOpenClass(true);
     const slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -345,17 +353,11 @@
     preAction?.(action);
   };
 
-  const handleAction = async (action: Action) => {
+  const handleAction = (action: Action) => {
     switch (action.type) {
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
         eventManager.emit('AssetsDelete', [asset.id]);
-        break;
-      }
-      case AssetAction.SET_PERSON_FEATURED_PHOTO: {
-        const assetInfo = await getAssetInfo({ id: asset.id });
-        cursor.current = { ...asset, people: assetInfo.people };
-        eventManager.emit('AssetUpdate', cursor.current);
         break;
       }
       case AssetAction.RATING: {
@@ -490,7 +492,14 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} {onAssetsUndoArchive} {onStackCreate} onStackDelete={() => closeViewer()} {onStackUpdate} />
+<OnEvents
+  {onAssetUpdate}
+  {onAssetsUndoArchive}
+  {onStackCreate}
+  onStackDelete={() => closeViewer()}
+  {onStackUpdate}
+  {onPersonThumbnailReady}
+/>
 
 <svelte:document
   bind:fullscreenElement
