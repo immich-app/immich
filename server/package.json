@@ -95,7 +95,7 @@
     "multer": "^2.0.2",
     "nest-commander": "^3.16.0",
     "nestjs-cls": "^6.0.0",
-    "nestjs-kysely": "3.1.3",
+    "nestjs-kysely": "3.1.4",
     "nestjs-otel": "^8.0.0",
     "nestjs-zod": "^5.5.0",
     "nodemailer": "^9.0.0",
@@ -119,7 +119,7 @@
     "ua-parser-js": "^2.0.0",
     "uuid": "^14.0.0",
     "validator": "^13.12.0",
-    "zod": "4.4.3"
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
