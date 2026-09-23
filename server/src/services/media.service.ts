@@ -782,6 +782,7 @@ export class MediaService extends BaseService {
       }
 
       // upsert new file path
+      // eslint-disable-next-line unicorn/prefer-continue
       if (
         existingFile?.path !== newFile.path ||
         existingFile.isProgressive !== newFile.isProgressive ||
