@@ -29,7 +29,7 @@ class _ActivityCache extends StoreCache<Activity, ActivityScope> {
   @override
   Future<List<Activity>> fetch(Ref ref, ActivityScope scope) async {
     try {
-      return await ref.watchData().activityApi.getAll(scope.$1, assetId: scope.$2);
+      return await ref.watchController().activityApi.getAll(scope.$1, assetId: scope.$2);
     } catch (error, stack) {
       _log.severe("Failed to get all activities for album ${scope.$1}", error, stack);
       return const [];
@@ -50,7 +50,7 @@ class ActivityMutations extends CachedStoreMutations<Activity, ActivityScope> {
   /// Add a comment to an album or asset. Providing [assetId] will add to the corresponding asset, otherwise the comment will be added to the album
   Future<Activity> addComment(String albumId, String comment, {String? assetId}) async {
     try {
-      final activity = await ref.watchData().activityApi.create(
+      final activity = await ref.watchController().activityApi.create(
         albumId,
         ActivityType.comment,
         assetId: assetId,
@@ -67,7 +67,7 @@ class ActivityMutations extends CachedStoreMutations<Activity, ActivityScope> {
   /// Add a like to an album or asset. Providing [assetId] will add to the corresponding asset, otherwise the like will be added to the album
   Future<Activity> addLike(String albumId, {String? assetId}) async {
     try {
-      final activity = await ref.watchData().activityApi.create(albumId, ActivityType.like, assetId: assetId);
+      final activity = await ref.watchController().activityApi.create(albumId, ActivityType.like, assetId: assetId);
       cacheUpsert(activity);
       return activity;
     } catch (error, stack) {
@@ -79,7 +79,7 @@ class ActivityMutations extends CachedStoreMutations<Activity, ActivityScope> {
   /// Remove [activity] from its album
   Future<void> remove(Activity activity) async {
     try {
-      await ref.watchData().activityApi.delete(activity.id);
+      await ref.watchController().activityApi.delete(activity.id);
     } on NoResponseDtoError {
       // TODO(agg23): This error should not be thrown at all
     } catch (error, stack) {

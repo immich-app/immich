@@ -53,13 +53,13 @@ class PersonMutations extends StoreMutations {
 
   /// Update a person's name
   Future<int> updateName(String personId, String name) async {
-    await ref.watchData().personApi.update(personId, name: name);
+    await ref.watchController().personApi.update(personId, name: name);
     return ref.read(_peopleDb).updateName(personId, name);
   }
 
   /// Update a person's birthday
   Future<int> updateBirthday(String personId, DateTime birthday) async {
-    await ref.watchData().personApi.update(personId, birthday: birthday);
+    await ref.watchController().personApi.update(personId, birthday: birthday);
     return ref.read(_peopleDb).updateBirthday(personId, birthday);
   }
 }

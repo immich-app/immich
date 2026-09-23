@@ -110,6 +110,7 @@ class CacheNotifier<T, Arg> extends AutoDisposeFamilyAsyncNotifier<List<T>, Arg>
 
 /// Base for a store entry's mutations, to be exposed by the entry's provider via `ref.read(Store.x).doMutation()`
 abstract class StoreMutations {
+  @protected
   final Ref ref;
 
   const StoreMutations(this.ref);

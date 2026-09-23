@@ -55,5 +55,5 @@ abstract final class Store {
 }
 
 extension DataControllerAccessor on Ref<Object?> {
-  DataController watchData() => watch(_dataControllerProvider);
+  DataController watchController() => watch(_dataControllerProvider);
 }

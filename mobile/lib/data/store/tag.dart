@@ -20,7 +20,7 @@ extension type const TagStore._(Provider<TagMutations> _provider) implements Pro
 
 final _allProvider = FutureProvider.autoDispose<List<Tag>>((ref) async {
   try {
-    return await ref.watchData().tagApi.getAll();
+    return await ref.watchController().tagApi.getAll();
   } catch (error, stack) {
     _log.severe("Failed to get all tags", error, stack);
     return const [];
@@ -33,7 +33,7 @@ class TagMutations extends StoreMutations {
   /// Create the tags named [values], returning the list of successfully created (or pre-existing) tags
   Future<List<Tag>> upsert(List<String> values) async {
     try {
-      return await ref.watchData().tagApi.upsert(values);
+      return await ref.watchController().tagApi.upsert(values);
     } catch (error, stack) {
       _log.severe("Failed to upsert tags", error, stack);
       rethrow;
@@ -43,7 +43,7 @@ class TagMutations extends StoreMutations {
   /// Apply every tag in [tagIds] to every asset in [assetIds], returning the number of assets successfully tagged
   Future<int> applyToAssets(List<String> assetIds, List<String> tagIds) async {
     try {
-      return await ref.watchData().tagApi.bulkTagAssets(assetIds, tagIds);
+      return await ref.watchController().tagApi.bulkTagAssets(assetIds, tagIds);
     } catch (error, stack) {
       _log.severe("Failed to tag assets", error, stack);
       rethrow;
