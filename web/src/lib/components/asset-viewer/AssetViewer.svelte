@@ -159,6 +159,14 @@
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
+  const onPersonThumbnailReady = async ({ id: personId }: { id: string }) => {
+    if (person && person.id !== personId) {
+      return;
+    }
+    faceManager.clear();
+    await faceManager.getAssetFaces(asset.id);
+  };
+
   onMount(() => {
     syncAssetViewerOpenClass(true);
     const slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -327,7 +335,7 @@
     preAction?.(action);
   };
 
-  const handleAction = async (action: Action) => {
+  const handleAction = (action: Action) => {
     switch (action.type) {
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
@@ -344,12 +352,6 @@
       case AssetAction.STACK:
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
-        break;
-      }
-      case AssetAction.SET_PERSON_FEATURED_PHOTO: {
-        const assetInfo = await getAssetInfo({ id: asset.id });
-        cursor.current = { ...asset, people: assetInfo.people };
-        eventManager.emit('AssetUpdate', cursor.current);
         break;
       }
       case AssetAction.RATING: {
@@ -488,7 +490,7 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} {onAssetsUndoArchive} />
+<OnEvents {onAssetUpdate} {onAssetsUndoArchive} {onPersonThumbnailReady} />
 
 <svelte:document
   bind:fullscreenElement

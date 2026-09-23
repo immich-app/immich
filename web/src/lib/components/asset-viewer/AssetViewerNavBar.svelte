@@ -8,7 +8,6 @@
   import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/RemoveAssetFromStack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
-  import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/SetPersonFeaturedAction.svelte';
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/UnstackAction.svelte';
@@ -20,6 +19,7 @@
   import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
+  import { getPersonAssetActions } from '$lib/services/person.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -162,7 +162,8 @@
           <ActionMenuItem action={SetCover} />
         {/if}
         {#if person}
-          <SetFeaturedPhotoAction {asset} {person} {onAction} />
+          {@const { SetFeaturedPhoto } = getPersonAssetActions($t, person, asset)}
+          <ActionMenuItem action={SetFeaturedPhoto} />
         {/if}
 
         <ActionMenuItem action={Actions.SetProfilePicture} />
