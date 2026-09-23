@@ -30,8 +30,7 @@
       aria-label={$t('to_parent')}
       href={node.parent ? getLink(node.parent.path) : undefined}
       disabled={!node.parent}
-      class="shrink-0"
     />
-    <Breadcrumbs {items} class="w-full" />
+    <Breadcrumbs {items} class="[&_a]:text-primary" />
   </ControlBarHeader>
 </ControlBar>
