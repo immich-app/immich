@@ -7,6 +7,7 @@ mod android;
 /// cbindgen:ignore
 #[cfg(target_os = "android")]
 mod bitmap;
+mod convert;
 mod log;
 mod rotate;
 
