@@ -55,6 +55,11 @@ export default typescriptEslint.config([
       'unicorn/prefer-event-target': 'off',
       'unicorn/no-thenable': 'off',
       'object-shorthand': ['error', 'always'],
+      'unicorn/prefer-combined-guards': 'off',
+      'unicorn/prefer-ternary': 'off',
+      'unicorn/prefer-early-return': 'off',
+      'unicorn/prefer-continue': 'off',
+      'unicorn/no-immediate-mutation': 'off',
     },
   },
 ]);

@@ -79,11 +79,13 @@ export class LibraryService extends BaseService {
       start: library.scan.enabled,
     });
 
-    if (library.watch.enabled !== this.watchLibraries) {
-      // Watch configuration changed, update accordingly
-      this.watchLibraries = library.watch.enabled;
-      await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+    if (library.watch.enabled === this.watchLibraries) {
+      return;
     }
+
+    // Watch configuration changed, update accordingly
+    this.watchLibraries = library.watch.enabled;
+    await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
   }
 
   private async watch(id: string): Promise<boolean> {

@@ -155,10 +155,12 @@ export class PersonService extends BaseService {
     for (const { ownerId, personGroupId } of changeFeaturePhoto) {
       const assetFace = await this.personRepository.getRandomFace(personGroupId);
 
-      if (assetFace) {
-        await this.personRepository.update({ ownerId, personGroupId, faceAssetId: assetFace.id });
-        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
+      if (!assetFace) {
+        continue;
       }
+
+      await this.personRepository.update({ ownerId, personGroupId, faceAssetId: assetFace.id });
+      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
     }
 
     await this.jobRepository.queueAll(jobs);
