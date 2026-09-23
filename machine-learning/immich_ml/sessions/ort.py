@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import ctypes
+import platform
+import sys
 from collections.abc import Sequence
 from pathlib import Path
 from threading import Lock
@@ -184,6 +187,8 @@ class OrtSession:
     @property
     def _sess_options_default(self) -> ort.SessionOptions:
         sess_options = ort.SessionOptions()
+        # some CPUs slow down many times over on subnormal operands, and ORT clears the flush in its threads otherwise
+        sess_options.add_session_config_entry("session.set_denormal_as_zero", "1")
         sess_options.enable_cpu_mem_arena = settings.model_arena
 
         # avoid thread contention between models
@@ -204,3 +209,14 @@ class OrtSession:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
         return sess_options
+
+
+def flush_denormals() -> None:
+    """Reads subnormal floats as zero on the calling thread, which ORT does only on its own threads."""
+    if sys.platform != "linux" or platform.machine() != "x86_64":
+        return
+    libm = ctypes.CDLL("libm.so.6")
+    env = (ctypes.c_uint32 * 8)()  # glibc's fenv_t here: the x87 environment, then MXCSR
+    libm.fegetenv(env)
+    env[7] |= 0x8040  # denormals are zero, flush to zero
+    libm.fesetenv(env)
