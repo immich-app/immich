@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ChildProcess } from 'node:child_process';
 import { join } from 'node:path';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { VideoInterfaces } from 'src/types.js';
 import {
   HLS_BACKPRESSURE_PAUSE_SEGMENTS,
   HLS_BACKPRESSURE_RESUME_SEGMENTS,
@@ -15,9 +17,7 @@ import {
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum.js';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { VideoInterfaces } from 'src/types.js';
 import { isVideoStreamSessionPkConstraint } from 'src/utils/database.js';
 import { BaseConfig } from 'src/utils/media.js';
 

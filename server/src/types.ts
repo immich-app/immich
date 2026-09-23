@@ -1,4 +1,5 @@
 import { ShallowDehydrateObject } from 'kysely';
+import { Mocked } from 'vitest';
 import { VECTOR_EXTENSIONS } from 'src/constants.js';
 import { AssetFile } from 'src/database.js';
 import { UploadFieldName } from 'src/dtos/asset-media.dto.js';
@@ -30,7 +31,6 @@ import {
   TranscodeTarget,
   UserMetadataKey,
 } from 'src/enum.js';
-import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T
@@ -521,9 +521,11 @@ export type StorageAsset = {
 };
 
 export type OnThisDayData = { year: number };
+export type BirthdayData = { personId: string; personName: string; year: number };
 
 export interface MemoryData {
   [MemoryType.OnThisDay]: OnThisDayData;
+  [MemoryType.Birthday]: BirthdayData;
 }
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };

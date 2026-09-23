@@ -10,12 +10,14 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -36,6 +38,7 @@ final backgroundUploadServiceProvider = Provider((ref) {
     db.localAssetRepository,
     db.backupRepository,
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(assetServiceProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -51,6 +54,7 @@ abstract class UploadTaskMetadata with _$UploadTaskMetadata {
     required String localAssetId,
     required bool isLivePhotos,
     required String livePhotoVideoId,
+    String? checksum,
   }) = _UploadTaskMetadata;
 
   Map<String, dynamic> toMap() {
@@ -58,6 +62,7 @@ abstract class UploadTaskMetadata with _$UploadTaskMetadata {
       'localAssetId': localAssetId,
       'isLivePhotos': isLivePhotos,
       'livePhotoVideoId': livePhotoVideoId,
+      'checksum': checksum,
     };
   }
 
@@ -66,6 +71,7 @@ abstract class UploadTaskMetadata with _$UploadTaskMetadata {
       localAssetId: map['localAssetId'] as String,
       isLivePhotos: map['isLivePhotos'] as bool,
       livePhotoVideoId: map['livePhotoVideoId'] as String,
+      checksum: map['checksum'] as String?,
     );
   }
 
@@ -86,6 +92,7 @@ class BackgroundUploadService {
     this._localAssetRepository,
     this._backupRepository,
     this._assetMediaRepository,
+    this._assetService,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -96,6 +103,7 @@ class BackgroundUploadService {
   final LocalAssetRepository _localAssetRepository;
   final BackupRepository _backupRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final AssetService _assetService;
   final Logger _logger = Logger('BackgroundUploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -190,6 +198,7 @@ class BackgroundUploadService {
     switch (update.status) {
       case TaskStatus.complete:
         unawaited(_handleLivePhoto(update));
+        unawaited(_stackEditedAsset(update));
 
         if (CurrentPlatform.isIOS) {
           try {
@@ -238,6 +247,28 @@ class BackgroundUploadService {
     }
   }
 
+  Future<void> _stackEditedAsset(TaskStatusUpdate update) async {
+    try {
+      if (update.task.metaData.isEmpty || update.responseBody == null || update.responseBody!.isEmpty) {
+        return;
+      }
+
+      final metadata = UploadTaskMetadata.fromJson(update.task.metaData);
+      // The video half of a live photo carries isLivePhotos; the still that follows is the final asset
+      if (metadata.isLivePhotos) {
+        return;
+      }
+
+      await _assetService.stackEditedUpload(
+        metadata.localAssetId,
+        jsonDecode(update.responseBody!)['id'] as String,
+        metadata.checksum,
+      );
+    } catch (error, stackTrace) {
+      dPrint(() => "Error stacking edited asset upload: $error $stackTrace");
+    }
+  }
+
   @visibleForTesting
   Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
@@ -278,6 +309,7 @@ class BackgroundUploadService {
       localAssetId: asset.id,
       isLivePhotos: entity.isLivePhoto,
       livePhotoVideoId: '',
+      checksum: asset.checksum,
     ).toJson();
 
     final requiresWiFi = _shouldRequireWiFi(asset);
@@ -325,6 +357,12 @@ class BackgroundUploadService {
       modifiedAt: asset.updatedAt,
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
+      metadata: UploadTaskMetadata(
+        localAssetId: asset.id,
+        isLivePhotos: false,
+        livePhotoVideoId: livePhotoVideoId,
+        checksum: asset.checksum,
+      ).toJson(),
       fields: fields,
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately

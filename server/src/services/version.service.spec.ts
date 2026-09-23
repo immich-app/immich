@@ -3,7 +3,7 @@ import { defaults } from 'src/dtos/config.dto.js';
 import { CronJob, JobName, JobStatus, ReleaseChannel, SystemMetadataKey } from 'src/enum.js';
 import { VersionService } from 'src/services/version.service.js';
 import { factory } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 const mockVersionResponse = (version: string) => ({
   version,
