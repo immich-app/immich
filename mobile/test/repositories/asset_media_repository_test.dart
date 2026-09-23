@@ -17,14 +17,14 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/asset_media_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 
 import '../test_utils.dart';
 
-class _MockNativeSyncApi extends Mock implements NativeSyncApi {}
+class _MockAssetMediaApi extends Mock implements AssetMediaApi {}
 
 class _MockPersistentStorage extends Mock implements PersistentStorage {}
 
@@ -82,7 +82,7 @@ void main() {
     tempRoot = Directory.systemTemp.createTempSync('immich-share-test');
     storage = _MockStorageRepository();
     shareCall = Completer<List<String>>();
-    repository = _TestAssetMediaRepository(_MockNativeSyncApi(), storage, shareCall);
+    repository = _TestAssetMediaRepository(_MockAssetMediaApi(), storage, shareCall);
     taskDirs = [];
     failedRemoteIds = {};
 
