@@ -507,16 +507,18 @@ export class AssetService extends BaseService {
       isUndefined,
     );
 
-    if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif({
-        exif: updateLockedColumns({
-          assetId: id,
-          ...writes,
-        }),
-        lockedPropertiesBehavior: 'append',
-      });
-      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    if (Object.keys(writes).length === 0) {
+      return;
     }
+
+    await this.assetRepository.upsertExif({
+      exif: updateLockedColumns({
+        assetId: id,
+        ...writes,
+      }),
+      lockedPropertiesBehavior: 'append',
+    });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
   }
 
   async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
