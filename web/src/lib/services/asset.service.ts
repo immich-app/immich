@@ -7,6 +7,7 @@ import {
   removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
+  updateAssets,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -24,6 +25,7 @@ import {
   mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
+  mdiHeartMinusOutline,
   mdiHeartOutline,
   mdiImageRefreshOutline,
   mdiImageRemoveOutline,
@@ -86,6 +88,20 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
       ),
   };
 
+  const Favorite: ActionItem = {
+    title: $t('to_favorite'),
+    icon: mdiHeartOutline,
+    $if: () => !assetMultiSelectManager.isAllFavorite,
+    onAction: () => handleBulkFavorite(ownedAssets.filter((asset) => !asset.isFavorite).map(({ id }) => id), true),
+  }
+
+  const Unfavorite: ActionItem = {
+    title: $t('remove_from_favorites'),
+    icon: mdiHeartMinusOutline,
+    $if: () => assetMultiSelectManager.isAllFavorite,
+    onAction: () => handleBulkFavorite(ownedAssets.map((asset) => asset.id), false),
+  }
+
   const RefreshFacesJob: ActionItem = {
     title: $t('refresh_faces'),
     icon: mdiHeadSyncOutline,
@@ -114,6 +130,8 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
   return {
     AddToAlbum,
     RemoveFromAlbum,
+    Favorite,
+    Unfavorite,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -188,7 +206,7 @@ export const getAssetActions = (
     title: $t('to_favorite'),
     icon: mdiHeartOutline,
     $if: () => isOwner && !asset.isFavorite,
-    onAction: () => handleFavorite(asset),
+    onAction: () => handleFavorite([asset.id], true),
     shortcuts: [{ key: 'f' }],
   };
 
@@ -196,7 +214,7 @@ export const getAssetActions = (
     title: $t('unfavorite'),
     icon: mdiHeart,
     $if: () => isOwner && asset.isFavorite,
-    onAction: () => handleUnfavorite(asset),
+    onAction: () => handleFavorite([asset.id], false),
     shortcuts: [{ key: 'f' }],
   };
 
@@ -411,28 +429,28 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   }
 };
 
-const handleFavorite = async (asset: AssetResponseDto) => {
+const handleBulkFavorite = async (assetIds: string[], isFavorite: boolean) => {
+  if (await handleFavorite(assetIds, isFavorite)) {
+    assetMultiSelectManager.clear();
+  }
+}
+
+const handleFavorite = async (assetIds: string[], isFavorite: boolean) => {
   const $t = await getFormatter();
 
   try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.primary($t('added_to_favorites'));
-    eventManager.emit('AssetUpdate', response);
+    await updateAssets({ assetBulkUpdateDto: { ids: assetIds, isFavorite } });
+    if (isFavorite) {
+      toastManager.primary($t('added_to_favorites', { values: { count: assetIds.length } }));
+    } else {
+      toastManager.primary($t('removed_from_favorites', { values: { count: assetIds.length } }));
+    }
+    // (the server emits AssetUpdate when successful)
   } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
+    return false;
   }
-};
-
-const handleUnfavorite = async (asset: AssetResponseDto) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.primary($t('removed_from_favorites'));
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
-  }
+  return true;
 };
 
 const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {

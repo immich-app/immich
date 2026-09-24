@@ -42,8 +42,8 @@
 
       toastManager.primary(
         isFavorite
-          ? $t('added_to_favorites_count', { values: { count: ids.length } })
-          : $t('removed_from_favorites_count', { values: { count: ids.length } }),
+          ? $t('added_to_favorites', { values: { count: ids.length } })
+          : $t('removed_from_favorites', { values: { count: ids.length } }),
       );
 
       assetMultiSelectManager.clear();

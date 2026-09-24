@@ -261,7 +261,7 @@ class MemoryManager {
     const isSaved = !memory.isSaved;
     await updateMemory({ id: memory.id, memoryUpdateDto: { isSaved } });
     memory.isSaved = isSaved;
-    toastManager.primary(get(t)(isSaved ? 'added_to_favorites' : 'removed_from_favorites'));
+    toastManager.primary(get(t)(isSaved ? 'added_to_favorites' : 'removed_from_favorites', { values: { count: 1 } }));
   }
 
   // navigate away before removing something, so the url never points at a deleted position

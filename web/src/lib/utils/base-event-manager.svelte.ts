@@ -7,6 +7,7 @@ export type EventItem<E extends EventsBase, T extends keyof E = keyof E> = {
   id: number;
   event: T;
   callback: EventCallback<E, T>;
+  source: string;
 };
 
 let count = 1;
@@ -17,10 +18,11 @@ const noop = () => {};
 export class BaseEventManager<Events extends EventsBase> {
   #callbacks: EventItem<Events>[] = $state.raw([]);
 
-  on(subscriptions: EventMap<Events>): () => void {
+  on(subscriptions: EventMap<Events>, source: string = 'default'): () => void {
     const cleanups = Object.entries(subscriptions).map(([event, callback]) =>
-      this.#onEvent(event as keyof Events, callback as EventCallback<Events, keyof Events>),
+      this.#onEvent(event as keyof Events, callback as EventCallback<Events, keyof Events>, source),
     );
+    console.log(`[evtmgr] added ${cleanups.length} of ${Object.entries(subscriptions).length} listeners for ${source}`);
 
     return () => {
       for (const cleanup of cleanups) {
@@ -29,13 +31,13 @@ export class BaseEventManager<Events extends EventsBase> {
     };
   }
 
-  #onEvent<T extends keyof Events>(event: T, callback?: EventCallback<Events, T>) {
+  #onEvent<T extends keyof Events>(event: T, callback: EventCallback<Events, T>, source: string) {
     if (!callback) {
       return noop;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const item = { id: nextId(), event, callback } as EventItem<Events, any>;
+    const item = { id: nextId(), event, callback, source } as EventItem<Events, any>;
     this.#callbacks = [...this.#callbacks, item];
 
     return () => {
@@ -45,8 +47,10 @@ export class BaseEventManager<Events extends EventsBase> {
 
   emit<T extends keyof Events>(event: T, ...params: Events[T]) {
     const listeners = this.getListeners(event);
+    console.log(`[event] ${String(event)} for ${listeners.length} listeners`);
     for (const listener of listeners) {
-      void listener(...params);
+      console.log(`[event] ${String(event)} for ${listener.source}`);
+      void listener.callback(...params);
     }
   }
 
@@ -56,7 +60,7 @@ export class BaseEventManager<Events extends EventsBase> {
 
   private getListeners<T extends keyof Events>(event: T) {
     return this.#callbacks
-      .filter((item) => item.event === event)
-      .map((item) => item.callback as EventCallback<Events, T>);
+      .filter((item) => item.event === event);
+      // .map((item) => item.callback as EventCallback<Events, T>);
   }
 }

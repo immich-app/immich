@@ -111,11 +111,13 @@ export class TimelineManager extends VirtualScrollManager {
 
   constructor() {
     super();
+    console.log('timeline manager constructor');
 
     this.#unsubscribes.push(
       eventManager.on({
         AssetUpdate: (asset: AssetResponseDto) => {
           const timelineAsset = toTimelineAsset(asset);
+          console.log('[timeline] AssetUpdate');
           if (this.#options.albumId || this.#options.personId) {
             this.#updateAssets([timelineAsset]);
           } else {
@@ -150,7 +152,7 @@ export class TimelineManager extends VirtualScrollManager {
           this.upsertAssets(stack.assets.map((asset) => toTimelineAsset(asset)));
           updateStackedAssetInTimeline(this, stack);
         },
-      }),
+      }, 'timelineManager'),
     );
   }
 
@@ -336,6 +338,8 @@ export class TimelineManager extends VirtualScrollManager {
     for (const unsubscribe of this.#unsubscribes) {
       unsubscribe();
     }
+
+    console.log('timeline manager destroyed');
 
     super.destroy();
   }
