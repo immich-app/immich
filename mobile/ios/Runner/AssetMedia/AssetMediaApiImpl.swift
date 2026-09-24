@@ -46,8 +46,6 @@ class AssetMediaApiImpl: ImmichPlugin, AssetMediaApi, FlutterPlugin {
       var seen = Set<String>()
       assets.enumerateObjects { asset, _, _ in seen.insert(asset.localIdentifier) }
 
-      guard !self.detached else { return }
-
       PHPhotoLibrary.shared().performChanges {
         PHAssetChangeRequest.deleteAssets(assets)
       } completionHandler: { success, _ in
