@@ -50,7 +50,7 @@
   onPersonUserDelete={refreshPersonUsers}
 />
 
-<BasicModal title="Manage access" size="small" icon={mdiAccountMultipleOutline} {onClose}>
+<BasicModal title={$t('manage_access')} size="small" icon={mdiAccountMultipleOutline} {onClose}>
   <HStack fullWidth class="mb-2 justify-between">
     <Text size="medium" fontWeight="semi-bold">{$t('users')}</Text>
     <HeaderActionButton action={AddUsers} />

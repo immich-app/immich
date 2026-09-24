@@ -1,6 +1,6 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleUpdatePeople, handleUpdatePerson } from '$lib/services/person.service';
+  import { handleUpdatePeople } from '$lib/services/person.service';
   import { searchUsers, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { Button, Checkbox, DatePicker, Field, FormModal, HelperText, Input, Label, Select, VStack } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiText } from '@mdi/js';
@@ -74,7 +74,7 @@
 
 <FormModal title={$t('person')} size="small" icon={mdiText} {onClose} {onSubmit}>
   <VStack>
-    <Field label="User">
+    <Field label={$t('user')}>
       <Select
         value={targetUserId}
         options={candidates.map((person) => ({
@@ -83,7 +83,7 @@
         }))}
         onChange={(value) => onChange(value)}
       />
-      <HelperText>View and edit fields for this user.</HelperText>
+      <HelperText>{$t('view_and_edit_person_fields')}</HelperText>
     </Field>
 
     <div class="mx-auto">
@@ -94,7 +94,7 @@
         shape="round"
         variant="outline"
         leadingIcon={mdiAccountMultipleOutline}
-        onclick={handleCopyFromMine}>Copy from my person</Button
+        onclick={handleCopyFromMine}>{$t('copy_from_my_person')}</Button
       >
     </div>
 

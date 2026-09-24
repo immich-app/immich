@@ -400,24 +400,25 @@
                     </p>
                   </button>
                   {#if altItems.length > 0}
+                    {@const parts = new Intl.ListFormat($locale).formatToParts(
+                      altItems.map(({ sharedById }) => sharedById),
+                    )}
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      aka {#each altItems as altItem, i (altItem.sharedById)}
-                        {@const hasEditingPermissions = [PersonUserRole.Write, PersonUserRole.Admin].includes(
-                          altItem.role,
-                        )}
-                        {#if hasEditingPermissions}
-                          <button
-                            type="button"
-                            onclick={() =>
-                              modalManager.show(PersonEditModal, { person, targetUserId: altItem.sharedById })}
-                            class="underline">{altItem.name}</button
-                          >
+                      {#each parts as { type, value } (value)}
+                        {#if type === 'element'}
+                          {@const altItem = altItems.find(({ sharedById }) => sharedById === value)!}
+                          {#if [PersonUserRole.Write, PersonUserRole.Admin].includes(altItem.role)}
+                            <button
+                              type="button"
+                              onclick={() =>
+                                modalManager.show(PersonEditModal, { person, targetUserId: altItem.sharedById })}
+                              class="underline">{altItem.name}</button
+                            >
+                          {:else}
+                            {altItem.name}
+                          {/if}
                         {:else}
-                          {altItem.name}
-                        {/if}
-                        {altItems.length > 2 ? ',' : ''}
-                        {#if altItems.length > 1 && i === altItems.length - 2}
-                          and
+                          {value}
                         {/if}
                       {/each}
                     </p>

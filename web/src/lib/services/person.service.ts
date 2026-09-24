@@ -1,4 +1,11 @@
-import { updatePeople, updatePerson, type AssetResponseDto, type PeopleUpdateDto, type PersonResponseDto, type PersonUpdateDto } from '@immich/sdk';
+import {
+  updatePeople,
+  updatePerson,
+  type AssetResponseDto,
+  type PeopleUpdateDto,
+  type PersonResponseDto,
+  type PersonUpdateDto,
+} from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
