@@ -296,9 +296,6 @@
       return;
     }
 
-    // Update assetCount locally to avoid race condition with onAlbumUpdate.
-    // Calling refreshAlbum() here would fetch stale server state, overwriting
-    // concurrent description edits that haven't been saved yet (see issue #31746).
     album = { ...album, assetCount: album.assetCount + assetIds.length };
 
     timelineMultiSelectManager.clear();
