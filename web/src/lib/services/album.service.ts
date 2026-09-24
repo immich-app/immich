@@ -25,10 +25,11 @@ import {
   mdiRenameOutline,
   mdiShareVariantOutline,
   mdiTrashCanOutline,
+  mdiExitToApp,
   mdiUpload,
 } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
-import { goto } from '$app/navigation';
+import { goto, invalidateAll } from '$app/navigation';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -37,6 +38,7 @@ import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
 import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
+import { userInteraction } from '$lib/stores/user.svelte';
 import { createAlbumAndRedirect } from '$lib/utils/album-utils';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -83,6 +85,18 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => handleDownloadAlbum(album),
   };
 
+  const Leave: ActionItem = {
+    title: $t('leave_album'),
+    icon: mdiExitToApp,
+    $if: () => !isOwned,
+    onAction: async () => {
+      const success = await handleLeaveAlbum(album);
+      if (success) {
+        await invalidateAll();
+      }
+    },
+  };
+
   const Edit: ActionItem = {
     title: $t('edit_album'),
     icon: mdiRenameOutline,
@@ -97,7 +111,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => modalManager.show(AlbumOptionsModal, { album }),
   };
 
-  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Share };
+  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Share };
 };
 
 export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: AssetResponseDto) => {
@@ -254,6 +268,29 @@ export const handleRemoveUserFromAlbum = async (album: AlbumResponseDto, albumUs
     eventManager.emit('AlbumUserDelete', { albumId: album.id, userId: albumUser.id });
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_album_users'));
+  }
+};
+
+export const handleLeaveAlbum = async (album: AlbumResponseDto) => {
+  const $t = await getFormatter();
+
+  const confirmed = await modalManager.showDialog({
+    title: $t('leave_album'),
+    prompt: $t('are_you_sure_to_do_this'),
+    confirmText: $t('leave'),
+  });
+
+  if (!confirmed) {
+    return false;
+  }
+
+  try {
+    await removeUserFromAlbum({ id: album.id, userId: 'me' });
+    userInteraction.recentAlbums = undefined;
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_remove_album_users'));
+    return false;
   }
 };
 

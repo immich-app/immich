@@ -41,6 +41,7 @@
     getAlbumAssetsActions,
     handleDeleteAlbum,
     handleDownloadAlbum,
+    handleLeaveAlbum,
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -66,6 +67,7 @@
     mdiDotsHorizontal,
     mdiDotsVertical,
     mdiDownload,
+    mdiExitToApp,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -289,6 +291,14 @@
 
     await goto(Route.albums());
     viewMode = AlbumPageViewMode.VIEW;
+  };
+
+  const leaveAlbum = async () => {
+    const success = await handleLeaveAlbum(album);
+
+    if (success) {
+      await goto(Route.albums());
+    }
   };
 
   const onAlbumAddAssets = async ({ albumIds, assetIds }: { albumIds: string[]; assetIds: string[] }) => {
@@ -561,7 +571,7 @@
               />
             {/if}
 
-            {#if isOwned || containsEditors}
+            {#if isOwned || album.albumUsers.length > 1}
               <ButtonContextMenu
                 icon={mdiDotsVertical}
                 title={$t('album_options')}
@@ -594,6 +604,9 @@
                     text={$t('delete_album')}
                     onClick={() => handleDeleteAlbum(album)}
                   />
+                {/if}
+                {#if !isOwned}
+                  <MenuOption icon={mdiExitToApp} text={$t('leave_album')} onClick={leaveAlbum} />
                 {/if}
               </ButtonContextMenu>
             {/if}
