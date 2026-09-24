@@ -64,6 +64,10 @@ export default defineConfig([
       'unicorn/no-computed-property-existence-check': 'off',
       'unicorn/no-non-function-verb-prefix': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/prefer-ternary': 'off',
+      'unicorn/prefer-combined-guards': 'off',
+      'unicorn/no-immediate-mutation': 'off',
+      'unicorn/prefer-minimal-ternary': 'off',
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',
       '@typescript-eslint/require-array-sort-compare': 'error',

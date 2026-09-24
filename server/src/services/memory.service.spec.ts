@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
-import type { OnThisDayData } from 'src/types.js';
+import { MemoryType } from 'src/enum.js';
 import { MemoryService } from 'src/services/memory.service.js';
+import { OnThisDayData } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { MemoryFactory } from 'test/factories/memory.factory.js';
 import { getForMemory } from 'test/mappers.js';
@@ -94,7 +95,7 @@ describe(MemoryService.name, () => {
 
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
-          type: memory.type,
+          type: MemoryType.OnThisDay,
           data: memory.data as OnThisDayData,
           memoryAt: memory.memoryAt,
           isSaved: memory.isSaved,
@@ -124,7 +125,7 @@ describe(MemoryService.name, () => {
 
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
-          type: memory.type,
+          type: MemoryType.OnThisDay,
           data: memory.data as OnThisDayData,
           assetIds: memory.assets.map((asset) => asset.id),
           memoryAt: memory.memoryAt,
@@ -144,7 +145,7 @@ describe(MemoryService.name, () => {
 
       await expect(
         sut.create(factory.auth(), {
-          type: memory.type,
+          type: MemoryType.OnThisDay,
           data: memory.data as OnThisDayData,
           memoryAt: memory.memoryAt,
         }),

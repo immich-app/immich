@@ -1,35 +1,45 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { dateFormats } from '$lib/constants';
+  import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
+  import { getAlbumActions } from '$lib/services/album.service';
   import { locale } from '$lib/stores/preferences.store';
-  import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { AlbumUserRole, type AlbumResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
+  import { Icon, menuManager } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     album: AlbumResponseDto;
-    onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
-  }
-
-  let { album, onShowContextMenu = undefined }: Props = $props();
-
-  const showContextMenu = (position: ContextMenuPosition) => {
-    onShowContextMenu?.(position, album);
   };
+
+  const { album }: Props = $props();
+
+  let contextMenuAnchor: HTMLDivElement | undefined = $state();
+  const items = $derived.by(() => {
+    const { Edit, Share, Download, Delete } = getAlbumActions($t, album);
+    return [Edit, Share, Download, Delete];
+  });
 
   const dateLocaleString = (dateString: string) => {
     return new Date(dateString).toLocaleDateString($locale, dateFormats.album);
   };
 
-  const oncontextmenu = (event: MouseEvent) => {
+  const oncontextmenu = async (event: MouseEvent) => {
     event.preventDefault();
-    showContextMenu({ x: event.x, y: event.y });
+    contextMenuAnchor?.setAttribute('style', `left: ${event.x}px; top: ${event.y}px;`);
+    await menuManager.show({
+      target: contextMenuAnchor ?? (event.currentTarget as HTMLElement),
+      items,
+    });
   };
 </script>
+
+<Portal>
+  <div bind:this={contextMenuAnchor} class="absolute"></div>
+</Portal>
 
 <tr
   class="flex w-full place-items-center border-3 border-transparent p-2 text-center odd:bg-subtle/80 even:bg-subtle/20 hover:cursor-pointer hover:border-immich-primary/75 md:px-5 md:py-2 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"

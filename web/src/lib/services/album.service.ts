@@ -16,13 +16,24 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiImageOutline, mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
+import {
+  mdiDownload,
+  mdiImageOutline,
+  mdiLink,
+  mdiPlus,
+  mdiPlusBoxOutline,
+  mdiRenameOutline,
+  mdiShareVariantOutline,
+  mdiTrashCanOutline,
+  mdiUpload,
+} from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
+import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
 import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
@@ -45,13 +56,6 @@ export const getAlbumsActions = ($t: MessageFormatter) => {
 export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
   const isOwned = album.albumUsers[0].user.id === authManager.user.id;
 
-  const Share: ActionItem = {
-    title: $t('share'),
-    icon: mdiShareVariantOutline,
-    $if: () => isOwned,
-    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
-  };
-
   const AddUsers: ActionItem = {
     title: $t('invite_people'),
     icon: mdiPlus,
@@ -66,7 +70,34 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
   };
 
-  return { Share, AddUsers, CreateSharedLink };
+  const Delete: ActionItem = {
+    title: $t('delete'),
+    icon: mdiTrashCanOutline,
+    $if: () => isOwned,
+    onAction: () => handleDeleteAlbum(album),
+  };
+
+  const Download: ActionItem = {
+    title: $t('download'),
+    icon: mdiDownload,
+    onAction: () => handleDownloadAlbum(album),
+  };
+
+  const Edit: ActionItem = {
+    title: $t('edit_album'),
+    icon: mdiRenameOutline,
+    $if: () => isOwned,
+    onAction: () => modalManager.show(AlbumEditModal, { album }),
+  };
+
+  const Share: ActionItem = {
+    title: $t('share'),
+    icon: mdiShareVariantOutline,
+    $if: () => isOwned,
+    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
+  };
+
+  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Share };
 };
 
 export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: AssetResponseDto) => {

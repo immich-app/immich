@@ -75,6 +75,52 @@ where
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 
+-- PersonRepository.forBirthdayMemories
+select
+  "person"."personGroupId",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    date_part('month', person."birthDate")::int = $4
+    and date_part('day', person."birthDate")::int = $5
+  )
+  and date_part('year', person."birthDate")::int < $6
+
+-- PersonRepository.forBirthdayMemories (leap day fallback)
+select
+  "person"."personGroupId",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    (
+      date_part('month', person."birthDate")::int = $4
+      and date_part('day', person."birthDate")::int = $5
+    )
+    or (
+      date_part('month', person."birthDate")::int = $6
+      and date_part('day', person."birthDate")::int = $7
+    )
+  )
+  and date_part('year', person."birthDate")::int < $8
+
 -- PersonRepository.getFileSamples
 select
   "ownerId",
@@ -616,6 +662,7 @@ from
 where
   "asset_face"."assetId" = $2
   and "asset_face"."personGroupId" = $3
+  and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getForMergePerson
 select

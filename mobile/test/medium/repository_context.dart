@@ -268,10 +268,12 @@ class MediumRepositoryContext {
     String? name,
     String? checksum,
     Option<String>? checksumOption,
+    String? previousChecksum,
     DateTime? createdAt,
     AssetType? type,
     bool? isFavorite,
     String? iCloudId,
+    Option<String>? iCloudIdOption,
     DateTime? adjustmentTime,
     Option<DateTime>? adjustmentTimeOption,
     double? latitude,
@@ -295,10 +297,11 @@ class MediumRepositoryContext {
             orientation: .new(orientation ?? 0),
             updatedAt: .new(TestUtils.date(updatedAt)),
             checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
+            previousChecksum: .new(previousChecksum),
             createdAt: .new(TestUtils.date(createdAt)),
             type: .new(type ?? .image),
             isFavorite: .new(isFavorite ?? false),
-            iCloudId: .new(TestUtils.uuid(iCloudId)),
+            iCloudId: _resolveUndefined(iCloudId, iCloudIdOption, TestUtils.uuid()),
             adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
             latitude: .new(latitude ?? TestUtils.randDouble(-90, 90)),
             longitude: .new(longitude ?? TestUtils.randDouble(-180, 180)),
@@ -314,6 +317,7 @@ class MediumRepositoryContext {
     TrashOrigin? source,
     AssetType? type,
     DateTime? createdAt,
+    DateTime? updatedAt,
     bool? isFavorite,
   }) async {
     id ??= TestUtils.uuid();
@@ -329,6 +333,7 @@ class MediumRepositoryContext {
             source: .new(source ?? TrashOrigin.remoteSync),
             isFavorite: .new(isFavorite ?? false),
             createdAt: .new(TestUtils.date(createdAt)),
+            updatedAt: .new(TestUtils.date(updatedAt)),
           ),
         );
   }
