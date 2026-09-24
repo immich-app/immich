@@ -69,6 +69,8 @@ class DataController {
   // ignore: unused-code
   late final ActivityApiRepository activityApi = ActivityApiRepository(ActivitiesApi(_apiClient));
 
+  final foo = "test";
+
   /// Direct database access for the logic that has not yet been migrated
   // TODO(rewrite): Remove once all repositories have been migrated
   Drift get db => _db;
