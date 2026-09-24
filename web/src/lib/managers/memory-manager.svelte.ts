@@ -1,6 +1,7 @@
 import {
   type AssetResponseDto,
   MemorySearchOrder,
+  MemoryType,
   deleteMemory,
   type MemoryResponseDto,
   removeMemoryAssets,
@@ -349,6 +350,10 @@ class MemoryManager {
       if (!this.#lookup.has(item.id)) {
         this.memories.push(item);
       }
+    }
+
+    if (this.#filters.$for) {
+      this.memories.sort((a, b) => Number(b.type === MemoryType.Birthday) - Number(a.type === MemoryType.Birthday));
     }
 
     if (this.#total === undefined) {
