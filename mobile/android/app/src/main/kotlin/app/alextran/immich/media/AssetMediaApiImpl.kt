@@ -92,15 +92,12 @@ class AssetMediaApiImpl(context: Context) : ImmichPlugin(), AssetMediaApi, Activ
     if (!supportsMediaRequest) {
       return respond(callback, MediaAction.RESTORE.name) {
         val items = queryMediaItems(ids)
-        ids.map {
-          AssetMediaActionResult(
-            it,
-            if (it in items) {
-              AssetMediaActionStatus.ALREADY_IN_STATE
-            } else {
-              AssetMediaActionStatus.NOT_FOUND
-            }
-          )
+        ids.map { id ->
+          val status = when (id) {
+            !in items -> AssetMediaActionStatus.NOT_FOUND
+            else -> AssetMediaActionStatus.ALREADY_IN_STATE
+          }
+          AssetMediaActionResult(id, status)
         }
       }
     }
