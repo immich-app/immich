@@ -12,6 +12,7 @@ import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
+// TODO(rewrite): Remove when no longer needed
 class ApiService {
   final ApiClient _apiClient = ApiClient(basePath: '');
 
@@ -25,11 +26,13 @@ class ApiService {
   // ignore: unused-code
   late MapApi mapApi;
   late PartnersApi partnersApi;
+  // ignore: unused-code
   late PeopleApi peopleApi;
   late SharedLinksApi sharedLinksApi;
   late SyncApi syncApi;
   // ignore: unused-code
   late SystemConfigApi systemConfigApi;
+  // ignore: unused-code
   late ActivitiesApi activitiesApi;
   // ignore: unused-code
   late DownloadApi downloadApi;
@@ -39,6 +42,7 @@ class ApiService {
   // ignore: unused-code
   late MemoriesApi memoriesApi;
   late SessionsApi sessionsApi;
+  // ignore: unused-code
   late TagsApi tagsApi;
 
   ApiService() {
