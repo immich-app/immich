@@ -294,6 +294,7 @@ export class PersonService extends BaseService {
           birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
           isFavorite: person.isFavorite,
+          userId: person.userId,
         });
         results.push({ id: person.id, success: true });
       } catch (error: Error | any) {

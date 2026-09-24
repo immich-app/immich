@@ -1,6 +1,6 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleUpdatePerson } from '$lib/services/person.service';
+  import { handleUpdatePeople, handleUpdatePerson } from '$lib/services/person.service';
   import { searchUsers, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { Button, Checkbox, DatePicker, Field, FormModal, HelperText, Input, Label, Select, VStack } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiText } from '@mdi/js';
@@ -14,38 +14,36 @@
     onClose: () => void;
   };
 
-  let { person, targetUserId: initialTargetUserId, onClose }: Props = $props();
-
-  let users = $state<UserResponseDto[]>([]);
-  let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
-
-  let targetPerson = $state<{ name: string; birthDate: string | null; sharedById: string | null }>({
-    name: '',
-    birthDate: null,
-    sharedById: null,
-  });
+  const { person, targetUserId: initialTargetUserId, onClose }: Props = $props();
 
   const candidates = $derived([
     { name: person.name, birthDate: person.birthDate, sharedById: authManager.user.id },
     ...(person.otherPeople ?? []),
   ]);
 
+  let users = $state<UserResponseDto[]>([]);
+  let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
+
+  let targetPerson = $state(candidates[0]);
+
+  let applyToEveryone = $state(false);
+
   const loadUsers = async () => {
     users = await searchUsers();
   };
 
-  onMount(async () => {
-    await loadUsers();
-    onChange(targetUserId);
-  });
-
-  let applyToEveryone = $state(false);
-
   const onSubmit = async () => {
-    const success = await handleUpdatePerson(person.id, {
-      name: targetPerson.name,
-      birthDate: targetPerson.birthDate,
-      userId: targetPerson.sharedById ?? undefined,
+    const userIdsToUpdate = applyToEveryone
+      ? candidates.map(({ sharedById }) => sharedById)
+      : [targetPerson.sharedById];
+
+    const success = await handleUpdatePeople({
+      people: userIdsToUpdate.map((userId) => ({
+        id: person.id,
+        name: targetPerson.name,
+        birthDate: targetPerson.birthDate,
+        userId,
+      })),
     });
 
     if (success) {
@@ -67,9 +65,14 @@
       targetPerson.sharedById = match.sharedById;
     }
   };
+
+  onMount(async () => {
+    await loadUsers();
+    onChange(targetUserId);
+  });
 </script>
 
-<FormModal title="Shared person" size="small" icon={mdiText} {onClose} {onSubmit}>
+<FormModal title={$t('person')} size="small" icon={mdiText} {onClose} {onSubmit}>
   <VStack>
     <Field label="User">
       <Select
@@ -111,7 +114,7 @@
     </Field>
 
     <div class="flex w-full items-start gap-2">
-      <Label label="Apply to all people?" for="apply-to-all-people-checkbox" />
+      <Label label="Apply for all users?" for="apply-to-all-people-checkbox" />
       <Checkbox id="apply-to-all-people-checkbox" color="secondary" bind:checked={applyToEveryone} />
     </div>
   </VStack>

@@ -1,4 +1,4 @@
-import { updatePerson, type AssetResponseDto, type PersonResponseDto, type PersonUpdateDto } from '@immich/sdk';
+import { updatePeople, updatePerson, type AssetResponseDto, type PeopleUpdateDto, type PersonResponseDto, type PersonUpdateDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
@@ -111,6 +111,17 @@ export const handleUpdatePerson = async (id: string, personUpdateDto: PersonUpda
 
   try {
     await updatePerson({ id, personUpdateDto });
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
+  }
+};
+
+export const handleUpdatePeople = async (peopleUpdateDto: PeopleUpdateDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await updatePeople({ peopleUpdateDto });
     return true;
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
