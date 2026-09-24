@@ -8,6 +8,7 @@ import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
@@ -17,6 +18,7 @@ import { PersonUserRepository } from 'src/repositories/person-user.repository.js
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
 import { DB } from 'src/schema/index.js';
 import { PersonService } from 'src/services/person.service.js';
 import { newMediumService } from 'test/medium.factory.js';
@@ -38,6 +40,8 @@ const setup = (db?: Kysely<DB>) => {
       AssetRepository,
       AssetEditRepository,
       SystemMetadataRepository,
+      UserRepository,
+      ClusterGroupRepository,
     ],
     mock: [JobRepository, LoggingRepository, StorageRepository, MachineLearningRepository],
   });
@@ -1150,11 +1154,45 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('deleteSharedUsers', () => {
+  describe('addUsersToPeople', () => {
+    it('should skip sharedWith users that are not in the same cluster group', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user: owner });
+
+      await sut.addUsersToPeople(auth, {
+        personIds: [person.personGroupId],
+        sharedWithIds: [user1.id],
+        role: PersonUserRole.Read,
+      });
+
+      await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(0);
+    });
+
+    it('should add user to person', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      const auth = factory.auth({ user: owner });
+
+      await sut.addUsersToPeople(auth, {
+        personIds: [person.personGroupId],
+        sharedWithIds: [user1.id],
+        role: PersonUserRole.Read,
+      });
+
+      await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(1);
+    });
+  });
+
+  describe('removeUsersFromPeople', () => {
     it('should work with an empty list', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
-      const { user: sharedWith } = await ctx.newUser();
+      const { user: sharedWith } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
@@ -1172,7 +1210,7 @@ describe(PersonService.name, () => {
     it('should throw an error when there is no access', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { user: owner } = await ctx.newUser();
+      const { user: owner } = await ctx.newUser({ clusterGroupId: user.clusterGroupId });
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user });
 
@@ -1184,8 +1222,8 @@ describe(PersonService.name, () => {
     it('should delete only the requested person and user pairs', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
-      const { user: user1 } = await ctx.newUser();
-      const { user: user2 } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
       const { person: person1 } = await ctx.newPerson({ ownerId: owner.id });
       const { person: person2 } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
@@ -1216,8 +1254,8 @@ describe(PersonService.name, () => {
     it('should not delete the same pair shared by another user', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
-      const { user: otherOwner } = await ctx.newUser();
-      const { user: sharedWith } = await ctx.newUser();
+      const { user: otherOwner } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
+      const { user: sharedWith } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       await ctx.newPerson({ ownerId: otherOwner.id, personGroupId: person.personGroupId });
 

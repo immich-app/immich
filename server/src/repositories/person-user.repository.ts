@@ -57,6 +57,10 @@ export class PersonUserRepository {
     ],
   })
   createAll(dto: Insertable<PersonUserTable>[]) {
+    if (dto.length === 0) {
+      return [];
+    }
+
     return this.db
       .insertInto('person_user')
       .values(dto)

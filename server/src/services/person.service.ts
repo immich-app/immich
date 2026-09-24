@@ -821,12 +821,21 @@ export class PersonService extends BaseService {
       ids: dto.personIds.map((item) => ({ personGroupId: item, ownerId: auth.user.id })),
     });
 
-    // TODO: check sharedWithIds are in the auth user's cluster group
+    const user = await findOrFail(() => this.userRepository.get(auth.user.id, {}), 'User');
+    const clusterGroupUsers = await this.clusterGroupRepository.getUsers({
+      clusterGroupId: user.clusterGroupId,
+      userId: user.id,
+    });
+    const clusterGroupUserIds = new Set(clusterGroupUsers.map(({ id }) => id));
 
     const items: Insertable<PersonUserTable>[] = [];
     const sharedById = auth.user.id;
 
     for (const sharedWithId of dto.sharedWithIds) {
+      if (!clusterGroupUserIds.has(sharedWithId)) {
+        continue;
+      }
+
       for (const personGroupId of dto.personIds) {
         items.push({ personGroupId, sharedById, sharedWithId, role: dto.role });
       }
