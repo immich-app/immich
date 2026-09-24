@@ -46,10 +46,17 @@ import 'package:immich_mobile/wm_executor.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:timezone/data/latest.dart';
 
 void main() async {
   try {
+    // https://github.com/flutter/flutter/issues/118384
+    // Android only: Render maps into a TextureView
+    // By default, MapLibre will embed them into platform views, using Virtual Display. For some reason Flutter has a bug
+    // that leaks a presentation window and SurfaceFlinger layer for every map built, and it is never discarded
+    MapLibreMap.useHybridComposition = true;
+
     ImmichWidgetsBinding();
     unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
     await EasyLocalization.ensureInitialized();

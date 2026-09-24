@@ -1,24 +1,23 @@
 <script lang="ts">
-  import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
-  import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import StorageTemplateVariablesModal from '$lib/modals/StorageTemplateVariablesModal.svelte';
   import { Route } from '$lib/route';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
-  import { Heading, Link, LoadingSpinner, Text } from '@immich/ui';
+  import { Code, Heading, IconButton, Link, modalManager, Text } from '@immich/ui';
+  import { mdiInformationOutline } from '@mdi/js';
   import handlebar from 'handlebars';
   import * as luxon from 'luxon';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-  import { fade } from 'svelte/transition';
+  import { fade, slide } from 'svelte/transition';
 
   type Props = {
     minified?: boolean;
@@ -28,20 +27,28 @@
 
   const { minified = false, duration = 500, saveOnClose = false }: Props = $props();
 
+  const DATE_TEMPLATE = '{{y}}/{{MM}}/{{dd}}/{{filename}}';
+
+  const StorageTemplateOption = {
+    None: 'none',
+    Date: 'date',
+    Custom: 'custom',
+  } as const;
+
+  type StorageTemplateOption = (typeof StorageTemplateOption)[keyof typeof StorageTemplateOption];
+
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 
-  const bubble = createBubbler();
   let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
   let selectedPreset = $state('');
+  let customTemplate = $state(systemConfigManager.value.storageTemplate.template);
 
   const getTemplateOptions = async () => {
     templateOptions = await getStorageTemplateOptions();
     selectedPreset = config.storageTemplate.template;
   };
-
-  const getSupportDateTimeFormat = () => getStorageTemplateOptions();
 
   const renderTemplate = (templateString: string) => {
     if (!templateOptions) {
@@ -91,9 +98,47 @@
   const handlePresetSelection = () => {
     configToEdit.storageTemplate.template = selectedPreset;
   };
-  let parsedTemplate = $derived(() => {
+
+  let selectedOption = $state(
+    // initially load the selection state from saved config
+    (() => {
+      if (!configToEdit.storageTemplate.enabled) {
+        return StorageTemplateOption.None;
+      }
+
+      return configToEdit.storageTemplate.template === DATE_TEMPLATE
+        ? StorageTemplateOption.Date
+        : StorageTemplateOption.Custom;
+    })(),
+  );
+
+  const handleOptionSelection = (option: StorageTemplateOption) => {
+    if (selectedOption === StorageTemplateOption.Custom) {
+      customTemplate = configToEdit.storageTemplate.template;
+    }
+
+    const templates: Record<StorageTemplateOption, string> = {
+      [StorageTemplateOption.None]: configToEdit.storageTemplate.template,
+      [StorageTemplateOption.Date]: DATE_TEMPLATE,
+      [StorageTemplateOption.Custom]: customTemplate,
+    };
+
+    selectedOption = option;
+    configToEdit.storageTemplate.enabled = option !== StorageTemplateOption.None;
+    configToEdit.storageTemplate.template = templates[option];
+  };
+
+  const handleShowVariables = async () => {
+    if (templateOptions) {
+      await modalManager.show(StorageTemplateVariablesModal, { options: templateOptions });
+    }
+  };
+
+  let parsedCustomTemplate = $derived(() => {
     try {
-      return renderTemplate(configToEdit.storageTemplate.template);
+      return renderTemplate(
+        selectedOption === StorageTemplateOption.Custom ? configToEdit.storageTemplate.template : customTemplate,
+      );
     } catch {
       return 'error';
     }
@@ -106,30 +151,149 @@
   });
 </script>
 
-<section class="mt-2 dark:text-immich-dark-fg">
-  <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
-    <p class="text-sm dark:text-immich-dark-fg">
-      <FormatMessage key="admin.storage_template_more_details">
-        {#snippet children({ tag, message })}
-          {#if tag === 'template-link'}
-            <Link href="https://docs.immich.app/administration/storage-template">{message}</Link>
-          {:else if tag === 'implications-link'}
-            <Link href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations">
-              {message}
-            </Link>
-          {/if}
-        {/snippet}
-      </FormatMessage>
-    </p>
+{#snippet templateOption(option: StorageTemplateOption, label: string, description: string, preview: string)}
+  <div
+    class="flex flex-col rounded-2xl border-2 p-4 transition-colors {selectedOption === option
+      ? 'border-primary bg-primary/5'
+      : 'border-primary/10 hover:border-primary/20'} {disabled ? 'opacity-50' : ''}"
+  >
+    <label class="flex items-center gap-3 {disabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
+      <input
+        type="radio"
+        name="storage-template-option"
+        class="accent-primary focus-visible:ring"
+        {disabled}
+        checked={selectedOption === option}
+        onchange={() => handleOptionSelection(option)}
+      />
+      <div class="flex flex-col">
+        <span class="font-medium">{label}</span>
+        <Text size="small" color="muted">{description}</Text>
+      </div>
+    </label>
+
+    {#if option === StorageTemplateOption.Custom && selectedOption === StorageTemplateOption.Custom}
+      <div class="mt-4 flex flex-col gap-2" transition:slide={{ duration }}>
+        <div class="flex flex-col">
+          <label class="text-sm font-medium text-primary" for="preset-select">
+            {$t('preset')}
+          </label>
+          <select
+            class="mt-2 immich-form-input rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
+            {disabled}
+            name="presets"
+            id="preset-select"
+            bind:value={selectedPreset}
+            onchange={handlePresetSelection}
+          >
+            {#each templateOptions?.presetOptions ?? [] as preset (preset)}
+              <option value={preset}>{renderTemplate(preset)}</option>
+            {/each}
+          </select>
+        </div>
+
+        <SettingInputField
+          label={$t('template')}
+          {disabled}
+          required
+          inputType={SettingInputFieldType.TEXT}
+          bind:value={configToEdit.storageTemplate.template}
+          isEdited={configToEdit.storageTemplate.template !== config.storageTemplate.template}
+        >
+          {#snippet trailingSnippet()}
+            <IconButton
+              class="shrink-0"
+              size="small"
+              shape="round"
+              variant="ghost"
+              color="secondary"
+              aria-label={$t('admin.storage_template_variables')}
+              title={$t('admin.storage_template_variables')}
+              icon={mdiInformationOutline}
+              onclick={handleShowVariables}
+            />
+          {/snippet}
+        </SettingInputField>
+
+        <Text size="small">
+          <FormatMessage
+            key="admin.storage_template_path_length"
+            values={{
+              length: preview.length + authManager.user.id.length + 'UPLOAD_LOCATION'.length,
+              limit: 260,
+            }}
+          >
+            {#snippet children({ message })}
+              <span class="font-semibold text-primary">{message}</span>
+            {/snippet}
+          </FormatMessage>
+        </Text>
+
+        <Text size="small">
+          <FormatMessage
+            key="admin.storage_template_user_label"
+            values={{ label: authManager.user.storageLabel || authManager.user.id }}
+          >
+            {#snippet children({ message })}
+              <code class="text-primary">{message}</code>
+            {/snippet}
+          </FormatMessage>
+        </Text>
+      </div>
+    {/if}
+
+    {#if preview}
+      <Text size="small" class="mt-4">
+        {$t('preview')}:
+        <Code size="small"
+          >{`UPLOAD_LOCATION/library/${authManager.user.storageLabel || authManager.user.id}/${preview}.jpg`}</Code
+        >
+      </Text>
+    {/if}
   </div>
+{/snippet}
+
+<section class="mt-2 dark:text-immich-dark-fg">
+  {#if !minified}
+    <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
+      <p class="text-sm dark:text-immich-dark-fg">
+        <FormatMessage key="admin.storage_template_more_details">
+          {#snippet children({ tag, message })}
+            {#if tag === 'template-link'}
+              <Link href="https://docs.immich.app/administration/storage-template">{message}</Link>
+            {:else if tag === 'implications-link'}
+              <Link href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations">
+                {message}
+              </Link>
+            {/if}
+          {/snippet}
+        </FormatMessage>
+      </p>
+    </div>
+  {/if}
+
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ms-4 mt-4'}">
-      <SettingSwitch
-        title={$t('admin.storage_template_enable_description')}
-        {disabled}
-        bind:checked={configToEdit.storageTemplate.enabled}
-        isEdited={configToEdit.storageTemplate.enabled !== config.storageTemplate.enabled}
-      />
+      <div class="flex flex-col gap-2">
+        {@render templateOption(
+          StorageTemplateOption.None,
+          $t('admin.storage_template_option_none'),
+          $t('admin.storage_template_option_none_description'),
+          '',
+        )}
+        {@render templateOption(
+          StorageTemplateOption.Date,
+          'YYYY/MM/DD',
+          $t('admin.storage_template_option_date_description'),
+          renderTemplate(DATE_TEMPLATE),
+        )}
+        {@render templateOption(
+          StorageTemplateOption.Custom,
+          $t('admin.storage_template_option_custom'),
+          $t('admin.storage_template_option_custom_description'),
+          parsedCustomTemplate(),
+        )}
+      </div>
 
       {#if !minified}
         <SettingSwitch
@@ -140,135 +304,27 @@
           isEdited={configToEdit.storageTemplate.hashVerificationEnabled !==
             config.storageTemplate.hashVerificationEnabled}
         />
-      {/if}
 
-      {#if configToEdit.storageTemplate.enabled}
-        <hr />
-
-        <Heading size="tiny" color="primary">
-          {$t('variables')}
-        </Heading>
-
-        <section class="support-date">
-          {#await getSupportDateTimeFormat()}
-            <LoadingSpinner />
-          {:then options}
-            <div transition:fade={{ duration: 200 }}>
-              <SupportedDatetimePanel {options} />
-            </div>
-          {/await}
-        </section>
-
-        <section class="support-date">
-          <SupportedVariablesPanel />
-        </section>
-
-        <div class="mt-2 flex flex-col">
-          <!-- <h3 class="text-base font-medium text-primary">{$t('template')}</h3> -->
-          <Heading size="tiny" color="primary">
-            {$t('template')}
-          </Heading>
-
-          <div class="my-2">
-            <Text size="small">{$t('preview')}</Text>
-          </div>
-
-          <p class="text-sm">
-            <FormatMessage
-              key="admin.storage_template_path_length"
-              values={{
-                length: parsedTemplate().length + authManager.user.id.length + 'UPLOAD_LOCATION'.length,
-                limit: 260,
-              }}
-            >
-              {#snippet children({ message })}
-                <span class="font-semibold text-primary">{message}</span>
-              {/snippet}
-            </FormatMessage>
-          </p>
-
-          <p class="text-sm">
-            <FormatMessage
-              key="admin.storage_template_user_label"
-              values={{ label: authManager.user.storageLabel || authManager.user.id }}
-            >
-              {#snippet children({ message })}
-                <code class="text-primary">{message}</code>
-              {/snippet}
-            </FormatMessage>
-          </p>
-
-          <p class="mt-2 rounded-lg bg-gray-200 p-4 py-2 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
-            <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-              >UPLOAD_LOCATION/library/{authManager.user.storageLabel || authManager.user.id}</span
-            >/{parsedTemplate()}.jpg
-          </p>
-
-          <form autocomplete="off" class="flex flex-col" onsubmit={preventDefault(bubble('submit'))}>
-            <div class="my-2 flex flex-col">
-              {#if templateOptions}
-                <label class="text-sm font-medium text-primary" for="preset-select">
-                  {$t('preset')}
-                </label>
-                <select
-                  class="mt-2 immich-form-input rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
-                  disabled={disabled || !configToEdit.storageTemplate.enabled}
-                  name="presets"
-                  id="preset-select"
-                  bind:value={selectedPreset}
-                  onchange={handlePresetSelection}
+        {#if configToEdit.storageTemplate.enabled}
+          <div id="migration-info" class="mt-2 text-sm">
+            <Heading size="tiny" color="primary">
+              {$t('notes')}
+            </Heading>
+            <section class="flex flex-col gap-2">
+              <p>
+                <FormatMessage
+                  key="admin.storage_template_migration_info"
+                  values={{ job: $t('admin.storage_template_migration_job') }}
                 >
-                  {#each templateOptions.presetOptions as preset (preset)}
-                    <option value={preset}>{renderTemplate(preset)}</option>
-                  {/each}
-                </select>
-              {/if}
-            </div>
+                  {#snippet children({ message })}
+                    <a href={Route.queues()} class="text-primary">{message}</a>
+                  {/snippet}
+                </FormatMessage>
+              </p>
+            </section>
+          </div>
+        {/if}
 
-            <div class="flex gap-2 align-bottom">
-              <SettingInputField
-                label={$t('template')}
-                disabled={disabled || !configToEdit.storageTemplate.enabled}
-                required
-                inputType={SettingInputFieldType.TEXT}
-                bind:value={configToEdit.storageTemplate.template}
-                isEdited={configToEdit.storageTemplate.template !== config.storageTemplate.template}
-              />
-
-              <div class="flex-0">
-                <SettingInputField
-                  label={$t('extension')}
-                  inputType={SettingInputFieldType.TEXT}
-                  value=".jpg"
-                  disabled
-                />
-              </div>
-            </div>
-
-            {#if !minified}
-              <div id="migration-info" class="mt-2 text-sm">
-                <Heading size="tiny" color="primary">
-                  {$t('notes')}
-                </Heading>
-                <section class="flex flex-col gap-2">
-                  <p>
-                    <FormatMessage
-                      key="admin.storage_template_migration_info"
-                      values={{ job: $t('admin.storage_template_migration_job') }}
-                    >
-                      {#snippet children({ message })}
-                        <a href={Route.queues()} class="text-primary">{message}</a>
-                      {/snippet}
-                    </FormatMessage>
-                  </p>
-                </section>
-              </div>
-            {/if}
-          </form>
-        </div>
-      {/if}
-
-      {#if !minified}
         <SettingButtonsRow bind:configToEdit keys={['storageTemplate']} {disabled} />
       {/if}
     </div>

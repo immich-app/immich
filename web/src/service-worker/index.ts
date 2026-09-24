@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-unnecessary-global-this */
 /// <reference types="@sveltejs/kit" />
 /// <reference no-default-lib="true"/>
 /// <reference lib="esnext" />
