@@ -15,14 +15,22 @@
 
   let { id, description = $bindable(), isOwned }: Props = $props();
 
+  // keep unsaved edits local so an album refresh (e.g. from an upload) does not overwrite them
+  let newDescription = $derived(description);
+
   const handleFocusOut = async () => {
+    if (newDescription === description) {
+      return;
+    }
+
     try {
       const response = await updateAlbumInfo({
         id,
         updateAlbumDto: {
-          description: description || null,
+          description: newDescription || null,
         },
       });
+      ({ description } = response);
       eventManager.emit('AlbumUpdate', response);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_album'));
@@ -32,7 +40,7 @@
 
 {#if isOwned}
   <Textarea
-    bind:value={description}
+    bind:value={newDescription}
     variant="ghost"
     onfocusout={handleFocusOut}
     placeholder={$t('add_a_description')}
