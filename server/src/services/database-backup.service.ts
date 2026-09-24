@@ -224,7 +224,7 @@ export class DatabaseBackupService {
     };
   }
 
-  async createDatabaseBackup(filenamePrefix: string = ''): Promise<string> {
+  async createDatabaseBackup(filenamePrefix: string = '', signal?: AbortSignal): Promise<string> {
     this.logger.debug(`Database Backup Started`);
 
     const { bin, args, databasePassword, databaseVersion, databaseMajorVersion } =
@@ -250,7 +250,7 @@ export class DatabaseBackupService {
       gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
       const fileStream = this.storageRepository.createWriteStream(temporaryFilePath);
 
-      await pipeline(pgdump, gzip, fileStream);
+      await pipeline(pgdump, gzip, fileStream, { signal });
       await this.storageRepository.rename(temporaryFilePath, backupFilePath);
     } catch (error) {
       this.logger.error(`Database Backup Failure: ${error}`);
