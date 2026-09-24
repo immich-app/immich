@@ -1,14 +1,15 @@
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { CastDestinationType, CastState, type ICastDestination } from '$lib/managers/cast-manager.svelte';
+import {
+  CastDestinationType,
+  CastState,
+  type CastMediaSource,
+  type ICastDestination,
+} from '$lib/managers/cast-manager.svelte';
+import { withCastSession } from '$lib/utils/cast/cast-url';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-
-enum SESSION_DISCOVERY_CAUSE {
-  LOAD_MEDIA,
-  ACTIVE_SESSION,
-}
 
 export class GCastDestination implements ICastDestination {
   type = CastDestinationType.GCAST;
@@ -20,9 +21,11 @@ export class GCastDestination implements ICastDestination {
   receiverName = $state<string | null>(null);
 
   private remotePlayer: cast.framework.RemotePlayer | null = null;
+  private remotePlayerController: cast.framework.RemotePlayerController | null = null;
   private session: chrome.cast.Session | null = null;
   private currentMedia: chrome.cast.media.Media | null = null;
-  private currentUrl: string | null = null;
+  private loadedUrl: string | null = null;
+  private contentTypes = new Map<string, Promise<string>>();
 
   async initialize(): Promise<boolean> {
     if (!authManager.authenticated || !authManager.preferences.cast.gCastEnabled) {
@@ -84,47 +87,72 @@ export class GCastDestination implements ICastDestination {
       this.onCastStateChanged(event),
     );
 
-    const remotePlayerController = new cast.framework.RemotePlayerController(this.remotePlayer);
-    remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.ANY_CHANGE, (event) =>
+    this.remotePlayerController = new cast.framework.RemotePlayerController(this.remotePlayer);
+    this.remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.ANY_CHANGE, (event) =>
       this.onRemotePlayerChange(event),
     );
 
     return true;
   }
 
-  async loadMedia(mediaUrl: string, sessionKey: string, reload: boolean = false): Promise<void> {
+  prepareMedia(source: CastMediaSource): Promise<string> {
+    if (source.contentType) {
+      return Promise.resolve(source.contentType);
+    }
+
+    const cached = this.contentTypes.get(source.key);
+    if (cached) {
+      return cached;
+    }
+
+    const lookup = fetch(source.url, { method: 'HEAD' }).then((response) => {
+      const contentType = response.headers.get('content-type')?.split(';')[0];
+      if (!response.ok || !contentType) {
+        throw new Error(`Unable to resolve Cast media type (${response.status})`);
+      }
+      return contentType;
+    });
+    this.contentTypes.set(source.key, lookup);
+    if (this.contentTypes.size > 256) {
+      this.contentTypes.delete(this.contentTypes.keys().next().value!);
+    }
+    void lookup.catch(() => this.contentTypes.delete(source.key));
+    return lookup;
+  }
+
+  async loadMedia(source: CastMediaSource, sessionKey: string, reload: boolean = false): Promise<boolean> {
     if (!this.isAvailable || !this.isConnected || !this.session) {
-      return;
+      throw new Error('Google Cast session is unavailable');
     }
 
-    // already playing the same media
-    if (this.currentUrl === mediaUrl && !reload) {
-      return;
+    if (this.loadedUrl === source.url && !reload) {
+      return false;
     }
 
-    // we need to send content type in the request
-    // in the future we can swap this out for an API call to get image metadata
-    const assetHead = await fetch(mediaUrl, { method: 'HEAD' });
-    const contentType = assetHead.headers.get('content-type');
+    const contentType = await this.prepareMedia(source);
+    const activeSession = this.session;
 
-    if (!contentType) {
-      throw new Error('No content type found for media url');
-    }
-
-    // build the authenticated media request and send it to the cast device
-    const authenticatedUrl = `${mediaUrl}&sessionKey=${sessionKey}`;
-    const mediaInfo = new chrome.cast.media.MediaInfo(authenticatedUrl, contentType);
+    const mediaInfo = new chrome.cast.media.MediaInfo(withCastSession(source.url, sessionKey), contentType);
 
     // Create a queue with a single item and set it to repeat
     const queueItem = new chrome.cast.media.QueueItem(mediaInfo);
     const queueLoadRequest = new chrome.cast.media.QueueLoadRequest([queueItem]);
     queueLoadRequest.repeatMode = chrome.cast.media.RepeatMode.SINGLE;
 
-    const successCallback = this.onMediaDiscovered.bind(this, SESSION_DISCOVERY_CAUSE.LOAD_MEDIA);
-
-    this.currentUrl = mediaUrl;
-
-    return this.session.queueLoad(queueLoadRequest, successCallback, this.onError.bind(this));
+    await new Promise<void>((resolve, reject) => {
+      activeSession.queueLoad(
+        queueLoadRequest,
+        (media) => {
+          if (this.session === activeSession) {
+            this.currentMedia = media;
+            this.loadedUrl = source.url;
+          }
+          resolve();
+        },
+        (error) => reject(new Error(`Google Cast load failed: ${error.code}`)),
+      );
+    });
+    return true;
   }
 
   ///
@@ -152,10 +180,10 @@ export class GCastDestination implements ICastDestination {
   }
 
   seekTo(time: number): void {
-    const remotePlayer = new cast.framework.RemotePlayer();
-    const remotePlayerController = new cast.framework.RemotePlayerController(remotePlayer);
-    remotePlayer.currentTime = time;
-    remotePlayerController.seek();
+    if (this.remotePlayer && this.remotePlayerController) {
+      this.remotePlayer.currentTime = time;
+      this.remotePlayerController.seek();
+    }
   }
 
   disconnect(): void {
@@ -175,11 +203,28 @@ export class GCastDestination implements ICastDestination {
       case cast.framework.SessionState.NO_SESSION:
       case cast.framework.SessionState.SESSION_ENDED: {
         this.session = null;
+        this.isConnected = false;
+        this.currentMedia = null;
+        this.loadedUrl = null;
         break;
       }
       case cast.framework.SessionState.SESSION_RESUMED:
       case cast.framework.SessionState.SESSION_STARTED: {
         this.session = event.session.getSessionObj();
+        this.isConnected = true;
+        this.receiverName = this.session.receiver.friendlyName;
+        this.currentMedia = this.session.media?.[0] ?? null;
+        const contentId = this.currentMedia?.media?.contentId;
+        if (contentId) {
+          try {
+            const url = new URL(contentId);
+            url.searchParams.delete('sessionKey');
+            this.loadedUrl = url.href;
+            this.castState = this.currentMedia!.playerState as unknown as CastState;
+          } catch {
+            this.loadedUrl = null;
+          }
+        }
         break;
       }
       case cast.framework.SessionState.SESSION_START_FAILED: {
@@ -191,19 +236,19 @@ export class GCastDestination implements ICastDestination {
   }
 
   private onCastStateChanged(event: cast.framework.CastStateEventData) {
-    this.isConnected = event.castState === cast.framework.CastState.CONNECTED;
+    this.isConnected = event.castState === cast.framework.CastState.CONNECTED && !!this.session;
     this.receiverName = this.session?.receiver.friendlyName ?? null;
 
     if (event.castState === cast.framework.CastState.NOT_CONNECTED) {
       this.currentMedia = null;
-      this.currentUrl = null;
+      this.loadedUrl = null;
     }
   }
 
   private onRemotePlayerChange(event: cast.framework.RemotePlayerChangedEvent) {
     switch (event.field) {
       case 'isConnected': {
-        this.isConnected = event.value;
+        this.isConnected = event.value && !!this.session;
         break;
       }
       case 'remotePlayer': {
@@ -227,17 +272,6 @@ export class GCastDestination implements ICastDestination {
 
   onError(error: chrome.cast.Error) {
     console.error('Google Cast Error:', error);
-  }
-
-  private onMediaDiscovered(cause: SESSION_DISCOVERY_CAUSE, currentMedia: chrome.cast.media.Media) {
-    this.currentMedia = currentMedia;
-
-    if (cause === SESSION_DISCOVERY_CAUSE.LOAD_MEDIA) {
-      this.castState = CastState.PLAYING;
-    } else if (cause === SESSION_DISCOVERY_CAUSE.ACTIVE_SESSION) {
-      // CastState and PlayerState are identical enums
-      this.castState = currentMedia.playerState as unknown as CastState;
-    }
   }
 
   static async showCastDialog() {

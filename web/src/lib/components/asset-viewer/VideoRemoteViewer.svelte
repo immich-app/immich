@@ -40,7 +40,11 @@
   });
 
   $effect(() => {
-    if (castManager.castState === CastState.IDLE && previousPlayerState !== CastState.PAUSED) {
+    if (
+      castManager.castState === CastState.IDLE &&
+      previousPlayerState !== null &&
+      previousPlayerState !== CastState.PAUSED
+    ) {
       onVideoEnded();
     }
 
@@ -54,7 +58,7 @@
     const fullUrl = new URL(url, location.href);
 
     try {
-      await castManager.loadMedia(fullUrl.href, force);
+      await castManager.loadMedia({ key: fullUrl.href, url: fullUrl.href }, force);
       onVideoStarted();
     } catch (error) {
       handleError(error, 'Unable to cast');

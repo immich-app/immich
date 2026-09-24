@@ -88,6 +88,12 @@
 
     return getAssetPlaybackUrl({ id: assetId, cacheKey });
   });
+  // The default receiver cannot authenticate the child playlists of a local HLS session yet.
+  const castFileUrl = $derived(
+    playOriginalVideo
+      ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
+      : getAssetPlaybackUrl({ id: assetId, cacheKey }),
+  );
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   let showVideo = $state(false);
   let hasFocused = $state(false);
@@ -363,7 +369,7 @@
           poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
           {onVideoEnded}
-          {assetFileUrl}
+          assetFileUrl={castFileUrl}
         />
       </div>
     {:else}

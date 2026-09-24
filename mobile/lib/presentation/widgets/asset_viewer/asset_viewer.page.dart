@@ -201,6 +201,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (asset is RemoteAsset) {
       context.scaffoldMessenger.hideCurrentSnackBar();
       ref.read(castProvider.notifier).loadMedia(asset, false);
+      unawaited(_prepareCastNeighbors(_currentPage));
       return;
     }
 
@@ -215,6 +216,31 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ),
       ),
     );
+  }
+
+  Future<void> _prepareCastNeighbors(int selectedPage) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    if (!mounted || selectedPage != _currentPage || !ref.read(castProvider).isCasting) {
+      return;
+    }
+
+    for (final index in [selectedPage - 1, selectedPage + 1]) {
+      if (index < 0 || index >= _totalAssets) {
+        continue;
+      }
+      BaseAsset? neighbor;
+      try {
+        neighbor = await ref.read(timelineServiceProvider).getAssetAsync(index);
+      } catch (_) {
+        return;
+      }
+      if (!mounted || selectedPage != _currentPage || !ref.read(castProvider).isCasting) {
+        return;
+      }
+      if (neighbor is RemoteAsset && neighbor.isImage) {
+        ref.read(castProvider.notifier).prepareMedia(neighbor);
+      }
+    }
   }
 
   void _onEvent(Event event) {
