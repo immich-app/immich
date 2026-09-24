@@ -4,10 +4,9 @@ import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class AssetMarkerIcon extends StatelessWidget {
-  const AssetMarkerIcon({required this.id, required this.thumbhash, super.key});
+  const AssetMarkerIcon({required this.id, super.key});
 
   final String id;
-  final String thumbhash;
 
   @override
   Widget build(BuildContext context) {

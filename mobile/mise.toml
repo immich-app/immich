@@ -109,7 +109,15 @@ run = "flutter test"
 [tasks.analyze]
 alias = "lint"
 description = "Analyze Dart code"
+usage = '''
+flag "--full" help="Check for unused code" default=#false
+'''
 depends = ["analyze:dart", "analyze:dcm"]
+run = '''
+if [ "${usage_full}" = "true" ]; then
+  mise run analyze:unused
+fi
+'''
 
 [tasks."analyze-fix"]
 alias = "lint-fix"
@@ -199,6 +207,10 @@ run = "dart analyze --fatal-infos"
 description = "Run Dart Code Metrics"
 hide = true
 run = "dcm analyze lib --fatal-style --fatal-warnings"
+
+[tasks."analyze:unused"]
+description = "Find unused code"
+run = "dcm check-unused-code lib test integration_test --concise"
 
 [tasks."analyze-fix:dart"]
 description = "Auto-fix Dart analysis"

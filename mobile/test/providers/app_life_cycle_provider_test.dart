@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -99,6 +100,8 @@ void main() {
   late Completer<ServerVersion?> serverVersion;
   late MockServerInfoService serverInfoService;
   late MockBackgroundWorkerLockService lockService;
+  late MockBackgroundWorkerFgService fgService;
+  late MockBackgroundSyncManager backgroundSync;
   late ProviderContainer container;
   late TestWebsocketNotifier websocket;
   late AppLifeCycleNotifier lifeCycle;
@@ -125,7 +128,8 @@ void main() {
     serverVersion = Completer<ServerVersion?>();
     serverInfoService = MockServerInfoService();
     lockService = MockBackgroundWorkerLockService();
-    final backgroundSync = MockBackgroundSyncManager();
+    fgService = MockBackgroundWorkerFgService();
+    backgroundSync = MockBackgroundSyncManager();
     serverVersionCount = 0;
     memoryLaneBuilds = 0;
 
@@ -135,6 +139,7 @@ void main() {
     });
     when(() => lockService.lock()).thenAnswer((_) async {});
     when(() => lockService.unlock()).thenAnswer((_) async {});
+    when(() => fgService.wasLaunchedInBackground()).thenAnswer((_) async => false);
     when(() => backgroundSync.cancelResumeSyncs()).thenAnswer((_) async {});
     when(() => backgroundSync.syncLocal(full: any(named: 'full'))).thenAnswer((_) async {});
     when(() => backgroundSync.syncRemote()).thenAnswer((_) async => true);
@@ -149,6 +154,7 @@ void main() {
         }),
         backupProvider.overrideWith((_) => TestDriftBackupNotifier()),
         backgroundWorkerLockServiceProvider.overrideWithValue(lockService),
+        backgroundWorkerFgServiceProvider.overrideWithValue(fgService),
         backgroundSyncProvider.overrideWithValue(backgroundSync),
         appConfigProvider.overrideWithValue(defaultConfig),
         notificationPermissionProvider.overrideWith((_) => TestNotificationPermissionNotifier()),
@@ -160,9 +166,14 @@ void main() {
       ],
     );
     lifeCycle = container.read(appStateProvider.notifier);
+    container.read(websocketProvider);
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
   });
 
-  tearDown(() => container.dispose());
+  tearDown(() {
+    debugDefaultTargetPlatformOverride = null;
+    container.dispose();
+  });
 
   Future<void> startResume() async {
     await lifeCycle.handleAppPause();
@@ -228,5 +239,55 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(memoryLaneBuilds, 2);
+  });
+
+  test('first resume runs when the app was launched in the background', () async {
+    when(() => fgService.wasLaunchedInBackground()).thenAnswer((_) async => true);
+    websocket.throwOnConnect = false;
+    serverVersion.complete();
+    await lifeCycle.handleAppResume();
+
+    expect(lifeCycle.state, AppLifeCycleEnum.resumed);
+    expect(serverVersionCount, 1);
+    expect(websocket.connectCount, 1);
+    verify(() => backgroundSync.syncLocal(full: true)).called(1);
+
+    await lifeCycle.handleAppPause();
+    await lifeCycle.handleAppResume();
+
+    verify(() => backgroundSync.syncLocal(full: false)).called(1);
+  });
+
+  test('a background launch does not resume twice without a pause', () async {
+    when(() => fgService.wasLaunchedInBackground()).thenAnswer((_) async => true);
+    websocket.throwOnConnect = false;
+    serverVersion.complete();
+    await lifeCycle.handleAppResume();
+    await lifeCycle.handleAppResume();
+
+    expect(serverVersionCount, 1);
+    expect(websocket.connectCount, 1);
+    verify(() => backgroundSync.syncLocal(full: true)).called(1);
+  });
+
+  test('pause before the first sync keeps the full sync for the next resume', () async {
+    when(() => fgService.wasLaunchedInBackground()).thenAnswer((_) async => true);
+    websocket.throwOnConnect = false;
+    unawaited(lifeCycle.handleAppResume());
+    await untilCalled(() => serverInfoService.getServerVersion());
+    await lifeCycle.handleAppPause();
+    await releaseResume();
+
+    await lifeCycle.handleAppResume();
+
+    verify(() => backgroundSync.syncLocal(full: true)).called(1);
+  });
+
+  test('first resume is skipped on a normal launch', () async {
+    await lifeCycle.handleAppResume();
+
+    expect(lifeCycle.state, AppLifeCycleEnum.resumed);
+    expect(serverVersionCount, 0);
+    expect(websocket.connectCount, 0);
   });
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: unused-code
+
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
