@@ -48,6 +48,12 @@ export interface AssetFaceId {
   personGroupId: string;
 }
 
+export interface UpdateGroupIdData {
+  oldPersonGroupId: string;
+  ownerId: string;
+  newPersonGroupId: string;
+}
+
 export interface UpdateFacesData {
   oldPersonGroupId?: string;
   faceIds?: string[];
@@ -177,6 +183,28 @@ export class PersonRepository {
       .executeTakeFirst();
 
     return Number(result.numUpdatedRows ?? 0);
+  }
+
+  @GenerateSql({ params: [{ oldPersonGroupId: DummyValue.UUID, newPersonGroupId: DummyValue.UUID }] })
+  updateGroupId({ oldPersonGroupId, ownerId, newPersonGroupId }: UpdateGroupIdData) {
+    return this.db.transaction().execute(async (trx) => {
+      await trx
+        .updateTable('asset_face')
+        .from('asset')
+        .whereRef('asset_face.assetId', '=', 'asset.id')
+        .set({ personGroupId: newPersonGroupId })
+        .where('asset_face.personGroupId', '=', oldPersonGroupId)
+        .where('asset.ownerId', '=', ownerId)
+        .executeTakeFirst();
+
+      return trx
+        .updateTable('person')
+        .set({ personGroupId: newPersonGroupId })
+        .where('person.personGroupId', '=', oldPersonGroupId)
+        .where('person.ownerId', '=', ownerId)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+    });
   }
 
   @GenerateSql({ params: [{ sourceType: SourceType.MachineLearning, clusterGroupId: DummyValue.UUID }] })
@@ -976,7 +1004,6 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .where('person.personGroupId', 'in', personGroupIds)
-      .orderBy('person.ownerId')
       .execute();
   }
 }

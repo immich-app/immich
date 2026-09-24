@@ -10,6 +10,19 @@ where
   "asset_face"."assetId" = "asset"."id"
   and "asset_face"."personGroupId" = $2
 
+-- PersonRepository.updateGroupId
+begin
+update "asset_face"
+set
+  "personGroupId" = $1
+from
+  "asset"
+where
+  "asset_face"."assetId" = "asset"."id"
+  and "asset_face"."personGroupId" = $2
+  and "asset"."ownerId" = $3
+rollback
+
 -- PersonRepository.unassignFaces
 update "asset_face"
 set
@@ -907,5 +920,3 @@ from
   "person"
 where
   "person"."personGroupId" in ($1)
-order by
-  "person"."ownerId"
