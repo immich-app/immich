@@ -55,6 +55,7 @@ const webUnsupportedImage = {
   '.heif': ['image/heif'],
   '.hif': ['image/hif'],
   '.insp': ['image/jpeg'],
+  '.jfif': ['image/jpeg'],
   '.jp2': ['image/jp2'],
   '.jpe': ['image/jpeg'],
   '.jxl': ['image/jxl'],
@@ -98,7 +99,18 @@ const transparentCapableExtensions = new Set([
   '.webp',
 ]);
 
-const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp', '.svg']);
+const profileExtensions = new Set([
+  '.avif',
+  '.dng',
+  '.heic',
+  '.heif',
+  '.jfif',
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.webp',
+  '.svg',
+]);
 const profile: Record<string, string[]> = Object.fromEntries(
   Object.entries(image).filter(([key]) => profileExtensions.has(key)),
 );
