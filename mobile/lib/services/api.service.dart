@@ -22,17 +22,21 @@ class ApiService {
   late AssetsApi assetsApi;
   late SearchApi searchApi;
   late ServerApi serverInfoApi;
+  // ignore: unused-code
   late MapApi mapApi;
   late PartnersApi partnersApi;
   late PeopleApi peopleApi;
   late SharedLinksApi sharedLinksApi;
   late SyncApi syncApi;
+  // ignore: unused-code
   late SystemConfigApi systemConfigApi;
   late ActivitiesApi activitiesApi;
+  // ignore: unused-code
   late DownloadApi downloadApi;
   late TrashApi trashApi;
   late StacksApi stacksApi;
   late ViewsApi viewApi;
+  // ignore: unused-code
   late MemoriesApi memoriesApi;
   late SessionsApi sessionsApi;
   late TagsApi tagsApi;
