@@ -166,10 +166,13 @@ export class MediaRepository {
     const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
     if (affineEditOperations.length > 0) {
       const { a, b, c, d } = createAffineMatrix(affineEditOperations);
-      pipeline = pipeline.affine([
-        [a, b],
-        [c, d],
-      ]);
+      pipeline = pipeline.affine(
+        [
+          [a, b],
+          [c, d],
+        ],
+        { idx: 0.5, idy: 0.5, odx: -0.5, ody: -0.5 },
+      );
     }
 
     return pipeline;

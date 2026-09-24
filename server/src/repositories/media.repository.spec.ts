@@ -69,6 +69,50 @@ describe(MediaRepository.name, () => {
   });
 
   describe('applyEdits (single actions)', () => {
+    it.each([
+      {
+        edit: { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
+        width: 2,
+        height: 3,
+        pixels: [40, 10, 50, 20, 60, 30],
+      },
+      {
+        edit: { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
+        width: 3,
+        height: 2,
+        pixels: [60, 50, 40, 30, 20, 10],
+      },
+      {
+        edit: { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
+        width: 2,
+        height: 3,
+        pixels: [30, 60, 20, 50, 10, 40],
+      },
+      {
+        edit: { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+        width: 3,
+        height: 2,
+        pixels: [30, 20, 10, 60, 50, 40],
+      },
+      {
+        edit: { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
+        width: 3,
+        height: 2,
+        pixels: [40, 50, 60, 10, 20, 30],
+      },
+    ] as const)('should preserve every pixel for $edit', async ({ edit, width, height, pixels }) => {
+      const input = Buffer.from([10, 20, 30, 40, 50, 60].flatMap((value) => [value, value, value]));
+      const { data, info } = await sut['applyEdits'](sharp(input, { raw: { width: 3, height: 2, channels: 3 } }), [
+        edit,
+      ])
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+
+      expect(info.width).toBe(width);
+      expect(info.height).toBe(height);
+      expect(data).toEqual(Buffer.from(pixels.flatMap((value) => [value, value, value])));
+    });
+
     it('should apply crop edit correctly', async () => {
       const result = sut['applyEdits'](
         sharp({
