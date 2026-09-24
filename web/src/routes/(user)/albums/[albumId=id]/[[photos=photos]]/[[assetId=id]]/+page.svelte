@@ -291,12 +291,16 @@
     viewMode = AlbumPageViewMode.VIEW;
   };
 
-  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
+  const onAlbumAddAssets = async ({ albumIds, assetIds }: { albumIds: string[]; assetIds: string[] }) => {
     if (!albumIds.includes(album.id)) {
       return;
     }
 
-    await refreshAlbum();
+    // Update assetCount locally to avoid race condition with onAlbumUpdate.
+    // Calling refreshAlbum() here would fetch stale server state, overwriting
+    // concurrent description edits that haven't been saved yet (see issue #31746).
+    album = { ...album, assetCount: album.assetCount + assetIds.length };
+
     timelineMultiSelectManager.clear();
     await setModeToView();
   };
