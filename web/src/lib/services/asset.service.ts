@@ -297,8 +297,8 @@ export const getAssetActions = (
     title: $t('delete'),
     icon: mdiDeleteOutline,
     $if: () => isOwner && !isDeletionPermanent,
-    onAction: () => handleTrashOrDelete(asset),
-    shortcuts: { key: 'Delete' },
+    onAction: ({ event }) => handleTrashOrDelete(asset, event instanceof KeyboardEvent && event.shiftKey),
+    shortcuts: [{ key: 'Delete' }, { key: 'Delete', shift: true }],
   };
 
   const PermanentlyDelete: ActionItem = {
@@ -470,7 +470,7 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
   }
 };
 
-export const handleTrashOrDelete = async (asset: AssetResponseDto, force?: boolean) => {
+const handleTrashOrDelete = async (asset: AssetResponseDto, force?: boolean) => {
   const $t = await getFormatter();
 
   if (force && get(showDeleteModal)) {
@@ -482,7 +482,7 @@ export const handleTrashOrDelete = async (asset: AssetResponseDto, force?: boole
 
   try {
     await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force } });
-    eventManager.emit('AssetsDelete', [asset.id]);
+    // (no need to emit AssetsDelete, the server does it for us)
     if (force) {
       toastManager.primary($t('permanently_deleted_asset'));
     } else {

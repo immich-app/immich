@@ -13,7 +13,7 @@
   import { handleErrorAsync } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
+  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -151,24 +151,9 @@
   };
 
   const onAssetsDelete = async (assetIds: string[]) => {
-    timelineManager.removeAssets(assetIds);
-
     if (assetIds.includes(assetCursor.current.id)) {
       await navigateOrCloseViewer(assetCursor.current.id);
     }
-  };
-
-  const onAssetsRestore = async (assets: AssetResponseDto[]) => {
-    timelineManager.upsertAssets(assets.map((a) => toTimelineAsset(a)));
-    if (assets.length !== 1) {
-      // don't reopen asset viewer if multiple assets were restored (bulk action)
-      return;
-    }
-
-    const restoredAsset = assets[0];
-    const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
-    assetViewerManager.setAsset(asset);
-    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
   const handleUpdateOrUpload = (asset: AssetResponseDto) => {
@@ -194,7 +179,7 @@
   });
 </script>
 
-<OnEvents {onAssetsDelete} {onAssetsRestore} {onAlbumRemoveAssets} />
+<OnEvents {onAssetsDelete} {onAlbumRemoveAssets} />
 
 {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer

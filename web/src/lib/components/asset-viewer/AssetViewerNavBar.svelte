@@ -11,7 +11,7 @@
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { getAssetActions, handleTrashOrDelete } from '$lib/services/asset.service';
+  import { getAssetActions } from '$lib/services/asset.service';
   import { getPersonAssetActions } from '$lib/services/person.service';
   import { getStackActions } from '$lib/services/stack.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
@@ -24,7 +24,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, shortcut, Tooltip, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiDotsVertical, mdiVideoOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -76,10 +76,6 @@
   const StackActions = $derived(getStackActions($t, stack, asset));
   const sharedLink = getSharedLink();
 </script>
-
-<svelte:document
-  use:shortcut={{ shortcut: { key: 'Delete', shift: true }, onShortcut: () => handleTrashOrDelete(asset, true) }}
-/>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 

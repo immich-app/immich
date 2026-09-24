@@ -326,7 +326,8 @@
 <OnEvents
   {onPersonUpdate}
   onPersonAssetDelete={handlePersonAssetDelete}
-  onAssetsDelete={updateAssetCount}
+  onAssetsDelete={handleDeleteAssets}
+  onAssetsRestore={updateAssetCount}
   onAssetsArchive={updateAssetCount}
   onAssetsUnarchive={updateAssetCount}
 />

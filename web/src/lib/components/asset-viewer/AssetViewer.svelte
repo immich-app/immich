@@ -13,7 +13,6 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
@@ -145,6 +144,16 @@
     if (asset.id === updatedAsset.id) {
       cursor = { ...cursor, current: updatedAsset };
     }
+  };
+
+  const onAssetsRestore = async (assets: AssetResponseDto[]) => {
+    if (assets.length !== 1) {
+      return; // don't open asset viewer if multiple assets were restored (bulk action)
+    }
+
+    const restoredAsset = assets[0];
+    assetViewerManager.setAsset(restoredAsset);
+    await navigateToAsset(restoredAsset);
   };
 
   const onAssetsUndoArchive = async (assets: TimelineAsset[]) => {
@@ -486,6 +495,7 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
 <OnEvents
   {onAssetUpdate}
+  {onAssetsRestore}
   {onAssetsUndoArchive}
   {onStackCreate}
   onStackDelete={() => closeViewer()}
