@@ -109,10 +109,12 @@ run = "flutter test"
 [tasks.analyze]
 alias = "lint"
 description = "Analyze Dart code"
-usage = 'flag "--full" help="Check for unused code"'
+usage = '''
+flag "--full" help="Check for unused code" default=#false
+'''
 depends = ["analyze:dart", "analyze:dcm"]
 run = '''
-if [ "${usage_full:-false}" = "true" ]; then
+if [ "${usage_full}" = "true" ]; then
   mise run analyze:unused
 fi
 '''
