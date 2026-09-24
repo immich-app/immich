@@ -1,0 +1,43 @@
+docs/docs/features/casting.md
+  s_61fa43a2d43d36::t_d5fe9c52cafb84 3,18,20
+mobile/lib/presentation/widgets/asset_viewer/asset_viewer.page.dart
+  s_61fa43a2d43d36::t_9f22650a327970 204,221-245
+mobile/lib/providers/cast.provider.dart
+  s_61fa43a2d43d36::t_4201271fd4eea7 7,14,58-69
+mobile/lib/services/gcast.service.dart
+  s_61fa43a2d43d36::t_a53e473fc3dca9 5,11,13,25,31-37,41-44,56,61-68,78-83,91-95,107-119,129-132,164-169,189-191,193-210,212-214,216-234,236-239,241-251,253-259,261-262,266-273,275-306,311-318,320,322-330,354-355
+web/src/lib/components/asset-viewer/PhotoViewer.svelte
+  s_61fa43a2d43d36::t_8ed1a4e91ce385 14,20,127-132,136-137,139-142,145-146,149-155,157-159
+web/src/lib/components/asset-viewer/VideoNativeViewer.svelte
+  s_61fa43a2d43d36::t_7c94530a09f0cc 91-96,372
+web/src/lib/components/asset-viewer/VideoRemoteViewer.svelte
+  s_61fa43a2d43d36::t_c5465131f49c6d 43-47,61
+web/src/lib/managers/cast-manager.svelte.ts
+  s_61fa43a2d43d36::t_a108ae93049e55 5-7,34-35,58-60,71-76,120-151,155-157,159,161-183,186-202
+web/src/lib/utils/cast/cast-url.spec.ts
+  s_61fa43a2d43d36::t_921969ac2bfdfc 1-20
+web/src/lib/utils/cast/cast-url.ts
+  s_61fa43a2d43d36::t_7548a3026b2521 1-5
+web/src/lib/utils/cast/gcast-destination.svelte.ts
+  s_61fa43a2d43d36::t_16174c2bbb1167 4-10,24,27-28,90-91,98-100,103-105,108-126,128-129,132-135,142-155,183-186,206-208,214-227,239,244,251
+web/src/lib/utils/cast/latest-load-queue.spec.ts
+  s_61fa43a2d43d36::t_d37f458f930199 1-60
+web/src/lib/utils/cast/latest-load-queue.ts
+  s_61fa43a2d43d36::t_57a5a041cb8b9a 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "348d261749b98739999b2b88b5ee2aa82766b7b2",
+  "prompts": {},
+  "sessions": {
+    "s_61fa43a2d43d36": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ced0-deae-74b3-a5fe-105e9ed5a76d",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
