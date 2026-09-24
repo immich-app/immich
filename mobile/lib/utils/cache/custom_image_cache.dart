@@ -8,7 +8,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.da
 final class CustomImageCache implements ImageCache {
   final _thumbhash = ImageCache()..maximumSize = 0;
   final _small = ImageCache();
-  final _large = ImageCache()..maximumSize = 5; // Maximum 5 images
+  final _large = ImageCache()..maximumSize = 20;
 
   @override
   int get maximumSize => _small.maximumSize + _large.maximumSize;
@@ -21,6 +21,14 @@ final class CustomImageCache implements ImageCache {
 
   @override
   set maximumSizeBytes(int value) => _small.maximumSizeBytes = value;
+
+  int get maximumLargeSize => _large.maximumSize;
+
+  set maximumLargeSize(int value) => _large.maximumSize = value;
+
+  int get maximumLargeSizeBytes => _large.maximumSizeBytes;
+
+  set maximumLargeSizeBytes(int value) => _large.maximumSizeBytes = value;
 
   @override
   void clear() {
