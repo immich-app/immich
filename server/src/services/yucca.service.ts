@@ -1,4 +1,8 @@
-import { GatewayEvent, YuccaService as YuccaOrchestratorService } from '@futo-org/backups-orchestrator-api';
+import {
+  GatewayEvent,
+  ImmichDatabaseDumpConfig,
+  YuccaService as YuccaOrchestratorService,
+} from '@futo-org/backups-orchestrator-api';
 import { Injectable, Optional } from '@nestjs/common';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
@@ -9,6 +13,7 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
+import { SystemConfigService } from 'src/services/system-config.service';
 import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
@@ -17,11 +22,14 @@ export class YuccaService {
     private readonly databaseRepository: DatabaseRepository,
     private readonly libraryRepository: LibraryRepository,
     private readonly databaseBackupService: DatabaseBackupService,
+    private readonly systemConfigService: SystemConfigService,
     @Optional() private readonly maintenanceService: MaintenanceService,
     @Optional() private readonly yuccaService: YuccaOrchestratorService,
   ) {
     this.createDatabaseBackup = this.createDatabaseBackup.bind(this);
     this.cleanupDatabaseBackups = this.cleanupDatabaseBackups.bind(this);
+    this.getImmichDatabaseDumpConfig = this.getImmichDatabaseDumpConfig.bind(this);
+    this.configureImmichDatabaseDump = this.configureImmichDatabaseDump.bind(this);
     this.enterMaintenanceRollback = this.enterMaintenanceRollback.bind(this);
   }
 
@@ -41,17 +49,32 @@ export class YuccaService {
       hooks: {
         createDatabaseBackup: this.createDatabaseBackup,
         cleanupDatabaseBackups: this.cleanupDatabaseBackups,
+        getImmichDatabaseDumpConfig: this.getImmichDatabaseDumpConfig,
+        configureImmichDatabaseDump: this.configureImmichDatabaseDump,
         enterMaintenanceRollback: this.enterMaintenanceRollback,
       },
     });
   }
 
-  private createDatabaseBackup() {
-    return this.databaseBackupService.createDatabaseBackup();
+  private createDatabaseBackup(signal?: AbortSignal) {
+    return this.databaseBackupService.createDatabaseBackup('', signal);
   }
 
   private cleanupDatabaseBackups() {
     return this.databaseBackupService.cleanupDatabaseBackups();
+  }
+
+  private async getImmichDatabaseDumpConfig(): Promise<ImmichDatabaseDumpConfig> {
+    const { backup } = await this.systemConfigService.getAdminConfig();
+    return { enabled: backup.database.enabled, keepLastAmount: backup.database.keepLastAmount };
+  }
+
+  private async configureImmichDatabaseDump(databaseDump: Partial<ImmichDatabaseDumpConfig>) {
+    const config = await this.systemConfigService.getAdminConfig();
+    await this.systemConfigService.updateAdminConfig({
+      ...config,
+      backup: { ...config.backup, database: { ...config.backup.database, ...databaseDump } },
+    });
   }
 
   private enterMaintenanceRollback(repositoryId: string, snapshotId: string) {

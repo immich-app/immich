@@ -119,7 +119,7 @@ ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
 
-COPY --from=ghcr.io/immich-app/futo-backups-restic-proxy:commit-64b8a63d95e4a544f735a112c23b3c356de74653 /usr/local/bin/restic-proxy /usr/local/bin/restic-proxy
+COPY --from=ghcr.io/immich-app/futo-backups-restic-proxy:commit-6297cf30a3caf4101e1ca74247bb822ab1f56ee0 /usr/local/bin/restic-proxy /usr/local/bin/restic-proxy
 COPY --from=plugins /usr/local/bin/restic /usr/local/bin/restic
 
 VOLUME /data

@@ -18106,6 +18106,56 @@
         ]
       }
     },
+    "/yucca/config": {
+      "get": {
+        "operationId": "getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Config"
+        ]
+      },
+      "put": {
+        "operationId": "updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Config"
+        ]
+      }
+    },
     "/yucca/debug/reset": {
       "post": {
         "operationId": "resetOrchestrator",
@@ -18194,6 +18244,44 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Integrations"
+        ]
+      }
+    },
+    "/yucca/integrations/immich/database-dump": {
+      "post": {
+        "operationId": "configureImmichDatabaseDump",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureImmichDatabaseDumpRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Integrations"
+        ]
+      }
+    },
+    "/yucca/integrations/immich/database-dump/ignore-warning": {
+      "post": {
+        "operationId": "ignoreImmichDatabaseDumpWarning",
+        "parameters": [],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -22583,6 +22671,23 @@
         ],
         "type": "object"
       },
+      "BandwidthDto": {
+        "properties": {
+          "bytesPerSec": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "quietHours": {
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d-([01]\\d|2[0-3]):[0-5]\\d$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bytesPerSec"
+        ],
+        "type": "object"
+      },
       "BoolFilter": {
         "properties": {
           "eq": {
@@ -22825,6 +22930,41 @@
           "p3"
         ],
         "type": "string"
+      },
+      "ConfigResponseDto": {
+        "properties": {
+          "bandwidth": {
+            "$ref": "#/components/schemas/BandwidthDto"
+          }
+        },
+        "required": [
+          "bandwidth"
+        ],
+        "type": "object"
+      },
+      "ConfigUpdateRequestDto": {
+        "properties": {
+          "bandwidth": {
+            "$ref": "#/components/schemas/BandwidthDto"
+          }
+        },
+        "required": [
+          "bandwidth"
+        ],
+        "type": "object"
+      },
+      "ConfigureImmichDatabaseDumpRequestDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
       },
       "ConfigureImmichIntegrationRequestDto": {
         "properties": {
@@ -23927,6 +24067,12 @@
           "backend": {
             "$ref": "#/components/schemas/BackendDto"
           },
+          "databaseDump": {
+            "$ref": "#/components/schemas/ImmichDatabaseDumpConfigDto"
+          },
+          "databaseDumpWarningIgnored": {
+            "type": "boolean"
+          },
           "integration": {
             "$ref": "#/components/schemas/ImmichIntegrationDto"
           },
@@ -23940,6 +24086,23 @@
             "$ref": "#/components/schemas/ScheduleDto"
           }
         },
+        "type": "object"
+      },
+      "ImmichDatabaseDumpConfigDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "keepLastAmount"
+        ],
         "type": "object"
       },
       "ImmichIntegrationConfigurationDto": {
