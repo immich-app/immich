@@ -650,14 +650,15 @@ export class PersonService extends BaseService {
     });
 
     const allowedIds = new Set(allowedIds2.values().map((item) => item.personGroupId));
-
     const peopleMap: Record<string, Selectable<PersonTable>[]> = {};
+    const affectedOwnerIds = new Set<string>();
 
     for (const mergePerson of await this.personRepository.getForMergePerson(ids)) {
       if (!peopleMap[mergePerson.personGroupId]) {
         peopleMap[mergePerson.personGroupId] = [];
       }
       peopleMap[mergePerson.personGroupId].push(mergePerson);
+      affectedOwnerIds.add(mergePerson.ownerId);
     }
 
     const targetPeople: Record<string, Selectable<PersonTable>> = {};
@@ -666,6 +667,14 @@ export class PersonService extends BaseService {
       if (!hasAccess) {
         results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
+      }
+
+      const missingPeople = affectedOwnerIds.difference(new Set(peopleMap[mergeId].map(({ ownerId }) => ownerId)));
+
+      for (const ownerId of missingPeople) {
+        if (!targetPeople[ownerId]) {
+          targetPeople[ownerId] = await this.personRepository.create({ personGroupId: mergeId, ownerId });
+        }
       }
 
       for (const mergePerson of peopleMap[mergeId]) {
