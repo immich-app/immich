@@ -1391,9 +1391,13 @@ describe(PersonService.name, () => {
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
       mocks.person.getStatistics.mockResolvedValue({ assets: 3 });
+      mocks.partner.getAll.mockResolvedValue([]);
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
       await expect(sut.getStatistics(auth, person.personGroupId)).resolves.toEqual({ assets: 3 });
-      expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.personGroupId, auth.user.id);
+      expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.personGroupId, {
+        ownerId: auth.user.id,
+        partnerIds: [],
+      });
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
     });
 
