@@ -1,5 +1,7 @@
+import { ZodValidationException } from 'nestjs-zod';
 import { IncomingHttpHeaders } from 'node:http';
 import { UAParser } from 'ua-parser-js';
+import z from 'zod';
 
 export const fromChecksum = (checksum: string): Buffer => {
   return Buffer.from(checksum, checksum.length === 28 ? 'base64' : 'hex');
@@ -23,3 +25,11 @@ export const getUserAgentDetails = (headers: IncomingHttpHeaders) => {
     appVersion,
   };
 };
+
+export function validateSyncOrReject<T>(cls: { schema: z.ZodType<T> }, obj: unknown): T {
+  const result = cls.schema.safeParse(obj);
+  if (result.success) {
+    return result.data;
+  }
+  throw new ZodValidationException(result.error);
+}

@@ -186,6 +186,9 @@ importers:
       socket.io-client:
         specifier: ^4.7.4
         version: 4.8.3(supports-color@8.1.1)
+      structured-headers:
+        specifier: ^2.0.2
+        version: 2.1.0
       supertest:
         specifier: ^7.0.0
         version: 7.2.2(supports-color@8.1.1)
@@ -622,6 +625,9 @@ importers:
       socket.io:
         specifier: ^4.8.1
         version: 4.8.3(supports-color@8.1.1)
+      structured-headers:
+        specifier: ^2.0.2
+        version: 2.1.0
       tailwindcss-preset-email:
         specifier: ^1.4.0
         version: 1.4.2(tailwindcss@3.4.19(tsx@4.23.13)(yaml@2.9.1))
@@ -12136,6 +12142,10 @@ packages:
   strtok3@10.3.5:
     resolution: {integrity: sha512-ki4hZQfh5rX0QDLLkOCj+h+CVNkqmp/CMf8v8kZpkNVK6jGQooMytqzLZYUVYIZcFZ6yDB70EfD8POcFXiF5oA==}
     engines: {node: '>=18'}
+
+  structured-headers@2.1.0:
+    resolution: {integrity: sha512-ClzykN+XQVaSW5UfpOdEWfDplZ1Th7mISdaFvaC2+GjLTeBhGMJw83D/Rw9jPkHOml4oYd3EXaZhbz3gnE5nBQ==}
+    engines: {node: '>=18', npm: '>=6'}
 
   stubborn-fs@2.0.0:
     resolution: {integrity: sha512-Y0AvSwDw8y+nlSNFXMm2g6L51rBGdAQT20J3YSOqxC53Lo3bjWRtr2BKcfYoAf352WYpsZSTURrA0tqhfgudPA==}
@@ -26409,6 +26419,8 @@ snapshots:
   strtok3@10.3.5:
     dependencies:
       '@tokenizer/token': 0.3.0
+
+  structured-headers@2.1.0: {}
 
   stubborn-fs@2.0.0:
     dependencies:

@@ -710,6 +710,16 @@ export const utils = {
       }
     }
   },
+
+  downloadAsset: async (accessToken: string, id: string) => {
+    const downloadedRes = await fetch(`${baseUrl}/api/assets/${id}/original`, {
+      headers: asBearerAuth(accessToken),
+    });
+    if (!downloadedRes.ok) {
+      throw new Error(`Failed to download asset ${id}: ${downloadedRes.status} ${await downloadedRes.text()}`);
+    }
+    return await downloadedRes.blob();
+  },
 };
 
 // eslint-disable-next-line unicorn/no-top-level-side-effects
