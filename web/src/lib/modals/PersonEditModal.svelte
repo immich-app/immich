@@ -74,29 +74,31 @@
 
 <FormModal title={$t('person')} size="small" icon={mdiText} {onClose} {onSubmit}>
   <VStack>
-    <Field label={$t('user')}>
-      <Select
-        value={targetUserId}
-        options={candidates.map((person) => ({
-          label: users.find((user) => user.id === person.sharedById)?.name ?? person.sharedById,
-          value: person.sharedById,
-        }))}
-        onChange={(value) => onChange(value)}
-      />
-      <HelperText>{$t('view_and_edit_person_fields')}</HelperText>
-    </Field>
+    {#if candidates.length > 1}
+      <Field label={$t('user')}>
+        <Select
+          value={targetUserId}
+          options={candidates.map((person) => ({
+            label: users.find((user) => user.id === person.sharedById)?.name ?? person.sharedById,
+            value: person.sharedById,
+          }))}
+          onChange={(value) => onChange(value)}
+        />
+        <HelperText>{$t('view_and_edit_person_fields')}</HelperText>
+      </Field>
 
-    <div class="mx-auto">
-      <Button
-        size="small"
-        color="secondary"
-        class="mt-2"
-        shape="round"
-        variant="outline"
-        leadingIcon={mdiAccountMultipleOutline}
-        onclick={handleCopyFromMine}>{$t('copy_from_my_person')}</Button
-      >
-    </div>
+      <div class="mx-auto">
+        <Button
+          size="small"
+          color="secondary"
+          class="mt-2"
+          shape="round"
+          variant="outline"
+          leadingIcon={mdiAccountMultipleOutline}
+          onclick={handleCopyFromMine}>{$t('copy_from_my_person')}</Button
+        >
+      </div>
+    {/if}
 
     <Field label={$t('name')}>
       <Input bind:value={targetPerson.name} />
@@ -113,9 +115,11 @@
       <HelperText>{$t('birthdate_set_description')}</HelperText>
     </Field>
 
-    <div class="flex w-full items-start gap-2">
-      <Label label="Apply for all users?" for="apply-to-all-people-checkbox" />
-      <Checkbox id="apply-to-all-people-checkbox" color="secondary" bind:checked={applyToEveryone} />
-    </div>
+    {#if candidates.length > 1}
+      <div class="flex w-full items-start gap-2">
+        <Label label="Apply for all users?" for="apply-to-all-people-checkbox" />
+        <Checkbox id="apply-to-all-people-checkbox" color="secondary" bind:checked={applyToEveryone} />
+      </div>
+    {/if}
   </VStack>
 </FormModal>
