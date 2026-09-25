@@ -1,4 +1,5 @@
 import {
+  getPerson,
   updatePeople,
   updatePerson,
   type AssetResponseDto,
@@ -129,6 +130,13 @@ export const handleUpdatePeople = async (peopleUpdateDto: PeopleUpdateDto) => {
 
   try {
     await updatePeople({ peopleUpdateDto });
+
+    const ids = new Set(peopleUpdateDto.people.map(({ id }) => id));
+    const responses = await Promise.all([...ids].map((id) => getPerson({ id })));
+    for (const response of responses) {
+      eventManager.emit('PersonUpdate', response);
+    }
+
     return true;
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
