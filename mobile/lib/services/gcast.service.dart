@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cast/session.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -25,6 +27,7 @@ final gCastServiceProvider = Provider(
 
 class GCastService {
   static final _log = Logger('GCastService');
+  static const _volumeChannel = MethodChannel('app.immich/cast_volume');
   static const photoNamespace = 'urn:x-cast:app.immich.photos';
   final GCastRepository _gCastRepository;
   final SessionsAPIRepository _sessionsApiService;
@@ -50,6 +53,13 @@ class GCastService {
   RemoteAsset? _selectedPhoto;
   RemoteAsset? _previousPhoto;
   RemoteAsset? _nextPhoto;
+  double? _receiverVolumeLevel;
+  double _receiverVolumeStep = 0.05;
+  bool _receiverVolumeMuted = false;
+  bool _receiverVolumeFixed = false;
+  bool _castingVideo = false;
+  bool _hardwareVolumeKeysActive = false;
+  DateTime? _lastVolumeKeyAt;
 
   void Function(bool)? onConnectionState;
 
@@ -64,6 +74,76 @@ class GCastService {
   GCastService(this._gCastRepository, this._sessionsApiService, this._getReceiverAppId) {
     _gCastRepository.onCastStatus = _onCastStatusCallback;
     _gCastRepository.onCastMessage = _onCastMessageCallback;
+    if (Platform.isAndroid) {
+      _volumeChannel.setMethodCallHandler((call) async {
+        if (call.method == 'volumeKey' && call.arguments is int) {
+          changeReceiverVolume(call.arguments as int);
+        }
+      });
+    }
+  }
+
+  void _updateHardwareVolumeKeys() {
+    if (!Platform.isAndroid) {
+      return;
+    }
+    final active = isConnected && _castingVideo && _receiverVolumeLevel != null && !_receiverVolumeFixed;
+    if (active == _hardwareVolumeKeysActive) {
+      return;
+    }
+    _hardwareVolumeKeysActive = active;
+    unawaited(_volumeChannel.invokeMethod<void>('setActive', active).catchError((Object error) {
+      _log.fine('Unable to route volume keys to Cast', error);
+    }));
+  }
+
+  void changeReceiverVolume(int direction) {
+    final level = _receiverVolumeLevel;
+    if (!isConnected || !_castingVideo || _receiverVolumeFixed || level == null || direction == 0) {
+      return;
+    }
+    final next = (level + _receiverVolumeStep * direction.sign).clamp(0.0, 1.0).toDouble();
+    if (next == level && !(direction > 0 && _receiverVolumeMuted)) {
+      return;
+    }
+    try {
+      _gCastRepository.sendMessage(CastSession.kNamespaceReceiver, {
+        'type': 'SET_VOLUME',
+        'volume': {'level': next, if (direction > 0 && _receiverVolumeMuted) 'muted': false},
+      });
+    } catch (error, stack) {
+      _log.warning('Unable to change Cast receiver volume', error, stack);
+      _castingVideo = false;
+      _updateHardwareVolumeKeys();
+      return;
+    }
+    _receiverVolumeLevel = next;
+    _lastVolumeKeyAt = DateTime.now();
+    if (direction > 0) {
+      _receiverVolumeMuted = false;
+    }
+  }
+
+  void _handleReceiverStatus(Map<String, dynamic> message) {
+    final status = message['status'];
+    if (status is! Map || status['volume'] is! Map) {
+      return;
+    }
+    final volume = status['volume'] as Map;
+    final level = volume['level'];
+    // A delayed status for an earlier key press must not undo newer presses.
+    if (level is num &&
+        (_lastVolumeKeyAt == null ||
+            DateTime.now().difference(_lastVolumeKeyAt!) > const Duration(milliseconds: 500))) {
+      _receiverVolumeLevel = level.toDouble().clamp(0.0, 1.0).toDouble();
+    }
+    final step = volume['stepInterval'];
+    if (step is num && step > 0 && step <= 1) {
+      _receiverVolumeStep = step.toDouble();
+    }
+    _receiverVolumeMuted = volume['muted'] == true;
+    _receiverVolumeFixed = volume['controlType'] == 'FIXED';
+    _updateHardwareVolumeKeys();
   }
 
   void _clearPending() {
@@ -91,17 +171,28 @@ class GCastService {
       _selectedPhoto = null;
       _previousPhoto = null;
       _nextPhoto = null;
+      _castingVideo = false;
+      _updateHardwareVolumeKeys();
+      _receiverVolumeLevel = null;
+      _receiverVolumeStep = 0.05;
+      _receiverVolumeMuted = false;
+      _receiverVolumeFixed = false;
+      _lastVolumeKeyAt = null;
     }
   }
 
   void _onCastMessageCallback(Map<String, dynamic> message) {
     switch (message['type']) {
+      case 'RECEIVER_STATUS':
+        _handleReceiverStatus(message);
       case "MEDIA_STATUS":
         _handleMediaStatus(message);
       case "LOAD_FAILED":
         if (_pendingRequestId != null && message['requestId'] == _pendingRequestId) {
           _clearPending();
           _mediaStatusPollingTimer?.cancel();
+          _castingVideo = false;
+          _updateHardwareVolumeKeys();
         }
       case "PHOTO_READY":
         if (_pendingRequestId != null && message['requestId'] == _pendingRequestId) {
@@ -156,6 +247,8 @@ class GCastService {
         if (status['idleReason'] == 'ERROR') {
           _clearPending();
           _mediaStatusPollingTimer?.cancel();
+          _castingVideo = false;
+          _updateHardwareVolumeKeys();
         }
 
         // stop polling for media status if the video finished playing
@@ -184,12 +277,15 @@ class GCastService {
     await _gCastRepository.connect(device, appId);
     _customReceiver = appId.isNotEmpty;
     isConnected = true;
+    _updateHardwareVolumeKeys();
     onConnectionState?.call(true);
 
     onReceiverName?.call(device.extras["fn"] ?? "Google Cast");
   }
 
   Future<void> disconnect() async {
+    _castingVideo = false;
+    _updateHardwareVolumeKeys();
     _mediaStatusPollingTimer?.cancel();
     onReceiverName?.call("");
     currentAssetId = null;
@@ -203,6 +299,11 @@ class GCastService {
     _selectedPhoto = null;
     _previousPhoto = null;
     _nextPhoto = null;
+    _receiverVolumeLevel = null;
+    _receiverVolumeStep = 0.05;
+    _receiverVolumeMuted = false;
+    _receiverVolumeFixed = false;
+    _lastVolumeKeyAt = null;
     await _gCastRepository.disconnect();
   }
 
@@ -299,6 +400,11 @@ class GCastService {
       return;
     }
 
+    if (!asset.isVideo) {
+      _castingVideo = false;
+      _updateHardwareVolumeKeys();
+    }
+
     final generation = ++_selectionGeneration;
     final selectedAt = DateTime.now();
     final unauthenticatedUrl =
@@ -353,6 +459,8 @@ class GCastService {
           "repeatMode": "REPEAT_SINGLE",
           "startIndex": 0,
         });
+        _castingVideo = true;
+        _updateHardwareVolumeKeys();
       } else {
         _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
           'type': 'LOAD',
@@ -447,6 +555,8 @@ class GCastService {
   }
 
   void stop() {
+    _castingVideo = false;
+    _updateHardwareVolumeKeys();
     if (_customReceiver && _selectedPhoto != null) {
       _gCastRepository.sendMessage(photoNamespace, {'type': 'CLEAR_PHOTO'});
     } else {

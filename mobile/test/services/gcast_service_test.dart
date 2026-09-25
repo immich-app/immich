@@ -131,6 +131,57 @@ void main() {
     expect(media['contentId'], contains('sessionKey=test+token'));
   });
 
+  test('phone volume keys change receiver volume while casting a video', () async {
+    await connect('A2AE3577');
+    repository.onCastMessage?.call({
+      'type': 'RECEIVER_STATUS',
+      'status': {
+        'volume': {'level': 0.4, 'muted': false, 'stepInterval': 0.1},
+      },
+    });
+
+    service.changeReceiverVolume(1);
+    expect(repository.messages, isEmpty);
+
+    await service.loadMedia(RemoteAssetFactory.create(id: 'video', type: AssetType.video), false);
+    service.changeReceiverVolume(1);
+    expect(repository.messages.last.$1, CastSession.kNamespaceReceiver);
+    expect(repository.messages.last.$2['type'], 'SET_VOLUME');
+    expect((repository.messages.last.$2['volume'] as Map)['level'], closeTo(0.5, 0.0001));
+
+    repository.onCastMessage?.call({
+      'type': 'RECEIVER_STATUS',
+      'status': {
+        'volume': {'level': 0.4, 'muted': false, 'stepInterval': 0.1},
+      },
+    });
+    service.changeReceiverVolume(1);
+    expect((repository.messages.last.$2['volume'] as Map)['level'], closeTo(0.6, 0.0001));
+
+    service.changeReceiverVolume(-1);
+    expect((repository.messages.last.$2['volume'] as Map)['level'], closeTo(0.5, 0.0001));
+
+    service.stop();
+    final count = repository.messages.length;
+    service.changeReceiverVolume(1);
+    expect(repository.messages, hasLength(count));
+  });
+
+  test('fixed receiver volume leaves phone volume keys alone', () async {
+    await connect('A2AE3577');
+    repository.onCastMessage?.call({
+      'type': 'RECEIVER_STATUS',
+      'status': {
+        'volume': {'level': 0.4, 'controlType': 'FIXED'},
+      },
+    });
+
+    await service.loadMedia(RemoteAssetFactory.create(id: 'video', type: AssetType.video), false);
+    final count = repository.messages.length;
+    service.changeReceiverVolume(1);
+    expect(repository.messages, hasLength(count));
+  });
+
   test('default receiver keeps the direct photo load protocol', () async {
     await connect('');
     await service.loadMedia(RemoteAssetFactory.create(id: 'photo'), false);
