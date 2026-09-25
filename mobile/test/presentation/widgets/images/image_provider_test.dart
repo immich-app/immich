@@ -38,19 +38,23 @@ void main() {
     final replies = <Completer<Object?>>[];
     tester.binding.defaultBinaryMessenger
       ..setMockDecodedMessageHandler<Object?>(requestImage, (_) {
-        replies.add(Completer<Object?>());
-        return replies.last.future;
+        final reply = Completer<Object?>();
+        replies.add(reply);
+        return reply.future;
       })
       ..setMockDecodedMessageHandler<Object?>(cancelRequest, (_) async => const <Object?>[null]);
     const provider = RemoteImageProvider(url: 'https://example.test/face');
     final listener = ImageStreamListener((_, _) {});
 
+    // Show the image and hide it again before it loads, which cancels the first load
     final first = provider.resolve(ImageConfiguration.empty)..addListener(listener);
     await tester.pump();
     first.removeListener(listener);
-    provider.resolve(ImageConfiguration.empty).addListener(listener);
+    // Showing the same image again has to start a second load
+    provider.resolve(ImageConfiguration.empty);
     await tester.pump();
     expect(replies, hasLength(2));
+    // The cancelled request only fails now, and that must not throw away the second load
     replies.first.complete(const <Object?>['error', 'late failure', null]);
     await tester.pump();
 

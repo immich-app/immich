@@ -71,7 +71,7 @@ void main() {
   });
 
   group('LocalThumbProvider caching', () {
-    LocalThumbProvider thumbFor(String? checksum) =>
+    LocalThumbProvider thumbWithChecksum(String? checksum) =>
         LocalThumbProvider(id: 'asset-1', assetType: AssetType.image, checksum: checksum);
 
     test('editing on device re-renders the thumbnail', () {
@@ -82,8 +82,8 @@ void main() {
     });
 
     test('an unchanged thumbnail still comes from the cache', () {
-      cache.putIfAbsent(thumbFor('same'), load);
-      cache.putIfAbsent(thumbFor('same'), load);
+      cache.putIfAbsent(thumbWithChecksum('same'), load);
+      cache.putIfAbsent(thumbWithChecksum('same'), load);
 
       expect(loads, 1);
     });
@@ -98,8 +98,8 @@ void main() {
     });
 
     test('stays cached while the checksum is missing', () {
-      cache.putIfAbsent(thumbFor(null), load);
-      cache.putIfAbsent(thumbFor(null), load);
+      cache.putIfAbsent(thumbWithChecksum(null), load);
+      cache.putIfAbsent(thumbWithChecksum(null), load);
 
       expect(loads, 1);
     });
