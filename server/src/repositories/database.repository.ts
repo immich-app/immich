@@ -30,6 +30,11 @@ import 'src/schema/index.js'; // make sure all schema definitions are imported f
 import { DB } from 'src/schema/index.js';
 import { vectorIndexQuery } from 'src/utils/database.js';
 
+const dimensionSizeSchema = z
+  .int()
+  .min(1)
+  .max(2 ** 16);
+
 export let cachedVectorExtension: VectorExtension | undefined;
 export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
   if (cachedVectorExtension) {
@@ -306,13 +311,7 @@ export class DatabaseRepository {
     `.execute(this.db);
 
     const dimSize = rows[0]?.dimsize;
-    if (
-      !z
-        .int()
-        .min(1)
-        .max(2 ** 16)
-        .validate(dimSize)
-    ) {
+    if (!dimensionSizeSchema.validate(dimSize)) {
       this.logger.warn(`Could not retrieve dimension size of column '${column}' in table '${table}', assuming 512`);
       return 512;
     }
@@ -320,13 +319,7 @@ export class DatabaseRepository {
   }
 
   async setDimensionSize(dimSize: number): Promise<void> {
-    if (
-      !z
-        .int()
-        .min(1)
-        .max(2 ** 16)
-        .validate(dimSize)
-    ) {
+    if (!dimensionSizeSchema.validate(dimSize)) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
