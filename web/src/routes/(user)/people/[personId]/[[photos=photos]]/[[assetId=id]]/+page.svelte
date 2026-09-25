@@ -394,11 +394,21 @@
                   heightStyle="3.375rem"
                 />
                 <div class="flex flex-col text-start text-primary">
-                  <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
-                    <p class="w-max-40 sm:w-max-72 truncate text-start font-medium">
-                      {person.name || $t('add_a_name')}
-                    </p>
-                  </button>
+                  <div class="flex gap-2">
+                    <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
+                      <p class="w-max-40 sm:w-max-72 truncate text-start font-medium">
+                        {person.name || $t('add_a_name')}
+                      </p>
+                    </button>
+                    <IconButton
+                      icon={mdiPencilOutline}
+                      shape="round"
+                      size="small"
+                      variant="ghost"
+                      onclick={() => modalManager.show(PersonEditModal, { person })}
+                      aria-label={$t('edit')}
+                    />
+                  </div>
                   {#if altItems.length > 0}
                     {@const parts = new Intl.ListFormat($locale).formatToParts(
                       altItems.map(({ sharedById }) => sharedById),
@@ -443,13 +453,6 @@
                     </p>
                   {/if}
                 </div>
-                <IconButton
-                  aria-label={$t('edit')}
-                  icon={mdiPencilOutline}
-                  onclick={() => modalManager.show(PersonEditModal, { person })}
-                  size="small"
-                  variant="ghost"
-                />
               </div>
             {/if}
           </section>

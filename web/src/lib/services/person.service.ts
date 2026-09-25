@@ -129,7 +129,7 @@ export const handleUpdatePeople = async (peopleUpdateDto: PeopleUpdateDto) => {
   const $t = await getFormatter();
 
   try {
-    await updatePeople({ peopleUpdateDto });
+    const bulkResponse = await updatePeople({ peopleUpdateDto });
 
     const ids = new Set(peopleUpdateDto.people.map(({ id }) => id));
     const responses = await Promise.all([...ids].map((id) => getPerson({ id })));
@@ -137,8 +137,14 @@ export const handleUpdatePeople = async (peopleUpdateDto: PeopleUpdateDto) => {
       eventManager.emit('PersonUpdate', response);
     }
 
+    if (bulkResponse.some((response) => !response.success)) {
+      toastManager.danger($t('errors.something_went_wrong'));
+      return false;
+    }
+
     return true;
   } catch (error) {
+    console.log('uh oh');
     handleError(error, $t('errors.something_went_wrong'));
   }
 };

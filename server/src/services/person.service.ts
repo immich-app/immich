@@ -50,6 +50,7 @@ import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getDimensions, getMyPartnerIds } from 'src/utils/asset.util.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
+import { isHttpException } from 'src/utils/logger.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc.js';
 import { Point, transformPoints } from 'src/utils/transform.js';
@@ -303,7 +304,9 @@ export class PersonService extends BaseService {
         });
         results.push({ id: person.id, success: true });
       } catch (error: Error | any) {
-        this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
+        if (!isHttpException(error)) {
+          this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
+        }
         results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }

@@ -3,8 +3,9 @@
   import PeopleFilterUserPicker from '$lib/modals/PeopleFilterUserPicker.svelte';
   import { handleUpdatePeople } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { type PersonResponseDto } from '@immich/sdk';
+  import { PersonUserRole, type PersonResponseDto } from '@immich/sdk';
   import {
+    Alert,
     Button,
     Checkbox,
     DatePicker,
@@ -16,6 +17,7 @@
     Label,
     modalManager,
     Stack,
+    Text,
   } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiChevronDown, mdiText } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -42,9 +44,28 @@
     ]),
   );
 
+  const writableRoles = new Set([PersonUserRole.Write, PersonUserRole.Admin]);
+
   let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
   let targetPerson = $state(candidates[0]);
   let applyToEveryone = $state(false);
+
+  const isWritable = $derived.by(() => {
+    if (!targetUserId) {
+      return false;
+    }
+
+    if (targetUserId === authManager.user.id) {
+      return true;
+    }
+
+    const sharedBy = person.sharedBy.find((user) => user.id === targetUserId);
+    if (!sharedBy) {
+      return false;
+    }
+
+    return writableRoles.has(sharedBy.role);
+  });
 
   const onSubmit = async () => {
     const userIdsToUpdate = applyToEveryone
@@ -98,29 +119,51 @@
   });
 </script>
 
-<FormModal title={$t('person')} size="small" icon={mdiText} {onClose} {onSubmit}>
+<FormModal
+  title={$t('person')}
+  size="small"
+  icon={mdiText}
+  {onClose}
+  {onSubmit}
+  submitText={$t('submit')}
+  disabled={!isWritable}
+>
   <Stack gap={6}>
     {#if candidates.length > 1}
-      <Button color="secondary" size="small" shape="round" trailingIcon={mdiChevronDown} onclick={onViewAsAnotherUser}>
-        {$t('view_as', { values: { name: userNames.get(targetUserId) ?? targetUserId } })}
-      </Button>
-      <Button
-        size="small"
-        color="secondary"
-        shape="round"
-        variant="ghost"
-        leadingIcon={mdiAccountMultipleOutline}
-        onclick={handleCopyFromMine}
-      >
-        {$t('copy_from_my_person')}
-      </Button>
+      <div class="flex flex-col gap-2">
+        <Button
+          color="secondary"
+          size="small"
+          shape="round"
+          trailingIcon={mdiChevronDown}
+          onclick={onViewAsAnotherUser}
+        >
+          {$t('view_as', { values: { name: userNames.get(targetUserId) ?? targetUserId } })}
+        </Button>
+        {#if isWritable}
+          <Button
+            size="small"
+            color="secondary"
+            shape="round"
+            variant="ghost"
+            leadingIcon={mdiAccountMultipleOutline}
+            onclick={handleCopyFromMine}
+          >
+            {$t('copy_from_my_person')}
+          </Button>
+        {:else}
+          <Alert shape="rectangle" color="warning" size="small" icon={false} class="mt-4" title={$t('readonly_access')}>
+            <Text size="tiny">{$t('person_read_access_message')}</Text>
+          </Alert>
+        {/if}
+      </div>
     {/if}
 
-    <Field label={$t('name')}>
+    <Field label={$t('name')} disabled={!isWritable}>
       <Input bind:value={targetPerson.name} />
     </Field>
 
-    <Field label={$t('date_of_birth')}>
+    <Field label={$t('date_of_birth')} disabled={!isWritable}>
       <DatePicker
         bind:value={
           () => (targetPerson.birthDate ? DateTime.fromISO(targetPerson.birthDate) : undefined),
@@ -131,7 +174,7 @@
       <HelperText>{$t('birthdate_set_description')}</HelperText>
     </Field>
 
-    {#if candidates.length > 1}
+    {#if candidates.length > 1 && isWritable}
       <HStack fullWidth gap={4}>
         <Checkbox id="apply-for-all-users-checkbox" color="secondary" size="small" bind:checked={applyToEveryone} />
         <Label
