@@ -200,6 +200,14 @@ export const getAssetActions = (
     shortcuts: [{ key: 'f' }],
   };
 
+  const Rate: ActionItem = {
+    title: $t('rate_asset'),
+    description: $t('rate_asset_description'),
+    $if: () => isOwner && authManager.preferences.ratings.enabled,
+    onAction: ({ event }) => handleRate(asset, event instanceof KeyboardEvent ? Number(event.key) : NaN),
+    shortcuts: [0, 1, 2, 3, 4, 5].map((key) => ({ key: String(key) })),
+  };
+
   const AddToAlbum: ActionItem = {
     title: $t('add_to_album'),
     icon: mdiPlus,
@@ -340,6 +348,7 @@ export const getAssetActions = (
     Info,
     Favorite,
     Unfavorite,
+    Rate,
     PlayMotionPhoto,
     StopMotionPhoto,
     PlaySlideshow,
@@ -432,6 +441,27 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  }
+};
+
+const handleRate = async (asset: AssetResponseDto, rating: number) => {
+  const $t = await getFormatter();
+
+  if (Number.isNaN(rating)) {
+    toastManager.info($t('rate_asset_description'));
+    return;
+  }
+
+  const newRating = rating === 0 ? null : rating;
+  if (asset.exifInfo && asset.exifInfo.rating === newRating) {
+    return;
+  }
+
+  try {
+    const response = await updateAsset({ id: asset.id, updateAssetDto: { rating: newRating } });
+    eventManager.emit('AssetUpdate', response);
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_set_rating'));
   }
 };
 

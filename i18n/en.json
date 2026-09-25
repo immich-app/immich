@@ -1750,7 +1750,8 @@
   "purchase_settings_server_activated": "The server product key is managed by the admin",
   "query_asset_id": "Query Asset ID",
   "queue_status": "Queuing {count}/{total}",
-  "rate_asset": "Rate Asset",
+  "rate_asset": "Rate asset",
+  "rate_asset_description": "Use the keys from 1 to 5 to quickly rate an asset, and 0 to clear the rating",
   "rating": "Star rating",
   "rating_clear": "Clear rating",
   "rating_count": "{count, plural, =0 {Unrated} one {# star} other {# stars}}",
@@ -2367,6 +2368,5 @@
   "you": "You",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
-  "zero_to_clear_rating": "press 0 to clear asset rating",
   "zoom_image": "Zoom Image"
 }
