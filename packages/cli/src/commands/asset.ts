@@ -199,10 +199,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
         formatValue: (v: number, options, type) => {
           // Don't format percentage
-          if (type === 'percentage') {
-            return v.toString();
-          }
-          return byteSize(v).toString();
+          return type === 'percentage' ? v.toString() : byteSize(v).toString();
         },
         etaBuffer: 100, // Increase samples for ETA calculation
       },
@@ -563,12 +560,15 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
       continue;
     }
     const albumId = existingAlbums.get(albumName);
-    if (albumId) {
-      if (!albumToAssets.has(albumId)) {
-        albumToAssets.set(albumId, []);
-      }
-      albumToAssets.get(albumId)?.push(asset.id);
+
+    if (!albumId) {
+      continue;
     }
+
+    if (!albumToAssets.has(albumId)) {
+      albumToAssets.set(albumId, []);
+    }
+    albumToAssets.get(albumId)?.push(asset.id);
   }
 
   const albumUpdateProgress = new SingleBar(

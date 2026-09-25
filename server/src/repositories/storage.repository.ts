@@ -186,15 +186,17 @@ export class StorageRepository {
     const files = await fs.readdir(directory);
     await Promise.all(files.map((file) => this.removeEmptyDirs(path.join(directory, file), true)));
 
-    if (self) {
-      const updated = await fs.readdir(directory);
-      if (updated.length === 0) {
-        try {
-          await fs.rmdir(directory);
-        } catch (error: Error | any) {
-          if (error.code !== 'ENOTEMPTY') {
-            this.logger.warn(`Attempted to remove directory, but failed: ${error}`);
-          }
+    if (!self) {
+      return;
+    }
+
+    const updated = await fs.readdir(directory);
+    if (updated.length === 0) {
+      try {
+        await fs.rmdir(directory);
+      } catch (error: Error | any) {
+        if (error.code !== 'ENOTEMPTY') {
+          this.logger.warn(`Attempted to remove directory, but failed: ${error}`);
         }
       }
     }
@@ -258,10 +260,12 @@ export class StorageRepository {
     let batch: string[] = [];
     for await (const value of stream) {
       batch.push(value.toString());
-      if (batch.length === walkOptions.take) {
-        yield batch;
-        batch = [];
+      if (batch.length !== walkOptions.take) {
+        continue;
       }
+
+      yield batch;
+      batch = [];
     }
 
     if (batch.length > 0) {

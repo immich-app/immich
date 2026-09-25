@@ -6,7 +6,9 @@ import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart' show StreamQueryStore;
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/data/db/main/dao/ocr.dart';
 import 'package:immich_mobile/data/db/main/dao/person.dart';
+import 'package:immich_mobile/data/db/main/dao/user_metadata.dart';
 import 'package:immich_mobile/data/db/main/database.drift.dart';
 import 'package:immich_mobile/data/db/main/database.steps.dart';
 import 'package:immich_mobile/data/db/main/table/app/settings.dart';
@@ -40,7 +42,6 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/memory.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/ocr.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
@@ -51,7 +52,6 @@ import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -112,6 +112,7 @@ import 'package:sqlite_async/sqlite_async.dart';
 class Drift extends $Drift {
   final SqliteConnectionPool? _updatePool;
 
+  @visibleForTesting
   Drift(super.executor) : _updatePool = null;
 
   Drift.sqlite(SqliteConnection db, SqliteConnectionPool updatePool)
@@ -168,9 +169,15 @@ class Drift extends $Drift {
       await customStatement('PRAGMA foreign_keys = OFF');
 
       try {
-        await transaction(
-          () => m.runMigrationSteps(
-            from: from,
+        await transaction(() async {
+          // Re-read the current version inside the transaction to avoid race between different connections.
+          final current = (await customSelect('PRAGMA user_version').getSingle()).read<int>('user_version');
+          if (current >= to) {
+            return;
+          }
+
+          await m.runMigrationSteps(
+            from: current,
             to: to,
             steps: migrationSteps(
               from1To2: (m, v2) async {
@@ -374,8 +381,13 @@ class Drift extends $Drift {
                 await m.createIndex(v35.idxLocalAssetGroup);
               },
             ),
-          ),
-        );
+          );
+
+          // This prevents a drift between the current connection and other connections in the pool,
+          // which is waiting for the transaction to finish. Drift updates this outside of the transaction,
+          // so doing it inside the transaction ensures that all connections are in sync.
+          await customStatement('PRAGMA user_version = $to');
+        });
 
         if (kDebugMode) {
           // Fail if the migration broke foreign keys
