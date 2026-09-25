@@ -10,4 +10,6 @@ export const personFactory = Sync.makeFactory<PersonResponseDto>({
   thumbnailPath: Sync.each(() => faker.system.filePath()),
   updatedAt: Sync.each(() => faker.date.recent().toISOString()),
   otherPeople: [],
+  sharedBy: [],
+  sharedWith: [],
 });

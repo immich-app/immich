@@ -255,7 +255,11 @@ export type Person = {
   isHidden: boolean;
   thumbnailPath: string;
   otherPeople: { sharedById: string; name: string; birthDate: string | null; role: PersonUserRole }[];
+  sharedBy: PersonUser[];
+  sharedWith: PersonUser[];
 };
+
+export type PersonUser = User & { role: PersonUserRole };
 
 export type AssetFace = {
   id: string;
@@ -278,7 +282,7 @@ export type AssetFace = {
 export type Plugin = Selectable<PluginTable>;
 
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
-const userWithPrefixColumns = [
+const user2Columns = [
   'user2.id',
   'user2.name',
   'user2.email',
@@ -376,7 +380,15 @@ export const columns = {
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
   user: userColumns,
-  userWithPrefix: userWithPrefixColumns,
+  user2: user2Columns,
+  userPrefix: [
+    'user.id',
+    'user.name',
+    'user.email',
+    'user.avatarColor',
+    'user.profileImagePath',
+    'user.profileChangedAt',
+  ],
   userAdmin: [
     ...userColumns,
     'clusterGroupId',

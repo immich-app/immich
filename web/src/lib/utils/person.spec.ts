@@ -8,6 +8,8 @@ const makePerson = (overrides: Partial<PersonResponseDto> = {}): PersonResponseD
   isHidden: false,
   birthDate: null,
   otherPeople: [],
+  sharedBy: [],
+  sharedWith: [],
   ...overrides,
 });
 

@@ -42,7 +42,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
   'SearchAssetResponseDto': {'nextCursor': null},
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
-  'PersonResponseDto': {'otherPeople': const []},
+  'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'WorkflowResponseDto': {'logging': false},
 };
 

@@ -9820,7 +9820,7 @@
             "name": "sharedById",
             "required": false,
             "in": "query",
-            "description": "Only include people shared by this user",
+            "description": "Only include people to which the user gave access",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
@@ -9831,7 +9831,7 @@
             "name": "sharedWithId",
             "required": false,
             "in": "query",
-            "description": "Only include people shared with this user",
+            "description": "Only include people to which the user was given access",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
@@ -10085,7 +10085,7 @@
     },
     "/people/users": {
       "delete": {
-        "description": "Remove shared users from a person",
+        "description": "Remove user access to people",
         "operationId": "removeUsersFromPeople",
         "parameters": [],
         "requestBody": {
@@ -10132,7 +10132,7 @@
         "x-immich-state": "Stable"
       },
       "get": {
-        "description": "Retrieve a list of all shared users and people",
+        "description": "Retrieve a list of users and the people to which they have been given access",
         "operationId": "getUsersForPeople",
         "parameters": [
           {
@@ -10167,7 +10167,7 @@
             "name": "sharedById",
             "required": false,
             "in": "query",
-            "description": "User ID of shared by user",
+            "description": "User ID of the user that gave access",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
@@ -10178,7 +10178,7 @@
             "name": "sharedWithId",
             "required": false,
             "in": "query",
-            "description": "User ID of shared with user",
+            "description": "User ID of the user that was given access",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
@@ -10209,7 +10209,7 @@
             "api_key": []
           }
         ],
-        "summary": "Get shared users",
+        "summary": "Get people access",
         "tags": [
           "People"
         ],
@@ -10227,7 +10227,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "description": "Share people with users",
+        "description": "Give users access to people",
         "operationId": "addUsersToPeople",
         "parameters": [],
         "requestBody": {
@@ -10256,7 +10256,7 @@
             "api_key": []
           }
         ],
-        "summary": "Create shared users",
+        "summary": "Give users access to people",
         "tags": [
           "People"
         ],
@@ -25080,6 +25080,52 @@
         ],
         "type": "object"
       },
+      "PeopleUserResponseDto": {
+        "properties": {
+          "avatarColor": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          },
+          "email": {
+            "description": "User email",
+            "format": "email",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
+            "type": "string"
+          },
+          "id": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "name": {
+            "description": "User name",
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "description": "Profile change date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "profileImagePath": {
+            "description": "Profile image path",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PersonUserRole",
+            "description": "Access role"
+          }
+        },
+        "required": [
+          "avatarColor",
+          "email",
+          "id",
+          "name",
+          "profileChangedAt",
+          "profileImagePath",
+          "role"
+        ],
+        "type": "object"
+      },
       "Permission": {
         "description": "List of permissions",
         "enum": [
@@ -25387,6 +25433,20 @@
             },
             "type": "array"
           },
+          "sharedBy": {
+            "description": "Users that gave the current user access to this person",
+            "items": {
+              "$ref": "#/components/schemas/PeopleUserResponseDto"
+            },
+            "type": "array"
+          },
+          "sharedWith": {
+            "description": "Users the current user gave access to this person",
+            "items": {
+              "$ref": "#/components/schemas/PeopleUserResponseDto"
+            },
+            "type": "array"
+          },
           "thumbnailPath": {
             "description": "Thumbnail path",
             "type": "string"
@@ -25414,6 +25474,8 @@
           "isHidden",
           "name",
           "otherPeople",
+          "sharedBy",
+          "sharedWith",
           "thumbnailPath"
         ],
         "type": "object"
@@ -25498,7 +25560,7 @@
             "description": "Role that should be applied"
           },
           "sharedWithIds": {
-            "description": "User IDs the person should be shared with",
+            "description": "User IDs that should be given access to the person",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
@@ -25524,13 +25586,13 @@
               "type": "string"
             },
             "sharedById": {
-              "description": "User ID the person was shared by",
+              "description": "User ID of the user that gave access to the person",
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "type": "string"
             },
             "sharedWithId": {
-              "description": "User ID the person was shared with",
+              "description": "User ID of the user that was given access to the person",
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "type": "string"
@@ -25555,20 +25617,24 @@
             },
             "role": {
               "$ref": "#/components/schemas/PersonUserRole",
-              "description": "Sharing role"
+              "description": "Access role"
+            },
+            "sharedBy": {
+              "$ref": "#/components/schemas/UserResponseDto",
+              "description": "The user that gave access to this person"
             },
             "sharedById": {
-              "description": "User ID of the user this is person is shared by",
+              "description": "User ID of the user that gave access to this person",
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "type": "string"
             },
             "sharedWith": {
               "$ref": "#/components/schemas/UserResponseDto",
-              "description": "The user response dto for the user that this person is shared with"
+              "description": "The user that was given access to this person"
             },
             "sharedWithId": {
-              "description": "User ID of the user this person is shared with",
+              "description": "User ID of the user that was given access to this person",
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "type": "string"
@@ -25578,6 +25644,7 @@
             "personId",
             "sharedById",
             "sharedWithId",
+            "sharedBy",
             "sharedWith",
             "role"
           ],

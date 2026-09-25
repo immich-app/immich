@@ -27,8 +27,8 @@ import {
   PersonUsersSearchDto,
   mapFaces,
   mapPerson,
+  mapPersonUsers,
 } from 'src/dtos/person.dto.js';
-import { mapUser } from 'src/dtos/user.dto.js';
 import {
   AssetVisibility,
   CacheControl,
@@ -822,7 +822,7 @@ export class PersonService extends BaseService {
   async getUsersForPeople(auth: AuthDto, dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {
     const sharedUsers = await this.personUserRepository.searchPeopleUsers(auth.user.id, dto);
 
-    return sharedUsers.map((sharedUser) => ({ ...sharedUser, sharedWith: mapUser(sharedUser.sharedWith) }));
+    return mapPersonUsers(sharedUsers);
   }
 
   async addUsersToPeople(auth: AuthDto, dto: PersonUsersCreateDto) {

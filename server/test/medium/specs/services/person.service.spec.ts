@@ -229,6 +229,32 @@ describe(PersonService.name, () => {
         }),
       );
     });
+
+    it('should include the users the person is shared by and shared with', async () => {
+      const { ctx, sut } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
+      const { person } = await ctx.newPerson({ ownerId: owner.id });
+      await ctx.newPersonUser({
+        personGroupId: person.personGroupId,
+        sharedById: owner.id,
+        sharedWithId: user1.id,
+        role: PersonUserRole.Write,
+      });
+
+      await expect(sut.getById(factory.auth({ user: owner }), person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({
+          sharedBy: [],
+          sharedWith: [expect.objectContaining({ id: user1.id, email: user1.email, role: PersonUserRole.Write })],
+        }),
+      );
+      await expect(sut.getById(factory.auth({ user: user1 }), person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({
+          sharedBy: [expect.objectContaining({ id: owner.id, email: owner.email, role: PersonUserRole.Write })],
+          sharedWith: [],
+        }),
+      );
+    });
   });
 
   describe('getThumbnail', () => {
@@ -1248,7 +1274,12 @@ describe(PersonService.name, () => {
         role: PersonUserRole.Read,
       });
 
-      await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(1);
+      await expect(sut.getUsersForPeople(auth, {})).resolves.toEqual([
+        expect.objectContaining({
+          sharedBy: expect.objectContaining({ id: owner.id }),
+          sharedWith: expect.objectContaining({ id: user1.id }),
+        }),
+      ]);
     });
 
     it('should update the name and birthdate when sharing to an existing copy', async () => {

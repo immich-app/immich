@@ -2,12 +2,12 @@ import { Selectable } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import type { ImageDimensions, MaybeDehydrated } from 'src/types.js';
-import { AssetFace, Person } from 'src/database.js';
+import { AssetFace, Person, PersonUser, User } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
-import { UserResponseSchema } from 'src/dtos/user.dto.js';
+import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { SharingDirectionSchema, SourceTypeSchema } from 'src/enum.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
@@ -58,8 +58,8 @@ const PersonSearchSchema = z
     closestAssetId: z.uuidv4().optional().describe('Closest asset ID for similarity search'),
     page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
     size: z.coerce.number().int().min(1).max(1000).default(500).describe('Number of items per page'),
-    sharedById: z.uuid().optional().describe('Only include people shared by this user'),
-    sharedWithId: z.uuid().optional().describe('Only include people shared with this user'),
+    sharedById: z.uuid().optional().describe('Only include people to which the user gave access'),
+    sharedWithId: z.uuid().optional().describe('Only include people to which the user was given access'),
     isFavorite: stringToBool.optional().describe('Filter by favorite status'),
     isHidden: stringToBool.optional().describe('Filter by hidden status'),
   })
@@ -84,6 +84,10 @@ const PersonOtherResponseSchema = z
     role: PersonUserRoleSchema,
   })
   .meta({ id: 'PersonOtherResponseDto' });
+
+const PeopleUserResponseSchema = UserResponseSchema.extend({
+  role: PersonUserRoleSchema.describe('Access role'),
+}).meta({ id: 'PeopleUserResponseDto' });
 
 export const PersonResponseSchema = z
   .object({
@@ -111,6 +115,8 @@ export const PersonResponseSchema = z
       .describe('Person color (hex)')
       .meta(new HistoryBuilder().added('v1.126.0').stable('v2').getExtensions()),
     otherPeople: z.array(PersonOtherResponseSchema),
+    sharedBy: z.array(PeopleUserResponseSchema).describe('Users that gave the current user access to this person'),
+    sharedWith: z.array(PeopleUserResponseSchema).describe('Users the current user gave access to this person'),
   })
   .meta({ id: 'PersonResponseDto' });
 
@@ -132,6 +138,7 @@ export class PeopleUpdateDto extends createZodDto(PeopleUpdateSchema) {}
 export class MergePersonDto extends createZodDto(MergePersonSchema) {}
 export class PersonSearchDto extends createZodDto(PersonSearchSchema) {}
 export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
+export class PeopleUserResponseDto extends createZodDto(PeopleUserResponseSchema) {}
 
 const AssetFaceResponseSchema = z
   .object({
@@ -195,10 +202,11 @@ const PersonUsersResponseSchema = z
   .array(
     z.object({
       personId: z.uuid().describe('Person ID'),
-      sharedById: z.uuid().describe('User ID of the user this is person is shared by'),
-      sharedWithId: z.uuid().describe('User ID of the user this person is shared with'),
-      sharedWith: UserResponseSchema.describe('The user response dto for the user that this person is shared with'),
-      role: PersonUserRoleSchema.describe('Sharing role'),
+      sharedById: z.uuid().describe('User ID of the user that gave access to this person'),
+      sharedWithId: z.uuid().describe('User ID of the user that was given access to this person'),
+      sharedBy: UserResponseSchema.describe('The user that gave access to this person'),
+      sharedWith: UserResponseSchema.describe('The user that was given access to this person'),
+      role: PersonUserRoleSchema.describe('Access role'),
     }),
   )
   .meta({ id: 'PersonUsersResponseDto' });
@@ -207,8 +215,8 @@ const PersonUsersSearchSchema = z
   .object({
     personId: z.uuid().optional().describe('Person ID'),
     direction: SharingDirectionSchema.optional(),
-    sharedById: z.uuid().optional().describe('User ID of shared by user'),
-    sharedWithId: z.uuid().optional().describe('User ID of shared with user'),
+    sharedById: z.uuid().optional().describe('User ID of the user that gave access'),
+    sharedWithId: z.uuid().optional().describe('User ID of the user that was given access'),
     role: PersonUserRoleSchema.optional().describe('Role of user'),
   })
   .meta({ id: 'PersonUsersSearchDto' });
@@ -216,7 +224,7 @@ const PersonUsersSearchSchema = z
 const PersonUsersCreateSchema = z
   .object({
     personIds: z.array(z.uuid()).describe('Person IDs'),
-    sharedWithIds: z.array(z.uuid()).describe('User IDs the person should be shared with'),
+    sharedWithIds: z.array(z.uuid()).describe('User IDs that should be given access to the person'),
     role: PersonUserRoleSchema.describe('Role that should be applied'),
   })
   .meta({ id: 'PersonUsersCreateDto' });
@@ -225,8 +233,8 @@ const PersonUsersDeleteSchema = z
   .array(
     z.object({
       personId: z.uuid().describe('Person ID'),
-      sharedWithId: z.uuid().describe('User ID the person was shared with'),
-      sharedById: z.uuid().optional().describe('User ID the person was shared by'),
+      sharedWithId: z.uuid().describe('User ID of the user that was given access to the person'),
+      sharedById: z.uuid().optional().describe('User ID of the user that gave access to the person'),
     }),
   )
   .meta({ id: 'PersonUsersDeleteDto' });
@@ -256,7 +264,11 @@ const PeopleResponseSchema = z
   .describe('People response');
 export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 
-export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
+type OptionalKeys = 'otherPeople' | 'sharedBy' | 'sharedWith';
+
+export function mapPerson(
+  person: MaybeDehydrated<Omit<Person, OptionalKeys> & Partial<Pick<Person, OptionalKeys>>>,
+): PersonResponseDto {
   return {
     id: person.personGroupId,
     name: person.name,
@@ -266,9 +278,36 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
     updatedAt: asDateTimeString(person.updatedAt),
-    otherPeople: person.otherPeople,
+    // TODO: use different response dtos for asset faces, which do not load the sharing properties
+    otherPeople: person.otherPeople ?? [],
+    sharedBy: (person.sharedBy ?? []).map((user) => mapPeopleUser(user)),
+    sharedWith: (person.sharedWith ?? []).map((user) => mapPeopleUser(user)),
   };
 }
+
+const mapPeopleUser = (user: MaybeDehydrated<PersonUser>): PeopleUserResponseDto => ({
+  ...mapUser(user),
+  role: user.role,
+});
+
+type PersonUserShare = {
+  personId: string;
+  sharedById: string;
+  sharedWithId: string;
+  role: PersonUserRole;
+  sharedBy: MaybeDehydrated<User>;
+  sharedWith: MaybeDehydrated<User>;
+};
+
+export const mapPersonUsers = (shares: PersonUserShare[]): PersonUsersResponseDto =>
+  shares.map((share) => ({
+    personId: share.personId,
+    sharedById: share.sharedById,
+    sharedWithId: share.sharedWithId,
+    role: share.role,
+    sharedBy: mapUser(share.sharedBy),
+    sharedWith: mapUser(share.sharedWith),
+  }));
 
 function mapFacesWithoutPerson(
   face: MaybeDehydrated<Selectable<AssetFaceTable>>,

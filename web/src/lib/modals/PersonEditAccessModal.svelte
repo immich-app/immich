@@ -15,7 +15,7 @@
     type PersonResponseDto,
     type PersonUsersResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, BasicModal, Card, CardDescription, Field, HStack, Select, Text } from '@immich/ui';
+  import { ActionButton, BasicModal, Field, HStack, Select, Text } from '@immich/ui';
   import { mdiAccountMultipleOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -51,9 +51,10 @@
 />
 
 <BasicModal title={$t('manage_person_access')} size="small" icon={mdiAccountMultipleOutline} {onClose}>
-  <Card color="info">
-    <CardDescription class="p-2 px-4">{$t('manage_person_access_description')}</CardDescription>
-  </Card>
+  <Text size="small" color="muted" class="mb-4">
+    {$t('manage_person_access_description')}
+  </Text>
+
   <HStack fullWidth class="my-2 justify-between">
     <Text size="medium" fontWeight="semi-bold">{$t('users')}</Text>
     <HeaderActionButton action={AddUsers} />

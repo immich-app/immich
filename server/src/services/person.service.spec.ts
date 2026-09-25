@@ -301,6 +301,8 @@ describe(PersonService.name, () => {
         isHidden: false,
         isFavorite: false,
         otherPeople: [],
+        sharedBy: [],
+        sharedWith: [],
         updatedAt: expect.any(String),
       });
       expect(mocks.person.update).toHaveBeenCalledWith({
@@ -643,6 +645,8 @@ describe(PersonService.name, () => {
         id: person.personGroupId,
         name: person.name,
         otherPeople: [],
+        sharedBy: [],
+        sharedWith: [],
         thumbnailPath: person.thumbnailPath,
         updatedAt: expect.any(String),
       });

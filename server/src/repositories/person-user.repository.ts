@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { PersonUserRole, PersonUsersDeleteDto, PersonUsersSearchDto } from 'src/dtos/person.dto.js';
 import { SharingDirection } from 'src/enum.js';
@@ -22,11 +23,18 @@ export class PersonUserRepository {
         'person_user.sharedWithId',
         'person_user.role',
       ])
-      .select((eb) =>
-        jsonObjectFrom(eb.selectFrom('user').selectAll().whereRef('user.id', '=', 'person_user.sharedWithId'))
+      .select((eb) => [
+        jsonObjectFrom(
+          eb.selectFrom('user').select(columns.userPrefix).whereRef('user.id', '=', 'person_user.sharedById'),
+        )
+          .$notNull()
+          .as('sharedBy'),
+        jsonObjectFrom(
+          eb.selectFrom('user').select(columns.userPrefix).whereRef('user.id', '=', 'person_user.sharedWithId'),
+        )
           .$notNull()
           .as('sharedWith'),
-      )
+      ])
       .$if(!!dto.personId, (qb) => qb.where('person_user.personGroupId', '=', dto.personId!))
       .$if(!!dto.sharedWithId, (qb) => qb.where('person_user.sharedWithId', '=', dto.sharedWithId!))
       .$if(!!dto.sharedById, (qb) => qb.where('person_user.sharedById', '=', dto.sharedById!))

@@ -8,14 +8,15 @@ import {
   type ShallowDehydrateObject,
   type SqlBool,
   type Updateable,
+  expressionBuilder,
   sql,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFace } from 'src/database.js';
+import { AssetFace, PersonUser, columns } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
 import { PersonUserRole } from 'src/dtos/person.dto.js';
-import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum.js';
+import { AssetFileType, AssetVisibility, SharingDirection, SourceType, UserMetadataKey } from 'src/enum.js';
 import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
@@ -29,6 +30,8 @@ import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.j
 type PersonGroupRow = {
   ownedPerson: ShallowDehydrateObject<Selectable<PersonTable>>;
   otherPeople: { sharedById: string; role: PersonUserRole; name: string; birthDate: string | null }[];
+  sharedBy: PersonUser[];
+  sharedWith: PersonUser[];
 };
 
 export interface PersonFilterOptions {
@@ -119,38 +122,53 @@ const withOwnedPerson = (userId: string) => {
       .as('ownedPerson');
 };
 
+const withOtherPeopleFor = (userId: string, personGroupId: Expression<string>) =>
+  jsonArrayFrom(
+    expressionBuilder<DB>()
+      .selectFrom('person as other')
+      .innerJoin('person_user', (join) =>
+        join
+          .onRef('person_user.personGroupId', '=', 'other.personGroupId')
+          .onRef('person_user.sharedById', '=', 'other.ownerId')
+          .on('person_user.sharedWithId', '=', userId),
+      )
+      .select(['person_user.sharedById', 'person_user.role', 'other.name', 'other.birthDate'])
+      .where('other.personGroupId', '=', personGroupId)
+      .where((eb) => eb.or([eb('other.birthDate', 'is not', null), eb('other.name', '!=', '')])),
+  ).as('otherPeople');
+
+const withPersonUsersFor = (userId: string, personGroupId: Expression<string>, direction: SharingDirection) => {
+  const [userColumn, viewerColumn] =
+    direction === SharingDirection.SharedBy
+      ? (['person_user.sharedById', 'person_user.sharedWithId'] as const)
+      : (['person_user.sharedWithId', 'person_user.sharedById'] as const);
+
+  return jsonArrayFrom(
+    expressionBuilder<DB>()
+      .selectFrom('person_user')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', userColumn).on('user.deletedAt', 'is', null))
+      .select(columns.user)
+      .select('person_user.role')
+      .where('person_user.personGroupId', '=', personGroupId)
+      .where(viewerColumn, '=', userId)
+      .orderBy('user.name'),
+  )
+    .$castTo<PersonUser[]>()
+    .as(direction === SharingDirection.SharedBy ? 'sharedBy' : 'sharedWith');
+};
+
+const withSharing = (userId: string, personGroupId: Expression<string>) => [
+  withOtherPeopleFor(userId, personGroupId),
+  withPersonUsersFor(userId, personGroupId, SharingDirection.SharedBy),
+  withPersonUsersFor(userId, personGroupId, SharingDirection.SharedWith),
+];
+
 const withOtherPeople = (userId: string) => {
-  return (eb: ExpressionBuilder<DB, 'person_group'>) =>
-    jsonArrayFrom(
-      eb
-        .selectFrom('person as other')
-        .innerJoin('person_user', (join) =>
-          join
-            .onRef('person_user.personGroupId', '=', 'other.personGroupId')
-            .onRef('person_user.sharedById', '=', 'other.ownerId')
-            .on('person_user.sharedWithId', '=', userId),
-        )
-        .select(['person_user.sharedById', 'person_user.role', 'other.name', 'other.birthDate'])
-        .whereRef('other.personGroupId', '=', 'person_group.id')
-        .where((eb) => eb.or([eb('other.birthDate', 'is not', null), eb('other.name', '!=', '')])),
-    ).as('otherPeople');
+  return (eb: ExpressionBuilder<DB, 'person_group'>) => withSharing(userId, eb.ref('person_group.id'));
 };
 
 const withOtherPeopleForPerson = (userId: string) => {
-  return (eb: ExpressionBuilder<DB, 'person'>) =>
-    jsonArrayFrom(
-      eb
-        .selectFrom('person as other')
-        .innerJoin('person_user', (join) =>
-          join
-            .onRef('person_user.personGroupId', '=', 'other.personGroupId')
-            .onRef('person_user.sharedById', '=', 'other.ownerId')
-            .on('person_user.sharedWithId', '=', userId),
-        )
-        .select(['person_user.sharedById', 'person_user.role', 'other.name', 'other.birthDate'])
-        .whereRef('other.personGroupId', '=', 'person.personGroupId')
-        .where((eb) => eb.or([eb('other.birthDate', 'is not', null), eb('other.name', '!=', '')])),
-    ).as('otherPeople');
+  return (eb: ExpressionBuilder<DB, 'person'>) => withSharing(userId, eb.ref('person.personGroupId'));
 };
 
 const withFilters = (userId: string, options: PersonFilterOptions = {}) => {
@@ -186,7 +204,12 @@ const withFilters = (userId: string, options: PersonFilterOptions = {}) => {
   };
 };
 
-const asPerson = ({ ownedPerson, otherPeople }: PersonGroupRow) => ({ ...ownedPerson, otherPeople });
+const asPerson = ({ ownedPerson, otherPeople, sharedBy, sharedWith }: PersonGroupRow) => ({
+  ...ownedPerson,
+  otherPeople,
+  sharedBy,
+  sharedWith,
+});
 
 const faceCount = (eb: ExpressionBuilder<DB, 'asset'>) => eb.fn.count('asset.id');
 

@@ -229,8 +229,8 @@ export class PersonController {
   @Get('users')
   @Authenticated({ permission: Permission.PersonRead })
   @Endpoint({
-    summary: 'Get shared users',
-    description: 'Retrieve a list of all shared users and people',
+    summary: 'Get people access',
+    description: 'Retrieve a list of users and the people to which they have been given access',
     history: new HistoryBuilder().added('v3.3').stable('v3.3'),
   })
   getUsersForPeople(@Auth() auth: AuthDto, @Query() dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {
@@ -240,8 +240,8 @@ export class PersonController {
   @Put('users')
   @Authenticated({ permission: Permission.PersonUpdate })
   @Endpoint({
-    summary: 'Create shared users',
-    description: 'Share people with users',
+    summary: 'Give users access to people',
+    description: 'Give users access to people',
     history: new HistoryBuilder().added('v3.3').stable('v3.3'),
   })
   addUsersToPeople(@Auth() auth: AuthDto, @Body() dto: PersonUsersCreateDto): Promise<void> {
@@ -252,7 +252,7 @@ export class PersonController {
   @Authenticated({ permission: Permission.PersonDelete })
   @Endpoint({
     summary: 'Remove users from people',
-    description: 'Remove shared users from a person',
+    description: 'Remove user access to people',
     history: new HistoryBuilder().added('v3.3').stable('v3.3'),
   })
   removeUsersFromPeople(@Auth() auth: AuthDto, @Body() dto: PersonUsersDeleteDto): Promise<void> {

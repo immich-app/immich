@@ -12,7 +12,30 @@ select
     from
       (
         select
-          *
+          "user"."id",
+          "user"."name",
+          "user"."email",
+          "user"."avatarColor",
+          "user"."profileImagePath",
+          "user"."profileChangedAt"
+        from
+          "user"
+        where
+          "user"."id" = "person_user"."sharedById"
+      ) as obj
+  ) as "sharedBy",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "user"."id",
+          "user"."name",
+          "user"."email",
+          "user"."avatarColor",
+          "user"."profileImagePath",
+          "user"."profileChangedAt"
         from
           "user"
         where

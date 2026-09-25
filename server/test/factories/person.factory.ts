@@ -19,6 +19,8 @@ export class PersonFactory {
       isHidden: false,
       name: 'person',
       otherPeople: [],
+      sharedBy: [],
+      sharedWith: [],
       ownerId: newUuid(),
       thumbnailPath: '/data/thumbs/person-thumbnail.jpg',
       updatedAt: newDate(),

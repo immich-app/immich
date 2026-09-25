@@ -1,8 +1,9 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import PeopleFilterUserPicker from '$lib/modals/PeopleFilterUserPicker.svelte';
   import { handleUpdatePeople } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { searchUsers, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { type PersonResponseDto } from '@immich/sdk';
   import {
     Button,
     Checkbox,
@@ -13,10 +14,10 @@
     HStack,
     Input,
     Label,
-    Select,
-    VStack,
+    modalManager,
+    Stack,
   } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiText } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiChevronDown, mdiText } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -34,17 +35,16 @@
     ...(person.otherPeople ?? []),
   ]);
 
-  let users = $state(new Map<string, UserResponseDto>());
+  const userNames = $derived(
+    new Map([
+      [authManager.user.id, authManager.user.name],
+      ...person.sharedBy.map(({ id, name }) => [id, name] as const),
+    ]),
+  );
+
   let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
-
   let targetPerson = $state(candidates[0]);
-
   let applyToEveryone = $state(false);
-
-  const loadUsers = async () => {
-    const response = await searchUsers();
-    users = new Map(response.map((user) => [user.id, user]));
-  };
 
   const onSubmit = async () => {
     const userIdsToUpdate = applyToEveryone
@@ -80,38 +80,40 @@
     }
   };
 
-  onMount(async () => {
-    await loadUsers();
+  const onViewAsAnotherUser = async () => {
+    const candidateIds = new Set(candidates.map(({ sharedById }) => sharedById));
+    const userId = await modalManager.show(PeopleFilterUserPicker, {
+      title: $t('user'),
+      selected: targetUserId,
+      users: person.sharedBy.filter(({ id }) => candidateIds.has(id)),
+      allowEmpty: false,
+    });
+    if (userId) {
+      onChange(userId);
+    }
+  };
+
+  onMount(() => {
     onChange(targetUserId);
   });
 </script>
 
 <FormModal title={$t('person')} size="small" icon={mdiText} {onClose} {onSubmit}>
-  <VStack>
+  <Stack gap={6}>
     {#if candidates.length > 1}
-      <Field label={$t('user')}>
-        <Select
-          value={targetUserId}
-          options={candidates.map((person) => ({
-            label: users.get(person.sharedById)?.name ?? person.sharedById,
-            value: person.sharedById,
-          }))}
-          onChange={(value) => onChange(value)}
-        />
-        <HelperText>{$t('view_and_edit_person_fields')}</HelperText>
-      </Field>
-
-      <div class="mx-auto">
-        <Button
-          size="small"
-          color="secondary"
-          class="mt-2"
-          shape="round"
-          variant="outline"
-          leadingIcon={mdiAccountMultipleOutline}
-          onclick={handleCopyFromMine}>{$t('copy_from_my_person')}</Button
-        >
-      </div>
+      <Button color="secondary" size="small" shape="round" trailingIcon={mdiChevronDown} onclick={onViewAsAnotherUser}>
+        {$t('view_as', { values: { name: userNames.get(targetUserId) ?? targetUserId } })}
+      </Button>
+      <Button
+        size="small"
+        color="secondary"
+        shape="round"
+        variant="ghost"
+        leadingIcon={mdiAccountMultipleOutline}
+        onclick={handleCopyFromMine}
+      >
+        {$t('copy_from_my_person')}
+      </Button>
     {/if}
 
     <Field label={$t('name')}>
@@ -138,7 +140,7 @@
               people: new Intl.ListFormat($locale, { style: 'long' }).format(
                 candidates
                   .filter(({ sharedById }) => sharedById !== targetUserId)
-                  .map(({ sharedById }) => users.get(sharedById)?.name ?? sharedById),
+                  .map(({ sharedById }) => userNames.get(sharedById) ?? sharedById),
               ),
             },
           })}
@@ -147,5 +149,5 @@
         />
       </HStack>
     {/if}
-  </VStack>
+  </Stack>
 </FormModal>

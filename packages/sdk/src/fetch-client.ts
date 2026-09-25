@@ -1222,6 +1222,21 @@ export type PersonOtherResponseDto = {
     role: PersonUserRole;
     sharedById: string;
 };
+export type PeopleUserResponseDto = {
+    avatarColor: UserAvatarColor;
+    /** User email */
+    email: string;
+    /** User ID */
+    id: string;
+    /** User name */
+    name: string;
+    /** Profile change date */
+    profileChangedAt: string;
+    /** Profile image path */
+    profileImagePath: string;
+    /** Access role */
+    role: PersonUserRole;
+};
 export type PersonResponseDto = {
     /** Person date of birth */
     birthDate: string | null;
@@ -1236,6 +1251,10 @@ export type PersonResponseDto = {
     /** Person name */
     name: string;
     otherPeople: PersonOtherResponseDto[];
+    /** Users that gave the current user access to this person */
+    sharedBy: PeopleUserResponseDto[];
+    /** Users the current user gave access to this person */
+    sharedWith: PeopleUserResponseDto[];
     /** Thumbnail path */
     thumbnailPath: string;
     /** Last update date */
@@ -2028,21 +2047,23 @@ export type MergePersonDto = {
 export type PersonUsersDeleteDto = {
     /** Person ID */
     personId: string;
-    /** User ID the person was shared by */
+    /** User ID of the user that gave access to the person */
     sharedById?: string;
-    /** User ID the person was shared with */
+    /** User ID of the user that was given access to the person */
     sharedWithId: string;
 }[];
 export type PersonUsersResponseDto = {
     /** Person ID */
     personId: string;
-    /** Sharing role */
+    /** Access role */
     role: PersonUserRole;
-    /** User ID of the user this is person is shared by */
+    /** The user that gave access to this person */
+    sharedBy: UserResponseDto;
+    /** User ID of the user that gave access to this person */
     sharedById: string;
-    /** The user response dto for the user that this person is shared with */
+    /** The user that was given access to this person */
     sharedWith: UserResponseDto;
-    /** User ID of the user this person is shared with */
+    /** User ID of the user that was given access to this person */
     sharedWithId: string;
 }[];
 export type PersonUsersCreateDto = {
@@ -2050,7 +2071,7 @@ export type PersonUsersCreateDto = {
     personIds: string[];
     /** Role that should be applied */
     role: PersonUserRole;
-    /** User IDs the person should be shared with */
+    /** User IDs that should be given access to the person */
     sharedWithIds: string[];
 };
 export type PersonDeleteDto = {
@@ -6159,7 +6180,7 @@ export function removeUsersFromPeople({ personUsersDeleteDto }: {
     })));
 }
 /**
- * Get shared users
+ * Get people access
  */
 export function getUsersForPeople({ direction, personId, role, sharedById, sharedWithId }: {
     direction?: SharingDirection;
@@ -6182,7 +6203,7 @@ export function getUsersForPeople({ direction, personId, role, sharedById, share
     }));
 }
 /**
- * Create shared users
+ * Give users access to people
  */
 export function addUsersToPeople({ personUsersCreateDto }: {
     personUsersCreateDto: PersonUsersCreateDto;
