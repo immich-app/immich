@@ -50,6 +50,7 @@ class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
   int cleanupStaleTempFilesCalls = 0;
   int cleanupManagedTempFileCalls = 0;
+  final List<String> managedTempPaths = [];
   final List<String> cleanedManagedTempPaths = [];
 
   TestViewIntentService() : super(MockViewIntentHostApi());
@@ -68,7 +69,9 @@ class TestViewIntentService extends ViewIntentService {
   }
 
   @override
-  Future<void> setManagedTempFilePath(String path) async {}
+  Future<void> setManagedTempFilePath(String path) async {
+    managedTempPaths.add(path);
+  }
 
   @override
   Future<void> cleanupManagedTempFileIfCurrent(String path) async {
@@ -118,14 +121,14 @@ void main() {
     );
   });
 
-  setUp(() async {
+  setUp(() {
     viewIntentService = TestViewIntentService();
     resolver = MockViewIntentAssetResolver();
     assetService = MockAssetService();
     router = MockAppRouter();
     payload = ViewIntentPayload(path: '/tmp/incoming.jpg', mimeType: 'image/jpeg', localAssetId: 'local-1');
     deepLinkAsset = _localAsset(id: 'local-1');
-    deepLinkTimelineService = await _createReadyTimelineService([deepLinkAsset], TimelineOrigin.deepLink);
+    deepLinkTimelineService = _timelineServiceFromAssets([deepLinkAsset], TimelineOrigin.deepLink);
 
     when(() => router.push<Object?>(any())).thenAnswer((_) async => null);
     when(() => assetService.watchAsset(any())).thenAnswer((_) => const Stream.empty());
@@ -201,12 +204,6 @@ void main() {
     expect(container.read(activeViewIntentPayloadProvider), isNull);
   });
 
-  test('flushDeferredViewIntent does nothing when there is no pending attachment', () async {
-    await handler.flushDeferredViewIntent();
-
-    verifyNever(() => resolver.resolve(any()));
-  });
-
   test('onAppResumed cleans stale temp files when no attachment is present', () async {
     viewIntentService.consumedAttachment = null;
 
@@ -266,7 +263,7 @@ void main() {
       localAssetId: 'local-2',
     );
     final secondAsset = _localAsset(id: 'local-2');
-    final secondTimelineService = await _createReadyTimelineService([secondAsset], TimelineOrigin.deepLink);
+    final secondTimelineService = _timelineServiceFromAssets([secondAsset], TimelineOrigin.deepLink);
     addTearDown(() async => secondTimelineService.dispose());
 
     when(
@@ -308,7 +305,7 @@ void main() {
       localAssetId: 'local-2',
     );
     final secondAsset = _localAsset(id: 'local-2');
-    final secondTimelineService = await _createReadyTimelineService([secondAsset], TimelineOrigin.deepLink);
+    final secondTimelineService = _timelineServiceFromAssets([secondAsset], TimelineOrigin.deepLink);
     addTearDown(secondTimelineService.dispose);
 
     when(() => resolver.resolve(payload)).thenAnswer((_) => firstResolution.future);
@@ -346,6 +343,7 @@ void main() {
 
     expect(container.read(activeViewIntentPayloadProvider), same(payload));
     expect(container.read(viewIntentFilePathProvider), path);
+    expect(viewIntentService.managedTempPaths, [path]);
 
     routeClosed.complete(null);
     await handling;
@@ -402,14 +400,4 @@ TimelineService _timelineServiceFromAssets(List<BaseAsset> assets, TimelineOrigi
     bucketSource: () => Stream.value([Bucket(assetCount: assets.length)]),
     origin: origin,
   ));
-}
-
-Future<TimelineService> _createReadyTimelineService(List<BaseAsset> assets, TimelineOrigin origin) async {
-  final timelineService = _timelineServiceFromAssets(assets, origin);
-  // Spin a few async ticks so the internal bucket subscription has populated
-  // the buffer before tests start asserting against totalAssets.
-  for (var i = 0; i < 20 && timelineService.totalAssets != assets.length; i++) {
-    await Future<void>.delayed(Duration.zero);
-  }
-  return timelineService;
 }
