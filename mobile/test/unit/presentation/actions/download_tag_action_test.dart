@@ -24,7 +24,7 @@ void main() {
 
   setUp(() async {
     context = await PresentationContext.create();
-    tagApi = context.service.tag.repo;
+    tagApi = context.repository.tag.repo;
   });
 
   tearDown(() async {

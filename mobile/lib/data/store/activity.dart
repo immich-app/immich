@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/data/server/activity.dart';
+import 'package:immich_mobile/data/data_controller.dart';
 import 'package:immich_mobile/data/server/errors.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
@@ -29,7 +29,7 @@ class _ActivityCache extends StoreCache<Activity, ActivityScope> {
   @override
   Future<List<Activity>> fetch(Ref ref, ActivityScope scope) async {
     try {
-      return await ref.watch(activityApiRepositoryProvider).getAll(scope.$1, assetId: scope.$2);
+      return await ref.read(DataController.all).activityApi.getAll(scope.$1, assetId: scope.$2);
     } catch (error, stack) {
       _log.severe("Failed to get all activities for album ${scope.$1}", error, stack);
       return const [];
@@ -50,9 +50,10 @@ class ActivityMutations extends CachedStoreMutations<Activity, ActivityScope> {
   /// Add a comment to an album or asset. Providing [assetId] will add to the corresponding asset, otherwise the comment will be added to the album
   Future<Activity> addComment(String albumId, String comment, {String? assetId}) async {
     try {
-      final activity = await read(
-        activityApiRepositoryProvider,
-      ).create(albumId, ActivityType.comment, assetId: assetId, comment: comment);
+      final activity = await ref
+          .read(DataController.all)
+          .activityApi
+          .create(albumId, ActivityType.comment, assetId: assetId, comment: comment);
       cacheUpsert(activity);
       return activity;
     } catch (error, stack) {
@@ -64,7 +65,10 @@ class ActivityMutations extends CachedStoreMutations<Activity, ActivityScope> {
   /// Add a like to an album or asset. Providing [assetId] will add to the corresponding asset, otherwise the like will be added to the album
   Future<Activity> addLike(String albumId, {String? assetId}) async {
     try {
-      final activity = await read(activityApiRepositoryProvider).create(albumId, ActivityType.like, assetId: assetId);
+      final activity = await ref
+          .read(DataController.all)
+          .activityApi
+          .create(albumId, ActivityType.like, assetId: assetId);
       cacheUpsert(activity);
       return activity;
     } catch (error, stack) {
@@ -76,7 +80,7 @@ class ActivityMutations extends CachedStoreMutations<Activity, ActivityScope> {
   /// Remove [activity] from its album
   Future<void> remove(Activity activity) async {
     try {
-      await read(activityApiRepositoryProvider).delete(activity.id);
+      await ref.read(DataController.all).activityApi.delete(activity.id);
     } on NoResponseDtoError {
       // TODO(agg23): This error should not be thrown at all
     } catch (error, stack) {

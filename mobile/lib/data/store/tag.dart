@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/data/server/tag.dart';
+import 'package:immich_mobile/data/data_controller.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:logging/logging.dart';
@@ -20,7 +20,7 @@ extension type const TagStore._(Provider<TagMutations> _provider) implements Pro
 
 final _allProvider = FutureProvider.autoDispose<List<Tag>>((ref) async {
   try {
-    return await ref.watch(tagApiRepositoryProvider).getAll();
+    return await ref.read(DataController.all).tagApi.getAll();
   } catch (error, stack) {
     _log.severe("Failed to get all tags", error, stack);
     return const [];
@@ -33,7 +33,7 @@ class TagMutations extends StoreMutations {
   /// Create the tags named [values], returning the list of successfully created (or pre-existing) tags
   Future<List<Tag>> upsert(List<String> values) async {
     try {
-      return await read(tagApiRepositoryProvider).upsert(values);
+      return await ref.read(DataController.all).tagApi.upsert(values);
     } catch (error, stack) {
       _log.severe("Failed to upsert tags", error, stack);
       rethrow;
@@ -43,7 +43,7 @@ class TagMutations extends StoreMutations {
   /// Apply every tag in [tagIds] to every asset in [assetIds], returning the number of assets successfully tagged
   Future<int> applyToAssets(List<String> assetIds, List<String> tagIds) async {
     try {
-      return await read(tagApiRepositoryProvider).bulkTagAssets(assetIds, tagIds);
+      return await ref.read(DataController.all).tagApi.bulkTagAssets(assetIds, tagIds);
     } catch (error, stack) {
       _log.severe("Failed to tag assets", error, stack);
       rethrow;

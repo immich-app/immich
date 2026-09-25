@@ -7,6 +7,8 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../store.mocks.dart';
+
 class _MockActivityApi extends Mock implements ActivityApiRepository {}
 
 final _user = UserDto(id: 'u1', email: 'u1@test.com', name: 'User', profileChangedAt: DateTime.utc(2025));
@@ -20,7 +22,9 @@ void main() {
 
   setUp(() {
     api = _MockActivityApi();
-    container = ProviderContainer(overrides: [activityApiRepositoryProvider.overrideWithValue(api)]);
+    final dataController = MockDataController();
+    when(() => dataController.activityApi).thenReturn(api);
+    container = ProviderContainer(overrides: Store.overrideForTest(dataController: dataController));
     addTearDown(container.dispose);
 
     // Fetches for any ID default to empty

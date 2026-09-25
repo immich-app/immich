@@ -1,13 +1,21 @@
 import 'package:flutter/foundation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/db/logger/database.dart';
-import 'package:immich_mobile/data/db/main/dao/person.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/server/activity.dart';
 import 'package:immich_mobile/data/server/person.dart';
+import 'package:immich_mobile/data/server/tag.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:openapi/api.dart';
 import 'package:sqlite3/common.dart';
+
+/// The [DataController] backing this container's store
+///
+/// Must be overridden with a constructed instance (`Store.overrideWithValue`)
+final _dataControllerProvider = Provider<DataController>(
+  (ref) => throw UnimplementedError("DataController instance must be set via Store.overrideWith"),
+);
 
 /// Controls all data access. Serves request against the HTTP API and the Drift DB
 class DataController {
@@ -61,13 +69,11 @@ class DataController {
     return (logDb, false);
   }
 
-  // ignore: unused-code
-  late final PeopleDatabaseRepository peopleDb = PeopleDatabaseRepository(_db);
-  // ignore: unused-code
-  late final PersonApiRepository personApi = PersonApiRepository(PeopleApi(_apiClient));
+  static Provider<DataController> all = _dataControllerProvider;
 
-  // ignore: unused-code
   late final ActivityApiRepository activityApi = ActivityApiRepository(ActivitiesApi(_apiClient));
+  late final PersonApiRepository personApi = PersonApiRepository(PeopleApi(_apiClient));
+  late final TagApiRepository tagApi = TagApiRepository(TagsApi(_apiClient));
 
   /// Direct database access for the logic that has not yet been migrated
   // TODO(rewrite): Remove once all repositories have been migrated

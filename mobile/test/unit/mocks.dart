@@ -19,6 +19,7 @@ import 'package:mocktail/mocktail.dart';
 import '../infrastructure/repository.mock.dart';
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
+import '../store.mocks.dart';
 import 'factories/local_album_factory.dart';
 import 'factories/local_asset_factory.dart';
 import 'factories/remote_album_factory.dart';
@@ -33,11 +34,14 @@ class RepositoryMocks {
   final remoteAlbum = MockRemoteAlbumRepository();
   final albumApi = MockAlbumApiRepository();
   final permission = PermissionRepositoryStub(MockPermissionRepository());
+  final tag = TagApiRepositoryStub(MockTagApiRepository());
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
   final assetApi = AssetApiRepositoryStub(MockAssetApiRepository());
   final assetMedia = AssetMediaRepositoryStub(MockAssetMediaRepository());
   final download = DownloadRepositoryStub(MockDownloadRepository());
+
+  final data = MockDataController();
 
   RepositoryMocks() {
     resetAll();
@@ -57,6 +61,8 @@ class RepositoryMocks {
     assetMedia.reset();
     download.reset();
     permission.reset();
+    tag.reset();
+    reset(data);
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();
     _stubRemoteAssetRepository();
@@ -67,6 +73,8 @@ class RepositoryMocks {
     _stubDownloadRepository();
     _stubTrashedAssetRepository();
     _stubPermissionRepository();
+    _stubTagApi();
+    _stubDataController();
   }
 
   void _stubRemoteAssetRepository() {
@@ -117,6 +125,16 @@ class RepositoryMocks {
     when(permission.request).thenAnswer((_) async => DevicePermissionStatus.denied);
     when(permission.getAndroidSdkVersion).thenAnswer((_) async => 34);
   }
+
+  void _stubTagApi() {
+    when(tag.bulkTagAssets).thenAnswer((_) async => 0);
+    when(tag.upsert).thenAnswer((_) async => const []);
+    when(tag.getAll).thenAnswer((_) async => const []);
+  }
+
+  void _stubDataController() {
+    when(() => data.tagApi).thenReturn(tag.repo);
+  }
 }
 
 class ServiceMocks {
@@ -125,7 +143,6 @@ class ServiceMocks {
   final asset = AssetServiceStub(MockAssetService());
   final album = RemoteAlbumServiceStub(MockRemoteAlbumService());
   final cleanup = CleanupServiceStub(MockCleanupService());
-  final tag = TagApiRepositoryStub(MockTagApiRepository());
   final backgroundSync = MockBackgroundSyncManager();
   final upload = MockForegroundUploadService();
   final cast = MockGCastService();
@@ -143,7 +160,6 @@ class ServiceMocks {
     asset.reset();
     album.reset();
     cleanup.reset();
-    tag.reset();
     reset(cast);
     reset(serverInfo);
     reset(backgroundSync);
@@ -154,7 +170,6 @@ class ServiceMocks {
     _stubAssetService();
     _stubRemoteAlbumService();
     _stubCleanupService();
-    _stubTagApi();
     _stubBackgroundSync();
     _stubForegroundUpload();
   }
@@ -196,12 +211,6 @@ class ServiceMocks {
 
   void _stubCleanupService() {
     when(cleanup.deleteLocalAssets).thenAnswer((_) async => 0);
-  }
-
-  void _stubTagApi() {
-    when(tag.bulkTagAssets).thenAnswer((_) async => 0);
-    when(tag.upsert).thenAnswer((_) async => const []);
-    when(tag.getAll).thenAnswer((_) async => const []);
   }
 
   void _stubBackgroundSync() {
