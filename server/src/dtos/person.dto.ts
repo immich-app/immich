@@ -58,6 +58,10 @@ const PersonSearchSchema = z
     closestAssetId: z.uuidv4().optional().describe('Closest asset ID for similarity search'),
     page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
     size: z.coerce.number().int().min(1).max(1000).default(500).describe('Number of items per page'),
+    sharedById: z.uuid().optional().describe('Only include people shared by this user'),
+    sharedWithId: z.uuid().optional().describe('Only include people shared with this user'),
+    isFavorite: stringToBool.optional().describe('Filter by favorite status'),
+    isHidden: stringToBool.optional().describe('Filter by hidden status'),
   })
   .meta({ id: 'PersonSearchDto' });
 

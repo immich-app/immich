@@ -198,6 +198,7 @@ from
   and "asset"."deletedAt" is null
 where
   "owned"."isHidden" = $6
+  and 1 = 1
 group by
   "person_group"."id",
   "owned"."ownerId",
@@ -652,6 +653,7 @@ where
         and "person_user"."sharedWithId" = $5
     )
   )
+  and 1 = 1
 
 -- PersonRepository.createGroup
 insert into

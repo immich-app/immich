@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
+  type Expression,
   type ExpressionBuilder,
   type Insertable,
   type Kysely,
   type Selectable,
   type ShallowDehydrateObject,
+  type SqlBool,
   type Updateable,
   sql,
 } from 'kysely';
@@ -29,7 +31,14 @@ type PersonGroupRow = {
   otherPeople: { sharedById: string; role: PersonUserRole; name: string; birthDate: string | null }[];
 };
 
-export interface PersonSearchOptions {
+export interface PersonFilterOptions {
+  sharedById?: string;
+  sharedWithId?: string;
+  isFavorite?: boolean;
+  isHidden?: boolean;
+}
+
+export interface PersonSearchOptions extends PersonFilterOptions {
   withHidden: boolean;
   closestFaceAssetId?: string;
 }
@@ -142,6 +151,39 @@ const withOtherPeopleForPerson = (userId: string) => {
         .whereRef('other.personGroupId', '=', 'person.personGroupId')
         .where((eb) => eb.or([eb('other.birthDate', 'is not', null), eb('other.name', '!=', '')])),
     ).as('otherPeople');
+};
+
+const withFilters = (userId: string, options: PersonFilterOptions = {}) => {
+  const { sharedById, sharedWithId, isFavorite, isHidden } = options;
+  return (eb: ExpressionBuilder<DB & { owned: DB['person'] }, 'person_group' | 'owned'>) => {
+    const filters: Expression<SqlBool>[] = [];
+
+    if (sharedById || sharedWithId) {
+      filters.push(
+        eb.exists(
+          eb
+            .selectFrom('person_user')
+            .whereRef('person_user.personGroupId', '=', 'person_group.id')
+            // only consider shares that involve the current user
+            .where((eb) =>
+              eb.or([eb('person_user.sharedById', '=', userId), eb('person_user.sharedWithId', '=', userId)]),
+            )
+            .$if(!!sharedById, (qb) => qb.where('person_user.sharedById', '=', sharedById!))
+            .$if(!!sharedWithId, (qb) => qb.where('person_user.sharedWithId', '=', sharedWithId!)),
+        ),
+      );
+    }
+
+    if (isFavorite !== undefined) {
+      filters.push(eb('owned.isFavorite', '=', isFavorite));
+    }
+
+    if (isHidden !== undefined) {
+      filters.push(eb('owned.isHidden', '=', isHidden));
+    }
+
+    return eb.and(filters);
+  };
 };
 
 const asPerson = ({ ownedPerson, otherPeople }: PersonGroupRow) => ({ ...ownedPerson, otherPeople });
@@ -434,7 +476,9 @@ export class PersonRepository {
           .orderBy(sql`NULLIF("owned"."name", '')`, (om) => om.asc().nullsLast())
           .orderBy('owned.createdAt'),
       )
-      .$if(!options?.withHidden, (qb) => qb.where('owned.isHidden', '=', false))
+      // an explicit isHidden filter takes precedence over withHidden
+      .$if(!options?.withHidden && options?.isHidden === undefined, (qb) => qb.where('owned.isHidden', '=', false))
+      .where(withFilters(userId, options))
       .offset(pagination.skip ?? 0)
       .limit(pagination.take + 1)
       .execute();
@@ -656,7 +700,7 @@ export class PersonRepository {
     };
   }
   @GenerateSql({ params: [DummyValue.UUID] })
-  getNumberOfPeople(userId: string) {
+  getNumberOfPeople(userId: string, options?: PersonFilterOptions) {
     const zero = sql.lit(0);
     return this.db
       .selectFrom('person_group')
@@ -694,6 +738,7 @@ export class PersonRepository {
           ),
         ]),
       )
+      .where(withFilters(userId, options))
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
       .select((eb) =>
         eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('owned.isHidden', '=', true), zero).as('hidden'),

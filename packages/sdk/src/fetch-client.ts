@@ -6073,10 +6073,14 @@ export function deletePeople({ peopleDeleteDto }: {
 /**
  * Get all people
  */
-export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
+export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHidden, page, sharedById, sharedWithId, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
+    isFavorite?: boolean;
+    isHidden?: boolean;
     page?: number;
+    sharedById?: string;
+    sharedWithId?: string;
     size?: number;
     withHidden?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -6086,7 +6090,11 @@ export function getAllPeople({ closestAssetId, closestPersonId, page, size, with
     }>(`/people${QS.query(QS.explode({
         closestAssetId,
         closestPersonId,
+        isFavorite,
+        isHidden,
         page,
+        sharedById,
+        sharedWithId,
         size,
         withHidden
     }))}`, {

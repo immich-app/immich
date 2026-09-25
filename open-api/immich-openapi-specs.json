@@ -9787,6 +9787,24 @@
             }
           },
           {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "description": "Filter by favorite status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isHidden",
+            "required": false,
+            "in": "query",
+            "description": "Filter by hidden status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -9796,6 +9814,28 @@
               "maximum": 9007199254740991,
               "default": 1,
               "type": "integer"
+            }
+          },
+          {
+            "name": "sharedById",
+            "required": false,
+            "in": "query",
+            "description": "Only include people shared by this user",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sharedWithId",
+            "required": false,
+            "in": "query",
+            "description": "Only include people shared with this user",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
             }
           },
           {

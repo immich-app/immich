@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
-import { AssetFaceCreateDto, PersonUserRole } from 'src/dtos/person.dto.js';
+import { AssetFaceCreateDto, PersonSearchDto, PersonUserRole } from 'src/dtos/person.dto.js';
 import { AssetFileType, JobName } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
@@ -108,6 +108,97 @@ describe(PersonService.name, () => {
           data: [{ personId: person.personGroupId, userId: user2.id, assetId: newUuid() }],
         }),
       ).resolves.toEqual([expect.objectContaining({ id: person.personGroupId })]);
+    });
+  });
+
+  describe('getAll', () => {
+    it('should filter by sharing direction and user', async () => {
+      const { ctx, sut } = setup(await getKyselyDB());
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { user: user3 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { asset } = await ctx.newAsset({ ownerId: user1.id });
+
+      const { person: sharedByMe } = await ctx.newPerson({ ownerId: user1.id, name: 'Shared by me' });
+      const { person: notShared } = await ctx.newPerson({ ownerId: user1.id, name: 'Not shared' });
+      const { person: sharedWithMe } = await ctx.newPerson({ ownerId: user3.id, name: 'Shared with me' });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: sharedByMe.personGroupId });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: notShared.personGroupId });
+      await ctx.newPersonUser({
+        personGroupId: sharedByMe.personGroupId,
+        sharedById: user1.id,
+        sharedWithId: user2.id,
+      });
+      await ctx.newPersonUser({
+        personGroupId: sharedWithMe.personGroupId,
+        sharedById: user3.id,
+        sharedWithId: user1.id,
+      });
+
+      const auth = factory.auth({ user: user1 });
+      const getIds = async (dto: Partial<PersonSearchDto>) => {
+        const { people, total } = await sut.getAll(auth, { page: 1, size: 10, ...dto });
+        expect(total).toBe(people.length);
+        return people.map(({ id }) => id).toSorted();
+      };
+
+      await expect(getIds({})).resolves.toEqual(
+        [sharedByMe.personGroupId, notShared.personGroupId, sharedWithMe.personGroupId].toSorted(),
+      );
+      await expect(getIds({ sharedById: user1.id })).resolves.toEqual([sharedByMe.personGroupId]);
+      await expect(getIds({ sharedWithId: user2.id })).resolves.toEqual([sharedByMe.personGroupId]);
+      await expect(getIds({ sharedWithId: user3.id })).resolves.toEqual([]);
+      await expect(getIds({ sharedWithId: user1.id })).resolves.toEqual([sharedWithMe.personGroupId]);
+      await expect(getIds({ sharedById: user3.id })).resolves.toEqual([sharedWithMe.personGroupId]);
+      await expect(getIds({ sharedById: user2.id })).resolves.toEqual([]);
+    });
+
+    it('should filter by favorite and hidden', async () => {
+      const { ctx, sut } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person: favorite } = await ctx.newPerson({ ownerId: user.id, isFavorite: true });
+      const { person: hidden } = await ctx.newPerson({ ownerId: user.id, isHidden: true });
+      const { person: neither } = await ctx.newPerson({ ownerId: user.id });
+      for (const person of [favorite, hidden, neither]) {
+        await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
+      }
+
+      const auth = factory.auth({ user });
+      const getIds = async (dto: Partial<PersonSearchDto>) => {
+        const { people, total } = await sut.getAll(auth, { page: 1, size: 10, withHidden: true, ...dto });
+        expect(total).toBe(people.length);
+        return people.map(({ id }) => id).toSorted();
+      };
+
+      await expect(getIds({ isFavorite: true })).resolves.toEqual([favorite.personGroupId]);
+      await expect(getIds({ isFavorite: false })).resolves.toEqual(
+        [hidden.personGroupId, neither.personGroupId].toSorted(),
+      );
+      await expect(getIds({ isHidden: true })).resolves.toEqual([hidden.personGroupId]);
+      await expect(getIds({ isHidden: false })).resolves.toEqual(
+        [favorite.personGroupId, neither.personGroupId].toSorted(),
+      );
+      await expect(getIds({ isFavorite: true, isHidden: true })).resolves.toEqual([]);
+    });
+
+    it('should include hidden people when filtering by isHidden without withHidden', async () => {
+      const { ctx, sut } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person: hidden } = await ctx.newPerson({ ownerId: user.id, isHidden: true });
+      const { person: visible } = await ctx.newPerson({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: hidden.personGroupId });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: visible.personGroupId });
+
+      const auth = factory.auth({ user });
+
+      await expect(sut.getAll(auth, { page: 1, size: 10, isHidden: true })).resolves.toEqual(
+        expect.objectContaining({ people: [expect.objectContaining({ id: hidden.personGroupId })], total: 1 }),
+      );
+      await expect(sut.getAll(auth, { page: 1, size: 10, isHidden: false })).resolves.toEqual(
+        expect.objectContaining({ people: [expect.objectContaining({ id: visible.personGroupId })], total: 1 }),
+      );
     });
   });
 

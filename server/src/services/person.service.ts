@@ -59,7 +59,7 @@ const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${person
 @Injectable()
 export class PersonService extends BaseService {
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const { withHidden = false, closestAssetId, closestPersonId, page, size } = dto;
+    const { withHidden = false, closestAssetId, closestPersonId, page, size, ...filters } = dto;
     let closestFaceAssetId = closestAssetId;
     const pagination = {
       take: size,
@@ -79,8 +79,9 @@ export class PersonService extends BaseService {
     const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
       withHidden,
       closestFaceAssetId,
+      ...filters,
     });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
+    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, filters);
 
     return {
       people: items.map((person) => mapPerson(person)),
