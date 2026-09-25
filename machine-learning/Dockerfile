@@ -4,7 +4,7 @@ FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9
 
 FROM builder-cpu AS builder-openvino
 
-FROM builder-cpu AS builder-cuda
+FROM python:3.13-slim-bookworm@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26 AS builder-cuda
 
 FROM python:3.13-trixie@sha256:4a0820d8b1b1a1e012a23ff9a1296a3e28b48896a4d27a328a91ee197ce619d9 AS builder-armnn
 
@@ -108,17 +108,23 @@ ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 ADD --chmod=644 --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
 
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS mimalloc
+RUN echo "deb http://deb.debian.org/debian trixie-backports main" > /etc/apt/sources.list.d/backports.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends libmimalloc3/trixie-backports && \
+    cp /usr/lib/*-linux-gnu/libmimalloc.so.3 /libmimalloc.so
+
 FROM prod-${DEVICE} AS prod
 
 ARG DEVICE
 
-RUN MIMALLOC=$(case "$DEVICE" in cuda) echo "libmimalloc2.0";; openvino|rocm);; *) echo "libmimalloc3";; esac); \
-    apt-get update && \
-    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $MIMALLOC && \
+COPY --from=mimalloc /libmimalloc.so /usr/lib/libmimalloc.so
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tini ccache libgomp1 && \
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    { [ -z "$MIMALLOC" ] || ls /usr/lib/*-linux-gnu/libmimalloc.so.? > /etc/ld.so.preload; }
+    case "$DEVICE" in openvino|rocm);; *) echo /usr/lib/libmimalloc.so > /etc/ld.so.preload;; esac
 
 WORKDIR /usr/src
 ENV TRANSFORMERS_CACHE=/cache \
@@ -156,6 +162,10 @@ ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE
 
 # store huggingface in /cache subfolder to enable rootless deployment with a single volume
 ENV HF_HOME=/cache/hf-cache
+
+ENV CUDA_CACHE_PATH=/cache/jit/cuda \
+    AMD_COMGR_CACHE_DIR=/cache/jit/comgr \
+    NEO_CACHE_DIR=/cache/jit/neo
 
 ENTRYPOINT ["tini", "--"]
 CMD ["python", "-m", "immich_ml"]

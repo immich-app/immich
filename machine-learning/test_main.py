@@ -1,5 +1,10 @@
 import json
 import os
+import platform
+import sys
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from pathlib import Path
 from random import randint
@@ -17,8 +22,10 @@ from PIL import Image
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from immich_ml.config import MaxBatchSize, Settings, settings
-from immich_ml.main import load, preload_models
+from immich_ml import allocator
+from immich_ml.config import MaxBatchSize, PreloadModelData, Settings, settings
+from immich_ml.main import app, lifespan, load, preload_models, update_state
+from immich_ml.main import run_inference as run_request
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.cache import ModelCache
 from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
@@ -29,7 +36,7 @@ from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
-from immich_ml.sessions.ort import OrtSession
+from immich_ml.sessions.ort import OrtSession, flush_denormals
 from immich_ml.sessions.rknn import RknnSession, run_inference
 
 
@@ -162,6 +169,7 @@ class TestBase:
 
         snapshot_download.assert_called_once_with(
             "immich-app/ViT-B-32__openai",
+            revision=settings.model_revision,
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
             ignore_patterns=["*.armnn", "*.rknn"],
@@ -171,27 +179,18 @@ class TestBase:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", model_format=ModelFormat.ARMNN)
         encoder.download()
 
-        snapshot_download.assert_called_once_with(
-            "immich-app/ViT-B-32__openai",
-            cache_dir=encoder.cache_dir,
-            local_dir=encoder.cache_dir,
-            ignore_patterns=["*.rknn"],
-        )
+        assert snapshot_download.call_args.kwargs["ignore_patterns"] == ["*.rknn"]
 
     def test_download_downloads_rknn_if_preferred_format(self, snapshot_download: mock.Mock) -> None:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", model_format=ModelFormat.RKNN)
         encoder.download()
 
-        snapshot_download.assert_called_once_with(
-            "immich-app/ViT-B-32__openai",
-            cache_dir=encoder.cache_dir,
-            local_dir=encoder.cache_dir,
-            ignore_patterns=["*.armnn"],
-        )
+        assert snapshot_download.call_args.kwargs["ignore_patterns"] == ["*.armnn"]
 
     def test_throws_exception_if_model_path_does_not_exist(
-        self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
+        snapshot_download = mocker.patch("immich_ml.models.base.snapshot_download")  # which brings no such file
         path.return_value.__truediv__.return_value.__truediv__.return_value.is_file.return_value = False
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
@@ -201,6 +200,18 @@ class TestBase:
 
         snapshot_download.assert_called_once()
         ort_session.assert_not_called()
+
+    @pytest.mark.parametrize(
+        ("symbols", "called"), [(["mi_collect", "malloc_trim"], "mi_collect"), (["malloc_trim"], "malloc_trim")]
+    )
+    def test_returns_memory_through_the_allocator_the_process_runs_on(
+        self, mocker: MockerFixture, symbols: list[str], called: str
+    ) -> None:
+        process = mocker.patch("immich_ml.allocator._process", mock.Mock(spec=symbols))
+
+        allocator.release()
+
+        getattr(process, called).assert_called_once()
 
 
 @pytest.mark.usefixtures("ort_session")
@@ -370,12 +381,63 @@ class TestOrtSession:
 
         assert session.provider_options == []
 
+    @pytest.mark.parametrize(
+        ("machine", "disabled"),
+        [("arm64", ["ConvAddActivationFusion"]), ("aarch64", ["ConvAddActivationFusion"]), ("x86_64", [])],
+    )
+    def test_disables_the_fusion_that_is_slower_on_arm_whatever_the_os_calls_it(
+        self, ort_session: mock.Mock, mocker: MockerFixture, machine: str, disabled: list[str]
+    ) -> None:
+        mocker.patch("immich_ml.sessions.ort.platform.machine", return_value=machine)
+
+        OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
+
+        assert ort_session.call_args.kwargs["disabled_optimizers"] == disabled
+
+    @pytest.mark.parametrize(
+        ("providers", "disabled"),
+        [
+            (["CUDAExecutionProvider", "CPUExecutionProvider"], ["MatMulAddFusion"]),
+            (["CoreMLExecutionProvider", "CPUExecutionProvider"], ["MatMulAddFusion"]),
+            (["CPUExecutionProvider"], []),
+        ],
+    )
+    def test_disables_the_fusion_that_is_slower_on_cuda_and_coreml(
+        self, ort_session: mock.Mock, mocker: MockerFixture, providers: list[str], disabled: list[str]
+    ) -> None:
+        mocker.patch("immich_ml.sessions.ort.platform.machine", return_value="x86_64")
+
+        OrtSession("ViT-B-32__openai", providers=providers)
+
+        assert ort_session.call_args.kwargs["disabled_optimizers"] == disabled
+
     def test_sets_default_sess_options_if_cpu(self) -> None:
         session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
 
         assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
         assert session.sess_options.inter_op_num_threads == 1
         assert session.sess_options.intra_op_num_threads == 2
+        assert session.sess_options.get_session_config_entry("session.set_denormal_as_zero") == "1"
+
+    @pytest.mark.skipif(sys.platform != "linux" or platform.machine() != "x86_64", reason="an x86 register")
+    def test_flushes_denormals_on_the_calling_thread(self) -> None:
+        results: list[float] = []
+
+        def probe() -> None:  # a fresh thread, as a request thread is
+            flush_denormals()
+            results.append(float((np.array([1e-39], np.float32) * np.float32(1))[0]))
+
+        thread = threading.Thread(target=probe)
+        thread.start()
+        thread.join()
+
+        assert results == [0.0]
+
+    def test_gives_a_model_the_cpu_threads_it_asks_for(self) -> None:
+        session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"], threads=4)
+
+        assert session.sess_options.intra_op_num_threads == 4
+        assert OpenClipTextualEncoder.threads == 4 and OpenClipVisualEncoder.threads == 2
 
     @pytest.mark.ov_device_ids(["CPU"])
     def test_sets_default_sess_options_if_openvino_cpu(self, ov_device_ids: list[str]) -> None:
@@ -594,6 +656,22 @@ class TestCLIP:
         assert isinstance(embedding, list)
         assert len(embedding) == clip_model_cfg["embed_dim"]
         mocked.run.assert_called_once()
+
+    def test_visual_squashes_when_the_tower_was_calibrated_that_way(
+        self, mocker: MockerFixture, clip_model_cfg: dict[str, Any], clip_preprocess_cfg: dict[str, Any]
+    ) -> None:
+        mocker.patch.object(OpenClipVisualEncoder, "download")
+        mocker.patch.object(OpenClipVisualEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenClipVisualEncoder, "preprocess_cfg", clip_preprocess_cfg | {"resize_mode": "squash"})
+        session = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        session.run.return_value = [[self.embedding]]
+
+        # a stripe far enough left that a shortest-side crop of this frame would discard it
+        image = Image.new("RGB", (600, 200), "black")
+        image.paste(Image.new("RGB", (20, 200), "white"), (0, 0))
+        OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache").predict(image)
+
+        assert (session.run.call_args.args[1]["image"][0, :, 0, 0] > 0).all()  # white, where black normalizes below 0
 
     def test_basic_text(
         self,
@@ -1179,56 +1257,76 @@ class TestOcr:
 class TestCache:
     async def test_caches(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
-        await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
-        await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
-        assert len(model_cache.cache._cache) == 1
-        mock_get_model.assert_called_once()
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+        assert len(model_cache._models) == 1
+        mock_get_model.return_value.assert_called_once()
 
     async def test_kwargs_used(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
-        await model_cache.get(
-            "test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, cache_dir="test_cache"
-        )
-        mock_get_model.assert_called_once_with(
-            "test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, cache_dir="test_cache"
-        )
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, cache_dir="test_cache")
+        mock_get_model.return_value.assert_called_once_with("test_model_name", cache_dir="test_cache")
 
     async def test_different_clip(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
-        await model_cache.get("test_model_name", ModelType.VISUAL, ModelTask.SEARCH)
-        await model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
-        mock_get_model.assert_has_calls(
-            [
-                mock.call("test_model_name", ModelType.VISUAL, ModelTask.SEARCH),
-                mock.call("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH),
-            ]
-        )
-        assert len(model_cache.cache._cache) == 2
+        model_cache.get("test_model_name", ModelType.VISUAL, ModelTask.SEARCH)
+        model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
+        assert mock_get_model.call_args_list == [
+            mock.call("test_model_name", ModelType.VISUAL, ModelTask.SEARCH),
+            mock.call("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH),
+        ]
+        assert len(model_cache._models) == 2
 
-    @mock.patch("immich_ml.models.cache.OptimisticLock", autospec=True)
-    async def test_model_ttl(self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock) -> None:
+    async def test_lets_go_of_a_model_unused_for_its_ttl_and_returns_its_memory(
+        self, mock_get_model: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        events: list[str] = []
+
+        class Model:
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                pass
+
+            def __del__(self) -> None:
+                events.append("destroyed")
+
+        mock_get_model.return_value = Model
+        mocker.patch("immich_ml.models.cache.allocator.release", side_effect=lambda: events.append("released"))
+        loop = mocker.patch("immich_ml.models.cache.asyncio.get_running_loop").return_value
         model_cache = ModelCache()
-        await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
-        mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
 
-    @mock.patch("immich_ml.models.cache.SimpleMemoryCache.expire")
-    async def test_revalidate_get(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache(revalidate=True)
-        await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
-        await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
-        mock_cache_expire.assert_called_once_with(mock.ANY, 100)
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
+        delay, evict, key = loop.call_later.call_args.args
+        evict(key)
 
-    async def test_profiling(self, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache(profiling=True)
-        await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
-        profiling = await model_cache.get_profiling()
-        assert isinstance(profiling, dict)
-        assert profiling == model_cache.cache.profiling
+        assert delay == 100
+        assert events == ["destroyed", "released"]
+        assert not model_cache._models
+
+    async def test_a_use_starts_the_ttl_over(self, mock_get_model: mock.Mock, mocker: MockerFixture) -> None:
+        loop = mocker.patch("immich_ml.models.cache.asyncio.get_running_loop").return_value
+        model_cache = ModelCache()
+
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
+
+        loop.call_later.return_value.cancel.assert_called_once()
+        assert loop.call_later.call_count == 2
+
+    async def test_keeps_a_preloaded_model_whatever_ttl_a_request_names(
+        self, mock_get_model: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        loop = mocker.patch("immich_ml.models.cache.asyncio.get_running_loop").return_value
+        model_cache = ModelCache()
+
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
+
+        loop.call_later.assert_not_called()
 
     async def test_loads_mclip(self) -> None:
         model_cache = ModelCache()
 
-        model = await model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.TEXTUAL, ModelTask.SEARCH)
+        model = model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.TEXTUAL, ModelTask.SEARCH)
 
         assert isinstance(model, MClipTextualEncoder)
         assert model.model_name == "XLM-Roberta-Large-Vit-B-32"
@@ -1238,13 +1336,13 @@ class TestCache:
         model_cache = ModelCache()
 
         with pytest.raises(ValueError):
-            await model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.TEXTUAL, invalid)
+            model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.TEXTUAL, invalid)
 
     async def test_raises_exception_if_unknown_model_name(self) -> None:
         model_cache = ModelCache()
 
         with pytest.raises(ValueError):
-            await model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
+            model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
 
     async def test_preloads_clip_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
@@ -1528,3 +1626,64 @@ class TestPredictionEndpoints:
             parsed_embedding = orjson.loads(embedding)
             assert np.allclose(expected_face["embedding"], parsed_embedding)
             assert np.allclose(expected_face["score"], actual_face["score"])
+
+
+@pytest.mark.asyncio
+async def test_waits_for_every_entry_before_failing_the_request(mocker: MockerFixture) -> None:
+    finished = threading.Event()
+
+    def model(task: ModelTask, load: Callable[[], None]) -> mock.Mock:
+        stub = mock.Mock(
+            spec=InferenceModel, depends=[], loaded=False, load_attempts=0, identity=(ModelType.VISUAL, task)
+        )
+        stub.load.side_effect = load
+        return stub
+
+    def slow() -> None:
+        time.sleep(0.2)
+        finished.set()
+
+    models = {
+        ModelTask.SEARCH: model(ModelTask.SEARCH, slow),
+        ModelTask.OCR: model(ModelTask.OCR, mock.Mock(side_effect=RuntimeError("fails at once"))),
+    }
+    mocker.patch("immich_ml.main.model_cache.get", side_effect=lambda name, type, task, **options: models[task])
+    entries: Any = [
+        {"name": "a", "task": ModelTask.SEARCH, "type": ModelType.VISUAL, "options": {}},
+        {"name": "b", "task": ModelTask.OCR, "type": ModelType.DETECTION, "options": {}},
+    ]
+
+    with ThreadPoolExecutor(2) as pool, pytest.raises(RuntimeError, match="fails at once"):
+        mocker.patch("immich_ml.main.thread_pool", pool)
+        await run_request("text", (entries, []))
+
+    assert finished.is_set()  # or it would still be loading with no request counted as active
+
+
+@pytest.mark.asyncio
+async def test_returns_what_a_preload_freed(mocker: MockerFixture) -> None:
+    events: list[str] = []
+    mocker.patch.object(settings, "preload", PreloadModelData())
+    mocker.patch("immich_ml.main.preload_models", side_effect=lambda _: events.append("preloaded"))
+    mocker.patch("immich_ml.main.allocator.release", side_effect=lambda: events.append("released"))
+
+    async with lifespan(app):
+        assert events == ["preloaded", "released"]
+
+
+@pytest.mark.asyncio
+async def test_returns_memory_once_requests_stop_unless_another_arrives(mocker: MockerFixture) -> None:
+    mocker.patch("immich_ml.main.release", None)
+    loop = mocker.patch("immich_ml.main.asyncio.get_running_loop").return_value
+    first, second, third = update_state(), update_state(), update_state()
+    await anext(first)
+    await anext(second)
+
+    await first.aclose()
+    loop.call_later.assert_not_called()
+    await second.aclose()
+    loop.call_later.assert_called_once_with(5, allocator.release)
+
+    await anext(third)
+    loop.call_later.return_value.cancel.assert_called_once()
+    await third.aclose()

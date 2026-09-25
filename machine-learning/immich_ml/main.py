@@ -2,25 +2,26 @@ import asyncio
 import gc
 import os
 import signal
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import Any, AsyncGenerator, Callable, Iterator
+from typing import Any, AsyncGenerator, Callable
 from zipfile import BadZipFile
 
 import orjson
 from fastapi import Depends, FastAPI, File, Form, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
 from pydantic import ValidationError
 from starlette.formparsers import MultiPartParser
 
+from immich_ml import allocator
 from immich_ml.models import get_model_deps
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_pil
+from immich_ml.sessions.ort import flush_denormals
 
 from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache
@@ -32,18 +33,24 @@ from .schemas import (
     ModelIdentity,
     ModelTask,
     ModelType,
-    ORJSONResponse,
     PipelineRequest,
     T,
 )
 
+
+class ORJSONResponse(JSONResponse):
+    def render(self, content: Any) -> bytes:
+        return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY)
+
+
 MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
-model_cache = ModelCache(revalidate=settings.model_ttl > 0)
+model_cache = ModelCache()
 thread_pool: ThreadPoolExecutor | None = None
-lock = threading.Lock()
+MODEL_FILE_ERRORS = (InvalidProtobuf, NoSuchFile)
 active_requests = 0
 last_called: float | None = None
+release: asyncio.TimerHandle | None = None
 
 
 @asynccontextmanager
@@ -57,19 +64,20 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     )
 
     try:
+        flush_denormals()  # for work that runs on the event loop's own thread
         if settings.request_threads > 0:
             # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
-            thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
+            thread_pool = ThreadPoolExecutor(settings.request_threads, initializer=flush_denormals)
             log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
         if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
             asyncio.ensure_future(idle_shutdown_task())
         if settings.preload is not None:
             await preload_models(settings.preload)
+            allocator.release()
         yield
     finally:
         log.handlers.clear()
-        for model in model_cache.cache._cache.values():
-            del model
+        model_cache.clear()
         if thread_pool is not None:
             thread_pool.shutdown()
         gc.collect()
@@ -78,10 +86,10 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 async def preload_models(preload: PreloadModelData) -> None:
     log.info(f"Preloading models: clip:{preload.clip} facial_recognition:{preload.facial_recognition}")
 
-    async def load_models(model_string: str, model_type: ModelType, model_task: ModelTask) -> None:
+    async def load_models(model_string: str, model_type: ModelType, model_task: ModelTask, **options: Any) -> None:
         for model_name in model_string.split(","):
             model_name = model_name.strip()
-            model = await model_cache.get(model_name, model_type, model_task)
+            model = model_cache.get(model_name, model_type, model_task, **options)
             await load(model)
 
     if preload.clip.textual is not None:
@@ -119,14 +127,19 @@ async def preload_models(preload: PreloadModelData) -> None:
         )
 
 
-def update_state() -> Iterator[None]:
-    global active_requests, last_called
+async def update_state() -> AsyncGenerator[None, None]:
+    global active_requests, last_called, release
     active_requests += 1
     last_called = time.time()
+    if release is not None:
+        release.cancel()
+        release = None
     try:
         yield
     finally:
         active_requests -= 1
+        if not active_requests:
+            release = asyncio.get_running_loop().call_later(5, allocator.release)
 
 
 def get_entries(entries: str = Form()) -> InferenceEntries:
@@ -187,9 +200,7 @@ async def run_inference(payload: Image | str, entries: InferenceEntries) -> Infe
     response: InferenceResponse = {}
 
     async def _run_inference(entry: InferenceEntry) -> None:
-        model = await model_cache.get(
-            entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **entry["options"]
-        )
+        model = model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **entry["options"])
         inputs = [payload]
         for dep in model.depends:
             try:
@@ -198,14 +209,15 @@ async def run_inference(payload: Image | str, entries: InferenceEntries) -> Infe
                 message = f"Task {entry['task']} of type {entry['type']} depends on output of {dep}"
                 raise HTTPException(400, message)
         model = await load(model)
-        output = await run(model.predict, *inputs, **entry["options"])
+        output = await attempt(model, partial(model.predict, *inputs, **entry["options"]), MODEL_FILE_ERRORS)
         outputs[model.identity] = output
         response[entry["task"]] = output
 
-    without_deps, with_deps = entries
-    await asyncio.gather(*[_run_inference(entry) for entry in without_deps])
-    if with_deps:
-        await asyncio.gather(*[_run_inference(entry) for entry in with_deps])
+    for stage in entries:  # those that depend on another's output run after it
+        results = await asyncio.gather(*[_run_inference(entry) for entry in stage], return_exceptions=True)
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
     if isinstance(payload, Image):
         response["imageHeight"], response["imageWidth"] = payload.height, payload.width
 
@@ -220,42 +232,40 @@ async def run(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
 
 
 async def load(model: InferenceModel) -> InferenceModel:
-    if model.loaded:
-        return model
+    if not model.loaded:
+        await attempt(model, model.load, (OSError, BadZipFile, *MODEL_FILE_ERRORS))
+    return model
 
-    def _load(model: InferenceModel) -> InferenceModel:
-        if model.load_attempts > 1:
+
+async def attempt(model: InferenceModel, func: Callable[[], T], corrupt: tuple[type[Exception], ...]) -> T:
+    def _attempt() -> T:
+        if not model.loaded and model.load_attempts > 1:
             raise HTTPException(500, f"Failed to load model '{model.model_name}'")
-        with lock:
-            try:
-                model.load()
-            except FileNotFoundError as e:
-                if model.model_format == ModelFormat.ONNX:
-                    raise e
-                log.warning(
-                    f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it.",
-                    exc_info=e,
-                )
-                model.model_format = ModelFormat.ONNX
-                model.load()
-        return model
+        try:
+            return func()
+        except FileNotFoundError as e:
+            if model.model_format == ModelFormat.ONNX:
+                raise e
+            log.warning(
+                f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it.",
+                exc_info=e,
+            )
+            model.unload()
+            model.model_format = ModelFormat.ONNX
+            return func()
 
     try:
-        return await run(_load, model)
-    except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
+        return await run(_attempt)
+    except corrupt:
         log.warning(f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache.")
+        model.unload()
         model.clear_cache()
-        return await run(_load, model)
+        return await run(_attempt)
 
 
 async def idle_shutdown_task() -> None:
     while True:
-        if (
-            last_called is not None
-            and not active_requests
-            and not lock.locked()
-            and time.time() - last_called > settings.model_ttl
-        ):
+        if last_called is not None and not active_requests and time.time() - last_called > settings.model_ttl:
             log.info("Shutting down due to inactivity.")
             os.kill(os.getpid(), signal.SIGINT)
             break

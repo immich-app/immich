@@ -9,6 +9,7 @@ from PIL import Image
 
 from immich_ml.config import log
 from immich_ml.main import app
+from immich_ml.models.base import InferenceModel
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ def pil_image() -> Image.Image:
 
 @pytest.fixture
 def mock_get_model() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.models.cache.from_model_type", autospec=True) as mocked:
+    with mock.patch("immich_ml.models.cache.get_model_class") as mocked:
         yield mocked
 
 
@@ -187,5 +188,8 @@ def exception() -> Iterator[mock.Mock]:
 
 @pytest.fixture(scope="function")
 def snapshot_download() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.models.base.snapshot_download") as mocked:
+    with (
+        mock.patch("immich_ml.models.base.snapshot_download") as mocked,
+        mock.patch.object(InferenceModel, "cached", new_callable=mock.PropertyMock, side_effect=lambda: mocked.called),
+    ):
         yield mocked

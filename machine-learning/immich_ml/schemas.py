@@ -1,17 +1,10 @@
 from collections.abc import Sequence
 from enum import Enum
-from typing import Any, Literal, Protocol, TypeGuard, TypeVar
+from typing import Any, Literal, Protocol, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-import orjson
-from fastapi.responses import JSONResponse
 from typing_extensions import TypedDict
-
-
-class ORJSONResponse(JSONResponse):
-    def render(self, content: Any) -> bytes:
-        return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 class StrEnum(str, Enum):
@@ -56,6 +49,11 @@ class ModelPrecision(StrEnum):
     FP32 = "FP32"
 
 
+class ModelOrganization(StrEnum):
+    APP = "immich-app"
+    TESTING = "immich-testing"
+
+
 ModelIdentity = tuple[ModelType, ModelTask]
 
 
@@ -82,10 +80,6 @@ class ModelSession(Protocol):
     def get_outputs(self) -> Sequence[SessionNode]: ...
 
     def get_metadata(self) -> dict[str, str]: ...
-
-
-class HasProfiling(Protocol):
-    profiling: dict[str, float]
 
 
 class FaceDetectionOutput(TypedDict):
@@ -122,10 +116,6 @@ InferenceEntries = tuple[list[InferenceEntry], list[InferenceEntry]]
 
 
 InferenceResponse = dict[ModelTask | Literal["imageHeight"] | Literal["imageWidth"], Any]
-
-
-def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
-    return hasattr(obj, "profiling") and isinstance(obj.profiling, dict)
 
 
 T = TypeVar("T")
