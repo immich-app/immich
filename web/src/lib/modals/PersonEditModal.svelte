@@ -1,8 +1,21 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleUpdatePeople } from '$lib/services/person.service';
+  import { locale } from '$lib/stores/preferences.store';
   import { searchUsers, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
-  import { Button, Checkbox, DatePicker, Field, FormModal, HelperText, Input, Label, Select, VStack } from '@immich/ui';
+  import {
+    Button,
+    Checkbox,
+    DatePicker,
+    Field,
+    FormModal,
+    HelperText,
+    HStack,
+    Input,
+    Label,
+    Select,
+    VStack,
+  } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiText } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
@@ -21,7 +34,7 @@
     ...(person.otherPeople ?? []),
   ]);
 
-  let users = $state<UserResponseDto[]>([]);
+  let users = $state(new Map<string, UserResponseDto>());
   let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
 
   let targetPerson = $state(candidates[0]);
@@ -29,7 +42,8 @@
   let applyToEveryone = $state(false);
 
   const loadUsers = async () => {
-    users = await searchUsers();
+    const response = await searchUsers();
+    users = new Map(response.map((user) => [user.id, user]));
   };
 
   const onSubmit = async () => {
@@ -79,7 +93,7 @@
         <Select
           value={targetUserId}
           options={candidates.map((person) => ({
-            label: users.find((user) => user.id === person.sharedById)?.name ?? person.sharedById,
+            label: users.get(person.sharedById)?.name ?? person.sharedById,
             value: person.sharedById,
           }))}
           onChange={(value) => onChange(value)}
@@ -116,10 +130,22 @@
     </Field>
 
     {#if candidates.length > 1}
-      <div class="flex w-full items-start gap-2">
-        <Label label="Apply for all users?" for="apply-to-all-people-checkbox" />
-        <Checkbox id="apply-to-all-people-checkbox" color="secondary" bind:checked={applyToEveryone} />
-      </div>
+      <HStack fullWidth gap={4}>
+        <Checkbox id="apply-for-all-users-checkbox" color="secondary" size="small" bind:checked={applyToEveryone} />
+        <Label
+          label={$t('person_edit_change_for_all_users', {
+            values: {
+              people: new Intl.ListFormat($locale, { style: 'long' }).format(
+                candidates
+                  .filter(({ sharedById }) => sharedById !== targetUserId)
+                  .map(({ sharedById }) => users.get(sharedById)?.name ?? sharedById),
+              ),
+            },
+          })}
+          size="small"
+          for="apply-for-all-users-checkbox"
+        />
+      </HStack>
     {/if}
   </VStack>
 </FormModal>
