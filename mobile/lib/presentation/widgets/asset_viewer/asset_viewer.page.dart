@@ -219,7 +219,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   Future<void> _prepareCastNeighbors(int selectedPage, RemoteAsset current) async {
     await Future<void>.delayed(const Duration(milliseconds: 50));
-    if (!mounted || selectedPage != _currentPage || !ref.read(castProvider).isCasting) {
+    if (!mounted) {
+      return;
+    }
+    if (selectedPage != _currentPage || !ref.read(castProvider).isCasting) {
       return;
     }
 
@@ -235,7 +238,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       } catch (_) {
         return;
       }
-      if (!mounted || selectedPage != _currentPage || !ref.read(castProvider).isCasting) {
+      if (!mounted) {
+        return;
+      }
+      if (selectedPage != _currentPage || !ref.read(castProvider).isCasting) {
         return;
       }
       if (neighbor is RemoteAsset && neighbor.isImage) {

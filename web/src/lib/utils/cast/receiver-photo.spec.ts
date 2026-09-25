@@ -53,7 +53,7 @@ describe('Cast receiver photo switching', () => {
     });
     await vi.importActual('../../../../static/cast/receiver.js');
 
-    const photos = document.querySelector('#photos')!;
+    const photos = document.querySelector<HTMLElement>('#photos')!;
     const url = (id: string) => `/api/assets/${id}/thumbnail`;
     const show = (id: string, previous?: string, next?: string) =>
       onMessage({
