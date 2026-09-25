@@ -1250,6 +1250,47 @@ describe(PersonService.name, () => {
 
       await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(1);
     });
+
+    it('should update the name and birthdate when sharing to an existing copy', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
+      const { person } = await ctx.newPerson({ ownerId: owner.id, name: 'Owner name', birthDate: '1990-01-01' });
+      await ctx.newPerson({ ownerId: user1.id, personGroupId: person.personGroupId, name: '', birthDate: null });
+
+      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+        personIds: [person.personGroupId],
+        sharedWithIds: [user1.id],
+        role: PersonUserRole.Read,
+      });
+
+      await expect(sut.getById(factory.auth({ user: user1 }), person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({ name: 'Owner name', birthDate: '1990-01-01' }),
+      );
+    });
+
+    it('should skip updating when sharing to an existing copy with values', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: user1 } = await ctx.newUser({ clusterGroupId: owner.clusterGroupId });
+      const { person } = await ctx.newPerson({ ownerId: owner.id, name: 'Owner name', birthDate: '1990-01-01' });
+      await ctx.newPerson({
+        ownerId: user1.id,
+        personGroupId: person.personGroupId,
+        name: 'User1 name',
+        birthDate: '2000-02-02',
+      });
+
+      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+        personIds: [person.personGroupId],
+        sharedWithIds: [user1.id],
+        role: PersonUserRole.Read,
+      });
+
+      await expect(sut.getById(factory.auth({ user: user1 }), person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({ name: 'User1 name', birthDate: '2000-02-02' }),
+      );
+    });
   });
 
   describe('removeUsersFromPeople', () => {

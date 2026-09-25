@@ -226,11 +226,18 @@ export const person_user_after_insert = registerFunction({
   body: `
     BEGIN
       INSERT INTO person ("ownerId", "personGroupId", "name", "birthDate")
-      SELECT i."sharedWithId", i."personGroupId", shared."name", shared."birthDate"
+      SELECT DISTINCT ON (i."sharedWithId", i."personGroupId")
+        i."sharedWithId", i."personGroupId", shared."name", shared."birthDate"
       FROM inserted_rows i
       INNER JOIN person shared
         ON shared."ownerId" = i."sharedById" AND shared."personGroupId" = i."personGroupId"
-      ON CONFLICT ("ownerId", "personGroupId") DO NOTHING;
+      ORDER BY i."sharedWithId", i."personGroupId", shared."name" = '', shared."birthDate" IS NULL
+      ON CONFLICT ("ownerId", "personGroupId") DO UPDATE
+      SET
+        "name" = CASE WHEN person."name" = '' THEN EXCLUDED."name" ELSE person."name" END,
+        "birthDate" = COALESCE(person."birthDate", EXCLUDED."birthDate")
+      WHERE (person."name" = '' AND EXCLUDED."name" <> '')
+        OR (person."birthDate" IS NULL AND EXCLUDED."birthDate" IS NOT NULL);
       RETURN NULL;
     END`,
 });
