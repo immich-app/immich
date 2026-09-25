@@ -14,7 +14,7 @@ Immich's web and mobile apps support casting photos and videos to a Chromecast d
 3. The user selects a Cast device
 4. The sender launches a sends the Immich Custom Receiver cast app application ID to the Cast device
 5. The Cast device connects to Google's server and queries for the application URL using the application ID
-6. The sender creates a temporary Immich session (15 minutes) and adds its token as the `sessionKey` query parameter to each media URL. 
+6. The sender creates a temporary Immich session (15 minutes) and adds its token as the `sessionKey` query parameter to each media URL.
 7. When the user selects a photo or video on the sender device, the preview URL of this media is sent to the Cast device together with the session key
 8. The receiver requests the media from the Immich server over HTTPS. Asset media responses with a `sessionKey` include headers that allow the receiver's cross-origin request.
 

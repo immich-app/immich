@@ -18,4 +18,3 @@ To use casting with Immich, there are a few prerequisites:
 2. Your Cast device must be able to reach your instance over HTTPS and resolve its hostname.
 3. Videos must be in a format that is compatible with Google Cast. For more info, check out [Google's documentation](https://developers.google.com/cast/docs/media)
 4. Real-time HLS transcoding is used for local web playback, but Cast video currently uses a direct playback URL. Cast-compatible HLS authentication and controls are still being developed.
-
