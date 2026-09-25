@@ -1,13 +1,11 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -24,30 +22,27 @@ class ViewIntentResolution {
 final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
   (ref) => ViewIntentAssetResolver(
     localAssetRepository: ref.read(driftProvider).localAssetRepository,
-    assetService: ref.read(assetServiceProvider),
     nativeSyncApi: ref.read(nativeSyncApiProvider),
     timelineFactory: ref.read(timelineFactoryProvider),
-    timelineRepository: ref.read(driftProvider).timelineRepository,
+    remoteAssetRepository: ref.read(driftProvider).remoteAssetRepository,
     timelineUsers: () => ref.read(timelineUsersProvider.future),
   ),
 );
 
 class ViewIntentAssetResolver {
   final LocalAssetRepository _localAssetRepository;
-  final AssetService _assetService;
   final NativeSyncApi _nativeSyncApi;
   final TimelineFactory _timelineFactory;
-  final TimelineRepository timelineRepository;
-  final Future<List<String>> Function() timelineUsers;
+  final RemoteAssetRepository _remoteAssetRepository;
+  final Future<List<String>> Function() _timelineUsers;
   static final Logger _logger = Logger('ViewIntentAssetResolver');
 
   const ViewIntentAssetResolver({
     required this._localAssetRepository,
-    required this._assetService,
     required this._nativeSyncApi,
     required this._timelineFactory,
-    required this.timelineRepository,
-    required this.timelineUsers,
+    required this._remoteAssetRepository,
+    required this._timelineUsers,
   });
 
   Future<ViewIntentResolution> resolve(ViewIntentPayload attachment) async {
@@ -59,55 +54,44 @@ class ViewIntentAssetResolver {
       throw StateError('ViewIntent resolution requires either a localAssetId or a materialized file path.');
     }
 
-    ({LocalAsset? asset, String? checksum}) resolvedLocal = (asset: null, checksum: null);
-    if (localAssetId != null) {
-      resolvedLocal = await _resolveLocalAsset(localAssetId);
-      final remoteAsset = await _resolveRemoteAsset(
-        localAssetId,
-        remoteAssetId: resolvedLocal.asset?.remoteId,
-        checksum: resolvedLocal.checksum,
-      );
-      if (remoteAsset != null) {
-        return ViewIntentResolution(asset: remoteAsset, timelineService: _timelineFor(remoteAsset));
-      }
+    final localAsset = localAssetId == null ? null : await _localAssetRepository.getById(localAssetId);
+    final checksum = localAsset?.checksum ?? (localAssetId == null ? null : await _hashLocalAsset(localAssetId));
+    if (localAsset != null && localAsset.checksum == null && checksum != null) {
+      await _localAssetRepository.updateHashes({localAsset.id: checksum});
     }
 
-    final asset = resolvedLocal.asset ?? _toTransientAsset(attachment, resolvedLocal.checksum);
-
-    return ViewIntentResolution(
-      asset: asset,
-      timelineService: _timelineFor(asset),
-      viewIntentFilePath: resolvedLocal.asset == null ? path : null,
-    );
-  }
-
-  TimelineService _timelineFor(BaseAsset asset) => _timelineFactory.fromAssets([asset], TimelineOrigin.deepLink);
-
-  Future<({LocalAsset? asset, String? checksum})> _resolveLocalAsset(String localAssetId) async {
-    final localAsset = await _localAssetRepository.get(localAssetId);
-    final checksum = localAsset?.checksum ?? await _hashLocalAsset(localAssetId);
-
-    if (checksum == null || checksum == localAsset?.checksum) {
-      return (asset: localAsset, checksum: checksum);
+    final remoteAsset = checksum == null
+        ? null
+        : await _remoteAssetRepository.getCounterpartByChecksum(
+            await _timelineUsers(),
+            checksum,
+            // An existing local row is linked to the user's own asset in any visibility.
+            ownInAnyVisibility: localAsset != null,
+          );
+    if (remoteAsset != null) {
+      _logger.fine('resolve matched remote asset by checksum: $checksum, asset=$remoteAsset');
+      return _resolution(remoteAsset.copyWith(localId: localAssetId));
     }
 
     if (localAsset != null) {
-      await _localAssetRepository.updateHashes({localAssetId: checksum});
-      final resolvedAsset = await _localAssetRepository.get(localAssetId);
-      return (asset: resolvedAsset ?? localAsset.copyWith(checksum: checksum), checksum: checksum);
+      return _resolution(localAsset.copyWith(checksum: checksum));
     }
 
-    return (asset: null, checksum: checksum);
+    return _resolution(_toTransientAsset(attachment, checksum), viewIntentFilePath: path);
   }
+
+  ViewIntentResolution _resolution(BaseAsset asset, {String? viewIntentFilePath}) => ViewIntentResolution(
+    asset: asset,
+    timelineService: _timelineFactory.fromAssets([asset], TimelineOrigin.deepLink),
+    viewIntentFilePath: viewIntentFilePath,
+  );
 
   Future<String?> _hashLocalAsset(String localAssetId) async {
     try {
-      final hashResults = await _nativeSyncApi.hashAssets([localAssetId]);
-      if (hashResults.isEmpty) {
+      final result = (await _nativeSyncApi.hashAssets([localAssetId])).firstOrNull;
+      if (result == null) {
         return null;
       }
-
-      final result = hashResults.first;
       if (result.error != null) {
         _logger.warning('Failed to hash view intent local asset $localAssetId: ${result.error}');
         return null;
@@ -117,34 +101,6 @@ class ViewIntentAssetResolver {
       _logger.warning('Failed to hash view intent local asset $localAssetId', error, stackTrace);
       return null;
     }
-  }
-
-  Future<RemoteAsset?> _resolveRemoteAsset(
-    String localAssetId, {
-    required String? remoteAssetId,
-    required String? checksum,
-  }) async {
-    RemoteAsset? remoteAsset;
-    if (remoteAssetId != null) {
-      remoteAsset = await _assetService.getRemoteAsset(remoteAssetId);
-      if (remoteAsset != null) {
-        _logger.fine('resolve matched remote asset by id: $remoteAssetId, asset=$remoteAsset');
-      }
-    }
-
-    if (remoteAsset == null && checksum != null) {
-      final candidates = await timelineRepository.getViewableRemoteAssetsByChecksum(await timelineUsers(), checksum);
-      if (candidates.isNotEmpty) {
-        remoteAsset = candidates.first;
-        _logger.fine('resolve matched remote asset by checksum: $checksum, asset=$remoteAsset');
-      }
-    }
-
-    if (remoteAsset == null || remoteAsset.isTrashed) {
-      return null;
-    }
-    final asset = remoteAsset.copyWith(localId: localAssetId);
-    return asset;
   }
 
   LocalAsset _toTransientAsset(ViewIntentPayload attachment, String? checksum) {
