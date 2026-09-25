@@ -75,7 +75,7 @@ function getExpectedKeysByActionMessage(): string {
 }
 
 function isParametersValidForAction(edit: z.infer<typeof AssetEditActionItemSchema>): boolean {
-  return actionParameterMap[edit.action].safeParse(edit.parameters).success;
+  return actionParameterMap[edit.action].validate(edit.parameters);
 }
 
 const AssetEditActionItemSchema = z
