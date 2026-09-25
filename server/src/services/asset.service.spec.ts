@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { mapAsset } from 'src/dtos/asset-response.dto.js';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto.js';
 import { AssetEditAction } from 'src/dtos/editing.dto.js';
 import {
@@ -397,7 +396,7 @@ describe(AssetService.name, () => {
       const asset1 = AssetFactory.from().owner(auth.user).build();
       const asset2 = AssetFactory.from().owner(auth.user).build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
-      mocks.asset.getByIds.mockResolvedValue([asset1, asset2])
+      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
 
       await sut.updateAll(auth, { ids: [asset1.id, asset2.id], visibility: AssetVisibility.Archive });
 
