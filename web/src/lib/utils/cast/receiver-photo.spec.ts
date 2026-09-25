@@ -19,6 +19,7 @@ describe('Cast receiver photo switching', () => {
     document.body.innerHTML = `
       <div id="photos" hidden></div>
       <div id="player" hidden></div>
+      <video id="video-player" hidden></video>
       <div id="brand"></div>
       <div id="spinner" hidden></div>
     `;
@@ -98,6 +99,7 @@ describe('Cast receiver photo switching', () => {
     document.body.innerHTML = `
       <div id="photos" hidden></div>
       <div id="player" hidden></div>
+      <video id="video-player" hidden></video>
       <div id="brand"></div>
       <div id="spinner" hidden></div>
     `;
@@ -123,22 +125,21 @@ describe('Cast receiver photo switching', () => {
     });
     await vi.importActual('../../../../static/cast/receiver.js');
 
-    const mediaElement = { loop: false };
+    const mediaElement = document.querySelector<HTMLVideoElement>('#video-player')!;
     const player = document.querySelector<HTMLElement>('#player')!;
-    Object.assign(player, { getMediaElement: () => mediaElement });
+    expect(context.start).toHaveBeenCalledWith({ disableIdleTimeout: true, mediaElement });
 
     onLoad({
-      media: { contentType: 'video/mp4', contentId: '/api/assets/1/video/playback' },
-      repeatMode: 'REPEAT_SINGLE',
+      media: { contentType: 'video/mp4', contentId: '/api/assets/1/video/playback', customData: { immichLoop: true } },
     });
     expect(mediaElement.loop).toBe(true);
-    expect(player.hidden).toBe(false);
+    expect(mediaElement.hidden).toBe(false);
+    expect(player.hidden).toBe(true);
 
     onLoad({
       media: { contentType: 'video/mp4', contentId: '/api/assets/2/video/playback' },
-      repeatMode: 'REPEAT_OFF',
     });
     expect(mediaElement.loop).toBe(false);
-    expect(player.hidden).toBe(false);
+    expect(mediaElement.hidden).toBe(false);
   });
 });

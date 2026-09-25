@@ -5,6 +5,7 @@ import { PhotoCache } from './photo-cache.js';
 const NAMESPACE = 'urn:x-cast:app.immich.photos';
 const photos = document.querySelector('#photos');
 const player = document.querySelector('#player');
+const video = document.querySelector('#video-player');
 const brand = document.querySelector('#brand');
 const spinner = document.querySelector('#spinner');
 const cache = new PhotoCache();
@@ -108,9 +109,10 @@ const hideSpinner = () => {
 
 const showLoading = (thisSelection) => {
   hideSpinner();
-  if (!player.hidden) {
+  if (!player.hidden || !video.hidden) {
     playerManager.stop();
     player.hidden = true;
+    video.hidden = true;
   }
   const keepPhotoVisible = !photos.hidden && photos.firstElementChild;
   brand.hidden = Boolean(keepPhotoVisible);
@@ -147,6 +149,7 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
         photos.replaceChildren(frame);
       }
       player.hidden = true;
+      video.hidden = true;
       photos.hidden = false;
       brand.hidden = true;
       preload(message.previous);
@@ -167,15 +170,12 @@ playerManager.setMessageInterceptor(cast.framework.messages.MessageType.LOAD, (r
   hideSpinner();
   photos.hidden = true;
   brand.hidden = true;
-  // Loop in the media element itself instead of reloading the stream on every
-  // repeat, so no `ended` event ever reaches the queue and a looping video
-  // wraps from the last frame to the first without rebuffering.
-  const mediaElement = player.getMediaElement?.();
-  if (mediaElement) {
-    mediaElement.loop = request.repeatMode === cast.framework.messages.RepeatMode.REPEAT_SINGLE;
-  }
-  player.hidden = false;
+  // The queue repeat mode is on QUEUE_LOAD, not on this per-item LOAD. The
+  // sender marks its looping videos in MediaInfo.customData instead.
+  video.loop = request.media?.customData?.immichLoop === true;
+  video.hidden = false;
+  player.hidden = true;
   return request;
 });
 
-context.start({ disableIdleTimeout: true });
+context.start({ disableIdleTimeout: true, mediaElement: video });

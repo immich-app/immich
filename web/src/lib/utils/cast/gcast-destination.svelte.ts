@@ -192,6 +192,9 @@ export class GCastDestination implements ICastDestination {
     }
 
     const mediaInfo = new chrome.cast.media.MediaInfo(withCastSession(source.url, sessionKey), contentType);
+    if (customPhotoReceiver && contentType.startsWith('video/')) {
+      mediaInfo.customData = { immichLoop: true };
+    }
 
     // Create a queue with a single item and set it to repeat
     const queueItem = new chrome.cast.media.QueueItem(mediaInfo);
