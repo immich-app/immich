@@ -1842,15 +1842,19 @@ export type MapReverseGeocodeResponseDto = {
     /** State/Province name */
     state: string | null;
 };
-export type OnThisDayDto = {
-    /** Year for on this day memory */
+export type MemoryDataDto = {
+    /** Person ID (birthday memories) */
+    personId?: string;
+    /** Name of the person when the memory was created (birthday memories) */
+    personName?: string;
+    /** Year of the memory */
     year: number;
 };
 export type MemoryResponseDto = {
     assets: AssetResponseDto[];
     /** Creation date */
     createdAt: string;
-    data: OnThisDayDto;
+    data: MemoryDataDto;
     /** Deletion date */
     deletedAt?: string;
     /** Date when memory should be hidden */
@@ -1874,7 +1878,7 @@ export type MemoryResponseDto = {
 export type MemoryCreateDto = {
     /** Asset IDs to associate with memory */
     assetIds?: string[];
-    data: OnThisDayDto;
+    data: MemoryDataDto;
     /** Date when memory should be hidden */
     hideAt?: string;
     /** Is memory saved */
@@ -3407,7 +3411,7 @@ export type SyncAssetFaceV1 = {
     /** Source type */
     sourceType: string;
 };
-export type SyncAssetFaceV2 = {
+export type SyncAssetFaceV3 = {
     /** Asset ID */
     assetId: string;
     /** Bounding box X1 */
@@ -3583,6 +3587,33 @@ export type SyncAuthUserV1 = {
     name: string;
     /** User OAuth ID */
     oauthId: string;
+    /** User pin code */
+    pinCode: string | null;
+    /** User profile changed at */
+    profileChangedAt: string;
+    /** Quota size in bytes */
+    quotaSizeInBytes: number | null;
+    /** Quota usage in bytes */
+    quotaUsageInBytes: number;
+    /** User storage label */
+    storageLabel: string | null;
+};
+export type SyncAuthUserV2 = {
+    avatarColor?: (UserAvatarColor) | null;
+    /** User deleted at */
+    deletedAt: string | null;
+    /** User email */
+    email: string;
+    /** User has profile image */
+    hasProfileImage: boolean;
+    /** User ID */
+    id: string;
+    /** User is admin */
+    isAdmin: boolean;
+    /** User name */
+    name: string;
+    /** User OAuth ID */
+    oauthId: string | null;
     /** User pin code */
     pinCode: string | null;
     /** User profile changed at */
@@ -8191,7 +8222,8 @@ export enum MemorySearchOrder {
     Random = "random"
 }
 export enum MemoryType {
-    OnThisDay = "on_this_day"
+    OnThisDay = "on_this_day",
+    Birthday = "birthday"
 }
 export enum PartnerDirection {
     SharedBy = "shared-by",
@@ -8306,6 +8338,7 @@ export enum AssetIdErrorReason {
 }
 export enum SyncEntityType {
     AuthUserV1 = "AuthUserV1",
+    AuthUserV2 = "AuthUserV2",
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
     AssetV1 = "AssetV1",
@@ -8358,6 +8391,7 @@ export enum SyncEntityType {
     PersonDeleteV1 = "PersonDeleteV1",
     AssetFaceV1 = "AssetFaceV1",
     AssetFaceV2 = "AssetFaceV2",
+    AssetFaceV3 = "AssetFaceV3",
     AssetFaceDeleteV1 = "AssetFaceDeleteV1",
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
@@ -8380,6 +8414,7 @@ export enum SyncRequestType {
     AssetMetadataV1 = "AssetMetadataV1",
     AssetOcrV1 = "AssetOcrV1",
     AuthUsersV1 = "AuthUsersV1",
+    AuthUsersV2 = "AuthUsersV2",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",
     PartnersV1 = "PartnersV1",
@@ -8392,6 +8427,7 @@ export enum SyncRequestType {
     PeopleV1 = "PeopleV1",
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
+    AssetFacesV3 = "AssetFacesV3",
     UserMetadataV1 = "UserMetadataV1"
 }
 export enum AssetOrderBy {

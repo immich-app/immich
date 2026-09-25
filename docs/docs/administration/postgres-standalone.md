@@ -1,5 +1,7 @@
 # Pre-existing Postgres
 
+import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
+
 While not officially recommended, it is possible to run Immich using a pre-existing Postgres server. To use this setup, you should have a baseline level of familiarity with Postgres and the Linux command line. If you do not have these, we recommend using the default setup with a dedicated Postgres container.
 
 By default, Immich expects superuser permission on the Postgres database and requires certain extensions to be installed. This guide outlines the steps required to prepare a pre-existing Postgres server to be used by Immich.
@@ -26,6 +28,8 @@ The current accepted range for VectorChord is `>= 0.3, < 2.0`.
 :::
 
 ## Specifying the connection URL
+
+<ComposeBuilder query="database.external=true" />
 
 You can connect to your pre-existing Postgres server by setting the `DB_URL` environment variable in the `.env` file.
 

@@ -43,11 +43,11 @@ class SyncApiRepository {
     request.body = jsonEncode(
       SyncStreamDto(
         types: [
-          SyncRequestType.authUsersV1,
+          serverVersion.supports(.syncAuthUsersV2) ? SyncRequestType.authUsersV2 : SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
           serverVersion.supports(.syncV2) ? SyncRequestType.assetsV2 : SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
-          if (serverVersion.supports(.assetEdits)) SyncRequestType.assetEditsV1,
+          if (serverVersion.supports(.syncAssetEditsV1)) SyncRequestType.assetEditsV1,
           SyncRequestType.assetMetadataV1,
           SyncRequestType.partnersV1,
           serverVersion.supports(.syncV2) ? SyncRequestType.partnerAssetsV2 : SyncRequestType.partnerAssetsV1,
@@ -63,8 +63,12 @@ class SyncApiRepository {
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
           SyncRequestType.peopleV1,
-          serverVersion.supports(.assetFacesV2) ? SyncRequestType.assetFacesV2 : SyncRequestType.assetFacesV1,
-          if (serverVersion.supports(.assetOcr)) SyncRequestType.assetOcrV1,
+          serverVersion.supports(.syncAssetFacesV3)
+              ? SyncRequestType.assetFacesV3
+              : serverVersion.supports(.syncAssetFacesV2)
+              ? SyncRequestType.assetFacesV2
+              : SyncRequestType.assetFacesV1,
+          if (serverVersion.supports(.syncAssetOcrV1)) SyncRequestType.assetOcrV1,
         ],
       ).toJson(),
     );
@@ -140,6 +144,7 @@ class SyncApiRepository {
 
 const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.authUserV1: SyncAuthUserV1.fromJson,
+  SyncEntityType.authUserV2: SyncAuthUserV2.fromJson,
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
@@ -193,7 +198,8 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.personV1: SyncPersonV1.fromJson,
   SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
-  SyncEntityType.assetFaceV2: SyncAssetFaceV2.fromJson,
+  SyncEntityType.assetFaceV2: SyncAssetFaceV3.fromJson,
+  SyncEntityType.assetFaceV3: SyncAssetFaceV3.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
   SyncEntityType.assetOcrV1: SyncAssetOcrV1.fromJson,
   SyncEntityType.assetOcrDeleteV1: SyncAssetOcrDeleteV1.fromJson,

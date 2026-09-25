@@ -1,15 +1,15 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:20ec607c68642c64c73269ce245aa0f060913f4129d15d9687850aa158e6269c AS builder-cpu
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS builder-cpu
 
-FROM python:3.13-slim-trixie@sha256:f82c96458eedc847b233e582eb31336f4954b39cae020b6dcf5b3ed0e5cbcd74 AS builder-openvino
+FROM builder-cpu AS builder-openvino
 
 FROM builder-cpu AS builder-cuda
 
-FROM builder-cpu AS builder-armnn
+FROM python:3.13-trixie@sha256:4a0820d8b1b1a1e012a23ff9a1296a3e28b48896a4d27a328a91ee197ce619d9 AS builder-armnn
 
 # renovate: datasource=github-releases depName=ARM-software/armnn
-ARG ARMNN_VERSION="v24.05"
+ARG ARMNN_VERSION="v26.07"
 
 ENV ARMNN_PATH=/opt/armnn
 COPY ann /opt/ann
@@ -18,7 +18,7 @@ RUN mkdir /opt/armnn && \
     cd /opt/ann && \
     sh build.sh
 
-FROM builder-cpu AS builder-rknn
+FROM python:3.12-slim-trixie@sha256:78387bc3881b8273120a12ebe6c1ab22b018ccc2c9adf565ae1ac9b536e184ea AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
@@ -39,12 +39,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
 
-FROM python:3.11-slim-bookworm@sha256:e2d3af735aff6eeee600b1933bedd99da6645fedf572cc12ef4cc1331f2ceebe AS prod-cpu
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS prod-cpu
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
-FROM python:3.13-slim-trixie@sha256:f82c96458eedc847b233e582eb31336f4954b39cae020b6dcf5b3ed0e5cbcd74 AS prod-openvino
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
@@ -63,8 +62,7 @@ RUN apt-get update && \
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && \
     # Pascal support was dropped in 9.11
@@ -73,8 +71,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
-COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
-COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
+COPY --from=builder-cuda /usr/local/lib/python3.13 /usr/local/lib/python3.13
+COPY --from=builder-cuda /usr/local/lib/libpython3.13.so /usr/local/lib/libpython3.13.so
 
 FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS prod-rocm
 
@@ -85,7 +83,6 @@ RUN apt-get update && apt-get install --no-install-recommends -yqq migraphx miop
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn \
-    LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd libgomp1 && \
@@ -96,21 +93,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopen
 
 COPY --from=builder-armnn \
     /opt/armnn/libarmnn.so.?? \
-    /opt/armnn/libarmnnOnnxParser.so.?? \
     /opt/armnn/libarmnnDeserializer.so.?? \
-    /opt/armnn/libarmnnTfLiteParser.so.?? \
     /opt/armnn/libprotobuf.so.?.??.?.? \
     /opt/ann/libann.s[o] \
     /opt/ann/build.sh \
     /opt/armnn/
 
-FROM prod-cpu AS prod-rknn
+FROM python:3.12-slim-trixie@sha256:78387bc3881b8273120a12ebe6c1ab22b018ccc2c9adf565ae1ac9b536e184ea AS prod-rknn
 
 # renovate: datasource=github-tags depName=airockchip/rknn-toolkit2
 ARG RKNN_TOOLKIT_VERSION="v2.3.0"
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 ADD --chmod=644 --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
 
@@ -118,13 +112,13 @@ FROM prod-${DEVICE} AS prod
 
 ARG DEVICE
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
+RUN MIMALLOC=$(case "$DEVICE" in cuda) echo "libmimalloc2.0";; openvino|rocm);; *) echo "libmimalloc3";; esac); \
+    apt-get update && \
+    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $MIMALLOC && \
     apt-get autoremove -yqq && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN ln -s "/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2" /usr/lib/libmimalloc.so.2
+    rm -rf /var/lib/apt/lists/* && \
+    { [ -z "$MIMALLOC" ] || ls /usr/lib/*-linux-gnu/libmimalloc.so.? > /etc/ld.so.preload; }
 
 WORKDIR /usr/src
 ENV TRANSFORMERS_CACHE=/cache \

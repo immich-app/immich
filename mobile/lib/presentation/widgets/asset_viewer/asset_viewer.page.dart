@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -222,50 +221,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     switch (event) {
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
-      case ViewerReloadAssetEvent():
-        _onViewerReloadEvent();
-      case final ViewerStackAssetDeletedEvent event:
-        unawaited(_onViewerStackAssetDeletedEvent(event));
       default:
     }
-  }
-
-  void _onViewerReloadEvent() {
-    if (_totalAssets <= 1) {
-      return;
-    }
-
-    final index = _pageController.page?.round() ?? 0;
-    final target = index >= _totalAssets - 1 ? index - 1 : index + 1;
-    unawaited(_pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut));
-    unawaited(_onAssetChanged(target));
-  }
-
-  Future<void> _onViewerStackAssetDeletedEvent(ViewerStackAssetDeletedEvent event) async {
-    final timelineAsset = ref.read(timelineServiceProvider).getAssetSafe(_currentPage);
-    if (timelineAsset == null) {
-      _onViewerReloadEvent();
-      return;
-    }
-
-    final stackProvider = stackChildrenNotifier(timelineAsset);
-
-    ref.invalidate(stackProvider);
-    final stack = await ref.read(stackProvider.future);
-
-    if (!mounted) {
-      return;
-    }
-
-    if (stack.isEmpty) {
-      _onViewerReloadEvent();
-      return;
-    }
-
-    final targetIndex = math.min(event.stackIndex, stack.length - 1);
-    ref.read(assetViewerProvider.notifier)
-      ..setAsset(stack[targetIndex])
-      ..setStackIndex(targetIndex);
   }
 
   void _onTimelineReloadEvent() {

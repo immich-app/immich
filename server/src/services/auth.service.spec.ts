@@ -1026,8 +1026,12 @@ describe(AuthService.name, () => {
         profileChangedAt: expect.any(Date),
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(profile.picture);
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(
         Buffer.from(pictureBytes.buffer, pictureBytes.byteOffset, pictureBytes.byteLength),
+        expect.objectContaining({ processInvalidImages: false }),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.anything(),
         expect.objectContaining({ format: 'webp', processInvalidImages: false }),
         expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
       );
@@ -1057,12 +1061,13 @@ describe(AuthService.name, () => {
     });
 
     it('should not sync the profile picture if the user already has one', async () => {
-      const user = UserFactory.create({ oauthId: 'oauth-id', profileImagePath: 'not-empty' });
+      const oauthId = 'oauth-id';
+      const user = UserFactory.create({ oauthId, profileImagePath: 'not-empty' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
         profile: OAuthProfileFactory.create({
-          sub: user.oauthId,
+          sub: oauthId,
           email: user.email,
           picture: 'https://auth.immich.cloud/profiles/1.jpg',
         }),
@@ -1181,11 +1186,12 @@ describe(AuthService.name, () => {
     });
 
     it('should promote an existing user to admin if the role claim contains admin on login', async () => {
-      const user = UserFactory.create({ isAdmin: false, oauthId: 'oauth-id' });
+      const oauthId = 'oauth-id';
+      const user = UserFactory.create({ isAdmin: false, oauthId });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: 'admin' }),
+        profile: OAuthProfileFactory.create({ sub: oauthId, immich_role: 'admin' }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...user, isAdmin: true });
@@ -1201,11 +1207,12 @@ describe(AuthService.name, () => {
     });
 
     it('should demote an existing admin if the role claim only contains user on login', async () => {
-      const user = UserFactory.create({ isAdmin: true, oauthId: 'oauth-id' });
+      const oauthId = 'oauth-id';
+      const user = UserFactory.create({ isAdmin: true, oauthId });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: ['user'] }),
+        profile: OAuthProfileFactory.create({ sub: oauthId, immich_role: ['user'] }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...user, isAdmin: false });
@@ -1221,11 +1228,12 @@ describe(AuthService.name, () => {
     });
 
     it('should not change isAdmin for an existing user if the role claim is blank', async () => {
-      const user = UserFactory.create({ isAdmin: true, oauthId: 'oauth-id' });
+      const oauthId = 'oauth-id';
+      const user = UserFactory.create({ isAdmin: true, oauthId });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId }),
+        profile: OAuthProfileFactory.create({ sub: oauthId }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
@@ -1334,7 +1342,7 @@ describe(AuthService.name, () => {
 
       await sut.unlink(auth);
 
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: null });
     });
 
     it('should unlink an account and remove the OAuth data from the session', async () => {
@@ -1349,7 +1357,7 @@ describe(AuthService.name, () => {
       await sut.unlink(auth);
 
       expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: null, oauthBearerToken: null });
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: null });
     });
   });
 

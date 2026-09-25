@@ -36,6 +36,7 @@ linter:
     close_sinks: true
     collection_methods_unrelated_type: true
     deprecated_consistency: true
+    deprecated_member_use_from_same_package: true
     discarded_futures: true
     no_adjacent_strings_in_list: true
     no_self_assignments: true
@@ -100,8 +101,22 @@ analyzer:
   errors:
     unawaited_futures: warning
     always_put_control_body_on_new_line: warning
+    deprecated_member_use_from_same_package: error
 
 dart_code_metrics:
+  exclude:
+    unused-code:
+      - '**/*.g.dart'
+      - '**/*.freezed.dart'
+      - '**/*.mapper.dart'
+      - '**/*.drift.dart'
+      - '**/*.gr.dart'
+      - 'lib/data/db/main/database.steps.dart'
+      # Ideally we wouldn't do this, as this allows for non-column used code, but not complaining
+      # about the columns is more important
+      - 'lib/data/db/**/table/**'
+      - 'lib/widgets/photo_view/**'
+      - 'test/drift/**/generated/**'
   rules:
     - banned-usage:
         entries:

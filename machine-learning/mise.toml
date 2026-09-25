@@ -1,5 +1,5 @@
 [tools]
-python = "3.11"
+python = "3.12"
 uv = "0.8.15"
 
 [tasks.install]

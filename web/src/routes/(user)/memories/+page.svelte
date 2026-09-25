@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { scrollMemory } from '$lib/actions/scroll-memory';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
@@ -60,6 +61,7 @@
 <UserPageLayout
   title={data.meta.title}
   description={memoryManager.total === undefined ? undefined : `(${memoryManager.total.toLocaleString($locale)})`}
+  use={[[scrollMemory, { routeStartsWith: Route.memories() }]]}
 >
   {#snippet buttons()}
     <div class="flex place-items-center gap-2">

@@ -10,6 +10,7 @@ class TestUtils {
   static DateTime date([DateTime? date]) => date ?? DateTime.now();
   static DateTime now() => DateTime.now();
   static DateTime yesterday() => DateTime.now().subtract(const Duration(days: 1));
+  // ignore: unused-code
   static DateTime tomorrow() => DateTime.now().add(const Duration(days: 1));
 
   static T randElement<T>(List<T> list) => list[_random.nextInt(list.length)];

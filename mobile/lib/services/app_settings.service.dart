@@ -2,15 +2,14 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
-  advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
-  manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
-  enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
-  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
+  advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, false),
+  manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, false),
+  enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, true),
+  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, false);
 
-  const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
+  const AppSettingsEnum(this.storeKey, this.defaultValue);
 
   final StoreKey<T> storeKey;
-  final String? hiveKey;
   final T defaultValue;
 }
 
