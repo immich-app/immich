@@ -4,8 +4,6 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
@@ -21,6 +19,8 @@
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
 
   interface Props {
     data: PageData;
@@ -46,6 +46,7 @@
   };
 
   const { LockSession } = $derived(getUserActions($t));
+  const Actions = $derived(getAssetBulkActions($t));
 
   const onSessionLocked = async () => {
     await goto(Route.photos());
@@ -81,8 +82,8 @@
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
-      <ChangeDate menuItem />
-      <ChangeLocation menuItem />
+      <ActionMenuItem action={Actions.ChangeDate} />
+      <ActionMenuItem action={Actions.ChangeLocation} />
       <DeleteAssets menuItem force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>

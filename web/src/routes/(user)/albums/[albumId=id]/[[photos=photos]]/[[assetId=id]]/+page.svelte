@@ -13,16 +13,11 @@
   import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode } from '$lib/constants';
@@ -30,7 +25,6 @@
   import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -41,6 +35,7 @@
     getAlbumAssetsActions,
     handleDeleteAlbum,
     handleDownloadAlbum,
+    handleUpdateThumbnail,
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -48,15 +43,8 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
-  import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
-  import {
-    ActionButton,
-    CommandPaletteDefaultProvider,
-    Icon,
-    IconButton,
-    modalManager,
-    toastManager,
-  } from '@immich/ui';
+  import { AlbumUserRole, AssetVisibility, getAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, modalManager } from '@immich/ui';
   import {
     mdiAccountEye,
     mdiAccountEyeOutline,
@@ -173,40 +161,11 @@
     await refreshAlbum();
   };
 
-  const handleUpdateThumbnail = async (assetId: string) => {
-    if (viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL) {
-      return;
-    }
-
-    await updateThumbnail(assetId);
+  const updateThumbnail = async (assetId: string) => {
+    await handleUpdateThumbnail(album, assetId);
 
     viewMode = AlbumPageViewMode.VIEW;
     assetMultiSelectManager.clear();
-  };
-
-  const updateThumbnailUsingCurrentSelection = async () => {
-    if (assetMultiSelectManager.assets.length !== 1) {
-      return;
-    }
-
-    const [firstAsset] = assetMultiSelectManager.assets;
-    assetMultiSelectManager.clear();
-    await updateThumbnail(firstAsset.id);
-  };
-
-  const updateThumbnail = async (assetId: string) => {
-    try {
-      const response = await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          albumThumbnailAssetId: assetId,
-        },
-      });
-      eventManager.emit('AlbumUpdate', response);
-      toastManager.primary($t('album_cover_updated'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_album_cover'));
-    }
   };
 
   onNavigate(async ({ to }) => {
@@ -270,8 +229,8 @@
   );
   const showArchiveIcon = $derived(viewMode !== AlbumPageViewMode.SELECT_ASSETS);
   const onSelect = ({ id }: { id: string }) => {
-    if (viewMode !== AlbumPageViewMode.SELECT_ASSETS) {
-      void handleUpdateThumbnail(id);
+    if (viewMode === AlbumPageViewMode.SELECT_THUMBNAIL) {
+      void updateThumbnail(id);
     }
   };
   const currentAssetIntersection = $derived(
@@ -471,7 +430,7 @@
       <AssetSelectControlBar>
         {@const Actions = getAssetBulkActions($t, album)}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-        <CreateSharedLink />
+        <ActionButton action={Actions.CreateSharedLink} />
         <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
         <ActionButton action={Actions.AddToAlbum} />
         {#if assetMultiSelectManager.isAllUserOwned}
@@ -482,10 +441,10 @@
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
           <DownloadAction menuItem filename={album.albumName} />
+          <ActionMenuItem action={Actions.ChangeDate} />
+          <ActionMenuItem action={Actions.ChangeDescription} />
+          <ActionMenuItem action={Actions.ChangeLocation} />
           {#if assetMultiSelectManager.isAllUserOwned}
-            <ChangeDate menuItem />
-            <ChangeDescription menuItem />
-            <ChangeLocation menuItem />
             <ArchiveAction
               menuItem
               unarchive={assetMultiSelectManager.isAllArchived}
@@ -493,18 +452,10 @@
             />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
-          {#if assetMultiSelectManager.assets.length === 1}
-            <MenuOption
-              text={$t('set_as_album_cover')}
-              icon={mdiImageOutline}
-              onClick={() => updateThumbnailUsingCurrentSelection()}
-            />
-          {/if}
 
-          {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-            <TagAction menuItem />
-          {/if}
+          <ActionMenuItem action={Actions.Tag} />
 
+          <ActionMenuItem action={Actions.SetAlbumCover} />
           <ActionMenuItem action={Actions.RemoveFromAlbum} />
           {#if assetMultiSelectManager.isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />

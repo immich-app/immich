@@ -2,7 +2,7 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { FormModal } from '@immich/ui';
+  import { FormModal, toastManager } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -34,6 +34,7 @@
 
     const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
     eventManager.emit('AssetsTag', updatedIds);
+    toastManager.primary();
     onClose(true);
   };
 

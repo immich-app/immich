@@ -7,7 +7,9 @@ import {
   removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
+  updateAssets,
   type AlbumResponseDto,
+  type AssetBulkUpdateDto,
   type AssetJobsDto,
   type AssetResponseDto,
 } from '@immich/sdk';
@@ -15,6 +17,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountCircleOutline,
   mdiAlertOutline,
+  mdiCalendarEditOutline,
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
@@ -25,20 +28,25 @@ import {
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
+  mdiImageOutline,
   mdiImageRefreshOutline,
   mdiImageRemoveOutline,
   mdiImageSearch,
   mdiInformationOutline,
   mdiMagnifyMinusOutline,
   mdiMagnifyPlusOutline,
+  mdiMapMarkerMultipleOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiPlus,
   mdiPresentationPlay,
   mdiShareVariantOutline,
+  mdiTagMultipleOutline,
   mdiTagPlusOutline,
+  mdiText,
   mdiTune,
 } from '@mdi/js';
+import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { ProjectionType } from '$lib/constants';
@@ -47,18 +55,25 @@ import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
+import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+import AssetUpdateDescriptionConfirmModal from '$lib/modals/AssetUpdateDescriptionConfirmModal.svelte';
+import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
+import { handleUpdateThumbnail } from '$lib/services/album.service';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
+  const selectedAssetIds = assetMultiSelectManager.assets.map((asset) => asset.id);
   const ownedAssets = assetMultiSelectManager.ownedAssets;
   const isAlbumOwner = album?.albumUsers[0].user.id === authManager.user.id;
 
@@ -71,8 +86,34 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () =>
-      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
+    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: selectedAssetIds }),
+  };
+
+  const ChangeDate: ActionItem = {
+    title: $t('change_date'),
+    icon: mdiCalendarEditOutline,
+    $if: () => assetMultiSelectManager.isAllUserOwned,
+    onAction: () => handleChangeDate(ownedAssets),
+  };
+
+  const ChangeDescription: ActionItem = {
+    title: $t('change_description'),
+    icon: mdiText,
+    $if: () => assetMultiSelectManager.isAllUserOwned,
+    onAction: () => handleChangeDescription(ownedAssets.map((asset) => asset.id)),
+  };
+
+  const ChangeLocation: ActionItem = {
+    title: $t('change_location'),
+    icon: mdiMapMarkerMultipleOutline,
+    $if: () => assetMultiSelectManager.isAllUserOwned,
+    onAction: () => handleChangeLocation(ownedAssets.map((asset) => asset.id)),
+  };
+
+  const CreateSharedLink: ActionItem = {
+    title: $t('share'),
+    icon: mdiShareVariantOutline,
+    onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: selectedAssetIds }),
   };
 
   const RemoveFromAlbum: ActionItem = {
@@ -84,6 +125,29 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
         assetMultiSelectManager.assets.map((asset) => asset.id),
         album!,
       ),
+  };
+
+  const SetAlbumCover: ActionItem = {
+    title: $t('set_as_album_cover'),
+    icon: mdiImageOutline,
+    $if: () => !!album && selectedAssetIds.length === 1,
+    onAction: async () => {
+      await handleUpdateThumbnail(album!, selectedAssetIds[0]);
+      assetMultiSelectManager.clear();
+    },
+  };
+
+  const Tag: ActionItem = {
+    title: $t('tag'),
+    icon: mdiTagMultipleOutline,
+    $if: () => authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned,
+    onAction: async () => {
+      const success = await modalManager.show(AssetTagModal, { assetIds: ownedAssets.map((asset) => asset.id) });
+      if (success) {
+        assetMultiSelectManager.clear();
+      }
+    },
+    shortcuts: { key: 't' },
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -107,13 +171,19 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
   const TranscodeVideoJob: ActionItem = {
     title: $t('refresh_encoded_videos'),
     icon: mdiCogRefreshOutline,
-    onAction: () => onAction(AssetJobName.TranscodeVideo),
     $if: () => ownedAssets.every((asset) => asset.isVideo),
+    onAction: () => onAction(AssetJobName.TranscodeVideo),
   };
 
   return {
     AddToAlbum,
+    ChangeDate,
+    ChangeDescription,
+    ChangeLocation,
+    CreateSharedLink,
     RemoveFromAlbum,
+    SetAlbumCover,
+    Tag,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -432,6 +502,48 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  }
+};
+
+const genericBulkUpdate = async (assetBulkUpdateDto: AssetBulkUpdateDto, errorMessage: string) => {
+  try {
+    await updateAssets({ assetBulkUpdateDto });
+    toastManager.primary();
+    assetMultiSelectManager.clear();
+  } catch (error) {
+    handleError(error, errorMessage);
+  }
+};
+
+const handleChangeDate = async (assets: TimelineAsset[]) => {
+  const initialDate = assets.length === 1 ? fromTimelinePlainDateTime(assets[0].localDateTime) : DateTime.now();
+  const success = await modalManager.show(AssetSelectionChangeDateModal, {
+    assets,
+    initialDate,
+  });
+  if (success) {
+    assetMultiSelectManager.clear();
+  }
+};
+
+const handleChangeLocation = async (assetIds: string[]) => {
+  const $t = await getFormatter();
+
+  const point = await modalManager.show(GeolocationPointPickerModal, {});
+  if (point) {
+    await genericBulkUpdate(
+      { ids: assetIds, latitude: point.lat, longitude: point.lng },
+      $t('errors.unable_to_update_location'),
+    );
+  }
+};
+
+const handleChangeDescription = async (assetIds: string[]) => {
+  const $t = await getFormatter();
+
+  const description = await modalManager.show(AssetUpdateDescriptionConfirmModal, {});
+  if (description) {
+    await genericBulkUpdate({ ids: assetIds, description }, $t('errors.unable_to_change_description'));
   }
 };
 

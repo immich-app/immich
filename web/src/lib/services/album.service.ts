@@ -257,7 +257,7 @@ export const handleRemoveUserFromAlbum = async (album: AlbumResponseDto, albumUs
   }
 };
 
-const handleUpdateThumbnail = async (album: AlbumResponseDto, assetId: string) => {
+export const handleUpdateThumbnail = async (album: AlbumResponseDto, assetId: string) => {
   const $t = await getFormatter();
 
   try {
