@@ -10,25 +10,25 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
-  mdiCalendarEditOutline,
   mdiEyeOffOutline,
   mdiEyeOutline,
   mdiFaceManProfile,
   mdiHeartMinusOutline,
   mdiHeartOutline,
+  mdiPencilOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import PersonEditAccessModal from '$lib/modals/PersonEditAccessModal.svelte';
-import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
+import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
 export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
-  const SetDateOfBirth: ActionItem = {
-    title: $t('set_date_of_birth'),
-    icon: mdiCalendarEditOutline,
-    onAction: () => modalManager.show(PersonEditBirthDateModal, { person }),
+  const Edit: ActionItem = {
+    title: $t('edit_person'),
+    icon: mdiPencilOutline,
+    onAction: () => modalManager.show(PersonEditModal, { person }),
   };
 
   const Favorite: ActionItem = {
@@ -65,7 +65,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     onAction: () => modalManager.show(PersonEditAccessModal, { person }),
   };
 
-  return { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson, Access };
+  return { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access };
 };
 
 export const getPersonAssetActions = ($t: MessageFormatter, person: PersonResponseDto, asset: AssetResponseDto) => {
