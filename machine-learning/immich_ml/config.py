@@ -13,7 +13,7 @@ from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
-from .schemas import ModelOrganization, ModelPrecision
+from .schemas import ModelOrganization
 
 
 class ClipSettings(BaseModel):
@@ -29,6 +29,7 @@ class FacialRecognitionSettings(BaseModel):
 class OcrSettings(BaseModel):
     recognition: str | None = None
     detection: str | None = None
+    max_resolution: int = 736  # must match the server's OCR setting, or the preloaded model will not be used
 
 
 class PreloadModelData(BaseModel):
@@ -38,8 +39,8 @@ class PreloadModelData(BaseModel):
 
 
 class MaxBatchSize(BaseModel):
-    facial_recognition: int | None = None
-    ocr: int | None = None
+    facial_recognition: int = 4
+    ocr: int = 6
 
 
 def default_worker_timeout() -> int:
@@ -71,9 +72,7 @@ class Settings(BaseSettings):
     rknn: bool = True
     rknn_threads: int = 1
     preload: PreloadModelData | None = None
-    max_batch_size: MaxBatchSize | None = None
-    openvino_precision: ModelPrecision = ModelPrecision.FP32
-    rocm_precision: ModelPrecision = ModelPrecision.FP32
+    max_batch_size: MaxBatchSize = MaxBatchSize()
     model_organization: ModelOrganization = ModelOrganization.APP
     model_revision: str = "main"
 

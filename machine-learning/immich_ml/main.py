@@ -91,6 +91,7 @@ async def preload_models(preload: PreloadModelData) -> None:
             model_name = model_name.strip()
             model = model_cache.get(model_name, model_type, model_task, **options)
             await load(model)
+            await attempt(model, model.build, MODEL_FILE_ERRORS)
 
     if preload.clip.textual is not None:
         await load_models(preload.clip.textual, ModelType.TEXTUAL, ModelTask.SEARCH)
@@ -117,6 +118,7 @@ async def preload_models(preload: PreloadModelData) -> None:
             preload.ocr.detection,
             ModelType.DETECTION,
             ModelTask.OCR,
+            maxResolution=preload.ocr.max_resolution,
         )
 
     if preload.ocr.recognition is not None:
