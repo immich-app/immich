@@ -8,8 +8,10 @@ import {
   type ICastDestination,
 } from '$lib/managers/cast-manager.svelte';
 import { withCastSession } from '$lib/utils/cast/cast-url';
+import { createPhotoMessage, isPhotoReceiver, PHOTO_NAMESPACE } from '$lib/utils/cast/photo-message';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+const CUSTOM_RECEIVER_APP_ID = import.meta.env.VITE_IMMICH_CAST_RECEIVER_APP_ID as string | undefined;
 
 export class GCastDestination implements ICastDestination {
   type = CastDestinationType.GCAST;
@@ -25,7 +27,30 @@ export class GCastDestination implements ICastDestination {
   private session: chrome.cast.Session | null = null;
   private currentMedia: chrome.cast.media.Media | null = null;
   private loadedUrl: string | null = null;
+  private loadedPhotoSignature: string | null = null;
+  private photoRequestId = 0;
+  // MIME lookups do not participate in Svelte reactivity.
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
   private contentTypes = new Map<string, Promise<string>>();
+
+  private onPhotoMessage = (_namespace: string, message: string) => {
+    try {
+      const response = JSON.parse(message) as {
+        type?: string;
+        requestId?: number;
+      };
+      if (response.requestId !== this.photoRequestId) {
+        return;
+      }
+      if (response.type === 'PHOTO_ERROR') {
+        this.loadedUrl = null;
+        this.loadedPhotoSignature = null;
+        console.error('Google Cast: receiver failed to load photo');
+      }
+    } catch {
+      // Ignore messages not using the photo protocol.
+    }
+  };
 
   async initialize(): Promise<boolean> {
     if (!authManager.authenticated || !authManager.preferences.cast.gCastEnabled) {
@@ -75,7 +100,7 @@ export class GCastDestination implements ICastDestination {
     this.remotePlayer = new cast.framework.RemotePlayer();
 
     castContext.setOptions({
-      receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+      receiverApplicationId: CUSTOM_RECEIVER_APP_ID || chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
 
@@ -100,13 +125,18 @@ export class GCastDestination implements ICastDestination {
       return Promise.resolve(source.contentType);
     }
 
+    if (source.kind === 'photo' && this.session && isPhotoReceiver(this.session.appId, CUSTOM_RECEIVER_APP_ID)) {
+      // The custom receiver decodes the image itself and falls back to the thumbnail if preview loading fails.
+      return Promise.resolve('image/*');
+    }
+
     const cached = this.contentTypes.get(source.key);
     if (cached) {
       return cached;
     }
 
     const lookup = fetch(source.url, { method: 'HEAD' }).then((response) => {
-      const contentType = response.headers.get('content-type')?.split(';')[0];
+      const contentType = response.headers.get('content-type')?.split(';', 1)[0];
       if (!response.ok || !contentType) {
         throw new Error(`Unable to resolve Cast media type (${response.status})`);
       }
@@ -125,12 +155,39 @@ export class GCastDestination implements ICastDestination {
       throw new Error('Google Cast session is unavailable');
     }
 
-    if (this.loadedUrl === source.url && !reload) {
+    const activeSession = this.session;
+    const customPhotoReceiver = isPhotoReceiver(activeSession.appId, CUSTOM_RECEIVER_APP_ID);
+    const photoSignature = [source.url, source.neighbors?.previous?.url, source.neighbors?.next?.url].join('|');
+    if (
+      this.loadedUrl === source.url &&
+      !reload &&
+      (!customPhotoReceiver || !source.neighbors || this.loadedPhotoSignature === photoSignature)
+    ) {
       return false;
     }
 
     const contentType = await this.prepareMedia(source);
-    const activeSession = this.session;
+    if (this.session !== activeSession || !this.isConnected) {
+      return false;
+    }
+
+    if (customPhotoReceiver && contentType.startsWith('image/')) {
+      const requestId = ++this.photoRequestId;
+      await new Promise<void>((resolve, reject) => {
+        activeSession.sendMessage(
+          PHOTO_NAMESPACE,
+          createPhotoMessage(source, sessionKey, requestId),
+          resolve,
+          (error) => reject(new Error(`Google Cast photo request failed: ${error.code}`)),
+        );
+      });
+      if (this.session === activeSession) {
+        this.currentMedia = null;
+        this.loadedUrl = source.url;
+        this.loadedPhotoSignature = photoSignature;
+      }
+      return true;
+    }
 
     const mediaInfo = new chrome.cast.media.MediaInfo(withCastSession(source.url, sessionKey), contentType);
 
@@ -146,6 +203,7 @@ export class GCastDestination implements ICastDestination {
           if (this.session === activeSession) {
             this.currentMedia = media;
             this.loadedUrl = source.url;
+            this.loadedPhotoSignature = null;
           }
           resolve();
         },
@@ -180,19 +238,18 @@ export class GCastDestination implements ICastDestination {
   }
 
   seekTo(time: number): void {
-    if (this.remotePlayer && this.remotePlayerController) {
-      this.remotePlayer.currentTime = time;
-      this.remotePlayerController.seek();
+    if (!this.remotePlayer || !this.remotePlayerController) {
+      return;
     }
+
+    this.remotePlayer.currentTime = time;
+    this.remotePlayerController.seek();
   }
 
   disconnect(): void {
-    this.session?.leave(() => {
-      this.session = null;
-      this.castState = CastState.IDLE;
-      this.isConnected = false;
-      this.receiverName = null;
-    }, this.onError.bind(this));
+    if (this.session) {
+      cast.framework.CastContext.getInstance().endCurrentSession(true);
+    }
   }
 
   ///
@@ -202,21 +259,32 @@ export class GCastDestination implements ICastDestination {
     switch (event.sessionState) {
       case cast.framework.SessionState.NO_SESSION:
       case cast.framework.SessionState.SESSION_ENDED: {
+        if (this.session && isPhotoReceiver(this.session.appId, CUSTOM_RECEIVER_APP_ID)) {
+          this.session?.removeMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
+        }
         this.session = null;
         this.isConnected = false;
         this.currentMedia = null;
         this.loadedUrl = null;
+        this.loadedPhotoSignature = null;
         break;
       }
       case cast.framework.SessionState.SESSION_RESUMED:
       case cast.framework.SessionState.SESSION_STARTED: {
+        if (this.session && isPhotoReceiver(this.session.appId, CUSTOM_RECEIVER_APP_ID)) {
+          this.session?.removeMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
+        }
         this.session = event.session.getSessionObj();
+        if (isPhotoReceiver(this.session.appId, CUSTOM_RECEIVER_APP_ID)) {
+          this.session.addMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
+        }
         this.isConnected = true;
         this.receiverName = this.session.receiver.friendlyName;
         this.currentMedia = this.session.media?.[0] ?? null;
         const contentId = this.currentMedia?.media?.contentId;
         if (contentId) {
           try {
+            // eslint-disable-next-line svelte/prefer-svelte-reactivity
             const url = new URL(contentId);
             url.searchParams.delete('sessionKey');
             this.loadedUrl = url.href;
@@ -242,6 +310,7 @@ export class GCastDestination implements ICastDestination {
     if (event.castState === cast.framework.CastState.NOT_CONNECTED) {
       this.currentMedia = null;
       this.loadedUrl = null;
+      this.loadedPhotoSignature = null;
     }
   }
 
@@ -275,12 +344,16 @@ export class GCastDestination implements ICastDestination {
   }
 
   static async showCastDialog() {
+    const context = cast.framework.CastContext.getInstance();
     try {
-      await cast.framework.CastContext.getInstance().requestSession();
-    } catch {
-      // the cast dialog throws an error if the user closes it
-      // we don't care about this error
-      return;
+      await context.requestSession();
+    } catch (error) {
+      const code = typeof error === 'string' ? error : (error as { code?: string } | null)?.code;
+      if (code === chrome.cast.ErrorCode.CANCEL) {
+        return;
+      }
+      console.error('Google Cast: device picker failed', { error, castState: context.getCastState() });
+      throw error;
     }
   }
 }

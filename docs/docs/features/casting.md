@@ -18,3 +18,13 @@ To use casting with Immich, there are a few prerequisites:
 2. Your Cast device must be able to reach your instance over HTTPS and resolve its hostname.
 3. Videos must be in a format that is compatible with Google Cast. For more info, check out [Google's documentation](https://developers.google.com/cast/docs/media)
 4. Real-time HLS transcoding is used for local web playback, but Cast video currently uses a direct playback URL. Cast-compatible HLS authentication and controls are still being developed.
+
+## Experimental custom receiver for faster photo navigation
+
+The default Google receiver cannot queue or preload photos. To test receiver-side preloading from the web app:
+
+1. In the Google Cast SDK Developer Console, register a **Custom Receiver** with the receiver URL `https://your-immich-host/cast/receiver.html`. Register your Chromecast as a development device if the application is unpublished.
+2. Set `VITE_IMMICH_CAST_RECEIVER_APP_ID` to the resulting application ID when starting the Immich web development server (or when building the web app), then reload the web app and start a new Cast session.
+3. Ensure the Chromecast can access both the receiver URL and Immich's media URLs over HTTPS. If you use Cloudflare Access or another IP allowlist, the Chromecast must be allowed through it.
+
+With this receiver, the web app sends the current photo and its previous/next URLs to the Chromecast. The receiver keeps the current photo visible until the selected photo is ready. It downloads, decodes, and renders both adjacent photos into cached canvases, so selecting a prepared neighbor does not need another download or decode. The canvases are kept in receiver memory rather than displayed until selected. Videos continue to use the standard Cast media player. Without `VITE_IMMICH_CAST_RECEIVER_APP_ID`, the web app continues to use Google's default receiver. The mobile app currently continues to use the default receiver.

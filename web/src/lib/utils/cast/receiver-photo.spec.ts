@@ -1,0 +1,93 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+type PhotoMessage = {
+  type: string;
+  requestId: number;
+  current: { url: string };
+  previous?: { url: string };
+  next?: { url: string };
+};
+
+describe('Cast receiver photo switching', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('switches immediately to a prepared adjacent photo without downloading or drawing it again', async () => {
+    document.body.innerHTML = `
+      <div id="photos" hidden></div>
+      <div id="player" hidden></div>
+      <div id="brand"></div>
+      <div id="spinner" hidden></div>
+    `;
+    const decode = vi.spyOn(Image.prototype, 'decode').mockResolvedValue(undefined);
+    vi.spyOn(Image.prototype, 'naturalWidth', 'get').mockReturnValue(1600);
+    vi.spyOn(Image.prototype, 'naturalHeight', 'get').mockReturnValue(900);
+    const drawImage = vi.fn();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation((() => ({
+      fillRect: vi.fn(),
+      drawImage,
+    })) as unknown as typeof HTMLCanvasElement.prototype.getContext);
+
+    let onMessage: (event: { senderId: string; data: PhotoMessage }) => void = () => {};
+    const playerManager = { setMessageInterceptor: vi.fn(), stop: vi.fn() };
+    const context = {
+      getPlayerManager: () => playerManager,
+      addCustomMessageListener: (_namespace: string, listener: typeof onMessage) => (onMessage = listener),
+      sendCustomMessage: vi.fn(),
+      start: vi.fn(),
+    };
+    vi.stubGlobal('cast', {
+      framework: {
+        CastReceiverContext: { getInstance: () => context },
+        messages: { MessageType: { LOAD: 'LOAD' } },
+      },
+    });
+    await vi.importActual('../../../../static/cast/receiver.js');
+
+    const photos = document.querySelector('#photos')!;
+    const url = (id: string) => `/api/assets/${id}/thumbnail`;
+    const show = (id: string, previous?: string, next?: string) =>
+      onMessage({
+        senderId: 'sender',
+        data: {
+          type: 'SHOW_PHOTO',
+          requestId: 1,
+          current: { url: url(id) },
+          previous: previous ? { url: url(previous) } : undefined,
+          next: next ? { url: url(next) } : undefined,
+        },
+      });
+
+    show('middle', 'first', 'last');
+    await vi.waitFor(() => expect(photos.querySelector('canvas')).toBeTruthy());
+    await vi.waitFor(() => expect(drawImage).toHaveBeenCalledTimes(3));
+    expect(drawImage.mock.calls.map(([image]) => (image as HTMLImageElement).src)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(url('first')),
+        expect.stringContaining(url('middle')),
+        expect.stringContaining(url('last')),
+      ]),
+    );
+    const middleFrame = photos.firstElementChild!;
+    const preparedCount = drawImage.mock.calls.length;
+
+    show('last', 'middle');
+    await vi.waitFor(() => expect(photos.firstElementChild).not.toBe(middleFrame));
+    expect(photos.children).toHaveLength(1);
+    expect(drawImage).toHaveBeenCalledTimes(preparedCount);
+    expect(decode).toHaveBeenCalledTimes(3);
+
+    show('middle', 'first', 'last');
+    await vi.waitFor(() => expect(photos.firstElementChild).toBe(middleFrame));
+    expect(photos.children).toHaveLength(1);
+
+    show('first', undefined, 'middle');
+    await vi.waitFor(() => expect(photos.firstElementChild).not.toBe(middleFrame));
+    expect(photos.children).toHaveLength(1);
+    expect(drawImage).toHaveBeenCalledTimes(preparedCount);
+    expect(decode).toHaveBeenCalledTimes(3);
+  });
+});

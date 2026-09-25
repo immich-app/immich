@@ -1,10 +1,18 @@
 import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
 import { DateTime, Duration } from 'luxon';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 import { LatestLoadQueue } from '$lib/utils/cast/latest-load-queue';
 
-export type CastMediaSource = { key: string; url: string; contentType?: string; fallback?: CastMediaSource };
+export type CastMediaSource = {
+  key: string;
+  url: string;
+  kind?: 'photo';
+  contentType?: string;
+  fallback?: CastMediaSource;
+  neighbors?: { previous?: CastMediaSource; next?: CastMediaSource };
+};
 
 // follows chrome.cast.media.PlayerState
 export enum CastState {
@@ -190,13 +198,14 @@ class CastManager {
         return [...prepared, performance.now()] as const;
       },
       async ([session, resolvedSource, readyAt]) => {
-        if (destination === this.current && destination.isConnected) {
-          performance.measure('cast:selection-to-ready', { start: selectedAt, end: readyAt });
-          const dispatchedAt = performance.now();
-          if (await destination.loadMedia(resolvedSource, session.token, reload)) {
-            performance.measure('cast:command-to-ack', { start: dispatchedAt, end: performance.now() });
-            performance.measure('cast:selection-to-ack', { start: selectedAt, end: performance.now() });
-          }
+        if (destination !== this.current || !destination.isConnected) {
+          return;
+        }
+        performance.measure('cast:selection-to-ready', { start: selectedAt, end: readyAt });
+        const dispatchedAt = performance.now();
+        if (await destination.loadMedia(resolvedSource, session.token, reload)) {
+          performance.measure('cast:command-to-ack', { start: dispatchedAt, end: performance.now() });
+          performance.measure('cast:selection-to-ack', { start: selectedAt, end: performance.now() });
         }
       },
     );

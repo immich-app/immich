@@ -129,7 +129,7 @@
       const url = new URL(getAssetMediaUrl({ id: item.id, size, cacheKey: item.thumbhash }), location.href).href;
       return { key: `${item.id}:${size}:${item.thumbhash}:${url}`, url };
     };
-    return { ...source(AssetMediaSize.Preview), fallback: source(AssetMediaSize.Thumbnail) };
+    return { ...source(AssetMediaSize.Preview), kind: 'photo' as const, fallback: source(AssetMediaSize.Thumbnail) };
   };
 
   $effect(() => {
@@ -137,7 +137,13 @@
       return;
     }
 
-    const source = castSource(asset);
+    const source = {
+      ...castSource(asset),
+      neighbors: {
+        previous: cursor.previousAsset?.type === AssetTypeEnum.Image ? castSource(cursor.previousAsset) : undefined,
+        next: cursor.nextAsset?.type === AssetTypeEnum.Image ? castSource(cursor.nextAsset) : undefined,
+      },
+    };
     castManager.prepareSession();
     void castManager.loadMedia(source).catch((error: unknown) => handleError(error, 'Unable to cast'));
   });
@@ -149,11 +155,11 @@
     const neighbors = [cursor.previousAsset, cursor.nextAsset].filter(
       (neighbor): neighbor is AssetResponseDto => neighbor?.type === AssetTypeEnum.Image,
     );
-    const prepare = () => neighbors.forEach((neighbor) => castManager.prepareMedia(castSource(neighbor)));
-    if ('requestIdleCallback' in window) {
-      const idleId = window.requestIdleCallback(prepare, { timeout: 2000 });
-      return () => window.cancelIdleCallback(idleId);
-    }
+    const prepare = () => {
+      for (const neighbor of neighbors) {
+        castManager.prepareMedia(castSource(neighbor));
+      }
+    };
     const timeoutId = setTimeout(prepare, 50);
     return () => clearTimeout(timeoutId);
   });
