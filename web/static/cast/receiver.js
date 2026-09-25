@@ -1,8 +1,11 @@
+/* global cast */
+// `cast` is provided by the Cast Application Framework receiver script in receiver.html.
 import { PhotoCache } from './photo-cache.js';
 
 const NAMESPACE = 'urn:x-cast:app.immich.photos';
 const photos = document.querySelector('#photos');
 const player = document.querySelector('#player');
+const video = document.querySelector('#video-player');
 const brand = document.querySelector('#brand');
 const spinner = document.querySelector('#spinner');
 const cache = new PhotoCache();
@@ -11,6 +14,18 @@ const context = cast.framework.CastReceiverContext.getInstance();
 const playerManager = context.getPlayerManager();
 let selection = 0;
 let spinnerTimeout;
+
+// Play videos on our own media element. Progressive streams keep their data
+// buffered on the element, so a looping video wraps from the last frame back
+// to the first without tearing down the pipeline and rebuffering.
+playerManager.setMediaElement(video);
+
+video.addEventListener('waiting', () => {
+  if (!video.hidden) {
+    spinner.hidden = false;
+  }
+});
+video.addEventListener('playing', () => hideSpinner());
 
 const mediaUrl = (value) => {
   if (typeof value !== 'string') {
@@ -106,9 +121,10 @@ const hideSpinner = () => {
 
 const showLoading = (thisSelection) => {
   hideSpinner();
-  if (!player.hidden) {
+  if (!player.hidden || !video.hidden) {
     playerManager.stop();
     player.hidden = true;
+    video.hidden = true;
   }
   const keepPhotoVisible = !photos.hidden && photos.firstElementChild;
   brand.hidden = Boolean(keepPhotoVisible);
@@ -135,8 +151,8 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
 
   const thisSelection = ++selection;
   showLoading(thisSelection);
-  void preparePhoto(current).then(
-    (frame) => {
+  void preparePhoto(current)
+    .then((frame) => {
       if (thisSelection !== selection) {
         return;
       }
@@ -149,15 +165,15 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
       brand.hidden = true;
       preload(message.previous);
       preload(message.next);
-    },
-    () => {
-      if (thisSelection === selection) {
-        hideSpinner();
-        brand.hidden = !photos.hidden && Boolean(photos.firstElementChild);
-        reply(event.senderId, 'PHOTO_ERROR', message.requestId);
+    })
+    .catch(() => {
+      if (thisSelection !== selection) {
+        return;
       }
-    },
-  );
+      hideSpinner();
+      brand.hidden = !photos.hidden && Boolean(photos.firstElementChild);
+      reply(event.senderId, 'PHOTO_ERROR', message.requestId);
+    });
 });
 
 playerManager.setMessageInterceptor(cast.framework.messages.MessageType.LOAD, (request) => {
@@ -165,7 +181,18 @@ playerManager.setMessageInterceptor(cast.framework.messages.MessageType.LOAD, (r
   hideSpinner();
   photos.hidden = true;
   brand.hidden = true;
-  player.hidden = false;
+  const isVideo = request.media?.contentType?.startsWith('video/') ?? false;
+  if (!isVideo) {
+    video.loop = false;
+    video.hidden = true;
+    player.hidden = false;
+    return request;
+  }
+  // With a repeating sender the element loops natively, so no `ended` event
+  // ever reaches the queue and playback wraps without reloading the stream.
+  video.loop = request.repeatMode === cast.framework.messages.RepeatMode.REPEAT_SINGLE;
+  player.hidden = true;
+  video.hidden = false;
   return request;
 });
 

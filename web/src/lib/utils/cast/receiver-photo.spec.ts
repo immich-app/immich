@@ -19,6 +19,7 @@ describe('Cast receiver photo switching', () => {
     document.body.innerHTML = `
       <div id="photos" hidden></div>
       <div id="player" hidden></div>
+      <video id="video-player" hidden></video>
       <div id="brand"></div>
       <div id="spinner" hidden></div>
     `;
@@ -32,7 +33,7 @@ describe('Cast receiver photo switching', () => {
     })) as unknown as typeof HTMLCanvasElement.prototype.getContext);
 
     let onMessage: (event: { senderId: string; data: PhotoMessage }) => void = () => {};
-    const playerManager = { setMessageInterceptor: vi.fn(), stop: vi.fn() };
+    const playerManager = { setMessageInterceptor: vi.fn(), setMediaElement: vi.fn(), stop: vi.fn() };
     const context = {
       getPlayerManager: () => playerManager,
       addCustomMessageListener: (_namespace: string, listener: typeof onMessage) => (onMessage = listener),
@@ -42,7 +43,10 @@ describe('Cast receiver photo switching', () => {
     vi.stubGlobal('cast', {
       framework: {
         CastReceiverContext: { getInstance: () => context },
-        messages: { MessageType: { LOAD: 'LOAD' } },
+        messages: {
+          MessageType: { LOAD: 'LOAD' },
+          RepeatMode: { REPEAT_SINGLE: 'REPEAT_SINGLE', REPEAT_OFF: 'REPEAT_OFF' },
+        },
       },
     });
     await vi.importActual('../../../../static/cast/receiver.js');
@@ -89,5 +93,57 @@ describe('Cast receiver photo switching', () => {
     expect(photos.children).toHaveLength(1);
     expect(drawImage).toHaveBeenCalledTimes(preparedCount);
     expect(decode).toHaveBeenCalledTimes(3);
+  });
+
+  it('loops videos natively on the media element when the sender repeats a single item', async () => {
+    document.body.innerHTML = `
+      <div id="photos" hidden></div>
+      <div id="player" hidden></div>
+      <video id="video-player" hidden></video>
+      <div id="brand"></div>
+      <div id="spinner" hidden></div>
+    `;
+    let onLoad: (request: unknown) => unknown = () => {};
+    const playerManager = {
+      setMessageInterceptor: vi.fn((_type: string, interceptor: typeof onLoad) => (onLoad = interceptor)),
+      setMediaElement: vi.fn(),
+      stop: vi.fn(),
+    };
+    const context = {
+      getPlayerManager: () => playerManager,
+      addCustomMessageListener: vi.fn(),
+      sendCustomMessage: vi.fn(),
+      start: vi.fn(),
+    };
+    vi.stubGlobal('cast', {
+      framework: {
+        CastReceiverContext: { getInstance: () => context },
+        messages: {
+          MessageType: { LOAD: 'LOAD' },
+          RepeatMode: { REPEAT_SINGLE: 'REPEAT_SINGLE', REPEAT_OFF: 'REPEAT_OFF' },
+        },
+      },
+    });
+    await vi.importActual('../../../../static/cast/receiver.js');
+
+    const video = document.querySelector<HTMLVideoElement>('#video-player')!;
+    const player = document.querySelector<HTMLElement>('#player')!;
+    expect(playerManager.setMediaElement).toHaveBeenCalledWith(video);
+
+    onLoad({
+      media: { contentType: 'video/mp4', contentId: '/api/assets/1/video/playback' },
+      repeatMode: 'REPEAT_SINGLE',
+    });
+    expect(video.loop).toBe(true);
+    expect(video.hidden).toBe(false);
+    expect(player.hidden).toBe(true);
+
+    onLoad({
+      media: { contentType: 'video/mp4', contentId: '/api/assets/2/video/playback' },
+      repeatMode: 'REPEAT_OFF',
+    });
+    expect(video.loop).toBe(false);
+    expect(video.hidden).toBe(false);
+    expect(player.hidden).toBe(true);
   });
 });

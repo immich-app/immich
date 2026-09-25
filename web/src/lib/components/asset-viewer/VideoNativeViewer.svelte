@@ -364,12 +364,13 @@
     bind:clientHeight={containerHeight}
   >
     {#if castManager.isCasting}
-      <div class="h-full place-content-center place-items-center">
+      <div class="size-full">
         <VideoRemoteViewer
           poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
           {onVideoEnded}
           assetFileUrl={castFileUrl}
+          duration={asset.duration! / 1000}
         />
       </div>
     {:else}

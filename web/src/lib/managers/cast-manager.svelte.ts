@@ -39,6 +39,9 @@ export interface ICastDestination {
   receiverName: string | null; // name of the cast destination
   castState: CastState; // current state of the cast destination
 
+  volumeLevel: number | null; // current volume level of the cast destination (0-1)
+  isMuted: boolean | null; // is the cast destination muted
+
   prepareMedia(source: CastMediaSource): Promise<string>;
   loadMedia(source: CastMediaSource, sessionKey: string, reload: boolean): Promise<boolean>;
 
@@ -46,6 +49,8 @@ export interface ICastDestination {
   play(): void;
   pause(): void;
   seekTo(time: number): void;
+  setVolume(level: number): void;
+  toggleMute(): void;
   disconnect(): void;
 }
 
@@ -61,6 +66,8 @@ class CastManager {
   castState = $derived<CastState | null>(this.current?.castState ?? null);
   currentTime = $derived<number | null>(this.current?.currentTime ?? null);
   duration = $derived<number | null>(this.current?.duration ?? null);
+  volumeLevel = $derived<number | null>(this.current?.volumeLevel ?? null);
+  isMuted = $derived<boolean>(this.current?.isMuted ?? false);
 
   private sessionKey: SessionCreateResponseDto | null = null;
   private sessionPromise: Promise<SessionCreateResponseDto> | null = null;
@@ -221,6 +228,14 @@ class CastManager {
 
   seekTo(time: number) {
     this.current?.seekTo(time);
+  }
+
+  setVolume(level: number) {
+    this.current?.setVolume(level);
+  }
+
+  toggleMute() {
+    this.current?.toggleMute();
   }
 
   disconnect() {

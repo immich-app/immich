@@ -21,6 +21,8 @@ export class GCastDestination implements ICastDestination {
   duration = $state<number | null>(null);
   castState = $state<CastState>(CastState.IDLE);
   receiverName = $state<string | null>(null);
+  volumeLevel = $state<number | null>(null);
+  isMuted = $state<boolean | null>(null);
 
   private remotePlayer: cast.framework.RemotePlayer | null = null;
   private remotePlayerController: cast.framework.RemotePlayerController | null = null;
@@ -246,6 +248,24 @@ export class GCastDestination implements ICastDestination {
     this.remotePlayerController.seek();
   }
 
+  setVolume(level: number): void {
+    if (!this.remotePlayer || !this.remotePlayerController) {
+      return;
+    }
+
+    this.remotePlayer.volumeLevel = Math.min(1, Math.max(0, level));
+    this.remotePlayerController.setVolumeLevel();
+  }
+
+  toggleMute(): void {
+    if (!this.remotePlayer || !this.remotePlayerController) {
+      return;
+    }
+
+    this.remotePlayer.isMuted = !this.remotePlayer.isMuted;
+    this.remotePlayerController.muteOrUnmute();
+  }
+
   disconnect(): void {
     if (this.session) {
       cast.framework.CastContext.getInstance().endCurrentSession(true);
@@ -280,6 +300,8 @@ export class GCastDestination implements ICastDestination {
         }
         this.isConnected = true;
         this.receiverName = this.session.receiver.friendlyName;
+        this.volumeLevel = this.remotePlayer?.volumeLevel ?? null;
+        this.isMuted = this.remotePlayer?.isMuted ?? null;
         this.currentMedia = this.session.media?.[0] ?? null;
         const contentId = this.currentMedia?.media?.contentId;
         if (contentId) {
@@ -334,6 +356,14 @@ export class GCastDestination implements ICastDestination {
       }
       case 'playerState': {
         this.castState = event.value;
+        break;
+      }
+      case 'volumeLevel': {
+        this.volumeLevel = event.value;
+        break;
+      }
+      case 'isMuted': {
+        this.isMuted = event.value;
         break;
       }
     }
