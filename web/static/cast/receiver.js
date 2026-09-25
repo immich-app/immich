@@ -5,7 +5,6 @@ import { PhotoCache } from './photo-cache.js';
 const NAMESPACE = 'urn:x-cast:app.immich.photos';
 const photos = document.querySelector('#photos');
 const player = document.querySelector('#player');
-const video = document.querySelector('#video-player');
 const brand = document.querySelector('#brand');
 const spinner = document.querySelector('#spinner');
 const cache = new PhotoCache();
@@ -14,18 +13,6 @@ const context = cast.framework.CastReceiverContext.getInstance();
 const playerManager = context.getPlayerManager();
 let selection = 0;
 let spinnerTimeout;
-
-// Play videos on our own media element. Progressive streams keep their data
-// buffered on the element, so a looping video wraps from the last frame back
-// to the first without tearing down the pipeline and rebuffering.
-playerManager.setMediaElement(video);
-
-video.addEventListener('waiting', () => {
-  if (!video.hidden) {
-    spinner.hidden = false;
-  }
-});
-video.addEventListener('playing', () => hideSpinner());
 
 const mediaUrl = (value) => {
   if (typeof value !== 'string') {
@@ -121,10 +108,9 @@ const hideSpinner = () => {
 
 const showLoading = (thisSelection) => {
   hideSpinner();
-  if (!player.hidden || !video.hidden) {
+  if (!player.hidden) {
     playerManager.stop();
     player.hidden = true;
-    video.hidden = true;
   }
   const keepPhotoVisible = !photos.hidden && photos.firstElementChild;
   brand.hidden = Boolean(keepPhotoVisible);
@@ -181,18 +167,14 @@ playerManager.setMessageInterceptor(cast.framework.messages.MessageType.LOAD, (r
   hideSpinner();
   photos.hidden = true;
   brand.hidden = true;
-  const isVideo = request.media?.contentType?.startsWith('video/') ?? false;
-  if (!isVideo) {
-    video.loop = false;
-    video.hidden = true;
-    player.hidden = false;
-    return request;
+  // Loop in the media element itself instead of reloading the stream on every
+  // repeat, so no `ended` event ever reaches the queue and a looping video
+  // wraps from the last frame to the first without rebuffering.
+  const mediaElement = player.getMediaElement?.();
+  if (mediaElement) {
+    mediaElement.loop = request.repeatMode === cast.framework.messages.RepeatMode.REPEAT_SINGLE;
   }
-  // With a repeating sender the element loops natively, so no `ended` event
-  // ever reaches the queue and playback wraps without reloading the stream.
-  video.loop = request.repeatMode === cast.framework.messages.RepeatMode.REPEAT_SINGLE;
-  player.hidden = true;
-  video.hidden = false;
+  player.hidden = false;
   return request;
 });
 

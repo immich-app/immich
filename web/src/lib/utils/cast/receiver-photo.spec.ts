@@ -19,7 +19,6 @@ describe('Cast receiver photo switching', () => {
     document.body.innerHTML = `
       <div id="photos" hidden></div>
       <div id="player" hidden></div>
-      <video id="video-player" hidden></video>
       <div id="brand"></div>
       <div id="spinner" hidden></div>
     `;
@@ -33,7 +32,7 @@ describe('Cast receiver photo switching', () => {
     })) as unknown as typeof HTMLCanvasElement.prototype.getContext);
 
     let onMessage: (event: { senderId: string; data: PhotoMessage }) => void = () => {};
-    const playerManager = { setMessageInterceptor: vi.fn(), setMediaElement: vi.fn(), stop: vi.fn() };
+    const playerManager = { setMessageInterceptor: vi.fn(), stop: vi.fn() };
     const context = {
       getPlayerManager: () => playerManager,
       addCustomMessageListener: (_namespace: string, listener: typeof onMessage) => (onMessage = listener),
@@ -95,18 +94,16 @@ describe('Cast receiver photo switching', () => {
     expect(decode).toHaveBeenCalledTimes(3);
   });
 
-  it('loops videos natively on the media element when the sender repeats a single item', async () => {
+  it('loops video natively on the player media element when the sender repeats a single item', async () => {
     document.body.innerHTML = `
       <div id="photos" hidden></div>
       <div id="player" hidden></div>
-      <video id="video-player" hidden></video>
       <div id="brand"></div>
       <div id="spinner" hidden></div>
     `;
     let onLoad: (request: unknown) => unknown = () => {};
     const playerManager = {
       setMessageInterceptor: vi.fn((_type: string, interceptor: typeof onLoad) => (onLoad = interceptor)),
-      setMediaElement: vi.fn(),
       stop: vi.fn(),
     };
     const context = {
@@ -126,24 +123,22 @@ describe('Cast receiver photo switching', () => {
     });
     await vi.importActual('../../../../static/cast/receiver.js');
 
-    const video = document.querySelector<HTMLVideoElement>('#video-player')!;
+    const mediaElement = { loop: false };
     const player = document.querySelector<HTMLElement>('#player')!;
-    expect(playerManager.setMediaElement).toHaveBeenCalledWith(video);
+    Object.assign(player, { getMediaElement: () => mediaElement });
 
     onLoad({
       media: { contentType: 'video/mp4', contentId: '/api/assets/1/video/playback' },
       repeatMode: 'REPEAT_SINGLE',
     });
-    expect(video.loop).toBe(true);
-    expect(video.hidden).toBe(false);
-    expect(player.hidden).toBe(true);
+    expect(mediaElement.loop).toBe(true);
+    expect(player.hidden).toBe(false);
 
     onLoad({
       media: { contentType: 'video/mp4', contentId: '/api/assets/2/video/playback' },
       repeatMode: 'REPEAT_OFF',
     });
-    expect(video.loop).toBe(false);
-    expect(video.hidden).toBe(false);
-    expect(player.hidden).toBe(true);
+    expect(mediaElement.loop).toBe(false);
+    expect(player.hidden).toBe(false);
   });
 });
