@@ -1,0 +1,31 @@
+docs/docs/features/casting.md
+  s_802dfc3b6bda22::t_65a18625292542 30
+web/src/lib/components/asset-viewer/cast-video.svelte.ts
+  s_802dfc3b6bda22::t_1a53862ed997dd 1-216
+web/src/lib/managers/cast-manager.svelte.ts
+  s_802dfc3b6bda22::t_04054dc13e3316 42-44,52-53,69-70,233-240
+web/src/lib/utils/cast/gcast-destination.svelte.ts
+  s_802dfc3b6bda22::t_4661cddc672f37 24-25,251-268,303-304,361-368
+web/src/lib/utils/cast/receiver-photo.spec.ts
+  s_802dfc3b6bda22::t_ddedbbbba3f4e1 22,36,46-49,97-148
+web/static/cast/receiver.html
+  s_802dfc3b6bda22::t_795537df45ae8f 18,26-30,105
+web/static/cast/tsconfig.json
+  s_802dfc3b6bda22::t_2954049a5d07ac 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e70aebafcb63f652c0d9c20612a22634fddab58e",
+  "prompts": {},
+  "sessions": {
+    "s_802dfc3b6bda22": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f286970c3ffeyhQ7ylowVT0Vvk",
+        "model": "@cf/moonshotai/kimi-k3"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
