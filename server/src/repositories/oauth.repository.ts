@@ -9,14 +9,21 @@ import {
   authorizationCodeGrant,
   buildAuthorizationUrl,
   calculatePKCECodeChallenge,
+  customFetch,
   discovery,
   fetchUserInfo,
   randomPKCECodeVerifier,
   randomState,
   skipSubjectCheck,
 } from 'openid-client';
+import { EnvHttpProxyAgent, fetch as undiciFetch } from 'undici';
 import { OAuthTokenEndpointAuthMethod } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+
+const envHttpProxyAgent = new EnvHttpProxyAgent();
+type OAuthCustomFetch = NonNullable<Awaited<ReturnType<typeof discovery>>[typeof customFetch]>;
+const oauthFetch: OAuthCustomFetch = (...args) =>
+  undiciFetch(args[0] as never, { ...args[1], dispatcher: envHttpProxyAgent } as never) as unknown as Promise<Response>;
 
 export type OAuthConfig = {
   clientId: string;
@@ -214,6 +221,7 @@ export class OAuthRepository {
         },
         this.getTokenAuthMethod(tokenEndpointAuthMethod, clientSecret),
         {
+          [customFetch]: oauthFetch,
           execute: allowInsecureRequests ? [allowInsecureRequestsExecute] : [],
           timeout,
         },
