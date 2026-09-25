@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-type PhotoMessage = {
-  type: string;
-  requestId: number;
-  current: { url: string };
-  previous?: { url: string };
-  next?: { url: string };
-};
+type PhotoMessage =
+  | {
+      type: 'SHOW_PHOTO';
+      requestId: number;
+      current: { url: string };
+      previous?: { url: string };
+      next?: { url: string };
+    }
+  | { type: 'CLEAR_PHOTO' };
 
 describe('Cast receiver photo switching', () => {
   afterEach(() => {
@@ -67,6 +69,10 @@ describe('Cast receiver photo switching', () => {
 
     show('middle', 'first', 'last');
     await vi.waitFor(() => expect(photos.querySelector('canvas')).toBeTruthy());
+    expect(context.sendCustomMessage).toHaveBeenCalledWith('urn:x-cast:app.immich.photos', 'sender', {
+      type: 'PHOTO_READY',
+      requestId: 1,
+    });
     await vi.waitFor(() => expect(drawImage).toHaveBeenCalledTimes(3));
     expect(drawImage.mock.calls.map(([image]) => (image as HTMLImageElement).src)).toEqual(
       expect.arrayContaining([
@@ -83,6 +89,10 @@ describe('Cast receiver photo switching', () => {
     expect(photos.children).toHaveLength(1);
     expect(drawImage).toHaveBeenCalledTimes(preparedCount);
     expect(decode).toHaveBeenCalledTimes(3);
+
+    onMessage({ senderId: 'sender', data: { type: 'CLEAR_PHOTO' } });
+    expect(photos.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>('#brand')!.hidden).toBe(false);
 
     show('middle', 'first', 'last');
     await vi.waitFor(() => expect(photos.firstElementChild).toBe(middleFrame));

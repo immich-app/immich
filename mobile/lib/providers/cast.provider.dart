@@ -69,6 +69,10 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     }));
   }
 
+  void setPhotoNeighbors(RemoteAsset current, RemoteAsset? previous, RemoteAsset? next) {
+    _gCastService.setPhotoNeighbors(current, previous, next);
+  }
+
   Future<void> connect(CastDestinationType type, dynamic device) async {
     switch (type) {
       case CastDestinationType.googleCast:

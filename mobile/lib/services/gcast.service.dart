@@ -9,6 +9,7 @@ import 'package:immich_mobile/models/sessions/session_create_response.model.dart
 import 'package:immich_mobile/repositories/gcast.repository.dart';
 import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
 // ignore: import_rule_openapi, we are only using the AssetMediaSize enum
@@ -18,13 +19,16 @@ final gCastServiceProvider = Provider(
   (ref) => GCastService(
     ref.watch(gCastRepositoryProvider),
     ref.watch(sessionsAPIRepositoryProvider),
+    () async => (await ref.read(serverInfoServiceProvider).getServerConfig())?.castReceiverAppId ?? '',
   ),
 );
 
 class GCastService {
   static final _log = Logger('GCastService');
+  static const photoNamespace = 'urn:x-cast:app.immich.photos';
   final GCastRepository _gCastRepository;
   final SessionsAPIRepository _sessionsApiService;
+  final Future<String> Function() _getReceiverAppId;
 
   SessionCreateResponse? sessionKey;
   String? currentAssetId;
@@ -42,6 +46,10 @@ class GCastService {
   final Map<String, Future<String>> _mimeTypes = {};
   int _selectionGeneration = 0;
   int _credentialGeneration = 0;
+  bool _customReceiver = false;
+  RemoteAsset? _selectedPhoto;
+  RemoteAsset? _previousPhoto;
+  RemoteAsset? _nextPhoto;
 
   void Function(bool)? onConnectionState;
 
@@ -53,7 +61,7 @@ class GCastService {
 
   void Function(CastState)? onCastState;
 
-  GCastService(this._gCastRepository, this._sessionsApiService) {
+  GCastService(this._gCastRepository, this._sessionsApiService, this._getReceiverAppId) {
     _gCastRepository.onCastStatus = _onCastStatusCallback;
     _gCastRepository.onCastMessage = _onCastMessageCallback;
   }
@@ -67,10 +75,7 @@ class GCastService {
   }
 
   void _onCastStatusCallback(CastSessionState state) {
-    if (state == CastSessionState.connected) {
-      onConnectionState?.call(true);
-      isConnected = true;
-    } else if (state == CastSessionState.closed) {
+    if (state == CastSessionState.closed) {
       onConnectionState?.call(false);
       isConnected = false;
       onReceiverName?.call("");
@@ -81,6 +86,11 @@ class GCastService {
       _credentialGeneration++;
       sessionKey = null;
       _sessionFuture = null;
+      _mediaStatusPollingTimer?.cancel();
+      _customReceiver = false;
+      _selectedPhoto = null;
+      _previousPhoto = null;
+      _nextPhoto = null;
     }
   }
 
@@ -92,6 +102,23 @@ class GCastService {
         if (_pendingRequestId != null && message['requestId'] == _pendingRequestId) {
           _clearPending();
           _mediaStatusPollingTimer?.cancel();
+        }
+      case "PHOTO_READY":
+        if (_pendingRequestId != null && message['requestId'] == _pendingRequestId) {
+          currentAssetId = _pendingAssetId;
+          _currentSourceUrl = _pendingSourceUrl;
+          _clearPending();
+          _mediaStatusPollingTimer?.cancel();
+          _sessionId = null;
+          onCurrentTime?.call(Duration.zero);
+          onDuration?.call(Duration.zero);
+          onCastState?.call(CastState.idle);
+        }
+      case "PHOTO_ERROR":
+        if (_pendingRequestId != null && message['requestId'] == _pendingRequestId) {
+          _clearPending();
+          _mediaStatusPollingTimer?.cancel();
+          onCastState?.call(CastState.idle);
         }
     }
   }
@@ -153,12 +180,17 @@ class GCastService {
   }
 
   Future<void> connect(dynamic device) async {
-    await _gCastRepository.connect(device);
+    final appId = (await _getReceiverAppId()).trim();
+    await _gCastRepository.connect(device, appId);
+    _customReceiver = appId.isNotEmpty;
+    isConnected = true;
+    onConnectionState?.call(true);
 
     onReceiverName?.call(device.extras["fn"] ?? "Google Cast");
   }
 
   Future<void> disconnect() async {
+    _mediaStatusPollingTimer?.cancel();
     onReceiverName?.call("");
     currentAssetId = null;
     _currentSourceUrl = null;
@@ -167,6 +199,10 @@ class GCastService {
     _credentialGeneration++;
     sessionKey = null;
     _sessionFuture = null;
+    _customReceiver = false;
+    _selectedPhoto = null;
+    _previousPhoto = null;
+    _nextPhoto = null;
     await _gCastRepository.disconnect();
   }
 
@@ -251,7 +287,7 @@ class GCastService {
   }
 
   Future<void> prepareMedia(RemoteAsset asset) async {
-    if (!isConnected || !asset.isImage) {
+    if (!isConnected || !asset.isImage || _customReceiver) {
       return;
     }
     final session = await _getSession();
@@ -265,41 +301,66 @@ class GCastService {
 
     final generation = ++_selectionGeneration;
     final selectedAt = DateTime.now();
-    final unauthenticatedUrl = asset.isVideo
-        ? getPlaybackUrlForRemoteId(asset.id)
-        : _getPhotoUrl(asset, AssetMediaSize.preview);
+    final unauthenticatedUrl =
+        asset.isVideo ? getPlaybackUrlForRemoteId(asset.id) : _getPhotoUrl(asset, AssetMediaSize.preview);
     if ((_currentSourceUrl == unauthenticatedUrl || _pendingSourceUrl == unauthenticatedUrl) && !reload) {
       return;
     }
 
+    _selectedPhoto = _customReceiver && asset.isImage ? asset : null;
+    _previousPhoto = null;
+    _nextPhoto = null;
+
     final session = await _getSession();
-    final (resolvedUrl, mimeType) = await _resolveSource(asset, unauthenticatedUrl, session.token);
+    final (resolvedUrl, mimeType) = _selectedPhoto != null
+        ? (unauthenticatedUrl, 'image/*')
+        : await _resolveSource(asset, unauthenticatedUrl, session.token);
     if (generation != _selectionGeneration || !isConnected) {
       return;
     }
     _log.fine('Cast selection to media ready: ${DateTime.now().difference(selectedAt).inMilliseconds} ms');
     final uri = Uri.parse(resolvedUrl);
-    final authenticatedURL = uri
-        .replace(queryParameters: {...uri.queryParameters, 'sessionKey': session.token})
-        .toString();
+    final authenticatedURL =
+        uri.replace(queryParameters: {...uri.queryParameters, 'sessionKey': session.token}).toString();
 
     _pendingAssetId = asset.id;
     _pendingSourceUrl = unauthenticatedUrl;
     _pendingCastUrl = authenticatedURL;
     _pendingSelectedAt = selectedAt;
-    _pendingRequestId = ++_nextRequestId;
     try {
-      _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-        "type": "LOAD",
-        "requestId": _pendingRequestId,
-        "media": {
-          "contentId": authenticatedURL,
-          "streamType": "BUFFERED",
-          "contentType": mimeType,
-          "contentUrl": authenticatedURL,
-        },
-        "autoplay": true,
-      });
+      if (_selectedPhoto != null) {
+        _mediaStatusPollingTimer?.cancel();
+        _sendPhoto(session.token);
+        return;
+      }
+
+      _pendingRequestId = ++_nextRequestId;
+
+      final media = <String, dynamic>{
+        "contentId": authenticatedURL,
+        "streamType": "BUFFERED",
+        "contentType": mimeType,
+        "contentUrl": authenticatedURL,
+        if (_customReceiver) "customData": {"immichLoop": true},
+      };
+      if (asset.isVideo) {
+        _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+          "type": "QUEUE_LOAD",
+          "requestId": _pendingRequestId,
+          "items": [
+            {"media": media, "autoplay": true},
+          ],
+          "repeatMode": "REPEAT_SINGLE",
+          "startIndex": 0,
+        });
+      } else {
+        _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+          'type': 'LOAD',
+          'requestId': _pendingRequestId,
+          'media': media,
+          'autoplay': true,
+        });
+      }
     } catch (_) {
       _clearPending();
       rethrow;
@@ -330,6 +391,45 @@ class GCastService {
     });
   }
 
+  Map<String, String> _photoSource(RemoteAsset asset, String token) => {
+        'url': _withSession(_getPhotoUrl(asset, AssetMediaSize.preview), token),
+        'fallbackUrl': _withSession(_getPhotoUrl(asset, AssetMediaSize.thumbnail), token),
+      };
+
+  String _withSession(String url, String token) {
+    final uri = Uri.parse(url);
+    return uri.replace(queryParameters: {...uri.queryParameters, 'sessionKey': token}).toString();
+  }
+
+  void _sendPhoto(String token) {
+    final photo = _selectedPhoto;
+    if (photo == null) {
+      return;
+    }
+    _pendingAssetId = photo.id;
+    _pendingSourceUrl = _getPhotoUrl(photo, AssetMediaSize.preview);
+    _pendingRequestId = ++_nextRequestId;
+    _gCastRepository.sendMessage(photoNamespace, {
+      'type': 'SHOW_PHOTO',
+      'requestId': _pendingRequestId,
+      'current': _photoSource(photo, token),
+      if (_previousPhoto != null) 'previous': _photoSource(_previousPhoto!, token),
+      if (_nextPhoto != null) 'next': _photoSource(_nextPhoto!, token),
+    });
+  }
+
+  void setPhotoNeighbors(RemoteAsset current, RemoteAsset? previous, RemoteAsset? next) {
+    if (!_customReceiver || !isConnected || _selectedPhoto?.id != current.id) {
+      return;
+    }
+    _previousPhoto = previous;
+    _nextPhoto = next;
+    final token = sessionKey?.token;
+    if (token != null && (_pendingAssetId == current.id || currentAssetId == current.id)) {
+      _sendPhoto(token);
+    }
+  }
+
   void play() {
     _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "PLAY", "mediaSessionId": _sessionId});
   }
@@ -347,12 +447,19 @@ class GCastService {
   }
 
   void stop() {
-    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "STOP", "mediaSessionId": _sessionId});
+    if (_customReceiver && _selectedPhoto != null) {
+      _gCastRepository.sendMessage(photoNamespace, {'type': 'CLEAR_PHOTO'});
+    } else {
+      _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "STOP", "mediaSessionId": _sessionId});
+    }
     _mediaStatusPollingTimer?.cancel();
 
     currentAssetId = null;
     _currentSourceUrl = null;
     _clearPending();
+    _selectedPhoto = null;
+    _previousPhoto = null;
+    _nextPhoto = null;
   }
 
   // 0x01 is display capability bitmask

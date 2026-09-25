@@ -28,6 +28,7 @@ import { setDifference } from 'src/utils/set.js';
 export interface EnvData {
   host?: string;
   port: number;
+  castReceiverAppId?: string;
   environment: ImmichEnvironment;
   configFile?: string;
   logLevel?: LogLevel;
@@ -255,6 +256,7 @@ const getEnv = (): EnvData => {
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
+    castReceiverAppId: dto.IMMICH_CAST_RECEIVER_APP_ID,
     environment,
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,

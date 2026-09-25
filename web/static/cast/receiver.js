@@ -127,6 +127,14 @@ const showLoading = (thisSelection) => {
 
 context.addCustomMessageListener(NAMESPACE, (event) => {
   const message = event.data;
+  if (message?.type === 'CLEAR_PHOTO') {
+    selection++;
+    hideSpinner();
+    photos.replaceChildren();
+    photos.hidden = true;
+    brand.hidden = false;
+    return;
+  }
   if (message?.type !== 'SHOW_PHOTO') {
     return;
   }
@@ -154,6 +162,7 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
       brand.hidden = true;
       preload(message.previous);
       preload(message.next);
+      reply(event.senderId, 'PHOTO_READY', message.requestId);
     })
     .catch(() => {
       if (thisSelection !== selection) {

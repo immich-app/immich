@@ -1,0 +1,142 @@
+import 'dart:io';
+
+import 'package:cast/device.dart';
+import 'package:cast/session.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
+import 'package:immich_mobile/repositories/gcast.repository.dart';
+import 'package:immich_mobile/repositories/sessions_api.repository.dart';
+import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:mocktail/mocktail.dart';
+
+import '../unit/factories/remote_asset_factory.dart';
+
+class _RecordingCastRepository extends GCastRepository {
+  String? launchedAppId;
+  final messages = <(String, Map<String, dynamic>)>[];
+
+  @override
+  Future<void> connect(CastDevice device, String customReceiverAppId) async {
+    launchedAppId = customReceiverAppId;
+  }
+
+  @override
+  void sendMessage(String namespace, Map<String, dynamic> message) {
+    messages.add((namespace, message));
+  }
+
+  @override
+  Future<void> disconnect() async {}
+}
+
+class _MockSessionsAPIRepository extends Mock implements SessionsAPIRepository {}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late Drift db;
+  late StoreService store;
+  late HttpServer server;
+  late _RecordingCastRepository repository;
+  late GCastService service;
+
+  const device = CastDevice(serviceName: 'test', name: 'TV', host: 'localhost', port: 8009, extras: {'fn': 'TV'});
+
+  setUpAll(() async {
+    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    store = await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
+    server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    server.listen((request) async {
+      request.response.headers.contentType =
+          request.uri.path.contains('/video/') ? ContentType('video', 'mp4') : ContentType('image', 'jpeg');
+      await request.response.close();
+    });
+    await Store.put(StoreKey.serverEndpoint, 'http://127.0.0.1:${server.port}/api');
+  });
+
+  tearDownAll(() async {
+    await store.dispose();
+    await db.close();
+    await server.close(force: true);
+  });
+
+  Future<void> connect(String appId) async {
+    repository = _RecordingCastRepository();
+    service = GCastService(repository, _MockSessionsAPIRepository(), () async => appId);
+    await service.connect(device);
+    service.sessionKey = SessionCreateResponse(
+      createdAt: DateTime.now().toIso8601String(),
+      current: true,
+      deviceOS: 'Google Cast',
+      deviceType: 'Cast',
+      expiresAt: DateTime.now().add(const Duration(minutes: 10)).toIso8601String(),
+      id: 'session',
+      token: 'test token',
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+  }
+
+  tearDown(() async {
+    await service.disconnect();
+  });
+
+  test('custom receiver gets signed photo messages and adjacent photos', () async {
+    await connect('A2AE3577');
+    final current = RemoteAssetFactory.create(id: 'current');
+    final previous = RemoteAssetFactory.create(id: 'previous');
+    final next = RemoteAssetFactory.create(id: 'next');
+
+    await service.loadMedia(current, false);
+    expect(repository.launchedAppId, 'A2AE3577');
+    expect(repository.messages.single.$1, GCastService.photoNamespace);
+    final first = repository.messages.single.$2;
+    expect(first['type'], 'SHOW_PHOTO');
+    expect((first['current'] as Map)['url'], contains('sessionKey=test+token'));
+    expect((first['current'] as Map)['fallbackUrl'], contains('size=thumbnail'));
+
+    service.setPhotoNeighbors(current, previous, next);
+    final updated = repository.messages.last.$2;
+    expect((updated['previous'] as Map)['url'], contains(previous.id));
+    expect((updated['next'] as Map)['url'], contains(next.id));
+    repository.onCastMessage?.call({'type': 'PHOTO_READY', 'requestId': updated['requestId']});
+    expect(service.currentAssetId, current.id);
+
+    await service.loadMedia(current, false);
+    expect(repository.messages, hasLength(2));
+
+    service.stop();
+    expect(repository.messages.last.$1, GCastService.photoNamespace);
+    expect(repository.messages.last.$2['type'], 'CLEAR_PHOTO');
+  });
+
+  test('custom receiver gets a repeating video queue with the native loop flag', () async {
+    await connect('A2AE3577');
+    final video = RemoteAssetFactory.create(id: 'video', type: AssetType.video);
+
+    await service.loadMedia(video, false);
+    final (namespace, message) = repository.messages.single;
+    expect(namespace, CastSession.kNamespaceMedia);
+    expect(message['type'], 'QUEUE_LOAD');
+    expect(message['repeatMode'], 'REPEAT_SINGLE');
+    final media = ((message['items'] as List).single as Map)['media'] as Map;
+    expect(media['customData'], {'immichLoop': true});
+    expect(media['contentId'], contains('sessionKey=test+token'));
+  });
+
+  test('default receiver keeps the direct photo load protocol', () async {
+    await connect('');
+    await service.loadMedia(RemoteAssetFactory.create(id: 'photo'), false);
+
+    expect(repository.launchedAppId, '');
+    expect(repository.messages.single.$1, CastSession.kNamespaceMedia);
+    expect(repository.messages.single.$2['type'], 'LOAD');
+  });
+}

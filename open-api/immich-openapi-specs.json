@@ -27181,6 +27181,10 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "castReceiverAppId": {
+            "description": "Google Cast custom receiver application ID, if configured",
+            "type": "string"
+          },
           "externalDomain": {
             "description": "External domain URL",
             "type": "string"
@@ -27242,6 +27246,7 @@
           }
         },
         "required": [
+          "castReceiverAppId",
           "externalDomain",
           "isInitialized",
           "isOnboarded",

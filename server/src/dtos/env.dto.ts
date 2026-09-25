@@ -42,6 +42,7 @@ export const EnvSchema = z
     IMMICH_BUILD_URL: z.string().optional(),
     IMMICH_BUILD_IMAGE: z.string().optional(),
     IMMICH_BUILD_IMAGE_URL: z.string().optional(),
+    IMMICH_CAST_RECEIVER_APP_ID: z.string().optional(),
     IMMICH_CONFIG_FILE: z.string().optional(),
     IMMICH_HELMET_FILE: z.string().optional(),
     IMMICH_ENV: ImmichEnvironmentSchema.optional(),

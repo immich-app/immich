@@ -167,12 +167,18 @@ describe(ServerService.name, () => {
         isOnboarded: false,
         externalDomain: '',
         publicUsers: true,
+        castReceiverAppId: '',
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
         maintenanceMode: false,
         minFaces: 3,
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
+    });
+
+    it('should expose the configured Cast receiver application ID', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ castReceiverAppId: 'A2AE3577' }));
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({ castReceiverAppId: 'A2AE3577' });
     });
 
     it('should be initialized once an admin exists', async () => {
