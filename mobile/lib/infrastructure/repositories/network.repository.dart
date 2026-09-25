@@ -50,8 +50,6 @@ class NetworkRepository {
     }
   }
 
-  const NetworkRepository();
-
   /// Returns a shared HTTP client that uses native SSL configuration.
   ///
   /// On iOS: Uses SharedURLSessionManager's URLSession.

@@ -56,7 +56,10 @@ class BackgroundWorkerFgService {
     );
   }
 
+  // ignore: unused-code
   Future<void> disable() => _foregroundHostApi.disable();
+
+  Future<bool> wasLaunchedInBackground() => _foregroundHostApi.wasLaunchedInBackground();
 }
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {

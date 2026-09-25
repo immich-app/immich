@@ -1,52 +1,7 @@
-import 'dart:async';
-
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
-
-class DownloadPanel extends ConsumerWidget {
-  const DownloadPanel({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final showProgress = ref.watch(downloadStateProvider.select((state) => state.showProgress));
-
-    final tasks = ref.watch(downloadStateProvider.select((state) => state.taskProgress)).entries.toList();
-
-    void onCancelDownload(String id) {
-      unawaited(ref.read(downloadStateProvider.notifier).cancelDownload(id));
-    }
-
-    return Positioned(
-      bottom: 140,
-      left: 16,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: showProgress
-            ? ConstrainedBox(
-                constraints: BoxConstraints.loose(Size(context.width - 32, 300)),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = tasks[index];
-                    return DownloadTaskTile(
-                      progress: task.value.progress,
-                      fileName: task.value.fileName,
-                      status: task.value.status,
-                      onCancelDownload: () => onCancelDownload(task.key),
-                    );
-                  },
-                ),
-              )
-            : const SizedBox.shrink(key: ValueKey('no_progress')),
-      ),
-    );
-  }
-}
 
 class DownloadTaskTile extends StatelessWidget {
   final double progress;

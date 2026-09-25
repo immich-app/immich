@@ -1,7 +1,6 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../api.mocks.dart';
@@ -12,7 +11,6 @@ void _stubPartnerApi(MockPartnerApiRepository api) {
   final id = TestUtils.uuid();
   final partner = UserDto(id: id, email: '$id@example.com', name: 'name $id', profileChangedAt: TestUtils.now());
 
-  registerFallbackValue(Direction.sharedByMe);
   when(() => api.create(any())).thenAnswer((_) async => partner);
   when(() => api.update(any(), inTimeline: any(named: 'inTimeline'))).thenAnswer((_) async => partner);
   when(() => api.delete(any())).thenAnswer((_) async {});

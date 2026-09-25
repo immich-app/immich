@@ -106,8 +106,6 @@ export default typescriptEslint.config(
       },
     },
 
-    ignores: ['**/service-worker/**'],
-
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -173,6 +171,10 @@ export default typescriptEslint.config(
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      'unicorn/prefer-early-return': 'off',
+      'unicorn/prefer-ternary': 'off',
+      'unicorn/prefer-combined-guards': 'off',
+      'unicorn/no-immediate-mutation': 'off',
       eqeqeq: 'error',
     },
   },

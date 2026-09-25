@@ -16,11 +16,6 @@ import 'package:logging/logging.dart';
 part 'backup.provider.freezed.dart';
 
 @freezed
-abstract class EnqueueStatus with _$EnqueueStatus {
-  const factory EnqueueStatus({required int enqueueCount, required int totalCount}) = _EnqueueStatus;
-}
-
-@freezed
 abstract class UploadStatus with _$UploadStatus {
   const factory UploadStatus({
     required String taskId,

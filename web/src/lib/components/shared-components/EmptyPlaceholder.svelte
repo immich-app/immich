@@ -2,7 +2,7 @@
   import empty1Url from '$lib/assets/empty-1.svg';
 
   interface Props {
-    onClick?: undefined | (() => unknown);
+    onClick?: undefined | ((event: MouseEvent) => unknown);
     text: string;
     fullWidth?: boolean;
     src?: string;
