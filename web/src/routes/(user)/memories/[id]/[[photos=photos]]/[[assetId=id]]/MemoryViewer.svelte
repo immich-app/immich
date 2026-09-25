@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import { shortcuts } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
@@ -300,6 +301,7 @@
   id="memory-viewer"
   data-sveltekit-noscroll
   class="dark w-full bg-immich-dark-gray text-white"
+  use:scrollMemoryClearer={{ routeStartsWith: Route.memories() }}
   bind:this={memoryWrapper}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
