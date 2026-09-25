@@ -286,8 +286,9 @@
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
+              bind:clientWidth={boundingbox.labelWidth}
               style="top: {boundingbox.height + 4}px; {assetViewerManager.imgRef
-                ? boundingbox.left >= 0
+                ? boundingbox.left >= boundingbox.labelWidth - boundingbox.width
                   ? `right: ${Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)}px;`
                   : `left: ${-boundingbox.left}px;`
                 : ''}"
