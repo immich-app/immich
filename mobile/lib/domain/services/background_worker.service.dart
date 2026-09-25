@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
@@ -32,6 +33,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -321,13 +323,70 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     );
   }
 
+  /// Status codes that mean "not now" rather than "no".
+  static const _transientSyncStatus = {429, 502, 503, 504};
+
+  /// How long to wait when the server does not say.
+  static const _defaultSyncRetryDelay = Duration(seconds: 15);
+
+  /// How many times to ask before giving up on this run.
+  static const _remoteSyncAttempts = 4;
+
+  /// The server's own answer to "when should I come back", if it gave one.
+  Duration? _retryHint(ApiException error) {
+    final body = error.message;
+    if (body == null) {
+      return null;
+    }
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        final seconds = decoded['retry_after_seconds'];
+        if (seconds is num && seconds > 0) {
+          return Duration(seconds: seconds.round());
+        }
+      }
+    } catch (_) {
+      // Not JSON, or not a shape we know about. The default applies.
+    }
+    return null;
+  }
+
+  /// Remote sync, retried while the server is merely unavailable.
+  ///
+  /// A server that is restarting, or being woken on demand behind a proxy,
+  /// answers 503 for the first half minute and often says when it expects to be
+  /// ready. Treating that as permanent costs an entire backup cycle, because
+  /// the periodic worker only runs once an hour -- and by the time it runs
+  /// again the server has usually gone back to sleep, so the backup never
+  /// happens at all rather than merely happening late.
+  Future<bool> _remoteSyncWithRetry() async {
+    for (var attempt = 1; attempt <= _remoteSyncAttempts; attempt++) {
+      try {
+        return await _remoteSyncService.sync();
+      } on ApiException catch (error) {
+        final isLastAttempt = attempt == _remoteSyncAttempts;
+        if (isLastAttempt || _isCleanedUp || !_transientSyncStatus.contains(error.code)) {
+          rethrow;
+        }
+        final delay = _retryHint(error) ?? _defaultSyncRetryDelay;
+        _logger.info(
+          "Remote sync got ${error.code} on attempt $attempt of $_remoteSyncAttempts, "
+          "retrying in ${delay.inSeconds}s",
+        );
+        await Future.delayed(delay);
+      }
+    }
+    return false;
+  }
+
   Future<bool> _syncAssets({Duration? hashTimeout}) async {
     await _localSyncService.sync();
     if (_isCleanedUp) {
       return false;
     }
 
-    final isSuccess = await _remoteSyncService.sync();
+    final isSuccess = await _remoteSyncWithRetry();
     if (_isCleanedUp) {
       return isSuccess;
     }
