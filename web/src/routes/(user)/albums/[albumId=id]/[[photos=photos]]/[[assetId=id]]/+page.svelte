@@ -41,7 +41,6 @@
     getAlbumAssetsActions,
     handleDeleteAlbum,
     handleDownloadAlbum,
-    handleLeaveAlbum,
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -67,7 +66,6 @@
     mdiDotsHorizontal,
     mdiDotsVertical,
     mdiDownload,
-    mdiExitToApp,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -293,14 +291,6 @@
     viewMode = AlbumPageViewMode.VIEW;
   };
 
-  const leaveAlbum = async () => {
-    const success = await handleLeaveAlbum(album);
-
-    if (success) {
-      await goto(Route.albums());
-    }
-  };
-
   const onAlbumAddAssets = async ({ albumIds, assetIds }: { albumIds: string[]; assetIds: string[] }) => {
     if (!albumIds.includes(album.id)) {
       return;
@@ -338,7 +328,7 @@
   };
 
   const { Cast } = $derived(getGlobalActions($t));
-  const { Share } = $derived(getAlbumActions($t, album));
+  const { Share, Leave } = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
 
   const Close = $derived({
@@ -604,9 +594,8 @@
                     text={$t('delete_album')}
                     onClick={() => handleDeleteAlbum(album)}
                   />
-                {/if}
-                {#if !isOwned}
-                  <MenuOption icon={mdiExitToApp} text={$t('leave_album')} onClick={leaveAlbum} />
+                {:else}
+                  <ActionMenuItem action={Leave} />
                 {/if}
               </ButtonContextMenu>
             {/if}

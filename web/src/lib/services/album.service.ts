@@ -29,7 +29,7 @@ import {
   mdiUpload,
 } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
-import { goto, invalidateAll } from '$app/navigation';
+import { goto } from '$app/navigation';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -89,12 +89,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     title: $t('leave_album'),
     icon: mdiExitToApp,
     $if: () => !isOwned,
-    onAction: async () => {
-      const success = await handleLeaveAlbum(album);
-      if (success) {
-        await invalidateAll();
-      }
-    },
+    onAction: () => handleLeaveAlbum(album),
   };
 
   const Edit: ActionItem = {
@@ -281,16 +276,16 @@ export const handleLeaveAlbum = async (album: AlbumResponseDto) => {
   });
 
   if (!confirmed) {
-    return false;
+    return;
   }
 
   try {
     await removeUserFromAlbum({ id: album.id, userId: 'me' });
     userInteraction.recentAlbums = undefined;
+    eventManager.emit('AlbumDelete', album);
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_album_users'));
-    return false;
   }
 };
 
