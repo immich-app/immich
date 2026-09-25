@@ -14,7 +14,7 @@ describe('LatestLoadQueue', () => {
   it('ignores a selection whose preparation finishes after a newer selection', async () => {
     const queue = new LatestLoadQueue();
     const firstPreparation = deferred<string>();
-    const load = vi.fn((_source: string) => Promise.resolve());
+    const load = vi.fn((_: string) => Promise.resolve());
 
     const first = queue.run(() => firstPreparation.promise, load);
     const second = queue.run(() => Promise.resolve('second'), load);

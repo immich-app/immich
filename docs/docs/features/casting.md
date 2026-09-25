@@ -1,12 +1,12 @@
 # Chromecast support
 
-Immich supports Google's Cast protocol so that photos and videos can be cast to devices such as a Chromecast and a Nest Hub from the web and mobile apps. This feature is experimental and has several important limitations listed below.
+Immich supports Google's Cast protocol so that photos and videos can be cast to devices such as a Chromecast and a Nest Hub from the web and mobile apps.
 
 ## Enable Google Cast Support
 
 Google Cast support is disabled by default. The web UI uses Google-provided scripts and must retrieve them from Google servers when the page loads. This is a privacy concern for some and is thus opt-in.
 
-You can enable Google Cast support through `Account Settings > Features > Cast > Google Cast`
+You can enable Google Cast support on the web frontend through `Account Settings > Features > Cast > Google Cast`
 
 <img src={require('./img/gcast-enable.webp').default} width="70%" title='Enable Google Cast Support' />
 

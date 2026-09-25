@@ -1,13 +1,13 @@
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import {
   CastDestinationType,
   CastState,
   type CastMediaSource,
   type ICastDestination,
 } from '$lib/managers/cast-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { withCastSession } from '$lib/utils/cast/cast-url';
 import { createPhotoMessage, isPhotoReceiver, PHOTO_NAMESPACE } from '$lib/utils/cast/photo-message';
 
