@@ -893,6 +893,9 @@ importers:
       socket.io-client:
         specifier: ~4.8.0
         version: 4.8.3(supports-color@8.1.1)
+      svelte-confetti:
+        specifier: ^2.3.2
+        version: 2.3.2(svelte@5.57.0(@typescript-eslint/types@8.70.0))
       svelte-gestures:
         specifier: ^5.2.2
         version: 5.2.2
@@ -12198,6 +12201,11 @@ packages:
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: ^5.0.0 || ^6.0.0
+
+  svelte-confetti@2.3.2:
+    resolution: {integrity: sha512-cfIwoGqMPYWRYDUz2g7mG1uHYWy7VBepelQdzCC3j/M42UrAqaBYmIi9xaoQfow4fbINHO9WuARnTyK2bjjGQg==}
+    peerDependencies:
+      svelte: '>=5.0.0'
 
   svelte-eslint-parser@1.8.1:
     resolution: {integrity: sha512-5zgKBqAf6V8Jyrmr1jViksyG4NKT8NheYwkdxRaMRDAqpGWi9wR8ktcGrAZbfMn/PHUp1BWzAp0cYQECkWuAMA==}
@@ -26492,6 +26500,10 @@ snapshots:
       typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - picomatch
+
+  svelte-confetti@2.3.2(svelte@5.57.0(@typescript-eslint/types@8.70.0)):
+    dependencies:
+      svelte: 5.57.0(@typescript-eslint/types@8.70.0)
 
   svelte-eslint-parser@1.8.1(svelte@5.57.0(@typescript-eslint/types@8.70.0)):
     dependencies:
