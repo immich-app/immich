@@ -71,7 +71,9 @@ export class TagService extends BaseService {
       value = existing.value;
     }
 
+    const assetIds = value === existing.value ? [] : await this.tagRepository.getAssetIdsByTagId(id);
     const tag = await this.tagRepository.update(id, { value, color });
+    await this.syncAssetTags(assetIds);
     return mapTag(tag);
   }
 
@@ -83,9 +85,9 @@ export class TagService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.TagDelete, ids: [id] });
 
-    // TODO sync tag changes for affected assets
-
+    const assetIds = await this.tagRepository.getAssetIdsByTagId(id);
     await this.tagRepository.delete(id);
+    await this.syncAssetTags(assetIds);
   }
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
@@ -168,5 +170,17 @@ export class TagService extends BaseService {
       exif: updateLockedColumns({ assetId, tags: tags.map(({ value }) => value) }),
       lockedPropertiesBehavior: 'append',
     });
+  }
+
+  private async syncAssetTags(assetIds: string[]) {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    for (const assetId of assetIds) {
+      await this.updateTags(assetId);
+    }
+
+    await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
   }
 }
