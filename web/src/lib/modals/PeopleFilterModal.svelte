@@ -69,6 +69,13 @@
     }
   };
 
+  const onReset = () => {
+    sharedById = '';
+    sharedWithId = '';
+    isFavorite = undefined;
+    isHidden = undefined;
+  };
+
   const onSubmit = () => {
     onClose({ sharedById: sharedById || undefined, sharedWithId: sharedWithId || undefined, isFavorite, isHidden });
   };
@@ -122,6 +129,9 @@
         bind:checked={() => isHidden === true, () => (isHidden = cycle(isHidden))}
         indeterminate={isHidden === undefined}
       />
+    </div>
+    <div class="flex justify-end">
+      <Button size="small" variant="outline" color="secondary" shape="round" onclick={onReset}>{$t('reset')}</Button>
     </div>
   </Stack>
 </FormModal>
