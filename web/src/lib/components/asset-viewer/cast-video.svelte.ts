@@ -24,6 +24,15 @@ template.innerHTML = `
   <img part="poster" alt="" />
 `;
 
+/**
+ * Media element shim that presents the active Cast session as an
+ * HTMLMediaElement, so the standard media-chrome controls can drive the
+ * remote player exactly like a local <video>.
+ *
+ * The poster is rendered in the shadow DOM instead of media-chrome's
+ * `slot="poster"` layer, which is hidden once playback starts — the poster
+ * is the only visual available while casting, so it must stay visible.
+ */
 class CastVideoElement extends HTMLElement {
   static observedAttributes = ['poster'];
 
@@ -54,7 +63,7 @@ class CastVideoElement extends HTMLElement {
   }
 
   get ended(): boolean {
-    return castManager.castState === CastState.IDLE;
+    return castManager.castState === CastState.IDLE && castManager.duration !== null;
   }
 
   get currentTime(): number {
@@ -124,12 +133,18 @@ class CastVideoElement extends HTMLElement {
       let previousState: CastState | null = null;
       $effect(() => {
         const state = castManager.castState;
+        const wasIdle = previousState === CastState.IDLE;
         if (state === previousState) {
           return;
         }
         previousState = state;
         switch (state) {
           case CastState.PLAYING: {
+            if (wasIdle) {
+              // Mirror native replay semantics (seek back to 0 then play) so
+              // media-chrome clears its ended state and shows the pause icon.
+              this.#emit('seeked');
+            }
             this.#emit('play');
             this.#emit('playing');
             break;
