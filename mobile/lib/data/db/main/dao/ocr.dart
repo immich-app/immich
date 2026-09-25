@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/dao/ocr.drift.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/asset/ocr.drift.dart';
 import 'package:immich_mobile/domain/models/ocr.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/ocr.repository.drift.dart';
 
 @DriftAccessor()
 class OcrRepository extends DatabaseAccessor<Drift> with $OcrRepositoryMixin {

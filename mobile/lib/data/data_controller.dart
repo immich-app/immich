@@ -61,9 +61,12 @@ class DataController {
     return (logDb, false);
   }
 
+  // ignore: unused-code
   late final PeopleDatabaseRepository peopleDb = PeopleDatabaseRepository(_db);
+  // ignore: unused-code
   late final PersonApiRepository personApi = PersonApiRepository(PeopleApi(_apiClient));
 
+  // ignore: unused-code
   late final ActivityApiRepository activityApi = ActivityApiRepository(ActivitiesApi(_apiClient));
 
   /// Direct database access for the logic that has not yet been migrated
