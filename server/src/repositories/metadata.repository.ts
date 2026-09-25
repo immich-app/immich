@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
+import { rm } from 'node:fs/promises';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 
@@ -142,6 +143,17 @@ export class MetadataRepository {
     try {
       await this.exiftool.write(path, tagsToWrite);
     } catch (error) {
+      if (String(error).includes('Temporary file already exists')) {
+        try {
+          await rm(`${path}_exiftool_tmp`, { force: true });
+          await this.exiftool.write(path, tagsToWrite);
+          return;
+        } catch (retryError) {
+          this.logger.warn(`Error writing exif data (${path}): ${retryError}`);
+          return;
+        }
+      }
+
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
   }
