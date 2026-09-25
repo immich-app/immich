@@ -58,8 +58,7 @@ const cronExpressionSchema = z
   })
   .describe('Cron expression');
 
-const emptyOrUrl = (error: string) =>
-  z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
+const emptyOrUrl = (error: string) => z.string().refine((url) => url.length === 0 || z.url().validate(url), { error });
 
 const AdminConfigIntegrityJobSchema = z
   .object({
@@ -310,7 +309,7 @@ const AdminConfigSchemaWithVisibility = z
           return value;
         }
 
-        if (!z.url().safeParse(value.mobileRedirectUri).success) {
+        if (!z.url().validate(value.mobileRedirectUri)) {
           ctx.issues.push({
             code: 'custom',
             message: 'Mobile redirect URI must be an empty string or a valid URL',

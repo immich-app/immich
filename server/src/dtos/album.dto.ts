@@ -195,7 +195,7 @@ const AlbumUserParamSchema = z.object({
   // TODO: disallow 'me' as a shortcut in v4 and type userId as uuidv4
   userId: z
     .string()
-    .refine((value) => value === 'me' || z.uuidv4().safeParse(value).success, {
+    .refine((value) => value === 'me' || z.uuidv4().validate(value), {
       error: 'Must be a UUID v4 or "me"',
     })
     .describe('Album user ID, or "me" to reference the current user.')
