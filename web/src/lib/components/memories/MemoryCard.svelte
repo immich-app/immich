@@ -10,13 +10,13 @@
 
   type MemoryCardItem = CarouselImageItem & { isSaved?: boolean; type?: MemoryType };
 
-  const { item, class: className = 'h-54' }: Props = $props();
+  const { item, class: className = '' }: Props = $props();
 
   const isBirthday = $derived(item.type === MemoryType.Birthday);
 </script>
 
 <a
-  class="relative me-2 inline-block aspect-3/4 rounded-xl shadow-sm last:me-0 max-md:h-37.5 md:me-4 md:aspect-4/3 xl:aspect-video {className}"
+  class="relative me-2 inline-block aspect-3/4 h-54 rounded-xl shadow-sm last:me-0 max-md:h-37.5 md:me-4 md:aspect-4/3 xl:aspect-video {className}"
   href={item.href}
 >
   <img class="size-full rounded-xl object-cover" src={item.src} alt={item.alt ?? item.title} draggable="false" />
