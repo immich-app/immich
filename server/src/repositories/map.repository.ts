@@ -303,6 +303,7 @@ export class MapRepository {
         admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`) ?? null,
       };
       bufferGeodata.push(geoData);
+      // eslint-disable-next-line unicorn/prefer-continue
       if (bufferGeodata.length >= 5000) {
         const curLength = bufferGeodata.length;
         futures.push(

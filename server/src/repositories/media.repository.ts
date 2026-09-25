@@ -329,14 +329,17 @@ export class MediaRepository {
       if (flags[1] !== 'D') {
         postDiscard.push({ pts, duration });
       }
-      if (flags[0] === 'K') {
-        keyframePts.push(pts);
-        keyframeAccDuration.push(totalDuration);
-        // VFR content can have variable duration keyframes,
-        // so we need to track their duration separately for accurate segment boundaries.
-        // Non-keyframes are accounted for in totalDuration.
-        keyframeOwnDuration.push(duration);
+
+      if (flags[0] !== 'K') {
+        return;
       }
+
+      keyframePts.push(pts);
+      keyframeAccDuration.push(totalDuration);
+      // VFR content can have variable duration keyframes,
+      // so we need to track their duration separately for accurate segment boundaries.
+      // Non-keyframes are accounted for in totalDuration.
+      keyframeOwnDuration.push(duration);
     };
 
     let stderr = '';
