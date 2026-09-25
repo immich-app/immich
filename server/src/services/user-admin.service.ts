@@ -54,44 +54,59 @@ export class UserAdminService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: UserAdminUpdateDto): Promise<UserAdminResponseDto> {
+    const { notify, ...userDto } = dto;
     const user = await this.findOrFail(id, {});
 
-    if (dto.isAdmin !== undefined && dto.isAdmin !== auth.user.isAdmin && auth.user.id === id) {
+    if (notify && !userDto.password) {
+      throw new BadRequestException('notify requires a new password to be set');
+    }
+
+    if (userDto.isAdmin !== undefined && userDto.isAdmin !== auth.user.isAdmin && auth.user.id === id) {
       throw new BadRequestException('Admin status can only be changed by another admin');
     }
 
-    if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
+    if (userDto.quotaSizeInBytes && user.quotaSizeInBytes !== userDto.quotaSizeInBytes) {
       await this.userRepository.syncUsage(id);
     }
 
-    if (dto.email) {
-      const duplicate = await this.userRepository.getByEmail(dto.email);
+    if (userDto.email) {
+      const duplicate = await this.userRepository.getByEmail(userDto.email);
       if (duplicate && duplicate.id !== id) {
         this.logger.debug('Email already in use by another account');
         throw new BadRequestException('Email is not available');
       }
     }
 
-    if (dto.storageLabel) {
-      const duplicate = await this.userRepository.getByStorageLabel(dto.storageLabel);
+    if (userDto.storageLabel) {
+      const duplicate = await this.userRepository.getByStorageLabel(userDto.storageLabel);
       if (duplicate && duplicate.id !== id) {
         throw new BadRequestException('Storage label already in use by another account');
       }
     }
 
-    if (dto.password) {
-      dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
+    const plainTextPassword = userDto.password;
+
+    if (userDto.password) {
+      userDto.password = await this.cryptoRepository.hashBcrypt(userDto.password, SALT_ROUNDS);
     }
 
-    if (dto.pinCode) {
-      dto.pinCode = await this.cryptoRepository.hashBcrypt(dto.pinCode, SALT_ROUNDS);
+    if (userDto.pinCode) {
+      userDto.pinCode = await this.cryptoRepository.hashBcrypt(userDto.pinCode, SALT_ROUNDS);
     }
 
-    if (dto.storageLabel === '') {
-      dto.storageLabel = null;
+    if (userDto.storageLabel === '') {
+      userDto.storageLabel = null;
     }
 
-    const updatedUser = await this.userRepository.update(id, { ...dto, updatedAt: new Date() });
+    const updatedUser = await this.userRepository.update(id, { ...userDto, updatedAt: new Date() });
+
+    if (notify && plainTextPassword) {
+      await this.eventRepository.emit('UserSignup', {
+        notify: true,
+        id: updatedUser.id,
+        password: plainTextPassword,
+      });
+    }
 
     return mapUserAdmin(updatedUser);
   }
