@@ -7,6 +7,7 @@ import { ImmichFileResponse } from 'src/utils/file.js';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
+import { PartnerFactory } from 'test/factories/partner.factory.js';
 import { PersonGroupFactory } from 'test/factories/person-group.factory.js';
 import { PersonFactory } from 'test/factories/person.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
@@ -20,6 +21,7 @@ import {
   getForDetectedFaces,
   getForFaceSearch,
   getForFacialRecognitionJob,
+  getForPartner,
 } from 'test/mappers.js';
 import { newDate, newUuid } from 'test/small.factory.js';
 import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
@@ -1399,6 +1401,26 @@ describe(PersonService.name, () => {
         partnerIds: [],
       });
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+    });
+
+    it('should only include partners that are shown in the timeline', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+      const inTimeline = UserFactory.create();
+      const notInTimeline = UserFactory.create();
+
+      mocks.person.getStatistics.mockResolvedValue({ assets: 3 });
+      mocks.partner.getAll.mockResolvedValue([
+        getForPartner(PartnerFactory.from({ inTimeline: true }).sharedBy(inTimeline).sharedWith(auth.user).build()),
+        getForPartner(PartnerFactory.from({ inTimeline: false }).sharedBy(notInTimeline).sharedWith(auth.user).build()),
+      ]);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getStatistics(auth, person.personGroupId)).resolves.toEqual({ assets: 3 });
+      expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.personGroupId, {
+        ownerId: auth.user.id,
+        partnerIds: [inTimeline.id],
+      });
     });
 
     it('should require person.read permission', async () => {

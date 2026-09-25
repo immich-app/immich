@@ -203,7 +203,11 @@ export class PersonService extends BaseService {
       ids: [{ personGroupId, ownerId: auth.user.id }],
     });
 
-    const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
     return this.personRepository.getStatistics(personGroupId, { ownerId: auth.user.id, partnerIds });
   }
 
