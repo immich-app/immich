@@ -25,7 +25,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiHeartOutline,
     $if: () => !person.isFavorite,
     onAction: () => handleFavoritePerson(person),
-    shortcuts: [{ key: 'f' }],
+    shortcuts: { key: 'f' },
   };
 
   const Unfavorite: ActionItem = {
@@ -33,7 +33,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiHeartMinusOutline,
     $if: () => !!person.isFavorite,
     onAction: () => handleUnfavoritePerson(person),
-    shortcuts: [{ key: 'f' }],
+    shortcuts: { key: 'f' },
   };
 
   const HidePerson: ActionItem = {
@@ -41,7 +41,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiEyeOffOutline,
     $if: () => !person.isHidden,
     onAction: () => handleHidePerson(person),
-    shortcuts: [{ key: 'h' }],
+    shortcuts: { key: 'h' },
   };
 
   const ShowPerson: ActionItem = {
@@ -49,7 +49,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiEyeOutline,
     $if: () => !!person.isHidden,
     onAction: () => handleShowPerson(person),
-    shortcuts: [{ key: 'h' }],
+    shortcuts: { key: 'h' },
   };
 
   return { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson };
