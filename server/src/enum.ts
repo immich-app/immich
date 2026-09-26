@@ -574,6 +574,7 @@ export const ColorspaceSchema = z.enum(Colorspace).describe('Colorspace').meta({
 export enum ImageFormat {
   Jpeg = 'jpeg',
   Webp = 'webp',
+  Avif = 'avif',
 }
 
 export const ImageFormatSchema = z.enum(ImageFormat).describe('Image format').meta({ id: 'ImageFormat' });
