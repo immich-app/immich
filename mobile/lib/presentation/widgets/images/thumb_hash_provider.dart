@@ -4,11 +4,10 @@ import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 
-class ThumbHashProvider extends CancellableImageProvider<ThumbHashProvider>
-    with CancellableImageProviderMixin<ThumbHashProvider> {
+class ThumbHashProvider extends ImageProvider<ThumbHashProvider> {
   final String thumbHash;
 
-  ThumbHashProvider({required this.thumbHash});
+  const ThumbHashProvider({required this.thumbHash});
 
   @override
   Future<ThumbHashProvider> obtainKey(ImageConfiguration configuration) {
@@ -17,12 +16,16 @@ class ThumbHashProvider extends CancellableImageProvider<ThumbHashProvider>
 
   @override
   ImageStreamCompleter loadImage(ThumbHashProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(_loadCodec(key, decode), onLastListenerRemoved: cancel);
+    final loader = ImageLoader(key);
+    return OneFramePlaceholderImageStreamCompleter(
+      _loadCodec(loader, key, decode),
+      onLastListenerRemoved: loader.cancel,
+    );
   }
 
-  Stream<ImageInfo> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) {
-    final request = this.request = ThumbhashImageRequest(thumbhash: key.thumbHash);
-    return loadRequest(request, decode, isFinal: true);
+  Stream<ImageInfo> _loadCodec(ImageLoader loader, ThumbHashProvider key, ImageDecoderCallback decode) {
+    final request = loader.request = ThumbhashImageRequest(thumbhash: key.thumbHash);
+    return loader.loadRequest(request, decode, isFinal: true);
   }
 
   @override
