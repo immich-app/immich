@@ -12,11 +12,6 @@ export interface PartnerIds {
   sharedWithId: string;
 }
 
-export enum PartnerDirection {
-  SharedBy = 'shared-by',
-  SharedWith = 'shared-with',
-}
-
 const withSharedBy = (eb: ExpressionBuilder<DB, 'partner'>) => {
   return jsonObjectFrom(
     eb.selectFrom('user as sharedBy').select(columns.user).whereRef('sharedBy.id', '=', 'partner.sharedById'),

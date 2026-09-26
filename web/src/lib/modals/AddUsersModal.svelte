@@ -1,9 +1,8 @@
 <script lang="ts">
   import { initInput } from '$lib/actions/focus';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { handleAddUsersToAlbum } from '$lib/services/album.service';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { searchUsers, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { searchUsers, type UserResponseDto } from '@immich/sdk';
   import { FormModal, ListButton, LoadingSpinner, Stack, Text } from '@immich/ui';
   import { sortBy } from 'lodash-es';
   import { onMount } from 'svelte';
@@ -11,16 +10,24 @@
   import { SvelteMap } from 'svelte/reactivity';
 
   type Props = {
-    album: AlbumResponseDto;
+    excludedUserIds: string[];
+    emptyMessage?: string;
+    onAddUsers: (users: UserResponseDto[]) => Promise<boolean | undefined>;
+    loadUsers?: () => Promise<UserResponseDto[]>;
     onClose: () => void;
   };
 
   let search = $state('');
 
-  const { album, onClose }: Props = $props();
+  const {
+    excludedUserIds,
+    emptyMessage = $t('album_share_no_users'),
+    onAddUsers,
+    loadUsers = searchUsers,
+    onClose,
+  }: Props = $props();
 
   let users: UserResponseDto[] = $state([]);
-  const excludedUserIds = $derived(album.albumUsers.map(({ user: { id } }) => id));
   const filteredUsers = $derived(
     sortBy(
       users.filter(
@@ -43,14 +50,14 @@
   };
 
   const onSubmit = async () => {
-    const success = await handleAddUsersToAlbum(album, [...selectedUsers.values()]);
+    const success = await onAddUsers([...selectedUsers.values()]);
     if (success) {
       onClose();
     }
   };
 
   onMount(async () => {
-    users = await searchUsers();
+    users = await loadUsers();
     loading = false;
   });
 </script>
@@ -84,7 +91,7 @@
           </div>
         </ListButton>
       {:else}
-        <Text class="py-6">{$t('album_share_no_users')}</Text>
+        <Text class="py-6">{emptyMessage}</Text>
       {/each}
     </Stack>
   {/if}

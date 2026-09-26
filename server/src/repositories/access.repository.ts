@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { type Kysely, type NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
+import { PersonUserRole } from 'src/dtos/person.dto.js';
 import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
+import { PersonId } from 'src/repositories/person.repository.js';
 import { DB } from 'src/schema/index.js';
 import { asUuid } from 'src/utils/database.js';
 
@@ -519,20 +521,54 @@ class ClusterGroupRequestAccess {
 class PersonAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, [PersonUserRole.Admin]] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, personGroupIds: Set<string>) {
-    if (personGroupIds.size === 0) {
-      return new Set<string>();
+  async checkAccess(userId: string, personIds: Set<PersonId>, roles: PersonUserRole[]) {
+    if (personIds.size === 0 || roles.length === 0) {
+      return new Set<PersonId>();
     }
 
+    const personGroupIds = personIds
+      .values()
+      .map(({ personGroupId }) => personGroupId)
+      .toArray();
+    const ownerIds = personIds
+      .values()
+      .map(({ ownerId }) => ownerId)
+      .toArray();
+
     return this.db
-      .selectFrom('person')
-      .select('person.personGroupId')
-      .where('person.personGroupId', 'in', [...personGroupIds])
-      .where('person.ownerId', '=', userId)
+      .selectFrom(
+        sql<{ personGroupId: string; ownerId: string }>`(
+      select
+        unnest(${personGroupIds}::uuid[]) as "personGroupId",
+        unnest(${ownerIds}::uuid[]) as "ownerId"
+    )`.as('people'),
+      )
+      .select(['personGroupId', 'ownerId'])
+      .where((eb) =>
+        eb.or([
+          eb.exists(
+            eb
+              .selectFrom('person')
+              .whereRef('people.personGroupId', '=', 'person.personGroupId')
+              .whereRef('people.ownerId', '=', 'person.ownerId')
+              .where('person.ownerId', '=', userId)
+              .selectAll(),
+          ),
+          eb.exists(
+            eb
+              .selectFrom('person_user')
+              .where('person_user.sharedWithId', '=', userId)
+              .where('person_user.role', 'in', roles)
+              .whereRef('people.personGroupId', '=', 'person_user.personGroupId')
+              .whereRef('people.ownerId', '=', 'person_user.sharedById')
+              .selectAll(),
+          ),
+        ]),
+      )
       .execute()
-      .then((persons) => new Set(persons.map((person) => person.personGroupId)));
+      .then((items) => new Set(items));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
