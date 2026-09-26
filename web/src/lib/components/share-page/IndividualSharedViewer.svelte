@@ -22,6 +22,7 @@
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/GalleryViewer.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -65,13 +66,18 @@
 
   const handleAction = async (action: Action) => {
     switch (action.type) {
-      case AssetAction.ARCHIVE:
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
+      case AssetAction.ARCHIVE: {
         await goto(Route.photos());
         break;
       }
       // no default
+    }
+  };
+
+  const onAssetsDelete = async (assetIds: string[]) => {
+    // Only used for single asset shared link
+    if (assetIds.includes(assets[0].id)) {
+      await goto(Route.photos());
     }
   };
 </script>
@@ -134,6 +140,8 @@
     {/if}
   </header>
 {:else if assets.length === 1}
+  <OnEvents {onAssetsDelete} />
+
   {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
     {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
       <AssetViewer cursor={{ current: asset }} onAction={handleAction} />

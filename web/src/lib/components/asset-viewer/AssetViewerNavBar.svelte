@@ -2,9 +2,7 @@
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import ArchiveAction from '$lib/components/asset-viewer/actions/ArchiveAction.svelte';
-  import DeleteAction from '$lib/components/asset-viewer/actions/DeleteAction.svelte';
   import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
-  import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
   import LoadingDots from '$lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
@@ -17,7 +15,6 @@
   import { getPersonAssetActions } from '$lib/services/person.service';
   import { getStackActions } from '$lib/services/stack.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
-  import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
@@ -38,7 +35,6 @@
     stack?: StackResponseDto;
     preAction: PreAction;
     onAction: OnAction;
-    onUndoDelete?: OnUndoDelete;
     onClose?: () => void;
     isPlayingOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -51,7 +47,6 @@
     stack,
     preAction,
     onAction,
-    onUndoDelete = undefined,
     onClose,
     isPlayingOriginalVideo = false,
     setPlayOriginalVideo,
@@ -122,10 +117,8 @@
     {/if}
 
     <ActionButton action={Actions.Edit} />
-
-    {#if isOwner}
-      <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
-    {/if}
+    <ActionButton action={Actions.Delete} />
+    <ActionButton action={Actions.PermanentlyDelete} />
 
     {#if !sharedLink}
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
@@ -133,10 +126,7 @@
 
         <ActionMenuItem action={Actions.Download} />
         <ActionMenuItem action={Actions.DownloadOriginal} />
-
-        {#if !isLocked && asset.isTrashed}
-          <RestoreAction {asset} {onAction} />
-        {/if}
+        <ActionMenuItem action={Actions.Restore} />
 
         <ActionMenuItem action={Actions.AddToAlbum} />
         <ActionMenuItem action={Actions.RemoveFromAlbum} />
