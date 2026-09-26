@@ -47,7 +47,6 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     unawaited(
       completer.operation.valueOrCancellation().whenComplete(() {
         cachedStream.removeListener(listener);
-        cachedOperation = null;
       }),
     );
     cachedOperation = completer.operation;
