@@ -235,7 +235,7 @@
         timelineAlbumId: albumId,
       };
     }
-    return { albumId, order: album.order };
+    return { albumId, order: album.order, withStacked: true };
   });
 
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 1);
