@@ -245,7 +245,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         return;
       }
       if (neighbor is RemoteAsset && neighbor.isImage) {
-        ref.read(castProvider.notifier).prepareMedia(neighbor);
         if (index < selectedPage) {
           previous = neighbor;
         } else {

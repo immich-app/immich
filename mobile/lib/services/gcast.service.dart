@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/gcast.repository.dart';
 import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -18,11 +19,16 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final gCastServiceProvider = Provider(
-  (ref) => GCastService(
-    ref.watch(gCastRepositoryProvider),
-    ref.watch(sessionsAPIRepositoryProvider),
-    () async => (await ref.read(serverInfoServiceProvider).getServerConfig())?.castReceiverAppId ?? '',
-  ),
+  (ref) => GCastService(ref.watch(gCastRepositoryProvider), ref.watch(sessionsAPIRepositoryProvider), () async {
+    final config = ref.read(appConfigProvider);
+    if (!config.castEnabled) {
+      throw StateError('Google Cast is disabled');
+    }
+    final override = config.castReceiverAppId.trim();
+    return override.isNotEmpty
+        ? override
+        : (await ref.read(serverInfoServiceProvider).getServerConfig())?.castReceiverAppId ?? '';
+  }),
 );
 
 class GCastService {
@@ -49,7 +55,6 @@ class GCastService {
   final Map<String, Future<String>> _mimeTypes = {};
   int _selectionGeneration = 0;
   int _credentialGeneration = 0;
-  bool _customReceiver = false;
   RemoteAsset? _selectedPhoto;
   RemoteAsset? _previousPhoto;
   RemoteAsset? _nextPhoto;
@@ -92,9 +97,11 @@ class GCastService {
       return;
     }
     _hardwareVolumeKeysActive = active;
-    unawaited(_volumeChannel.invokeMethod<void>('setActive', active).catchError((Object error) {
-      _log.fine('Unable to route volume keys to Cast', error);
-    }));
+    unawaited(
+      _volumeChannel.invokeMethod<void>('setActive', active).catchError((Object error) {
+        _log.fine('Unable to route volume keys to Cast', error);
+      }),
+    );
   }
 
   void changeReceiverVolume(int direction) {
@@ -167,7 +174,6 @@ class GCastService {
       sessionKey = null;
       _sessionFuture = null;
       _mediaStatusPollingTimer?.cancel();
-      _customReceiver = false;
       _selectedPhoto = null;
       _previousPhoto = null;
       _nextPhoto = null;
@@ -274,8 +280,10 @@ class GCastService {
 
   Future<void> connect(dynamic device) async {
     final appId = (await _getReceiverAppId()).trim();
+    if (appId.isEmpty) {
+      throw StateError('Configure an Immich Cast receiver application ID before casting');
+    }
     await _gCastRepository.connect(device, appId);
-    _customReceiver = appId.isNotEmpty;
     isConnected = true;
     _updateHardwareVolumeKeys();
     onConnectionState?.call(true);
@@ -295,7 +303,6 @@ class GCastService {
     _credentialGeneration++;
     sessionKey = null;
     _sessionFuture = null;
-    _customReceiver = false;
     _selectedPhoto = null;
     _previousPhoto = null;
     _nextPhoto = null;
@@ -353,10 +360,7 @@ class GCastService {
     return _mimeTypes.putIfAbsent(url, () async {
       try {
         final uri = Uri.parse(url);
-        final authenticated = uri.replace(queryParameters: {
-          ...uri.queryParameters,
-          'sessionKey': token,
-        });
+        final authenticated = uri.replace(queryParameters: {...uri.queryParameters, 'sessionKey': token});
         final response = await http.head(authenticated, headers: ApiService.getRequestHeaders());
         final contentType = response.headers['content-type']?.split(';').first;
         if (response.statusCode < 200 || response.statusCode >= 300 || contentType == null) {
@@ -375,26 +379,6 @@ class GCastService {
     return getThumbnailUrlForRemoteId(asset.id, type: size, edited: asset.isEdited, thumbhash: revision);
   }
 
-  Future<(String, String)> _resolveSource(RemoteAsset asset, String url, String token) async {
-    try {
-      return (url, await _getMimeType(url, token));
-    } catch (_) {
-      if (asset.isVideo) {
-        rethrow;
-      }
-      final thumbnailUrl = _getPhotoUrl(asset, AssetMediaSize.thumbnail);
-      return (thumbnailUrl, await _getMimeType(thumbnailUrl, token));
-    }
-  }
-
-  Future<void> prepareMedia(RemoteAsset asset) async {
-    if (!isConnected || !asset.isImage || _customReceiver) {
-      return;
-    }
-    final session = await _getSession();
-    await _resolveSource(asset, _getPhotoUrl(asset, AssetMediaSize.preview), session.token);
-  }
-
   Future<void> loadMedia(RemoteAsset asset, bool reload) async {
     if (!isConnected) {
       return;
@@ -407,27 +391,29 @@ class GCastService {
 
     final generation = ++_selectionGeneration;
     final selectedAt = DateTime.now();
-    final unauthenticatedUrl =
-        asset.isVideo ? getPlaybackUrlForRemoteId(asset.id) : _getPhotoUrl(asset, AssetMediaSize.preview);
+    final unauthenticatedUrl = asset.isVideo
+        ? getPlaybackUrlForRemoteId(asset.id)
+        : _getPhotoUrl(asset, AssetMediaSize.preview);
     if ((_currentSourceUrl == unauthenticatedUrl || _pendingSourceUrl == unauthenticatedUrl) && !reload) {
       return;
     }
 
-    _selectedPhoto = _customReceiver && asset.isImage ? asset : null;
+    _selectedPhoto = asset.isImage ? asset : null;
     _previousPhoto = null;
     _nextPhoto = null;
 
     final session = await _getSession();
     final (resolvedUrl, mimeType) = _selectedPhoto != null
         ? (unauthenticatedUrl, 'image/*')
-        : await _resolveSource(asset, unauthenticatedUrl, session.token);
+        : (unauthenticatedUrl, await _getMimeType(unauthenticatedUrl, session.token));
     if (generation != _selectionGeneration || !isConnected) {
       return;
     }
     _log.fine('Cast selection to media ready: ${DateTime.now().difference(selectedAt).inMilliseconds} ms');
     final uri = Uri.parse(resolvedUrl);
-    final authenticatedURL =
-        uri.replace(queryParameters: {...uri.queryParameters, 'sessionKey': session.token}).toString();
+    final authenticatedURL = uri
+        .replace(queryParameters: {...uri.queryParameters, 'sessionKey': session.token})
+        .toString();
 
     _pendingAssetId = asset.id;
     _pendingSourceUrl = unauthenticatedUrl;
@@ -447,28 +433,19 @@ class GCastService {
         "streamType": "BUFFERED",
         "contentType": mimeType,
         "contentUrl": authenticatedURL,
-        if (_customReceiver) "customData": {"immichLoop": true},
+        "customData": {"immichLoop": true},
       };
-      if (asset.isVideo) {
-        _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-          "type": "QUEUE_LOAD",
-          "requestId": _pendingRequestId,
-          "items": [
-            {"media": media, "autoplay": true},
-          ],
-          "repeatMode": "REPEAT_SINGLE",
-          "startIndex": 0,
-        });
-        _castingVideo = true;
-        _updateHardwareVolumeKeys();
-      } else {
-        _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-          'type': 'LOAD',
-          'requestId': _pendingRequestId,
-          'media': media,
-          'autoplay': true,
-        });
-      }
+      _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+        "type": "QUEUE_LOAD",
+        "requestId": _pendingRequestId,
+        "items": [
+          {"media": media, "autoplay": true},
+        ],
+        "repeatMode": "REPEAT_SINGLE",
+        "startIndex": 0,
+      });
+      _castingVideo = true;
+      _updateHardwareVolumeKeys();
     } catch (_) {
       _clearPending();
       rethrow;
@@ -477,17 +454,8 @@ class GCastService {
     // we need to poll for media status since the cast device does not
     // send a message when the media is loaded for whatever reason
     _mediaStatusPollingTimer?.cancel();
-    if (!asset.isVideo && _pendingCastUrl == null) {
-      return;
-    }
-    var photoPollCount = 0;
     _mediaStatusPollingTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (isConnected) {
-        if (!asset.isVideo && ++photoPollCount > 30) {
-          _clearPending();
-          timer.cancel();
-          return;
-        }
         final request = <String, dynamic>{"type": "GET_STATUS"};
         if (_pendingCastUrl == null && _sessionId != null) {
           request['mediaSessionId'] = _sessionId;
@@ -500,9 +468,9 @@ class GCastService {
   }
 
   Map<String, String> _photoSource(RemoteAsset asset, String token) => {
-        'url': _withSession(_getPhotoUrl(asset, AssetMediaSize.preview), token),
-        'fallbackUrl': _withSession(_getPhotoUrl(asset, AssetMediaSize.thumbnail), token),
-      };
+    'url': _withSession(_getPhotoUrl(asset, AssetMediaSize.preview), token),
+    'fallbackUrl': _withSession(_getPhotoUrl(asset, AssetMediaSize.thumbnail), token),
+  };
 
   String _withSession(String url, String token) {
     final uri = Uri.parse(url);
@@ -527,7 +495,7 @@ class GCastService {
   }
 
   void setPhotoNeighbors(RemoteAsset current, RemoteAsset? previous, RemoteAsset? next) {
-    if (!_customReceiver || !isConnected || _selectedPhoto?.id != current.id) {
+    if (!isConnected || _selectedPhoto?.id != current.id) {
       return;
     }
     _previousPhoto = previous;
@@ -557,7 +525,7 @@ class GCastService {
   void stop() {
     _castingVideo = false;
     _updateHardwareVolumeKeys();
-    if (_customReceiver && _selectedPhoto != null) {
+    if (_selectedPhoto != null) {
       _gCastRepository.sendMessage(photoNamespace, {'type': 'CLEAR_PHOTO'});
     } else {
       _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "STOP", "mediaSessionId": _sessionId});
@@ -576,6 +544,9 @@ class GCastService {
   bool isDisplay(int ca) => (ca & 0x01) != 0;
 
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
+    if ((await _getReceiverAppId()).trim().isEmpty) {
+      throw StateError('Configure an Immich Cast receiver application ID before casting');
+    }
     final dests = await _gCastRepository.listDestinations();
 
     return dests

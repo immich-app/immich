@@ -55,18 +55,14 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   void loadMedia(RemoteAsset asset, bool reload) {
-    unawaited(_gCastService.loadMedia(asset, reload).catchError((Object error, StackTrace stack) {
-      _log.warning('Unable to cast media', error, stack);
-      if (mounted) {
-        state = state.copyWith(castState: CastState.idle);
-      }
-    }));
-  }
-
-  void prepareMedia(RemoteAsset asset) {
-    unawaited(_gCastService.prepareMedia(asset).catchError((Object error, StackTrace stack) {
-      _log.fine('Unable to prepare adjacent Cast media', error, stack);
-    }));
+    unawaited(
+      _gCastService.loadMedia(asset, reload).catchError((Object error, StackTrace stack) {
+        _log.warning('Unable to cast media', error, stack);
+        if (mounted) {
+          state = state.copyWith(castState: CastState.idle);
+        }
+      }),
+    );
   }
 
   void setPhotoNeighbors(RemoteAsset current, RemoteAsset? previous, RemoteAsset? next) {

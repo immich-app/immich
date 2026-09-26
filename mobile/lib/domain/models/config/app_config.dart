@@ -30,6 +30,8 @@ abstract class AppConfig with _$AppConfig {
   const AppConfig._();
 
   const factory AppConfig({
+    @Default(false) bool castEnabled,
+    @Default('') String castReceiverAppId,
     @Default(LogLevel.info) LogLevel logLevel,
     @Default(ThemeConfig()) ThemeConfig theme,
     @Default(CleanupConfig()) CleanupConfig cleanup,
@@ -47,6 +49,8 @@ abstract class AppConfig with _$AppConfig {
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
+            .castEnabled => castEnabled,
+            .castReceiverAppId => castReceiverAppId,
             .logLevel => logLevel,
             .themePrimaryColor => theme.primaryColor,
             .themeMode => theme.mode,
@@ -101,6 +105,8 @@ abstract class AppConfig with _$AppConfig {
 
   AppConfig write<T, U extends T>(SettingsKey<T> key, U value) {
     return switch (key) {
+      .castEnabled => copyWith(castEnabled: value as bool),
+      .castReceiverAppId => copyWith(castReceiverAppId: value as String),
       .logLevel => copyWith(logLevel: value as LogLevel),
       .themePrimaryColor => copyWith(theme: theme.copyWith(primaryColor: value as ImmichColorPreset)),
       .themeMode => copyWith(theme: theme.copyWith(mode: value as ThemeMode)),

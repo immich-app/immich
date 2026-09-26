@@ -6,7 +6,11 @@ Immich supports Google's Cast protocol so that photos and videos can be cast to 
 
 Google Cast support is disabled by default. The web UI uses Google-provided scripts and must retrieve them from Google servers when the page loads. This is a privacy concern for some and is thus opt-in.
 
-You can enable Google Cast support on the web frontend through `Account Settings > Features > Cast > Google Cast`
+Configure `IMMICH_CAST_RECEIVER_APP_ID` on the server with your registered Immich custom receiver application ID, then restart the server. Both clients read this setting. Casting requires a custom receiver; there is no default receiver fallback. See [receiver setup](../developer/casting.md#configure-the-custom-receiver).
+
+Enable casting on the web through `Account Settings > Features > Cast > Google Cast`, or on mobile through `Settings > Cast > Enable Google Cast on this device`. The mobile setting applies to this device independently of the web preference.
+
+Both settings screens also provide a local receiver application ID override for development and troubleshooting. Clear it to use the configured receiver again.
 
 <img src={require('./img/gcast-enable.webp').default} width="70%" title='Enable Google Cast Support' />
 

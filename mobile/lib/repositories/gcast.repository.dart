@@ -11,7 +11,6 @@ final gCastRepositoryProvider = Provider((_) {
 });
 
 class GCastRepository {
-  static const defaultReceiverAppId = 'CC1AD845';
   CastSession? _castSession;
   String? _activeTransportId;
   String? _activeAppSessionId;
@@ -22,10 +21,13 @@ class GCastRepository {
   GCastRepository();
 
   Future<void> connect(CastDevice device, String customReceiverAppId) async {
+    final appId = customReceiverAppId.trim();
+    if (appId.isEmpty) {
+      throw StateError('An Immich Cast receiver application ID is required');
+    }
     _castSession = await CastSessionManager().startSession(device);
     _activeTransportId = null;
     _activeAppSessionId = null;
-    final appId = customReceiverAppId.isEmpty ? defaultReceiverAppId : customReceiverAppId;
     final launched = Completer<void>();
 
     _castSession?.stateStream.listen((state) {
@@ -49,7 +51,11 @@ class GCastRepository {
                 // The cast package keeps the first app transport it sees. A
                 // receiver switch needs a new virtual connection to this app.
                 _castSession?.socket.sendMessage(
-                    CastSession.kNamespaceConnection, _castSession!.sessionId, transportId, {'type': 'CONNECT'});
+                  CastSession.kNamespaceConnection,
+                  _castSession!.sessionId,
+                  transportId,
+                  {'type': 'CONNECT'},
+                );
               }
               if (!launched.isCompleted) {
                 launched.complete();

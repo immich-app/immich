@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/cast.action.dart';
 import 'package:mocktail/mocktail.dart';
@@ -11,6 +12,7 @@ void main() {
 
   setUp(() async {
     context = await PresentationContext.create();
+    await SettingsRepository.instance.write(.castEnabled, true);
   });
 
   tearDown(() async {
@@ -21,6 +23,12 @@ void main() {
       verify(() => context.service.cast.onConnectionState = captureAny()).captured.single as void Function(bool);
 
   group('CastAction', () {
+    testWidgets('hides casting when disabled on this device', (tester) async {
+      await SettingsRepository.instance.write(.castEnabled, false);
+      await tester.pumpTestWidget(context, const ActionIconButton(action: CastAction()));
+      expect(find.byIcon(Icons.cast_rounded), findsNothing);
+    });
+
     testWidgets('offers to cast when nothing is connected', (tester) async {
       await tester.pumpTestWidget(context, const ActionIconButton(action: CastAction()));
 

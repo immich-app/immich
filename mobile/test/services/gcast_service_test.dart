@@ -5,16 +5,21 @@ import 'package:cast/session.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/gcast.repository.dart';
 import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../unit/factories/remote_asset_factory.dart';
@@ -39,6 +44,8 @@ class _RecordingCastRepository extends GCastRepository {
 
 class _MockSessionsAPIRepository extends Mock implements SessionsAPIRepository {}
 
+class _MockServerInfoService extends Mock implements ServerInfoService {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -55,8 +62,9 @@ void main() {
     store = await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
-      request.response.headers.contentType =
-          request.uri.path.contains('/video/') ? ContentType('video', 'mp4') : ContentType('image', 'jpeg');
+      request.response.headers.contentType = request.uri.path.contains('/video/')
+          ? ContentType('video', 'mp4')
+          : ContentType('image', 'jpeg');
       await request.response.close();
     });
     await Store.put(StoreKey.serverEndpoint, 'http://127.0.0.1:${server.port}/api');
@@ -182,12 +190,64 @@ void main() {
     expect(repository.messages, hasLength(count));
   });
 
-  test('default receiver keeps the direct photo load protocol', () async {
-    await connect('');
-    await service.loadMedia(RemoteAssetFactory.create(id: 'photo'), false);
+  for (final appId in ['', '   ']) {
+    test('refuses to connect without a custom receiver ID ($appId)', () async {
+      await expectLater(connect(appId), throwsStateError);
+      expect(repository.launchedAppId, isNull);
+      expect(service.isConnected, isFalse);
+      expect(repository.messages, isEmpty);
+    });
+  }
 
-    expect(repository.launchedAppId, '');
-    expect(repository.messages.single.$1, CastSession.kNamespaceMedia);
-    expect(repository.messages.single.$2['type'], 'LOAD');
+  test('trims the configured custom receiver ID', () async {
+    await connect(' A2AE3577 ');
+    expect(repository.launchedAppId, 'A2AE3577');
+  });
+  group('client configuration', () {
+    Future<void> useConfig(AppConfig config) async {
+      repository = _RecordingCastRepository();
+      final serverInfo = _MockServerInfoService();
+      when(serverInfo.getServerConfig).thenAnswer(
+        (_) async => const ServerConfig(
+          castReceiverAppId: 'SERVER01',
+          trashDays: 30,
+          oauthButtonText: '',
+          externalDomain: '',
+          mapDarkStyleUrl: '',
+          mapLightStyleUrl: '',
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          gCastRepositoryProvider.overrideWithValue(repository),
+          sessionsAPIRepositoryProvider.overrideWithValue(_MockSessionsAPIRepository()),
+          serverInfoServiceProvider.overrideWithValue(serverInfo),
+        ],
+      );
+      addTearDown(container.dispose);
+      service = container.read(gCastServiceProvider);
+      await service.connect(device);
+    }
+
+    test('uses the server receiver by default', () async {
+      await useConfig(const AppConfig(castEnabled: true));
+      expect(repository.launchedAppId, 'SERVER01');
+    });
+
+    test('local override wins over the server receiver', () async {
+      await useConfig(const AppConfig(castEnabled: true, castReceiverAppId: ' LOCAL001 '));
+      expect(repository.launchedAppId, 'LOCAL001');
+    });
+
+    test('clearing the override restores the server receiver', () async {
+      await useConfig(const AppConfig(castEnabled: true, castReceiverAppId: '   '));
+      expect(repository.launchedAppId, 'SERVER01');
+    });
+
+    test('casting is disabled by default', () async {
+      await expectLater(useConfig(const AppConfig()), throwsStateError);
+      expect(repository.launchedAppId, isNull);
+    });
   });
 }

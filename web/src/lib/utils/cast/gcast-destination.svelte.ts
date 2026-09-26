@@ -8,15 +8,20 @@ import {
   type ICastDestination,
 } from '$lib/managers/cast-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
 import { withCastSession } from '$lib/utils/cast/cast-url';
 import { createPhotoMessage, isPhotoReceiver, PHOTO_NAMESPACE } from '$lib/utils/cast/photo-message';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-const BUILD_RECEIVER_APP_ID = import.meta.env.VITE_IMMICH_CAST_RECEIVER_APP_ID as string | undefined;
 
 export class GCastDestination implements ICastDestination {
   private get customReceiverAppId(): string | undefined {
-    return serverConfigManager.value.castReceiverAppId || BUILD_RECEIVER_APP_ID;
+    return (
+      userPreferencesManager.castReceiverAppId.trim() ||
+      (import.meta.env.VITE_IMMICH_CAST_RECEIVER_APP_ID as string | undefined)?.trim() ||
+      serverConfigManager.value.castReceiverAppId.trim() ||
+      undefined
+    );
   }
   type = CastDestinationType.GCAST;
   isAvailable = $state<boolean>(false);
@@ -64,6 +69,12 @@ export class GCastDestination implements ICastDestination {
       return false;
     }
 
+    const receiverAppId = this.customReceiverAppId;
+    if (!receiverAppId) {
+      this.isAvailable = false;
+      return false;
+    }
+
     // this is a really messy way since google does a pseudo-callbak
     // in the form of a global window event. We will give Chrome 3 seconds to respond
     // or we will mark the destination as unavailable
@@ -106,7 +117,7 @@ export class GCastDestination implements ICastDestination {
     this.remotePlayer = new cast.framework.RemotePlayer();
 
     castContext.setOptions({
-      receiverApplicationId: this.customReceiverAppId || chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+      receiverApplicationId: receiverAppId,
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
 
@@ -131,7 +142,7 @@ export class GCastDestination implements ICastDestination {
       return Promise.resolve(source.contentType);
     }
 
-    if (source.kind === 'photo' && this.session && isPhotoReceiver(this.session.appId, this.customReceiverAppId)) {
+    if (source.kind === 'photo') {
       // The custom receiver decodes the image itself and falls back to the thumbnail if preview loading fails.
       return Promise.resolve('image/*');
     }
@@ -162,12 +173,14 @@ export class GCastDestination implements ICastDestination {
     }
 
     const activeSession = this.session;
-    const customPhotoReceiver = isPhotoReceiver(activeSession.appId, this.customReceiverAppId);
+    if (!isPhotoReceiver(activeSession.appId, this.customReceiverAppId)) {
+      throw new Error('Google Cast session is not using the configured Immich receiver');
+    }
     const photoSignature = [source.url, source.neighbors?.previous?.url, source.neighbors?.next?.url].join('|');
     if (
       this.loadedUrl === source.url &&
       !reload &&
-      (!customPhotoReceiver || !source.neighbors || this.loadedPhotoSignature === photoSignature)
+      (!source.neighbors || this.loadedPhotoSignature === photoSignature)
     ) {
       return false;
     }
@@ -177,7 +190,7 @@ export class GCastDestination implements ICastDestination {
       return false;
     }
 
-    if (customPhotoReceiver && contentType.startsWith('image/')) {
+    if (contentType.startsWith('image/')) {
       const requestId = ++this.photoRequestId;
       await new Promise<void>((resolve, reject) => {
         activeSession.sendMessage(
@@ -196,7 +209,7 @@ export class GCastDestination implements ICastDestination {
     }
 
     const mediaInfo = new chrome.cast.media.MediaInfo(withCastSession(source.url, sessionKey), contentType);
-    if (customPhotoReceiver && contentType.startsWith('video/')) {
+    if (contentType.startsWith('video/')) {
       mediaInfo.customData = { immichLoop: true };
     }
 
@@ -301,7 +314,13 @@ export class GCastDestination implements ICastDestination {
         if (this.session && isPhotoReceiver(this.session.appId, this.customReceiverAppId)) {
           this.session?.removeMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
         }
-        this.session = event.session.getSessionObj();
+        const session = event.session.getSessionObj();
+        if (!isPhotoReceiver(session.appId, this.customReceiverAppId)) {
+          this.session = null;
+          this.isConnected = false;
+          return;
+        }
+        this.session = session;
         if (isPhotoReceiver(this.session.appId, this.customReceiverAppId)) {
           this.session.addMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
         }

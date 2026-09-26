@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
+  import { castManager } from '$lib/managers/cast-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetOrder, updateMyPreferences } from '@immich/sdk';
-  import { Button, Field, NumberInput, Select, Switch, toastManager } from '@immich/ui';
+  import { Button, Field, Input, NumberInput, Select, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -39,6 +41,8 @@
   // Cast
   let gCastEnabled = $state(authManager.preferences.cast?.gCastEnabled ?? false);
 
+  let castReceiverAppId = $state(userPreferencesManager.castReceiverAppId);
+
   // Recently added
   let recentlyAddedSidebar = $state(authManager.preferences.recentlyAdded?.sidebarWeb ?? false);
 
@@ -58,7 +62,15 @@
         },
       });
 
+      const castChanged =
+        gCastEnabled !== authManager.preferences.cast.gCastEnabled ||
+        castReceiverAppId.trim() !== userPreferencesManager.castReceiverAppId;
+      userPreferencesManager.castReceiverAppId = castReceiverAppId;
       authManager.setPreferences(response);
+      if (castChanged) {
+        castManager.disconnect();
+        location.reload();
+      }
       toastManager.primary($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
@@ -178,6 +190,15 @@
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
             </Field>
+            <Field
+              label={$t('cast_receiver_app_id_override')}
+              description={$t('cast_receiver_app_id_override_description')}
+            >
+              <Input bind:value={castReceiverAppId} placeholder={serverConfigManager.value.castReceiverAppId} />
+            </Field>
+            {#if !castReceiverAppId.trim() && !serverConfigManager.value.castReceiverAppId.trim() && !import.meta.env.VITE_IMMICH_CAST_RECEIVER_APP_ID?.trim()}
+              <p>{$t('cast_receiver_not_configured')}</p>
+            {/if}
           </div>
         </SettingAccordion>
 
