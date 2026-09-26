@@ -316,12 +316,17 @@ class NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widge
   Widget build(BuildContext context) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final status = ref.watch(videoPlayerProvider(widget.asset.id).select((v) => v.status));
+    // https://github.com/flutter/flutter/issues/97499: iOS platform views are only disposed in frames containing platform views, or on
+    // the first frame after a platform view disappears. Animating this view away uses those disppearing frames. Instead, forcibly remove
+    // the view from the tree when we start a route transition, which has the side effect of properly ordering the `dispose`
+    final isRouteActive = ModalRoute.of(context)?.isActive ?? true;
+    final showPlayer = !isCasting && isRouteActive;
 
     return IgnorePointer(
       child: Stack(
         children: [
-          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Positioned.fill(child: widget.image),
-          if (!isCasting) ...[
+          if (!_isVideoReady || widget.asset.isMotionPhoto || !showPlayer) Positioned.fill(child: widget.image),
+          if (showPlayer) ...[
             Visibility.maintain(
               visible: _isVideoReady,
               child: NativeVideoPlayerView(onViewReady: _initController),
