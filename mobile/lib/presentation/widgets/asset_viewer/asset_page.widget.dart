@@ -15,6 +15,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.wi
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_overlay.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/panorama_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/progressive_image.widget.dart';
@@ -375,7 +376,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           tightMode: true,
           enablePanAlways: true,
           maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
-          disableScaleGestures: _showingDetails,
+          disableScaleGestures: _showingDetails || isPanorama(ref, asset),
           scaleStateChangedCallback: _onScaleStateChanged,
           onPageBuild: _onPageBuild,
           onDragStart: _onDragStart,
@@ -492,6 +493,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     remoteThumbnailSize: thumbnailSize,
                   ),
                 ),
+                PanoramaButton(asset: displayAsset, controller: _viewController),
                 if (showingOcr && displayAsset.width != null && displayAsset.height != null)
                   Positioned.fill(
                     child: OcrOverlay(
