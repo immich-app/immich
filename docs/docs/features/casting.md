@@ -6,11 +6,11 @@ Immich supports Google's Cast protocol so that photos and videos can be cast to 
 
 Google Cast support is disabled by default. The web UI uses Google-provided scripts and must retrieve them from Google servers when the page loads. This is a privacy concern for some and is thus opt-in.
 
-Configure `IMMICH_CAST_RECEIVER_APP_ID` on the server with your registered Immich custom receiver application ID, then restart the server. Both clients read this setting. Casting requires a custom receiver; there is no default receiver fallback. See [receiver setup](../developer/casting.md#configure-the-custom-receiver).
+Casting requires a custom receiver application ID. See [receiver setup](../developer/casting.md#local-development).
 
-Enable casting on the web through `Account Settings > Features > Cast > Google Cast`, or on mobile through `Settings > Cast > Enable Google Cast on this device`. The mobile setting applies to this device independently of the web preference.
+Enable casting on the web through `Account Settings > Features > Cast > Google Cast`, or on mobile through `Settings > Cast > Enable Google Cast on this device`. You need to enable this setting on every client you want to cast from; it does not carry across devices.
 
-Both settings screens also provide a local receiver application ID override for development and troubleshooting. Clear it to use the configured receiver again.
+The web and mobile settings screens provide local receiver application ID overrides for development and troubleshooting. Set an ID in each client where you want to cast; these overrides are not sent to the server.
 
 <img src={require('./img/gcast-enable.webp').default} width="70%" title='Enable Google Cast Support' />
 
@@ -18,7 +18,7 @@ Both settings screens also provide a local receiver application ID override for 
 
 To use casting with Immich, there are a few prerequisites:
 
-1. Your instance must be accessed via an HTTPS connection in order for the casting menu to show.
+1. Your Immich instance must be accessed via HTTPS using a real TLS certificate. Self-signed certificates are not supported by the Google Cast SDK.
 2. Your Cast device must be able to reach your instance over HTTPS and resolve its hostname.
-3. Videos must be in a format that is compatible with Google Cast. For more info, check out [Google's documentation](https://developers.google.com/cast/docs/media)
-4. Real-time HLS transcoding is used for local web playback, but Cast video currently uses a direct playback URL. Cast-compatible HLS authentication and controls are still being developed.
+
+If you have a proxy or authentication in front of your instance, casting will not work. If you are able, try exempting the cast device from the authentication proxy.

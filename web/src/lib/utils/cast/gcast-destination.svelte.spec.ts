@@ -3,14 +3,12 @@ import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 
 const mocks = vi.hoisted(() => ({
   auth: { authenticated: true, preferences: { cast: { gCastEnabled: true } } },
-  server: { value: { castReceiverAppId: 'SERVER01' } },
   local: { castReceiverAppId: '' },
   setOptions: vi.fn(),
   addEventListener: vi.fn(),
 }));
 
 vi.mock('$lib/managers/auth-manager.svelte', () => ({ authManager: mocks.auth }));
-vi.mock('$lib/managers/server-config-manager.svelte', () => ({ serverConfigManager: mocks.server }));
 vi.mock('$lib/managers/user-preferences-manager.svelte', () => ({ userPreferencesManager: mocks.local }));
 vi.mock('$lib/managers/cast-manager.svelte', () => ({
   CastDestinationType: { GCAST: 'gcast' },
@@ -28,11 +26,9 @@ const initialize = async () => {
 describe('custom receiver selection', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.stubEnv('VITE_IMMICH_CAST_RECEIVER_APP_ID', '');
     vi.spyOn(document.body, 'append').mockImplementation(() => {});
     mocks.auth.authenticated = true;
     mocks.auth.preferences.cast.gCastEnabled = true;
-    mocks.server.value.castReceiverAppId = 'SERVER01';
     mocks.local.castReceiverAppId = '';
     mocks.setOptions.mockClear();
     mocks.addEventListener.mockClear();
@@ -61,32 +57,14 @@ describe('custom receiver selection', () => {
     vi.useRealTimers();
   });
 
-  it('launches the server-configured receiver', async () => {
+  it('launches the locally configured receiver', async () => {
+    mocks.local.castReceiverAppId = ' SERVER01 ';
     expect(await initialize()).toBe(true);
-    expect(mocks.setOptions).toHaveBeenCalledWith({ receiverApplicationId: 'SERVER01', autoJoinPolicy: 'origin' });
-  });
-
-  it('uses the build override before the server setting', async () => {
-    vi.stubEnv('VITE_IMMICH_CAST_RECEIVER_APP_ID', ' BUILD001 ');
-    await initialize();
-    expect(mocks.setOptions).toHaveBeenCalledWith({ receiverApplicationId: 'BUILD001', autoJoinPolicy: 'origin' });
-  });
-
-  it('uses the local override before the server setting', async () => {
-    mocks.local.castReceiverAppId = ' LOCAL001 ';
-    vi.stubEnv('VITE_IMMICH_CAST_RECEIVER_APP_ID', 'BUILD001');
-    expect(await initialize()).toBe(true);
-    expect(mocks.setOptions).toHaveBeenCalledWith({ receiverApplicationId: 'LOCAL001', autoJoinPolicy: 'origin' });
-  });
-
-  it('treats a blank override as cleared', async () => {
-    mocks.local.castReceiverAppId = ' '.repeat(3);
-    await initialize();
     expect(mocks.setOptions).toHaveBeenCalledWith({ receiverApplicationId: 'SERVER01', autoJoinPolicy: 'origin' });
   });
 
   it('does not load Google scripts or choose a receiver when no ID is configured', async () => {
-    mocks.server.value.castReceiverAppId = ' '.repeat(3);
+    mocks.local.castReceiverAppId = ' '.repeat(3);
     expect(await new GCastDestination().initialize()).toBe(false);
     expect(document.querySelector('script')).toBeNull();
     expect(mocks.setOptions).not.toHaveBeenCalled();

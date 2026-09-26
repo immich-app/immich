@@ -7,7 +7,6 @@ import {
   type CastMediaSource,
   type ICastDestination,
 } from '$lib/managers/cast-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
 import { withCastSession } from '$lib/utils/cast/cast-url';
 import { createPhotoMessage, isPhotoReceiver, PHOTO_NAMESPACE } from '$lib/utils/cast/photo-message';
@@ -16,12 +15,7 @@ const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?l
 
 export class GCastDestination implements ICastDestination {
   private get customReceiverAppId(): string | undefined {
-    return (
-      userPreferencesManager.castReceiverAppId.trim() ||
-      (import.meta.env.VITE_IMMICH_CAST_RECEIVER_APP_ID as string | undefined)?.trim() ||
-      serverConfigManager.value.castReceiverAppId.trim() ||
-      undefined
-    );
+    return userPreferencesManager.castReceiverAppId.trim() || undefined;
   }
   type = CastDestinationType.GCAST;
   isAvailable = $state<boolean>(false);

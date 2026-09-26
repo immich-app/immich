@@ -40,7 +40,6 @@
 
   // Cast
   let gCastEnabled = $state(authManager.preferences.cast?.gCastEnabled ?? false);
-
   let castReceiverAppId = $state(userPreferencesManager.castReceiverAppId);
 
   // Recently added
@@ -194,7 +193,7 @@
               label={$t('cast_receiver_app_id_override')}
               description={$t('cast_receiver_app_id_override_description')}
             >
-              <Input bind:value={castReceiverAppId} placeholder={serverConfigManager.value.castReceiverAppId} />
+              <Input bind:value={castReceiverAppId} />
             </Field>
           </div>
         </SettingAccordion>

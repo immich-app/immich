@@ -22,23 +22,34 @@ Immich's web and mobile apps support casting photos and videos to a Chromecast d
 
 For performance reasons, Immich uses a Custom Receiver application since the other options did not give us enough control over the receiver application. Performance was an important consideration for this since the custom app allows us to preload next and previous assets, greatly speeding up the navigation.
 
-For a photo, the sender sends `SHOW_PHOTO` with the current photo's URL, optional previous and next photo URLs, and an optional thumbnail fallback URL. The receiver fetches and displays the current photo, preloads its neighbors, and responds with `PHOTO_READY` or `PHOTO_ERROR`. `CLEAR_PHOTO` clears the display. The receiver accepts media URLs only from its own origin under `/api/assets/`.
+For a photo, the sender sends `SHOW_PHOTO` with the current photo's URL, optional previous and next photo URLs, and an optional thumbnail fallback URL. The receiver fetches and displays the current photo, preloads its neighbors, and responds with `PHOTO_READY` or `PHOTO_ERROR`. `CLEAR_PHOTO` clears the display. For these photo messages, the receiver accepts URLs only when their origin matches its own and their path starts with `/api/assets/`.
 
-Videos use the standard Cast media namespace. The sender loads a single video with repeat enabled and marks it with `immichLoop` in the media's custom data; the custom receiver uses that flag to loop its video element. Cast video uses a direct playback URL rather than the HLS stream used for local web playback.
+Videos use the standard Cast media namespace. The sender loads a one-item queue with repeat enabled and marks the video with `immichLoop` in the media's custom data; the custom receiver uses that flag to loop its video element. Cast sends a direct playback or original-media URL, not the HLS session URL used for local web playback.
 
-## Configure the custom receiver
+## Local development
+
+The receiver application must be hosted on a publicly available location for all Immich instances to reach. Immich hosts a central application at (URL to be determined), hosted as static assets on a Cloudflare Worker. This application is registered on the (Google Cast SDK Developer Console)[https://cast.google.com/publish/] under the Immich-managed account.
 
 When developing the custom receiver app, do the following steps:
 
-1. Register a Custom Receiver in the Google Cast SDK Developer Console with the URL `https://your-immich-host/cast/receiver.html`. Register your Cast device as a development device if the application is unpublished.
-2. Set `IMMICH_CAST_RECEIVER_APP_ID` to the resulting application ID in the Immich server environment, then restart the server. Both apps read the ID from the server. A custom receiver ID is required; neither app uses Google's Default Media Receiver.
-3. Ensure the Cast device can reach the receiver page and media URLs over HTTPS.
+1. Create a Google Cast Developer Account in the [Google Cast SDK Developer Console](https://cast.google.com/publish/). Google charges a one-time, non-refundable **$5 USD registration fee**. Complete the account details and allow up to 48 hours for registration to finish.
+2. Set up your Cast device with the Google Home app and connect it to the same Wi-Fi network as your computer.
+3. In the Developer Console, choose **Add new application** and select **Custom Receiver**. Enter the receiver URL `https://your-immich-host/cast/receiver.html` and save. Record the application ID assigned by Google.
+4. Register your Cast device in the same Developer Console: choose **Add new device**, enter its serial number and a description, then save. Wait at least 15 minutes for registration, then restart the device.
+5. Ensure the Cast device can reach the receiver page and media URLs over HTTPS.
+6. In the web app, enter the application ID under **Account Settings > Features > Cast > Receiver application ID override**.
+7. In the mobile app, enter it under **Settings > Advanced > Receiver application ID override**.
 
-The receiver currently requires photo URLs to share its origin. Hosting it on a separate domain, such as a shared Cloudflare deployment, requires a separate design for accepting media from Immich instances; the server's CORS headers alone do not enable this.
+## Testing
 
-For local development or troubleshooting, clients can override the server ID:
+Unfortunately, automated testing is not possible with casting, so we have to do these test scenarios manually. A few acceptance tests are listed here and should be done from both web, Android, and iOS:
 
-- Web: enter **Account Settings > Features > Cast > Receiver application ID override**. The value is saved in this browser and saving a Cast change reloads the page. Resolution order is browser override, `VITE_IMMICH_CAST_RECEIVER_APP_ID` build override, then the server ID.
-- Mobile: open **Settings > Cast**, enable casting on this device, and save a **Receiver application ID override**. It takes precedence over the connected server's ID and applies to the next connection. Disconnect before editing it.
+- Start casting and confirm the Cast picker opens and launches the custom Immich receiver and it loads the Immich splash screen.
+- Cast a photo. Confirm it loads, then navigate to the previous and next photos using the sender. Navigate quickly across several photos and confirm the receiver ends on the selected photo. There should be no black frames between loading photos.
+- Cast a video. Confirm it plays, loops at the end, and responds to play, pause, seek, and stop actions from the sender.
+- While playing a video from Android, changing the device volume should change the cast volume.
+- Switch between photos and videos during an active session. Confirm the previous media stops and does not replace or interrupt the newly selected asset.
+- Disconnect from the sender and from the Cast device, then reconnect. Confirm the receiver name and current casting state recover correctly.
+- Make the Immich server inaccessible for the Cast device, but not the Immich client. When casting, it should not fail silently but show clear error message.
 
-These overrides stay local and are not sent to the server. Clear the override to return to the configured receiver. Mobile casting is disabled by default independently of the web account preference.
+Another complication is the difference between different Cast device generations. Care must be taking when making changes since the device you are testing on might be different to the devices used by our users.

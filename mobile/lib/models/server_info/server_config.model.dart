@@ -6,7 +6,6 @@ part 'server_config.model.freezed.dart';
 @freezed
 abstract class ServerConfig with _$ServerConfig {
   const factory ServerConfig({
-    @Default('') String castReceiverAppId,
     required int trashDays,
     required String oauthButtonText,
     required String externalDomain,
@@ -15,7 +14,6 @@ abstract class ServerConfig with _$ServerConfig {
   }) = _ServerConfig;
 
   factory ServerConfig.fromDto(ServerConfigDto dto) => ServerConfig(
-    castReceiverAppId: dto.castReceiverAppId,
     trashDays: dto.trashDays,
     oauthButtonText: dto.oauthButtonText,
     externalDomain: dto.externalDomain,

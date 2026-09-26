@@ -125,7 +125,6 @@ export class ServerService extends BaseService {
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
       publicUsers: config.server.publicUsers,
-      castReceiverAppId: this.configRepository.getEnv().castReceiverAppId ?? '',
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: false,

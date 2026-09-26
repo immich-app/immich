@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/cast_settings.dart';
 
 import '../presentation_context.dart';
@@ -20,7 +21,7 @@ void main() {
   });
 
   testWidgets('saves and clears a local receiver override', (tester) async {
-    await tester.pumpTestWidget(context, const CastSettings());
+    await tester.pumpTestWidget(context, const AdvancedSettings());
     await tester.enterText(find.byType(TextField), ' LOCAL001 ');
     await tester.tap(find.byType(TextButton));
     await tester.pumpAndSettle();

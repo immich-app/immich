@@ -12,7 +12,6 @@ import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/gcast.repository.dart';
 import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
 // ignore: import_rule_openapi, we are only using the AssetMediaSize enum
@@ -24,10 +23,7 @@ final gCastServiceProvider = Provider(
     if (!config.castEnabled) {
       throw StateError('Google Cast is disabled');
     }
-    final override = config.castReceiverAppId.trim();
-    return override.isNotEmpty
-        ? override
-        : (await ref.read(serverInfoServiceProvider).getServerConfig())?.castReceiverAppId ?? '';
+    return config.castReceiverAppId.trim();
   }),
 );
 

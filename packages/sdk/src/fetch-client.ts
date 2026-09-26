@@ -2705,8 +2705,6 @@ export type ServerApkLinksDto = {
     x86_64: string;
 };
 export type ServerConfigDto = {
-    /** Google Cast custom receiver application ID, if configured */
-    castReceiverAppId: string;
     /** External domain URL */
     externalDomain: string;
     /** Whether the server has been initialized */

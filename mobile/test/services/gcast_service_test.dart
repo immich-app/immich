@@ -14,13 +14,11 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/gcast.repository.dart';
 import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
-import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../unit/factories/remote_asset_factory.dart';
@@ -44,8 +42,6 @@ class _RecordingCastRepository extends GCastRepository {
 }
 
 class _MockSessionsAPIRepository extends Mock implements SessionsAPIRepository {}
-
-class _MockServerInfoService extends Mock implements ServerInfoService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -271,23 +267,11 @@ void main() {
   group('client configuration', () {
     Future<void> useConfig(AppConfig config) async {
       repository = _RecordingCastRepository();
-      final serverInfo = _MockServerInfoService();
-      when(serverInfo.getServerConfig).thenAnswer(
-        (_) async => const ServerConfig(
-          castReceiverAppId: 'SERVER01',
-          trashDays: 30,
-          oauthButtonText: '',
-          externalDomain: '',
-          mapDarkStyleUrl: '',
-          mapLightStyleUrl: '',
-        ),
-      );
       final container = ProviderContainer(
         overrides: [
           appConfigProvider.overrideWithValue(config),
           gCastRepositoryProvider.overrideWithValue(repository),
           sessionsAPIRepositoryProvider.overrideWithValue(_MockSessionsAPIRepository()),
-          serverInfoServiceProvider.overrideWithValue(serverInfo),
         ],
       );
       addTearDown(container.dispose);
@@ -295,19 +279,14 @@ void main() {
       await service.connect(device);
     }
 
-    test('uses the server receiver by default', () async {
-      await useConfig(const AppConfig(castEnabled: true));
-      expect(repository.launchedAppId, 'SERVER01');
-    });
-
-    test('local override wins over the server receiver', () async {
+    test('uses the local receiver override', () async {
       await useConfig(const AppConfig(castEnabled: true, castReceiverAppId: ' LOCAL001 '));
       expect(repository.launchedAppId, 'LOCAL001');
     });
 
-    test('clearing the override restores the server receiver', () async {
-      await useConfig(const AppConfig(castEnabled: true, castReceiverAppId: '   '));
-      expect(repository.launchedAppId, 'SERVER01');
+    test('requires a local receiver override', () async {
+      await expectLater(useConfig(const AppConfig(castEnabled: true, castReceiverAppId: '   ')), throwsStateError);
+      expect(repository.launchedAppId, isNull);
     });
 
     test('casting is disabled by default', () async {

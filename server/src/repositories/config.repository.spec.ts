@@ -10,7 +10,6 @@ const resetEnv = () => {
   for (const env of [
     'IMMICH_ALLOW_EXTERNAL_PLUGINS',
     'IMMICH_ALLOW_SETUP',
-    'IMMICH_CAST_RECEIVER_APP_ID',
     'IMMICH_ENV',
     'IMMICH_WORKERS_INCLUDE',
     'IMMICH_WORKERS_EXCLUDE',
@@ -88,11 +87,6 @@ describe('getEnv', () => {
       process.env.IMMICH_MEDIA_LOCATION = './relative/path';
       expect(() => getEnv()).toThrowError('[IMMICH_MEDIA_LOCATION] Must be an absolute path');
     });
-  });
-
-  it('provides the configured Cast receiver application ID', () => {
-    process.env.IMMICH_CAST_RECEIVER_APP_ID = 'A2AE3577';
-    expect(getEnv().castReceiverAppId).toBe('A2AE3577');
   });
 
   describe('IMMICH_ALLOW_EXTERNAL_PLUGINS', () => {
