@@ -11142,10 +11142,17 @@
             "in": "query",
             "description": "Filter jobs by status",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/QueueJobStatus"
-              }
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/QueueJobStatus"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QueueJobStatus"
+                  }
+                }
+              ]
             }
           }
         ],
@@ -25549,10 +25556,26 @@
       },
       "QueueJobResponseDto": {
         "properties": {
+          "attemptsMade": {
+            "description": "Number of attempts made",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
           "data": {
             "additionalProperties": {},
             "description": "Job data payload",
             "type": "object"
+          },
+          "failedReason": {
+            "description": "Reason for job failure",
+            "type": "string"
+          },
+          "finishedOn": {
+            "description": "Job completion timestamp",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "id": {
             "description": "Job ID",
@@ -25560,6 +25583,12 @@
           },
           "name": {
             "$ref": "#/components/schemas/JobName"
+          },
+          "processedOn": {
+            "description": "Job processing timestamp",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "timestamp": {
             "description": "Job creation timestamp",
@@ -25569,6 +25598,7 @@
           }
         },
         "required": [
+          "attemptsMade",
           "data",
           "name",
           "timestamp"

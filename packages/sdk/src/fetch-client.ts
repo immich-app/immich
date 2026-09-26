@@ -2138,13 +2138,21 @@ export type QueueDeleteDto = {
     failed?: boolean;
 };
 export type QueueJobResponseDto = {
+    /** Number of attempts made */
+    attemptsMade: number;
     /** Job data payload */
     data: {
         [key: string]: any;
     };
+    /** Reason for job failure */
+    failedReason?: string;
+    /** Job completion timestamp */
+    finishedOn?: number;
     /** Job ID */
     id?: string;
     name: JobName;
+    /** Job processing timestamp */
+    processedOn?: number;
     /** Job creation timestamp */
     timestamp: number;
 };
@@ -6345,7 +6353,7 @@ export function emptyQueue({ name, queueDeleteDto }: {
  */
 export function getQueueJobs({ name, status }: {
     name: QueueName;
-    status?: QueueJobStatus[];
+    status?: QueueJobStatus | QueueJobStatus[];
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
