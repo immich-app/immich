@@ -231,9 +231,17 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
       isFavorite: isFavorite.toDriftValue(),
       createdAt: createdAt.toDriftValue(),
     );
+    final columns = companion.toColumns(true);
+    if (createdAt case Some(:final value)) {
+      columns['group_date'] = coalesce([
+        _db.remoteAssetEntity.localDateTime.strftime('%Y-%m-%d'),
+        Variable(value).modify(const DateTimeModifier.localTime()).date,
+      ]);
+    }
+    final row = RawValuesInsertable<RemoteAssetEntityData>(columns);
     return _db.batch((batch) {
       for (final remoteId in remoteIds) {
-        batch.update(_db.remoteAssetEntity, companion, where: (e) => e.id.equals(remoteId));
+        batch.update(_db.remoteAssetEntity, row, where: (e) => e.id.equals(remoteId));
       }
     });
   }

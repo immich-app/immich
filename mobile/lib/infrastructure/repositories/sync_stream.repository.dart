@@ -31,6 +31,7 @@ import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
 import 'package:openapi/api.dart' hide AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
@@ -233,6 +234,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          final groupDate = asset.localDateTime ?? asset.fileCreatedAt?.toLocal();
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -244,6 +246,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
             localDateTime: Value(asset.localDateTime),
+            groupDate: groupDate == null ? const Value.absent() : Value(timelineGroupDate(groupDate)),
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
             visibility: Value(asset.visibility.toAssetVisibility()),
@@ -255,11 +258,18 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             isEdited: Value(asset.isEdited),
           );
 
-          batch.insert(
+          // no server dates, so the day follows created_at, which defaults to now on insert
+          final insert = companion.copyWith(id: Value(asset.id)).toColumns(true);
+          final update = companion.toColumns(true);
+          if (groupDate == null) {
+            insert['group_date'] = currentDateAndTime.modify(const DateTimeModifier.localTime()).date;
+            update['group_date'] = _db.remoteAssetEntity.createdAt.modify(const DateTimeModifier.localTime()).date;
+          }
+          batch.insert<$RemoteAssetEntityTable, RemoteAssetEntityData>(
             _db.remoteAssetEntity,
-            companion.copyWith(id: Value(asset.id)),
+            RawValuesInsertable(insert),
             mode: InsertMode.insertOrReplace,
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate((_) => RawValuesInsertable(update)),
           );
         }
       });
@@ -273,6 +283,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          final groupDate = asset.localDateTime ?? asset.fileCreatedAt?.toLocal();
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -284,6 +295,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
             localDateTime: Value(asset.localDateTime),
+            groupDate: groupDate == null ? const Value.absent() : Value(timelineGroupDate(groupDate)),
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
             visibility: Value(asset.visibility.toAssetVisibility()),
@@ -295,11 +307,17 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             isEdited: Value(asset.isEdited),
           );
 
-          batch.insert(
+          final insert = companion.copyWith(id: Value(asset.id)).toColumns(true);
+          final update = companion.toColumns(true);
+          if (groupDate == null) {
+            insert['group_date'] = currentDateAndTime.modify(const DateTimeModifier.localTime()).date;
+            update['group_date'] = _db.remoteAssetEntity.createdAt.modify(const DateTimeModifier.localTime()).date;
+          }
+          batch.insert<$RemoteAssetEntityTable, RemoteAssetEntityData>(
             _db.remoteAssetEntity,
-            companion.copyWith(id: Value(asset.id)),
+            RawValuesInsertable(insert),
             mode: InsertMode.insertOrReplace,
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate((_) => RawValuesInsertable(update)),
           );
         }
       });
