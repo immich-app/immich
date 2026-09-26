@@ -128,10 +128,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
-    if (isCancelled) {
-      return;
-    }
-
     final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(
         key.assetId,
@@ -147,10 +143,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return;
     }
 
-    if (isCancelled) {
-      return;
-    }
-
     final originalRequest = request = RemoteImageRequest(
       uri: getOriginalUrlForRemoteId(key.assetId, edited: key.edited),
     );
@@ -159,10 +151,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
-
-    if (isCancelled) {
-      return;
-    }
 
     final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(
@@ -173,10 +161,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       ),
     );
     yield* loadRequest(previewRequest, decode, isFinal: false);
-
-    if (isCancelled) {
-      return;
-    }
 
     // always try original for animated, since previews don't support animation
     final originalRequest = request = RemoteImageRequest(
