@@ -368,7 +368,6 @@
     "storage_template_migration_info": "儲存範本會將所有副檔名轉換為小寫。範本變更僅會套用至新項目。若要追溯套用範本至先前上傳的項目，請執行 <link>{job}</link>。",
     "storage_template_migration_job": "儲存範本遷移作業",
     "storage_template_more_details": "關於此功能的更多詳細資訊，請參閱 <template-link>儲存範本</template-link> 及其 <implications-link>影響</implications-link>",
-    "storage_template_onboarding_description_v2": "啟用後，此功能將依據使用者自訂範本自動整理檔案。更多資訊請參閱 <link>說明文件</link>。",
     "storage_template_path_length": "預估路徑長度上限：<b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "儲存範本",
     "storage_template_settings_description": "管理上傳項目的資料夾結構與檔名",

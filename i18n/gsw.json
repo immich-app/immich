@@ -328,7 +328,6 @@
     "storage_template_migration_info": "D’Speicher-Vorlage wird alli Dateierweiterige i Chliibuchstabe umwandle. Vorlageänderige gältet nume für neui Dateie. Um d’Vorlage rückwirkend uf scho ufgeladeni Assets aazwände, führ dr <link>{job}</link> us.",
     "storage_template_migration_job": "Speicher-Vorlage-Migrations-Ufgob",
     "storage_template_more_details": "Wiiteri Details zu däre Funktion findsch du unter <template-link>Speicher-Vorlage</template-link> und dere <implications-link>Implikatione</implications-link>",
-    "storage_template_onboarding_description_v2": "Wenn aktiviert, werdend Dateie automatisch nach enere benutzerdefinierte Vorlag organisiert. Für meh Informatione siehe d’<link>Dokumentation</link>.",
     "storage_template_path_length": "Ungefähres Pfadlänge-Limit: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Speichervorlag",
     "storage_template_settings_description": "D’Ordnerstruktur und dr Dateiname vo dr ufgeladene Datei verwalte",
