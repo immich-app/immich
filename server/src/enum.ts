@@ -935,6 +935,9 @@ export enum JobName {
   IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
   IntegrityDeleteReportType = 'IntegrityDeleteReportType',
   IntegrityDeleteReports = 'IntegrityDeleteReports',
+
+  // iPhone upload (custom)
+  IphoneUploadAdopt = 'IphoneUploadAdopt',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -989,6 +992,7 @@ export enum DatabaseLock {
   IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
+  IphoneUpload = 1338,
 }
 
 export enum MaintenanceAction {

@@ -15,6 +15,7 @@ import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { HlsService } from 'src/services/hls.service';
 import { IntegrityService } from 'src/services/integrity.service';
+import { IphoneUploadService } from 'src/services/iphone-upload.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
@@ -69,6 +70,7 @@ export const services = [
   DuplicateService,
   IntegrityService,
   HlsService,
+  IphoneUploadService,
   JobService,
   LibraryService,
   MaintenanceService,

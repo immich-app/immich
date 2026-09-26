@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Insertable } from 'kysely';
+import { Insertable, Updateable } from 'kysely';
+import { chunk } from 'lodash';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
@@ -35,6 +36,14 @@ import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
 import { batched, findOrFail, handlePromiseError } from 'src/utils/misc';
+
+const LIBRARY_HASH_CONCURRENCY = 8;
+const LIBRARY_RECENT_CHANGE_DELAY_MS = 5 * 60 * 1000;
+
+type FileSyncResult =
+  | { action: 'create'; checksum: Buffer; asset: Insertable<AssetTable> }
+  | { action: 'move'; checksum: Buffer; id: string; values: Updateable<AssetTable> }
+  | { action: 'skip' };
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -260,17 +269,45 @@ export class LibraryService extends BaseService {
       return JobStatus.Failed;
     }
 
+    // file watcher events are not pre-filtered like the disk crawl
+    const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, job.paths);
+
     const assetImports: Insertable<AssetTable>[] = [];
-    await Promise.all(
-      job.paths.map(async (path) => {
-        try {
-          const asset = await this.processEntity(path, library.ownerId, job.libraryId);
-          assetImports.push(asset);
-        } catch (error) {
-          this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`);
-        }
-      }),
-    );
+    const moves: Array<{ id: string; values: Updateable<AssetTable> }> = [];
+    const seenChecksums = new Set<string>();
+
+    // hashing reads whole files, so limit how many are open at once
+    for (const batch of chunk(paths, LIBRARY_HASH_CONCURRENCY)) {
+      await Promise.all(
+        batch.map(async (path) => {
+          try {
+            const result = await this.processEntity(path, library.ownerId, job.libraryId);
+            if (result.action === 'skip') {
+              return;
+            }
+
+            const key = result.checksum.toString('hex');
+            if (seenChecksums.has(key)) {
+              this.logger.debug(`Skipping ${path}, same content as another file in this batch`);
+              return;
+            }
+            seenChecksums.add(key);
+
+            if (result.action === 'move') {
+              moves.push({ id: result.id, values: result.values });
+            } else {
+              assetImports.push(result.asset);
+            }
+          } catch (error) {
+            this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`);
+          }
+        }),
+      );
+    }
+
+    for (const move of moves) {
+      await this.assetRepository.updateAll([move.id], move.values);
+    }
 
     const assetIds = await this.assetRepository.createAll(assetImports);
 
@@ -280,6 +317,9 @@ export class LibraryService extends BaseService {
         : `(${job.progressCounter} done so far)`;
 
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
+    if (moves.length > 0) {
+      this.logger.log(`Updated path of ${moves.length} moved file(s) in library ${job.libraryId}`);
+    }
 
     await Promise.all(
       assetIds.map((assetId) =>
@@ -287,7 +327,7 @@ export class LibraryService extends BaseService {
       ),
     );
 
-    await this.queuePostSyncJobs(assetIds);
+    await this.queuePostSyncJobs([...assetIds, ...moves.map(({ id }) => id)]);
 
     return JobStatus.Success;
   }
@@ -396,25 +436,89 @@ export class LibraryService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async processEntity(filePath: string, ownerId: string, libraryId: string) {
+  private async processEntity(filePath: string, ownerId: string, libraryId: string): Promise<FileSyncResult> {
     const assetPath = path.normalize(filePath);
     const stat = await this.storageRepository.stat(assetPath);
+    const checksum = await this.cryptoRepository.hashFile(assetPath);
+
+    const existing = await this.assetRepository.getByChecksum({ ownerId, libraryId, checksum });
+    if (existing) {
+      const isMove =
+        existing.status !== AssetStatus.Deleted &&
+        existing.originalPath !== assetPath &&
+        !(await this.storageRepository.checkFileExists(existing.originalPath));
+
+      if (!isMove) {
+        this.logger.debug(`Skipping ${assetPath}, same content as asset ${existing.id} at ${existing.originalPath}`);
+        return { action: 'skip' };
+      }
+
+      this.logger.log(`Detected move of asset ${existing.id}: ${existing.originalPath} => ${assetPath}`);
+      return {
+        action: 'move',
+        checksum,
+        id: existing.id,
+        values: {
+          originalPath: assetPath,
+          fileModifiedAt: stat.mtime,
+          isOffline: false,
+          // same rule as un-offlining: an asset trashed by the user stays in the trash
+          ...(existing.status === AssetStatus.Trashed ? {} : { deletedAt: null }),
+        },
+      };
+    }
+
+    const upload = await this.assetRepository.getByChecksum({ ownerId, checksum });
+    if (upload && !StorageCore.isImmichPath(upload.originalPath)) {
+      this.logger.debug(`Skipping ${assetPath}, upload ${upload.id} is being moved into this library`);
+      return { action: 'skip' };
+    }
 
     return {
-      ownerId,
-      libraryId,
-      checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
-      checksumAlgorithm: ChecksumAlgorithm.sha1Path,
-      originalPath: assetPath,
+      action: 'create',
+      checksum,
+      asset: {
+        ownerId,
+        libraryId,
+        checksum,
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
+        originalPath: assetPath,
 
-      fileCreatedAt: stat.mtime,
-      fileModifiedAt: stat.mtime,
-      localDateTime: stat.mtime,
-      type: mimeTypes.isVideo(assetPath) ? AssetType.Video : AssetType.Image,
-      originalFileName: parse(assetPath).base,
-      isExternal: true,
-      livePhotoVideoId: null,
+        fileCreatedAt: stat.mtime,
+        fileModifiedAt: stat.mtime,
+        localDateTime: stat.mtime,
+        type: mimeTypes.isVideo(assetPath) ? AssetType.Video : AssetType.Image,
+        originalFileName: parse(assetPath).base,
+        isExternal: true,
+        livePhotoVideoId: null,
+      },
     };
+  }
+
+  private async filterRecentlyChangedPaths(paths: string[]): Promise<string[]> {
+    const threshold = Date.now() - LIBRARY_RECENT_CHANGE_DELAY_MS;
+    const stats = await Promise.all(
+      paths.map(async (path) => {
+        try {
+          const stat: Partial<Stats> = await this.storageRepository.stat(path);
+          return stat;
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    const ready = paths.filter((_, index) => {
+      const stat = stats[index];
+      const changedAt = Math.max(stat?.ctime?.getTime() ?? 0, stat?.mtime?.getTime() ?? 0);
+      return changedAt < threshold;
+    });
+
+    if (ready.length < paths.length) {
+      this.logger.log(`Postponing import of ${paths.length - ready.length} recently changed file(s) to the next scan`);
+    }
+
+    return ready;
   }
 
   async queuePostSyncJobs(assetIds: string[]) {
@@ -476,8 +580,8 @@ export class LibraryService extends BaseService {
   async handleSyncAssets(job: JobOf<JobName.LibrarySyncAssets>): Promise<JobStatus> {
     const assets = await this.assetJobRepository.getForSyncAssets(job.assetIds);
 
-    const assetIdsToOffline: string[] = [];
-    const trashedAssetIdsToOffline: string[] = [];
+    const assetIdsToOffline: Array<{ id: string; originalPath: string }> = [];
+    const trashedAssetIdsToOffline: Array<{ id: string; originalPath: string }> = [];
     const assetIdsToOnline: string[] = [];
     const trashedAssetIdsToOnline: string[] = [];
     const assetIdsToUpdate: string[] = [];
@@ -497,10 +601,11 @@ export class LibraryService extends BaseService {
           break;
         }
         case AssetSyncResult.OFFLINE: {
+          const item = { id: asset.id, originalPath: asset.originalPath };
           if (asset.status === AssetStatus.Trashed) {
-            trashedAssetIdsToOffline.push(asset.id);
+            trashedAssetIdsToOffline.push(item);
           } else {
-            assetIdsToOffline.push(asset.id);
+            assetIdsToOffline.push(item);
           }
           break;
         }
@@ -540,12 +645,15 @@ export class LibraryService extends BaseService {
     }
 
     const promises = [];
+    // the path guard avoids offlining an asset whose move was detected by a concurrent import
     if (assetIdsToOffline.length > 0) {
-      promises.push(this.assetRepository.updateAll(assetIdsToOffline, { isOffline: true, deletedAt: new Date() }));
+      promises.push(
+        this.assetRepository.updateAllIfPathUnchanged(assetIdsToOffline, { isOffline: true, deletedAt: new Date() }),
+      );
     }
 
     if (trashedAssetIdsToOffline.length > 0) {
-      promises.push(this.assetRepository.updateAll(trashedAssetIdsToOffline, { isOffline: true }));
+      promises.push(this.assetRepository.updateAllIfPathUnchanged(trashedAssetIdsToOffline, { isOffline: true }));
     }
 
     if (assetIdsToOnline.length > 0) {
@@ -651,7 +759,9 @@ export class LibraryService extends BaseService {
 
     for await (const pathBatch of pathsOnDisk) {
       crawlCount += pathBatch.length;
-      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
+      const newPaths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
+      // a file still being copied would be imported with a wrong checksum
+      const paths = await this.filterRecentlyChangedPaths(newPaths);
 
       if (paths.length > 0) {
         importCount += paths.length;
@@ -686,7 +796,17 @@ export class LibraryService extends BaseService {
     this.logger.verbose(`Deleting asset(s) ${job.paths} from library ${job.libraryId}`);
     for (const assetPath of job.paths) {
       const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, assetPath);
-      if (asset) {
+      if (!asset) {
+        continue;
+      }
+
+      if (asset.checksumAlgorithm === ChecksumAlgorithm.sha1File) {
+        // keep it (offline, in the trash) so a move can be detected when the file reappears elsewhere
+        await this.assetRepository.updateAll(
+          [asset.id],
+          asset.status === AssetStatus.Trashed ? { isOffline: true } : { isOffline: true, deletedAt: new Date() },
+        );
+      } else {
         await this.assetRepository.remove(asset);
       }
     }

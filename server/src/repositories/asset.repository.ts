@@ -12,7 +12,7 @@ import {
   UpdateResult,
 } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import { isEmpty, isUndefined, omitBy } from 'lodash';
+import { chunk, isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
@@ -25,6 +25,7 @@ import {
   AssetType,
   AssetVisibility,
   CalendarHeatmapType,
+  ChecksumAlgorithm,
 } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table';
@@ -453,7 +454,13 @@ export class AssetRepository {
     if (assets.length === 0) {
       return [];
     }
-    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
+    // a duplicate checksum in a batch must not fail the whole import
+    const ids = await this.db
+      .insertInto('asset')
+      .values(assets)
+      .onConflict((oc) => oc.doNothing())
+      .returning('id')
+      .execute();
     return ids.map(({ id }) => id);
   }
 
@@ -686,11 +693,96 @@ export class AssetRepository {
       .select('id')
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
-      .where('libraryId', 'is', null)
+      // external assets hashed by content count as already uploaded
+      .where((eb) => eb.or([eb('libraryId', 'is', null), eb('checksumAlgorithm', '=', ChecksumAlgorithm.sha1File)]))
       .limit(1)
       .executeTakeFirst();
 
     return asset?.id;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForIphoneUpload(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select([
+        'asset.id',
+        'asset.ownerId',
+        'asset.libraryId',
+        'asset.originalPath',
+        'asset.originalFileName',
+        'asset.checksum',
+        'asset.localDateTime',
+        'asset.type',
+        'asset.visibility',
+        'asset.deletedAt',
+        'asset.livePhotoVideoId',
+      ])
+      .select(withFiles)
+      .where('asset.id', '=', asUuid(id))
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getLivePhotoStillId(videoId: string): Promise<string | undefined> {
+    const asset = await this.db
+      .selectFrom('asset')
+      .select('id')
+      .where('livePhotoVideoId', '=', asUuid(videoId))
+      .limit(1)
+      .executeTakeFirst();
+
+    return asset?.id;
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.DATE] })
+  async getIphoneUploadCandidateIds(ownerIds: string[], updatedBefore: Date): Promise<string[]> {
+    if (ownerIds.length === 0) {
+      return [];
+    }
+
+    const assets = await this.db
+      .selectFrom('asset')
+      .select('asset.id')
+      .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .where('asset.ownerId', '=', anyUuid(ownerIds))
+      .where('asset.libraryId', 'is', null)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', 'in', [AssetVisibility.Timeline, AssetVisibility.Archive])
+      .where('asset.updatedAt', '<', updatedBefore)
+      .where('asset_job_status.metadataExtractedAt', 'is not', null)
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      )
+      .execute();
+
+    return assets.map(({ id }) => id);
+  }
+
+  /** only touches assets whose originalPath still matches, so a concurrently detected move is not overwritten */
+  async updateAllIfPathUnchanged(
+    assets: Array<{ id: string; originalPath: string }>,
+    options: Updateable<AssetTable>,
+  ): Promise<void> {
+    for (const batch of chunk(assets, 1000)) {
+      await this.db
+        .updateTable('asset')
+        .set(options)
+        .where((eb) =>
+          eb.or(
+            batch.map(({ id, originalPath }) =>
+              eb.and([eb('id', '=', asUuid(id)), eb('originalPath', '=', originalPath)]),
+            ),
+          ),
+        )
+        .execute();
+    }
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions) {

@@ -137,6 +137,20 @@ export class AssetMediaService extends BaseService {
         ids: [auth.user.id],
       });
 
+      // the checksum constraint only covers the upload library, not content-hashed external assets
+      const existingId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
+      if (existingId) {
+        await this.jobRepository.queue({
+          name: JobName.FileDelete,
+          data: { files: [file.originalPath, sidecarFile?.originalPath] },
+        });
+        if (auth.sharedLink) {
+          await this.addToSharedLink(auth.sharedLink, existingId);
+        }
+        this.logger.debug(`Duplicate asset upload rejected: existing asset ${existingId}`);
+        return { status: AssetMediaStatus.DUPLICATE, id: existingId };
+      }
+
       this.requireQuota(auth, file.size);
 
       if (dto.livePhotoVideoId) {

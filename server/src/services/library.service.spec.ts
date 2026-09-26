@@ -3,7 +3,7 @@ import { Stats } from 'node:fs';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { defaults, SystemConfig } from 'src/dtos/config.dto';
 import { mapLibrary } from 'src/dtos/library.dto';
-import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetStatus, AssetType, ChecksumAlgorithm, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -359,10 +359,10 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset.id], {
-        isOffline: true,
-        deletedAt: expect.anything(),
-      });
+      expect(mocks.asset.updateAllIfPathUnchanged).toHaveBeenCalledWith(
+        [{ id: asset.id, originalPath: asset.originalPath }],
+        { isOffline: true, deletedAt: expect.anything() },
+      );
     });
 
     it('should set assets deleted from disk as offline', async () => {
@@ -381,10 +381,10 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset.id], {
-        isOffline: true,
-        deletedAt: expect.anything(),
-      });
+      expect(mocks.asset.updateAllIfPathUnchanged).toHaveBeenCalledWith(
+        [{ id: asset.id, originalPath: asset.originalPath }],
+        { isOffline: true, deletedAt: expect.anything() },
+      );
     });
 
     it('should do nothing with offline assets deleted from disk', async () => {
@@ -550,6 +550,125 @@ describe(LibraryService.name, () => {
         mtime: new Date('2023-01-01'),
         ctime: new Date('2023-01-01'),
       } as Stats);
+      mocks.asset.filterNewExternalAssetPaths.mockImplementation((_, paths) => Promise.resolve(paths));
+      mocks.crypto.hashFile.mockImplementation((path) => Promise.resolve(Buffer.from(`${path} (file-hashed)`)));
+    });
+
+    it('should import a new asset with a content checksum', async () => {
+      const library = factory.library();
+      const asset = AssetFactory.create();
+
+      mocks.asset.createAll.mockResolvedValue([asset.id]);
+      mocks.library.get.mockResolvedValue(library);
+
+      await sut.handleSyncFiles({ libraryId: library.id, paths: ['/data/user1/photo.jpg'] });
+
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([
+        expect.objectContaining({
+          checksum: Buffer.from('/data/user1/photo.jpg (file-hashed)'),
+          checksumAlgorithm: ChecksumAlgorithm.sha1File,
+        }),
+      ]);
+    });
+
+    it('should skip paths that are already in the library', async () => {
+      const library = factory.library();
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue([]);
+
+      await sut.handleSyncFiles({ libraryId: library.id, paths: ['/data/user1/photo.jpg'] });
+
+      expect(mocks.crypto.hashFile).not.toHaveBeenCalled();
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should detect a moved file and keep the existing asset', async () => {
+      const library = factory.library();
+      const existing = AssetFactory.create({ libraryId: library.id, originalPath: '/data/user1/old/photo.jpg' });
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.asset.getByChecksum.mockResolvedValueOnce(existing as any);
+      mocks.storage.checkFileExists.mockResolvedValue(false);
+
+      await sut.handleSyncFiles({ libraryId: library.id, paths: ['/data/user1/new/photo.jpg'] });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([existing.id], {
+        originalPath: '/data/user1/new/photo.jpg',
+        fileModifiedAt: new Date('2023-01-01'),
+        isOffline: false,
+        deletedAt: null,
+      });
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarCheck, data: { id: existing.id, source: 'upload' } },
+      ]);
+    });
+
+    it('should keep a user-trashed asset in the trash when its file moved', async () => {
+      const library = factory.library();
+      const existing = AssetFactory.create({
+        libraryId: library.id,
+        originalPath: '/data/user1/old/photo.jpg',
+        status: AssetStatus.Trashed,
+        deletedAt: new Date(),
+      });
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.asset.getByChecksum.mockResolvedValueOnce(existing as any);
+      mocks.storage.checkFileExists.mockResolvedValue(false);
+
+      await sut.handleSyncFiles({ libraryId: library.id, paths: ['/data/user1/new/photo.jpg'] });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([existing.id], {
+        originalPath: '/data/user1/new/photo.jpg',
+        fileModifiedAt: new Date('2023-01-01'),
+        isOffline: false,
+      });
+    });
+
+    it('should ignore a copy of a file that is still present', async () => {
+      const library = factory.library();
+      const existing = AssetFactory.create({ libraryId: library.id, originalPath: '/data/user1/old/photo.jpg' });
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.asset.getByChecksum.mockResolvedValueOnce(existing as any);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+
+      await sut.handleSyncFiles({ libraryId: library.id, paths: ['/data/user1/copy/photo.jpg'] });
+
+      expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should ignore a file whose upload is being moved into the library', async () => {
+      const library = factory.library();
+      // outside of the media location (/data in tests), i.e. already moved out of the Immich storage
+      const upload = AssetFactory.create({ libraryId: null, originalPath: '/mnt/photos/iphone_upload/photo.jpg' });
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.asset.getByChecksum.mockResolvedValueOnce(undefined).mockResolvedValueOnce(upload as any);
+
+      await sut.handleSyncFiles({ libraryId: library.id, paths: ['/mnt/photos/iphone_upload/photo.jpg'] });
+
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should import only one of two identical new files', async () => {
+      const library = factory.library();
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.crypto.hashFile.mockResolvedValue(Buffer.from('same content'));
+
+      await sut.handleSyncFiles({ libraryId: library.id, paths: ['/data/user1/a.jpg', '/data/user1/b.jpg'] });
+
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([expect.objectContaining({ isExternal: true })]);
     });
 
     it('should import a new asset', async () => {

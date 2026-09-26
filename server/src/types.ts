@@ -449,7 +449,10 @@ export type JobItem =
   | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
 
   // Editor
-  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
+  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob }
+
+  // iPhone upload (custom)
+  | { name: JobName.IphoneUploadAdopt; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
