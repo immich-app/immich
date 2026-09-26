@@ -139,36 +139,23 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* initialImageStream();
 
     final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
-    final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    var request = this.request = LocalImageRequest(
-      localId: key.id,
-      size: _previewTarget(devicePixelRatio, !loadOriginal),
-      assetType: key.assetType,
-    );
-    yield* loadRequest(request, decode, isFinal: !loadOriginal);
+    final previewRequest = request = _previewRequest(key, isFinal: !loadOriginal);
+    yield* loadRequest(previewRequest, decode, isFinal: !loadOriginal);
 
-    if (!loadOriginal) {
-      return;
+    if (loadOriginal) {
+      final originalRequest = request = _originalRequest(key);
+      yield* loadRequest(originalRequest, decode, isFinal: true);
     }
-
-    request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
-
-    yield* loadRequest(request, decode, isFinal: true);
   }
 
   Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
-    final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    final previewRequest = request = LocalImageRequest(
-      localId: key.id,
-      size: _previewTarget(devicePixelRatio, false),
-      assetType: key.assetType,
-    );
+    final previewRequest = request = _previewRequest(key, isFinal: false);
     yield* loadRequest(previewRequest, decode, isFinal: false);
 
     // always try original for animated, since previews don't support animation
-    final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
+    final originalRequest = request = _originalRequest(key);
     final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
       if (isCancelled) {
@@ -178,6 +165,15 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     }
     yield codec;
   }
+
+  LocalImageRequest _previewRequest(LocalFullImageProvider key, {required bool isFinal}) => LocalImageRequest(
+    localId: key.id,
+    size: _previewTarget(PlatformDispatcher.instance.views.first.devicePixelRatio, isFinal),
+    assetType: key.assetType,
+  );
+
+  LocalImageRequest _originalRequest(LocalFullImageProvider key) =>
+      LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
 
   @override
   bool operator ==(Object other) {
