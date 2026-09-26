@@ -19,8 +19,12 @@ const mediaUrl = (value) => {
   if (typeof value !== 'string') {
     return null;
   }
-  const url = new URL(value, location.href);
-  return url.origin === location.origin && url.pathname.startsWith('/api/assets/') ? url.href : null;
+  try {
+    const url = new URL(value, location.href);
+    return url.origin === location.origin && url.pathname.startsWith('/api/assets/') ? url.href : null;
+  } catch {
+    return null;
+  }
 };
 
 const photo = (value) => {
@@ -130,6 +134,10 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
   if (message?.type === 'CLEAR_PHOTO') {
     selection++;
     hideSpinner();
+    video.loop = false;
+    playerManager.stop();
+    player.hidden = true;
+    video.hidden = true;
     photos.replaceChildren();
     photos.hidden = true;
     brand.hidden = false;

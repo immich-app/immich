@@ -137,6 +137,7 @@ export class AssetMediaController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    allowCrossOriginCastMedia(req, res);
     if (dto.size === AssetMediaSize.Original) {
       this.logger.deprecate(
         'Calling the thumbnail endpoint with size=original is deprecated. Use the :id/original endpoint instead',
@@ -150,7 +151,6 @@ export class AssetMediaController {
     const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
 
     if (viewThumbnailRes instanceof ImmichFileResponse) {
-      allowCrossOriginCastMedia(req, res);
       await sendFile(res, next, () => Promise.resolve(viewThumbnailRes), this.logger);
     } else {
       // viewThumbnailRes is a AssetMediaRedirectResponse

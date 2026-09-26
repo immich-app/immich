@@ -192,18 +192,26 @@ export class GCastDestination implements ICastDestination {
 
     if (contentType.startsWith('image/')) {
       const requestId = ++this.photoRequestId;
-      await new Promise<void>((resolve, reject) => {
-        activeSession.sendMessage(
-          PHOTO_NAMESPACE,
-          createPhotoMessage(source, sessionKey, requestId),
-          resolve,
-          (error) => reject(new Error(`Google Cast photo request failed: ${error.code}`)),
-        );
-      });
-      if (this.session === activeSession) {
-        this.currentMedia = null;
-        this.loadedUrl = source.url;
-        this.loadedPhotoSignature = photoSignature;
+      // PHOTO_ERROR can arrive before the transport acknowledges sendMessage.
+      // Record the selection first so an error cannot be overwritten by that acknowledgement.
+      this.currentMedia = null;
+      this.loadedUrl = source.url;
+      this.loadedPhotoSignature = photoSignature;
+      try {
+        await new Promise<void>((resolve, reject) => {
+          activeSession.sendMessage(
+            PHOTO_NAMESPACE,
+            createPhotoMessage(source, sessionKey, requestId),
+            resolve,
+            (error) => reject(new Error(`Google Cast photo request failed: ${error.code}`)),
+          );
+        });
+      } catch (error) {
+        if (this.session === activeSession && this.photoRequestId === requestId) {
+          this.loadedUrl = null;
+          this.loadedPhotoSignature = null;
+        }
+        throw error;
       }
       return true;
     }

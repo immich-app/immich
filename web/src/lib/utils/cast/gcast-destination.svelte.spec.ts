@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   server: { value: { castReceiverAppId: 'SERVER01' } },
   local: { castReceiverAppId: '' },
   setOptions: vi.fn(),
+  addEventListener: vi.fn(),
 }));
 
 vi.mock('$lib/managers/auth-manager.svelte', () => ({ authManager: mocks.auth }));
@@ -34,16 +35,20 @@ describe('custom receiver selection', () => {
     mocks.server.value.castReceiverAppId = 'SERVER01';
     mocks.local.castReceiverAppId = '';
     mocks.setOptions.mockClear();
+    mocks.addEventListener.mockClear();
     document.body.replaceChildren();
     vi.stubGlobal('chrome', { cast: { AutoJoinPolicy: { ORIGIN_SCOPED: 'origin' } } });
     vi.stubGlobal('cast', {
       framework: {
-        CastContext: { getInstance: () => ({ setOptions: mocks.setOptions, addEventListener: vi.fn() }) },
+        CastContext: {
+          getInstance: () => ({ setOptions: mocks.setOptions, addEventListener: mocks.addEventListener }),
+        },
         RemotePlayer: class {},
         RemotePlayerController: class {
           addEventListener() {}
         },
-        CastContextEventType: {},
+        CastContextEventType: { SESSION_STATE_CHANGED: 'session' },
+        SessionState: { SESSION_STARTED: 'started' },
         RemotePlayerEventType: {},
       },
     });
@@ -92,5 +97,31 @@ describe('custom receiver selection', () => {
     expect(await new GCastDestination().initialize()).toBe(false);
     expect(document.querySelector('script')).toBeNull();
     expect(mocks.setOptions).not.toHaveBeenCalled();
+  });
+
+  it('allows retry when the receiver reports a photo error before the send acknowledgement', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const destination = new GCastDestination();
+    const initialized = destination.initialize();
+    Reflect.get(globalThis, '__onGCastApiAvailable')(true);
+    await initialized;
+
+    let onPhotoMessage: (namespace: string, message: string) => void = () => {};
+    const session = {
+      appId: 'SERVER01',
+      receiver: { friendlyName: 'TV' },
+      addMessageListener: (_namespace: string, listener: typeof onPhotoMessage) => (onPhotoMessage = listener),
+      sendMessage: vi.fn((namespace: string, message: { requestId: number }, resolve: () => void) => {
+        onPhotoMessage(namespace, JSON.stringify({ type: 'PHOTO_ERROR', requestId: message.requestId }));
+        resolve();
+      }),
+    };
+    const onSession = mocks.addEventListener.mock.calls.find(([type]) => type === 'session')![1];
+    onSession({ sessionState: 'started', session: { getSessionObj: () => session } });
+
+    const source = { key: 'photo', url: 'https://immich.example/api/assets/photo/thumbnail', kind: 'photo' as const };
+    await destination.loadMedia(source, 'token');
+    await destination.loadMedia(source, 'token');
+    expect(session.sendMessage).toHaveBeenCalledTimes(2);
   });
 });

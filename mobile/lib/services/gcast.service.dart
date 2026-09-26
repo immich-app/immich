@@ -31,6 +31,19 @@ final gCastServiceProvider = Provider(
   }),
 );
 
+typedef CastMimeTypeResolver = Future<String> Function(String url, String token);
+
+Future<String> _resolveCastMimeType(String url, String token) async {
+  final uri = Uri.parse(url);
+  final authenticated = uri.replace(queryParameters: {...uri.queryParameters, 'sessionKey': token});
+  final response = await http.head(authenticated, headers: ApiService.getRequestHeaders());
+  final contentType = response.headers['content-type']?.split(';').first;
+  if (response.statusCode < 200 || response.statusCode >= 300 || contentType == null) {
+    throw StateError('Unable to resolve Cast media type (${response.statusCode})');
+  }
+  return contentType;
+}
+
 class GCastService {
   static final _log = Logger('GCastService');
   static const _volumeChannel = MethodChannel('app.immich/cast_volume');
@@ -38,10 +51,12 @@ class GCastService {
   final GCastRepository _gCastRepository;
   final SessionsAPIRepository _sessionsApiService;
   final Future<String> Function() _getReceiverAppId;
+  final CastMimeTypeResolver _mimeTypeResolver;
 
   SessionCreateResponse? sessionKey;
   String? currentAssetId;
   String? _currentSourceUrl;
+  String? _selectedSourceUrl;
   String? _pendingAssetId;
   String? _pendingSourceUrl;
   String? _pendingCastUrl;
@@ -76,7 +91,12 @@ class GCastService {
 
   void Function(CastState)? onCastState;
 
-  GCastService(this._gCastRepository, this._sessionsApiService, this._getReceiverAppId) {
+  GCastService(
+    this._gCastRepository,
+    this._sessionsApiService,
+    this._getReceiverAppId, {
+    CastMimeTypeResolver? mimeTypeResolver,
+  }) : _mimeTypeResolver = mimeTypeResolver ?? _resolveCastMimeType {
     _gCastRepository.onCastStatus = _onCastStatusCallback;
     _gCastRepository.onCastMessage = _onCastMessageCallback;
     if (Platform.isAndroid) {
@@ -109,7 +129,7 @@ class GCastService {
     if (!isConnected || !_castingVideo || _receiverVolumeFixed || level == null || direction == 0) {
       return;
     }
-    final next = (level + _receiverVolumeStep * direction.sign).clamp(0.0, 1.0).toDouble();
+    final next = (level + _receiverVolumeStep * direction.sign).clamp(0.0, 1.0);
     if (next == level && !(direction > 0 && _receiverVolumeMuted)) {
       return;
     }
@@ -142,7 +162,7 @@ class GCastService {
     if (level is num &&
         (_lastVolumeKeyAt == null ||
             DateTime.now().difference(_lastVolumeKeyAt!) > const Duration(milliseconds: 500))) {
-      _receiverVolumeLevel = level.toDouble().clamp(0.0, 1.0).toDouble();
+      _receiverVolumeLevel = level.toDouble().clamp(0.0, 1.0);
     }
     final step = volume['stepInterval'];
     if (step is num && step > 0 && step <= 1) {
@@ -168,6 +188,8 @@ class GCastService {
       onReceiverName?.call("");
       currentAssetId = null;
       _currentSourceUrl = null;
+      _selectedSourceUrl = null;
+      _sessionId = null;
       _clearPending();
       _selectionGeneration++;
       _credentialGeneration++;
@@ -221,6 +243,11 @@ class GCastService {
   }
 
   void _handleMediaStatus(Map<String, dynamic> message) {
+    // Stopping the previous video can report an error after a photo was selected.
+    // Only the photo acknowledgement may complete that selection.
+    if (_selectedPhoto != null || _selectedSourceUrl == null) {
+      return;
+    }
     final statusList = (message['status'] as List).whereType<Map<String, dynamic>>().toList();
 
     if (statusList.isEmpty) {
@@ -229,6 +256,9 @@ class GCastService {
 
     final status = statusList[0];
     final contentId = status['media']?['contentId'];
+    if (_pendingCastUrl != null && contentId != null && contentId != _pendingCastUrl) {
+      return;
+    }
     if (contentId != null && contentId == _pendingCastUrl) {
       if (_pendingSelectedAt != null) {
         final elapsed = DateTime.now().difference(_pendingSelectedAt!).inMilliseconds;
@@ -292,12 +322,16 @@ class GCastService {
   }
 
   Future<void> disconnect() async {
+    isConnected = false;
+    onConnectionState?.call(false);
     _castingVideo = false;
     _updateHardwareVolumeKeys();
     _mediaStatusPollingTimer?.cancel();
     onReceiverName?.call("");
     currentAssetId = null;
     _currentSourceUrl = null;
+    _selectedSourceUrl = null;
+    _sessionId = null;
     _clearPending();
     _selectionGeneration++;
     _credentialGeneration++;
@@ -353,22 +387,15 @@ class GCastService {
     }
   }
 
-  Future<String> _getMimeType(String url, String token) {
+  Future<String> _getMimeType(String url, String token) async {
     if (!_mimeTypes.containsKey(url) && _mimeTypes.length >= 256) {
-      _mimeTypes.remove(_mimeTypes.keys.first);
+      unawaited(_mimeTypes.remove(_mimeTypes.keys.first));
     }
-    return _mimeTypes.putIfAbsent(url, () async {
+    return await _mimeTypes.putIfAbsent(url, () async {
       try {
-        final uri = Uri.parse(url);
-        final authenticated = uri.replace(queryParameters: {...uri.queryParameters, 'sessionKey': token});
-        final response = await http.head(authenticated, headers: ApiService.getRequestHeaders());
-        final contentType = response.headers['content-type']?.split(';').first;
-        if (response.statusCode < 200 || response.statusCode >= 300 || contentType == null) {
-          throw StateError('Unable to resolve Cast media type (${response.statusCode})');
-        }
-        return contentType;
+        return await _mimeTypeResolver(url, token);
       } catch (_) {
-        _mimeTypes.remove(url);
+        unawaited(_mimeTypes.remove(url));
         rethrow;
       }
     });
@@ -389,21 +416,28 @@ class GCastService {
       _updateHardwareVolumeKeys();
     }
 
-    final generation = ++_selectionGeneration;
     final selectedAt = DateTime.now();
     final unauthenticatedUrl = asset.isVideo
         ? getPlaybackUrlForRemoteId(asset.id)
         : _getPhotoUrl(asset, AssetMediaSize.preview);
-    if ((_currentSourceUrl == unauthenticatedUrl || _pendingSourceUrl == unauthenticatedUrl) && !reload) {
+    if (_selectedSourceUrl == unauthenticatedUrl &&
+        (_currentSourceUrl == unauthenticatedUrl || _pendingSourceUrl == unauthenticatedUrl) &&
+        !reload) {
       return;
     }
 
+    final generation = ++_selectionGeneration;
+    _selectedSourceUrl = unauthenticatedUrl;
+    _clearPending();
     _selectedPhoto = asset.isImage ? asset : null;
     _previousPhoto = null;
     _nextPhoto = null;
 
     final session = await _getSession();
-    final (resolvedUrl, mimeType) = _selectedPhoto != null
+    if (generation != _selectionGeneration || !isConnected) {
+      return;
+    }
+    final (resolvedUrl, mimeType) = asset.isImage
         ? (unauthenticatedUrl, 'image/*')
         : (unauthenticatedUrl, await _getMimeType(unauthenticatedUrl, session.token));
     if (generation != _selectionGeneration || !isConnected) {
@@ -523,6 +557,7 @@ class GCastService {
   }
 
   void stop() {
+    _selectionGeneration++;
     _castingVideo = false;
     _updateHardwareVolumeKeys();
     if (_selectedPhoto != null) {
@@ -534,6 +569,8 @@ class GCastService {
 
     currentAssetId = null;
     _currentSourceUrl = null;
+    _selectedSourceUrl = null;
+    _sessionId = null;
     _clearPending();
     _selectedPhoto = null;
     _previousPhoto = null;

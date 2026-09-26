@@ -84,6 +84,7 @@ class CastManager {
     eventManager.on({
       AppInit: () => void this.initialize(),
       AuthLogout: () => {
+        this.disconnect();
         this.sessionKey = null;
         this.sessionPromise = null;
         this.sessionUserId = null;
@@ -239,6 +240,7 @@ class CastManager {
   }
 
   disconnect() {
+    this.loadQueue.invalidate();
     this.current?.disconnect();
   }
 }

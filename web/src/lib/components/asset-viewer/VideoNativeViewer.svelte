@@ -88,7 +88,7 @@
 
     return getAssetPlaybackUrl({ id: assetId, cacheKey });
   });
-  // The default receiver cannot authenticate the child playlists of a local HLS session yet.
+  // The receiver cannot authenticate the child playlists of a local HLS session yet.
   const castFileUrl = $derived(
     playOriginalVideo
       ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })

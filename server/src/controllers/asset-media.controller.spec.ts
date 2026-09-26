@@ -173,6 +173,24 @@ describe(AssetMediaController.name, () => {
         const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
         expect(status).toBe(302);
       });
+
+      it.each(['original', 'preview'])('should allow Cast to follow a %s redirect', async (size) => {
+        service.viewThumbnail.mockResolvedValue({ targetSize: 'original' });
+        const { status, headers } = await request(ctx.getHttpServer())
+          .get(`/assets/${factory.uuid()}/thumbnail`)
+          .query({ size, sessionKey: 'cast-token' });
+
+        expect(status).toBe(302);
+        expect(headers['access-control-allow-origin']).toBe('*');
+        expect(headers['cross-origin-resource-policy']).toBe('cross-origin');
+        expect(headers.location).toBe('original?sessionKey=cast-token');
+      });
+
+      it('should not add Cast CORS headers without URL credentials', async () => {
+        const { headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
+        expect(headers['access-control-allow-origin']).toBeUndefined();
+        expect(headers['cross-origin-resource-policy']).toBeUndefined();
+      });
     });
   });
 });

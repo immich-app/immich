@@ -34,6 +34,8 @@ When developing the custom receiver app, do the following steps:
 2. Set `IMMICH_CAST_RECEIVER_APP_ID` to the resulting application ID in the Immich server environment, then restart the server. Both apps read the ID from the server. A custom receiver ID is required; neither app uses Google's Default Media Receiver.
 3. Ensure the Cast device can reach the receiver page and media URLs over HTTPS.
 
+The receiver currently requires photo URLs to share its origin. Hosting it on a separate domain, such as a shared Cloudflare deployment, requires a separate design for accepting media from Immich instances; the server's CORS headers alone do not enable this.
+
 For local development or troubleshooting, clients can override the server ID:
 
 - Web: enter **Account Settings > Features > Cast > Receiver application ID override**. The value is saved in this browser and saving a Cast change reloads the page. Resolution order is browser override, `VITE_IMMICH_CAST_RECEIVER_APP_ID` build override, then the server ID.

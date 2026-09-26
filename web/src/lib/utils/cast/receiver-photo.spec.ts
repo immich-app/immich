@@ -67,6 +67,20 @@ describe('Cast receiver photo switching', () => {
         },
       });
 
+    for (const invalidUrl of ['https://[', 'https://other.example/api/assets/photo/thumbnail', '/api/server/config']) {
+      expect(() =>
+        onMessage({
+          senderId: 'sender',
+          data: { type: 'SHOW_PHOTO', requestId: 0, current: { url: invalidUrl } },
+        }),
+      ).not.toThrow();
+      expect(context.sendCustomMessage).toHaveBeenLastCalledWith('urn:x-cast:app.immich.photos', 'sender', {
+        type: 'PHOTO_ERROR',
+        requestId: 0,
+      });
+    }
+    expect(decode).not.toHaveBeenCalled();
+
     show('middle', 'first', 'last');
     await vi.waitFor(() => expect(photos.querySelector('canvas')).toBeTruthy());
     expect(context.sendCustomMessage).toHaveBeenCalledWith('urn:x-cast:app.immich.photos', 'sender', {
@@ -103,6 +117,14 @@ describe('Cast receiver photo switching', () => {
     expect(photos.children).toHaveLength(1);
     expect(drawImage).toHaveBeenCalledTimes(preparedCount);
     expect(decode).toHaveBeenCalledTimes(3);
+
+    const video = document.querySelector<HTMLVideoElement>('#video-player')!;
+    video.hidden = false;
+    video.loop = true;
+    onMessage({ senderId: 'sender', data: { type: 'CLEAR_PHOTO' } });
+    expect(video.hidden).toBe(true);
+    expect(video.loop).toBe(false);
+    expect(playerManager.stop).toHaveBeenCalled();
   });
 
   it('loops video natively on the player media element when the sender repeats a single item', async () => {

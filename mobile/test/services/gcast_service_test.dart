@@ -1,8 +1,8 @@
-import 'dart:io';
+import 'dart:async';
 
 import 'package:cast/device.dart';
 import 'package:cast/session.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
@@ -51,8 +52,8 @@ void main() {
 
   late Drift db;
   late StoreService store;
-  late HttpServer server;
   late _RecordingCastRepository repository;
+  late _MockSessionsAPIRepository sessions;
   late GCastService service;
 
   const device = CastDevice(serviceName: 'test', name: 'TV', host: 'localhost', port: 8009, extras: {'fn': 'TV'});
@@ -60,25 +61,25 @@ void main() {
   setUpAll(() async {
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     store = await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
-    server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    server.listen((request) async {
-      request.response.headers.contentType = request.uri.path.contains('/video/')
-          ? ContentType('video', 'mp4')
-          : ContentType('image', 'jpeg');
-      await request.response.close();
-    });
-    await Store.put(StoreKey.serverEndpoint, 'http://127.0.0.1:${server.port}/api');
+    await SettingsRepository.ensureInitialized(db);
+    await Store.put(StoreKey.serverEndpoint, 'https://immich.example/api');
   });
 
   tearDownAll(() async {
+    await SettingsRepository.reset();
     await store.dispose();
     await db.close();
-    await server.close(force: true);
   });
 
   Future<void> connect(String appId) async {
     repository = _RecordingCastRepository();
-    service = GCastService(repository, _MockSessionsAPIRepository(), () async => appId);
+    sessions = _MockSessionsAPIRepository();
+    service = GCastService(
+      repository,
+      sessions,
+      () async => appId,
+      mimeTypeResolver: (url, _) async => url.contains('/video/') ? 'video/mp4' : 'image/jpeg',
+    );
     await service.connect(device);
     service.sessionKey = SessionCreateResponse(
       createdAt: DateTime.now().toIso8601String(),
@@ -90,6 +91,10 @@ void main() {
       token: 'test token',
       updatedAt: DateTime.now().toIso8601String(),
     );
+  }
+
+  Future<void> loadVideo(RemoteAsset video) async {
+    await service.loadMedia(video, false);
   }
 
   tearDown(() async {
@@ -129,7 +134,7 @@ void main() {
     await connect('A2AE3577');
     final video = RemoteAssetFactory.create(id: 'video', type: AssetType.video);
 
-    await service.loadMedia(video, false);
+    await loadVideo(video);
     final (namespace, message) = repository.messages.single;
     expect(namespace, CastSession.kNamespaceMedia);
     expect(message['type'], 'QUEUE_LOAD');
@@ -137,6 +142,66 @@ void main() {
     final media = ((message['items'] as List).single as Map)['media'] as Map;
     expect(media['customData'], {'immichLoop': true});
     expect(media['contentId'], contains('sessionKey=test+token'));
+  });
+
+  test('stopping cancels a video still waiting for credentials', () async {
+    await connect('A2AE3577');
+    final session = service.sessionKey!;
+    service.sessionKey = null;
+    final pendingSession = Completer<SessionCreateResponse>();
+    when(() => sessions.createSession('Cast', 'Google Cast', duration: 900)).thenAnswer((_) => pendingSession.future);
+
+    final loading = service.loadMedia(RemoteAssetFactory.create(id: 'video', type: AssetType.video), false);
+    service.stop();
+    final count = repository.messages.length;
+    pendingSession.complete(session);
+    await loading;
+
+    expect(repository.messages, hasLength(count));
+    expect(service.currentAssetId, isNull);
+  });
+
+  test('returning to the displayed photo supersedes another pending photo', () async {
+    await connect('A2AE3577');
+    final first = RemoteAssetFactory.create(id: 'first');
+    final second = RemoteAssetFactory.create(id: 'second');
+    await service.loadMedia(first, false);
+    repository.onCastMessage?.call({'type': 'PHOTO_READY', 'requestId': repository.messages.last.$2['requestId']});
+
+    await service.loadMedia(second, false);
+    final secondRequestId = repository.messages.last.$2['requestId'];
+    await service.loadMedia(first, false);
+    expect(repository.messages, hasLength(3));
+    expect((repository.messages.last.$2['current'] as Map)['url'], contains('/first/'));
+
+    repository.onCastMessage?.call({'type': 'PHOTO_READY', 'requestId': secondRequestId});
+    expect(service.currentAssetId, first.id);
+    repository.onCastMessage?.call({'type': 'PHOTO_READY', 'requestId': repository.messages.last.$2['requestId']});
+    expect(service.currentAssetId, first.id);
+  });
+
+  test('a stopped video status cannot discard a pending photo acknowledgement', () async {
+    await connect('A2AE3577');
+    final photo = RemoteAssetFactory.create(id: 'photo');
+    await service.loadMedia(photo, false);
+    final requestId = repository.messages.last.$2['requestId'];
+    repository.onCastMessage?.call({
+      'type': 'MEDIA_STATUS',
+      'status': [
+        {'playerState': 'IDLE', 'idleReason': 'ERROR', 'mediaSessionId': 1},
+      ],
+    });
+    repository.onCastMessage?.call({'type': 'PHOTO_READY', 'requestId': requestId});
+    expect(service.currentAssetId, photo.id);
+  });
+
+  test('disconnecting immediately prevents further loads', () async {
+    await connect('A2AE3577');
+    final disconnected = service.disconnect();
+    expect(service.isConnected, isFalse);
+    await service.loadMedia(RemoteAssetFactory.create(id: 'photo'), false);
+    await disconnected;
+    expect(repository.messages, isEmpty);
   });
 
   test('phone volume keys change receiver volume while casting a video', () async {
@@ -151,7 +216,7 @@ void main() {
     service.changeReceiverVolume(1);
     expect(repository.messages, isEmpty);
 
-    await service.loadMedia(RemoteAssetFactory.create(id: 'video', type: AssetType.video), false);
+    await loadVideo(RemoteAssetFactory.create(id: 'video', type: AssetType.video));
     service.changeReceiverVolume(1);
     expect(repository.messages.last.$1, CastSession.kNamespaceReceiver);
     expect(repository.messages.last.$2['type'], 'SET_VOLUME');
@@ -184,7 +249,7 @@ void main() {
       },
     });
 
-    await service.loadMedia(RemoteAssetFactory.create(id: 'video', type: AssetType.video), false);
+    await loadVideo(RemoteAssetFactory.create(id: 'video', type: AssetType.video));
     final count = repository.messages.length;
     service.changeReceiverVolume(1);
     expect(repository.messages, hasLength(count));
