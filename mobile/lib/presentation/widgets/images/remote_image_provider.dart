@@ -128,7 +128,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     final isImage = assetType == AssetType.image;
     final loadOriginal = isImage && SettingsRepository.instance.appConfig.image.loadOriginal;
-    final loadPreview = isImage && SettingsRepository.instance.appConfig.image.loadPreview;
+    final loadPreview = SettingsRepository.instance.appConfig.image.loadPreview;
     yield* initialImageStream(isFinal: !loadOriginal && !loadPreview);
 
     if (isCancelled) {
