@@ -196,9 +196,6 @@
             >
               <Input bind:value={castReceiverAppId} placeholder={serverConfigManager.value.castReceiverAppId} />
             </Field>
-            {#if !castReceiverAppId.trim() && !serverConfigManager.value.castReceiverAppId.trim() && !import.meta.env.VITE_IMMICH_CAST_RECEIVER_APP_ID?.trim()}
-              <p>{$t('cast_receiver_not_configured')}</p>
-            {/if}
           </div>
         </SettingAccordion>
 

@@ -58,8 +58,6 @@ class CastSettings extends HookConsumerWidget {
                       },
                 child: Text(context.t.save),
               ),
-              if (serverAppId.trim().isEmpty && config.castReceiverAppId.isEmpty)
-                Text(context.t.cast_receiver_not_configured),
             ],
           ),
         ),
