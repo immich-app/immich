@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image.widget.dart';
 
 /// Randomly selects an asset from the provided [TimelineService] for a persistent Ken Burns zoom
 class RandomAssetBackgroundImage extends StatefulWidget {
@@ -166,23 +167,26 @@ class _RandomAssetBackgroundImageState extends State<RandomAssetBackgroundImage>
                     child: SizedBox(
                       width: double.infinity,
                       height: double.infinity,
-                      child: Image(
-                        alignment: Alignment.topRight,
-                        image: getFullImageProvider(_currentAsset!),
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) {
-                            return child;
-                          }
-                          return Container();
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
-                          );
-                        },
+                      child: ProgressiveImage(
+                        provider: getFullImageProvider(_currentAsset!),
+                        builder: (context, provider) => Image(
+                          alignment: Alignment.topRight,
+                          image: provider,
+                          fit: BoxFit.cover,
+                          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                            if (wasSynchronouslyLoaded || frame != null) {
+                              return child;
+                            }
+                            return Container();
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return SizedBox(
+                              width: double.infinity,
+                              height: double.infinity,
+                              child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -193,23 +197,26 @@ class _RandomAssetBackgroundImageState extends State<RandomAssetBackgroundImage>
                     child: SizedBox(
                       width: double.infinity,
                       height: double.infinity,
-                      child: Image(
-                        alignment: Alignment.topRight,
-                        image: getFullImageProvider(_nextAsset!),
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) {
-                            return child;
-                          }
-                          return const SizedBox.shrink();
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
-                          );
-                        },
+                      child: ProgressiveImage(
+                        provider: getFullImageProvider(_nextAsset!),
+                        builder: (context, provider) => Image(
+                          alignment: Alignment.topRight,
+                          image: provider,
+                          fit: BoxFit.cover,
+                          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                            if (wasSynchronouslyLoaded || frame != null) {
+                              return child;
+                            }
+                            return const SizedBox.shrink();
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return SizedBox(
+                              width: double.infinity,
+                              height: double.infinity,
+                              child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),

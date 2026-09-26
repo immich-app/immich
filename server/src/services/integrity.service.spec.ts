@@ -13,6 +13,35 @@ describe(IntegrityService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('handleUntrackedFiles', () => {
+    const decomposedPath = '/data/upload/upload/user-id/Cafe\u{301}.jpg';
+    const composedPath = '/data/upload/upload/user-id/Caf\u{E9}.jpg';
+
+    beforeEach(() => {
+      mocks.integrityReport.getAssetPathsByPaths.mockResolvedValue([]);
+      mocks.integrityReport.getPersonThumbnailPathsByPaths.mockResolvedValue([]);
+    });
+
+    it.each([
+      { scannedPath: decomposedPath, storedPath: composedPath },
+      { scannedPath: composedPath, storedPath: decomposedPath },
+    ])(
+      'should not report a tracked asset whose path differs only by unicode normalization',
+      async ({ scannedPath, storedPath }) => {
+        mocks.integrityReport.getAssetPathsByPaths.mockResolvedValue([
+          { originalPath: storedPath, encodedVideoPath: null },
+        ]);
+
+        await sut.handleUntrackedFiles({ type: 'asset', paths: [scannedPath] });
+
+        expect(mocks.integrityReport.getAssetPathsByPaths).toHaveBeenCalledWith(
+          expect.arrayContaining([decomposedPath, composedPath]),
+        );
+        expect(mocks.integrityReport.create).not.toHaveBeenCalled();
+      },
+    );
+  });
+
   describe('handleUntrackedRefresh', () => {
     beforeEach(() => {
       mocks.integrityReport.getTrackedPaths.mockResolvedValue([]);

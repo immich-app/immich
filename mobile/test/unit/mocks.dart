@@ -70,7 +70,7 @@ class RepositoryMocks {
   }
 
   void _stubRemoteAssetRepository() {
-    when(remoteAsset.getExif).thenAnswer((_) async => null);
+    when(remoteAsset.watchExif).thenAnswer((_) => Stream.value(null));
     when(remoteAsset.getAssetEdits).thenAnswer((_) async => const []);
     when(remoteAsset.update).thenAnswer((_) async {});
   }
@@ -125,7 +125,7 @@ class ServiceMocks {
   final asset = AssetServiceStub(MockAssetService());
   final album = RemoteAlbumServiceStub(MockRemoteAlbumService());
   final cleanup = CleanupServiceStub(MockCleanupService());
-  final tag = TagServiceStub(MockTagService());
+  final tag = TagApiRepositoryStub(MockTagApiRepository());
   final backgroundSync = MockBackgroundSyncManager();
   final upload = MockForegroundUploadService();
   final cast = MockGCastService();
@@ -154,7 +154,7 @@ class ServiceMocks {
     _stubAssetService();
     _stubRemoteAlbumService();
     _stubCleanupService();
-    _stubTagService();
+    _stubTagApi();
     _stubBackgroundSync();
     _stubForegroundUpload();
   }
@@ -198,10 +198,10 @@ class ServiceMocks {
     when(cleanup.deleteLocalAssets).thenAnswer((_) async => 0);
   }
 
-  void _stubTagService() {
+  void _stubTagApi() {
     when(tag.bulkTagAssets).thenAnswer((_) async => 0);
-    when(tag.upsertTags).thenAnswer((_) async => const []);
-    when(tag.getAllTags).thenAnswer((_) async => const {});
+    when(tag.upsert).thenAnswer((_) async => const []);
+    when(tag.getAll).thenAnswer((_) async => const []);
   }
 
   void _stubBackgroundSync() {
@@ -269,8 +269,8 @@ extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo) imp
 
 extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
     implements Stub<MockRemoteAssetRepository> {
-  Future<ExifInfo?> Function() get getExif =>
-      () => repo.getExif(any());
+  Stream<ExifInfo?> Function() get watchExif =>
+      () => repo.watchExif(any());
 
   Future<List<AssetEdit>> Function() get getAssetEdits =>
       () => repo.getAssetEdits(any());
@@ -442,13 +442,13 @@ extension type const PermissionRepositoryStub(MockPermissionRepository repo) imp
       () => repo.getAndroidSdkVersion();
 }
 
-extension type const TagServiceStub(MockTagService service) implements Stub<MockTagService> {
+extension type const TagApiRepositoryStub(MockTagApiRepository repo) implements Stub<MockTagApiRepository> {
   Future<int> Function() get bulkTagAssets =>
-      () => service.bulkTagAssets(any(), any());
+      () => repo.bulkTagAssets(any(), any());
 
-  Future<List<Tag>> Function() get upsertTags =>
-      () => service.upsertTags(any());
+  Future<List<Tag>> Function() get upsert =>
+      () => repo.upsert(any());
 
-  Future<Set<Tag>> Function() get getAllTags =>
-      () => service.getAllTags();
+  Future<List<Tag>> Function() get getAll =>
+      () => repo.getAll();
 }

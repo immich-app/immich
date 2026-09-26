@@ -89,6 +89,9 @@ export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting p
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
+
+  /** pictures of a person, shown leading up to their birthday */
+  Birthday = 'birthday',
 }
 
 export const MemoryTypeSchema = z.enum(MemoryType).describe('Memory type').meta({ id: 'MemoryType' });
@@ -1038,7 +1041,9 @@ export enum SyncRequestType {
   PeopleV1 = 'PeopleV1',
   /** @deprecated */
   AssetFacesV1 = 'AssetFacesV1',
+  /** @deprecated */
   AssetFacesV2 = 'AssetFacesV2',
+  AssetFacesV3 = 'AssetFacesV3',
   UserMetadataV1 = 'UserMetadataV1',
 }
 
@@ -1119,8 +1124,11 @@ export enum SyncEntityType {
   PersonV1 = 'PersonV1',
   PersonDeleteV1 = 'PersonDeleteV1',
 
+  /** @deprecated */
   AssetFaceV1 = 'AssetFaceV1',
+  /** @deprecated */
   AssetFaceV2 = 'AssetFaceV2',
+  AssetFaceV3 = 'AssetFaceV3',
   AssetFaceDeleteV1 = 'AssetFaceDeleteV1',
 
   UserMetadataV1 = 'UserMetadataV1',

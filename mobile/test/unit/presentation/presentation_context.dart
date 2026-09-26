@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/server/tag.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -24,6 +25,7 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
@@ -63,6 +65,8 @@ class PresentationContext {
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
     assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
+    permissionRepositoryProvider.overrideWithValue(repository.permission.repo),
+    tagApiRepositoryProvider.overrideWithValue(service.tag.repo),
   ];
 
   Drift _mockDrift() {

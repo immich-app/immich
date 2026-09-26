@@ -9,6 +9,7 @@ enum ServerCapability {
   syncV2(SemVer(major: 3, minor: 0, patch: 0)),
   syncAssetEditsV1(SemVer(major: 2, minor: 6, patch: 0)),
   syncAssetFacesV2(SemVer(major: 2, minor: 6, patch: 0)),
+  syncAssetFacesV3(SemVer(major: 3, minor: 3, patch: 0)),
   syncAssetOcrV1(SemVer(major: 3, minor: 0, patch: 0)),
   syncAuthUsersV2(SemVer(major: 3, minor: 3, patch: 0)),
 

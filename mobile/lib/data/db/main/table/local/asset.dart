@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/data/db/util/asset_mixin.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
@@ -20,7 +21,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   TextColumn get iCloudId => text().nullable()();
 
-  DateTimeColumn get adjustmentTime => dateTime().nullable()();
+  DateTimeColumn get adjustmentTime => customType(clampedDateTime).nullable()();
 
   RealColumn get latitude => real().nullable()();
 
@@ -28,8 +29,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().withDefault(const Constant(0))();
 
-  /// Checksum this asset had before its bytes last changed, so the upload of the
-  /// edited asset can be stacked over the remote asset that still has the old bytes.
+  /// Checksum of the last synced version of this asset
   TextColumn get previousChecksum => text().nullable()();
 
   @override

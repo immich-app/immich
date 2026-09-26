@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
@@ -12,6 +13,7 @@ class PartnerRepository extends DatabaseAccessor<Drift> with $PartnerRepositoryM
 
   Drift get _db => attachedDatabase;
 
+  @visibleForTesting
   Future<Partner> get({required String sharedById, required String sharedWithId}) =>
       (_db.select(_db.partnerEntity).join([
             innerJoin(_db.userEntity, _db.userEntity.id.equalsExp(_db.partnerEntity.sharedById)),
