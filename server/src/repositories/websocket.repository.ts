@@ -25,7 +25,9 @@ export const serverEvents = [
   'HlsSessionRequest',
   'HlsSessionResult',
   'HlsSessionEnd',
+  'UploadAbort',
 ] as const;
+
 export type ServerEvents = (typeof serverEvents)[number];
 
 export interface ClientEventMap {
