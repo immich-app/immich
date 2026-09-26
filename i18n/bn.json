@@ -369,7 +369,6 @@
     "storage_template_migration_info": "স্টোরেজ টেমপ্লেটটি সমস্ত এক্সটেনশনকে ছোট হাতের অক্ষরে (lowercase) রূপান্তর করবে। টেমপ্লেটের পরিবর্তনগুলো কেবল নতুন অ্যাসেটগুলোর ক্ষেত্রে প্রযোজ্য হবে। পূর্বে আপলোড করা অ্যাসেটগুলোতে এই টেমপ্লেটটি ভূতাপেক্ষভাবে (retroactively) প্রয়োগ করতে <link>{job}</link> রান করুন।",
     "storage_template_migration_job": "স্টোরেজ টেমপ্লেট মাইগ্রেশন জব",
     "storage_template_more_details": "এই ফিচার সম্পর্কে আরও বিস্তারিতভাবে জানতে <template-link>Storage Template</template-link> এবং এর <implications-link>প্রভাব</implications-link> দেখুন",
-    "storage_template_onboarding_description_v2": "এটি সক্রিয় থাকলে, ফিচারটি ব্যবহারকারীর নির্ধারিত টেমপ্লেট অনুযায়ী ফাইলগুলোকে স্বয়ংক্রিয়ভাবে অর্গানাইজ (Auto-organize) করবে। আরও তথ্যের জন্য অনুগ্রহ করে <link>ডকুমেন্টেশন</link> দেখুন।",
     "storage_template_path_length": "আনুমানিকভাবে পথের দৈর্ঘ্যের সীমা: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "স্টোরেজ টেমপ্লেট (Storage Template)",
     "storage_template_settings_description": "আপলোড করা অ্যাসেটের ফোল্ডার স্ট্রাকচার এবং ফাইল নেম ম্যানেজ করুন",

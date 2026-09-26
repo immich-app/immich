@@ -333,7 +333,6 @@
     "storage_template_migration_info": "संच टेम्पलेट सर्व एक्स्टेंशन्स लघू (लोअरकेस)मध्ये रूपांतरित करेल. टेम्पलेट बदल फक्त नवीन मालमत्तांवर लागू होतील. पूर्वी अपलोड केलेल्या मालमत्तांवर रेट्रो-लागू करण्यासाठी <link>{job}</link> चालवा।",
     "storage_template_migration_job": "संग्रह टेम्प्लेट स्थलांतर जॉब",
     "storage_template_more_details": "या वैशिष्ट्याबद्दल अधिक माहितीसाठी, <template-link>संग्रह टेम्प्लेट</template-link> आणि त्याचे <implications-link>परिणाम</implications-link> पहा",
-    "storage_template_onboarding_description_v2": "सक्षम केल्यास, ही वैशिष्ट्य वापरकर्ताद्वारे परिभाषित टेम्प्लेटच्या आधारे फायली स्वयंचलितपणे आयोजित करेल. अधिक माहितीसाठी, कृपया <link>दस्तऐवजीकरण</link> पहा.",
     "storage_template_path_length": "मार्गाची अंदाजे लांबी मर्यादा: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "संग्रह टेम्प्लेट",
     "storage_template_settings_description": "अपलोड केलेल्या फायलींच्या फोल्डर संरचना आणि नाव व्यवस्थापित करा",

@@ -336,7 +336,6 @@
     "storage_template_migration_info": "சேமிப்பக வார்ப்புரு அனைத்து நீட்டிப்புகளையும் சிறிய எழுத்துக்களுக்கு மாற்றும். டெம்ப்ளேட் மாற்றங்கள் புதிய படங்களுக்கு மட்டுமே பொருந்தும். முன்பு பதிவேற்றிய படங்களுக்கு டெம்ப்ளேட்டைப் பயன்படுத்த, <link>{job}</link> ஐ இயக்கவும்.",
     "storage_template_migration_job": "ஸ்டோரேஜ் டெம்ப்ளேட் இடம்பெயர்வு வேலை",
     "storage_template_more_details": "இந்த நற்பண்பைப் பற்றிய கூடுதல் விவரங்களுக்கு, <template-link>Storage Template</template-link> மற்றும் அதன் <implications-link>தாக்கங்கள்</implications-link> ஐப் பார்க்கவும்",
-    "storage_template_onboarding_description_v2": "இயக்கப்பட்டால், இந்த நற்பண்பைப் பயனர் வரையறுக்கப்பட்ட டெம்ப்ளேட்டின் அடிப்படையில் கோப்புகளைத் தானாக ஒழுங்கமைக்கும். மேலும் தகவலுக்கு, <link>ஆவணங்கள்</link> ஐப் பார்.",
     "storage_template_path_length": "தோராயமான பாதை நீள வரம்பு: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "ஸ்டோரேஜ் டெம்ப்ளேட்",
     "storage_template_settings_description": "பதிவேற்ற புகைப்படங்களின் கோப்புறை அமைப்பு மற்றும் கோப்பு பெயரை நிர்வகிக்கவும்",

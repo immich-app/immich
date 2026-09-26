@@ -1,5 +1,6 @@
 {
   "about": "ಕುರಿತು",
+  "accept": "ಸ್ವೀಕರಿಸಿ",
   "account": "ಖಾತೆ",
   "account_settings": "ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
   "acknowledge": "ಅಂಗೀಕರಿಸಿ",
@@ -359,7 +360,6 @@
     "storage_template_migration_info": "ಸಂಗ್ರಹಣೆ ಟೆಂಪ್ಲೇಟ್ ಎಲ್ಲಾ ವಿಸ್ತರಣೆಗಳನ್ನು ಸಣ್ಣಕ್ಷರಕ್ಕೆ ಪರಿವರ್ತಿಸುತ್ತದೆ. ಟೆಂಪ್ಲೇಟ್ ಬದಲಾವಣೆಗಳು ಹೊಸ ಸ್ವತ್ತುಗಳಿಗೆ ಮಾತ್ರ ಅನ್ವಯಿಸುತ್ತವೆ. ಹಿಂದೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ಸ್ವತ್ತುಗಳಿಗೆ ಟೆಂಪ್ಲೇಟ್ ಅನ್ನು ಪೂರ್ವಾನ್ವಯವಾಗಿ ಅನ್ವಯಿಸಲು, <link>{job}</link> ಅನ್ನು ರನ್ ಮಾಡಿ.",
     "storage_template_migration_job": "ಸಂಗ್ರಹಣೆ ಟೆಂಪ್ಲೇಟ್ ವಲಸೆ ಕೆಲಸ",
     "storage_template_more_details": "ಈ ವೈಶಿಷ್ಟ್ಯದ ಕುರಿತು ಹೆಚ್ಚಿನ ವಿವರಗಳಿಗಾಗಿ, <template-link>Storage Template</template-link> ಮತ್ತು ಅದರ <implications-link>implications</implications-link> ಅನ್ನು ನೋಡಿ",
-    "storage_template_onboarding_description_v2": "ಸಕ್ರಿಯಗೊಳಿಸಿದಾಗ, ಈ ವೈಶಿಷ್ಟ್ಯವು ಬಳಕೆದಾರ-ವ್ಯಾಖ್ಯಾನಿತ ಟೆಂಪ್ಲೇಟ್ ಅನ್ನು ಆಧರಿಸಿ ಫೈಲ್‌ಗಳನ್ನು ಸ್ವಯಂ-ಸಂಘಟಿಸುತ್ತದೆ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, ದಯವಿಟ್ಟು <link>documentation</link> ನೋಡಿ.",
     "storage_template_path_length": "ಅಂದಾಜು ಮಾರ್ಗ ಉದ್ದದ ಮಿತಿ: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "ಸಂಗ್ರಹಣೆ ಟೆಂಪ್ಲೇಟ್",
     "storage_template_settings_description": "ಅಪ್‌ಲೋಡ್ ಸ್ವತ್ತಿನ ಫೋಲ್ಡರ್ ರಚನೆ ಮತ್ತು ಫೈಲ್ ಹೆಸರನ್ನು ನಿರ್ವಹಿಸಿ",
