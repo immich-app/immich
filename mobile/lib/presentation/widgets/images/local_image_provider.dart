@@ -140,10 +140,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final loadPreview = SettingsRepository.instance.appConfig.image.loadPreview;
     yield* initialImageStream(isFinal: !loadOriginal && !loadPreview);
 
-    if (isCancelled) {
-      return;
-    }
-
     if (loadPreview) {
       final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
       final previewRequest = request = LocalImageRequest(
@@ -152,10 +148,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
         assetType: key.assetType,
       );
       yield* loadRequest(previewRequest, decode, isFinal: !loadOriginal);
-
-      if (isCancelled) {
-        return;
-      }
     }
 
     if (!loadOriginal) {
@@ -169,10 +161,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream(isFinal: false);
 
-    if (isCancelled) {
-      return;
-    }
-
     if (SettingsRepository.instance.appConfig.image.loadPreview) {
       final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
       final previewRequest = request = LocalImageRequest(
@@ -181,10 +169,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
         assetType: key.assetType,
       );
       yield* loadRequest(previewRequest, decode, isFinal: false);
-
-      if (isCancelled) {
-        return;
-      }
     }
 
     // always try original for animated, since previews don't support animation
