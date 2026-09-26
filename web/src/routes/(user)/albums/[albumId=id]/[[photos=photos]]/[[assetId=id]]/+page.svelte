@@ -378,7 +378,7 @@
               <AlbumTitle
                 id={album.id}
                 albumName={album.albumName}
-                {isOwned}
+                {isEditor}
                 onUpdate={(albumName) => (album = { ...album, albumName })}
               />
 
@@ -428,7 +428,7 @@
               {/if}
               <AlbumDescription
                 id={album.id}
-                {isOwned}
+                {isEditor}
                 bind:description={() => album.description, (description) => (album = { ...album, description })}
               />
             </section>
