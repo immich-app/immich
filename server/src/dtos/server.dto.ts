@@ -122,6 +122,7 @@ const ServerConfigSchema = z
     isOnboarded: z.boolean().describe('Whether the admin has completed onboarding'),
     externalDomain: z.string().describe('External domain URL'),
     publicUsers: z.boolean().describe('Whether public user registration is enabled'),
+    castReceiverAppId: z.string().describe('Google Cast custom receiver application ID, if configured'),
     mapDarkStyleUrl: z.string().describe('Map dark style URL'),
     mapLightStyleUrl: z.string().describe('Map light style URL'),
     maintenanceMode: z.boolean().describe('Whether maintenance mode is active'),

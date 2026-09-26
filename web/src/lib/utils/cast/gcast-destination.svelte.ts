@@ -1,16 +1,28 @@
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { CastDestinationType, CastState, type ICastDestination } from '$lib/managers/cast-manager.svelte';
+import {
+  CastDestinationType,
+  CastState,
+  type CastMediaSource,
+  type ICastDestination,
+} from '$lib/managers/cast-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
+import { withCastSession } from '$lib/utils/cast/cast-url';
+import { createPhotoMessage, isPhotoReceiver, PHOTO_NAMESPACE } from '$lib/utils/cast/photo-message';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
 
-enum SESSION_DISCOVERY_CAUSE {
-  LOAD_MEDIA,
-  ACTIVE_SESSION,
-}
-
 export class GCastDestination implements ICastDestination {
+  private get customReceiverAppId(): string | undefined {
+    return (
+      userPreferencesManager.castReceiverAppId.trim() ||
+      (import.meta.env.VITE_IMMICH_CAST_RECEIVER_APP_ID as string | undefined)?.trim() ||
+      serverConfigManager.value.castReceiverAppId.trim() ||
+      undefined
+    );
+  }
   type = CastDestinationType.GCAST;
   isAvailable = $state<boolean>(false);
   isConnected = $state<boolean>(false);
@@ -18,14 +30,47 @@ export class GCastDestination implements ICastDestination {
   duration = $state<number | null>(null);
   castState = $state<CastState>(CastState.IDLE);
   receiverName = $state<string | null>(null);
+  volumeLevel = $state<number | null>(null);
+  isMuted = $state<boolean | null>(null);
 
   private remotePlayer: cast.framework.RemotePlayer | null = null;
+  private remotePlayerController: cast.framework.RemotePlayerController | null = null;
   private session: chrome.cast.Session | null = null;
   private currentMedia: chrome.cast.media.Media | null = null;
-  private currentUrl: string | null = null;
+  private loadedUrl: string | null = null;
+  private loadedPhotoSignature: string | null = null;
+  private photoRequestId = 0;
+  // MIME lookups do not participate in Svelte reactivity.
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  private contentTypes = new Map<string, Promise<string>>();
+
+  private onPhotoMessage = (_namespace: string, message: string) => {
+    try {
+      const response = JSON.parse(message) as {
+        type?: string;
+        requestId?: number;
+      };
+      if (response.requestId !== this.photoRequestId) {
+        return;
+      }
+      if (response.type === 'PHOTO_ERROR') {
+        this.loadedUrl = null;
+        this.loadedPhotoSignature = null;
+        console.error('Google Cast: receiver failed to load photo');
+      }
+    } catch {
+      // Ignore messages not using the photo protocol.
+    }
+  };
 
   async initialize(): Promise<boolean> {
     if (!authManager.authenticated || !authManager.preferences.cast.gCastEnabled) {
+      this.isAvailable = false;
+      return false;
+    }
+
+    const receiverAppId = this.customReceiverAppId;
+    if (!receiverAppId) {
       this.isAvailable = false;
       return false;
     }
@@ -72,7 +117,7 @@ export class GCastDestination implements ICastDestination {
     this.remotePlayer = new cast.framework.RemotePlayer();
 
     castContext.setOptions({
-      receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+      receiverApplicationId: receiverAppId,
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
 
@@ -84,47 +129,118 @@ export class GCastDestination implements ICastDestination {
       this.onCastStateChanged(event),
     );
 
-    const remotePlayerController = new cast.framework.RemotePlayerController(this.remotePlayer);
-    remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.ANY_CHANGE, (event) =>
+    this.remotePlayerController = new cast.framework.RemotePlayerController(this.remotePlayer);
+    this.remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.ANY_CHANGE, (event) =>
       this.onRemotePlayerChange(event),
     );
 
     return true;
   }
 
-  async loadMedia(mediaUrl: string, sessionKey: string, reload: boolean = false): Promise<void> {
+  prepareMedia(source: CastMediaSource): Promise<string> {
+    if (source.contentType) {
+      return Promise.resolve(source.contentType);
+    }
+
+    if (source.kind === 'photo') {
+      // The custom receiver decodes the image itself and falls back to the thumbnail if preview loading fails.
+      return Promise.resolve('image/*');
+    }
+
+    const cached = this.contentTypes.get(source.key);
+    if (cached) {
+      return cached;
+    }
+
+    const lookup = fetch(source.url, { method: 'HEAD' }).then((response) => {
+      const contentType = response.headers.get('content-type')?.split(';', 1)[0];
+      if (!response.ok || !contentType) {
+        throw new Error(`Unable to resolve Cast media type (${response.status})`);
+      }
+      return contentType;
+    });
+    this.contentTypes.set(source.key, lookup);
+    if (this.contentTypes.size > 256) {
+      this.contentTypes.delete(this.contentTypes.keys().next().value!);
+    }
+    void lookup.catch(() => this.contentTypes.delete(source.key));
+    return lookup;
+  }
+
+  async loadMedia(source: CastMediaSource, sessionKey: string, reload: boolean = false): Promise<boolean> {
     if (!this.isAvailable || !this.isConnected || !this.session) {
-      return;
+      throw new Error('Google Cast session is unavailable');
     }
 
-    // already playing the same media
-    if (this.currentUrl === mediaUrl && !reload) {
-      return;
+    const activeSession = this.session;
+    if (!isPhotoReceiver(activeSession.appId, this.customReceiverAppId)) {
+      throw new Error('Google Cast session is not using the configured Immich receiver');
+    }
+    const photoSignature = [source.url, source.neighbors?.previous?.url, source.neighbors?.next?.url].join('|');
+    if (
+      this.loadedUrl === source.url &&
+      !reload &&
+      (!source.neighbors || this.loadedPhotoSignature === photoSignature)
+    ) {
+      return false;
     }
 
-    // we need to send content type in the request
-    // in the future we can swap this out for an API call to get image metadata
-    const assetHead = await fetch(mediaUrl, { method: 'HEAD' });
-    const contentType = assetHead.headers.get('content-type');
-
-    if (!contentType) {
-      throw new Error('No content type found for media url');
+    const contentType = await this.prepareMedia(source);
+    if (this.session !== activeSession || !this.isConnected) {
+      return false;
     }
 
-    // build the authenticated media request and send it to the cast device
-    const authenticatedUrl = `${mediaUrl}&sessionKey=${sessionKey}`;
-    const mediaInfo = new chrome.cast.media.MediaInfo(authenticatedUrl, contentType);
+    if (contentType.startsWith('image/')) {
+      const requestId = ++this.photoRequestId;
+      // PHOTO_ERROR can arrive before the transport acknowledges sendMessage.
+      // Record the selection first so an error cannot be overwritten by that acknowledgement.
+      this.currentMedia = null;
+      this.loadedUrl = source.url;
+      this.loadedPhotoSignature = photoSignature;
+      try {
+        await new Promise<void>((resolve, reject) => {
+          activeSession.sendMessage(
+            PHOTO_NAMESPACE,
+            createPhotoMessage(source, sessionKey, requestId),
+            resolve,
+            (error) => reject(new Error(`Google Cast photo request failed: ${error.code}`)),
+          );
+        });
+      } catch (error) {
+        if (this.session === activeSession && this.photoRequestId === requestId) {
+          this.loadedUrl = null;
+          this.loadedPhotoSignature = null;
+        }
+        throw error;
+      }
+      return true;
+    }
+
+    const mediaInfo = new chrome.cast.media.MediaInfo(withCastSession(source.url, sessionKey), contentType);
+    if (contentType.startsWith('video/')) {
+      mediaInfo.customData = { immichLoop: true };
+    }
 
     // Create a queue with a single item and set it to repeat
     const queueItem = new chrome.cast.media.QueueItem(mediaInfo);
     const queueLoadRequest = new chrome.cast.media.QueueLoadRequest([queueItem]);
     queueLoadRequest.repeatMode = chrome.cast.media.RepeatMode.SINGLE;
 
-    const successCallback = this.onMediaDiscovered.bind(this, SESSION_DISCOVERY_CAUSE.LOAD_MEDIA);
-
-    this.currentUrl = mediaUrl;
-
-    return this.session.queueLoad(queueLoadRequest, successCallback, this.onError.bind(this));
+    await new Promise<void>((resolve, reject) => {
+      activeSession.queueLoad(
+        queueLoadRequest,
+        (media) => {
+          if (this.session === activeSession) {
+            this.currentMedia = media;
+            this.loadedUrl = source.url;
+            this.loadedPhotoSignature = null;
+          }
+          resolve();
+        },
+        (error) => reject(new Error(`Google Cast load failed: ${error.code}`)),
+      );
+    });
+    return true;
   }
 
   ///
@@ -152,19 +268,36 @@ export class GCastDestination implements ICastDestination {
   }
 
   seekTo(time: number): void {
-    const remotePlayer = new cast.framework.RemotePlayer();
-    const remotePlayerController = new cast.framework.RemotePlayerController(remotePlayer);
-    remotePlayer.currentTime = time;
-    remotePlayerController.seek();
+    if (!this.remotePlayer || !this.remotePlayerController) {
+      return;
+    }
+
+    this.remotePlayer.currentTime = time;
+    this.remotePlayerController.seek();
+  }
+
+  setVolume(level: number): void {
+    if (!this.remotePlayer || !this.remotePlayerController) {
+      return;
+    }
+
+    this.remotePlayer.volumeLevel = Math.min(1, Math.max(0, level));
+    this.remotePlayerController.setVolumeLevel();
+  }
+
+  toggleMute(): void {
+    if (!this.remotePlayer || !this.remotePlayerController) {
+      return;
+    }
+
+    this.remotePlayer.isMuted = !this.remotePlayer.isMuted;
+    this.remotePlayerController.muteOrUnmute();
   }
 
   disconnect(): void {
-    this.session?.leave(() => {
-      this.session = null;
-      this.castState = CastState.IDLE;
-      this.isConnected = false;
-      this.receiverName = null;
-    }, this.onError.bind(this));
+    if (this.session) {
+      cast.framework.CastContext.getInstance().endCurrentSession(true);
+    }
   }
 
   ///
@@ -174,12 +307,48 @@ export class GCastDestination implements ICastDestination {
     switch (event.sessionState) {
       case cast.framework.SessionState.NO_SESSION:
       case cast.framework.SessionState.SESSION_ENDED: {
+        if (this.session && isPhotoReceiver(this.session.appId, this.customReceiverAppId)) {
+          this.session?.removeMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
+        }
         this.session = null;
+        this.isConnected = false;
+        this.currentMedia = null;
+        this.loadedUrl = null;
+        this.loadedPhotoSignature = null;
         break;
       }
       case cast.framework.SessionState.SESSION_RESUMED:
       case cast.framework.SessionState.SESSION_STARTED: {
-        this.session = event.session.getSessionObj();
+        if (this.session && isPhotoReceiver(this.session.appId, this.customReceiverAppId)) {
+          this.session?.removeMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
+        }
+        const session = event.session.getSessionObj();
+        if (!isPhotoReceiver(session.appId, this.customReceiverAppId)) {
+          this.session = null;
+          this.isConnected = false;
+          return;
+        }
+        this.session = session;
+        if (isPhotoReceiver(this.session.appId, this.customReceiverAppId)) {
+          this.session.addMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
+        }
+        this.isConnected = true;
+        this.receiverName = this.session.receiver.friendlyName;
+        this.volumeLevel = this.remotePlayer?.volumeLevel ?? null;
+        this.isMuted = this.remotePlayer?.isMuted ?? null;
+        this.currentMedia = this.session.media?.[0] ?? null;
+        const contentId = this.currentMedia?.media?.contentId;
+        if (contentId) {
+          try {
+            // eslint-disable-next-line svelte/prefer-svelte-reactivity
+            const url = new URL(contentId);
+            url.searchParams.delete('sessionKey');
+            this.loadedUrl = url.href;
+            this.castState = this.currentMedia!.playerState as unknown as CastState;
+          } catch {
+            this.loadedUrl = null;
+          }
+        }
         break;
       }
       case cast.framework.SessionState.SESSION_START_FAILED: {
@@ -191,19 +360,20 @@ export class GCastDestination implements ICastDestination {
   }
 
   private onCastStateChanged(event: cast.framework.CastStateEventData) {
-    this.isConnected = event.castState === cast.framework.CastState.CONNECTED;
+    this.isConnected = event.castState === cast.framework.CastState.CONNECTED && !!this.session;
     this.receiverName = this.session?.receiver.friendlyName ?? null;
 
     if (event.castState === cast.framework.CastState.NOT_CONNECTED) {
       this.currentMedia = null;
-      this.currentUrl = null;
+      this.loadedUrl = null;
+      this.loadedPhotoSignature = null;
     }
   }
 
   private onRemotePlayerChange(event: cast.framework.RemotePlayerChangedEvent) {
     switch (event.field) {
       case 'isConnected': {
-        this.isConnected = event.value;
+        this.isConnected = event.value && !!this.session;
         break;
       }
       case 'remotePlayer': {
@@ -222,6 +392,14 @@ export class GCastDestination implements ICastDestination {
         this.castState = event.value;
         break;
       }
+      case 'volumeLevel': {
+        this.volumeLevel = event.value;
+        break;
+      }
+      case 'isMuted': {
+        this.isMuted = event.value;
+        break;
+      }
     }
   }
 
@@ -229,24 +407,17 @@ export class GCastDestination implements ICastDestination {
     console.error('Google Cast Error:', error);
   }
 
-  private onMediaDiscovered(cause: SESSION_DISCOVERY_CAUSE, currentMedia: chrome.cast.media.Media) {
-    this.currentMedia = currentMedia;
-
-    if (cause === SESSION_DISCOVERY_CAUSE.LOAD_MEDIA) {
-      this.castState = CastState.PLAYING;
-    } else if (cause === SESSION_DISCOVERY_CAUSE.ACTIVE_SESSION) {
-      // CastState and PlayerState are identical enums
-      this.castState = currentMedia.playerState as unknown as CastState;
-    }
-  }
-
   static async showCastDialog() {
+    const context = cast.framework.CastContext.getInstance();
     try {
-      await cast.framework.CastContext.getInstance().requestSession();
-    } catch {
-      // the cast dialog throws an error if the user closes it
-      // we don't care about this error
-      return;
+      await context.requestSession();
+    } catch (error) {
+      const code = typeof error === 'string' ? error : (error as { code?: string } | null)?.code;
+      if (code === chrome.cast.ErrorCode.CANCEL) {
+        return;
+      }
+      console.error('Google Cast: device picker failed', { error, castState: context.getCastState() });
+      throw error;
     }
   }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.ext.SdkExtensions
+import android.view.KeyEvent
 import app.alextran.immich.background.BackgroundEngineLock
 import app.alextran.immich.background.BackgroundWorkerApiImpl
 import app.alextran.immich.background.BackgroundWorkerFgHostApi
@@ -26,11 +27,45 @@ import app.alextran.immich.sync.NativeSyncApiImpl30
 import app.alextran.immich.viewintent.ViewIntentPlugin
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterFragmentActivity() {
+  private var castVolumeKeysActive = false
+  private var castVolumeChannel: MethodChannel? = null
+
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
     registerPlugins(this, flutterEngine)
+    castVolumeChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.immich/cast_volume")
+    castVolumeChannel?.setMethodCallHandler { call, result ->
+      when (call.method) {
+        "setActive" -> {
+          castVolumeKeysActive = call.arguments == true
+          result.success(null)
+        }
+        else -> result.notImplemented()
+      }
+    }
+  }
+
+  override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+    if (
+      castVolumeKeysActive &&
+        (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP || event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
+    ) {
+      if (event.action == KeyEvent.ACTION_DOWN) {
+        castVolumeChannel?.invokeMethod("volumeKey", if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) 1 else -1)
+      }
+      return true
+    }
+    return super.dispatchKeyEvent(event)
+  }
+
+  override fun onDestroy() {
+    castVolumeKeysActive = false
+    castVolumeChannel?.setMethodCallHandler(null)
+    castVolumeChannel = null
+    super.onDestroy()
   }
 
   override fun onNewIntent(intent: Intent) {

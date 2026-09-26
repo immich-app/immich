@@ -4,12 +4,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:logging/logging.dart';
 
 final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
   (ref) => CastNotifier(ref.watch(gCastServiceProvider)),
 );
 
 class CastNotifier extends StateNotifier<CastManagerState> {
+  static final _log = Logger('CastNotifier');
   // more cast providers can be added here (ie Fcast)
   final GCastService _gCastService;
 
@@ -53,7 +55,18 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   void loadMedia(RemoteAsset asset, bool reload) {
-    unawaited(_gCastService.loadMedia(asset, reload));
+    unawaited(
+      _gCastService.loadMedia(asset, reload).catchError((Object error, StackTrace stack) {
+        _log.warning('Unable to cast media', error, stack);
+        if (mounted) {
+          state = state.copyWith(castState: CastState.idle);
+        }
+      }),
+    );
+  }
+
+  void setPhotoNeighbors(RemoteAsset current, RemoteAsset? previous, RemoteAsset? next) {
+    _gCastService.setPhotoNeighbors(current, previous, next);
   }
 
   Future<void> connect(CastDestinationType type, dynamic device) async {

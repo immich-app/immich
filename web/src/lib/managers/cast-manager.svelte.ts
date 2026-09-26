@@ -1,7 +1,18 @@
 import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
 import { DateTime, Duration } from 'luxon';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
+import { LatestLoadQueue } from '$lib/utils/cast/latest-load-queue';
+
+export type CastMediaSource = {
+  key: string;
+  url: string;
+  kind?: 'photo';
+  contentType?: string;
+  fallback?: CastMediaSource;
+  neighbors?: { previous?: CastMediaSource; next?: CastMediaSource };
+};
 
 // follows chrome.cast.media.PlayerState
 export enum CastState {
@@ -28,12 +39,18 @@ export interface ICastDestination {
   receiverName: string | null; // name of the cast destination
   castState: CastState; // current state of the cast destination
 
-  loadMedia(mediaUrl: string, sessionKey: string, reload: boolean): Promise<void>; // load media to the cast destination
+  volumeLevel: number | null; // current volume level of the cast destination (0-1)
+  isMuted: boolean | null; // is the cast destination muted
+
+  prepareMedia(source: CastMediaSource): Promise<string>;
+  loadMedia(source: CastMediaSource, sessionKey: string, reload: boolean): Promise<boolean>;
 
   // remote player controls
   play(): void;
   pause(): void;
   seekTo(time: number): void;
+  setVolume(level: number): void;
+  toggleMute(): void;
   disconnect(): void;
 }
 
@@ -49,8 +66,13 @@ class CastManager {
   castState = $derived<CastState | null>(this.current?.castState ?? null);
   currentTime = $derived<number | null>(this.current?.currentTime ?? null);
   duration = $derived<number | null>(this.current?.duration ?? null);
+  volumeLevel = $derived<number | null>(this.current?.volumeLevel ?? null);
+  isMuted = $derived<boolean>(this.current?.isMuted ?? false);
 
   private sessionKey: SessionCreateResponseDto | null = null;
+  private sessionPromise: Promise<SessionCreateResponseDto> | null = null;
+  private sessionUserId: string | null = null;
+  private loadQueue = new LatestLoadQueue();
 
   constructor() {
     // load each cast destination
@@ -61,6 +83,13 @@ class CastManager {
 
     eventManager.on({
       AppInit: () => void this.initialize(),
+      AuthLogout: () => {
+        this.disconnect();
+        this.sessionKey = null;
+        this.sessionPromise = null;
+        this.sessionUserId = null;
+        this.loadQueue.invalidate();
+      },
     });
   }
 
@@ -104,32 +133,90 @@ class CastManager {
     return bufferedExpiration > DateTime.now();
   }
 
-  private async refreshSessionToken() {
-    // get session token to authenticate the media url
-    // check and make sure we have at least 10 seconds remaining in the session
-    // before we send the media request, refresh the session if needed
-    if (!this.isTokenValid()) {
-      this.sessionKey = await createSession({
-        sessionCreateDto: {
-          duration: Duration.fromObject({ minutes: 15 }).as('seconds'),
-          deviceOS: 'Google Cast',
-          deviceType: 'Cast',
-        },
-      });
+  private async refreshSessionToken(): Promise<SessionCreateResponseDto> {
+    if (!authManager.authenticated) {
+      throw new Error('No authenticated user for Cast');
+    }
+    const userId = authManager.user.id;
+    if (this.sessionUserId !== userId) {
+      this.sessionKey = null;
+      this.sessionPromise = null;
+      this.sessionUserId = userId;
+    }
+    if (this.isTokenValid()) {
+      return this.sessionKey!;
+    }
+
+    this.sessionPromise ??= createSession({
+      sessionCreateDto: {
+        duration: Duration.fromObject({ minutes: 15 }).as('seconds'),
+        deviceOS: 'Google Cast',
+        deviceType: 'Cast',
+      },
+    });
+    try {
+      const session = await this.sessionPromise;
+      if (!authManager.authenticated || authManager.user.id !== userId) {
+        throw new Error('Cast user changed while preparing credentials');
+      }
+      this.sessionKey = session;
+      return session;
+    } finally {
+      if (this.sessionUserId === userId) {
+        this.sessionPromise = null;
+      }
     }
   }
 
-  async loadMedia(mediaUrl: string, reload: boolean = false) {
-    if (!this.current) {
+  prepareSession(): void {
+    if (this.current) {
+      void this.refreshSessionToken().catch(() => {});
+    }
+  }
+
+  prepareMedia(source: CastMediaSource): void {
+    if (this.current) {
+      void this.resolveSource(this.current, source).catch(() => {});
+    }
+  }
+
+  private async resolveSource(destination: ICastDestination, source: CastMediaSource): Promise<CastMediaSource> {
+    try {
+      await destination.prepareMedia(source);
+      return source;
+    } catch (error) {
+      if (!source.fallback) {
+        throw error;
+      }
+      await destination.prepareMedia(source.fallback);
+      return source.fallback;
+    }
+  }
+
+  async loadMedia(source: CastMediaSource, reload: boolean = false) {
+    const destination = this.current;
+    if (!destination) {
       throw new Error('No active cast destination');
     }
 
-    await this.refreshSessionToken();
-    if (!this.sessionKey) {
-      throw new Error('No session key available');
-    }
-
-    await this.current.loadMedia(mediaUrl, this.sessionKey.token, reload);
+    const selectedAt = performance.now();
+    await this.loadQueue.run(
+      async () => {
+        const prepared = await Promise.all([this.refreshSessionToken(), this.resolveSource(destination, source)]);
+        return [...prepared, performance.now()] as const;
+      },
+      async ([session, resolvedSource, readyAt]) => {
+        if (destination !== this.current || !destination.isConnected) {
+          return;
+        }
+        performance.measure('cast:selection-to-ready', { start: selectedAt, end: readyAt });
+        const dispatchedAt = performance.now();
+        if (await destination.loadMedia(resolvedSource, session.token, reload)) {
+          performance.measure('cast:command-to-ack', { start: dispatchedAt, end: performance.now() });
+          performance.measure('cast:selection-to-ack', { start: selectedAt, end: performance.now() });
+        }
+      },
+    );
   }
 
   play() {
@@ -144,7 +231,16 @@ class CastManager {
     this.current?.seekTo(time);
   }
 
+  setVolume(level: number) {
+    this.current?.setVolume(level);
+  }
+
+  toggleMute() {
+    this.current?.toggleMute();
+  }
+
   disconnect() {
+    this.loadQueue.invalidate();
     this.current?.disconnect();
   }
 }

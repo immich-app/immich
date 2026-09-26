@@ -29,6 +29,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'recentlyAdded': RecentlyAddedResponse(sidebarWeb: false).toJson(),
   },
   'ServerConfigDto': {
+    'castReceiverAppId': '',
     'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
     'mapDarkStyleUrl': 'https://tiles.immich.cloud/v1/style/dark.json',
     'minFaces': 3,

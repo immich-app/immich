@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Immich Cast</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+
+      #photos,
+      #video-player,
+      cast-media-player {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #video-player {
+        background: #000;
+        object-fit: contain;
+      }
+
+      #photos {
+        background: #000;
+        overflow: hidden;
+      }
+
+      #photos .photo-frame {
+        position: absolute;
+        inset: 0;
+        background: #000;
+      }
+
+      #photos img,
+      #photos canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      #brand {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.25rem;
+        background: #000;
+        color: #fff;
+        font:
+          600 clamp(3rem, 6vw, 6rem) system-ui,
+          sans-serif;
+        z-index: 1;
+      }
+
+      #brand img {
+        width: clamp(4rem, 8vw, 8rem);
+        height: auto;
+      }
+
+      #spinner {
+        position: absolute;
+        right: 2rem;
+        bottom: 2rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 2px solid rgb(255 255 255 / 35%);
+        border-top-color: #fff;
+        border-radius: 50%;
+        filter: drop-shadow(0 0 3px #000);
+        animation: spin 0.8s linear infinite;
+        z-index: 1;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #spinner {
+          animation: none;
+        }
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+    <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+    <script type="module" src="/cast/receiver.js"></script>
+  </head>
+  <body>
+    <cast-media-player id="player" hidden></cast-media-player>
+    <video id="video-player" class="castMediaElement" hidden playsinline disablepictureinpicture></video>
+    <div id="photos" hidden></div>
+    <div id="brand" aria-label="Immich"><img src="/favicon.png" alt="" /><span>immich</span></div>
+    <div id="spinner" aria-label="Loading photo" hidden></div>
+  </body>
+</html>

@@ -102,7 +102,7 @@ export default typescriptEslint.config(
       parserOptions: {
         extraFileExtensions: ['.svelte'],
         tsconfigRootDir: import.meta.dirname,
-        project: ['./tsconfig.json'],
+        project: ['./tsconfig.json', './static/cast/tsconfig.json'],
       },
     },
 

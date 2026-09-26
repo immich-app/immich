@@ -126,6 +126,7 @@ describe('/server', () => {
         userDeleteDelay: 7,
         isInitialized: true,
         externalDomain: '',
+        castReceiverAppId: '',
         publicUsers: true,
         isOnboarded: false,
         maintenanceMode: false,
