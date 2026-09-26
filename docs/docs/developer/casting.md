@@ -14,7 +14,7 @@ Immich's web and mobile apps support casting photos and videos to a Chromecast d
 3. The user selects a Cast device
 4. The sender sends the Immich Custom Receiver application ID to the Cast device
 5. The Cast device connects to Google's server and queries for the application URL using the application ID
-6. The sender creates a temporary Immich session (15 minutes) and adds its token as the `sessionKey` query parameter to each media URL.
+6. The sender creates a temporary Immich session (15 minutes plus the video duration, when known) and adds its token as the `sessionKey` query parameter to each media URL.
 7. When the user selects a photo or video on the sender device, the preview URL of this media is sent to the Cast device together with the session key
 8. The receiver requests the media from the Immich server over HTTPS. Asset media responses with a `sessionKey` include headers that allow the receiver's cross-origin request.
 
@@ -24,7 +24,9 @@ For performance reasons, Immich uses a Custom Receiver application since the oth
 
 For a photo, the sender sends `SHOW_PHOTO` with the current photo's URL, optional previous and next photo URLs, and an optional thumbnail fallback URL. The receiver fetches and displays the current photo, preloads its neighbors, and responds with `PHOTO_READY` or `PHOTO_ERROR`. `CLEAR_PHOTO` clears the display. For these photo messages, the receiver accepts URLs only when their origin matches its own and their path starts with `/api/assets/`.
 
-Videos use the standard Cast media namespace. The sender loads a one-item queue with repeat enabled and marks the video with `immichLoop` in the media's custom data; the custom receiver uses that flag to loop its video element. Cast sends a direct playback or original-media URL, not the HLS session URL used for local web playback.
+Videos use the standard Cast media namespace. The sender loads a one-item queue with repeat enabled and marks the video with `immichLoop` in the media's custom data; the custom receiver uses that flag to loop its video element. Cast first sends a direct playback or original-media URL. If loading or playback fails, the sender retries once using the asset's HLS main playlist, resuming from the last known position. The original `contentId` is retained while `contentUrl` points at HLS, so sender controls continue tracking the same asset. Real-time transcoding must be enabled on the server and the asset must have streaming metadata; otherwise the HLS attempt fails normally.
+
+The receiver uses CAF's Shaka HLS player with fragmented MP4 segments. Its manifest and segment request hooks add the Cast session token only to URLs inside the selected asset's streaming path. It releases HLS sessions on media changes, stop, errors, and receiver shutdown. It periodically sends a HEAD request for the last segment to keep the session alive while paused or looping buffered media, without downloading that segment again. Authentication still expires after its allotted duration; a prolonged pause or repeated looping beyond that window requires reloading the video.
 
 ## Local development
 
@@ -37,8 +39,8 @@ When developing the custom receiver app, do the following steps:
 3. In the Developer Console, choose **Add new application** and select **Custom Receiver**. Enter the receiver URL `https://your-immich-host/cast/receiver.html` and save. Record the application ID assigned by Google.
 4. Register your Cast device in the same Developer Console: choose **Add new device**, enter its serial number and a description, then save. Wait at least 15 minutes for registration, then restart the device.
 5. Ensure the Cast device can reach the receiver page and media URLs over HTTPS.
-6. In the web app, enter the application ID under **Account Settings > Features > Cast > Receiver application ID override**.
-7. In the mobile app, enter it under **Settings > Advanced > Receiver application ID override**.
+6. In the web app, enter the application ID under **Account Settings > Features > Cast > Receiver application ID override**. It is saved in that browser's local storage, not to the Immich server or your account, and applies only in that browser. To use the custom receiver on another browser, set the override there too.
+7. In the mobile app, enter it under **Settings > Advanced > Receiver application ID override**. This is stored locally on that device.
 
 ## Testing
 
@@ -46,7 +48,10 @@ Unfortunately, automated testing is not possible with casting, so we have to do 
 
 - Start casting and confirm the Cast picker opens and launches the custom Immich receiver and it loads the Immich splash screen.
 - Cast a photo. Confirm it loads, then navigate to the previous and next photos using the sender. Navigate quickly across several photos and confirm the receiver ends on the selected photo. There should be no black frames between loading photos.
+- With real-time transcoding enabled, cast a video the receiver cannot play directly. Confirm it retries as HLS, adapts quality, and supports seeking. Pause for more than five minutes and resume, then switch to a photo and confirm the HLS session is released. Repeat with transcoding disabled and confirm the failure does not cause repeated retries.
+- Cast a video longer than 15 minutes and confirm authenticated segment requests continue for the full video.
 - Cast a video. Confirm it plays, loops at the end, and responds to play, pause, seek, and stop actions from the sender.
+- While playing a video, it should display the video thumbnail on the client device as a static image and not play the video locally.
 - While playing a video from Android, changing the device volume should change the cast volume.
 - Switch between photos and videos during an active session. Confirm the previous media stops and does not replace or interrupt the newly selected asset.
 - Disconnect from the sender and from the Cast device, then reconnect. Confirm the receiver name and current casting state recover correctly.

@@ -20,5 +20,7 @@ To use casting with Immich, there are a few prerequisites:
 
 1. Your Immich instance must be accessed via HTTPS using a real TLS certificate. Self-signed certificates are not supported by the Google Cast SDK.
 2. Your Cast device must be able to reach your instance over HTTPS and resolve its hostname.
+3. Videos first use direct playback. If playback fails, Immich retries using HLS when real-time transcoding is enabled and streaming metadata is ready. HLS can adapt video quality to the connection, but uses server resources for transcoding.
+4. Cast authentication lasts for the video's known duration plus a 15-minute margin. Long pauses or repeated loops beyond this window require reloading the video.
 
 If you have a proxy or authentication in front of your instance, casting will not work. If you are able, try exempting the cast device from the authentication proxy.

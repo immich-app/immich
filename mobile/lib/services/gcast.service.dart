@@ -66,6 +66,10 @@ class GCastService {
   final Map<String, Future<String>> _mimeTypes = {};
   int _selectionGeneration = 0;
   int _credentialGeneration = 0;
+  RemoteAsset? _selectedVideo;
+  bool _hlsAttempted = false;
+  double _videoPosition = 0;
+  String? _videoPlaybackUrl;
   RemoteAsset? _selectedPhoto;
   RemoteAsset? _previousPhoto;
   RemoteAsset? _nextPhoto;
@@ -187,6 +191,7 @@ class GCastService {
       _selectedSourceUrl = null;
       _sessionId = null;
       _clearPending();
+      _selectedVideo = null;
       _selectionGeneration++;
       _credentialGeneration++;
       sessionKey = null;
@@ -213,10 +218,14 @@ class GCastService {
         _handleMediaStatus(message);
       case "LOAD_FAILED":
         if (_pendingRequestId != null && message['requestId'] == _pendingRequestId) {
+          if (_tryHlsFallback()) {
+            return;
+          }
           _clearPending();
           _mediaStatusPollingTimer?.cancel();
           _castingVideo = false;
           _updateHardwareVolumeKeys();
+          onCastState?.call(CastState.idle);
         }
       case "PHOTO_READY":
         if (_pendingRequestId != null && message['requestId'] == _pendingRequestId) {
@@ -252,6 +261,10 @@ class GCastService {
 
     final status = statusList[0];
     final contentId = status['media']?['contentId'];
+    final contentUrl = status['media']?['contentUrl'];
+    if (_videoPlaybackUrl != null && contentUrl != null && contentUrl != _videoPlaybackUrl) {
+      return;
+    }
     if (_pendingCastUrl != null && contentId != null && contentId != _pendingCastUrl) {
       return;
     }
@@ -266,6 +279,12 @@ class GCastService {
       if (_currentSourceUrl?.contains('/thumbnail?') ?? false) {
         _mediaStatusPollingTimer?.cancel();
       }
+    }
+    if (status['playerState'] != 'IDLE' && status['currentTime'] is num) {
+      _videoPosition = (status['currentTime'] as num).toDouble();
+    }
+    if (status['playerState'] == 'IDLE' && status['idleReason'] == 'ERROR' && _tryHlsFallback()) {
+      return;
     }
     switch (status['playerState']) {
       case "PLAYING":
@@ -329,6 +348,7 @@ class GCastService {
     _selectedSourceUrl = null;
     _sessionId = null;
     _clearPending();
+    _selectedVideo = null;
     _selectionGeneration++;
     _credentialGeneration++;
     sessionKey = null;
@@ -344,7 +364,7 @@ class GCastService {
     await _gCastRepository.disconnect();
   }
 
-  bool isSessionValid() {
+  bool isSessionValid({Duration minimumRemaining = const Duration(seconds: 10)}) {
     // check if we already have a session token
     // we should always have a expiration date
     if (sessionKey == null || sessionKey?.expiresAt == null) {
@@ -353,22 +373,26 @@ class GCastService {
 
     final tokenExpiration = DateTime.parse(sessionKey!.expiresAt!);
 
-    // we want to make sure we have at least 10 seconds remaining in the session
-    // this is to account for network latency and other delays when sending the request
-    final bufferedExpiration = tokenExpiration.subtract(const Duration(seconds: 10));
+    // Video streams need credentials for every segment throughout playback.
+    // Callers include the video duration and a buffer for request delays.
+    final bufferedExpiration = tokenExpiration.subtract(minimumRemaining);
 
     return bufferedExpiration.isAfter(DateTime.now());
   }
 
-  Future<SessionCreateResponse> _getSession() async {
-    if (isSessionValid()) {
+  Future<SessionCreateResponse> _getSession({Duration duration = Duration.zero}) async {
+    if (isSessionValid(minimumRemaining: duration + const Duration(seconds: 10))) {
       return sessionKey!;
+    }
+    if (_sessionFuture != null) {
+      await _sessionFuture;
+      return _getSession(duration: duration);
     }
     final generation = _credentialGeneration;
     final pending = _sessionFuture ??= _sessionsApiService.createSession(
       "Cast",
       "Google Cast",
-      duration: const Duration(minutes: 15).inSeconds,
+      duration: (duration + const Duration(minutes: 15)).inSeconds,
     );
     try {
       final session = await pending;
@@ -402,7 +426,33 @@ class GCastService {
     return getThumbnailUrlForRemoteId(asset.id, type: size, edited: asset.isEdited, thumbhash: revision);
   }
 
-  Future<void> loadMedia(RemoteAsset asset, bool reload) async {
+  Future<void> loadMedia(RemoteAsset asset, bool reload) => _loadMedia(asset, reload);
+
+  bool _tryHlsFallback() {
+    final asset = _selectedVideo;
+    if (!isConnected || asset == null || _hlsAttempted) {
+      return false;
+    }
+    _hlsAttempted = true;
+    onCastState?.call(CastState.buffering);
+    final loading = _loadMedia(asset, true, hls: true);
+    final generation = _selectionGeneration;
+    unawaited(
+      loading.catchError((Object error, StackTrace stack) {
+        _log.warning('Unable to cast HLS video', error, stack);
+        if (generation == _selectionGeneration) {
+          _clearPending();
+          _mediaStatusPollingTimer?.cancel();
+          _castingVideo = false;
+          _updateHardwareVolumeKeys();
+          onCastState?.call(CastState.idle);
+        }
+      }),
+    );
+    return true;
+  }
+
+  Future<void> _loadMedia(RemoteAsset asset, bool reload, {bool hls = false}) async {
     if (!isConnected) {
       return;
     }
@@ -422,6 +472,11 @@ class GCastService {
       return;
     }
 
+    if (!hls) {
+      _hlsAttempted = false;
+      _videoPosition = 0;
+    }
+    _selectedVideo = asset.isVideo ? asset : null;
     final generation = ++_selectionGeneration;
     _selectedSourceUrl = unauthenticatedUrl;
     _clearPending();
@@ -429,13 +484,16 @@ class GCastService {
     _previousPhoto = null;
     _nextPhoto = null;
 
-    final session = await _getSession();
+    final session = await _getSession(duration: asset.isVideo ? asset.duration : Duration.zero);
     if (generation != _selectionGeneration || !isConnected) {
       return;
     }
     final (resolvedUrl, mimeType) = asset.isImage
         ? (unauthenticatedUrl, 'image/*')
-        : (unauthenticatedUrl, await _getMimeType(unauthenticatedUrl, session.token));
+        : (
+            unauthenticatedUrl,
+            hls ? 'application/vnd.apple.mpegurl' : await _getMimeType(unauthenticatedUrl, session.token),
+          );
     if (generation != _selectionGeneration || !isConnected) {
       return;
     }
@@ -462,14 +520,22 @@ class GCastService {
         "contentId": authenticatedURL,
         "streamType": "BUFFERED",
         "contentType": mimeType,
-        "contentUrl": authenticatedURL,
+        "contentUrl": hls
+            ? uri
+                  .replace(
+                    path: uri.path.replaceFirst('/video/playback', '/video/stream/main.m3u8'),
+                    queryParameters: {...uri.queryParameters, 'sessionKey': session.token},
+                  )
+                  .toString()
+            : authenticatedURL,
         "customData": {"immichLoop": true},
       };
+      _videoPlaybackUrl = media['contentUrl'] as String;
       _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
         "type": "QUEUE_LOAD",
         "requestId": _pendingRequestId,
         "items": [
-          {"media": media, "autoplay": true},
+          {"media": media, "autoplay": true, "startTime": _videoPosition},
         ],
         "repeatMode": "REPEAT_SINGLE",
         "startIndex": 0,
@@ -553,6 +619,7 @@ class GCastService {
   }
 
   void stop() {
+    _selectedVideo = null;
     _selectionGeneration++;
     _castingVideo = false;
     _updateHardwareVolumeKeys();

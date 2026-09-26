@@ -1,5 +1,6 @@
 /* global cast */
 // `cast` is provided by the Cast Application Framework receiver script in receiver.html.
+import { HlsPlayback } from './hls-playback.js';
 import { PhotoCache } from './photo-cache.js';
 
 const NAMESPACE = 'urn:x-cast:app.immich.photos';
@@ -12,6 +13,7 @@ const cache = new PhotoCache();
 const preparedFrames = new Map();
 const context = cast.framework.CastReceiverContext.getInstance();
 const playerManager = context.getPlayerManager();
+const hls = new HlsPlayback();
 let selection = 0;
 let spinnerTimeout;
 
@@ -132,6 +134,7 @@ const showLoading = (thisSelection) => {
 context.addCustomMessageListener(NAMESPACE, (event) => {
   const message = event.data;
   if (message?.type === 'CLEAR_PHOTO') {
+    hls.release();
     selection++;
     hideSpinner();
     video.loop = false;
@@ -153,6 +156,7 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
     return;
   }
 
+  hls.release();
   const thisSelection = ++selection;
   showLoading(thisSelection);
   void preparePhoto(current)
@@ -183,6 +187,11 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
 });
 
 playerManager.setMessageInterceptor(cast.framework.messages.MessageType.LOAD, (request) => {
+  hls.prepare(request.media);
+  if (hls.active) {
+    request.media.hlsSegmentFormat = cast.framework.messages.HlsSegmentFormat.FMP4;
+    request.media.hlsVideoSegmentFormat = cast.framework.messages.HlsVideoSegmentFormat.FMP4;
+  }
   selection++;
   hideSpinner();
   photos.hidden = true;
@@ -195,4 +204,16 @@ playerManager.setMessageInterceptor(cast.framework.messages.MessageType.LOAD, (r
   return request;
 });
 
-context.start({ disableIdleTimeout: true, mediaElement: video });
+// This receiver plays a single looping item. CAF otherwise routes PRELOAD
+// through LOAD, which would release the session of the video still playing.
+playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PRELOAD, () => null);
+playerManager.setMediaPlaybackInfoHandler((request, config) => hls.configure(request, config));
+playerManager.setMessageInterceptor(cast.framework.messages.MessageType.STOP, (request) => {
+  hls.release();
+  return request;
+});
+playerManager.addEventListener(cast.framework.events.EventType.ERROR, () => hls.release());
+context.addEventListener(cast.framework.system.EventType.SHUTDOWN, () => hls.release());
+window.addEventListener('pagehide', () => hls.release());
+
+context.start({ disableIdleTimeout: true, mediaElement: video, useShakaForHls: true });

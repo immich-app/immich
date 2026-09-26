@@ -8,7 +8,7 @@ import {
   type ICastDestination,
 } from '$lib/managers/cast-manager.svelte';
 import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
-import { withCastSession } from '$lib/utils/cast/cast-url';
+import { getCastHlsUrl, withCastSession } from '$lib/utils/cast/cast-url';
 import { createPhotoMessage, isPhotoReceiver, PHOTO_NAMESPACE } from '$lib/utils/cast/photo-message';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
@@ -34,6 +34,14 @@ export class GCastDestination implements ICastDestination {
   private loadedUrl: string | null = null;
   private loadedPhotoSignature: string | null = null;
   private photoRequestId = 0;
+  private videoSelection: {
+    source: CastMediaSource;
+    token: string;
+    contentType: string;
+    hls: boolean;
+    loading: boolean;
+    position: number;
+  } | null = null;
   // MIME lookups do not participate in Svelte reactivity.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   private contentTypes = new Map<string, Promise<string>>();
@@ -179,6 +187,7 @@ export class GCastDestination implements ICastDestination {
       return false;
     }
 
+    this.videoSelection = null;
     const contentType = await this.prepareMedia(source);
     if (this.session !== activeSession || !this.isConnected) {
       return false;
@@ -210,31 +219,83 @@ export class GCastDestination implements ICastDestination {
       return true;
     }
 
-    const mediaInfo = new chrome.cast.media.MediaInfo(withCastSession(source.url, sessionKey), contentType);
-    if (contentType.startsWith('video/')) {
-      mediaInfo.customData = { immichLoop: true };
-    }
-
-    // Create a queue with a single item and set it to repeat
-    const queueItem = new chrome.cast.media.QueueItem(mediaInfo);
-    const queueLoadRequest = new chrome.cast.media.QueueLoadRequest([queueItem]);
-    queueLoadRequest.repeatMode = chrome.cast.media.RepeatMode.SINGLE;
-
-    await new Promise<void>((resolve, reject) => {
-      activeSession.queueLoad(
-        queueLoadRequest,
-        (media) => {
-          if (this.session === activeSession) {
-            this.currentMedia = media;
-            this.loadedUrl = source.url;
-            this.loadedPhotoSignature = null;
-          }
-          resolve();
-        },
-        (error) => reject(new Error(`Google Cast load failed: ${error.code}`)),
-      );
-    });
+    const selection = { source, token: sessionKey, contentType, hls: false, loading: true, position: 0 };
+    this.videoSelection = selection;
+    await this.loadVideo(selection, activeSession);
     return true;
+  }
+
+  private async loadVideo(
+    selection: NonNullable<GCastDestination['videoSelection']>,
+    session: chrome.cast.Session,
+  ): Promise<void> {
+    selection.loading = true;
+    this.castState = CastState.BUFFERING;
+    const originalUrl = withCastSession(selection.source.url, selection.token);
+    const hlsUrl = getCastHlsUrl(originalUrl);
+    const mediaInfo = new chrome.cast.media.MediaInfo(
+      originalUrl,
+      selection.hls ? 'application/vnd.apple.mpegurl' : selection.contentType,
+    );
+    // contentUrl is supported by Cast but missing from the community typings.
+    Object.assign(mediaInfo, { contentUrl: selection.hls ? hlsUrl : originalUrl });
+    mediaInfo.customData = { immichLoop: true };
+    const queueItem = new chrome.cast.media.QueueItem(mediaInfo);
+    const request = new chrome.cast.media.QueueLoadRequest([queueItem]);
+    request.repeatMode = chrome.cast.media.RepeatMode.SINGLE;
+    queueItem.startTime = selection.position;
+
+    try {
+      const media = await new Promise<chrome.cast.media.Media>((resolve, reject) => {
+        session.queueLoad(request, resolve, (error) => reject(new Error(`Google Cast load failed: ${error.code}`)));
+      });
+      if (this.videoSelection !== selection || this.session !== session || !this.isConnected) {
+        return;
+      }
+      selection.loading = false;
+      this.currentMedia = media;
+      this.loadedUrl = selection.source.url;
+      this.loadedPhotoSignature = null;
+      media.addUpdateListener(() => {
+        if (
+          this.videoSelection !== selection ||
+          this.session !== session ||
+          !this.isConnected ||
+          selection.loading ||
+          this.currentMedia !== media
+        ) {
+          return;
+        }
+        if (media.playerState !== chrome.cast.media.PlayerState.IDLE) {
+          selection.position = media.currentTime;
+        }
+        if (
+          media.playerState === chrome.cast.media.PlayerState.IDLE &&
+          media.idleReason === chrome.cast.media.IdleReason.ERROR &&
+          !selection.hls &&
+          hlsUrl
+        ) {
+          selection.hls = true;
+          void this.loadVideo(selection, session).catch((error: unknown) =>
+            console.error('Google Cast HLS failed', error),
+          );
+        } else if (media.playerState === chrome.cast.media.PlayerState.IDLE) {
+          this.castState = CastState.IDLE;
+        }
+      });
+    } catch (error) {
+      if (this.videoSelection !== selection || this.session !== session || !this.isConnected) {
+        return;
+      }
+      if (selection.hls || !hlsUrl) {
+        selection.loading = false;
+        this.castState = CastState.IDLE;
+        this.loadedUrl = null;
+        throw error;
+      }
+      selection.hls = true;
+      await this.loadVideo(selection, session);
+    }
   }
 
   ///
@@ -289,6 +350,7 @@ export class GCastDestination implements ICastDestination {
   }
 
   disconnect(): void {
+    this.videoSelection = null;
     if (this.session) {
       cast.framework.CastContext.getInstance().endCurrentSession(true);
     }
@@ -304,6 +366,7 @@ export class GCastDestination implements ICastDestination {
         if (this.session && isPhotoReceiver(this.session.appId, this.customReceiverAppId)) {
           this.session?.removeMessageListener(PHOTO_NAMESPACE, this.onPhotoMessage);
         }
+        this.videoSelection = null;
         this.session = null;
         this.isConnected = false;
         this.currentMedia = null;
@@ -318,6 +381,7 @@ export class GCastDestination implements ICastDestination {
         }
         const session = event.session.getSessionObj();
         if (!isPhotoReceiver(session.appId, this.customReceiverAppId)) {
+          this.videoSelection = null;
           this.session = null;
           this.isConnected = false;
           return;
@@ -383,7 +447,19 @@ export class GCastDestination implements ICastDestination {
         break;
       }
       case 'playerState': {
-        this.castState = event.value;
+        if (
+          event.value === CastState.IDLE &&
+          this.videoSelection &&
+          !this.videoSelection.hls &&
+          !this.videoSelection.loading
+        ) {
+          // The media update listener decides whether this is an end or an error.
+          return;
+        }
+        // An initial failure reports IDLE before queueLoad rejects. Keep the
+        // viewer open while the load/fallback is still being prepared.
+        this.castState =
+          event.value === CastState.IDLE && this.videoSelection?.loading ? CastState.BUFFERING : event.value;
         break;
       }
       case 'volumeLevel': {

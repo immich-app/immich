@@ -35,9 +35,15 @@ describe('Cast receiver photo switching', () => {
     })) as unknown as typeof HTMLCanvasElement.prototype.getContext);
 
     let onMessage: (event: { senderId: string; data: PhotoMessage }) => void = () => {};
-    const playerManager = { setMessageInterceptor: vi.fn(), stop: vi.fn() };
+    const playerManager = {
+      setMessageInterceptor: vi.fn(),
+      setMediaPlaybackInfoHandler: vi.fn(),
+      addEventListener: vi.fn(),
+      stop: vi.fn(),
+    };
     const context = {
       getPlayerManager: () => playerManager,
+      addEventListener: vi.fn(),
       addCustomMessageListener: (_namespace: string, listener: typeof onMessage) => (onMessage = listener),
       sendCustomMessage: vi.fn(),
       start: vi.fn(),
@@ -45,8 +51,10 @@ describe('Cast receiver photo switching', () => {
     vi.stubGlobal('cast', {
       framework: {
         CastReceiverContext: { getInstance: () => context },
+        events: { EventType: { ERROR: 'ERROR' } },
+        system: { EventType: { SHUTDOWN: 'SHUTDOWN' } },
         messages: {
-          MessageType: { LOAD: 'LOAD' },
+          MessageType: { LOAD: 'LOAD', STOP: 'STOP', PRELOAD: 'PRELOAD' },
           RepeatMode: { REPEAT_SINGLE: 'REPEAT_SINGLE', REPEAT_OFF: 'REPEAT_OFF' },
         },
       },
@@ -137,11 +145,18 @@ describe('Cast receiver photo switching', () => {
     `;
     let onLoad: (request: unknown) => unknown = () => {};
     const playerManager = {
-      setMessageInterceptor: vi.fn((_type: string, interceptor: typeof onLoad) => (onLoad = interceptor)),
+      setMessageInterceptor: vi.fn((type: string, interceptor: typeof onLoad) => {
+        if (type === 'LOAD') {
+          onLoad = interceptor;
+        }
+      }),
+      setMediaPlaybackInfoHandler: vi.fn(),
+      addEventListener: vi.fn(),
       stop: vi.fn(),
     };
     const context = {
       getPlayerManager: () => playerManager,
+      addEventListener: vi.fn(),
       addCustomMessageListener: vi.fn(),
       sendCustomMessage: vi.fn(),
       start: vi.fn(),
@@ -149,8 +164,10 @@ describe('Cast receiver photo switching', () => {
     vi.stubGlobal('cast', {
       framework: {
         CastReceiverContext: { getInstance: () => context },
+        events: { EventType: { ERROR: 'ERROR' } },
+        system: { EventType: { SHUTDOWN: 'SHUTDOWN' } },
         messages: {
-          MessageType: { LOAD: 'LOAD' },
+          MessageType: { LOAD: 'LOAD', STOP: 'STOP', PRELOAD: 'PRELOAD' },
           RepeatMode: { REPEAT_SINGLE: 'REPEAT_SINGLE', REPEAT_OFF: 'REPEAT_OFF' },
         },
       },
@@ -159,7 +176,7 @@ describe('Cast receiver photo switching', () => {
 
     const mediaElement = document.querySelector<HTMLVideoElement>('#video-player')!;
     const player = document.querySelector<HTMLElement>('#player')!;
-    expect(context.start).toHaveBeenCalledWith({ disableIdleTimeout: true, mediaElement });
+    expect(context.start).toHaveBeenCalledWith({ disableIdleTimeout: true, mediaElement, useShakaForHls: true });
 
     onLoad({
       media: { contentType: 'video/mp4', contentId: '/api/assets/1/video/playback', customData: { immichLoop: true } },

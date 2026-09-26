@@ -8,6 +8,7 @@ import { LatestLoadQueue } from '$lib/utils/cast/latest-load-queue';
 export type CastMediaSource = {
   key: string;
   url: string;
+  duration?: number;
   kind?: 'photo';
   contentType?: string;
   fallback?: CastMediaSource;
@@ -117,7 +118,7 @@ class CastManager {
     return connectedDest || null;
   }
 
-  private isTokenValid() {
+  private isTokenValid(minimumRemaining = 10) {
     // check if we already have a session token
     // we should always have a expiration date
     if (!this.sessionKey || !this.sessionKey.expiresAt) {
@@ -126,14 +127,14 @@ class CastManager {
 
     const tokenExpiration = DateTime.fromISO(this.sessionKey.expiresAt);
 
-    // we want to make sure we have at least 10 seconds remaining in the session
-    // this is to account for network latency and other delays when sending the request
-    const bufferedExpiration = tokenExpiration.minus({ seconds: 10 });
+    // HLS fetches authenticated segments throughout playback, so callers
+    // include the video duration as well as a buffer for request delays.
+    const bufferedExpiration = tokenExpiration.minus({ seconds: minimumRemaining });
 
     return bufferedExpiration > DateTime.now();
   }
 
-  private async refreshSessionToken(): Promise<SessionCreateResponseDto> {
+  private async refreshSessionToken(duration = 0): Promise<SessionCreateResponseDto> {
     if (!authManager.authenticated) {
       throw new Error('No authenticated user for Cast');
     }
@@ -143,13 +144,17 @@ class CastManager {
       this.sessionPromise = null;
       this.sessionUserId = userId;
     }
-    if (this.isTokenValid()) {
+    if (this.isTokenValid(duration + 10)) {
       return this.sessionKey!;
     }
 
-    this.sessionPromise ??= createSession({
+    if (this.sessionPromise) {
+      await this.sessionPromise;
+      return this.refreshSessionToken(duration);
+    }
+    this.sessionPromise = createSession({
       sessionCreateDto: {
-        duration: Duration.fromObject({ minutes: 15 }).as('seconds'),
+        duration: Math.ceil(duration) + Duration.fromObject({ minutes: 15 }).as('seconds'),
         deviceOS: 'Google Cast',
         deviceType: 'Cast',
       },
@@ -202,7 +207,10 @@ class CastManager {
     const selectedAt = performance.now();
     await this.loadQueue.run(
       async () => {
-        const prepared = await Promise.all([this.refreshSessionToken(), this.resolveSource(destination, source)]);
+        const prepared = await Promise.all([
+          this.refreshSessionToken(Number.isFinite(source.duration) ? Math.max(0, source.duration!) : 0),
+          this.resolveSource(destination, source),
+        ]);
         return [...prepared, performance.now()] as const;
       },
       async ([session, resolvedSource, readyAt]) => {

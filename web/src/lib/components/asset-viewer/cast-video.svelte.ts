@@ -118,7 +118,7 @@ class CastVideoElement extends HTMLElement {
   async play(): Promise<void> {
     if (castManager.castState === CastState.IDLE && this.src) {
       // Nothing is loaded on the receiver (e.g. after an error), reload it.
-      await castManager.loadMedia({ key: this.src, url: this.src }, true);
+      await castManager.loadMedia({ key: this.src, url: this.src, duration: castManager.duration ?? undefined }, true);
       return;
     }
     castManager.play();

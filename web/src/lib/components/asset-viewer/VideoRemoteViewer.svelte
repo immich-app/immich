@@ -51,7 +51,7 @@
     const fullUrl = new URL(url, location.href);
 
     try {
-      await castManager.loadMedia({ key: fullUrl.href, url: fullUrl.href }, force);
+      await castManager.loadMedia({ key: fullUrl.href, url: fullUrl.href, duration }, force);
       onVideoStarted();
     } catch (error) {
       handleError(error, 'Unable to cast');

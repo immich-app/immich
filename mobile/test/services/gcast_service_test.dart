@@ -140,6 +140,55 @@ void main() {
     expect(media['contentId'], contains('sessionKey=test+token'));
   });
 
+  test('failed direct video retries HLS once with the original media identity', () async {
+    await connect('A2AE3577');
+    final asset = RemoteAssetFactory.create(id: 'video', type: AssetType.video);
+    await service.loadMedia(asset, false);
+    final direct = repository.messages.last.$2;
+    final directMedia = (direct['items'] as List).first['media'] as Map;
+    repository.onCastMessage?.call({'type': 'LOAD_FAILED', 'requestId': direct['requestId']});
+    await Future<void>.delayed(Duration.zero);
+    final fallback = repository.messages.last.$2;
+    final hlsMedia = (fallback['items'] as List).first['media'] as Map;
+    expect(hlsMedia['contentId'], directMedia['contentId']);
+    expect(hlsMedia['contentUrl'], contains('/video/stream/main.m3u8?sessionKey=test+token'));
+    expect(hlsMedia['contentType'], 'application/vnd.apple.mpegurl');
+    final count = repository.messages.length;
+    repository.onCastMessage?.call({'type': 'LOAD_FAILED', 'requestId': fallback['requestId']});
+    await Future<void>.delayed(Duration.zero);
+    expect(repository.messages, hasLength(count));
+  });
+
+  test('HLS fallback resumes after a playback error and does not retry after a photo selection', () async {
+    await connect('A2AE3577');
+    await service.loadMedia(RemoteAssetFactory.create(id: 'video', type: AssetType.video), false);
+    final media = (repository.messages.last.$2['items'] as List).first['media'] as Map;
+    repository.onCastMessage?.call({
+      'type': 'MEDIA_STATUS',
+      'status': [
+        {'media': media, 'mediaSessionId': 1, 'playerState': 'PLAYING', 'currentTime': 42},
+      ],
+    });
+    repository.onCastMessage?.call({
+      'type': 'MEDIA_STATUS',
+      'status': [
+        {'media': media, 'mediaSessionId': 1, 'playerState': 'IDLE', 'idleReason': 'ERROR'},
+      ],
+    });
+    await Future<void>.delayed(Duration.zero);
+    expect((repository.messages.last.$2['items'] as List).first['startTime'], 42);
+    await service.loadMedia(RemoteAssetFactory.create(id: 'photo'), false);
+    final count = repository.messages.length;
+    repository.onCastMessage?.call({
+      'type': 'MEDIA_STATUS',
+      'status': [
+        {'media': media, 'mediaSessionId': 1, 'playerState': 'IDLE', 'idleReason': 'ERROR'},
+      ],
+    });
+    await Future<void>.delayed(Duration.zero);
+    expect(repository.messages, hasLength(count));
+  });
+
   test('stopping cancels a video still waiting for credentials', () async {
     await connect('A2AE3577');
     final session = service.sessionKey!;

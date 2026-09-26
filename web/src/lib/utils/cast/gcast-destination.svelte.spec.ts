@@ -12,7 +12,7 @@ vi.mock('$lib/managers/auth-manager.svelte', () => ({ authManager: mocks.auth })
 vi.mock('$lib/managers/user-preferences-manager.svelte', () => ({ userPreferencesManager: mocks.local }));
 vi.mock('$lib/managers/cast-manager.svelte', () => ({
   CastDestinationType: { GCAST: 'gcast' },
-  CastState: { IDLE: 'idle' },
+  CastState: { IDLE: 'IDLE', BUFFERING: 'BUFFERING' },
 }));
 
 const initialize = async () => {
@@ -34,6 +34,25 @@ describe('custom receiver selection', () => {
     mocks.addEventListener.mockClear();
     document.body.replaceChildren();
     vi.stubGlobal('chrome', { cast: { AutoJoinPolicy: { ORIGIN_SCOPED: 'origin' } } });
+    Object.assign(chrome.cast, {
+      media: {
+        MediaInfo: class {
+          constructor(
+            public contentId: string,
+            public contentType: string,
+          ) {}
+        },
+        QueueItem: class {
+          constructor(public media: unknown) {}
+        },
+        QueueLoadRequest: class {
+          constructor(public items: unknown[]) {}
+        },
+        RepeatMode: { SINGLE: 'REPEAT_SINGLE' },
+        PlayerState: { IDLE: 'IDLE', PLAYING: 'PLAYING' },
+        IdleReason: { ERROR: 'ERROR' },
+      },
+    });
     vi.stubGlobal('cast', {
       framework: {
         CastContext: {
@@ -78,6 +97,7 @@ describe('custom receiver selection', () => {
   });
 
   it('allows retry when the receiver reports a photo error before the send acknowledgement', async () => {
+    mocks.local.castReceiverAppId = 'SERVER01';
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const destination = new GCastDestination();
     const initialized = destination.initialize();
@@ -101,5 +121,73 @@ describe('custom receiver selection', () => {
     await destination.loadMedia(source, 'token');
     await destination.loadMedia(source, 'token');
     expect(session.sendMessage).toHaveBeenCalledTimes(2);
+  });
+  it('retries a failed direct video once as HLS and preserves its media identity', async () => {
+    mocks.local.castReceiverAppId = 'SERVER01';
+    const destination = new GCastDestination();
+    const initialized = destination.initialize();
+    Reflect.get(globalThis, '__onGCastApiAvailable')(true);
+    await initialized;
+    const session = {
+      appId: 'SERVER01',
+      receiver: { friendlyName: 'TV' },
+      addMessageListener: vi.fn(),
+      queueLoad: vi.fn((_request, _resolve, reject) => reject({ code: 'LOAD_FAILED' })),
+    };
+    const onSession = mocks.addEventListener.mock.calls.find(([type]) => type === 'session')![1];
+    onSession({ sessionState: 'started', session: { getSessionObj: () => session } });
+    await expect(
+      destination.loadMedia(
+        {
+          key: 'video',
+          url: 'https://immich.example/api/assets/video/video/playback',
+          contentType: 'video/mp4',
+        },
+        'token',
+      ),
+    ).rejects.toThrow('LOAD_FAILED');
+    expect(session.queueLoad).toHaveBeenCalledTimes(2);
+    const [direct, hls] = session.queueLoad.mock.calls.map(([request]) => request.items[0].media);
+    expect(direct.contentType).toBe('video/mp4');
+    expect(hls.contentId).toBe(direct.contentId);
+    expect(hls.contentType).toBe('application/vnd.apple.mpegurl');
+    expect(hls.contentUrl).toBe('https://immich.example/api/assets/video/video/stream/main.m3u8?sessionKey=token');
+  });
+  it('keeps compatible videos direct and resumes at the last position after a playback error', async () => {
+    mocks.local.castReceiverAppId = 'SERVER01';
+    const destination = new GCastDestination();
+    const initialized = destination.initialize();
+    Reflect.get(globalThis, '__onGCastApiAvailable')(true);
+    await initialized;
+    const media = { playerState: 'PLAYING', currentTime: 42, idleReason: '', addUpdateListener: vi.fn() };
+    const hlsMedia = { ...media, addUpdateListener: vi.fn() };
+    const session = {
+      appId: 'SERVER01',
+      receiver: { friendlyName: 'TV' },
+      addMessageListener: vi.fn(),
+      queueLoad: vi
+        .fn()
+        .mockImplementationOnce((_request, resolve) => resolve(media))
+        .mockImplementationOnce((_request, resolve) => resolve(hlsMedia)),
+    };
+    const onSession = mocks.addEventListener.mock.calls.find(([type]) => type === 'session')![1];
+    onSession({ sessionState: 'started', session: { getSessionObj: () => session } });
+    await destination.loadMedia(
+      { key: 'video', url: 'https://immich.example/api/assets/video/video/playback', contentType: 'video/mp4' },
+      'token',
+    );
+    const onUpdate = media.addUpdateListener.mock.calls[0][0];
+    onUpdate(true);
+    expect(session.queueLoad).toHaveBeenCalledTimes(1);
+    media.playerState = 'IDLE';
+    media.idleReason = 'ERROR';
+    onUpdate(true);
+    // A second error from the old player must not undo the fallback's loading state.
+    onUpdate(true);
+    expect(destination.castState).toBe('BUFFERING');
+    await Promise.resolve();
+    expect(session.queueLoad).toHaveBeenCalledTimes(2);
+    expect(session.queueLoad.mock.calls[1][0].items[0].startTime).toBe(42);
+    expect(session.queueLoad.mock.calls[1][0].items[0].media.contentType).toBe('application/vnd.apple.mpegurl');
   });
 });
