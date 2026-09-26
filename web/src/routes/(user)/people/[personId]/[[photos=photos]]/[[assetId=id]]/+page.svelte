@@ -329,7 +329,7 @@
     onAction: () => {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     },
-    shortcuts: [{ key: 'm' }],
+    shortcuts: { key: 'm' },
   };
 
   const enablePersonActions = $derived(!assetViewerManager.isViewing && !assetMultiSelectManager.selectionActive);
