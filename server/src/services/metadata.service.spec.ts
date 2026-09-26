@@ -70,6 +70,7 @@ const emptyPackets = {
   keyframePts: [],
   keyframeAccDuration: [],
   keyframeOwnDuration: [],
+  timeBase: 0,
 };
 
 describe(MetadataService.name, () => {
@@ -714,6 +715,7 @@ describe(MetadataService.name, () => {
         keyframePts: [-590, 10, 611, 1211],
         keyframeAccDuration: [10, 610, 6110, 12_080],
         keyframeOwnDuration: [10, 10, 10, 10],
+        timeBase: 600,
       });
       mockReadTags({});
 
@@ -745,6 +747,44 @@ describe(MetadataService.name, () => {
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.not.objectContaining({ keyframes: expect.anything() }),
+      );
+    });
+
+    it('should use rescaled timeBase from probePackets for nanosecond time_base videos', async () => {
+      const asset = AssetFactory.create({ type: AssetType.Video });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      // Video with nanosecond time_base (1/1e9) - causes int32 overflow without rescaling
+      mocks.media.probe.mockResolvedValue({
+        ...videoInfoStub.videoStreamHDR10,
+        videoStreams: [
+          {
+            ...videoInfoStub.videoStreamHDR10.videoStreams[0],
+            timeBase: 1_000_000_000,
+          },
+        ],
+      });
+      // probePackets rescales to ~90kHz and returns adjusted timeBase
+      mocks.media.probePackets.mockResolvedValue({
+        totalDuration: 270_000,
+        packetCount: 81,
+        outputFrames: 82,
+        keyframePts: [0, 90_000, 180_000],
+        keyframeAccDuration: [90_000, 180_000, 270_000],
+        keyframeOwnDuration: [90_000, 90_000, 90_000],
+        timeBase: 90_000,
+      });
+      mockReadTags({});
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          video: expect.objectContaining({ timeBase: 90_000 }),
+          keyframes: expect.objectContaining({
+            totalDuration: 270_000,
+            pts: [0, 90_000, 180_000],
+          }),
+        }),
       );
     });
 
