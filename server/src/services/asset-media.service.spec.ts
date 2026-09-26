@@ -74,6 +74,7 @@ const validImages = [
   '.heic',
   '.heif',
   '.iiq',
+  '.jfif',
   '.jp2',
   '.jpeg',
   '.jpg',
