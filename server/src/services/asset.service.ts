@@ -283,10 +283,15 @@ export class AssetService extends BaseService {
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
 
+    let count = 0;
     for await (const assets of batched(this.assetJobRepository.streamForDeletedJob(trashedBefore))) {
       await this.jobRepository.queueAll(
         assets.map(({ id, isOffline }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: !isOffline } })),
       );
+      count += assets.length;
+    }
+    if (count > 0) {
+      this.logger.log(`Automatically queued ${count} expired trash asset(s) for deletion`);
     }
 
     return JobStatus.Success;
