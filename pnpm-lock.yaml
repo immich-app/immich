@@ -634,6 +634,9 @@ importers:
       ua-parser-js:
         specifier: ^2.0.0
         version: 2.0.10
+      undici:
+        specifier: ^6.26.0
+        version: 6.26.0
       uuid:
         specifier: ^14.0.0
         version: 14.0.2
