@@ -22,6 +22,12 @@
   --font-sans: 'GoogleSans', sans-serif;
   --font-mono: 'GoogleSansCode', monospace;
 
+  --color-logo-red: #fa2921;
+  --color-logo-pink: #ed79b5;
+  --color-logo-yellow: #ffb400;
+  --color-logo-blue: #1e83f7;
+  --color-logo-green: #18c249;
+
   --spacing-18: 4.5rem;
 
   --breakpoint-tall: 800px;
