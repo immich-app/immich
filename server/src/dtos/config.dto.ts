@@ -35,11 +35,11 @@ import {
 
 const { Admin, User, Public } = ConfigVisibility;
 
+const urlSchema = z.url();
+const stringBoolSchema = z.stringbool({ truthy: ['true'], falsy: ['false'], case: 'sensitive' });
+
 const configBool = z
-  .preprocess(
-    (val) => z.stringbool({ truthy: ['true'], falsy: ['false'], case: 'sensitive' }).safeParse(val).data ?? val,
-    z.boolean(),
-  )
+  .preprocess((val) => stringBoolSchema.safeParse(val).data ?? val, z.boolean())
 
   .nonoptional()
   .meta({ type: 'boolean' });
@@ -59,7 +59,7 @@ const cronExpressionSchema = z
   .describe('Cron expression');
 
 const emptyOrUrl = (error: string) =>
-  z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
+  z.string().refine((url) => url.length === 0 || urlSchema.validate(url), { error });
 
 const AdminConfigIntegrityJobSchema = z
   .object({
@@ -310,7 +310,7 @@ const AdminConfigSchemaWithVisibility = z
           return value;
         }
 
-        if (!z.url().safeParse(value.mobileRedirectUri).success) {
+        if (!urlSchema.validate(value.mobileRedirectUri)) {
           ctx.issues.push({
             code: 'custom',
             message: 'Mobile redirect URI must be an empty string or a valid URL',
