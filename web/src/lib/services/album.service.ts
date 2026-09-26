@@ -289,7 +289,7 @@ export const handleLeaveAlbum = async (album: AlbumResponseDto) => {
   }
 };
 
-const handleUpdateThumbnail = async (album: AlbumResponseDto, assetId: string) => {
+export const handleUpdateThumbnail = async (album: AlbumResponseDto, assetId: string) => {
   const $t = await getFormatter();
 
   try {
