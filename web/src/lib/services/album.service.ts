@@ -27,6 +27,7 @@ import {
   mdiTrashCanOutline,
   mdiExitToApp,
   mdiUpload,
+  mdiCogOutline,
 } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
@@ -73,7 +74,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
   };
 
   const Delete: ActionItem = {
-    title: $t('delete'),
+    title: $t('delete_album'),
     icon: mdiTrashCanOutline,
     $if: () => isOwned,
     onAction: () => handleDeleteAlbum(album),
@@ -82,14 +83,8 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
   const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
+    $if: () => album.assetCount > 0,
     onAction: () => handleDownloadAlbum(album),
-  };
-
-  const Leave: ActionItem = {
-    title: $t('leave_album'),
-    icon: mdiExitToApp,
-    $if: () => !isOwned,
-    onAction: () => handleLeaveAlbum(album),
   };
 
   const Edit: ActionItem = {
@@ -99,6 +94,20 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => modalManager.show(AlbumEditModal, { album }),
   };
 
+  const Leave: ActionItem = {
+    title: $t('leave_album'),
+    icon: mdiExitToApp,
+    $if: () => !isOwned,
+    onAction: () => handleLeaveAlbum(album),
+  };
+
+  const Options: ActionItem = {
+    title: $t('options'),
+    icon: mdiCogOutline,
+    $if: () => album.assetCount > 0,
+    onAction: () => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned }),
+  };
+
   const Share: ActionItem = {
     title: $t('share'),
     icon: mdiShareVariantOutline,
@@ -106,7 +115,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => modalManager.show(AlbumOptionsModal, { album }),
   };
 
-  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Share };
+  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Options, Share };
 };
 
 export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: AssetResponseDto) => {
