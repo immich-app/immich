@@ -3574,7 +3574,7 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            'scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4',
+            'scale_rkrga=w=-2:h=720:format=nv12:afbc=1:async_depth=4',
             '-level',
             '51',
             '-rc_mode',
@@ -3587,35 +3587,92 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should crop with vpp_rkrga when rkmpp hardware decoding is enabled', async () => {
-      const croppedVideoStream = {
-        ...asset.videoStream,
-        width: 1920,
-        height: 1440,
-        cropTop: 66,
-        cropBottom: 66,
-        cropLeft: 88,
-        cropRight: 88,
-      };
-      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, videoStream: croppedVideoStream });
-      mocks.systemMetadata.get.mockResolvedValue({
-        ffmpeg: { accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true, transcode: TranscodePolicy.All },
+    describe('rkmpp frame cropping', () => {
+      const ffmpeg = { accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true, transcode: TranscodePolicy.All };
+      const pillarboxCrop = { width: 1920, height: 1080, cropTop: 0, cropBottom: 0, cropLeft: 240, cropRight: 240 };
+
+      beforeEach(() => {
+        mocks.systemMetadata.get.mockResolvedValue({ ffmpeg });
       });
 
-      await sut.handleVideoConversion({ id: 'video-id' });
+      it('should crop and scale to the cropped aspect ratio with vpp_rkrga', async () => {
+        mocks.assetJob.getForVideoConversion.mockResolvedValue({
+          ...asset,
+          videoStream: { ...asset.videoStream, ...pillarboxCrop },
+        });
 
-      expect(mocks.media.probe).not.toHaveBeenCalled();
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-apply_cropping', 'codec']),
-          outputOptions: expect.arrayContaining([
-            'vpp_rkrga=cw=1744:ch=1308:cx=88:cy=66:w=-2:h=720:format=nv12:afbc=1:async_depth=4',
-          ]),
-          twoPass: false,
-        }),
-      );
+        await sut.handleVideoConversion({ id: 'video-id' });
+
+        expect(mocks.media.transcode).toHaveBeenCalledWith(
+          '/original/path.ext',
+          expect.any(String),
+          expect.objectContaining({
+            inputOptions: expect.arrayContaining(['-apply_cropping', 'codec']),
+            outputOptions: expect.arrayContaining([
+              'vpp_rkrga=cw=1440:ch=1080:cx=240:cy=0:w=960:h=720:format=nv12:afbc=1:async_depth=4',
+            ]),
+          }),
+        );
+      });
+
+      it('should crop without scaling when the cropped video fits the target resolution', async () => {
+        mocks.assetJob.getForVideoConversion.mockResolvedValue({
+          ...asset,
+          videoStream: { ...asset.videoStream, ...pillarboxCrop },
+        });
+        mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { ...ffmpeg, targetResolution: 'original' } });
+
+        await sut.handleVideoConversion({ id: 'video-id' });
+
+        expect(mocks.media.transcode).toHaveBeenCalledWith(
+          '/original/path.ext',
+          expect.any(String),
+          expect.objectContaining({
+            inputOptions: expect.arrayContaining(['-apply_cropping', 'codec']),
+            outputOptions: expect.arrayContaining([
+              'vpp_rkrga=cw=1440:ch=1080:cx=240:cy=0:format=nv12:afbc=1:async_depth=4',
+            ]),
+          }),
+        );
+      });
+
+      it('should crop before OpenCL tone-mapping', async () => {
+        mocks.assetJob.getForVideoConversion.mockResolvedValue({
+          ...asset,
+          videoStream: { ...probeStub.videoStreamHDR.videoStream, ...pillarboxCrop },
+        });
+
+        await sut.handleVideoConversion({ id: 'video-id' });
+
+        expect(mocks.media.transcode).toHaveBeenCalledWith(
+          '/original/path.ext',
+          expect.any(String),
+          expect.objectContaining({
+            inputOptions: expect.arrayContaining(['-apply_cropping', 'codec']),
+            outputOptions: expect.arrayContaining([
+              expect.stringContaining(
+                'vpp_rkrga=cw=1440:ch=1080:cx=240:cy=0:w=960:h=720:format=p010:afbc=1:async_depth=4,hwmap=derive_device=opencl',
+              ),
+            ]),
+          }),
+        );
+      });
+
+      it.each([
+        { reason: 'every offset is zero', crop: { cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 } },
+        { reason: 'the offsets leave no frame', crop: { cropTop: 0, cropBottom: 0, cropLeft: 960, cropRight: 960 } },
+      ])('should scale without cropping when $reason', async ({ crop }) => {
+        mocks.assetJob.getForVideoConversion.mockResolvedValue({
+          ...asset,
+          videoStream: { ...asset.videoStream, width: 1920, height: 1080, ...crop },
+        });
+
+        await sut.handleVideoConversion({ id: 'video-id' });
+
+        const options = mocks.media.transcode.mock.calls[0][2];
+        expect(options.inputOptions).not.toContain('-apply_cropping');
+        expect(options.outputOptions).toContain('scale_rkrga=w=-2:h=720:format=nv12:afbc=1:async_depth=4');
+      });
     });
 
     it('should set vbr options for rkmpp when max bitrate is enabled', async () => {
@@ -3709,7 +3766,7 @@ describe(MediaService.name, () => {
           ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'scale_rkrga=-2:720:format=p010:afbc=1:async_depth=4,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0:tonemap_mode=lum:peak=100,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
+              'scale_rkrga=w=-2:h=720:format=p010:afbc=1:async_depth=4,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0:tonemap_mode=lum:peak=100,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
             ),
           ]),
           twoPass: false,
@@ -3737,7 +3794,7 @@ describe(MediaService.name, () => {
             'rga',
           ]),
           outputOptions: expect.arrayContaining([
-            expect.stringContaining('scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4'),
+            expect.stringContaining('scale_rkrga=w=-2:h=720:format=nv12:afbc=1:async_depth=4'),
           ]),
           twoPass: false,
         }),
