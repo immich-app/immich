@@ -70,6 +70,35 @@ void main() {
         expect(sorted.first.name, 'Pinned');
         expect(sorted.skip(1).map((a) => a.name), ['Newer', 'Older']);
       });
+
+      test('intermixed pinned and unpinned albums group pinned first while preserving relative order', () async {
+        final unpinnedOld = RemoteAlbumFactory.create(name: 'Unpinned Old', isPinned: false, createdAt: DateTime(2019));
+        final pinnedOld = RemoteAlbumFactory.create(name: 'Pinned Old', isPinned: true, createdAt: DateTime(2020));
+        final unpinnedNew = RemoteAlbumFactory.create(name: 'Unpinned New', isPinned: false, createdAt: DateTime(2023));
+        final pinnedNew = RemoteAlbumFactory.create(name: 'Pinned New', isPinned: true, createdAt: DateTime(2024));
+
+        // intermixed input: unpinned, pinned, unpinned, pinned.
+        final sorted = await sut.sortAlbums([unpinnedOld, pinnedOld, unpinnedNew, pinnedNew], AlbumSortMode.created);
+
+        // created sorts newest-first; pinned albums are grouped first, and each group preserves the active sort order
+        expect(sorted.map((a) => a.name), ['Pinned New', 'Pinned Old', 'Unpinned New', 'Unpinned Old']);
+      });
+
+      test('intermixed albums keep pinned grouping when the sort order is reversed', () async {
+        final unpinnedOld = RemoteAlbumFactory.create(name: 'Unpinned Old', isPinned: false, createdAt: DateTime(2019));
+        final pinnedOld = RemoteAlbumFactory.create(name: 'Pinned Old', isPinned: true, createdAt: DateTime(2020));
+        final unpinnedNew = RemoteAlbumFactory.create(name: 'Unpinned New', isPinned: false, createdAt: DateTime(2023));
+        final pinnedNew = RemoteAlbumFactory.create(name: 'Pinned New', isPinned: true, createdAt: DateTime(2024));
+
+        final sorted = await sut.sortAlbums(
+          [unpinnedOld, pinnedOld, unpinnedNew, pinnedNew],
+          AlbumSortMode.created,
+          isReverse: true,
+        );
+
+        // reversed created order is oldest-first; pinned albums still float to the top.
+        expect(sorted.map((a) => a.name), ['Pinned Old', 'Pinned New', 'Unpinned Old', 'Unpinned New']);
+      });
     });
   });
 }

@@ -79,14 +79,9 @@ class RemoteAlbumService {
     };
     final effectiveOrder = isReverse ? sortMode.defaultOrder.reverse() : sortMode.defaultOrder;
 
-    final ordered = (effectiveOrder == SortOrder.asc ? sorted : sorted.reversed).toList();
+    final ordered = effectiveOrder == SortOrder.asc ? sorted : sorted.reversed;
 
-    // Pinned albums float to the top, keeping their order among each other
-    // (already follows the active sort mode)
-    final pinned = ordered.where((album) => album.isPinned).toList();
-    final rest = ordered.where((album) => !album.isPinned).toList();
-
-    return [...pinned, ...rest];
+    return ordered.sortedBy((album) => album.isPinned ? 0 : 1);
   }
 
   List<RemoteAlbum> searchAlbums(

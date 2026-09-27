@@ -48,7 +48,7 @@ describe('AlbumCover component', () => {
         isPinned: true,
       }),
     });
-    expect(component.getByTitle('Pinned album')).toBeInTheDocument();
+    expect(component.getByTitle('pinned_album')).toBeInTheDocument();
   });
 
   it('does not show a pin icon when the album is not pinned', () => {
@@ -59,6 +59,6 @@ describe('AlbumCover component', () => {
         isPinned: false,
       }),
     });
-    expect(component.queryByTitle('Pinned album')).not.toBeInTheDocument();
+    expect(component.queryByTitle('pinned_album')).not.toBeInTheDocument();
   });
 });
