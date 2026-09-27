@@ -31,8 +31,9 @@ import {
 
 export const isVideoRotated = (videoStream: VideoStreamInfo): boolean => Math.abs(videoStream.rotation) === 90;
 
+// whether the video is portrait once its rotation is applied
 export const isVideoVertical = (videoStream: VideoStreamInfo): boolean =>
-  videoStream.height > videoStream.width || isVideoRotated(videoStream);
+  videoStream.height > videoStream.width !== isVideoRotated(videoStream);
 
 const getFrameCrop = (videoStream: VideoStreamInfo) => {
   const top = videoStream.cropTop ?? 0;
@@ -381,7 +382,12 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   getScaling(videoStream: VideoStreamInfo, mult = 2) {
     const targetResolution = this.getTargetResolution(videoStream);
-    return isVideoVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
+    return this.isFrameVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
+  }
+
+  // frames reach the filters already rotated, unless decoding with -noautorotate
+  isFrameVertical(videoStream: VideoStreamInfo) {
+    return isVideoVertical(videoStream);
   }
 
   isBitrateConstrained() {
@@ -758,6 +764,11 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     return ['-hwaccel', 'cuda', '-hwaccel_output_format', 'cuda', '-noautorotate', ...this.getInputThreadOptions()];
   }
 
+  // -noautorotate keeps frames in their stored orientation
+  isFrameVertical(videoStream: VideoStreamInfo) {
+    return videoStream.height > videoStream.width;
+  }
+
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     const tonemapOptions = this.getToneMapping(videoStream);
@@ -895,6 +906,11 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
     ];
   }
 
+  // -noautorotate keeps frames in their stored orientation
+  isFrameVertical(videoStream: VideoStreamInfo) {
+    return videoStream.height > videoStream.width;
+  }
+
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     const tonemapOptions = this.getToneMapping(videoStream);
@@ -1017,6 +1033,11 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
     ];
   }
 
+  // -noautorotate keeps frames in their stored orientation
+  isFrameVertical(videoStream: VideoStreamInfo) {
+    return videoStream.height > videoStream.width;
+  }
+
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     const tonemapOptions = this.getToneMapping(videoStream);
@@ -1103,6 +1124,11 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
   getBaseInputOptions(videoStream?: VideoStreamInfo): string[] {
     const options = ['-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate'];
     return videoStream && getFrameCrop(videoStream) ? ['-apply_cropping', 'codec', ...options] : options;
+  }
+
+  // -noautorotate keeps frames in their stored orientation
+  isFrameVertical(videoStream: VideoStreamInfo) {
+    return videoStream.height > videoStream.width;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
