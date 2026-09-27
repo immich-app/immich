@@ -51,6 +51,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   bool _showingDetails = false;
   bool _isZoomed = false;
+  bool _restoreControlsAfterZoom = false;
   // Frozen during dismiss drag + settle to prevent widget tree swap mid-animation.
   bool _wasMotionPlayingAtDismiss = false;
   bool _isDismissAnimating = false;
@@ -268,6 +269,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       return;
     }
 
+    _restoreControlsAfterZoom = false;
+
     final tapToNavigate = ref.read(appConfigProvider).viewer.tapToNavigate;
     if (!tapToNavigate) {
       _viewer.toggleControls();
@@ -299,14 +302,17 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     if (scaleState != PhotoViewScaleState.initial) {
       if (_dragStart == null) {
+        _restoreControlsAfterZoom |= ref.read(assetViewerProvider).showingControls;
         _viewer.setControls(false);
       }
       return;
     }
 
-    if (!_showingDetails) {
+    if (!_showingDetails && _restoreControlsAfterZoom) {
       _viewer.setControls(true);
     }
+
+    _restoreControlsAfterZoom = false;
   }
 
   void _listenForScaleBoundaries(PhotoViewControllerBase? controller) {
