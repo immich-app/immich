@@ -45,6 +45,23 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return _assetSelectable(id).getSingleOrNull();
   }
 
+  /// Assets to warm the thumbnail cache with, newest first so that what is
+  /// looked at most often lands on disk first.
+  Future<List<({String id, String thumbHash})>> getThumbnailTargets() {
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            row.deletedAt.isNull() &
+            (row.visibility.equalsValue(AssetVisibility.timeline) |
+                row.visibility.equalsValue(AssetVisibility.archive)),
+      )
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
+
+    // The empty fallback matches what the grid requests, otherwise the
+    // prefetched URL would not be the one it looks up.
+    return query.map((row) => (id: row.id, thumbHash: row.thumbHash ?? '')).get();
+  }
+
   Future<List<RemoteAsset>> getAllDebugForChecksum(String checksum) {
     final query = _db.remoteAssetEntity.select()..where((row) => row.checksum.equals(checksum));
 

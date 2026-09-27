@@ -21,6 +21,7 @@ final class RemoteImageRequest: ImageRequest {
 
 class RemoteImageApiImpl: NSObject, RemoteImageApi {
   private static let registry = RequestRegistry<RemoteImageRequest>()
+  private var prefetchTask: Task<Void, Never>?
   private static let rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
     bitsPerPixel: 32,
@@ -41,7 +42,10 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
 
     let request = RemoteImageRequest(id: requestId, completion: completion)
 
-    let task = URLSessionManager.shared.session.dataTask(with: urlRequest) { data, response, error in
+    let session = url.contains("size=thumbnail")
+      ? URLSessionManager.shared.thumbnailSession
+      : URLSessionManager.shared.session
+    let task = session.dataTask(with: urlRequest) { data, response, error in
       Self.handleCompletion(request: request, encoded: preferEncoded, width: width, height: height, data: data, response: response, error: error)
     }
 
@@ -164,10 +168,34 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
 
   func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
     Task {
-      let cache = URLSessionManager.shared.session.configuration.urlCache!
-      let cacheSize = Int64(cache.currentDiskUsage)
-      cache.removeAllCachedResponses()
+      let caches = [URLSessionManager.urlCache, URLSessionManager.shared.thumbnailSession.configuration.urlCache!]
+      let cacheSize = caches.reduce(0) { $0 + Int64($1.currentDiskUsage) }
+      caches.forEach { $0.removeAllCachedResponses() }
       completion(.success(cacheSize))
     }
+  }
+
+  /// Warms the on-disk thumbnail cache: the responses are stored by URLCache,
+  /// the bytes themselves are discarded. Already cached URLs never hit the network.
+  func prefetchThumbnails(urls: [String], completion: @escaping (Result<Void, any Error>) -> Void) {
+    prefetchTask?.cancel()
+    prefetchTask = Task {
+      let session = URLSessionManager.shared.thumbnailSession
+      await withTaskGroup(of: Void.self) { group in
+        for url in urls {
+          guard let parsed = URL(string: url) else { continue }
+          group.addTask {
+            var request = URLRequest(url: parsed)
+            request.cachePolicy = .returnCacheDataElseLoad
+            _ = try? await session.data(for: request)
+          }
+        }
+      }
+      completion(.success(()))
+    }
+  }
+
+  func cancelPrefetch() {
+    prefetchTask?.cancel()
   }
 }

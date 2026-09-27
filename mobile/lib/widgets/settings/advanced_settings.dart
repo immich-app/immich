@@ -11,6 +11,7 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/thumbnail_prefetch.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -175,9 +176,56 @@ class AdvancedSettings extends HookConsumerWidget {
           );
         },
       ),
+      const _PrefetchThumbnailsTile(),
       const SizedBox(height: 60),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
+  }
+}
+
+/// Warms the on-disk thumbnail cache so the grid stays readable offline.
+class _PrefetchThumbnailsTile extends ConsumerWidget {
+  const _PrefetchThumbnailsTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progress = ref.watch(thumbnailPrefetchProvider);
+    final notifier = ref.read(thumbnailPrefetchProvider.notifier);
+
+    if (progress.total == 0) {
+      return ListTile(
+        title: Text(
+          context.t.advanced_settings_prefetch_thumbnails,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        subtitle: Text(context.t.advanced_settings_prefetch_thumbnails_subtitle),
+        leading: const Icon(Icons.cloud_download_rounded),
+        onTap: () => unawaited(notifier.run()),
+      );
+    }
+
+    return ListTile(
+      title: Text(
+        context.t.advanced_settings_prefetch_thumbnails_running,
+        style: const TextStyle(fontWeight: FontWeight.w500),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          LinearProgressIndicator(value: progress.done / progress.total),
+          const SizedBox(height: 4),
+          Text(
+            context.t.advanced_settings_prefetch_thumbnails_progress(done: progress.done, total: progress.total),
+          ),
+        ],
+      ),
+      leading: const Icon(Icons.downloading_rounded),
+      trailing: TextButton(
+        onPressed: notifier.cancel,
+        child: Text(context.t.advanced_settings_prefetch_thumbnails_cancel),
+      ),
+    );
   }
 }

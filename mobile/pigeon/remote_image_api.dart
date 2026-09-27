@@ -27,4 +27,10 @@ abstract class RemoteImageApi {
 
   @async
   int clearCache();
+
+  /// Downloads thumbnails into the on-disk cache without decoding them.
+  @async
+  void prefetchThumbnails(List<String> urls);
+
+  void cancelPrefetch();
 }

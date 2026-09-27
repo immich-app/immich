@@ -38,6 +38,7 @@ class URLSessionManager: NSObject {
   static let shared = URLSessionManager()
 
   private(set) var session: URLSession
+  private(set) var thumbnailSession: URLSession
   let delegate: URLSessionManagerDelegate
   private static let cacheDir: URL = {
     let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
@@ -46,10 +47,28 @@ class URLSessionManager: NSObject {
     try! FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
     return dir
   }()
-  private static let urlCache = URLCache(
+  static let urlCache = URLCache(
     memoryCapacity: 0,
     diskCapacity: 1024 * 1024 * 1024,
     directory: cacheDir
+  )
+  /// Thumbnails get their own cache so that previews and originals cannot evict
+  /// them, and it lives in Application Support, which iOS does not purge when
+  /// storage runs low.
+  private static let thumbnailCacheDir: URL = {
+    var dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+      .first!
+      .appendingPathComponent("thumbnails", isDirectory: true)
+    try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+    var values = URLResourceValues()
+    values.isExcludedFromBackup = true
+    try? dir.setResourceValues(values)
+    return dir
+  }()
+  private static let thumbnailUrlCache = URLCache(
+    memoryCapacity: 0,
+    diskCapacity: 2 * 1024 * 1024 * 1024,
+    directory: thumbnailCacheDir
   )
   static let userAgent: String = {
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
@@ -65,7 +84,8 @@ class URLSessionManager: NSObject {
 
   private override init() {
     delegate = URLSessionManagerDelegate()
-    session = Self.buildSession(delegate: delegate)
+    session = Self.buildSession(delegate: delegate, cache: Self.urlCache)
+    thumbnailSession = Self.buildSession(delegate: delegate, cache: Self.thumbnailUrlCache)
     super.init()
     Self.serverUrls = UserDefaults.group.stringArray(forKey: SERVER_URLS_KEY) ?? []
     NotificationCenter.default.addObserver(
@@ -77,7 +97,8 @@ class URLSessionManager: NSObject {
   }
 
   func recreateSession() {
-    session = Self.buildSession(delegate: delegate)
+    session = Self.buildSession(delegate: delegate, cache: Self.urlCache)
+    thumbnailSession = Self.buildSession(delegate: delegate, cache: Self.thumbnailUrlCache)
   }
 
   static func setServerUrls(_ urls: [String]) {
@@ -144,9 +165,9 @@ class URLSessionManager: NSObject {
     }
   }
 
-  private static func buildSession(delegate: URLSessionManagerDelegate) -> URLSession {
+  private static func buildSession(delegate: URLSessionManagerDelegate, cache: URLCache) -> URLSession {
     let config = URLSessionConfiguration.default
-    config.urlCache = urlCache
+    config.urlCache = cache
     config.httpCookieStorage = cookieStorage
     config.httpMaximumConnectionsPerHost = 64
     config.timeoutIntervalForRequest = 60

@@ -27,6 +27,7 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import kotlin.coroutines.resume
 
 private const val MAX_PREALLOC_BYTES = 128 * 1024 * 1024
 
@@ -63,6 +64,7 @@ private fun isRawMime(contentType: String?): Boolean {
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
+  private var prefetchJob: Job? = null
 
   init {
     ImageFetcherManager.initialize(context)
@@ -183,6 +185,36 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         callback(Result.failure(e))
       }
     }
+  }
+
+  override fun prefetchThumbnails(urls: List<String>, callback: (Result<Unit>) -> Unit) {
+    prefetchJob?.cancel()
+    prefetchJob = CoroutineScope(Dispatchers.IO).launch {
+      try {
+        urls.map { url ->
+          async {
+            suspendCancellableCoroutine { cont ->
+              val signal = CancellationSignal()
+              cont.invokeOnCancellation { signal.cancel() }
+              ImageFetcherManager.fetch(
+                url,
+                signal,
+                // The bytes are not needed: what matters is that the response
+                // landed in the HTTP cache.
+                onSuccess = { buffer, _ -> buffer.free(); cont.resume(Unit) },
+                onFailure = { cont.resume(Unit) }
+              )
+            }
+          }
+        }.awaitAll()
+      } finally {
+        callback(Result.success(Unit))
+      }
+    }
+  }
+
+  override fun cancelPrefetch() {
+    prefetchJob?.cancel()
   }
 }
 
