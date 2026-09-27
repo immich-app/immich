@@ -24,7 +24,6 @@ import {
   ImageEffort,
   ImageFormat,
   LogLevel,
-  RawExtractedFormat,
 } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import type {
@@ -73,9 +72,10 @@ type ProgressEvent = {
   percent?: number;
 };
 
-export type ExtractResult = {
+export type EmbeddedImage = {
+  tag: string;
   buffer: Buffer;
-  format: RawExtractedFormat;
+  photometricInterpretation?: number;
 };
 
 @Injectable()
@@ -89,26 +89,31 @@ export class MediaRepository {
   }
 
   /**
-
   @param input file path to the input image
-  @returns ExtractResult if succeeded, or null if failed
+  @param tags binary tags to read, e.g. `PreviewImage`
+  @returns every copy of each tag across the file's IFDs and maker notes, ordered by `tags`, then by file order
+  @throws if the file cannot be read
   */
-  async extract(input: string): Promise<ExtractResult | null> {
-    for (const { tag, format } of [
-      { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
-      { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
-      { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
-      { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
-    ]) {
-      try {
-        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
-        this.logger.debug(`Successfully extracted ${tag} buffer from image`);
-        return { buffer, format };
-      } catch (error: any) {
-        this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
-      }
-    }
-    return null;
+  async getEmbeddedImages(input: string, tags: string[]): Promise<EmbeddedImage[]> {
+    // tags are named explicitly because -all skips some, e.g. JpgFromRaw in RW2
+    const result = await exiftool.read(input, {
+      readArgs: ['-g1', '-a', '-n', '-b', '-PhotometricInterpretation', ...tags.map((tag) => `-${tag}`)],
+    });
+    const groups = Object.values(result).filter(
+      (value): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value),
+    );
+
+    return tags.flatMap((tag) =>
+      groups.flatMap((group) => {
+        const data = group[tag];
+        if (typeof data !== 'string') {
+          return [];
+        }
+
+        const buffer = Buffer.from(data.replace(/^base64:/, ''), 'base64');
+        return { tag, buffer, photometricInterpretation: group.PhotometricInterpretation as number | undefined };
+      }),
+    );
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
