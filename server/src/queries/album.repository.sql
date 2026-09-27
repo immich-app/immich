@@ -437,11 +437,10 @@ order by
 
 -- AlbumRepository.copyAlbums
 insert into
-  "album_asset" ("albumId", "assetId", "createdAt")
+  "album_asset"
 select
   "album_asset"."albumId",
-  $1 as "assetId",
-  "album_asset"."createdAt"
+  $1 as "assetId"
 from
   "album_asset"
 where

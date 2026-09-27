@@ -459,11 +459,10 @@ export class AlbumRepository {
   async copyAlbums({ sourceAssetId, targetAssetId }: { sourceAssetId: string; targetAssetId: string }) {
     return this.db
       .insertInto('album_asset')
-      .columns(['albumId', 'assetId', 'createdAt'])
       .expression((eb) =>
         eb
           .selectFrom('album_asset')
-          .select((eb) => ['album_asset.albumId', eb.val(targetAssetId).as('assetId'), 'album_asset.createdAt'])
+          .select((eb) => ['album_asset.albumId', eb.val(targetAssetId).as('assetId')])
           .where('album_asset.assetId', '=', sourceAssetId),
       )
       .onConflict((oc) => oc.doNothing())
