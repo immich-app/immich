@@ -113,7 +113,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    const wroteMetadata = await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
@@ -127,6 +127,10 @@ export class AssetService extends BaseService {
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
+    }
+
+    if (!wroteMetadata) {
+      this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
     }
 
     return this.get(auth, id) as Promise<AssetResponseDto>;
@@ -160,8 +164,10 @@ export class AssetService extends BaseService {
       isUndefined,
     );
 
+    let shouldWriteSidecar = false;
     if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
+      shouldWriteSidecar = true;
     }
 
     const extractedTimeZone = extractTimeZone(dateTimeOriginal);
@@ -172,6 +178,7 @@ export class AssetService extends BaseService {
       extractedTimeZone?.type === 'fixed'
     ) {
       await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone ?? extractedTimeZone?.name);
+      shouldWriteSidecar = true;
     }
 
     if (Object.keys(assetDto).length > 0) {
@@ -182,7 +189,14 @@ export class AssetService extends BaseService {
       await this.albumRepository.removeAssetsFromAll(ids);
     }
 
-    await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    if (shouldWriteSidecar) {
+      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    } else {
+      const assets = await this.assetRepository.getByIds(ids);
+      for (const asset of assets) {
+        this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
+      }
+    }
   }
 
   async copy(
@@ -508,7 +522,7 @@ export class AssetService extends BaseService {
     );
 
     if (Object.keys(writes).length === 0) {
-      return;
+      return false;
     }
 
     await this.assetRepository.upsertExif({
@@ -519,6 +533,7 @@ export class AssetService extends BaseService {
       lockedPropertiesBehavior: 'append',
     });
     await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    return true;
   }
 
   async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
