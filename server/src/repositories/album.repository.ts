@@ -6,8 +6,8 @@ import {
   type NotNull,
   type Selectable,
   type ShallowDehydrateObject,
-  sql,
   type Updateable,
+  sql,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';

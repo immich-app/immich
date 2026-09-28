@@ -15,7 +15,7 @@ import {
   SourceType,
 } from 'src/enum.js';
 import { ImmichTags } from 'src/repositories/metadata.repository.js';
-import { firstDateTime, MetadataService } from 'src/services/metadata.service.js';
+import { MetadataService, firstDateTime } from 'src/services/metadata.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { PersonGroupFactory } from 'test/factories/person-group.factory.js';
 import { PersonFactory } from 'test/factories/person.factory.js';
@@ -23,7 +23,7 @@ import { videoInfoStub } from 'test/fixtures/media.stub.js';
 import { tagStub } from 'test/fixtures/tag.stub.js';
 import { getForMetadataExtraction, getForSidecarWrite } from 'test/mappers.js';
 import { factory } from 'test/small.factory.js';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
 const forSidecarJob = (
   asset: {

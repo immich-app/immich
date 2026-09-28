@@ -20,6 +20,7 @@ abstract class LivePhotosMetadata with _$LivePhotosMetadata {
     return LivePhotosMetadata(part: LivePhotosPart.values[map['part'] as int], id: map['id'] as String);
   }
 
+  @visibleForTesting
   String toJson() => json.encode(toMap());
 
   factory LivePhotosMetadata.fromJson(String source) =>

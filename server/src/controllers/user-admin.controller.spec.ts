@@ -1,11 +1,11 @@
+import request from 'supertest';
 import { UserAdminController } from 'src/controllers/user-admin.controller.js';
 import { UserAdminCreateDto } from 'src/dtos/user.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { factory } from 'test/small.factory.js';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
+import { ControllerContext, automock, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(UserAdminController.name, () => {
   let ctx: ControllerContext;

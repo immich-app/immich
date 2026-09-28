@@ -5,7 +5,7 @@ import { ActivityFactory } from 'test/factories/activity.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { getForActivity } from 'test/mappers.js';
 import { newUuid, newUuids } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;

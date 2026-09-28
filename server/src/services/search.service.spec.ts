@@ -1,4 +1,5 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { beforeEach, vitest } from 'vitest';
 import { mapAsset } from 'src/dtos/asset-response.dto.js';
 import { SearchSuggestionType } from 'src/dtos/search.dto.js';
 import { AssetVisibility } from 'src/enum.js';
@@ -8,8 +9,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForAsset } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
-import { beforeEach, vitest } from 'vitest';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 vitest.useFakeTimers();
 

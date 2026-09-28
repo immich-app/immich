@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { ActivityController } from 'src/controllers/activity.controller.js';
 import { ActivityService } from 'src/services/activity.service.js';
-import request from 'supertest';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 

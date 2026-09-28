@@ -1,8 +1,8 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { PersonResponseDto } from 'src/dtos/person.dto.js';
 import {
   LargeAssetSearchDto,

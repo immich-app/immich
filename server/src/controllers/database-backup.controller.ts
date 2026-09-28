@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Next, Param, Post, Res, UploadedFile, Us
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import type { NextFunction, Response } from 'express';
+import type { LoginDetails } from 'src/services/auth.service.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   DatabaseBackupDeleteDto,
@@ -11,7 +12,6 @@ import {
 import { ApiTag, ImmichCookie, Permission } from 'src/enum.js';
 import { Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
-import type { LoginDetails } from 'src/services/auth.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { MaintenanceService } from 'src/services/maintenance.service.js';
 import { sendFile } from 'src/utils/file.js';

@@ -200,7 +200,6 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       child: Timeline(
         topSliverWidget: PendingUploadsBanner(albumId: _album.id),
         appBar: RemoteAlbumSliverAppBar(
-          icon: Icons.photo_album_outlined,
           kebabMenu: _AlbumKebabMenu(
             album: _album,
             onDeleteAlbum: () => deleteAlbum(context),

@@ -5,7 +5,7 @@ import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(ApiKeyService.name, () => {
   let sut: ApiKeyService;

@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { NotificationAdminController } from 'src/controllers/notification-admin.controller.js';
 import { NotificationAdminService } from 'src/services/notification-admin.service.js';
-import request from 'supertest';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 

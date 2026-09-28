@@ -5,7 +5,7 @@ import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
-import { automock, AutoMocked, getMocks, ServiceMocks } from 'test/utils.js';
+import { AutoMocked, ServiceMocks, automock, getMocks } from 'test/utils.js';
 
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;

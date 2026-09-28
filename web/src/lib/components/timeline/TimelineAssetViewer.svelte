@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { AssetAction } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
@@ -9,7 +10,6 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
-  import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleErrorAsync } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
@@ -106,7 +106,11 @@
     });
   };
 
-  const handleRemoveFromAlbum = async (assetIds: string[]) => {
+  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
+    if (!album || !albumIds.includes(album.id)) {
+      return;
+    }
+
     timelineManager.removeAssets(assetIds);
 
     if (!assetIds.includes(assetCursor.current.id)) {
@@ -150,52 +154,6 @@
         timelineManager.upsertAssets([action.asset]);
         break;
       }
-
-      case AssetAction.STACK: {
-        updateStackedAssetInTimeline(timelineManager, {
-          stack: action.stack,
-          toDeleteIds: action.stack.assets
-            .filter((asset) => asset.id !== action.stack.primaryAssetId)
-            .map((asset) => asset.id),
-        });
-        break;
-      }
-
-      case AssetAction.UNSTACK: {
-        updateUnstackedAssetInTimeline(timelineManager, action.assets);
-        break;
-      }
-      case AssetAction.REMOVE_ASSET_FROM_STACK: {
-        timelineManager.upsertAssets([toTimelineAsset(action.asset)]);
-        if (action.stack) {
-          //Have to unstack then restack assets in timeline in order to update the stack count in the timeline.
-          updateUnstackedAssetInTimeline(
-            timelineManager,
-            action.stack.assets.map((asset) => toTimelineAsset(asset)),
-          );
-          updateStackedAssetInTimeline(timelineManager, {
-            stack: action.stack,
-            toDeleteIds: action.stack.assets
-              .filter((asset) => asset.id !== action.stack?.primaryAssetId)
-              .map((asset) => asset.id),
-          });
-        }
-        break;
-      }
-      case AssetAction.SET_STACK_PRIMARY_ASSET: {
-        //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
-        updateUnstackedAssetInTimeline(
-          timelineManager,
-          action.stack.assets.map((asset) => toTimelineAsset(asset)),
-        );
-        updateStackedAssetInTimeline(timelineManager, {
-          stack: action.stack,
-          toDeleteIds: action.stack.assets
-            .filter((asset) => asset.id !== action.stack.primaryAssetId)
-            .map((asset) => asset.id),
-        });
-        break;
-      }
       // no default
     }
   };
@@ -234,6 +192,8 @@
   });
 </script>
 
+<OnEvents {onAlbumRemoveAssets} />
+
 {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
     {withStacked}
@@ -251,7 +211,6 @@
     }}
     onUndoDelete={handleUndoDelete}
     onRandom={handleRandom}
-    onRemoveFromAlbum={handleRemoveFromAlbum}
     onClose={handleClose}
   />
 {/await}

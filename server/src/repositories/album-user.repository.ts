@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import type { Insertable, Kysely, Updateable } from 'kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AlbumUserRole } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';

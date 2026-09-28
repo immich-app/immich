@@ -1,9 +1,9 @@
 import mockfs from 'mock-fs';
+import { vitest } from 'vitest';
 import { CrawlOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { automock } from 'test/utils.js';
-import { vitest } from 'vitest';
 
 const mocks = vitest.hoisted(() => {
   const watcher = {
@@ -212,6 +212,7 @@ describe(StorageRepository.name, () => {
   });
 
   afterEach(() => {
+    // eslint-disable-next-line import-x/no-named-as-default-member
     mockfs.restore();
   });
 

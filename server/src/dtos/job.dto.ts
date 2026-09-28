@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
-import { ManualJobNameSchema } from 'src/enum.js';
 import z from 'zod';
+import { ManualJobNameSchema } from 'src/enum.js';
 
 const JobCreateSchema = z
   .object({

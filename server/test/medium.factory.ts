@@ -4,6 +4,8 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
+import { Mocked } from 'vitest';
+import type { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types.js';
 import { AssetFace } from 'src/database.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
@@ -62,6 +64,7 @@ import { TagRepository } from 'src/repositories/tag.repository.js';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
+import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
@@ -81,13 +84,11 @@ import { UserTable } from 'src/schema/tables/user.table.js';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
 import { SyncService } from 'src/services/sync.service.js';
-import type { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types.js';
 import { getConfig, updateConfig } from 'src/utils/config.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock.js';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory.js';
 import { automock, wait } from 'test/utils.js';
-import { Mocked } from 'vitest';
 
 export const testAssetsDir = resolve(import.meta.dirname, '../../e2e/test-assets');
 
@@ -616,6 +617,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       return automock(StorageRepository, { args: [{ setContext: () => {} }] });
     }
 
+    case WebsocketRepository: {
+      return automock(WebsocketRepository, { args: [undefined, { setContext: () => {} }] });
+    }
+
     default: {
       throw new Error(`Invalid repository key: ${key}`);
     }
@@ -761,7 +766,7 @@ const userInsert = (user: Partial<Insertable<UserTable>> & { clusterGroupId: str
     shouldChangePassword: true,
     storageLabel: null,
     pinCode: null,
-    oauthId: '',
+    oauthId: null,
     avatarColor: null,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
@@ -812,7 +817,6 @@ const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
 class CustomWritable extends Writable {
   private data = '';
 
-  // determined by Writable interface
   // eslint-disable-next-line unicorn/prefer-private-class-fields
   _write(chunk: any, encoding: string, callback: () => void) {
     this.data += chunk.toString();

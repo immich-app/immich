@@ -1,9 +1,9 @@
 import { ClsService } from 'nestjs-cls';
+import { Mocked } from 'vitest';
 import { ImmichWorker } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository, MyConsoleLogger } from 'src/repositories/logging.repository.js';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock.js';
-import { Mocked } from 'vitest';
 
 describe(LoggingRepository.name, () => {
   let sut: LoggingRepository;

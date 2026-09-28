@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { type NextFunction, type Request, type Response } from 'express';
+import type { UploadFiles } from 'src/types.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AssetBulkUploadCheckResponseDto,
@@ -36,7 +37,6 @@ import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js'
 import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { AssetMediaService } from 'src/services/asset-media.service.js';
-import type { UploadFiles } from 'src/types.js';
 import { ImmichFileResponse, sendFile } from 'src/utils/file.js';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation.js';
 

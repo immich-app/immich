@@ -7,9 +7,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import type { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository.js';
 import { MaintenanceAuthDto, MaintenanceStatusResponseDto } from 'src/dtos/maintenance.dto.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
-import type { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 interface ServerEventMap {

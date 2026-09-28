@@ -1,6 +1,6 @@
-import { CryptoRepository } from 'src/repositories/crypto.repository.js';
-import type { RepositoryInterface } from 'src/types.js';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 
 export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepository>> => {
   return {

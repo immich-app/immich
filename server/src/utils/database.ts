@@ -1,4 +1,4 @@
-import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
+import { DatabaseConnectionParams, createPostgres } from '@immich/sql-tools';
 import {
   AliasedRawBuilder,
   DeduplicateJoinsPlugin,
@@ -9,26 +9,27 @@ import {
   NotNull,
   OperandValueExpression,
   ReferenceExpression,
-  Selectable,
   SelectQueryBuilder,
+  Selectable,
   ShallowDehydrateObject,
-  sql,
   SqlBool,
+  sql,
 } from 'kysely';
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { Notice, PostgresError } from 'postgres';
-import { columns, lockableProperties, LockableProperty, Person } from 'src/database.js';
+import type { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
+import { LockableProperty, Person, columns, lockableProperties } from 'src/database.js';
 import { DummyValue, GenerateSqlQueries } from 'src/decorators.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
   DEFAULT_SEARCH_ORDER,
   IdsFilter,
-  isAlbumConfined,
   SearchFilterBranch,
   SearchOrder,
   StringFilter,
   StringPatternFilter,
+  isAlbumConfined,
 } from 'src/dtos/search.dto.js';
 import {
   AssetFileType,
@@ -46,7 +47,6 @@ import {
 } from 'src/repositories/search.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
-import type { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
 import { fromChecksum } from 'src/utils/request.js';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {

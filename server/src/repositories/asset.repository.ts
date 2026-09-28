@@ -4,19 +4,19 @@ import {
   type Insertable,
   type Kysely,
   type NotNull,
-  type Selectable,
   type SelectQueryBuilder,
+  type Selectable,
   type ShallowDehydrateObject,
-  sql,
-  type Updateable,
   UpdateResult,
+  type Updateable,
+  sql,
 } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { LockableProperty, Stack } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetFileType,
   AssetOrder,

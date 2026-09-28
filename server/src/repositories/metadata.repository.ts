@@ -90,6 +90,7 @@ export class MetadataRepository {
     useMWG: true,
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
+    // eslint-disable-next-line import-x/no-named-as-default-member
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     geolocation: true,
     readArgs: [

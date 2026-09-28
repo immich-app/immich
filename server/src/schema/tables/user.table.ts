@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { ColumnType } from 'kysely';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { UserAvatarColor, UserStatus } from 'src/enum.js';
 import { user_delete_audit } from 'src/schema/functions.js';
 import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
@@ -57,8 +57,8 @@ export class UserTable {
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;
 
-  @Column({ default: '' })
-  oauthId!: Generated<string>;
+  @Column({ nullable: true })
+  oauthId!: string | null;
 
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;

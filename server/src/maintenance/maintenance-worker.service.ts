@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
+import type { MaintenanceModeState } from 'src/types.js';
 import { serverVersion } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import {
@@ -28,7 +29,6 @@ import { type BaseService as _BaseService } from 'src/services/base.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { type ServerService as _ServerService } from 'src/services/server.service.js';
 import { type VersionService as _VersionService } from 'src/services/version.service.js';
-import type { MaintenanceModeState } from 'src/types.js';
 import { getConfig } from 'src/utils/config.js';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance.js';
 import { getExternalDomain } from 'src/utils/misc.js';

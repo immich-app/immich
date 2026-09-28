@@ -1,9 +1,9 @@
 import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 import { HistoryBuilder } from 'src/decorators.js';
 import { AssetMetadataUpsertItemSchema } from 'src/dtos/asset.dto.js';
 import { ApiCustomExtension, AssetVisibilitySchema } from 'src/enum.js';
-import { isoDatetimeToDate, JsonParsed, stringToBool } from 'src/validation.js';
-import z from 'zod';
+import { JsonParsed, isoDatetimeToDate, stringToBool } from 'src/validation.js';
 
 export enum AssetMediaSize {
   Original = 'original',

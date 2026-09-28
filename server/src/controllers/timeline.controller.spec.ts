@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { TimelineController } from 'src/controllers/timeline.controller.js';
 import { TimelineService } from 'src/services/timeline.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
