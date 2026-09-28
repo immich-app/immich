@@ -1209,7 +1209,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_quota: 5 }),
+        profile: OAuthProfileFactory.create({ sub: user.oauthId!, immich_quota: 5 }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...user, quotaSizeInBytes: 5_368_709_120 });
@@ -1233,7 +1233,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_quota: -1 }),
+        profile: OAuthProfileFactory.create({ sub: user.oauthId!, immich_quota: -1 }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...user, quotaSizeInBytes: null });
@@ -1257,7 +1257,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, preferred_username: 'idp-username' }),
+        profile: OAuthProfileFactory.create({ sub: user.oauthId!, preferred_username: 'idp-username' }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
@@ -1279,7 +1279,7 @@ describe(AuthService.name, () => {
         oauth: { ...systemConfigStub.oauthWithAutoRegister.oauth, storageLabelClaim: 'immich_label' },
       });
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_label: 'synced-label' }),
+        profile: OAuthProfileFactory.create({ sub: user.oauthId!, immich_label: 'synced-label' }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.getByStorageLabel.mockResolvedValue(void 0);
@@ -1365,7 +1365,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId }),
+        profile: OAuthProfileFactory.create({ sub: user.oauthId! }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
