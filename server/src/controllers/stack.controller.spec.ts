@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { StackController } from 'src/controllers/stack.controller.js';
 import { StackService } from 'src/services/stack.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';

@@ -18,7 +18,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForAsset, getForAssetDeletion } from 'test/mappers.js';
 import { factory, newUuid } from 'test/small.factory.js';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
 const stats: AssetStats = {
   [AssetType.Image]: 10,

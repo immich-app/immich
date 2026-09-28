@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { Insertable, InsertQueryBuilder, Kysely, QueryCreator, Selectable, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import type { InsertQueryBuilder, Insertable, Kysely, QueryCreator, Selectable, Updateable } from 'kysely';
 import { columns } from 'src/database.js';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { DB } from 'src/schema/index.js';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
 import { TagTable } from 'src/schema/tables/tag.table.js';
+
 @Injectable()
 export class TagRepository {
   constructor(

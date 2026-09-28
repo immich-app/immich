@@ -1,10 +1,10 @@
 import { cloneDeep } from 'lodash-es';
+import request from 'supertest';
 import { ConfigAdminController } from 'src/controllers/config-admin.controller.js';
 import { ConfigPublicController } from 'src/controllers/config-public.controller.js';
 import { ConfigUserController } from 'src/controllers/config-user.controller.js';
 import { defaults, mapPublicConfig, mapUserConfig } from 'src/dtos/config.dto.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 

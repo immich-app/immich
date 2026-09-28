@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
 import type { AssetFile } from 'src/database.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import type { JobItem, JobOf } from 'src/types.js';
 import { OnJob } from 'src/decorators.js';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
 import {
@@ -19,7 +21,6 @@ import {
   UpdateAssetDto,
   mapStats,
 } from 'src/dtos/asset.dto.js';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetEditAction,
   type AssetEditActionItem,
@@ -38,7 +39,6 @@ import {
   QueueName,
 } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { JobItem, JobOf } from 'src/types.js';
 import { requireElevatedPermission } from 'src/utils/access.js';
 import {
   getAssetFiles,
@@ -507,16 +507,18 @@ export class AssetService extends BaseService {
       isUndefined,
     );
 
-    if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif({
-        exif: updateLockedColumns({
-          assetId: id,
-          ...writes,
-        }),
-        lockedPropertiesBehavior: 'append',
-      });
-      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    if (Object.keys(writes).length === 0) {
+      return;
     }
+
+    await this.assetRepository.upsertExif({
+      exif: updateLockedColumns({
+        assetId: id,
+        ...writes,
+      }),
+      lockedPropertiesBehavior: 'append',
+    });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
   }
 
   async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {

@@ -5,8 +5,8 @@ import {
   type Kysely,
   type Selectable,
   type ShallowDehydrateObject,
-  sql,
   type Updateable,
+  sql,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { omit } from 'lodash-es';

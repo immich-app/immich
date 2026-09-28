@@ -1,4 +1,4 @@
-import { HttpException, NotFoundException, StreamableFile } from '@nestjs/common';
+import { NotFoundException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
-import { isConnectionAborted } from 'src/utils/misc.js';
+import { onRouteError } from 'src/utils/logger.js';
 
 export function getFileNameWithoutExtension(path: string): string {
   return basename(path, getFilenameExtension(path));
@@ -62,7 +62,7 @@ export const sendFile = async (
     const cacheControlHeader = cacheControlHeaders[file.cacheControl];
     if (cacheControlHeader) {
       // set the header to Cache-Control
-      res.set('Cache-Control', cacheControlHeader);
+      res.header('Cache-Control', cacheControlHeader);
     }
 
     res.header('Content-Type', file.contentType);
@@ -72,17 +72,10 @@ export const sendFile = async (
 
     return await _sendFile(file.path, { dotfiles: 'allow' });
   } catch (error: Error | any) {
-    // ignore client-closed connection
-    if (isConnectionAborted(error) || res.headersSent) {
-      return;
+    const { canWrite } = onRouteError(undefined, res, error, logger);
+    if (canWrite) {
+      next(new NotFoundException());
     }
-
-    // log non-http errors
-    if (!(error instanceof HttpException)) {
-      logger.error(`Unable to send file: ${error}`, error.stack);
-    }
-
-    next(new NotFoundException());
   }
 };
 

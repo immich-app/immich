@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { MaintenanceModeState } from 'src/types.js';
 import { OnEvent } from 'src/decorators.js';
 import {
   MaintenanceAuthDto,
@@ -7,9 +9,7 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto.js';
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { MaintenanceModeState } from 'src/types.js';
 import {
   createMaintenanceLoginUrl,
   detectPriorInstall,

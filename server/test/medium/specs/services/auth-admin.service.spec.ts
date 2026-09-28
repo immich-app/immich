@@ -31,7 +31,7 @@ describe(AuthAdminService.name, () => {
 
       await expect(sut.unlinkAll(auth)).resolves.toBeUndefined();
       await expect(userRepo.get(user.id, { withDeleted: true })).resolves.toEqual(
-        expect.objectContaining({ oauthId: '' }),
+        expect.objectContaining({ oauthId: null }),
       );
     });
 
@@ -43,7 +43,7 @@ describe(AuthAdminService.name, () => {
 
       await expect(sut.unlinkAll(auth)).resolves.toBeUndefined();
       await expect(userRepo.get(user.id, { withDeleted: true })).resolves.toEqual(
-        expect.objectContaining({ oauthId: '' }),
+        expect.objectContaining({ oauthId: null }),
       );
     });
 
@@ -56,10 +56,10 @@ describe(AuthAdminService.name, () => {
 
       await expect(sut.unlinkAll(auth)).resolves.toBeUndefined();
       await expect(userRepo.get(user1.id, { withDeleted: true })).resolves.toEqual(
-        expect.objectContaining({ oauthId: '' }),
+        expect.objectContaining({ oauthId: null }),
       );
       await expect(userRepo.get(user2.id, { withDeleted: true })).resolves.toEqual(
-        expect.objectContaining({ oauthId: '' }),
+        expect.objectContaining({ oauthId: null }),
       );
     });
   });

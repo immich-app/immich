@@ -6,7 +6,7 @@ import { StackFactory } from 'test/factories/stack.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForStack } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(StackService.name, () => {
   let sut: StackService;

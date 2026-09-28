@@ -1,77 +1,57 @@
 import math
-from functools import cached_property
+from bisect import bisect_left
 from typing import Any
 
 import cv2
 import numpy as np
+from immich_model.constants import OCR_RECOGNITION_WIDTHS
 from numpy.typing import NDArray
 from PIL import Image
-from rapidocr import LangRec
-from rapidocr.inference_engine.base import FileInfo, InferSession
-from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
-from rapidocr.utils.typings import EngineType, OCRVersion, TaskType
-from rapidocr.utils.typings import ModelType as RapidModelType
 
-from immich_ml.config import log, settings
-from immich_ml.models.base import InferenceModel
-from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
-from immich_ml.sessions.ort import OrtSession
+from immich_ml.config import settings
+from immich_ml.schemas import ModelGraph, ModelSession, ModelTask, ModelType, Shape
+from immich_ml.sessions.policy import ShapePolicy, batches, runs
 
-from .ctc import CtcDecoder, greedy
+from .ctc import GREEDY, CtcDecoder, probabilities
+from .legacy import TextModel
 from .schemas import TextDetectionOutput, TextRecognitionOutput
 
 REC_HEIGHT = 48
-REC_BASE_RATIO = 320 / REC_HEIGHT  # PP-OCR's rec_image_shape floor
 SCALE = np.float32(1.0 / 127.5)
 
 
-class TextRecognizer(InferenceModel):
+class TextRecognizer(TextModel):
     depends = [(ModelType.DETECTION, ModelTask.OCR)]
     identity = (ModelType.RECOGNITION, ModelTask.OCR)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        self.language = LangRec[model_name.split("__")[0]] if "__" in model_name else LangRec.CH
         self._empty: TextRecognitionOutput = {
             "box": np.empty(0, dtype=np.float32),
             "boxScore": np.empty(0, dtype=np.float32),
             "text": [],
             "textScore": np.empty(0, dtype=np.float32),
         }
-        super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
-        max_batch_size = settings.max_batch_size and settings.max_batch_size.ocr
-        self.batch_size = max_batch_size if max_batch_size else 6
-
-    def _download(self) -> None:
-        model_info = InferSession.get_model_url(
-            FileInfo(
-                engine_type=EngineType.ONNXRUNTIME,
-                ocr_version=OCRVersion.PPOCRV5,
-                task_type=TaskType.REC,
-                lang_type=self.language,
-                model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
-            )
+        super().__init__(model_name, **model_kwargs)
+        self.decoder: CtcDecoder | None = None
+        sizes = batches(settings.max_batch_size.ocr)
+        self.shape_policy = ShapePolicy(
+            dims=tuple(Shape(batch, width=width) for width in OCR_RECOGNITION_WIDTHS for batch in sizes)
         )
-        download_params = DownloadFileInput(
-            file_url=model_info["model_dir"],
-            sha256=model_info["SHA256"],
-            save_path=self.model_path,
-            logger=log,
-        )
-        DownloadFile.run(download_params)
 
     def _load(self) -> ModelSession:
-        # TODO: support other runtimes
-        session = OrtSession(self.model_path)
-        self.decoder = (
-            CtcDecoder(character.splitlines())
-            if (character := session.get_metadata().get("character")) is not None
-            else CtcDecoder.from_file(self.model_dir / "charset.txt")
-        )
+        session = super()._load()
+        # the widths it was compiled for, narrowest first: none where it takes any
+        self.widths = tuple(sorted({shape.width for shape in session.shapes if shape.width is not None}))
         return session
 
-    @cached_property
-    def raw_input(self) -> bool:
-        return self.session.get_inputs()[0].shape[-1] == 3  # NHWC models handle normalization and transpose internally
+    def _decoder(self, session: ModelGraph) -> CtcDecoder:
+        character = session.get_metadata().get("character")
+        greedy = GREEDY.get(session.get_outputs()[0].name, probabilities)
+        return (
+            CtcDecoder(character.splitlines(), greedy)
+            if character is not None
+            else CtcDecoder.from_file(self.model_dir / "charset.txt", greedy)
+        )
 
     def _predict(self, img: Image.Image, texts: TextDetectionOutput, minScore: float = 0.9) -> TextRecognitionOutput:
         boxes, box_scores = texts["boxes"], texts["scores"]
@@ -85,28 +65,35 @@ class TextRecognizer(InferenceModel):
 
         text_list: list[str] = [""] * len(order)
         score_list = np.zeros(len(order), dtype=np.float32)
-        input_name = self.session.get_inputs()[0].name
-        for start in range(0, len(order), self.batch_size):
-            chunk = order[start : start + self.batch_size]
-            width = int(REC_HEIGHT * max(REC_BASE_RATIO, ratios[chunk[-1]]))
-            images: NDArray[Any] = (
-                np.full((len(chunk), REC_HEIGHT, width, 3), 127, dtype=np.uint8)
-                if self.raw_input
-                else np.zeros((len(chunk), 3, REC_HEIGHT, width), dtype=np.float32)
-            )
+        sized = runs(len(order), self.session.batches)
+        bounds = [sum(sized[:index]) for index in range(len(sized))]
+        chunked = [order[start : start + size] for start, size in zip(bounds, sized)]
+        batch_widths = [self._width(int(REC_HEIGHT * ratios[chunk[-1]])) for chunk in chunked]
+        graphs = [self.session.for_shape(Shape(len(chunk), width=width)) for chunk, width in zip(chunked, batch_widths)]
+        raw = graphs[0].normalizes_input
+        # one buffer per request, sized for the largest batch and reshaped for each
+        sizes = [len(chunk) * REC_HEIGHT * width * 3 for chunk, width in zip(chunked, batch_widths)]
+        buffer = np.empty(max(sizes), dtype=np.uint8 if raw else np.float32)
+        for chunk, width, size, session in zip(chunked, batch_widths, sizes, graphs):
+            shape = (len(chunk), REC_HEIGHT, width, 3) if raw else (len(chunk), 3, REC_HEIGHT, width)
+            images: NDArray[Any] = buffer[:size].reshape(shape)
             for i, index in enumerate(chunk):
                 crop = self._crop(img, coeffs[index], widths[index], heights[index], upright[index])
                 resized_w = max(1, min(width, math.ceil(REC_HEIGHT * ratios[index])))
-                if self.raw_input:
+                if raw:
                     cv2.resize(crop, (resized_w, REC_HEIGHT), dst=images[i, :, :resized_w])
+                    images[i, :, resized_w:] = 127  # the pad the crop is read against, over whatever was there
                     continue
                 resized = cv2.resize(crop, (resized_w, REC_HEIGHT))
                 view = images[i, :, :, :resized_w]
                 np.multiply(resized.transpose(2, 0, 1)[::-1], SCALE, out=view)  # [::-1] is the RGB -> BGR swap
                 view -= 1.0
+                images[i, :, :, resized_w:] = 0
 
-            out_indices, out_probs = greedy(self.session.run(None, {input_name: images}))
-            chunk_texts, chunk_scores = self.decoder.decode(out_indices, out_probs)
+            outputs = session.run(None, {session.get_inputs()[0].name: images})
+            if self.decoder is None:
+                self.decoder = self._decoder(session)
+            chunk_texts, chunk_scores = self.decoder(outputs)
             for index, text, score in zip(chunk, chunk_texts, chunk_scores):
                 text_list[index] = text
                 score_list[index] = score
@@ -122,6 +109,11 @@ class TextRecognizer(InferenceModel):
             "boxScore": box_scores[valid],
             "textScore": score_list[valid],
         }
+
+    def _width(self, width: int) -> int:
+        if not self.widths:  # room past the text in proportion to it, as the recognizer reads a line worse without
+            return min(OCR_RECOGNITION_WIDTHS[-1], max(OCR_RECOGNITION_WIDTHS[0], math.ceil(width * 1.25)))
+        return self.widths[min(bisect_left(self.widths, width), len(self.widths) - 1)]
 
     def _crop_geometry(
         self, boxes: NDArray[np.float32]

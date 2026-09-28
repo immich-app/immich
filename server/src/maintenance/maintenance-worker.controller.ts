@@ -13,6 +13,10 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
+import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller.js';
+import type { ServerController as _ServerController } from 'src/controllers/server.controller.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
@@ -26,15 +30,10 @@ import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
 import { GetLoginDetails } from 'src/middleware/auth.guard.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
-import type { LoginDetails } from 'src/services/auth.service.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { sendFile } from 'src/utils/file.js';
 import { respondWithCookie } from 'src/utils/response.js';
 import { FilenameParamDto } from 'src/validation.js';
-
-import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller.js';
-import type { ServerController as _ServerController } from 'src/controllers/server.controller.js';
-import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto.js';
-import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 
 @Controller()
 export class MaintenanceWorkerController {

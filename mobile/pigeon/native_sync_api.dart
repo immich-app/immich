@@ -11,6 +11,8 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
+const String kUnsupportedOSError = 'UNSUPPORTED_OS';
+
 enum PlatformAssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
 
 class PlatformAsset {
@@ -95,12 +97,23 @@ class HashResult {
   const HashResult({required this.assetId, this.error, this.hash});
 }
 
+enum CloudIdErrorKind {
+  // PHPhotosErrorIdentifierNotFound
+  notFound,
+  // PHPhotosErrorMultipleIdentifiersFound
+  ambiguous,
+  // PhotoKit returned a partially synced identifier ("GUID:ID:" with no trailing hash)
+  incomplete,
+  unknown,
+}
+
 class CloudIdResult {
   final String assetId;
   final String? error;
   final String? cloudId;
+  final CloudIdErrorKind? errorKind;
 
-  const CloudIdResult({required this.assetId, this.error, this.cloudId});
+  const CloudIdResult({required this.assetId, this.error, this.cloudId, this.errorKind});
 }
 
 @HostApi()

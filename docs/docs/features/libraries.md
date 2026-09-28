@@ -1,5 +1,7 @@
 # External Libraries
 
+import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
+
 :::info
 Currently an external library can only belong to a single user which is selected when the library is initially created.
 :::
@@ -97,6 +99,8 @@ Let's show a concrete example where we add an existing gallery to Immich. Here, 
 First, we need to plan how we want to organize the libraries. The christmas trip photos should belong to its own library since we want to exclude the raw files. The videos and old photos can be in the same library since we want to import all files. We could also add all three folders to the same library if there are no files matching the Raw exclusion pattern in the other folders.
 
 ### Mount Docker Volumes
+
+<ComposeBuilder query="storage.externalLibraries.0.path=&storage.externalLibraries.0.readOnly=true" />
 
 The `immich-server` container will need access to the gallery. Modify your docker compose file as follows
 

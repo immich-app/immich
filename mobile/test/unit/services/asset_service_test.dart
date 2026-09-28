@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -117,6 +118,56 @@ void main() {
       verify(() => mocks.assetMedia.api.deleteAll(ids, trash: false)).called(1);
       verify(() => mocks.localAsset.repo.deleteAssets(ids)).called(1);
       verifyNever(() => mocks.trashedAsset.applyTrashedAssets(any()));
+    });
+  });
+
+  group('AssetService.stackEditedUpload', () {
+    const stack = StackResponse(id: 'stack', primaryAssetId: 'remote', assetIds: ['remote', 'previous']);
+
+    setUp(() {
+      when(() => mocks.localAsset.repo.updatePreviousChecksum(any(), any())).thenAnswer((_) async {});
+    });
+
+    test('stacks over the previous version, then records the uploaded checksum', () async {
+      when(() => mocks.localAsset.repo.getPreviousRemoteId('local')).thenAnswer((_) async => 'previous');
+      when(() => apiRepository.stack(any())).thenAnswer((_) async => stack);
+
+      await sut.stackEditedUpload('local', 'remote', 'sha');
+
+      verifyInOrder([
+        () => apiRepository.stack(['remote', 'previous']),
+        () => mocks.localAsset.repo.updatePreviousChecksum('local', 'sha'),
+      ]);
+      verifyNever(() => apiRepository.getChecksum(any()));
+    });
+
+    test('records the uploaded checksum when there is nothing to stack on', () async {
+      when(() => mocks.localAsset.repo.getPreviousRemoteId('local')).thenAnswer((_) async => null);
+
+      await sut.stackEditedUpload('local', 'remote', 'sha');
+
+      verifyNever(() => apiRepository.stack(any()));
+      verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'sha')).called(1);
+    });
+
+    test('records the uploaded checksum even when the stack call fails', () async {
+      when(() => mocks.localAsset.repo.getPreviousRemoteId('local')).thenAnswer((_) async => 'previous');
+      when(() => apiRepository.stack(any())).thenThrow(Exception('offline'));
+
+      await expectLater(sut.stackEditedUpload('local', 'remote', 'sha'), throwsException);
+
+      verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'sha')).called(1);
+    });
+
+    test('asks the server for the checksum when the upload did not know it', () async {
+      when(() => mocks.localAsset.repo.getPreviousRemoteId('local')).thenAnswer((_) async => 'previous');
+      when(() => apiRepository.getChecksum('remote')).thenAnswer((_) async => 'srv');
+      when(() => apiRepository.stack(any())).thenAnswer((_) async => stack);
+
+      await sut.stackEditedUpload('local', 'remote', null);
+
+      verify(() => apiRepository.stack(['remote', 'previous'])).called(1);
+      verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'srv')).called(1);
     });
   });
 }

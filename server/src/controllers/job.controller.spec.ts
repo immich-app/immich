@@ -1,7 +1,7 @@
+import request from 'supertest';
 import { JobController } from 'src/controllers/job.controller.js';
 import { JobService } from 'src/services/job.service.js';
 import { QueueService } from 'src/services/queue.service.js';
-import request from 'supertest';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(JobController.name, () => {

@@ -45,10 +45,11 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
     let chunk = new Set<T>();
     for (const element of collection) {
       chunk.add(element);
-      if (chunk.size === size) {
-        result.push(chunk);
-        chunk = new Set<T>();
+      if (chunk.size !== size) {
+        continue;
       }
+      result.push(chunk);
+      chunk = new Set<T>();
     }
     if (chunk.size > 0) {
       result.push(chunk);

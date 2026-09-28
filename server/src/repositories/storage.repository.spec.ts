@@ -188,6 +188,7 @@ describe(StorageRepository.name, () => {
   });
 
   afterEach(() => {
+    // eslint-disable-next-line import-x/no-named-as-default-member
     mockfs.restore();
   });
 

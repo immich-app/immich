@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
-import { defaults, SystemConfig } from 'src/dtos/config.dto.js';
+import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { ImmichWorker, JobName, QueueCommand, QueueName } from 'src/enum.js';
 import { QueueService } from 'src/services/queue.service.js';
 import { factory } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(QueueService.name, () => {
   let sut: QueueService;

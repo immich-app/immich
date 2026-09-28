@@ -1,7 +1,7 @@
 import { SystemMetadataKey } from 'src/enum.js';
 import { ServerService } from 'src/services/server.service.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(ServerService.name, () => {
   let sut: ServerService;

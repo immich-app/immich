@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { LockableProperty } from 'src/database.js';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('asset_exif')

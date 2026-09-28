@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { SystemMetadataController } from 'src/controllers/system-metadata.controller.js';
 import { SystemMetadataService } from 'src/services/system-metadata.service.js';
-import request from 'supertest';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(SystemMetadataController.name, () => {

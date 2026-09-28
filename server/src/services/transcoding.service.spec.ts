@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import {
   HLS_BACKPRESSURE_PAUSE_SEGMENTS,
   HLS_BACKPRESSURE_RESUME_SEGMENTS,
@@ -8,8 +9,7 @@ import {
 import { TranscodingService } from 'src/services/transcoding.service.js';
 import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database.js';
 import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub.js';
-import { mockSpawn, newTestService, ServiceMocks } from 'test/utils.js';
-import { vi } from 'vitest';
+import { ServiceMocks, mockSpawn, newTestService } from 'test/utils.js';
 
 describe(TranscodingService.name, () => {
   let sut: TranscodingService;

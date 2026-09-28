@@ -1,8 +1,9 @@
 import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
@@ -12,7 +13,6 @@ import {
 } from 'src/dtos/maintenance.dto.js';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
-import type { LoginDetails } from 'src/services/auth.service.js';
 import { MaintenanceService } from 'src/services/maintenance.service.js';
 import { respondWithCookie } from 'src/utils/response.js';
 

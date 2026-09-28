@@ -9,7 +9,8 @@ import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces/index.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { citiesFile, IWorker } from 'src/constants.js';
+import type { VectorExtension } from 'src/types.js';
+import { IWorker, citiesFile } from 'src/constants.js';
 import { Telemetry } from 'src/decorators.js';
 import { EnvSchema } from 'src/dtos/env.dto.js';
 import {
@@ -22,7 +23,6 @@ import {
   LogLevel,
   QueueName,
 } from 'src/enum.js';
-import type { VectorExtension } from 'src/types.js';
 import { setDifference } from 'src/utils/set.js';
 
 export interface EnvData {
@@ -90,6 +90,7 @@ export interface EnvData {
       admin1: string;
       admin2: string;
       cities500: string;
+      countryInfo: string;
       naturalEarthCountriesPath: string;
     };
     web: {
@@ -338,6 +339,7 @@ const getEnv = (): EnvData => {
         admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
         admin2: join(folders.geodata, 'admin2Codes.txt'),
         cities500: join(folders.geodata, citiesFile),
+        countryInfo: join(folders.geodata, 'countryInfo.txt'),
         naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
       },
       web: {
