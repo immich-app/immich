@@ -17,7 +17,7 @@
   let description = $state(album.description);
 
   const onSubmit = async () => {
-    const success = await handleUpdateAlbum(album, { albumName, description });
+    const success = await handleUpdateAlbum(album, { albumName, description: description || null });
     if (success) {
       onClose();
     }

@@ -1,5 +1,5 @@
-import { extname } from 'node:path';
-import { AssetType } from 'src/enum';
+import { AssetType } from 'src/enum.js';
+import { getFilenameExtension } from 'src/utils/file.js';
 
 const raw = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
@@ -43,6 +43,7 @@ const webSupportedImage = {
   '.avif': ['image/avif'],
   '.bmp': ['image/bmp'],
   '.gif': ['image/gif'],
+  '.jfif': ['image/jpeg'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],
   '.png': ['image/png', 'image/apng'],
@@ -98,7 +99,18 @@ const transparentCapableExtensions = new Set([
   '.webp',
 ]);
 
-const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp', '.svg']);
+const profileExtensions = new Set([
+  '.avif',
+  '.dng',
+  '.heic',
+  '.heif',
+  '.jfif',
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.webp',
+  '.svg',
+]);
 const profile: Record<string, string[]> = Object.fromEntries(
   Object.entries(image).filter(([key]) => profileExtensions.has(key)),
 );
@@ -132,9 +144,12 @@ const sidecar: Record<string, string[]> = {
 
 const types = { ...image, ...video, ...sidecar };
 
-const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
+const isType = (filename: string, r: Record<string, string[]>) =>
+  Object.hasOwn(r, getFilenameExtension(filename).toLowerCase());
 
-const lookup = (filename: string) => types[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
+const lookup = (filename: string) =>
+  types[getFilenameExtension(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
+
 const toExtension = (mimeType: string) => {
   return (
     extensionOverrides[mimeType] || Object.entries(types).find(([, mimeTypes]) => mimeTypes.includes(mimeType))?.[0]
@@ -157,7 +172,8 @@ export const mimeTypes = {
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
   isVideo: (filename: string) => isType(filename, video),
-  canBeTransparent: (filename: string) => transparentCapableExtensions.has(extname(filename).toLowerCase()),
+  canBeTransparent: (filename: string) =>
+    transparentCapableExtensions.has(getFilenameExtension(filename).toLowerCase()),
   isRaw: (filename: string) => isType(filename, raw),
   lookup,
   /** return an extension (including a leading `.`) for a mime-type */
@@ -168,7 +184,7 @@ export const mimeTypes = {
       return AssetType.Image;
     }
 
-    if (contentType.startsWith('video/') || contentType === 'application/mxf') {
+    if (contentType === 'application/mxf' || contentType.startsWith('video/')) {
       return AssetType.Video;
     }
 

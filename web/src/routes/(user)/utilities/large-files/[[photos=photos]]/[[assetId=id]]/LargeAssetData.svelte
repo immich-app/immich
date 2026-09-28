@@ -3,6 +3,7 @@
   import { getFileSize } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
@@ -25,7 +26,9 @@
     <Thumbnail asset={toTimelineAsset(asset)} readonly onClick={() => onViewAsset(asset)} thumbnailSize={boxWidth} />
 
     {#if !!asset.libraryId}
-      <div class="absolute inset-e-3 bottom-1 rounded-xl bg-red-500 px-4 py-1 text-xs transition-colors">External</div>
+      <div class="absolute inset-e-3 bottom-1 rounded-xl bg-red-500 px-4 py-1 text-xs transition-colors">
+        {$t('external')}
+      </div>
     {/if}
   </div>
   <div class="mt-4 truncate px-4 text-center text-sm font-normal" title={asset.originalFileName}>

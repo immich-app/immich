@@ -1,11 +1,11 @@
 import { createZodDto } from 'nestjs-zod';
-import { SharedLink } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
-import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto';
-import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkTypeSchema } from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import { SharedLink } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto.js';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const SharedLinkSearchSchema = z
   .object({
@@ -30,6 +30,29 @@ const SharedLinkCreateSchema = z
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().default(true).optional().describe('Allow downloads'),
     showMetadata: z.boolean().default(true).optional().describe('Show metadata'),
+  })
+  .superRefine(({ type, albumId, assetIds }, ctx) => {
+    switch (type) {
+      case SharedLinkType.Album: {
+        if (!albumId) {
+          ctx.addIssue(`albumId is required for type ${SharedLinkType.Album}`);
+        }
+        if (assetIds && assetIds.length > 0) {
+          ctx.addIssue(`assetIds can only be used with type ${SharedLinkType.Individual}`);
+        }
+        return;
+      }
+      case SharedLinkType.Individual: {
+        if (!assetIds || assetIds.length === 0) {
+          ctx.addIssue(`assetIds are required for type ${SharedLinkType.Individual}`);
+        }
+
+        if (albumId) {
+          ctx.addIssue(`albumId can only be used with type ${SharedLinkType.Album}`);
+        }
+        return;
+      }
+    }
   })
   .meta({ id: 'SharedLinkCreateDto' });
 

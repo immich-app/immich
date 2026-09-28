@@ -77,6 +77,40 @@ void main() {
     });
   });
 
+  group('normalizeAndValidateServerUrl', () {
+    test('should treat null as valid', () {
+      expect(normalizeAndValidateServerUrl(null), isTrue);
+    });
+
+    test('should treat empty string as valid', () {
+      expect(normalizeAndValidateServerUrl(''), isTrue);
+    });
+
+    test('should accept a bare host', () {
+      expect(normalizeAndValidateServerUrl('demo.immich.app'), isTrue);
+    });
+
+    test('should accept a bare host with a port', () {
+      expect(normalizeAndValidateServerUrl('192.168.1.1:2283'), isTrue);
+    });
+
+    test('should accept an http URL', () {
+      expect(normalizeAndValidateServerUrl('http://demo.immich.app'), isTrue);
+    });
+
+    test('should accept an https URL', () {
+      expect(normalizeAndValidateServerUrl('https://demo.immich.app:2283/api'), isTrue);
+    });
+
+    test('should reject a non-http scheme', () {
+      expect(normalizeAndValidateServerUrl('ftp://demo.immich.app'), isFalse);
+    });
+
+    test('should reject scheme only input', () {
+      expect(normalizeAndValidateServerUrl('https://'), isFalse);
+    });
+  });
+
   group('punycodeDecodeUrl', () {
     test('should return null for null input', () {
       expect(punycodeDecodeUrl(null), isNull);

@@ -78,7 +78,7 @@ void main() {
       final sharer = await ctx.newUser();
       await ctx.newPartner(sharedById: sharer.id, sharedWithId: me.id, inTimeline: false);
 
-      await sut.update(sharedById: sharer.id, sharedWithId: me.id, inTimeline: true);
+      await sut.updatePartner(sharedById: sharer.id, sharedWithId: me.id, inTimeline: true);
 
       final result = await sut.get(sharedById: sharer.id, sharedWithId: me.id);
       expect(result.inTimeline, isTrue);
@@ -91,7 +91,7 @@ void main() {
       final recipient = await ctx.newUser();
       await ctx.newPartner(sharedById: me.id, sharedWithId: recipient.id);
 
-      await sut.delete(sharedById: me.id, sharedWithId: recipient.id);
+      await sut.deletePartner(sharedById: me.id, sharedWithId: recipient.id);
 
       final rows = await ctx.db.select(ctx.db.partnerEntity).get();
       expect(rows, isEmpty);

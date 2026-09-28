@@ -16,7 +16,7 @@ describe('RecentAlbums component', () => {
     sdkMock.getAllAlbums.mockResolvedValueOnce([...albums]);
     render(RecentAlbums);
 
-    expect(sdkMock.getAllAlbums).toBeCalledTimes(1);
+    expect(sdkMock.getAllAlbums).toHaveBeenCalledOnce();
 
     // wtf
     await tick();

@@ -109,12 +109,14 @@
 
   let lastEndReachedHeight = 0;
   $effect(() => {
-    if (geometry.containerHeight - slidingWindow.bottom <= viewport.height) {
-      const contentHeight = geometry.containerHeight;
-      if (lastEndReachedHeight !== contentHeight) {
-        debouncedOnEndReached();
-        lastEndReachedHeight = contentHeight;
-      }
+    if (geometry.containerHeight - slidingWindow.bottom > viewport.height) {
+      return;
+    }
+
+    const contentHeight = geometry.containerHeight;
+    if (lastEndReachedHeight !== contentHeight) {
+      debouncedOnEndReached();
+      lastEndReachedHeight = contentHeight;
     }
   });
 

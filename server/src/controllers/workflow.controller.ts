@@ -1,19 +1,21 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   WorkflowCreateDto,
+  WorkflowGetLogsDto,
+  WorkflowLogEntryDto,
   WorkflowResponseDto,
   WorkflowSearchDto,
   WorkflowShareResponseDto,
   WorkflowTriggerResponseDto,
   WorkflowUpdateDto,
-} from 'src/dtos/workflow.dto';
-import { Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { WorkflowService } from 'src/services/workflow.service';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/workflow.dto.js';
+import { Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { WorkflowService } from 'src/services/workflow.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags('Workflows')
 @Controller('workflows')
@@ -112,5 +114,20 @@ export class WorkflowController {
   })
   deleteWorkflow(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
+  }
+
+  @Get(':id/logs')
+  @Authenticated({ permission: Permission.WorkflowLogs })
+  @Endpoint({
+    summary: 'Retrieve workflow logs',
+    description: 'Retrieve logs of a workflows runs by ID',
+    history: HistoryBuilder.v3(),
+  })
+  getWorkflowLogs(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: WorkflowGetLogsDto,
+  ): Promise<WorkflowLogEntryDto[]> {
+    return this.service.getLogs(auth, id, dto);
   }
 }

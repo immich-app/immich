@@ -1,5 +1,5 @@
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
-import { CliService } from 'src/services/cli.service';
+import { CliService } from 'src/services/cli.service.js';
 
 @Command({
   name: 'change-media-location',
@@ -17,14 +17,16 @@ export class ChangeMediaLocationCommand extends CommandRunner {
     hint = hint ? ` (${hint})` : '';
 
     const paths = await this.service.getSampleFilePaths();
-    if (paths.length > 0) {
-      let message = `  Examples from the database${hint}:\n`;
-      for (const path of paths) {
-        message += `  - ${path}\n`;
-      }
-
-      console.log(`\n${message}`);
+    if (paths.length === 0) {
+      return;
     }
+
+    let message = `  Examples from the database${hint}:\n`;
+    for (const path of paths) {
+      message += `  - ${path}\n`;
+    }
+
+    console.log(`\n${message}`);
   }
 
   async run(): Promise<void> {
@@ -36,7 +38,7 @@ export class ChangeMediaLocationCommand extends CommandRunner {
         {},
       );
 
-      const success = await this.service.migrateFilePaths({
+      const isSuccess = await this.service.migrateFilePaths({
         oldValue,
         newValue,
         confirm: async ({ sourceFolder, targetFolder }) => {
@@ -65,7 +67,7 @@ export class ChangeMediaLocationCommand extends CommandRunner {
         ...
   )`;
 
-      console.log(`\n  ${success ? successMessage : 'No rows were updated'}\n`);
+      console.log(`\n  ${isSuccess ? successMessage : 'No rows were updated'}\n`);
 
       await this.showSamplePaths('after');
     } catch (error) {

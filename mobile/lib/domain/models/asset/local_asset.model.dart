@@ -1,6 +1,7 @@
 part of 'base_asset.model.dart';
 
 class LocalAsset extends BaseAsset {
+  @override
   final String id;
   final String? remoteAssetId;
   final String? cloudId;
@@ -25,7 +26,6 @@ class LocalAsset extends BaseAsset {
     super.height,
     super.durationMs,
     super.isFavorite = false,
-    super.livePhotoVideoId,
     this.orientation = 0,
     required this.playbackStyle,
     this.adjustmentTime,

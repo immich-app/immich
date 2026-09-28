@@ -83,7 +83,7 @@
     }
   },
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {
       // https://github.com/devcontainers/features/issues/1466
       "moby": false
     }

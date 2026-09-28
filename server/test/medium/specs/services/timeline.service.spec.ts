@@ -1,16 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility, SharedLinkType } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
-import { DB } from 'src/schema';
-import { TimelineService } from 'src/services/timeline.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetVisibility, SharedLinkType } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { DB } from 'src/schema/index.js';
+import { TimelineService } from 'src/services/timeline.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -85,6 +85,18 @@ describe(TimelineService.name, () => {
       await expect(response).rejects.toThrow(
         'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
+    });
+
+    it('should return error if time bucket is requested with locked visibility for partner', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+
+      const response = sut.getTimeBuckets(auth, { userId: partner.id, visibility: AssetVisibility.Locked });
+      await expect(response).rejects.toThrow("You may not access another user's locked timeline");
     });
 
     it('should not allow access for unrelated shared links', async () => {
@@ -172,6 +184,7 @@ describe(TimelineService.name, () => {
           await ctx.newExif({ assetId: result.asset.id, make: 'Canon' });
           return result;
         }),
+
         ctx.newUser().then(async ({ user }) => {
           const result = await ctx.newAsset({
             ownerId: user.id,

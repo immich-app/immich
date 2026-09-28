@@ -128,8 +128,8 @@ class PhotoViewGallery extends StatefulWidget {
   /// The builder must return a [PhotoViewGalleryPageOptions].
   const PhotoViewGallery.builder({
     super.key,
-    required this.itemCount,
-    required this.builder,
+    required int this.itemCount,
+    required PhotoViewGalleryBuilder this.builder,
     this.loadingBuilder,
     this.backgroundDecoration,
     this.wantKeepAlive = false,
@@ -145,9 +145,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.customSize,
     this.allowImplicitScrolling = false,
     this.enablePanAlways = false,
-  }) : pageOptions = null,
-       assert(itemCount != null),
-       assert(builder != null);
+  }) : pageOptions = null;
 
   /// A list of options to describe the items in the gallery
   final List<PhotoViewGalleryPageOptions>? pageOptions;
@@ -352,9 +350,9 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
 /// The [maxScale], [minScale] and [initialScale] options may be [double] or a [PhotoViewComputedScale] constant
 ///
 class PhotoViewGalleryPageOptions {
-  PhotoViewGalleryPageOptions({
+  const PhotoViewGalleryPageOptions({
     this.key,
-    required this.imageProvider,
+    required ImageProvider this.imageProvider,
     this.heroAttributes,
     this.semanticLabel,
     this.minScale,
@@ -379,8 +377,7 @@ class PhotoViewGalleryPageOptions {
     this.disableGestures,
     this.errorBuilder,
   }) : child = null,
-       childSize = null,
-       assert(imageProvider != null);
+       childSize = null;
 
   const PhotoViewGalleryPageOptions.customChild({
     this.key,

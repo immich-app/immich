@@ -71,7 +71,7 @@
     }
 
     // Sort by date descending (newest first), but put unknown date at the top
-    const sortedEntries = [...groups.entries()].sort((a, b) => {
+    const sortedEntries = [...groups].sort((a, b) => {
       if (a[0] === unknownDateKey) {
         return -1;
       }
@@ -115,7 +115,7 @@
 
   <hr />
 
-  {#each [...groupedBackups.entries()] as [dateGroup, groupBackups] (dateGroup)}
+  {#each [...groupedBackups] as [dateGroup, groupBackups] (dateGroup)}
     <Stack gap={2}>
       <div class="mt-5 mb-1">
         <div class="flex w-max place-items-center gap-2 rounded-xl bg-primary-50 px-4 py-2">

@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { Activity } from 'src/database';
+import { Activity } from 'src/database.js';
 import {
   ActivityCreateDto,
   ActivityDto,
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
-  mapActivity,
   MaybeDuplicate,
   ReactionLevel,
   ReactionType,
-} from 'src/dtos/activity.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { Permission } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
+  mapActivity,
+} from 'src/dtos/activity.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { Permission } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
 export class ActivityService extends BaseService {
@@ -44,7 +44,7 @@ export class ActivityService extends BaseService {
     };
 
     let activity: Activity | undefined;
-    let duplicate = false;
+    let isDuplicate = false;
 
     if (dto.type === ReactionType.LIKE) {
       delete dto.comment;
@@ -54,7 +54,7 @@ export class ActivityService extends BaseService {
         assetId: dto.assetId ?? null,
         isLiked: true,
       });
-      duplicate = !!activity;
+      isDuplicate = !!activity;
     }
 
     if (!activity) {
@@ -65,7 +65,7 @@ export class ActivityService extends BaseService {
       });
     }
 
-    return { duplicate, value: mapActivity(activity) };
+    return { duplicate: isDuplicate, value: mapActivity(activity) };
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {

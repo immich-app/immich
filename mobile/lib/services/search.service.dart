@@ -34,11 +34,12 @@ class SearchService {
         model: model,
       );
     } catch (e) {
-      dPrint(() => "[ERROR] [getSearchSuggestions] ${e.toString()}");
+      dPrint(() => "[ERROR] [getSearchSuggestions] $e");
       return [];
     }
   }
 
+  // ignore: unused-code
   Future<List<SearchExploreResponseDto>?> getExploreData() async {
     try {
       return await _apiService.searchApi.getExploreData();
@@ -48,6 +49,7 @@ class SearchService {
     return null;
   }
 
+  // ignore: unused-code
   Future<List<AssetResponseDto>?> getAllPlaces() async {
     try {
       return await _apiService.searchApi.getAssetsByCity();

@@ -1,4 +1,4 @@
-import "package:openapi/api.dart" show CropParameters, RotateParameters, MirrorParameters;
+import "package:openapi/api.dart" show CropParameters, MirrorParameters, RotateParameters;
 
 enum AssetEditAction { rotate, crop, mirror, other }
 

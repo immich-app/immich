@@ -7,14 +7,14 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { NotificationDto } from 'src/dtos/notification.dto';
-import { ReleaseEventV1, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { SyncAssetEditV1, SyncAssetExifV1, SyncAssetV2 } from 'src/dtos/sync.dto';
-import { AppRestartEvent, ArgsOf, EventRepository } from 'src/repositories/event.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { handlePromiseError } from 'src/utils/misc';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { NotificationDto } from 'src/dtos/notification.dto.js';
+import { ReleaseEventV1, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
+import { SyncAssetEditV1, SyncAssetExifV1, SyncAssetV2 } from 'src/dtos/sync.dto.js';
+import { type AppRestartEvent, type ArgsOf, EventRepository } from 'src/repositories/event.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { handlePromiseError } from 'src/utils/misc.js';
 
 export const serverEvents = [
   'ConfigUpdate',
@@ -37,6 +37,7 @@ export interface ClientEventMap {
   on_asset_hidden: [string];
   on_asset_restore: [string[]];
   on_asset_stack_update: string[];
+  on_album_update: [string];
   on_person_thumbnail: [string];
   on_server_version: [ServerVersionResponseDto];
   on_config_update: [];

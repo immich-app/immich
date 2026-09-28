@@ -59,6 +59,7 @@ type MetadataFieldDefinition = {
   titleKey: string;
   keys: readonly string[];
   render: (asset: AssetResponseDto, $t: MessageFormatter, locale: string | undefined) => string;
+  tooltip?: (asset: AssetResponseDto, $t: MessageFormatter) => string;
 };
 
 const metadataFields = [
@@ -73,6 +74,7 @@ const metadataFields = [
     titleKey: 'path',
     keys: ['originalPath'],
     render: (asset, $t) => truncateMiddle(asset.originalPath) || $t('unknown'),
+    tooltip: (asset, $t) => $t('full_path', { values: { path: asset.originalPath } }),
   },
   {
     icon: mdiWeightKilogram,
@@ -147,6 +149,7 @@ const metadataFields = [
     titleKey: 'gps',
     keys: ['latitude', 'longitude'],
     render: (asset, $t) =>
+      // eslint-disable-next-line eqeqeq
       asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null
         ? `${asset.exifInfo.latitude.toFixed(4)}, ${asset.exifInfo.longitude.toFixed(4)}`
         : $t('unknown'),
@@ -173,18 +176,21 @@ const metadataFields = [
     icon: mdiCameraIris,
     titleKey: 'f_number',
     keys: ['fNumber'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.fNumber == null ? $t('unknown') : `f/${asset.exifInfo.fNumber.toFixed(1)}`),
   },
   {
     icon: mdiRayStartArrow,
     titleKey: 'focal_length',
     keys: ['focalLength'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.focalLength == null ? $t('unknown') : `${asset.exifInfo.focalLength} mm`),
   },
   {
     icon: mdiBrightness6,
     titleKey: 'iso',
     keys: ['iso'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.iso == null ? $t('unknown') : `ISO ${asset.exifInfo.iso}`),
   },
   {
@@ -203,13 +209,14 @@ const metadataFields = [
     icon: mdiStarOutline,
     titleKey: 'rating',
     keys: ['rating'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.rating == null ? $t('unknown') : `${asset.exifInfo.rating} stars`),
   },
   {
     icon: mdiPhoneRotateLandscape,
     titleKey: 'orientation',
     keys: ['orientation'],
-    render: (asset, $t) => String(asset.exifInfo?.orientation || $t('unknown')),
+    render: (asset, $t) => asset.exifInfo?.orientation || $t('unknown'),
   },
   {
     icon: mdiPanorama,
@@ -228,11 +235,12 @@ export const countDifferingMetadataItems = (differing: DifferingMetadataFields):
   metadataFields.filter(({ keys }) => keys.some((k) => differing[k as MetadataFieldKey])).length;
 
 export const getAllMetadataItems = (asset: AssetResponseDto, $t: MessageFormatter, locale: string | undefined) =>
-  metadataFields.map(({ icon, titleKey, keys, render }) => ({
-    icon,
-    title: $t(titleKey),
-    render: render(asset, $t, locale),
-    keys,
+  metadataFields.map((field) => ({
+    icon: field.icon,
+    title: $t(field.titleKey),
+    render: field.render(asset, $t, locale),
+    tooltip: 'tooltip' in field ? field.tooltip(asset, $t) : undefined,
+    keys: field.keys,
   }));
 
 const normalizeForComparison = (key: MetadataFieldKey, value: unknown): unknown => {
@@ -240,7 +248,7 @@ const normalizeForComparison = (key: MetadataFieldKey, value: unknown): unknown 
     return value;
   }
 
-  if (key === 'fileCreatedAt' || key === 'fileModifiedAt' || key === 'dateTimeOriginal' || key === 'modifyDate') {
+  if (['fileCreatedAt', 'fileModifiedAt', 'dateTimeOriginal', 'modifyDate'].includes(key)) {
     const dateTime = DateTime.fromISO(String(value));
     return dateTime.isValid ? dateTime.toISO() : String(value);
   }
@@ -273,7 +281,7 @@ const getValueForAsset = (asset: AssetResponseDto, key: MetadataFieldKey): unkno
       return getAssetResolution(asset);
     }
     default: {
-      if (asset.exifInfo && key in asset.exifInfo) {
+      if (asset.exifInfo && Object.hasOwn(asset.exifInfo, key)) {
         return asset.exifInfo[key as keyof typeof asset.exifInfo];
       }
       return undefined;

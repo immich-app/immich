@@ -1,14 +1,13 @@
-import { MapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkType } from 'src/enum';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { userStub } from 'test/fixtures/user.stub';
+import { DateTime } from 'luxon';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { SharedLinkType } from 'src/enum.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { userStub } from 'test/fixtures/user.stub.js';
 
 const today = new Date();
-const tomorrow = new Date();
-const yesterday = new Date();
-tomorrow.setDate(today.getDate() + 1);
-yesterday.setDate(yesterday.getDate() - 1);
+const tomorrow = DateTime.now().plus({ days: 1 }).toJSDate();
+const yesterday = DateTime.now().minus({ days: 1 }).toJSDate();
 
 const sharedLinkBytes = Buffer.from(
   '2c2b646895f84753bff43fb696ad124f3b0faf2a0bd547406f26fa4a76b5c71990092baa536275654b2ab7a191fb21a6d6cd',

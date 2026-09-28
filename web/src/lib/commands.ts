@@ -25,6 +25,7 @@ import {
   mdiThemeLightDark,
   mdiToolboxOutline,
   mdiTrashCanOutline,
+  mdiWrench,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
@@ -65,6 +66,12 @@ export const getPagesProvider = ($t: MessageFormatter) => {
       description: $t('admin.server_stats_page_description'),
       icon: mdiServer,
       onAction: () => goto(Route.systemStatistics()),
+    },
+    {
+      title: $t('admin.maintenance_settings'),
+      description: $t('admin.maintenance_settings_description'),
+      icon: mdiWrench,
+      onAction: () => goto(Route.systemMaintenance()),
     },
   ].map((route) => ({ ...route, $if: () => authManager.authenticated && authManager.user.isAdmin }));
 
@@ -232,7 +239,7 @@ export const getSettingsProvider = ($t: MessageFormatter) => {
     {
       title: $t('my_immich_title'),
       description: $t('my_immich_description'),
-      onAction: () => copyToClipboard(getMyImmichLink().toString()),
+      onAction: () => copyToClipboard(getMyImmichLink().href),
       shortcuts: { ctrl: true, shift: true, key: 'm' },
     },
   ];

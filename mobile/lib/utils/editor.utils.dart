@@ -45,21 +45,20 @@ bool isCloseToZero(double value, [double epsilon = 1e-15]) {
   return value.abs() < epsilon;
 }
 
-typedef NormalizedTransform = ({double rotation, bool mirrorHorizontal, bool mirrorVertical});
+typedef NormalizedTransform = ({int rotation, bool mirrorHorizontal, bool mirrorVertical});
 
 NormalizedTransform normalizeTransformEdits(List<AssetEdit> edits) {
   final matrix = buildAffineFromEdits(edits);
 
-  double a = matrix.a;
-  double b = matrix.b;
-  double c = matrix.c;
-  double d = matrix.d;
+  final double a = matrix.a;
+  final double b = matrix.b;
+  final double c = matrix.c;
+  final double d = matrix.d;
 
-  final rotation = ((isCloseToZero(a) ? asin(c) : acos(a)) * 180) / pi;
+  final degrees = ((isCloseToZero(a) ? asin(c) : acos(a)) * 180) / pi;
 
-  return (
-    rotation: rotation < 0 ? 360 + rotation : rotation,
-    mirrorHorizontal: false,
-    mirrorVertical: isCloseToZero(a) ? b == c : a == -d,
-  );
+  // We only allow 90 degree increments
+  final quarterTurns = (degrees / 90).round() % 4;
+
+  return (rotation: quarterTurns * 90, mirrorHorizontal: false, mirrorVertical: isCloseToZero(a) ? b == c : a == -d);
 }

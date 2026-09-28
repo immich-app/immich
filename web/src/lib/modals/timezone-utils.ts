@@ -37,7 +37,7 @@ export type ZoneOption = {
   valid: boolean;
 };
 
-const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const userTimeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 const knownTimezones = Intl.supportedValuesOf('timeZone');
 
 export function getTimezones(selectedDate: string) {
@@ -95,7 +95,7 @@ function zoneOptionForDate(zone: string, date: string) {
 
 function sortTwoZones(zoneA: ZoneOption, zoneB: ZoneOption) {
   const offsetDifference = zoneA.offsetMinutes - zoneB.offsetMinutes;
-  if (offsetDifference != 0) {
+  if (offsetDifference !== 0) {
     return offsetDifference;
   }
   return zoneA.value.localeCompare(zoneB.value, undefined, { sensitivity: 'base' });

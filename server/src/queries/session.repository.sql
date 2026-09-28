@@ -4,7 +4,8 @@
 select
   "id",
   "expiresAt",
-  "pinExpiresAt"
+  "pinExpiresAt",
+  "oauthBearerToken"
 from
   "session"
 where

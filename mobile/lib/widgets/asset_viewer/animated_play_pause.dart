@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -27,9 +28,9 @@ class AnimatedPlayPauseState extends State<AnimatedPlayPause> with SingleTickerP
     super.didUpdateWidget(oldWidget);
     if (widget.playing != oldWidget.playing) {
       if (widget.playing) {
-        animationController.forward();
+        unawaited(animationController.forward());
       } else {
-        animationController.reverse();
+        unawaited(animationController.reverse());
       }
     }
   }

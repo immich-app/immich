@@ -91,7 +91,7 @@ export const handleDeleteDatabaseBackup = async (...filenames: string[]) => {
 };
 
 export const handleDownloadDatabaseBackup = (filename: string) => {
-  location.href = getBaseUrl() + '/admin/database-backups/' + filename;
+  location.assign(getBaseUrl() + '/admin/database-backups/' + filename);
 };
 
 export const handleUploadDatabaseBackup = async () => {

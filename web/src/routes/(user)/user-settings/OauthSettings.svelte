@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { oauth } from '$lib/utils';
@@ -12,10 +13,10 @@
   let loading = $state(true);
 
   onMount(async () => {
-    if (oauth.isCallback(globalThis.location)) {
+    if (oauth.isCallback(location)) {
       try {
         loading = true;
-        const response = await oauth.link(globalThis.location);
+        const response = await oauth.link(location);
         authManager.setUser(response);
         toastManager.primary($t('linked_oauth_account'));
       } catch (error) {
@@ -41,18 +42,21 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <div class="flex justify-end sm:ms-8">
+    <div class="flex justify-end gap-3 sm:ms-8">
       {#if loading}
         <div class="flex place-content-center place-items-center">
           <LoadingSpinner />
         </div>
       {:else if featureFlagsManager.value.oauth}
         {#if authManager.user.oauthId}
+          {#if serverConfigManager.value.oauthAccountManagementUrl}
+            <Button shape="round" size="small" href={serverConfigManager.value.oauthAccountManagementUrl}
+              >{$t('manage_oauth_account')}</Button
+            >
+          {/if}
           <Button shape="round" size="small" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
         {:else}
-          <Button shape="round" size="small" onclick={() => oauth.authorize(globalThis.location)}
-            >{$t('link_to_oauth')}</Button
-          >
+          <Button shape="round" size="small" onclick={() => oauth.authorize(location)}>{$t('link_to_oauth')}</Button>
         {/if}
       {/if}
     </div>

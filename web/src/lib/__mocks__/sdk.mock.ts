@@ -1,6 +1,7 @@
 import * as sdk from '@immich/sdk';
 import type { Mock, MockedObject } from 'vitest';
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 vi.mock('@immich/sdk', async (originalImport) => {
   const module = await originalImport<typeof import('@immich/sdk')>();
 

@@ -3,8 +3,6 @@ import {
   deleteWorkflow,
   updateWorkflow,
   WorkflowTrigger,
-  type AlbumResponseDto,
-  type PersonResponseDto,
   type WorkflowCreateDto,
   type WorkflowResponseDto,
   type WorkflowUpdateDto,
@@ -17,6 +15,7 @@ import {
   mdiDeleteOutline,
   mdiDownload,
   mdiFileDocumentMultipleOutline,
+  mdiHistory,
   mdiPause,
   mdiPencil,
   mdiPlay,
@@ -26,14 +25,12 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import WorkflowDuplicateModal from '$lib/modals/WorkflowDuplicateModal.svelte';
+import WorkflowLogsModal from '$lib/modals/WorkflowLogsModal.svelte';
 import WorkflowTemplatePickerModal from '$lib/modals/WorkflowTemplatePickerModal.svelte';
 import { Route } from '$lib/route';
 import { copyToClipboard, downloadJson } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-
-export type PickerSubType = 'album-picker' | 'people-picker';
-export type PickerMetadata = AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[];
 
 export const getWorkflowsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -117,7 +114,13 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
     onAction: () => handleDeleteWorkflow(workflow),
   };
 
-  return { CopyJson, Download, Duplicate, ToggleEnabled, Edit, Delete };
+  const Logs: ActionItem = {
+    title: $t('check_logs'),
+    icon: mdiHistory,
+    onAction: () => modalManager.show(WorkflowLogsModal, { workflow }),
+  };
+
+  return { CopyJson, Download, Duplicate, ToggleEnabled, Edit, Delete, Logs };
 };
 
 export const getWorkflowShowSchemaAction = (

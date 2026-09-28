@@ -17,7 +17,7 @@ export type OcrBox = {
 };
 
 const CJK_PATTERN =
-  /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uAC00-\uD7AF\uFF00-\uFFEF]/;
+  /[\u{3000}-\u{303F}\u{3040}-\u{309F}\u{30A0}-\u{30FF}\u{3400}-\u{4DBF}\u{4E00}-\u{9FFF}\u{F900}-\u{FAFF}\u{AC00}-\u{D7AF}\u{FF00}-\u{FFEF}]/u;
 
 const VERTICAL_ASPECT_RATIO = 1.5;
 

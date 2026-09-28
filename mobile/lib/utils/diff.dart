@@ -16,7 +16,8 @@ Future<bool> diffSortedLists<T>(
   assert(la.isSorted(compare), "first argument must be sorted");
   assert(lb.isSorted(compare), "second argument must be sorted");
   bool diff = false;
-  int i = 0, j = 0;
+  int i = 0;
+  int j = 0;
   for (; i < la.length && j < lb.length;) {
     final int order = compare(la[i], lb[j]);
     if (order == 0) {
@@ -53,7 +54,8 @@ bool diffSortedListsSync<T>(
   assert(la.isSorted(compare), "first argument must be sorted");
   assert(lb.isSorted(compare), "second argument must be sorted");
   bool diff = false;
-  int i = 0, j = 0;
+  int i = 0;
+  int j = 0;
   for (; i < la.length && j < lb.length;) {
     final int order = compare(la[i], lb[j]);
     if (order == 0) {
@@ -74,18 +76,4 @@ bool diffSortedListsSync<T>(
     onlySecond(lb[j]);
   }
   return diff;
-}
-
-int compareToNullable<T extends Comparable>(T? a, T? b) {
-  if (a == null && b == null) {
-    return 0;
-  }
-
-  if (a == null) {
-    return 1;
-  }
-  if (b == null) {
-    return -1;
-  }
-  return a.compareTo(b);
 }

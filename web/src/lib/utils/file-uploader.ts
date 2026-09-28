@@ -20,27 +20,6 @@ import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { asQueryString } from '$lib/utils/shared-links';
 import { handleError } from './handle-error';
 
-export const addDummyItems = () => {
-  uploadAssetsStore.addItem({ id: 'asset-0', file: { name: 'asset0.jpg', size: 123_456 } as File });
-  uploadAssetsStore.updateItem('asset-0', { state: UploadState.PENDING });
-  uploadAssetsStore.addItem({ id: 'asset-1', file: { name: 'asset1.jpg', size: 123_456 } as File });
-  uploadAssetsStore.updateItem('asset-1', { state: UploadState.STARTED });
-  uploadAssetsStore.updateProgress('asset-1', 75, 100);
-  uploadAssetsStore.addItem({ id: 'asset-2', file: { name: 'asset2.jpg', size: 123_456 } as File });
-  uploadAssetsStore.updateItem('asset-2', { state: UploadState.ERROR, error: new Error('Internal server error') });
-  uploadAssetsStore.addItem({ id: 'asset-3', file: { name: 'asset3.jpg', size: 123_456 } as File });
-  uploadAssetsStore.updateItem('asset-3', { state: UploadState.DUPLICATED, assetId: 'asset-2' });
-  uploadAssetsStore.addItem({ id: 'asset-4', file: { name: 'asset3.jpg', size: 123_456 } as File });
-  uploadAssetsStore.updateItem('asset-4', { state: UploadState.DUPLICATED, assetId: 'asset-2', isTrashed: true });
-  uploadAssetsStore.addItem({ id: 'asset-10', file: { name: 'asset3.jpg', size: 123_456 } as File });
-  uploadAssetsStore.updateItem('asset-10', { state: UploadState.DONE });
-  uploadAssetsStore.track('error');
-  uploadAssetsStore.track('success');
-  uploadAssetsStore.track('duplicate');
-};
-
-// addDummyItems();
-
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
 type FilePickerParam = { multiple?: boolean; extensions?: string[] };
@@ -63,6 +42,8 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
       fileSelector.addEventListener(
         'change',
         (e: Event) => {
+          fileSelector.remove();
+
           const target = e.target as HTMLInputElement;
           if (!target.files) {
             return;
@@ -74,6 +55,11 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
         { passive: true },
       );
 
+      fileSelector.addEventListener('cancel', () => fileSelector.remove(), { passive: true });
+
+      // Safari requires the file selector to be mounted
+      fileSelector.hidden = true;
+      document.body.append(fileSelector);
       fileSelector.click();
     } catch (error) {
       console.log('Error selecting file', error);
@@ -124,7 +110,7 @@ export const fileUploadHandler = async ({
 };
 
 function getDeviceAssetId(asset: File) {
-  return 'web' + '-' + asset.name + '-' + asset.lastModified;
+  return 'web-' + asset.name + '-' + asset.lastModified;
 }
 
 function hashFile(file: File): Promise<string> {

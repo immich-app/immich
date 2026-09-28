@@ -5,6 +5,7 @@ class AsyncMutex {
   Future _running = Future.value(null);
   int _enqueued = 0;
 
+  // ignore: unused-code
   int get enqueued => _enqueued;
 
   /// Execute [operation] exclusively, after any currently running operations.
@@ -12,10 +13,12 @@ class AsyncMutex {
   Future<T> run<T>(Future<T> Function() operation) {
     final completer = Completer<T>();
     _enqueued++;
-    _running.whenComplete(() {
-      _enqueued--;
-      completer.complete(Future<T>.sync(operation));
-    });
+    unawaited(
+      _running.whenComplete(() {
+        _enqueued--;
+        completer.complete(Future<T>.sync(operation));
+      }),
+    );
     return _running = completer.future;
   }
 }

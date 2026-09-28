@@ -1,24 +1,25 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AddUsersDto,
   AlbumResponseDto,
+  AlbumStatisticsResponseDto,
+  AlbumUserParamDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
-  AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
-} from 'src/dtos/album.dto';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerResponseDto } from 'src/dtos/map.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { AlbumService } from 'src/services/album.service';
-import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
+} from 'src/dtos/album.dto.js';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { AlbumService } from 'src/services/album.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Albums)
 @Controller('albums')
@@ -175,8 +176,7 @@ export class AlbumController {
   })
   updateAlbumUser(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+    @Param() { id, userId }: AlbumUserParamDto,
     @Body() dto: UpdateAlbumUserDto,
   ): Promise<void> {
     return this.service.updateUser(auth, id, userId, dto);
@@ -190,11 +190,7 @@ export class AlbumController {
     description: 'Remove a user from an album. Use an ID of "me" to leave a shared album.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  removeUserFromAlbum(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-  ): Promise<void> {
+  removeUserFromAlbum(@Auth() auth: AuthDto, @Param() { id, userId }: AlbumUserParamDto): Promise<void> {
     return this.service.removeUser(auth, id, userId);
   }
 }

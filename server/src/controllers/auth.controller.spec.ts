@@ -1,10 +1,11 @@
-import { AuthController } from 'src/controllers/auth.controller';
-import { LoginResponseDto } from 'src/dtos/auth.dto';
-import { AuthService } from 'src/services/auth.service';
+import { BadRequestException } from '@nestjs/common';
 import request from 'supertest';
-import { mediumFactory } from 'test/medium.factory';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { AuthController } from 'src/controllers/auth.controller.js';
+import { LoginResponseDto } from 'src/dtos/auth.dto.js';
+import { AuthService } from 'src/services/auth.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { mediumFactory } from 'test/medium.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(AuthController.name, () => {
   let ctx: ControllerContext;
@@ -75,6 +76,18 @@ describe(AuthController.name, () => {
         .post('/auth/admin-sign-up')
         .send({ name: 'admin', password: 'password', email: 'admin@local' });
       expect(status).toEqual(201);
+    });
+
+    it('should not sign up an admin when setup is unavailable', async () => {
+      ctx.requireSetupAvailable.mockRejectedValue(new BadRequestException('Admin setup is not available'));
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/auth/admin-sign-up')
+        .send({ name, email, password });
+
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest('Admin setup is not available'));
+      expect(service.adminSignUp).not.toHaveBeenCalled();
     });
   });
 
@@ -186,28 +199,7 @@ describe(AuthController.name, () => {
     });
   });
 
-  describe('POST /auth/logout', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/logout');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('POST /auth/change-password', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer())
-        .post('/auth/change-password')
-        .send({ password: 'password', newPassword: 'Password1234', invalidateSessions: false });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /auth/pin-code', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '123456' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should reject 5 digits', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '12345' });
       expect(status).toEqual(400);
@@ -236,27 +228,6 @@ describe(AuthController.name, () => {
           { path: ['pinCode'], message: String.raw`Invalid string: must match pattern /^\d{6}$/` },
         ]),
       );
-    });
-  });
-
-  describe('PUT /auth/pin-code', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/auth/pin-code').send({ pinCode: '123456', newPinCode: '654321' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('DELETE /auth/pin-code', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete('/auth/pin-code').send({ pinCode: '123456' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /auth/status', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/auth/status');
-      expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
 });

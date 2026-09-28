@@ -5,8 +5,8 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -129,9 +129,9 @@ class AuthService {
     ]);
   }
 
-  Future<void> changePassword(String newPassword) {
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
     try {
-      return _authApiRepository.changePassword(newPassword);
+      await _authApiRepository.changePassword(currentPassword: currentPassword, newPassword: newPassword);
     } catch (error, stackTrace) {
       _log.severe("Error changing password", error, stackTrace);
       rethrow;

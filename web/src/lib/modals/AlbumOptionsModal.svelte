@@ -102,7 +102,7 @@
 
       <div>
         <HStack fullWidth class="mb-2 justify-between">
-          <Text size="medium" fontWeight="semi-bold">{$t('people')}</Text>
+          <Text size="medium" fontWeight="semi-bold">{$t('users')}</Text>
           {#if !readOnly}
             <HeaderActionButton action={AddUsers} />
           {/if}
@@ -122,7 +122,7 @@
                   options={[
                     { label: $t('role_editor'), value: AlbumUserRole.Editor },
                     { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
-                    { label: $t('owner'), value: AlbumUserRole.Owner },
+                    { label: $t('owner'), value: AlbumUserRole.Owner, disabled: true },
                     { label: $t('remove_user'), value: 'none' },
                   ] as SelectOption<AlbumUserRole | 'none'>[]}
                   onChange={(value) => handleRoleSelect(user, value)}

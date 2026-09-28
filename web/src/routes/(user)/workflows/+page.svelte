@@ -68,14 +68,14 @@
           fullWidth
           title={$t('create_first_workflow')}
           text={$t('workflows_help_text')}
-          onClick={() => Create.onAction(Create)}
+          onClick={(event: MouseEvent) => Create.onAction({ event, action: Create })}
           src={emptyWorkflows}
           class="mx-auto mt-10"
         />
       {:else}
         <div class="my-6 flex flex-col gap-3">
           {#each workflows as workflow (workflow.id)}
-            {@const { ToggleEnabled, Duplicate, Edit, Delete } = getWorkflowActions($t, workflow)}
+            {@const { ToggleEnabled, Duplicate, Logs, Edit, Delete } = getWorkflowActions($t, workflow)}
 
             <Card class="group shadow-none transition-colors hover:border-primary">
               <CardHeader>
@@ -120,6 +120,7 @@
                       ToggleEnabled,
                       Edit,
                       Duplicate,
+                      Logs,
                       getWorkflowShowSchemaAction($t, expandedIds.has(workflow.id), () => onToggleExpand(workflow.id)),
                       MenuItemType.Divider,
                       Delete,

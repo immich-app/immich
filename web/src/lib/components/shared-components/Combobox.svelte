@@ -268,7 +268,9 @@
 </script>
 
 <svelte:window onresize={onPositionChange} />
-<Label class="mb-1 block {hideLabel ? 'sr-only' : ''} text-xs font-light text-neutral-500" for={inputId}>{label}</Label>
+{#if !hideLabel}
+  <Label class="mb-1 block text-xs font-light text-neutral-500" for={inputId}>{label}</Label>
+{/if}
 <div
   class="relative w-full text-base text-gray-700 dark:text-gray-300"
   use:focusOutside={{ onFocusOut: deactivate }}
@@ -345,10 +347,12 @@
         {
           shortcut: { key: 'Escape' },
           onShortcut: (event) => {
-            if (isOpen) {
-              event.stopPropagation();
-              closeDropdown();
+            if (!isOpen) {
+              return;
             }
+
+            event.stopPropagation();
+            closeDropdown();
           },
         },
       ]}
@@ -399,7 +403,7 @@
           aria-selected={selectedIndex === 0}
           aria-disabled={true}
           class="w-full cursor-default px-4 py-2 text-start hover:bg-gray-200 aria-selected:bg-gray-200 dark:hover:bg-gray-700 aria-selected:dark:bg-gray-700"
-          id={`${listboxId}-${0}`}
+          id={`${listboxId}-0`}
           onclick={closeDropdown}
         >
           {allowCreate ? searchQuery : $t('no_results')}

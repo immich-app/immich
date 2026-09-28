@@ -189,11 +189,13 @@
   };
 
   const onWorkflowUpdate = async (response: WorkflowResponseDto) => {
-    if (id === response.id) {
-      data.workflow = response;
-      savedWorkflow = cloneDeep(response);
-      await invalidate('workflow:data');
+    if (id !== response.id) {
+      return;
     }
+
+    data.workflow = response;
+    savedWorkflow = cloneDeep(response);
+    await invalidate('workflow:data');
   };
 
   const onWorkflowDelete = async (response: WorkflowResponseDto) => {
@@ -252,16 +254,18 @@
     }
 
     void confirmNavigation().then((confirmed) => {
-      if (confirmed) {
-        allowNavigation = true;
-        void goto(to.url);
+      if (!confirmed) {
+        return;
       }
+
+      allowNavigation = true;
+      void goto(to.url);
     });
   });
 
   $effect(() => console.log(steps));
 
-  const { Download, Duplicate, CopyJson, Delete } = $derived(
+  const { Download, Duplicate, CopyJson, Delete, Logs } = $derived(
     getWorkflowActions($t, { ...savedWorkflow, name, description, enabled, trigger, steps }),
   );
 </script>
@@ -276,7 +280,7 @@
       {onClose}
       translations={{ close: $t('back') }}
       closeIcon={mdiArrowLeft}
-      actions={[Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
+      actions={[Logs, Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
     >
       <ControlBarHeader>
         <ControlBarTitle>{data.workflow.name}</ControlBarTitle>

@@ -14,12 +14,12 @@ const _kVersion = 2;
 
 void main() {
   late StoreService sut;
-  late DriftStoreRepository mockDriftStoreRepo;
+  late StoreRepository mockDriftStoreRepo;
   late StreamController<List<StoreDto<Object>>> controller;
 
   setUp(() async {
     controller = StreamController<List<StoreDto<Object>>>.broadcast();
-    mockDriftStoreRepo = MockDriftStoreRepository();
+    mockDriftStoreRepo = MockStoreRepository();
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
     registerFallbackValue(StoreKey.accessToken);
     registerFallbackValue(StoreKey.version);
@@ -124,12 +124,12 @@ void main() {
 
   group('Store Service delete:', () {
     setUp(() {
-      when(() => mockDriftStoreRepo.delete<String>(any<StoreKey<String>>())).thenAnswer((_) async => true);
+      when(() => mockDriftStoreRepo.deleteValue<String>(any<StoreKey<String>>())).thenAnswer((_) async => true);
     });
 
     test('Removes the value from the DB', () async {
       await sut.delete(StoreKey.accessToken);
-      verify(() => mockDriftStoreRepo.delete<String>(StoreKey.accessToken)).called(1);
+      verify(() => mockDriftStoreRepo.deleteValue<String>(StoreKey.accessToken)).called(1);
     });
 
     test('Removes the value from the cache', () async {

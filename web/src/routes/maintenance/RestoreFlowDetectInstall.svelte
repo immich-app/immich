@@ -21,11 +21,10 @@
   const getLibraryFolderCheckStatus = (writable: boolean, readable: boolean) => {
     if (writable) {
       return $t('maintenance_restore_library_folder_pass');
-    } else if (readable) {
-      return $t('maintenance_restore_library_folder_write_fail');
-    } else {
-      return $t('maintenance_restore_library_folder_read_fail');
     }
+    return readable
+      ? $t('maintenance_restore_library_folder_write_fail')
+      : $t('maintenance_restore_library_folder_read_fail');
   };
 
   onMount(() => reload());

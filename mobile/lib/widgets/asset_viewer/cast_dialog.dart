@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 
@@ -23,21 +23,21 @@ class CastDialog extends ConsumerWidget {
     }
 
     return AlertDialog(
-      title: const Text("cast", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+      title: Text(context.t.cast, style: const TextStyle(fontWeight: FontWeight.bold)),
       content: SizedBox(
         width: 250,
         height: 250,
         child: FutureBuilder<List<(String, CastDestinationType, dynamic)>>(
-          future: ref.read(castProvider.notifier).getDevices(),
+          future: ref.watch(castProvider.notifier).getDevices(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Text('error_saving_image'.tr(args: [snapshot.error.toString()]));
+              return Text(context.t.error_saving_image(error: snapshot.error.toString()));
             } else if (!snapshot.hasData) {
               return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
             }
 
             if (snapshot.data!.isEmpty) {
-              return const Text('no_cast_devices_found').tr();
+              return Text(context.t.no_cast_devices_found);
             }
 
             final devices = snapshot.data!;
@@ -47,12 +47,12 @@ class CastDialog extends ConsumerWidget {
             final List<dynamic> sectionedList = [];
 
             if (connected.isNotEmpty) {
-              sectionedList.add("connected_device");
+              sectionedList.add(context.t.connected_device);
               sectionedList.addAll(connected);
             }
 
             if (others.isNotEmpty) {
-              sectionedList.add("discovered_devices");
+              sectionedList.add(context.t.discovered_devices);
               sectionedList.addAll(others);
             }
 
@@ -66,7 +66,7 @@ class CastDialog extends ConsumerWidget {
                   // It's a section header
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(item, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
+                    child: Text(item, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   );
                 } else {
                   final (deviceName, type, deviceObj) = item as (String, CastDestinationType, dynamic);
@@ -110,16 +110,16 @@ class CastDialog extends ConsumerWidget {
           TextButton(
             onPressed: () => ref.read(castProvider.notifier).disconnect(),
             child: Text(
-              "stop_casting",
+              context.t.stop_casting,
               style: TextStyle(color: context.colorScheme.secondary, fontWeight: FontWeight.bold),
-            ).tr(),
+            ),
           ),
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            "close",
+            context.t.close,
             style: TextStyle(color: context.colorScheme.primary, fontWeight: FontWeight.bold),
-          ).tr(),
+          ),
         ),
       ],
     );

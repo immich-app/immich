@@ -34,7 +34,7 @@ describe('Executor Queue test', function () {
     // The last task will be executed after 200ms and will finish at 400ms
     void eq.addTask(() => timeoutPromiseBuilder(200, 'T4'));
 
-    expect(finished).not.toBeCalled();
+    expect(finished).not.toHaveBeenCalled();
     expect(started).toHaveBeenCalledTimes(3);
 
     vi.advanceTimersByTime(100);

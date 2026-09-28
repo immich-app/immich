@@ -15,8 +15,8 @@ extension DTOToAsset on api.AssetResponseDto {
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
       durationMs: duration,
-      height: height?.toInt(),
-      width: width?.toInt(),
+      height: height,
+      width: width,
       isFavorite: isFavorite,
       livePhotoVideoId: livePhotoVideoId.orElse(null),
       thumbHash: thumbhash,
@@ -38,8 +38,8 @@ extension DTOToAsset on api.AssetResponseDto {
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
       durationMs: duration,
-      height: height?.toInt(),
-      width: width?.toInt(),
+      height: height,
+      width: width,
       isFavorite: isFavorite,
       livePhotoVideoId: livePhotoVideoId.orElse(null),
       thumbHash: thumbhash,
@@ -58,7 +58,6 @@ extension on api.AssetVisibility {
     api.AssetVisibility.hidden => AssetVisibility.hidden,
     api.AssetVisibility.archive => AssetVisibility.archive,
     api.AssetVisibility.locked => AssetVisibility.locked,
-    _ => AssetVisibility.timeline,
   };
 }
 
@@ -68,6 +67,5 @@ extension on api.AssetTypeEnum {
     api.AssetTypeEnum.VIDEO => AssetType.video,
     api.AssetTypeEnum.AUDIO => AssetType.audio,
     api.AssetTypeEnum.OTHER => AssetType.other,
-    _ => throw Exception('Unknown AssetType value: $this'),
   };
 }

@@ -1,11 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
-import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
-import { AssetFile } from 'src/database';
-import { OnEvent, OnJob } from 'src/decorators';
-import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import type {
+  AudioStreamInfo,
+  DecodeToBufferOptions,
+  GenerateThumbnailOptions,
+  ImageDimensions,
+  JobItem,
+  JobOf,
+  VideoFormat,
+  VideoInterfaces,
+  VideoStreamInfo,
+} from 'src/types.js';
+import { FACE_THUMBNAIL_SIZE } from 'src/constants.js';
+import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core.js';
+import { AssetFile } from 'src/database.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { ConfigFFmpegDto, SystemConfig } from 'src/dtos/config.dto.js';
+import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto.js';
 import {
   AssetFileType,
   AssetType,
@@ -24,27 +34,16 @@ import {
   TranscodeTarget,
   VideoCodec,
   VideoContainer,
-} from 'src/enum';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { BoundingBox } from 'src/repositories/machine-learning.repository';
-import { BaseService } from 'src/services/base.service';
-import {
-  AudioStreamInfo,
-  DecodeToBufferOptions,
-  GenerateThumbnailOptions,
-  ImageDimensions,
-  JobItem,
-  JobOf,
-  VideoFormat,
-  VideoInterfaces,
-  VideoStreamInfo,
-} from 'src/types';
-import { getAssetFile, getDimensions } from 'src/utils/asset.util';
-import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
-import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
-import { mimeTypes } from 'src/utils/mime-types';
-import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
-import { getOutputDimensions } from 'src/utils/transform';
+} from 'src/enum.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getAssetFile, getDimensions } from 'src/utils/asset.util.js';
+import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor.js';
+import { BaseConfig, ThumbnailConfig } from 'src/utils/media.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { batched, clamp } from 'src/utils/misc.js';
+import { getOutputDimensions } from 'src/utils/transform.js';
 
 interface UpsertFileOptions {
   assetId: string;
@@ -69,49 +68,43 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
-    let jobs: JobItem[] = [];
 
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
-
-    const fullsizeEnabled = config.image.fullsize.enabled;
-    for await (const asset of this.assetJobRepository.streamForThumbnailJob({ force, fullsizeEnabled })) {
-      if (force || !asset.isEdited) {
-        jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
-      }
-
-      if (asset.isEdited) {
-        jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
-      }
-
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
-    }
-
-    await queueAll();
-
-    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
-
-    for await (const person of people) {
-      if (!person.faceAssetId) {
-        const face = await this.personRepository.getRandomFace(person.id);
-        if (!face) {
-          continue;
+    const isFullsizeEnabled = config.image.fullsize.enabled;
+    for await (const assets of batched(
+      this.assetJobRepository.streamForThumbnailJob({ force, fullsizeEnabled: isFullsizeEnabled }),
+    )) {
+      const jobs: JobItem[] = [];
+      for (const asset of assets) {
+        if (force || !asset.isEdited) {
+          jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
         }
 
-        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+        if (asset.isEdited) {
+          jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
+        }
       }
 
-      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
+      await this.jobRepository.queueAll(jobs);
     }
 
-    await queueAll();
+    for await (const people of batched(this.personRepository.getAll(force ? undefined : { thumbnailPath: '' }))) {
+      const jobs: JobItem[] = [];
+      for (const person of people) {
+        const { ownerId, personGroupId } = person;
+        if (!person.faceAssetId) {
+          const face = await this.personRepository.getRandomFace(personGroupId);
+          if (!face) {
+            continue;
+          }
+
+          await this.personRepository.update({ ownerId, personGroupId, faceAssetId: face.id });
+        }
+
+        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
+      }
+
+      await this.jobRepository.queueAll(jobs);
+    }
 
     return JobStatus.Success;
   }
@@ -124,29 +117,20 @@ export class MediaService extends BaseService {
       await this.storageCore.removeEmptyDirs(StorageFolder.EncodedVideo);
     }
 
-    let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForMigrationJob();
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.AssetFileMigration, data: { id: asset.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForMigrationJob())) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetFileMigration, data: { id: asset.id } })),
+      );
     }
 
-    await this.jobRepository.queueAll(jobs);
-    jobs = [];
-
-    for await (const person of this.personRepository.getAll()) {
-      jobs.push({ name: JobName.PersonFileMigration, data: { id: person.id } });
-
-      if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const people of batched(this.personRepository.getAll())) {
+      await this.jobRepository.queueAll(
+        people.map(({ ownerId, personGroupId }) => ({
+          name: JobName.PersonFileMigration,
+          data: { ownerId, personGroupId },
+        })),
+      );
     }
-
-    await this.jobRepository.queueAll(jobs);
 
     return JobStatus.Success;
   }
@@ -188,12 +172,10 @@ export class MediaService extends BaseService {
       const extractedImage = await this.extractOriginalImage(asset, config.image);
       const { info, data, colorspace } = extractedImage;
 
-      thumbhash = await this.mediaRepository.generateThumbhash(data, {
-        colorspace,
-        processInvalidImages: false,
-        raw: info,
-        edits: [],
-      });
+      thumbhash = await this.mediaRepository.generateThumbhash(
+        { data, info },
+        { colorspace, processInvalidImages: false, edits: [] },
+      );
     }
 
     if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
@@ -272,13 +254,14 @@ export class MediaService extends BaseService {
   }
 
   private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
-    const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
-    const extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
-    const generateFullsize =
+    const isExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
+    const extracted = isExtractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
+    const isGenerateFullsize =
       ((image.fullsize.enabled || asset.exifInfo.projectionType === 'EQUIRECTANGULAR') &&
         !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
       useEdits;
-    const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
+    const isConvertFullsize =
+      isGenerateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
     const thumbSource = extracted ? extracted.buffer : asset.originalPath;
     const { data, info, colorspace } = await this.decodeImage(
@@ -286,7 +269,7 @@ export class MediaService extends BaseService {
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
-      convertFullsize ? undefined : image.preview.size,
+      isConvertFullsize ? undefined : image.preview.size,
     );
 
     let isTransparent = false;
@@ -299,8 +282,8 @@ export class MediaService extends BaseService {
       data,
       info,
       colorspace,
-      convertFullsize,
-      generateFullsize,
+      convertFullsize: isConvertFullsize,
+      generateFullsize: isGenerateFullsize,
       isTransparent,
     };
   }
@@ -333,13 +316,14 @@ export class MediaService extends BaseService {
     this.storageCore.ensureFolders(previewFile.path);
 
     // generate final images
-    const baseOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const decoded = { data, info };
+    const baseOptions = { colorspace, processInvalidImages: false, edits: useEdits ? asset.edits : [] };
     const thumbnailOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat };
     const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat };
     const promises = [
-      this.mediaRepository.generateThumbhash(data, baseOptions),
-      this.mediaRepository.generateThumbnail(data, thumbnailOptions, thumbnailFile.path),
-      this.mediaRepository.generateThumbnail(data, previewOptions, previewFile.path),
+      this.mediaRepository.generateThumbhash(decoded, baseOptions),
+      this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(decoded, previewOptions, previewFile.path),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
@@ -360,7 +344,7 @@ export class MediaService extends BaseService {
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
       };
-      promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizeFile.path));
+      promises.push(this.mediaRepository.generateThumbnail(decoded, fullsizeOptions, fullsizeFile.path));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
@@ -405,23 +389,22 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
-  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
-    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
-      return JobStatus.Skipped;
-    }
-
-    const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
+  async handleGeneratePersonThumbnail({
+    ownerId,
+    personGroupId,
+  }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
+    const { image } = await this.getConfig({ withCache: true });
+    const data = await this.personRepository.getDataForThumbnailGenerationJob({ ownerId, personGroupId });
     if (!data) {
-      this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
+      this.logger.error(`Could not generate person thumbnail for ${personGroupId}: missing data`);
       return JobStatus.Failed;
     }
 
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
-        this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
+        this.logger.error(`Could not generate person thumbnail for video ${personGroupId}: missing preview path`);
         return JobStatus.Failed;
       }
       inputImage = previewPath;
@@ -432,20 +415,19 @@ export class MediaService extends BaseService {
       inputImage = originalPath;
     }
 
-    const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
+    const decoded = await this.mediaRepository.decodeImage(inputImage, {
       colorspace: image.colorspace,
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
       // if this is an extracted image, it may not have orientation metadata
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
 
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId });
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
       colorspace: image.colorspace,
       format: ImageFormat.Jpeg,
-      raw: info,
       quality: image.thumbnail.quality,
       progressive: false,
       processInvalidImages: false,
@@ -454,15 +436,18 @@ export class MediaService extends BaseService {
         {
           action: AssetEditAction.Crop,
           parameters: this.getCrop(
-            { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
+            {
+              old: { width: oldWidth, height: oldHeight },
+              new: { width: decoded.info.width, height: decoded.info.height },
+            },
             { x1, y1, x2, y2 },
           ),
         },
       ],
     };
 
-    await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
+    await this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailPath);
+    await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
 
     return JobStatus.Success;
   }
@@ -535,9 +520,14 @@ export class MediaService extends BaseService {
     await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
 
-    const thumbhash = await this.mediaRepository.generateThumbhash(previewFile.path, {
+    const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
+    const preview = await this.mediaRepository.decodeImage(previewFile.path, {
       colorspace: image.colorspace,
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      processInvalidImages,
+    });
+    const thumbhash = await this.mediaRepository.generateThumbhash(preview, {
+      colorspace: image.colorspace,
+      processInvalidImages,
     });
 
     return {
@@ -551,17 +541,11 @@ export class MediaService extends BaseService {
   async handleQueueVideoConversion(job: JobOf<JobName.AssetEncodeVideoQueueAll>): Promise<JobStatus> {
     const { force } = job;
 
-    let queue: { name: JobName.AssetEncodeVideo; data: { id: string } }[] = [];
-    for await (const asset of this.assetJobRepository.streamForVideoConversion(force)) {
-      queue.push({ name: JobName.AssetEncodeVideo, data: { id: asset.id } });
-
-      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(queue);
-        queue = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForVideoConversion(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetEncodeVideo, data: { id: asset.id } })),
+      );
     }
-
-    await this.jobRepository.queueAll(queue);
 
     return JobStatus.Success;
   }
@@ -620,20 +604,20 @@ export class MediaService extends BaseService {
         return JobStatus.Failed;
       }
 
-      let partialFallbackSuccess = false;
+      let isPartialFallbackSuccess = false;
       if (ffmpeg.accelDecode) {
         try {
           this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
           ffmpeg = { ...ffmpeg, accelDecode: false };
           const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
           await this.mediaRepository.transcode(input, output, command);
-          partialFallbackSuccess = true;
+          isPartialFallbackSuccess = true;
         } catch (error: any) {
           this.logger.error(`Error occurred during transcoding: ${error.message}`);
         }
       }
 
-      if (!partialFallbackSuccess) {
+      if (!isPartialFallbackSuccess) {
         this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
         ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
         const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
@@ -654,7 +638,7 @@ export class MediaService extends BaseService {
   }
 
   private getTranscodeTarget(
-    config: SystemConfigFFmpegDto,
+    config: ConfigFFmpegDto,
     videoStream: VideoStreamInfo,
     audioStream?: AudioStreamInfo,
   ): TranscodeTarget {
@@ -676,7 +660,7 @@ export class MediaService extends BaseService {
     return TranscodeTarget.None;
   }
 
-  private isAudioTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
+  private isAudioTranscodeRequired(ffmpegConfig: ConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
     if (!stream) {
       return false;
     }
@@ -699,10 +683,10 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo): boolean {
-    const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
+  private isVideoTranscodeRequired(ffmpegConfig: ConfigFFmpegDto, stream: VideoStreamInfo): boolean {
+    const isScalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
-    const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;
+    const isLargerThanTargetRes = isScalingEnabled && Math.min(stream.height, stream.width) > targetRes;
     const maxBitrate = this.parseBitrateToBps(ffmpegConfig.maxBitrate);
     const isLargerThanTargetBitrate = maxBitrate > 0 && stream.bitrate > maxBitrate;
 
@@ -731,7 +715,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isRemuxRequired(ffmpegConfig: SystemConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
+  private isRemuxRequired(ffmpegConfig: ConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
     if (ffmpegConfig.transcode === TranscodePolicy.Disabled) {
       return false;
     }
@@ -757,13 +741,13 @@ export class MediaService extends BaseService {
   }): boolean {
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
-    } else if (bitsPerSample) {
+    }
+    if (bitsPerSample) {
       // assume sRGB for 8-bit images with no color profile or colorspace metadata
       return bitsPerSample === 8;
-    } else {
-      // assume sRGB for images with no relevant metadata
-      return true;
     }
+    // assume sRGB for images with no relevant metadata
+    return true;
   }
 
   private parseBitrateToBps(bitrateString: string) {
@@ -776,11 +760,11 @@ export class MediaService extends BaseService {
 
     if (bitrateString.toLowerCase().endsWith('k')) {
       return bitrateValue * 1000; // Kilobits per second to bits per second
-    } else if (bitrateString.toLowerCase().endsWith('m')) {
-      return bitrateValue * 1_000_000; // Megabits per second to bits per second
-    } else {
-      return bitrateValue;
     }
+    if (bitrateString.toLowerCase().endsWith('m')) {
+      return bitrateValue * 1_000_000; // Megabits per second to bits per second
+    }
+    return bitrateValue;
   }
 
   private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
@@ -804,6 +788,7 @@ export class MediaService extends BaseService {
       }
 
       // upsert new file path
+      // eslint-disable-next-line unicorn/prefer-continue
       if (
         existingFile?.path !== newFile.path ||
         existingFile.isProgressive !== newFile.isProgressive ||
@@ -856,7 +841,7 @@ export class MediaService extends BaseService {
       : undefined;
 
     const originalDimensions = getDimensions(asset.exifInfo!);
-    const assetFaces = await this.personRepository.getFaces(asset.id, {});
+    const assetFaces = await this.personRepository.getFaces(asset.id, { viewingUserId: asset.ownerId });
     const ocrData = await this.ocrRepository.getByAssetId(asset.id, {});
 
     const faceStatuses = checkFaceVisibility(assetFaces, originalDimensions, cropBox);

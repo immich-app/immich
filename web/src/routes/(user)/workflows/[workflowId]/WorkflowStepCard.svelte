@@ -1,6 +1,6 @@
 <script module lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getAlbumInfo } from '@immich/sdk';
+  import { getAlbumInfo, getTagById } from '@immich/sdk';
 
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const albumNameCache = new Map<string, Promise<string>>();
@@ -237,6 +237,16 @@
                     {@render badge($t('album'), '…')}
                   {:then albumName}
                     {@render badge($t('album'), `"${truncate(albumName)}"`)}
+                  {/await}
+                {/each}
+              {:else if getUiHint(key) === 'TagId'}
+                {#each toIds(value) as tagId (tagId)}
+                  {#await getTagById({ id: tagId })}
+                    {@render badge($t('tag'), '…')}
+                  {:then tag}
+                    {@render badge($t('tag'), `"${truncate(tag.name)}"`)}
+                  {:catch}
+                    {@render badge($t('tag'), `"${truncate(tagId)}"`)}
                   {/await}
                 {/each}
               {:else}

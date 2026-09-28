@@ -30,6 +30,7 @@ const reset = () => {
   Object.assign(userInteraction, defaultUserInteraction);
 };
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 eventManager.on({
   AlbumCreate: () => resetRecentAlbums(),
   AlbumUpdate: () => resetRecentAlbums(),

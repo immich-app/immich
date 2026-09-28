@@ -145,7 +145,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   void _schedule() {
     final availableWorker = _pool.firstWhereOrNull((worker) => worker.taskId == null && worker.initialized);
     if (availableWorker == null) {
-      _ensureWorkersInitialized();
+      unawaited(_ensureWorkersInitialized());
       return;
     }
     if (_queue.isEmpty) {
@@ -153,26 +153,28 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     }
     final task = _queue.removeFirst();
 
-    availableWorker
-        .work(task)
-        .then(
-          (value) {
-            //might be completed by cancel and it is normal.
-            //Assuming that worker finished with error and cleaned gracefully
-            task.complete(value, null, null);
-          },
-          onError: (error, st) {
-            task.complete(null, error, st);
-          },
-        )
-        .whenComplete(() {
-          if (_dynamicSpawning && _queue.isEmpty) {
-            // Retire the idle worker; shutdown() nulls its fields so the husk
-            // stays pooled and is revived by initialize() if work arrives.
-            unawaited(availableWorker.shutdown());
-          }
-          _schedule();
-        });
+    unawaited(
+      availableWorker
+          .work(task)
+          .then(
+            (value) {
+              //might be completed by cancel and it is normal.
+              //Assuming that worker finished with error and cleaned gracefully
+              task.complete(value, null, null);
+            },
+            onError: (error, st) {
+              task.complete(null, error, st);
+            },
+          )
+          .whenComplete(() {
+            if (_dynamicSpawning && _queue.isEmpty) {
+              // Retire the idle worker; shutdown() nulls its fields so the husk
+              // stays pooled and is revived by initialize() if work arrives.
+              unawaited(availableWorker.shutdown());
+            }
+            _schedule();
+          }),
+    );
   }
 
   @override

@@ -69,38 +69,44 @@ export function focusTrap(container: HTMLElement, options?: Options) {
 
   // Add focus event listeners to sentinel nodes
   const handleStartFocus = () => {
-    if (withDefaults(options).active) {
-      const [, lastElement] = getFocusableElements();
-      // If no elements, stay on backup sentinel
-      if (lastElement) {
-        lastElement.focus();
-      } else {
-        backupSentinel.focus();
-      }
+    if (!withDefaults(options).active) {
+      return;
+    }
+
+    const [, lastElement] = getFocusableElements();
+    // If no elements, stay on backup sentinel
+    if (lastElement) {
+      lastElement.focus();
+    } else {
+      backupSentinel.focus();
     }
   };
 
   const handleBackupFocus = () => {
     // Backup sentinel keeps focus when there are no other focusable elements
-    if (withDefaults(options).active) {
-      const [firstElement] = getFocusableElements();
-      // Only move focus if there are actual focusable elements
-      if (firstElement) {
-        firstElement.focus();
-      }
-      // Otherwise, focus stays on backup sentinel
+    if (!withDefaults(options).active) {
+      return;
     }
+
+    const [firstElement] = getFocusableElements();
+    // Only move focus if there are actual focusable elements
+    if (firstElement) {
+      firstElement.focus();
+    }
+    // Otherwise, focus stays on backup sentinel
   };
 
   const handleEndFocus = () => {
-    if (withDefaults(options).active) {
-      const [firstElement] = getFocusableElements();
-      // If no elements, move to backup sentinel
-      if (firstElement) {
-        firstElement.focus();
-      } else {
-        backupSentinel.focus();
-      }
+    if (!withDefaults(options).active) {
+      return;
+    }
+
+    const [firstElement] = getFocusableElements();
+    // If no elements, move to backup sentinel
+    if (firstElement) {
+      firstElement.focus();
+    } else {
+      backupSentinel.focus();
     }
   };
 

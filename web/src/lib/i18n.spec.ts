@@ -6,7 +6,7 @@ describe('i18n', () => {
     const languageFiles = readdirSync('../i18n').sort();
     for (const filename of languageFiles) {
       test(`${filename} should have a loader`, async () => {
-        if (!filename.endsWith('.json') || filename == 'package.json') {
+        if (!filename.endsWith('.json') || filename === 'package.json') {
           return;
         }
 
@@ -57,6 +57,15 @@ describe('i18n', () => {
       expect(getClosestAvailableLocale(['pt_BR'], allLocales)).toBe('pt_BR');
       expect(getClosestAvailableLocale(['sr_Cyrl'], allLocales)).toBe('sr_Cyrl');
       expect(getClosestAvailableLocale(['zh_Hant'], allLocales)).toBe('zh_Hant');
+    });
+
+    it('should handle language aliases', () => {
+      const allLocales = ['zh-Hans', 'zh-Hant'];
+      expect(getClosestAvailableLocale(['zh-CN'], allLocales)).toBe('zh-Hans');
+      expect(getClosestAvailableLocale(['zh-HK'], allLocales)).toBe('zh-Hant');
+      expect(getClosestAvailableLocale(['zh-MO'], allLocales)).toBe('zh-Hant');
+      expect(getClosestAvailableLocale(['zh-SG'], allLocales)).toBe('zh-Hans');
+      expect(getClosestAvailableLocale(['zh-TW'], allLocales)).toBe('zh-Hant');
     });
   });
 });

@@ -1,5 +1,5 @@
 [tasks.install]
-run = "pnpm install --filter immich-e2e --frozen-lockfile"
+run = "pnpm install --filter immich-e2e... --frozen-lockfile"
 
 [tasks.build]
 dir = "{{ config_root }}"
@@ -40,18 +40,19 @@ run = "tsc --noEmit"
 
 
 [tasks.ci-setup]
-depends = [
-  "//:sdk:install",
-  "//:sdk:build",
-  "//packages/cli:install",
-  "//packages/cli:build",
+run = [
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
+  { task = "//packages/cli:install" },
+  { task = "//packages/cli:build" },
+  { task = ":install" },
 ]
-run = { task = ":install" }
 
 
 [tasks.ci-unit]
-depends = ["//:sdk:install", "//:sdk:build"]
 run = [
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
   { task = ":install" },
   { task = ":format" },
   { task = ":lint" },

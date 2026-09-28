@@ -12,6 +12,8 @@
     "editorconfig.editorconfig",
     "foxundermoon.shell-format",
     "timonwong.shellcheck",
-    "bluebrown.yamlfmt"
+    "bluebrown.yamlfmt",
+    // TODO TS 7 while it's still in preview
+    "typescriptteam.native-preview"
   ]
 }

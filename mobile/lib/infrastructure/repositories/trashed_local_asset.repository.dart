@@ -1,20 +1,27 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.drift.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
-class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class TrashedLocalAssetRepository extends DatabaseAccessor<Drift> with $TrashedLocalAssetRepositoryMixin {
+  TrashedLocalAssetRepository(super.attachedDatabase);
 
-  const DriftTrashedLocalAssetRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
+
+  /// Matches remote_asset_entity rows owned by the current user. The asset is unique over (owner, checksum),
+  /// so partners can have a duplicate checksum
+  Expression<bool> get _ownedByCurrentUser =>
+      _db.remoteAssetEntity.ownerId.isInQuery(_db.selectOnly(_db.authUserEntity)..addColumns([_db.authUserEntity.id]));
 
   Future<void> updateHashes(Map<String, String> hashes) {
     if (hashes.isEmpty) {
@@ -45,7 +52,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         await (_db.select(_db.trashedLocalAssetEntity).join([
               innerJoin(
                 _db.remoteAssetEntity,
-                _db.remoteAssetEntity.checksum.equalsExp(_db.trashedLocalAssetEntity.checksum),
+                _db.remoteAssetEntity.checksum.equalsExp(_db.trashedLocalAssetEntity.checksum) & _ownedByCurrentUser,
               ),
             ])..where(
               _db.trashedLocalAssetEntity.source.equalsValue(TrashOrigin.remoteSync) &
@@ -66,7 +73,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
       return;
     }
     final assetIds = trashedAssets.map((e) => e.asset.id).toSet();
-    Map<String, String> localChecksumById = await _getCachedChecksums(assetIds);
+    final Map<String, String> localChecksumById = await _getCachedChecksums(assetIds);
 
     return _db.transaction(() async {
       await _db.batch((batch) {
@@ -273,7 +280,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
               innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
               leftOuterJoin(
                 _db.remoteAssetEntity,
-                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) & _ownedByCurrentUser,
               ),
             ])..where(
               _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &

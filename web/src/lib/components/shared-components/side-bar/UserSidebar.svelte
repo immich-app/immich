@@ -14,6 +14,8 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiCards,
+    mdiCardsOutline,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -31,6 +33,7 @@
     mdiToolboxOutline,
     mdiTrashCan,
     mdiTrashCanOutline,
+    mdiUploadOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -45,6 +48,10 @@
 
   {#if featureFlagsManager.value.map}
     <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />
+  {/if}
+
+  {#if authManager.preferences.memories.enabled && authManager.preferences.memories.sidebarWeb}
+    <NavbarItem title={$t('memories')} href={Route.memories()} icon={mdiCardsOutline} activeIcon={mdiCards} />
   {/if}
 
   {#if authManager.preferences.people.enabled && authManager.preferences.people.sidebarWeb}
@@ -81,6 +88,14 @@
 
   {#if authManager.preferences.tags.enabled && authManager.preferences.tags.sidebarWeb}
     <NavbarItem title={$t('tags')} href={Route.tags()} icon={{ icon: mdiTagMultipleOutline, flipped: true }} />
+  {/if}
+
+  {#if authManager.preferences.recentlyAdded.sidebarWeb}
+    <NavbarItem
+      title={$t('recently_added')}
+      href={Route.recentlyAdded()}
+      icon={{ icon: mdiUploadOutline, flipped: true }}
+    />
   {/if}
 
   {#if authManager.preferences.folders.enabled && authManager.preferences.folders.sidebarWeb}

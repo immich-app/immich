@@ -4,19 +4,20 @@ This directory contains the infrastructure layer of Immich. The infrastructure l
 
 ## Structure
 
-- **[Entities](./entities/)**: These are the classes that define the database schema for the domain models.
 - **[Repositories](./repositories/)**: These are the actual implementation of the domain interfaces. A single interface might have multiple implementations.
 - **[Utils](./utils/)**: These are utility classes and functions specific to infrastructure implementations.
 
 ```
 infrastructure/
-├── entities/
-│   └── user.entity.dart
 ├── repositories/
 │   └── user.repository.dart
 └── utils/
-    └── database_utils.dart
+    └── user.converter.dart
 ```
+
+> **Note:** The Drift schema, the database class, and the server API base moved to
+> [`lib/data/`](../data/README.md). Repositories here are migrating there one entity at a
+> time; new data access should be added under `lib/data/`.
 
 ## Usage
 

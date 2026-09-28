@@ -7,13 +7,13 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -22,8 +22,10 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
   final BaseAsset asset;
   final String? localFilePath;
   final bool isCurrent;
-  final bool showControls;
   final Widget image;
+
+  /// Overrides the user's configured loop video setting
+  final bool? loopOverride;
 
   const NativeVideoViewer({
     super.key,
@@ -31,29 +33,30 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
     this.localFilePath,
     required this.image,
     this.isCurrent = false,
-    this.showControls = true,
+    this.loopOverride,
   });
 
   @override
-  ConsumerState<NativeVideoViewer> createState() => _NativeVideoViewerState();
+  ConsumerState<NativeVideoViewer> createState() => NativeVideoViewerState();
 }
 
-class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with WidgetsBindingObserver {
+class NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with WidgetsBindingObserver {
   static final _log = Logger('NativeVideoViewer');
 
   NativeVideoPlayerController? _controller;
-  late final Future<VideoSource?> _videoSource;
+  @visibleForTesting
+  late final Future<VideoSource?> videoSource;
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
 
-  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
+  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.id).notifier);
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _videoSource = _createSource();
+    videoSource = _createSource();
   }
 
   @override
@@ -66,7 +69,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
-      _notifier.pause();
+      unawaited(_notifier.pause());
       return;
     }
 
@@ -83,7 +86,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
         if (_shouldPlayOnForeground) {
@@ -91,7 +94,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         }
       case AppLifecycleState.paused:
         _shouldPlayOnForeground = await _controller?.isPlaying() ?? true;
-        if (_shouldPlayOnForeground) {
+        if (_shouldPlayOnForeground && mounted) {
           await _notifier.pause();
         }
       default:
@@ -109,55 +112,109 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     try {
+      final storageRepository = ref.read(storageRepositoryProvider);
       final localFilePath = widget.localFilePath;
       if (localFilePath != null) {
         final file = File(localFilePath);
+        // ignore: avoid_slow_async_io
         if (!await file.exists()) {
           throw Exception('No file found for the video');
         }
 
-        return VideoSource.init(
+        return await VideoSource.init(
           path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
           type: VideoSourceType.file,
         );
       }
 
-      if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
-        final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
-        final file = await StorageRepository().getFileForAsset(id);
+      // Attempt to retrieve LocalAsset, falling back to remote if it cannot be found
+      final localAsset = await _localPlaybackAsset(videoAsset);
+
+      if (localAsset != null) {
+        final file = localAsset.isMotionPhoto
+            ? await storageRepository.getMotionFileForAsset(localAsset)
+            : await storageRepository.getFileForAsset(localAsset.id);
+
         if (!mounted) {
           return null;
         }
 
-        if (file == null) {
-          throw Exception('No file found for the video');
-        }
-
         // Pass a file:// URI so Android's Uri.parse doesn't
         // interpret characters like '#' as fragment identifiers.
-        return VideoSource.init(
-          path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
-          type: VideoSourceType.file,
-        );
+        if (file != null) {
+          return await VideoSource.init(
+            path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
+            type: VideoSourceType.file,
+          );
+        }
+
+        if (videoAsset is! RemoteAsset) {
+          throw Exception('No file found for the video');
+        }
+        _log.warning('Local file missing for ${videoAsset.name} (${videoAsset.localId}), playing the remote copy');
       }
 
-      final remoteId = (videoAsset as RemoteAsset).id;
+      final remoteAsset = videoAsset as RemoteAsset;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+      if (!context.mounted) {
+        return null;
+      }
+
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
-      final String videoUrl = videoAsset.livePhotoVideoId != null
-          ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
-          : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;
+      final String videoUrl = '$serverEndpoint/assets/$assetId/$postfixUrl';
 
-      return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
+      return await VideoSource.init(
+        path: videoUrl,
+        type: VideoSourceType.network,
+        headers: ApiService.getRequestHeaders(),
+      );
     } catch (error) {
       _log.severe('Error creating video source for asset ${videoAsset.name}: $error');
       return null;
     }
   }
 
-  void _onPlaybackReady() async {
+  Future<LocalAsset?> _localPlaybackAsset(BaseAsset baseAsset) async {
+    if (!baseAsset.hasLocal) {
+      return null;
+    }
+
+    LocalAsset? localAsset;
+
+    if (baseAsset is LocalAsset) {
+      localAsset = baseAsset;
+    } else {
+      final localId = (baseAsset as RemoteAsset).localId;
+      localAsset = localId != null ? await ref.read(assetServiceProvider).getLocalAsset(localId) : null;
+    }
+
+    if (localAsset == null) {
+      _log.severe(
+        'Invariant violation: asset ${baseAsset.name} (${baseAsset.localId}) is marked `hasLocal` but local asset could not be retrieved',
+      );
+
+      return null;
+    }
+
+    // Clients (local) may not correctly recognize a given asset as a motion photo. This allows for a scenario where both remote and local
+    // have the same asset (hash), but only the remote properly recognizes it as a motion asset
+    // If this scenario occurs, fall back to using the remote asset
+    if (baseAsset.isMotionPhoto && !localAsset.isMotionPhoto) {
+      // Platform mismatch for motion photo, use remote instead
+      _log.warning(
+        'Mismatched local and remote motion states on ${baseAsset.name} (${baseAsset.localId}), local = ${localAsset.isMotionPhoto}, remote = ${baseAsset.isMotionPhoto}',
+      );
+
+      return null;
+    }
+
+    return localAsset;
+  }
+
+  Future<void> _onPlaybackReady() async {
     if (!mounted || !widget.isCurrent) {
       return;
     }
@@ -216,21 +273,24 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller?.onPlaybackEnded.removeListener(_onPlaybackEnded);
   }
 
-  void _loadVideo() async {
+  Future<void> _loadVideo() async {
     final nc = _controller;
     if (nc == null || nc.videoSource != null || !mounted) {
       return;
     }
 
-    final source = await _videoSource;
+    final source = await videoSource;
     if (source == null || !mounted) {
       return;
     }
 
-    await _notifier.load(source);
-    final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
-    await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
-    await _notifier.setVolume(1);
+    // Grab refs to prevent reading after dispose
+    final loopVideo = widget.loopOverride ?? ref.read(appConfigProvider).viewer.loopVideo;
+    final localNotifier = _notifier;
+
+    await localNotifier.load(source);
+    await localNotifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
+    await localNotifier.setVolume(1);
   }
 
   void _initController(NativeVideoPlayerController nc) {
@@ -248,19 +308,19 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller = nc;
 
     if (widget.isCurrent) {
-      _loadVideo();
+      unawaited(_loadVideo());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
+    final status = ref.watch(videoPlayerProvider(widget.asset.id).select((v) => v.status));
 
     return IgnorePointer(
       child: Stack(
         children: [
-          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Center(child: widget.image),
+          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Positioned.fill(child: widget.image),
           if (!isCasting) ...[
             Visibility.maintain(
               visible: _isVideoReady,

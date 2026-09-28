@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/ocr.provider.dart';
 
 class OcrToggleButton extends ConsumerWidget {
   final BaseAsset asset;
@@ -12,7 +12,7 @@ class OcrToggleButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = this.asset;
-    final hasOcr = asset is RemoteAsset && ref.watch(ocrAssetProvider(asset.id)).valueOrNull?.isNotEmpty == true;
+    final hasOcr = asset is RemoteAsset && ref.watch(Store.ocr.forAsset(asset.id)).valueOrNull?.isNotEmpty == true;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     return AnimatedSwitcher(
@@ -28,7 +28,7 @@ class OcrToggleButton extends ConsumerWidget {
                   shape: const CircleBorder(),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
-                    onTap: ref.read(assetViewerProvider.notifier).toggleOcr,
+                    onTap: ref.watch(assetViewerProvider.notifier).toggleOcr,
                     child: const Padding(
                       padding: EdgeInsets.all(10.0),
                       child: Icon(Icons.text_fields_rounded, size: 22, color: Colors.white),

@@ -11,7 +11,7 @@ class _Counter {
 
 void main() {
   test('Executes the method after the interval', () async {
-    var counter = _Counter();
+    final counter = _Counter();
     final debouncer = Debouncer(interval: const Duration(milliseconds: 300));
     debouncer.run(() => counter.increment());
     expect(counter.count, 0);
@@ -20,17 +20,17 @@ void main() {
   });
 
   test('Executes the method immediately if zero interval', () async {
-    var counter = _Counter();
-    final debouncer = Debouncer(interval: const Duration(milliseconds: 0));
+    final counter = _Counter();
+    final debouncer = Debouncer(interval: Duration.zero);
     debouncer.run(() => counter.increment());
     // Even though it is supposed to be executed immediately, it is added to the async queue and so
     // we need this delay to make sure the actual debounced method is called
-    await Future.delayed(const Duration(milliseconds: 0));
+    await Future.delayed(Duration.zero);
     expect(counter.count, 1);
   });
 
   test('Delayes method execution after all the calls are completed', () async {
-    var counter = _Counter();
+    final counter = _Counter();
     final debouncer = Debouncer(interval: const Duration(milliseconds: 100));
     debouncer.run(() => counter.increment());
     debouncer.run(() => counter.increment());

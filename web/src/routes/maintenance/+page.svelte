@@ -1,4 +1,5 @@
 <script lang="ts">
+  /* eslint-disable unicorn/no-optional-chaining-on-undeclared-variable */
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import MaintenanceRestoreFlow from './MaintenanceRestoreFlow.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';

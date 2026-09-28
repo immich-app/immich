@@ -1,14 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, OrderByDirection, sql, Updateable } from 'kysely';
+import {
+  type ExpressionBuilder,
+  type Insertable,
+  type Kysely,
+  type OrderByDirection,
+  type Updateable,
+  sql,
+} from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { MemorySearchDto } from 'src/dtos/memory.dto';
-import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
-import { MemoryTable } from 'src/schema/tables/memory.table';
-import { IBulkAsset } from 'src/types';
+import type { IBulkAsset } from 'src/types.js';
+import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
+import { MemorySearchDto } from 'src/dtos/memory.dto.js';
+import { AssetFileType, AssetOrderWithRandom, AssetVisibility } from 'src/enum.js';
+import { type YearMonthDay } from 'src/repositories/asset.repository.js';
+import { DB } from 'src/schema/index.js';
+import { MemoryTable } from 'src/schema/tables/memory.table.js';
+
+const asMakeDate = (eb: ExpressionBuilder<DB, 'asset'>, { year, month, day }: YearMonthDay) =>
+  eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]);
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
@@ -39,6 +50,12 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
+      .$if(dto.isUpcoming !== undefined, (qb) => {
+        const now = DateTime.now().toJSDate();
+        return dto.isUpcoming
+          ? qb.where('showAt', '>', now)
+          : qb.where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', now)]));
+      })
       .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
       .where('ownerId', '=', ownerId);
   }
@@ -56,6 +73,8 @@ export class MemoryRepository implements IBulkAsset {
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+    { name: 'upcoming filter', params: [DummyValue.UUID, { isUpcoming: true }] },
+    { name: 'not upcoming filter', params: [DummyValue.UUID, { isUpcoming: false }] },
   )
   search(ownerId: string, dto: MemorySearchDto) {
     return this.searchBuilder(ownerId, dto)
@@ -73,7 +92,11 @@ export class MemoryRepository implements IBulkAsset {
                 eb.exists(
                   eb
                     .selectFrom('asset_face')
-                    .innerJoin('person', 'person.id', 'asset_face.personId')
+                    .innerJoin('person', (join) =>
+                      join
+                        .onRef('person.personGroupId', '=', 'asset_face.personGroupId')
+                        .onRef('person.ownerId', '=', 'asset.ownerId'),
+                    )
                     .select((eb) => eb.val(1).as('one'))
                     .whereRef('asset_face.assetId', '=', 'asset.id')
                     .where('person.isHidden', '=', true),
@@ -84,12 +107,77 @@ export class MemoryRepository implements IBulkAsset {
         ).as('assets'),
       )
       .selectAll('memory')
-      .$call((qb) =>
-        dto.order === AssetOrderWithRandom.Random
-          ? qb.orderBy(sql`RANDOM()`)
-          : qb.orderBy('memoryAt', (dto.order?.toLowerCase() || 'desc') as OrderByDirection),
-      )
+      .$call((qb) => {
+        if (dto.order === AssetOrderWithRandom.Random) {
+          return qb.orderBy(sql`RANDOM()`);
+        }
+
+        const direction = (dto.order?.toLowerCase() || 'desc') as OrderByDirection;
+        return qb
+          .orderBy('showAt', (ob) => (direction === 'asc' ? ob.asc() : ob.desc()).nullsLast())
+          .orderBy('memoryAt', direction);
+      })
+      .$if(dto.id !== undefined, (qb) => qb.where('id', '=', dto.id!))
       .$if(dto.size !== undefined, (qb) => qb.limit(dto.size!))
+      .$if(dto.page !== undefined && dto.size !== undefined, (qb) => qb.offset((dto.page! - 1) * dto.size!))
+      .execute();
+  }
+
+  private personAssets(ownerId: string, personGroupId: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.ownerId', '=', ownerId)
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_face')
+            .whereRef('asset_face.assetId', '=', 'asset.id')
+            .where('asset_face.personGroupId', '=', personGroupId)
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true),
+        ),
+      )
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      );
+  }
+
+  @GenerateSql({
+    params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, { year: 2025, month: 1, day: 1 }],
+  })
+  async getPersonBirthdayYears(
+    ownerId: string,
+    personGroupId: string,
+    birthDate: YearMonthDay,
+    until: YearMonthDay,
+  ): Promise<number[]> {
+    const rows = await this.personAssets(ownerId, personGroupId)
+      .where(sql`date_part('month', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.month)
+      .where(sql`date_part('day', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.day)
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '>=', asMakeDate(eb, birthDate)))
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '<', asMakeDate(eb, until)))
+      .select(sql<number>`date_part('year', (asset."localDateTime" at time zone 'UTC')::date)::int`.as('year'))
+      .distinct()
+      .orderBy(sql`year`, 'desc')
+      .execute();
+
+    return rows.map(({ year }) => year);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, 5] })
+  getPersonAssetsByDate(ownerId: string, personGroupId: string, date: YearMonthDay, limit: number) {
+    return this.personAssets(ownerId, personGroupId)
+      .select(['asset.id'])
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', asMakeDate(eb, date)))
+      .orderBy('asset.localDateTime', 'desc')
+      .limit(limit)
       .execute();
   }
 

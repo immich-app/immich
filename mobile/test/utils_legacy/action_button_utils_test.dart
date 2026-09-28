@@ -86,7 +86,6 @@ void main() {
         asset: asset,
         isOwner: true,
         isArchived: false,
-        isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
@@ -97,7 +96,6 @@ void main() {
       expect(context.asset, isA<BaseAsset>());
       expect(context.isOwner, isTrue);
       expect(context.isArchived, isFalse);
-      expect(context.isTrashEnabled, isTrue);
       expect(context.isInLockedView, isFalse);
       expect(context.currentAlbum, isNull);
       expect(context.source, ActionSource.timeline);
@@ -117,7 +115,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -133,7 +130,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -152,7 +148,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -169,7 +164,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -186,7 +180,6 @@ void main() {
           asset: localAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -205,7 +198,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -222,7 +214,6 @@ void main() {
           asset: remoteAsset,
           isOwner: false,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -239,7 +230,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -256,7 +246,6 @@ void main() {
           asset: localAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -273,7 +262,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: true,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -292,7 +280,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: true,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -309,7 +296,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -326,7 +312,6 @@ void main() {
           asset: remoteAsset,
           isOwner: false,
           isArchived: true,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -345,7 +330,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -362,7 +346,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -379,7 +362,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -398,7 +380,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           isStacked: false,
           currentAlbum: null,
@@ -415,7 +396,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
           isStacked: false,
@@ -427,60 +407,6 @@ void main() {
       });
     });
 
-    group('trash button', () {
-      test('should show when owner, not locked, has remote, and trash enabled', () {
-        final remoteAsset = createRemoteAsset();
-        final context = ActionButtonContext(
-          asset: remoteAsset,
-          isOwner: true,
-          isArchived: false,
-          isTrashEnabled: true,
-          isInLockedView: false,
-          currentAlbum: null,
-          advancedTroubleshooting: false,
-          isStacked: false,
-          source: ActionSource.timeline,
-        );
-
-        expect(ActionButtonType.trash.shouldShow(context), isTrue);
-      });
-
-      test('should not show when trash disabled', () {
-        final remoteAsset = createRemoteAsset();
-        final context = ActionButtonContext(
-          asset: remoteAsset,
-          isOwner: true,
-          isArchived: false,
-          isTrashEnabled: false,
-          isInLockedView: false,
-          currentAlbum: null,
-          advancedTroubleshooting: false,
-          isStacked: false,
-          source: ActionSource.timeline,
-        );
-
-        expect(ActionButtonType.trash.shouldShow(context), isFalse);
-      });
-
-      test('should not show when asset is already trashed', () {
-        final remoteAsset = createRemoteAsset(deletedAt: DateTime(2024));
-        final context = ActionButtonContext(
-          asset: remoteAsset,
-          isOwner: true,
-          isArchived: false,
-          isTrashEnabled: true,
-          isInLockedView: false,
-          currentAlbum: null,
-          advancedTroubleshooting: false,
-          isStacked: false,
-          source: ActionSource.viewer,
-          timelineOrigin: TimelineOrigin.trash,
-        );
-
-        expect(ActionButtonType.trash.shouldShow(context), isFalse);
-      });
-    });
-
     group('restoreTrash button', () {
       test('should show when owner, not locked, has remote, and is in trash timeline', () {
         final remoteAsset = createRemoteAsset();
@@ -488,7 +414,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -506,7 +431,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: false,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -519,60 +443,6 @@ void main() {
       });
     });
 
-    group('deletePermanent button', () {
-      test('should show when owner, not locked, has remote, and trash disabled', () {
-        final remoteAsset = createRemoteAsset();
-        final context = ActionButtonContext(
-          asset: remoteAsset,
-          isOwner: true,
-          isArchived: false,
-          isTrashEnabled: false,
-          isInLockedView: false,
-          currentAlbum: null,
-          advancedTroubleshooting: false,
-          isStacked: false,
-          source: ActionSource.timeline,
-        );
-
-        expect(ActionButtonType.deletePermanent.shouldShow(context), isTrue);
-      });
-
-      test('should not show when trash enabled', () {
-        final remoteAsset = createRemoteAsset();
-        final context = ActionButtonContext(
-          asset: remoteAsset,
-          isOwner: true,
-          isArchived: false,
-          isTrashEnabled: true,
-          isInLockedView: false,
-          currentAlbum: null,
-          advancedTroubleshooting: false,
-          isStacked: false,
-          source: ActionSource.timeline,
-        );
-
-        expect(ActionButtonType.deletePermanent.shouldShow(context), isFalse);
-      });
-
-      test('should show when asset is trashed even with trash enabled', () {
-        final remoteAsset = createRemoteAsset(deletedAt: DateTime(2024));
-        final context = ActionButtonContext(
-          asset: remoteAsset,
-          isOwner: true,
-          isArchived: false,
-          isTrashEnabled: true,
-          isInLockedView: false,
-          currentAlbum: null,
-          advancedTroubleshooting: false,
-          isStacked: false,
-          source: ActionSource.viewer,
-          timelineOrigin: TimelineOrigin.trash,
-        );
-
-        expect(ActionButtonType.deletePermanent.shouldShow(context), isTrue);
-      });
-    });
-
     group('delete button', () {
       test('should show when owner, not locked, and has remote', () {
         final remoteAsset = createRemoteAsset();
@@ -580,7 +450,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -599,7 +468,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -612,13 +480,12 @@ void main() {
     });
 
     group('deleteLocal button', () {
-      test('should show when not locked and asset is local only', () {
+      test('should not show when asset is local only, as there is no backup to fall back on', () {
         final localAsset = createLocalAsset();
         final context = ActionButtonContext(
           asset: localAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -626,7 +493,7 @@ void main() {
           source: ActionSource.timeline,
         );
 
-        expect(ActionButtonType.deleteLocal.shouldShow(context), isTrue);
+        expect(ActionButtonType.deleteLocal.shouldShow(context), isFalse);
       });
 
       test('should not show when asset is not local only', () {
@@ -635,7 +502,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -651,7 +517,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -670,7 +535,6 @@ void main() {
           asset: localAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -689,7 +553,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -705,7 +568,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -724,7 +586,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -741,7 +602,6 @@ void main() {
           asset: remoteAsset,
           isOwner: false,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -758,7 +618,6 @@ void main() {
           asset: remoteAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -775,7 +634,6 @@ void main() {
           asset: localAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -794,7 +652,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -812,7 +669,6 @@ void main() {
           asset: mergedAsset,
           isOwner: false,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -830,7 +686,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -847,7 +702,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -865,7 +719,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -883,7 +736,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -903,7 +755,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -920,7 +771,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -937,7 +787,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
@@ -953,7 +802,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -971,7 +819,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: true,
@@ -987,7 +834,6 @@ void main() {
           asset: mergedAsset,
           isOwner: true,
           isArchived: false,
-          isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
@@ -1007,7 +853,6 @@ void main() {
         asset: remoteAsset,
         isOwner: true,
         isArchived: false,
-        isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
@@ -1024,7 +869,6 @@ void main() {
         asset: remoteAsset,
         isOwner: true,
         isArchived: false,
-        isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
@@ -1041,7 +885,6 @@ void main() {
         asset: remoteAsset,
         isOwner: false,
         isArchived: true,
-        isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
@@ -1063,7 +906,6 @@ void main() {
         asset: asset,
         isOwner: true,
         isArchived: false,
-        isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
@@ -1074,7 +916,7 @@ void main() {
 
     test('should build correct widget for each button type', () {
       for (final buttonType in ActionButtonType.values) {
-        var buttonContext = context;
+        final buttonContext = context;
 
         if (buttonType == ActionButtonType.removeFromAlbum) {
           final album = createRemoteAlbum();
@@ -1082,7 +924,6 @@ void main() {
             asset: asset,
             isOwner: true,
             isArchived: false,
-            isTrashEnabled: true,
             isInLockedView: false,
             currentAlbum: album,
             advancedTroubleshooting: false,
@@ -1096,7 +937,6 @@ void main() {
             asset: createRemoteAsset(),
             isOwner: true,
             isArchived: false,
-            isTrashEnabled: true,
             isInLockedView: false,
             currentAlbum: null,
             advancedTroubleshooting: false,
@@ -1111,7 +951,6 @@ void main() {
             asset: asset,
             isOwner: true,
             isArchived: false,
-            isTrashEnabled: true,
             isInLockedView: false,
             currentAlbum: album,
             advancedTroubleshooting: false,
@@ -1126,7 +965,6 @@ void main() {
             asset: asset,
             isOwner: true,
             isArchived: false,
-            isTrashEnabled: true,
             isInLockedView: false,
             currentAlbum: album,
             advancedTroubleshooting: false,
@@ -1140,102 +978,6 @@ void main() {
           expect(widget, isA<Widget>());
         }
       }
-    });
-  });
-
-  group('ActionButtonBuilder', () {
-    test('should return buttons that should show', () {
-      final remoteAsset = createRemoteAsset();
-      final context = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
-
-      final widgets = ActionButtonBuilder.build(context);
-
-      expect(widgets, isNotEmpty);
-      expect(widgets.length, greaterThan(0));
-    });
-
-    test('should include album-specific buttons when album is present', () {
-      final remoteAsset = createRemoteAsset();
-      final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
-      final context = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: album,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
-
-      final widgets = ActionButtonBuilder.build(context);
-
-      expect(widgets, isNotEmpty);
-    });
-
-    test('should only include local buttons for local assets', () {
-      final localAsset = createLocalAsset();
-      final context = ActionButtonContext(
-        asset: localAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
-
-      final widgets = ActionButtonBuilder.build(context);
-
-      expect(widgets, isNotEmpty);
-    });
-
-    test('should respect archived state', () {
-      final remoteAsset = createRemoteAsset();
-
-      final archivedContext = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: true,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
-
-      final archivedWidgets = ActionButtonBuilder.build(archivedContext);
-
-      final nonArchivedContext = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
-
-      final nonArchivedWidgets = ActionButtonBuilder.build(nonArchivedContext);
-
-      expect(archivedWidgets, isNotEmpty);
-      expect(nonArchivedWidgets, isNotEmpty);
     });
   });
 }

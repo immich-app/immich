@@ -1,6 +1,6 @@
 import { LoginResponseDto } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
-import { utils } from 'src/utils';
+import { utils } from 'src/utils.js';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -27,7 +27,7 @@ test.describe('Maintenance', () => {
   test('maintenance shows no options to users until they authenticate', async ({ page }) => {
     const setCookie = await utils.enterMaintenance(admin.accessToken);
     const cookie = setCookie
-      ?.map((cookie) => cookie.split(';')[0].split('='))
+      ?.map((cookie) => cookie.split(';', 1)[0].split('='))
       ?.find(([name]) => name === 'immich_maintenance_token');
 
     expect(cookie).toBeTruthy();

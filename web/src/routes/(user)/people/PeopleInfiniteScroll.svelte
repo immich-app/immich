@@ -20,10 +20,12 @@
   });
 
   $effect(() => {
-    if (lastPersonContainer) {
-      intersectionObserver.disconnect();
-      intersectionObserver.observe(lastPersonContainer);
+    if (!lastPersonContainer) {
+      return;
     }
+
+    intersectionObserver.disconnect();
+    intersectionObserver.observe(lastPersonContainer);
   });
 </script>
 

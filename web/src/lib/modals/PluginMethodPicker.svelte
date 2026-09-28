@@ -12,7 +12,7 @@
   const { trigger, selectedKey, onClose }: Props = $props();
 </script>
 
-<BasicModal title={$t('add_step')} {onClose} size="medium">
+<BasicModal title={$t('add_step')} onClose={() => onClose()} size="medium">
   {#await searchPluginMethods({ trigger })}
     <div class="flex w-full place-content-center place-items-center">
       <LoadingSpinner />

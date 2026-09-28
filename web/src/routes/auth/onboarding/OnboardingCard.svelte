@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Button, Icon } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiCheck } from '@mdi/js';
   import type { Snippet } from 'svelte';
@@ -52,7 +53,7 @@
       <div class="flex w-full place-content-start">
         <Button
           shape="round"
-          leadingIcon={mdiArrowLeft}
+          leadingIcon={languageManager.rtl ? mdiArrowRight : mdiArrowLeft}
           class="flex place-content-center gap-2"
           onclick={() => {
             onLeave?.();
@@ -67,7 +68,7 @@
     <div class="flex w-full place-content-end">
       <Button
         shape="round"
-        trailingIcon={nextTitle ? mdiArrowRight : mdiCheck}
+        trailingIcon={nextTitle ? (languageManager.rtl ? mdiArrowLeft : mdiArrowRight) : mdiCheck}
         onclick={() => {
           onLeave?.();
           onNext?.();

@@ -1,6 +1,6 @@
-import { AssetOrder, type AssetResponseDto } from '@immich/sdk';
+import { AssetOrder, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
+import { getOrderingDate, plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 import type { AssetDescriptor, Direction, TimelineAsset } from '../types';
@@ -125,7 +125,14 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
     return [];
   }
   const assetOrder: AssetOrder = timelineManager.getAssetOrder();
-  if (plainDateTimeCompare(assetOrder === AssetOrder.Desc, startAsset.localDateTime, endAsset.localDateTime) < 0) {
+  const orderBy: AssetOrderBy = timelineManager.getOrderBy();
+  if (
+    plainDateTimeCompare(
+      assetOrder === AssetOrder.Desc,
+      getOrderingDate(startAsset, orderBy),
+      getOrderingDate(endAsset, orderBy),
+    ) < 0
+  ) {
     [startAsset, endAsset] = [endAsset, startAsset];
     // eslint-disable-next-line no-useless-assignment
     [startTimelineMonth, endTimelineMonth] = [endTimelineMonth, startTimelineMonth];
@@ -165,10 +172,12 @@ export function findClosestTimelineMonthForDate(months: TimelineMonth[], targetY
     const monthDate = DateTime.fromObject({ year: month.yearMonth.year, month: month.yearMonth.month });
     const totalDiff = Math.abs(monthDate.diff(targetDate, 'months').months);
 
-    if (totalDiff < minDifference) {
-      minDifference = totalDiff;
-      closestMonth = month;
+    if (totalDiff >= minDifference) {
+      continue;
     }
+
+    minDifference = totalDiff;
+    closestMonth = month;
   }
 
   return closestMonth;

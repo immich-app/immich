@@ -58,7 +58,7 @@
         {#if session.deviceType || session.deviceOS}
           <span
             >{session.deviceOS || $t('unknown')} • {session.deviceType || $t('unknown')}{session.appVersion
-              ? `(v${session.appVersion})`
+              ? ` (v${session.appVersion})`
               : ''}</span
           >
         {:else}

@@ -4,22 +4,29 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/user.stub.dart';
 import '../../infrastructure/repository.mock.dart';
-import '../service.mock.dart';
+import '../../service.mocks.dart';
 
 void main() {
   late UserService sut;
   late UserApiRepository mockUserApiRepo;
   late StoreService mockStoreService;
+  late UserRepository mockUserRepository;
 
   setUp(() {
     mockUserApiRepo = MockUserApiRepository();
     mockStoreService = MockStoreService();
-    sut = UserService(userApiRepository: mockUserApiRepo, storeService: mockStoreService);
+    mockUserRepository = MockUserRepository();
+    sut = UserService(
+      userApiRepository: mockUserApiRepo,
+      userRepository: mockUserRepository,
+      storeService: mockStoreService,
+    );
 
     registerFallbackValue(UserStub.admin);
     when(() => mockStoreService.get(StoreKey.currentUser)).thenReturn(UserStub.admin);

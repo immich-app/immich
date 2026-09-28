@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { Library } from 'src/database';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import { Library } from 'src/database.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const stringArrayMax128 = z
   .array(z.string())
@@ -92,10 +92,7 @@ export class LibraryResponseDto extends createZodDto(LibraryResponseSchema) {}
 export class LibraryStatsResponseDto extends createZodDto(LibraryStatsResponseSchema) {}
 
 export function mapLibrary(entity: Library): LibraryResponseDto {
-  let assetCount = 0;
-  if (entity.assets) {
-    assetCount = entity.assets.length;
-  }
+  const assetCount = entity.assets ? entity.assets.length : 0;
   return {
     id: entity.id,
     ownerId: entity.ownerId,

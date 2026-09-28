@@ -1,32 +1,25 @@
 <script lang="ts">
-  import type { SearchDisplayFilters } from '$lib/types';
-  import { Checkbox, Label, Text } from '@immich/ui';
+  import SearchButton from './SearchButton.svelte';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  type Props = {
-    filters: SearchDisplayFilters;
-  };
-
-  let { filters = $bindable() }: Props = $props();
+  let filters = $derived(searchManager.filter.display);
 </script>
 
 <div id="display-options-selection">
   <fieldset>
-    <Text class="mb-2" fontWeight="medium">{$t('display_options')}</Text>
-
-    <div class="mt-1 flex flex-wrap gap-x-5 gap-y-2">
-      <div class="flex items-center gap-2">
-        <Checkbox id="not-in-album-checkbox" size="tiny" bind:checked={filters.isNotInAlbum} />
-        <Label label={$t('not_in_any_album')} for="not-in-album-checkbox" class="text-sm font-normal" />
-      </div>
-      <div class="flex items-center gap-2">
-        <Checkbox id="archive-checkbox" size="tiny" bind:checked={filters.isArchive} />
-        <Label label={$t('archive')} for="archive-checkbox" class="text-sm font-normal" />
-      </div>
-      <div class="flex items-center gap-2">
-        <Checkbox id="favorites-checkbox" size="tiny" bind:checked={filters.isFavorite} />
-        <Label label={$t('favorites')} for="favorites-checkbox" class="text-sm font-normal" />
-      </div>
+    <Text class="py-5" fontWeight="medium">{$t('library')}</Text>
+    <div class="flex flex-wrap gap-2">
+      <SearchButton checked active={filters.isFavorite} onclick={() => (filters.isFavorite = !filters.isFavorite)}
+        >{$t('favorites')}</SearchButton
+      >
+      <SearchButton checked active={filters.isArchive} onclick={() => (filters.isArchive = !filters.isArchive)}
+        >{$t('archive')}</SearchButton
+      >
+      <SearchButton checked active={filters.isNotInAlbum} onclick={() => (filters.isNotInAlbum = !filters.isNotInAlbum)}
+        >{$t('search_filter_display_option_not_in_album')}</SearchButton
+      >
     </div>
   </fieldset>
 </div>

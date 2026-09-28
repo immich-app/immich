@@ -19,12 +19,14 @@
   let destroyed = false;
 
   $effect(() => {
-    if (src !== undefined && capturedSource === undefined) {
-      capturedSource = src;
-      untrack(() => {
-        onStart?.();
-      });
+    if (src === undefined || capturedSource !== undefined) {
+      return;
     }
+
+    capturedSource = src;
+    untrack(() => {
+      onStart?.();
+    });
   });
 
   onDestroy(() => {
@@ -48,7 +50,7 @@
     }
 
     if (isFirefox && ref) {
-      ref.decode().then(completeLoad, completeLoad);
+      ref.decode().then(completeLoad).catch(completeLoad);
       return;
     }
 

@@ -2,12 +2,31 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:punycode/punycode.dart';
 
-String sanitizeUrl(String url) {
+/// Normalizes a server URL, guaranteeing that it has a schema and no trailing slashes
+String normalizeServerUrl(String url) {
+  final trimmedUrl = url.trim();
+
   // Add schema if none is set
-  final urlWithSchema = url.trimLeft().startsWith(RegExp(r"https?://")) ? url : "https://$url";
+  final urlWithSchema = trimmedUrl.contains('://') ? trimmedUrl : "https://$trimmedUrl";
 
   // Remove trailing slash(es)
-  return urlWithSchema.trimRight().replaceFirst(RegExp(r"/+$"), "");
+  return urlWithSchema.replaceFirst(RegExp(r"/+$"), "");
+}
+
+/// Validates a user-entered server URL
+bool _validateServerUrl(String url) {
+  final parsedUrl = Uri.tryParse(url);
+  return parsedUrl != null && parsedUrl.scheme.startsWith(RegExp(r'^https?$')) && parsedUrl.host.isNotEmpty;
+}
+
+/// Normalizes and validates that a server URL is supported
+bool normalizeAndValidateServerUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return true;
+  }
+
+  final normalizedUrl = normalizeServerUrl(url);
+  return _validateServerUrl(normalizedUrl);
 }
 
 String? getServerUrl() {

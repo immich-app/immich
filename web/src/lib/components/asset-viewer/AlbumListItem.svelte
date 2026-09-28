@@ -40,6 +40,9 @@
   const albumNameArray: string[] = $derived.by(() => {
     let { albumName } = album;
     let findIndex = normalizeSearchString(albumName).indexOf(normalizeSearchString(searchQuery));
+    if (findIndex === -1) {
+      return [albumName, '', ''];
+    }
     let findLength = searchQuery.length;
     return [
       albumName.slice(0, findIndex),
@@ -101,7 +104,7 @@
       e.preventDefault();
     };
     element.addEventListener('click', click);
-    element.addEventListener('pointerdown', start, true);
+    element.addEventListener('pointerdown', start, { capture: true });
     element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
     return {
       destroy: () => {

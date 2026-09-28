@@ -1,10 +1,10 @@
 import { SignJWT } from 'jose';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
-import { StorageCore } from 'src/cores/storage.core';
-import { MaintenanceAuthDto, MaintenanceDetectInstallResponseDto } from 'src/dtos/maintenance.dto';
-import { StorageFolder } from 'src/enum';
-import { StorageRepository } from 'src/repositories/storage.repository';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { MaintenanceAuthDto, MaintenanceDetectInstallResponseDto } from 'src/dtos/maintenance.dto.js';
+import { StorageFolder } from 'src/enum.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
 
 export async function createMaintenanceLoginUrl(
   baseUrl: string,
@@ -38,23 +38,23 @@ export async function detectPriorInstall(
         const files = await storageRepository.readdir(path);
         const filename = join(StorageCore.getBaseFolder(folder), '.immich');
 
-        let readable = false,
-          writable = false;
+        let isReadable = false,
+          isWritable = false;
 
         try {
           await storageRepository.readFile(filename);
-          readable = true;
+          isReadable = true;
 
-          await storageRepository.overwriteFile(filename, Buffer.from(`${Date.now()}`));
-          writable = true;
+          await storageRepository.overwriteFile(filename, Buffer.from(Date.now().toString()));
+          isWritable = true;
         } catch {
           // no-op
         }
 
         return {
           folder,
-          readable,
-          writable,
+          readable: isReadable,
+          writable: isWritable,
           files: files.filter((fn) => fn !== '.immich').length,
         };
       }),

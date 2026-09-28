@@ -2,6 +2,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import { acquireWakeLock, releaseWakeLock } from '$lib/utils/wakelock.svelte';
   import { Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -15,9 +16,19 @@
 
   let { stats, isDismissible, isUploading, remainingUploads } = uploadAssetsStore;
 
+  let hasRemaining = $derived($remainingUploads > 0);
+
   $effect(() => {
     if ($isUploading) {
       showDetail = true;
+    }
+  });
+
+  $effect(() => {
+    if (hasRemaining) {
+      void acquireWakeLock();
+    } else {
+      void releaseWakeLock();
     }
   });
 </script>

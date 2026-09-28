@@ -1,11 +1,12 @@
 import { WorkflowTrigger } from '@immich/plugin-sdk';
-import { WorkflowType } from 'src/enum';
-import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
+import { WorkflowType } from 'src/enum.js';
+import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository.js';
 
 export const triggerMap: Record<WorkflowTrigger, WorkflowType[]> = {
   [WorkflowTrigger.AssetCreate]: [WorkflowType.AssetV1],
   // [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
   [WorkflowTrigger.AssetMetadataExtraction]: [WorkflowType.AssetV1],
+  [WorkflowTrigger.AssetTagged]: [WorkflowType.AssetV1],
 };
 
 export const getWorkflowTriggers = () =>

@@ -4,12 +4,11 @@ import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { PostgresError } from 'postgres';
-import { ImmichAdminModule } from 'src/app.module';
-import { DatabaseLock, ExitCode, ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { type DB } from 'src/schema';
-import { getKyselyConfig } from 'src/utils/database';
+import { DatabaseLock, ExitCode, ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { type DB } from 'src/schema/index.js';
+import { getKyselyConfig } from 'src/utils/database.js';
 
 /**
  * Manages worker lifecycle
@@ -68,9 +67,9 @@ class Workers {
     const { database } = new ConfigRepository().getEnv();
     const kysely = new Kysely<DB>(getKyselyConfig(database.config));
 
-    let locked = false;
-    while (!locked) {
-      locked = await kysely.connection().execute(async (conn) => {
+    let isLocked = false;
+    while (!isLocked) {
+      isLocked = await kysely.connection().execute(async (conn) => {
         const { rows } = await sql<{
           pg_try_advisory_lock: boolean;
         }>`SELECT pg_try_advisory_lock(${DatabaseLock.MaintenanceOperation})`.execute(conn);
@@ -84,7 +83,9 @@ class Workers {
         return isLocked;
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!isLocked) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
 
     await kysely.destroy();
@@ -97,8 +98,7 @@ class Workers {
   private startWorker(name: ImmichWorker) {
     console.log(`Starting ${name} worker`);
 
-    // eslint-disable-next-line unicorn/prefer-module
-    const basePath = dirname(__filename);
+    const basePath = dirname(import.meta.filename);
     const workerFile = join(basePath, 'workers', `${name}.js`);
 
     let anyWorker: Worker | ChildProcess;
@@ -110,6 +110,7 @@ class Workers {
       });
 
       kill = (signal) => void worker.kill(signal);
+      // eslint-disable-next-line unicorn/prefer-hoisting-branch-code
       anyWorker = worker;
     } else {
       const worker = new Worker(workerFile);
@@ -151,9 +152,9 @@ class Workers {
     if (exitCode !== 0) {
       console.error(`${name} worker exited with code ${exitCode}`);
 
-      if (this.workers[ImmichWorker.Api] && name !== ImmichWorker.Api) {
+      if (Object.hasOwn(this.workers, ImmichWorker.Api) && name !== ImmichWorker.Api) {
         console.error('Killing api process');
-        void this.workers[ImmichWorker.Api].kill('SIGTERM');
+        void this.workers[ImmichWorker.Api]!.kill('SIGTERM');
       }
     }
 
@@ -161,7 +162,7 @@ class Workers {
   }
 }
 
-function main() {
+async function main() {
   const immichApp = process.argv[2];
   if (immichApp) {
     process.argv.splice(2, 1);
@@ -170,6 +171,10 @@ function main() {
   if (immichApp === 'immich-admin') {
     process.title = 'immich_admin_cli';
     process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
+
+    // imported lazily, so that the supervisor process does not build the whole application
+    // graph on every start.
+    const { ImmichAdminModule } = await import('./app.module.js');
 
     return CommandFactory.run(ImmichAdminModule);
   }

@@ -5,7 +5,7 @@ import { describe } from 'vitest';
 import FormatMessage from '$lib/elements/FormatMessage.svelte';
 import FormatTagB from '$lib/elements/__test__/FormatTagB.svelte';
 
-const getSanitizedHTML = (container: HTMLElement) => container.innerHTML.replaceAll('<!---->', '');
+const getSanitizedHTML = (container: HTMLElement) => container.getHTML().replaceAll('<!---->', '');
 
 describe('FormatMessage component', () => {
   beforeAll(async () => {
@@ -35,7 +35,7 @@ describe('FormatMessage component', () => {
 
   it('throws an error when locale is empty', async () => {
     await locale.set(undefined);
-    expect(() => render(FormatMessage, { key: '' as Translations })).toThrowError();
+    expect(() => render(FormatMessage, { key: '' as Translations })).toThrow();
     await locale.set('en');
   });
 

@@ -250,24 +250,7 @@
     {#if page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL(
-          page.data.meta.imageUrl,
-          serverConfigManager.value.externalDomain || globalThis.location.origin,
-        ).href}
-      />
-    {/if}
-
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={page.data.meta.title} />
-    <meta name="twitter:description" content={page.data.meta.description} />
-    {#if page.data.meta.imageUrl}
-      <meta
-        name="twitter:image"
-        content={new URL(
-          page.data.meta.imageUrl,
-          serverConfigManager.value.externalDomain || globalThis.location.origin,
-        ).href}
+        content={new URL(page.data.meta.imageUrl, serverConfigManager.value.externalDomain || location.origin).href}
       />
     {/if}
   {/if}

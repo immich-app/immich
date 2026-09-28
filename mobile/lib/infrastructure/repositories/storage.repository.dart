@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_slow_async_io
+
 import 'dart:io';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -33,6 +35,7 @@ class StorageRepository {
     return file;
   }
 
+  // TODO(agg23): Unify these methods
   Future<File?> getMotionFileForAsset(LocalAsset asset) async {
     File? file;
     final log = Logger('StorageRepository');

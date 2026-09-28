@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
 import { AssetVisibility } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { writeFileSync } from 'node:fs';
-import { SeededRandom } from 'src/ui/generators/timeline/utils';
+import { SeededRandom } from 'src/ui/generators/timeline/utils.js';
 import type { DayPattern, MonthDistribution } from './distribution-patterns';
 import { ASSET_DISTRIBUTION, DAY_DISTRIBUTION } from './distribution-patterns';
 import type { MockTimelineAsset, MockTimelineData, SerializedTimelineData, TimelineConfig } from './timeline-config';
@@ -64,7 +64,7 @@ export function generateAsset(
   const asset: MockTimelineAsset = {
     id: assetId,
     ownerId,
-    ratio: Number.parseFloat(ratio.split(':')[0]) / Number.parseFloat(ratio.split(':')[1]),
+    ratio: Number(ratio.split(':', 1)[0]) / Number(ratio.split(':', 2)[1]),
     thumbhash: generateThumbhash(rng),
     localDateTime: date.toISOString(),
     fileCreatedAt: date.toISOString(),
@@ -214,7 +214,7 @@ export function generateTimelineData(config: TimelineConfig): MockTimelineData {
   }
 
   // Create a mock album from random assets
-  const allAssets = [...buckets.values()].flat();
+  const allAssets = buckets.values().toArray().flat();
 
   // Select 10-30 random assets for the album (or all assets if less than 10)
   const albumSize = Math.min(allAssets.length, globalRng.nextInt(10, 31));

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -53,10 +55,12 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
       }
 
       if (previous?.isInteracting != true && next.isInteracting) {
-        _controller.animateTo(
-          widget.minChildSize,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
+        unawaited(
+          _controller.animateTo(
+            widget.minChildSize,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+          ),
         );
       }
     });
@@ -74,7 +78,7 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
           color: widget.backgroundColor ?? context.colorScheme.surfaceContainer,
           elevation: 3.0,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
-          margin: const EdgeInsets.symmetric(horizontal: 0),
+          margin: EdgeInsets.zero,
           child: Column(
             children: [
               Expanded(

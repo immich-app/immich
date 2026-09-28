@@ -23,9 +23,10 @@
 
   type Props = {
     onClose: (albums?: AlbumResponseDto[]) => void;
+    selectedItemsCount?: number;
   };
 
-  let { onClose }: Props = $props();
+  let { onClose, selectedItemsCount }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({});
@@ -137,6 +138,7 @@
         break;
       }
       case 'Control': {
+        // eslint-disable-next-line unicorn/no-late-event-control
         e.preventDefault();
         handleMultiSelect();
         break;
@@ -146,9 +148,15 @@
       }
     }
   };
+
+  const title = $derived(
+    selectedItemsCount === undefined
+      ? $t('select_albums')
+      : $t('add_to_album_item_count', { values: { count: selectedItemsCount } }),
+  );
 </script>
 
-<Modal title={$t('add_to_album')} {onClose} size="small">
+<Modal {title} {onClose} size="small">
   <ModalBody>
     <div class="mb-2 flex max-h-100 flex-col">
       {#if loading}

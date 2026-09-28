@@ -1,8 +1,8 @@
 import { ChokidarOptions } from 'chokidar';
-import { StorageCore } from 'src/cores/storage.core';
-import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository';
-import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository.js';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
@@ -13,7 +13,7 @@ export const makeMockWatcher =
   ({ items, close }: MockWatcherOptions) =>
   (paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) => {
     events.onReady?.();
-    for (const item of items || []) {
+    for (const item of items ?? []) {
       switch (item.event) {
         case 'add': {
           events.onAdd?.(item.value);

@@ -3,8 +3,6 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import '../../utils.dart';
 
 class UserFactory {
-  const UserFactory();
-
   static User create({
     String? id,
     String? name,
@@ -13,11 +11,11 @@ class UserFactory {
     bool? hasProfileImage,
     AvatarColor? avatarColor,
   }) {
-    id = TestUtils.uuid(id);
+    final userId = TestUtils.uuid(id);
     return User(
-      id: id,
-      name: name ?? 'user_$id',
-      email: email ?? '$id@test.com',
+      id: userId,
+      name: name ?? 'user_$userId',
+      email: email ?? '$userId@test.com',
       profileChangedAt: TestUtils.date(profileChangedAt),
       hasProfileImage: hasProfileImage ?? false,
       avatarColor: avatarColor ?? .primary,
@@ -32,11 +30,11 @@ class UserFactory {
     bool? hasProfileImage,
     AvatarColor? avatarColor,
   }) {
-    id = TestUtils.uuid(id);
+    final userId = TestUtils.uuid(id);
     return UserDto(
-      id: id,
-      name: name ?? 'user_$id',
-      email: email ?? '$id@test.com',
+      id: userId,
+      name: name ?? 'user_$userId',
+      email: email ?? '$userId@test.com',
       profileChangedAt: TestUtils.date(profileChangedAt),
       hasProfileImage: hasProfileImage ?? false,
       avatarColor: avatarColor ?? .primary,

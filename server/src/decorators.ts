@@ -1,11 +1,11 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
-import _ from 'lodash';
-import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
-import { EmitEvent } from 'src/repositories/event.repository';
-import { immich_uuid_v7, updated_at } from 'src/schema/functions';
-import { setUnion } from 'src/utils/set';
+import { chunk, flatten } from 'lodash-es';
+import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
+import { EmitEvent } from 'src/repositories/event.repository.js';
+import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
+import { setUnion } from 'src/utils/set.js';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
@@ -45,18 +45,18 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
     let chunk = new Set<T>();
     for (const element of collection) {
       chunk.add(element);
-      if (chunk.size === size) {
-        result.push(chunk);
-        chunk = new Set<T>();
+      if (chunk.size !== size) {
+        continue;
       }
+      result.push(chunk);
+      chunk = new Set<T>();
     }
     if (chunk.size > 0) {
       result.push(chunk);
     }
     return result;
-  } else {
-    return _.chunk(collection, size);
   }
+  return chunk(collection, size);
 }
 
 /**
@@ -82,11 +82,13 @@ export function Chunked(
         (Array.isArray(argument) && argument.length <= chunkSize) ||
         (argument instanceof Set && argument.size <= chunkSize)
       ) {
+        // eslint-disable-next-line unicorn/no-this-outside-of-class
         return originalMethod.apply(this, arguments_);
       }
 
       return Promise.all(
         chunks(argument, chunkSize).map((chunk) => {
+          // eslint-disable-next-line unicorn/no-this-outside-of-class
           return Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
@@ -99,7 +101,7 @@ export function Chunked(
 }
 
 export function ChunkedArray(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: _.flatten });
+  return Chunked({ ...options, mergeFn: flatten });
 }
 
 export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
@@ -107,9 +109,11 @@ export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
+const UUID_1 = '00000000-0000-4000-a000-000000000001';
 
 export const DummyValue = {
   UUID,
+  UUID_1,
   UUID_SET: new Set([UUID]),
   PAGINATION: { take: 10, skip: 0 },
   EMAIL: 'user@immich.app',
@@ -138,7 +142,7 @@ export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GEN
 
 export type EventConfig = {
   name: EmitEvent;
-  /** handle socket.io server events as well  */
+  /** handle socket.io server events as well */
   server?: boolean;
   /** lower value has higher priority, defaults to 0 */
   priority?: number;
@@ -190,11 +194,11 @@ type CustomExtensions = {
 };
 
 enum ApiState {
-  'Stable' = 'Stable',
-  'Alpha' = 'Alpha',
-  'Beta' = 'Beta',
-  'Internal' = 'Internal',
-  'Deprecated' = 'Deprecated',
+  Stable = 'Stable',
+  Alpha = 'Alpha',
+  Beta = 'Beta',
+  Internal = 'Internal',
+  Deprecated = 'Deprecated',
 }
 export class HistoryBuilder {
   private hasDeprecated = false;

@@ -5,19 +5,17 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea
+.scratch
 
 docker/upload
 docker/library
 uploads
 coverage
 
+mobile/generated
 mobile/gradle.properties
-mobile/openapi/pubspec.lock
 mobile/*.jks
 mobile/libisar.dylib
-mobile/openapi/test
-mobile/openapi/doc
-mobile/openapi/.openapi-generator/FILES
 mobile/ios/build
 
 packages/**/build

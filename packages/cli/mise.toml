@@ -29,16 +29,18 @@ env._.path = "./node_modules/.bin"
 run = "tsc --noEmit"
 
 [tasks.ci-publish]
-depends = ["//:sdk:install", "//:sdk:build"]
 run = [
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
   { task = ":install" },
   { task = ":build" },
   "pnpm publish --provenance --no-git-checks",
 ]
 
 [tasks.ci-unit]
-depends = ["//:sdk:install", "//:sdk:build"]
 run = [
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
   { task = ":install" },
   { task = ":format" },
   { task = ":lint" },

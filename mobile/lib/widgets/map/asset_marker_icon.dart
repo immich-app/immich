@@ -4,10 +4,9 @@ import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class AssetMarkerIcon extends StatelessWidget {
-  const AssetMarkerIcon({required this.id, required this.thumbhash, super.key});
+  const AssetMarkerIcon({required this.id, super.key});
 
   final String id;
-  final String thumbhash;
 
   @override
   Widget build(BuildContext context) {
@@ -69,15 +68,15 @@ class _PinPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint primaryBrush = Paint()
+    final Paint primaryBrush = Paint()
       ..color = primaryColor
       ..style = PaintingStyle.fill;
 
-    Paint secondaryBrush = Paint()
+    final Paint secondaryBrush = Paint()
       ..color = secondaryColor
       ..style = PaintingStyle.fill;
 
-    Paint lineBrush = Paint()
+    final Paint lineBrush = Paint()
       ..color = primaryColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;

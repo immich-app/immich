@@ -25,7 +25,7 @@ export class GCastDestination implements ICastDestination {
   private currentUrl: string | null = null;
 
   async initialize(): Promise<boolean> {
-    if (!authManager.authenticated || authManager.preferences.cast.gCastEnabled) {
+    if (!authManager.authenticated || !authManager.preferences.cast.gCastEnabled) {
       this.isAvailable = false;
       return false;
     }
@@ -41,11 +41,12 @@ export class GCastDestination implements ICastDestination {
         return;
       }
 
+      // eslint-disable-next-line unicorn/no-global-object-property-assignment
       window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
         resolve(isAvailable);
       };
 
-      if (!document.querySelector(`script[src="${FRAMEWORK_LINK}"]`)) {
+      if (!document.querySelector(`script[src="${CSS.escape(FRAMEWORK_LINK)}"]`)) {
         const script = document.createElement('script');
         script.src = FRAMEWORK_LINK;
         document.body.append(script);

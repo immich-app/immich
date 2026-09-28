@@ -3,14 +3,12 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import '../../utils.dart';
 
 class PartnerFactory {
-  const PartnerFactory();
-
   static Partner create({String? id, String? email, String? name, bool? inTimeline}) {
-    id = TestUtils.uuid(id);
+    final partnerId = TestUtils.uuid(id);
     return Partner(
-      id: id,
-      email: email ?? '$id@test.com',
-      name: name ?? 'user_$id',
+      id: partnerId,
+      email: email ?? '$partnerId@test.com',
+      name: name ?? 'user_$partnerId',
       inTimeline: inTimeline ?? false,
       hasProfileImage: false,
       profileChangedAt: DateTime.now(),

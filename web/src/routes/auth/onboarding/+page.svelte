@@ -127,7 +127,7 @@
   );
 
   const handleNextClicked = async () => {
-    if (nextStepIndex == -1) {
+    if (nextStepIndex === -1) {
       if (authManager.user.isAdmin) {
         await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
         await serverConfigManager.loadServerConfig();

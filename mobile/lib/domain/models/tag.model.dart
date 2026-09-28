@@ -1,31 +1,8 @@
-import 'package:openapi/api.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class Tag {
-  final String id;
-  final String value;
+part 'tag.model.freezed.dart';
 
-  const Tag({required this.id, required this.value});
-
-  @override
-  String toString() {
-    return 'Tag(id: $id, value: $value)';
-  }
-
-  @override
-  bool operator ==(covariant Tag other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.id == id && other.value == value;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^ value.hashCode;
-  }
-
-  static Tag fromDto(TagResponseDto dto) {
-    return Tag(id: dto.id, value: dto.value);
-  }
+@freezed
+abstract class Tag with _$Tag {
+  const factory Tag({required String id, required String value}) = _Tag;
 }
