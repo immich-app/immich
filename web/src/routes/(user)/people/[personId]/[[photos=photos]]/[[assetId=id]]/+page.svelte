@@ -24,6 +24,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -41,12 +42,13 @@
     ActionButton,
     CommandPaletteDefaultProvider,
     ContextMenuButton,
+    Icon,
     LoadingSpinner,
     modalManager,
     toastManager,
     type ActionItem,
   } from '@immich/ui';
-  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical } from '@mdi/js';
+  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical, mdiHeart } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -320,7 +322,10 @@
     onAction: () => {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     },
+    shortcuts: { key: 'm' },
   };
+
+  const enablePersonActions = $derived(!assetViewerManager.isViewing && !assetMultiSelectManager.selectionActive);
 </script>
 
 <OnEvents
@@ -330,6 +335,12 @@
   onAssetsArchive={updateAssetCount}
   onAssetsUnarchive={updateAssetCount}
 />
+{#if enablePersonActions}
+  <CommandPaletteDefaultProvider
+    name={$t('person')}
+    actions={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}
+  />
+{/if}
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)"
@@ -380,14 +391,22 @@
                   title={$t('edit_name')}
                   onclick={() => (isEditingName = true)}
                 >
-                  <ImageThumbnail
-                    circle
-                    shadow
-                    url={thumbnailData}
-                    altText={person.name}
-                    widthStyle="3.375rem"
-                    heightStyle="3.375rem"
-                  />
+                  <div class="relative">
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={thumbnailData}
+                      altText={person.name}
+                      widthStyle="3.375rem"
+                      heightStyle="3.375rem"
+                      hidden={person.isHidden}
+                    />
+                    {#if person.isFavorite}
+                      <div class="absolute inset-s-1 top-1">
+                        <Icon icon={mdiHeart} size="18" class="text-white drop-shadow-md" />
+                      </div>
+                    {/if}
+                  </div>
                   <div class="flex flex-col justify-center px-4 text-start text-primary">
                     <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
