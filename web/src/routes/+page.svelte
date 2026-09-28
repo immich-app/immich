@@ -6,6 +6,9 @@
   import { startDatabaseRestoreFlow } from '@immich/sdk';
   import { Button, Heading, Stack } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
+
+  let { data }: { data: PageData } = $props();
 
   async function switchToMaintenance() {
     try {
@@ -27,6 +30,11 @@
       <Button href={Route.register()} size="large" shape="round">
         <span class="px-2 font-semibold">{$t('getting_started')}</span>
       </Button>
+      {#if data.publicConfig.oauth.enabled}
+        <Button href={Route.login()} size="large" shape="round" color="secondary">
+          <span class="px-2 font-semibold">{data.publicConfig.oauth.buttonText}</span>
+        </Button>
+      {/if}
       <Button size="small" shape="round" variant="ghost" onclick={switchToMaintenance}>
         <span class="px-2 font-semibold">{$t('maintenance_restore_from_backup')}</span>
       </Button>

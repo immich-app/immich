@@ -309,7 +309,8 @@ export class AuthService extends BaseService {
       idToken: oauthBearerToken,
     } = await this.oauthRepository.getProfileAndOAuthSid(oauth, url, expectedState, codeVerifier);
     const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim, adminRole, userRole } =
+      oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -325,7 +326,7 @@ export class AuthService extends BaseService {
       }
     }
 
-    const role = this.getRoleClaim(profile, roleClaim);
+    const role = this.getRoleClaim(profile, { roleClaim, adminRole, userRole });
     const isAdmin = role === 'admin';
 
     if (user && role && isAdmin !== user.isAdmin) {
@@ -637,15 +638,18 @@ export class AuthService extends BaseService {
     return options.isValid(value) ? (value as T) : options.default;
   }
 
-  private getRoleClaim(profile: OAuthProfile, roleClaim: string): 'admin' | 'user' | undefined {
+  private getRoleClaim(
+    profile: OAuthProfile,
+    { roleClaim, adminRole, userRole }: { roleClaim: string; adminRole: string; userRole: string },
+  ): 'admin' | 'user' | undefined {
     const value = profile[roleClaim as keyof OAuthProfile];
     const roles = Array.isArray(value) ? value : [value];
-    const isRole = (role: string) => roles.includes(role);
+    const isRole = (role: string) => role !== '' && roles.includes(role);
 
-    if (isRole('admin')) {
+    if (isRole(adminRole)) {
       return 'admin';
     }
-    if (isRole('user')) {
+    if (isRole(userRole)) {
       return 'user';
     }
   }

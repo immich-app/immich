@@ -19117,6 +19117,10 @@
             "description": "Account management URL",
             "type": "string"
           },
+          "adminRole": {
+            "description": "Value of the role claim that grants the admin role",
+            "type": "string"
+          },
           "allowInsecureRequests": {
             "description": "Allow insecure requests",
             "type": "boolean"
@@ -19204,9 +19208,14 @@
           },
           "tokenEndpointAuthMethod": {
             "$ref": "#/components/schemas/OAuthTokenEndpointAuthMethod"
+          },
+          "userRole": {
+            "description": "Value of the role claim that grants the user role",
+            "type": "string"
           }
         },
         "required": [
+          "adminRole",
           "allowInsecureRequests",
           "autoLaunch",
           "autoRegister",
@@ -19227,7 +19236,8 @@
           "storageLabelClaim",
           "storageQuotaClaim",
           "timeout",
-          "tokenEndpointAuthMethod"
+          "tokenEndpointAuthMethod",
+          "userRole"
         ],
         "type": "object"
       },

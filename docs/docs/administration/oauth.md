@@ -71,7 +71,9 @@ Once you have a new OAuth client application configured, Immich can be configure
 | `end_session_endpoint`                               | URL     | (empty)              | Http(s) alternative end session endpoint (logout URI)                               |
 | Request timeout                                      | string  | 30,000 (30 seconds)  | Number of milliseconds to wait for http requests to complete before giving up       |
 | Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label**¹**                                     |
-| Role Claim                                           | string  | immich_role          | Claim mapping for the user's role. (should return "user" or "admin")**¹**           |
+| Role Claim                                           | string  | immich_role          | Claim mapping for the user's role**¹**                                              |
+| Admin Role                                           | string  | admin                | Value of the role claim that grants the admin role                                  |
+| User Role                                            | string  | user                 | Value of the role claim that grants the user role                                   |
 | Storage Quota Claim                                  | string  | immich_quota         | Claim mapping for the user's storage**¹**                                           |
 | Default Storage Quota (GiB)                          | number  | 0                    | Default quota for user without storage quota claim (empty for unlimited quota)      |
 | Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |

@@ -15,12 +15,12 @@ export const load = (async ({ parent, url }) => {
     redirect(307, continueUrl);
   }
 
-  if (!serverConfigManager.value.isInitialized) {
-    // Admin not registered
+  const publicConfig = await getPublicConfig();
+
+  if (!serverConfigManager.value.isInitialized && !publicConfig.oauth.enabled) {
+    // Admin not registered, and OAuth is not available to create one
     redirect(307, Route.register());
   }
-
-  const publicConfig = await getPublicConfig();
 
   const $t = await getFormatter();
   return {

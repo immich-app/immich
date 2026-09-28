@@ -1,3 +1,4 @@
+import { getPublicConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
@@ -34,9 +35,11 @@ export const load = (async ({ fetch }) => {
     }
   }
 
+  const publicConfig = await getPublicConfig();
   const $t = await getFormatter();
 
   return {
+    publicConfig,
     meta: {
       title: $t('welcome') + ' 🎉',
       description: $t('immich_web_interface'),

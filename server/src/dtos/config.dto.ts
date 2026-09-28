@@ -302,6 +302,8 @@ const AdminConfigSchemaWithVisibility = z
         storageLabelClaim: z.string().describe('Storage label claim'),
         storageQuotaClaim: z.string().describe('Storage quota claim'),
         roleClaim: z.string().describe('Role claim'),
+        adminRole: z.string().describe('Value of the role claim that grants the admin role'),
+        userRole: z.string().describe('Value of the role claim that grants the user role'),
         mobileOverrideEnabled: configBool.describe('Mobile override enabled'),
         mobileRedirectUri: z.string().describe('Mobile redirect URI (set to empty string to disable)'),
       })
@@ -680,6 +682,8 @@ export const defaults = Object.freeze<SystemConfig>({
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
     roleClaim: 'immich_role',
+    adminRole: 'admin',
+    userRole: 'user',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
     allowInsecureRequests: false,
