@@ -15,7 +15,7 @@ const mocks = vitest.hoisted(() => {
   return { watch: vitest.fn(() => watcher), watcher };
 });
 
-vitest.mock('chokidar', () => ({ default: { watch: mocks.watch } }));
+vitest.mock('chokidar', () => ({ watch: mocks.watch }));
 
 const getHandler = (event: string) => {
   const handler = mocks.watcher.on.mock.calls.find(([name]) => name === event)?.[1];
