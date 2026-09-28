@@ -3,9 +3,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class ImmichTitleText extends StatelessWidget {
   final double fontSize;
-  final Color? color;
 
-  const ImmichTitleText({super.key, this.fontSize = 48, this.color});
+  const ImmichTitleText({super.key, this.fontSize = 48});
 
   @override
   Widget build(BuildContext context) {

@@ -229,9 +229,9 @@ jobs:
           working_directory: ./mobile
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        uses: ruby/setup-ruby@984c0c890880bbf811283d6f09c4607c62d210a4 # v1.323.0
         with:
-          ruby-version: '3.3'
+          ruby-version: '3.4'
           bundler-cache: true # zizmor: ignore[cache-poisoning] release branches cannot read caches written by pull requests
           working-directory: ./mobile/ios
 

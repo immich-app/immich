@@ -942,6 +942,24 @@ describe(LibraryService.name, () => {
         expect(mocks.storage.watch).toHaveBeenCalledWith(library.importPaths, expect.anything(), expect.anything());
       });
 
+      it('should exclude paths from the watcher', async () => {
+        const library = factory.library({
+          importPaths: ['/foo', '/bar'],
+          exclusionPatterns: ['**/excluded/**'],
+        });
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.library.getAll.mockResolvedValue([library]);
+
+        await sut.watchAll();
+
+        expect(mocks.storage.watch).toHaveBeenCalledWith(
+          library.importPaths,
+          expect.objectContaining({ ignored: library.exclusionPatterns }),
+          expect.anything(),
+        );
+      });
+
       it('should watch and unwatch library', async () => {
         const library = factory.library({ importPaths: ['/foo', '/bar'] });
 

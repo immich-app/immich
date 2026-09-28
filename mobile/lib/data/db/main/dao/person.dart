@@ -11,14 +11,15 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
 
   Drift get _db => attachedDatabase;
 
-  Future<Person?> get(String personId) async {
+  /// The person for the given [personId], if any
+  Stream<Person?> watchPerson(String personId) {
     final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
 
-    final result = await query.getSingleOrNull();
-    return result?.toDto();
+    return query.map((row) => row.toDto()).watchSingleOrNull();
   }
 
-  Future<List<Person>> getAssetPeople(String assetId) async {
+  /// The people associated with a given [assetId]
+  Stream<List<Person>> watchPeopleForAsset(String assetId) {
     // An asset can have multiple face records for the same person (e.g., metadata
     // imports alongside ML detections). Use a subquery instead of a join so each
     // person is returned once, regardless of how many of their faces are on the asset
@@ -33,10 +34,13 @@ class PeopleDatabaseRepository extends DatabaseAccessor<Drift> with $PeopleDatab
     final query = _db.select(_db.personEntity)
       ..where((row) => row.id.isInQuery(faceQuery) & row.isHidden.equals(false));
 
-    return query.map((row) => row.toDto()).get();
+    return query.map((row) => row.toDto()).watch();
   }
 
-  Stream<List<Person>> watch({int minFaces = 3}) {
+  /// All known people with a known associated face and asset
+  ///
+  /// If [minFaces] is provided (defaults to 3), restrict to people having at least that many unique face entries
+  Stream<List<Person>> watchAll({int minFaces = 3}) {
     final people = _db.personEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;

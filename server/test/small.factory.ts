@@ -120,7 +120,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     createdAt = newDate(),
     updatedAt = newDate(),
     deletedAt = null,
-    oauthId = '',
+    oauthId = null,
     quotaSizeInBytes = null,
     quotaUsageInBytes = 0,
     status = UserStatus.Active,

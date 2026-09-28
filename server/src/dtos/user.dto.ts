@@ -151,7 +151,8 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     createdAt: entity.createdAt,
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
-    oauthId: entity.oauthId,
+    // TODO(v4): remove the mapping and make `oauthId` nullable
+    oauthId: entity.oauthId ?? '',
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,

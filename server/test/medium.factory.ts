@@ -10,6 +10,7 @@ import { AssetFace } from 'src/database.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto.js';
+import { PersonUserRole } from 'src/dtos/person.dto.js';
 import {
   AlbumUserRole,
   AssetType,
@@ -49,6 +50,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository.js';
 import { NotificationRepository } from 'src/repositories/notification.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
@@ -64,6 +66,7 @@ import { TagRepository } from 'src/repositories/tag.repository.js';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
+import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
@@ -74,6 +77,7 @@ import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
 import { SessionTable } from 'src/schema/tables/session.table.js';
 import { StackTable } from 'src/schema/tables/stack.table.js';
@@ -290,6 +294,14 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { person, result };
   }
 
+  async newPersonUser(
+    dto: Partial<Insertable<PersonUserTable>> & { personGroupId: string; sharedById: string; sharedWithId: string },
+  ) {
+    const personUser = mediumFactory.personUserInsert(dto);
+    const [result] = await this.get(PersonUserRepository).createAll([personUser]);
+    return { personUser, result };
+  }
+
   async newSession(dto: Partial<Insertable<SessionTable>> & { userId: string }) {
     const session = mediumFactory.sessionInsert(dto);
     const result = await this.get(SessionRepository).create(session);
@@ -484,6 +496,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
+    case PersonUserRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
@@ -616,6 +629,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       return automock(StorageRepository, { args: [{ setContext: () => {} }] });
     }
 
+    case WebsocketRepository: {
+      return automock(WebsocketRepository, { args: [undefined, { setContext: () => {} }] });
+    }
+
     default: {
       throw new Error(`Invalid repository key: ${key}`);
     }
@@ -727,6 +744,20 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
   };
 };
 
+const personUserInsert = (
+  personUser: Partial<Insertable<PersonUserTable>> & {
+    personGroupId: string;
+    sharedById: string;
+    sharedWithId: string;
+  },
+) => {
+  const defaults = {
+    role: personUser.role ?? PersonUserRole.Write,
+  };
+
+  return { ...defaults, ...personUser };
+};
+
 const sha256 = (value: string) => createHash('sha256').update(value).digest();
 
 const sessionInsert = ({
@@ -761,7 +792,7 @@ const userInsert = (user: Partial<Insertable<UserTable>> & { clusterGroupId: str
     shouldChangePassword: true,
     storageLabel: null,
     pinCode: null,
-    oauthId: '',
+    oauthId: null,
     avatarColor: null,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
@@ -867,6 +898,7 @@ export const mediumFactory = {
   albumInsert,
   faceInsert,
   personInsert,
+  personUserInsert,
   sessionInsert,
   syncStream,
   userInsert,

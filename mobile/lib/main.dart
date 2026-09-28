@@ -22,6 +22,8 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -44,10 +46,17 @@ import 'package:immich_mobile/wm_executor.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:timezone/data/latest.dart';
 
 void main() async {
   try {
+    // https://github.com/flutter/flutter/issues/118384
+    // Android only: Render maps into a TextureView
+    // By default, MapLibre will embed them into platform views, using Virtual Display. For some reason Flutter has a bug
+    // that leaks a presentation window and SurfaceFlinger layer for every map built, and it is never discarded
+    MapLibreMap.useHybridComposition = true;
+
     ImmichWidgetsBinding();
     unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
     await EasyLocalization.ensureInitialized();
@@ -55,7 +64,7 @@ void main() async {
     await initApp();
     // Warm-up isolate pool for worker manager
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
-    await migrateDatabaseIfNeeded(dataController.db);
+    await migrateDatabaseIfNeeded(dataController.db, NativeSyncApi(), PermissionApi());
 
     runApp(
       ProviderScope(

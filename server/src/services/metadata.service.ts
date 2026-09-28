@@ -943,15 +943,17 @@ export class MetadataService extends BaseService {
       };
 
       facesToAdd.push(face);
-      if (!existingNameMap.has(loweredName)) {
-        missing.push({
-          personGroupId,
-          ownerId: asset.ownerId,
-          clusterGroupId: asset.clusterGroupId,
-          name: region.Name,
-        });
-        missingWithFaceAsset.push({ personGroupId, ownerId: asset.ownerId, faceAssetId: face.id });
+      if (existingNameMap.has(loweredName)) {
+        continue;
       }
+
+      missing.push({
+        personGroupId,
+        ownerId: asset.ownerId,
+        clusterGroupId: asset.clusterGroupId,
+        name: region.Name,
+      });
+      missingWithFaceAsset.push({ personGroupId, ownerId: asset.ownerId, faceAssetId: face.id });
     }
 
     if (missing.length > 0) {
