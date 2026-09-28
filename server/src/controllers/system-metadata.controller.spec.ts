@@ -1,7 +1,7 @@
-import { SystemMetadataController } from 'src/controllers/system-metadata.controller';
-import { SystemMetadataService } from 'src/services/system-metadata.service';
 import request from 'supertest';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { SystemMetadataController } from 'src/controllers/system-metadata.controller.js';
+import { SystemMetadataService } from 'src/services/system-metadata.service.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(SystemMetadataController.name, () => {
   let ctx: ControllerContext;

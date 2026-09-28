@@ -7,7 +7,7 @@ import {
   QueueName,
 } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
-import { app, testAssetDir, utils } from 'src/utils';
+import { app, testAssetDir, utils } from 'src/utils.js';
 import request from 'supertest';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 

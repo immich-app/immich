@@ -66,7 +66,7 @@
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
+  const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id, withPartners: true });
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
@@ -481,7 +481,10 @@
         <ArchiveAction
           menuItem
           unarchive={assetMultiSelectManager.isAllArchived}
-          onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
+          onArchive={(ids, visibility) =>
+            timelineManager.update(ids, (asset) => {
+              asset.visibility = visibility;
+            })}
         />
         {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />

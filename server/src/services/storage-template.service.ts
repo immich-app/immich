@@ -3,9 +3,11 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
-import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { JobOf, StorageAsset } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto.js';
 import {
   AssetFileType,
   AssetPathType,
@@ -15,12 +17,10 @@ import {
   JobStatus,
   QueueName,
   StorageFolder,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { JobOf, StorageAsset } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
-import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getAssetFile } from 'src/utils/asset.util.js';
+import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file.js';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],
@@ -92,10 +92,12 @@ export class StorageTemplateService extends BaseService {
   @OnEvent({ name: 'ConfigInit' })
   onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
     const template = newConfig.storageTemplate.template;
-    if (!this._template || template !== this.template.raw) {
-      this.logger.debug(`Compiling new storage template: ${template}`);
-      this._template = this.compile(template);
+    if (this._template && template === this.template.raw) {
+      return;
     }
+
+    this.logger.debug(`Compiling new storage template: ${template}`);
+    this._template = this.compile(template);
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
@@ -191,16 +193,20 @@ export class StorageTemplateService extends BaseService {
       const filename = asset.originalFileName || asset.id;
       await this.moveAsset(asset, { storageLabel, filename });
 
-      // move motion part of live photo
-      if (asset.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId, {
-          includeHidden: true,
-        });
-        if (livePhotoVideo) {
-          const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
-        }
+      if (!asset.livePhotoVideoId) {
+        continue;
       }
+
+      // move motion part of live photo
+      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId, {
+        includeHidden: true,
+      });
+      if (!livePhotoVideo) {
+        continue;
+      }
+
+      const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
+      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
     }
 
     this.logger.debug('Cleaning up empty directories...');
@@ -417,13 +423,15 @@ export class StorageTemplateService extends BaseService {
 
     for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);
-      if (albumName) {
-        // Album date tokens are rendered in the server time zone to match storage template datetime behavior.
-        substitutions['album-startDate-' + token] = albumStartDate
-          ? DateTime.fromJSDate(albumStartDate).toFormat(token)
-          : '';
-        substitutions['album-endDate-' + token] = albumEndDate ? DateTime.fromJSDate(albumEndDate).toFormat(token) : '';
+      if (!albumName) {
+        continue;
       }
+
+      // Album date tokens are rendered in the server time zone to match storage template datetime behavior.
+      substitutions['album-startDate-' + token] = albumStartDate
+        ? DateTime.fromJSDate(albumStartDate).toFormat(token)
+        : '';
+      substitutions['album-endDate-' + token] = albumEndDate ? DateTime.fromJSDate(albumEndDate).toFormat(token) : '';
     }
 
     return template(substitutions).replaceAll(/\/{2,}/gm, '/');

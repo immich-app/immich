@@ -45,6 +45,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'WorkflowResponseDto': {'logging': false},
 };
 
+// ignore: unused-code
 void upgradeDto(dynamic value, String targetType) {
   if (value is! Map) {
     return;

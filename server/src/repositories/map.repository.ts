@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { Expression, Insertable, Kysely, NotNull, sql, SqlBool } from 'kysely';
+import { Expression, Insertable, Kysely, NotNull, SqlBool, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetVisibility, SystemMetadataKey } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DB } from 'src/schema';
-import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
-import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
+import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetVisibility, SystemMetadataKey } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { DB } from 'src/schema/index.js';
+import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
+import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -355,6 +355,7 @@ export class MapRepository {
         admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`) ?? null,
       };
       bufferGeodata.push(geoData);
+      // eslint-disable-next-line unicorn/prefer-continue
       if (bufferGeodata.length >= 5000) {
         const curLength = bufferGeodata.length;
         futures.push(

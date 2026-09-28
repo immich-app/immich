@@ -183,7 +183,11 @@ class _AspectRatioButton extends StatelessWidget {
               : Icon(ratio.icon, color: color),
           onPressed: onPressed,
         ),
-        Text(ratio.label, style: context.textTheme.displayMedium),
+        Text(switch (ratio) {
+          CropAspectRatio.free => context.t.crop_aspect_ratio_free,
+          CropAspectRatio.original => context.t.crop_aspect_ratio_original,
+          _ => '${ratio.numerator}:${ratio.denominator}',
+        }, style: context.textTheme.displayMedium),
       ],
     );
   }
@@ -226,7 +230,7 @@ class _AspectRatioSelector extends ConsumerWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: aspectRatioPresets.map((entry) {
+        children: CropAspectRatio.values.map((entry) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
