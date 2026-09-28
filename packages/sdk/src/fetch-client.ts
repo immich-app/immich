@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.2.3
+ * 3.2.4
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
