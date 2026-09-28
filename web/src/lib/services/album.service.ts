@@ -46,6 +46,11 @@ import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
+export const isAlbumOwner = (album: AlbumResponseDto) => album.albumUsers[0].user.id === authManager.user.id;
+export const isAlbumEditor = (album: AlbumResponseDto) =>
+  isAlbumOwner(album) ||
+  album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor;
+
 export const getAlbumsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
     title: $t('create_album'),
@@ -57,7 +62,8 @@ export const getAlbumsActions = ($t: MessageFormatter) => {
 };
 
 export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
-  const isOwned = album.albumUsers[0].user.id === authManager.user.id;
+  const isOwned = isAlbumOwner(album);
+  const isEditor = isAlbumEditor(album);
 
   const AddUsers: ActionItem = {
     title: $t('invite_people'),
@@ -90,7 +96,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
   const Edit: ActionItem = {
     title: $t('edit_album'),
     icon: mdiRenameOutline,
-    $if: () => isOwned,
+    $if: () => isEditor,
     onAction: () => modalManager.show(AlbumEditModal, { album }),
   };
 
