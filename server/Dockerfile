@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 FROM ghcr.io/immich-app/base-server-dev:202608300913@sha256:188679bfc2e7a496bdc13bd145cf59d90b2fb8f9dbf7131b2c1a368cd637b1a0 AS builder
+=======
+FROM ghcr.io/immich-app/base-server-dev:202609281550@sha256:ec2b9196bb2da497a495ded539528778c45487817eb8605cdbb3b765d727aeaa AS builder
+>>>>>>> ae49913 (chore(deps): update base-image to v202609281550 (#31850))
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -86,7 +90,11 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
+<<<<<<< HEAD
 FROM ghcr.io/immich-app/base-server-prod:202608300913@sha256:e809772a5ee5babfe2073563a40757818f997feff8d161d30bf7b904ca49eb6b
+=======
+FROM ghcr.io/immich-app/base-server-prod:202609281550@sha256:a97e8c52bb10c25b0bf2d7eb4c26da7e70088471886820f160e3f5f6f3c6c556
+>>>>>>> ae49913 (chore(deps): update base-image to v202609281550 (#31850))
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
