@@ -753,7 +753,11 @@ class TestPreparedGraphs:
     @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
     @pytest.mark.parametrize(
         ("provider", "reader"),
-        [("OpenVINOExecutionProvider", "_intel_gpu"), ("MIGraphXExecutionProvider", "_amd_gpu")],
+        [
+            ("OpenVINOExecutionProvider", "_intel_gpu"),
+            ("MIGraphXExecutionProvider", "_amd_gpu"),
+            ("nv_tensorrt_rtx", "_nvidia_gpu"),
+        ],
     )
     def test_prepares_once_per_kind_of_device_and_again_for_another_version(
         self, provider: str, reader: str, ov_device_ids: mock.Mock, mocker: MockerFixture
