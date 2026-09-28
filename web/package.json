@@ -98,6 +98,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-better-tailwindcss": "^4.5.0",
     "eslint-plugin-compat": "^7.0.0",
+    "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-svelte": "^3.12.4",
     "eslint-plugin-unicorn": "^75.0.0",
     "factory.ts": "^1.4.1",

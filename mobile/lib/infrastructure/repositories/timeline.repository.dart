@@ -366,10 +366,10 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.place,
   );
 
-  TimelineQuery person(String userId, String personId, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchPersonBucket(userId, personId, groupBy: groupBy),
+  TimelineQuery person(List<String> userIds, String personId, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchPersonBucket(userIds, personId, groupBy: groupBy),
     assetSource: (offset, count) =>
-        _getPersonBucketAssets(userId, personId, groupBy: groupBy, offset: offset, count: count),
+        _getPersonBucketAssets(userIds, personId, groupBy: groupBy, offset: offset, count: count),
     origin: TimelineOrigin.person,
   );
 
@@ -430,24 +430,30 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
-  Stream<List<Bucket>> _watchPersonBucket(String userId, String personId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
-    final idQuery = _db.assetFaceEntity.selectOnly()
+  Expression<bool> _personAssetFilter(List<String> userIds, String personId) {
+    final faceAssetIds = _db.assetFaceEntity.selectOnly()
       ..addColumns([_db.assetFaceEntity.assetId])
       ..where(
         _db.assetFaceEntity.personId.equals(personId) &
             _db.assetFaceEntity.isVisible.equals(true) &
             _db.assetFaceEntity.deletedAt.isNull(),
       );
+    final albumAssetIds = _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]);
+    return _db.remoteAssetEntity.id.isInQuery(faceAssetIds) &
+        (_db.remoteAssetEntity.ownerId.isIn(userIds) | _db.remoteAssetEntity.id.isInQuery(albumAssetIds)) &
+        _db.remoteAssetEntity.deletedAt.isNull() &
+        _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline);
+  }
 
+  Stream<List<Bucket>> _watchPersonBucket(
+    List<String> userIds,
+    String personId, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
     if (groupBy == GroupAssetsBy.none) {
       final query = _db.remoteAssetEntity.selectOnly()
         ..addColumns([_db.remoteAssetEntity.id.count()])
-        ..where(
-          _db.remoteAssetEntity.id.isInQuery(idQuery) &
-              _db.remoteAssetEntity.deletedAt.isNull() &
-              _db.remoteAssetEntity.ownerId.equals(userId) &
-              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
-        );
+        ..where(_personAssetFilter(userIds, personId));
 
       return query.map((row) {
         final count = row.read(_db.remoteAssetEntity.id.count())!;
@@ -460,12 +466,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..where(
-        _db.remoteAssetEntity.id.isInQuery(idQuery) &
-            _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-            _db.remoteAssetEntity.deletedAt.isNull(),
-      )
+      ..where(_personAssetFilter(userIds, personId))
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
@@ -477,28 +478,14 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   }
 
   Future<List<BaseAsset>> _getPersonBucketAssets(
-    String userId,
+    List<String> userIds,
     String personId, {
     required int offset,
     required int count,
     GroupAssetsBy groupBy = GroupAssetsBy.day,
   }) {
-    final idQuery = _db.assetFaceEntity.selectOnly()
-      ..addColumns([_db.assetFaceEntity.assetId])
-      ..where(
-        _db.assetFaceEntity.personId.equals(personId) &
-            _db.assetFaceEntity.isVisible.equals(true) &
-            _db.assetFaceEntity.deletedAt.isNull(),
-      );
-
     final query = _db.remoteAssetEntity.select()
-      ..where(
-        (row) =>
-            row.id.isInQuery(idQuery) &
-            row.deletedAt.isNull() &
-            row.ownerId.equals(userId) &
-            row.visibility.equalsValue(AssetVisibility.timeline),
-      )
+      ..where((_) => _personAssetFilter(userIds, personId))
       ..orderBy(_assetDateOrder(groupBy))
       ..limit(count, offset: offset);
 
