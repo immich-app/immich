@@ -50,8 +50,8 @@ const MirrorParametersSchema = z
 
 const ColorParametersSchema = z
   .object({
-    brightness: z.number().min(-100).max(100).describe('Brightness adjustment from -100 to 100'),
-    contrast: z.number().min(-100).max(100).describe('Contrast adjustment from -100 to 100'),
+    brightness: z.int().min(-100).max(100).describe('Brightness adjustment from -100 to 100'),
+    contrast: z.int().min(-100).max(100).describe('Contrast adjustment from -100 to 100'),
   })
   .meta({ id: 'ColorParameters' });
 

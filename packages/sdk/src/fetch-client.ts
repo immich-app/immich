@@ -3399,7 +3399,7 @@ export type SyncAssetEditDeleteV1 = {
     editId: string;
 };
 export type SyncAssetEditV1 = {
-    action: Action;
+    action: SyncAssetEditActionV1;
     /** Asset ID */
     assetId: string;
     /** Edit ID */
@@ -8608,7 +8608,7 @@ export enum ReleaseType {
     Prepatch = "prepatch",
     Prerelease = "prerelease"
 }
-export enum Action {
+export enum SyncAssetEditActionV1 {
     Crop = "crop",
     Rotate = "rotate",
     Mirror = "mirror"

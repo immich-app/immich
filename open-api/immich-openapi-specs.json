@@ -21774,13 +21774,13 @@
             "description": "Brightness adjustment from -100 to 100",
             "maximum": 100,
             "minimum": -100,
-            "type": "number"
+            "type": "integer"
           },
           "contrast": {
             "description": "Contrast adjustment from -100 to 100",
             "maximum": 100,
             "minimum": -100,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -30340,6 +30340,14 @@
         ],
         "type": "object"
       },
+      "SyncAssetEditActionV1": {
+        "enum": [
+          "crop",
+          "rotate",
+          "mirror"
+        ],
+        "type": "string"
+      },
       "SyncAssetEditDeleteV1": {
         "properties": {
           "editId": {
@@ -30357,12 +30365,7 @@
       "SyncAssetEditV1": {
         "properties": {
           "action": {
-            "enum": [
-              "crop",
-              "rotate",
-              "mirror"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/SyncAssetEditActionV1"
           },
           "assetId": {
             "description": "Asset ID",
