@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Hashable
+from dataclasses import dataclass
 from pathlib import Path
 from shutil import rmtree
 from threading import Lock
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 from huggingface_hub import snapshot_download
 
@@ -13,9 +15,10 @@ import immich_ml.sessions.rknn as rknn
 from immich_ml.sessions.ort import OrtSession
 
 from ..config import clean_name, log, settings
-from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
+from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelSource, ModelTask, ModelType, Options
 from ..sessions.ann import AnnSession
 from ..sessions.policy import ShapePolicy
+from .constants import get_model_source
 
 _IGNORED_PATTERNS: dict[ModelFormat, list[str]] = {
     ModelFormat.ONNX: ["*.armnn", "*.rknn"],
@@ -24,11 +27,10 @@ _IGNORED_PATTERNS: dict[ModelFormat, list[str]] = {
 }
 
 
-class InferenceModel(ABC):
+class InferenceModel[O: Options](ABC):
     depends: ClassVar[list[ModelIdentity]]
     identity: ClassVar[ModelIdentity]
-    # options a graph is built for, so one instance cannot serve two values of them
-    graph_options: ClassVar[tuple[str, ...]] = ()
+    sources: ClassVar[tuple[ModelSource, ...]]
     # the shapes this model feeds, which pick the artifact and tell the engine what it may pin
     shape_policy: ShapePolicy = ShapePolicy()
     threads: ClassVar[int] = 2  # how many threads one run takes for CPU inference
@@ -39,7 +41,6 @@ class InferenceModel(ABC):
         cache_dir: Path | str | None = None,
         model_format: ModelFormat | None = None,
         session: ModelSession | None = None,
-        **model_kwargs: Any,
     ) -> None:
         self.loaded = session is not None
         self.load_attempts = 0
@@ -49,6 +50,15 @@ class InferenceModel(ABC):
         self.model_format = model_format if model_format is not None else self._model_format_default
         if session is not None:
             self.session = session
+
+    @classmethod
+    def graph(cls, options: O) -> Hashable:
+        """What of its options the graph is built for: an instance serves only requests that agree on it."""
+        return None
+
+    @classmethod
+    def create(cls, model_name: str, options: O) -> Self:
+        return cls(model_name)
 
     def download(self) -> None:
         if self.cached:
@@ -87,9 +97,9 @@ class InferenceModel(ABC):
         self.load()
         self.session.warm()
 
-    def predict(self, *inputs: Any, **model_kwargs: Any) -> Any:
+    def predict(self, *inputs: Any, options: O) -> Any:
         self.load()
-        return self._predict(*inputs, **model_kwargs)
+        return self._predict(*inputs, options=options)
 
     @abstractmethod
     def _predict(self, *inputs: Any, **model_kwargs: Any) -> Any: ...
@@ -180,3 +190,17 @@ class InferenceModel(ABC):
             return ModelFormat.ARMNN
         else:
             return ModelFormat.ONNX
+
+
+@dataclass(frozen=True)
+class InferenceEntry[O: Options]:
+    model: type[InferenceModel[O]]
+    name: str
+    options: O
+
+    def __post_init__(self) -> None:
+        if get_model_source(self.name) not in self.model.sources:
+            raise ValueError(f"'{self.name}' is not a model {self.model.__name__} runs")
+
+    def __str__(self) -> str:
+        return f"{self.model.__name__}(name={self.name!r}, options={self.options})"

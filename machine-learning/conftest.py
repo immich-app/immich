@@ -27,13 +27,6 @@ def pil_image() -> Image.Image:
     return Image.new("RGB", (600, 800))
 
 
-@pytest.fixture
-def mock_get_model() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.models.cache.get_model_class") as mocked:
-        mocked.return_value.graph_options = ()
-        yield mocked
-
-
 @pytest.fixture(scope="session")
 def deployed_app() -> Iterator[TestClient]:
     with TestClient(app) as client:
