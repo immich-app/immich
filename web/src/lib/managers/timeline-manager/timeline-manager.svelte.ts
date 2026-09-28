@@ -3,7 +3,7 @@ import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
+import { eventManager, type Events } from '$lib/managers/event-manager.svelte';
 import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
 import { updateTimelineMonthViewportProximity } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
@@ -19,6 +19,7 @@ import {
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
 import { updateStackedAssetInTimeline } from '$lib/utils/actions';
+import type { EventMap } from '$lib/utils/base-event-manager.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
   getOrderingDate,
@@ -112,6 +113,29 @@ export class TimelineManager extends VirtualScrollManager {
   constructor() {
     super();
 
+    let stackEvents: EventMap<Events> = {};
+    if (this.#options.withStacked) {
+      stackEvents = {
+        StackCreate: (stack) => updateStackedAssetInTimeline(this, stack),
+        StackDelete: ({ assets }) => {
+          this.update(
+            assets.map((asset) => asset.id),
+            (asset) => (asset.stack = null),
+          );
+          this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
+        },
+        StackUpdate: (stack) => {
+          // unstack and re-stack
+          this.update(
+            stack.assets.map((asset) => asset.id),
+            (asset) => (asset.stack = null),
+          );
+          this.upsertAssets(stack.assets.map((asset) => toTimelineAsset(asset)));
+          updateStackedAssetInTimeline(this, stack);
+        },
+      };
+    }
+
     this.#unsubscribes.push(
       eventManager.on({
         AssetUpdate: (asset: AssetResponseDto) => {
@@ -123,33 +147,10 @@ export class TimelineManager extends VirtualScrollManager {
           }
         },
         AssetsUnarchive: (assets) => this.upsertAssets(assets),
-        StackCreate: (stack) => {
-          if (this.#options.withStacked) {
-            updateStackedAssetInTimeline(this, stack);
-          }
-        },
-        StackDelete: ({ assets }) => {
-          if (!this.#options.withStacked) {
-            return;
-          }
-          this.update(
-            assets.map((asset) => asset.id),
-            (asset) => (asset.stack = null),
-          );
-          this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
-        },
-        StackUpdate: (stack) => {
-          if (!this.#options.withStacked) {
-            return;
-          }
-          // unstack and re-stack
-          this.update(
-            stack.assets.map((asset) => asset.id),
-            (asset) => (asset.stack = null),
-          );
-          this.upsertAssets(stack.assets.map((asset) => toTimelineAsset(asset)));
-          updateStackedAssetInTimeline(this, stack);
-        },
+        // For now, AssetsRestore is only emitted locally (per-client), so we can reasonably
+        // assume that the restored assets belong to this (album/person) timeline.
+        AssetsRestore: (assets) => this.upsertAssets(assets.map((a) => toTimelineAsset(a))),
+        ...stackEvents,
       }),
     );
   }

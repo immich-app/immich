@@ -350,6 +350,8 @@
   {onAlbumUserUpdate}
   onAlbumUserDelete={refreshAlbum}
   {onAlbumUpdate}
+  onAssetsDelete={handleRemoveAssets}
+  onAssetsRestore={refreshAlbum}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 

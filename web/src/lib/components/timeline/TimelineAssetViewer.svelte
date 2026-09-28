@@ -7,14 +7,13 @@
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleErrorAsync } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
+  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -78,6 +77,14 @@
     };
   };
 
+  /** Find the next asset to show or close the viewer */
+  const navigateOrCloseViewer = async (id: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    (await navigateToAsset(assetCursor?.nextAsset)) ||
+      (await navigateToAsset(assetCursor?.previousAsset)) ||
+      (await handleClose(id));
+  };
+
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
@@ -113,35 +120,20 @@
 
     timelineManager.removeAssets(assetIds);
 
-    if (!assetIds.includes(assetCursor.current.id)) {
-      return;
+    if (assetIds.includes(assetCursor.current.id)) {
+      await navigateOrCloseViewer(assetCursor.current.id);
     }
-
-    // keep the cleanup workflow in viewer by moving to adjacent asset first
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    (await navigateToAsset(assetCursor?.nextAsset)) ||
-      (await navigateToAsset(assetCursor?.previousAsset)) ||
-      (await handleClose(assetCursor.current.id));
   };
 
   const handlePreAction = async (action: Action) => {
     switch (action.type) {
       case removeAction:
-      case AssetAction.TRASH:
-      case AssetAction.RESTORE:
-      case AssetAction.DELETE:
       case AssetAction.ARCHIVE:
       case AssetAction.SET_VISIBILITY_LOCKED:
       case AssetAction.SET_VISIBILITY_TIMELINE: {
         // must update manager before performing any navigation
         timelineManager.removeAssets([action.asset.id]);
-
-        // find the next asset to show or close the viewer
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await navigateToAsset(assetCursor?.nextAsset)) ||
-          (await navigateToAsset(assetCursor?.previousAsset)) ||
-          (await handleClose(action.asset.id));
-
+        await navigateOrCloseViewer(action.asset.id);
         break;
       }
       // no default
@@ -157,16 +149,11 @@
       // no default
     }
   };
-  const handleUndoDelete = async (assets: TimelineAsset[]) => {
-    timelineManager.upsertAssets(assets);
-    if (assets.length === 0) {
-      return;
-    }
 
-    const restoredAsset = assets[0];
-    const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
-    assetViewerManager.setAsset(asset);
-    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  const onAssetsDelete = async (assetIds: string[]) => {
+    if (assetIds.includes(assetCursor.current.id)) {
+      await navigateOrCloseViewer(assetCursor.current.id);
+    }
   };
 
   const handleUpdateOrUpload = (asset: AssetResponseDto) => {
@@ -192,7 +179,7 @@
   });
 </script>
 
-<OnEvents {onAlbumRemoveAssets} />
+<OnEvents {onAssetsDelete} {onAlbumRemoveAssets} />
 
 {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
@@ -209,7 +196,6 @@
       handleAction(action);
       assetCacheManager.invalidate();
     }}
-    onUndoDelete={handleUndoDelete}
     onRandom={handleRandom}
     onClose={handleClose}
   />
