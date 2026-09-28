@@ -2859,7 +2859,7 @@ export type SessionCreateDto = {
     /** Device OS */
     deviceOS?: string;
     /** Device type */
-    deviceType?: string;
+    deviceType?: string | null;
     /** Session duration in seconds */
     duration?: number;
 };

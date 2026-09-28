@@ -832,7 +832,7 @@ const syncStream = () => {
 };
 
 const loginDetails = () => {
-  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '', appVersion: null };
+  return { isSecure: false, clientIp: '', deviceType: null, deviceOS: '', appVersion: null };
 };
 
 const loginResponse = (): LoginResponseDto => {

@@ -22,7 +22,7 @@ const loginDetails = {
   isSecure: true,
   clientIp: '127.0.0.1',
   deviceOS: '',
-  deviceType: '',
+  deviceType: null,
   appVersion: null,
 };
 

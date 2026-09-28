@@ -27563,7 +27563,19 @@
           },
           "deviceType": {
             "description": "Device type",
-            "type": "string"
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
+              }
+            ]
           },
           "duration": {
             "description": "Session duration in seconds",
@@ -27595,7 +27607,18 @@
           },
           "deviceType": {
             "description": "Device type",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "expiresAt": {
             "description": "Expiration date",
@@ -27654,7 +27677,18 @@
           },
           "deviceType": {
             "description": "Device type",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "expiresAt": {
             "description": "Expiration date",

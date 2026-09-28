@@ -1,11 +1,27 @@
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { Session } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
 
 const SessionCreateSchema = z
   .object({
     duration: z.int().min(1).optional().describe('Session duration in seconds'),
-    deviceType: z.string().optional().describe('Device type'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    deviceType: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('Device type')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     deviceOS: z.string().optional().describe('Device OS'),
   })
   .meta({ id: 'SessionCreateDto' });
@@ -23,7 +39,18 @@ const SessionResponseSchema = z
     updatedAt: z.string().describe('Last update date'),
     expiresAt: z.string().optional().describe('Expiration date'),
     current: z.boolean().describe('Is current session'),
-    deviceType: z.string().describe('Device type'),
+    deviceType: z
+      .string()
+      .describe('Device type')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .getExtensions(),
+      }),
     deviceOS: z.string().describe('Device OS'),
     appVersion: z.string().nullable().describe('App version'),
     isPendingSyncReset: z.boolean().describe('Is pending sync reset'),
@@ -47,6 +74,7 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   current: currentId === entity.id,
   appVersion: entity.appVersion,
   deviceOS: entity.deviceOS,
-  deviceType: entity.deviceType,
+  // TODO: return null instead of '' in v4
+  deviceType: entity.deviceType ?? '',
   isPendingSyncReset: entity.isPendingSyncReset,
 });

@@ -32,7 +32,7 @@ import { getUserAgentDetails } from 'src/utils/request.js';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
-  deviceType: string;
+  deviceType: string | null;
   deviceOS: string;
   appVersion: string | null;
 }
