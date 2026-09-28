@@ -18202,7 +18202,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.2.0",
+    "version": "3.3.0-rc.0",
     "contact": {}
   },
   "tags": [
