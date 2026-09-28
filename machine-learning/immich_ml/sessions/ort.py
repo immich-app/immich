@@ -16,7 +16,7 @@ import numpy as np
 import onnxruntime as ort
 from immich_model.runtime import RewriteContext, RewritePlan, plan_rewrites
 from numpy.typing import NDArray
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
+from onnxruntime.capi.onnxruntime_pybind11_state import Fail, InvalidProtobuf
 from pydantic import BaseModel
 
 from immich_ml.schemas import ModelInput, SessionNode, Shape
@@ -27,6 +27,17 @@ from .policy import ShapePolicy
 # the one provider that handles a free dim well; the rest miscompile it, recompile inside the run,
 # or partition around it, so they are handed one graph per shape instead
 DYNAMIC_PROVIDERS = frozenset({"CPUExecutionProvider"})
+PLANNED_AS = {"nv_tensorrt_rtx": "NvTensorRTRTXExecutionProvider"}
+
+try:
+    import onnxruntime_ep_nv_tensorrt_rtx as nv_tensorrt_rtx
+except ImportError:
+    pass
+else:
+    try:
+        ort.register_execution_provider_library(nv_tensorrt_rtx.get_ep_name(), nv_tensorrt_rtx.get_library_path())
+    except Fail as e:
+        log.info(f"TensorRT-RTX is unavailable: {e}")
 
 
 def _label(pins: Mapping[str, int]) -> str:
@@ -109,6 +120,8 @@ class GraphSpec:
                 return _intel_gpu(self.openvino_device)
             case "MIGraphXExecutionProvider":
                 return _amd_gpu(int(settings.device_id))
+            case "nv_tensorrt_rtx":
+                return _nvidia_gpu(int(settings.device_id))
         return None
 
     @cached_property
@@ -159,6 +172,8 @@ class GraphSpec:
                     options = {"arena_extend_strategy": "kSameAsRequested"}
                 case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
+                case "nv_tensorrt_rtx":
+                    options = {"device_id": settings.device_id, "nv_runtime_cache_path": self.directory.as_posix()}
                 case "MIGraphXExecutionProvider":
                     options = {"device_id": settings.device_id, "migraphx_model_cache_dir": self.directory.as_posix()}
                 case "OpenVINOExecutionProvider":
@@ -249,7 +264,7 @@ def prepared(spec: GraphSpec) -> Path:
 @cache
 def _plan(provider: str) -> RewritePlan:
     version = tuple(int(piece) for piece in ort.__version__.split(".")[:3])
-    return plan_rewrites(RewriteContext(target=provider, ort_version=version))
+    return plan_rewrites(RewriteContext(target=PLANNED_AS.get(provider, provider), ort_version=version))
 
 
 @cache
@@ -353,6 +368,20 @@ def _intel_gpu(device: str) -> Device:
                 version = f"{ip.value >> 22}.{ip.value >> 14 & 0xFF}.{ip.value & 0x3FFF}"
                 return Device(f"{version}-{units.value}eu", driver.value.decode())
     raise LookupError(f"OpenCL has no GPU with the UUID of OpenVINO's {device}")
+
+
+@cache
+def _nvidia_gpu(index: int) -> Device:
+    cuda, device, major, minor = ctypes.CDLL("libcuda.so.1"), ctypes.c_int(), ctypes.c_int(), ctypes.c_int()
+    if cuda.cuInit(0) or cuda.cuDeviceGet(ctypes.byref(device), index):  # honors CUDA_VISIBLE_DEVICES
+        raise LookupError(f"CUDA has no device {index}")
+    cuda.cuDeviceGetAttribute(ctypes.byref(major), 75, device)  # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR
+    cuda.cuDeviceGetAttribute(ctypes.byref(minor), 76, device)  # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR
+    nvml, driver = ctypes.CDLL("libnvidia-ml.so.1"), ctypes.create_string_buffer(80)
+    nvml.nvmlInit_v2()
+    nvml.nvmlSystemGetDriverVersion(driver, 80)
+    tensorrt_rtx = ctypes.CDLL("libtensorrt_rtx.so.1").getInferLibVersion()
+    return Device(f"sm{major.value}{minor.value}", f"{driver.value.decode()} {tensorrt_rtx}")
 
 
 @cache
