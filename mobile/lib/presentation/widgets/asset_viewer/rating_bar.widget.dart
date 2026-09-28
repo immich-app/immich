@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class RatingBar extends StatefulWidget {
   final double initialRating;
@@ -129,10 +129,7 @@ class _RatingBarState extends State<RatingBar> {
                 });
                 widget.onClearRating?.call();
               },
-              child: Text(
-                'rating_clear'.t(context: context),
-                style: TextStyle(color: context.themeData.colorScheme.primary),
-              ),
+              child: Text(context.t.rating_clear, style: TextStyle(color: context.themeData.colorScheme.primary)),
             ),
           ),
       ],

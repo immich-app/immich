@@ -1,8 +1,9 @@
+// TODO: Dedupe against lib/utils/map_utils.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -13,17 +14,6 @@ class MapUtils {
   static const mapZoomToAssetLevel = 12.0;
   static const defaultSourceId = 'asset-map-markers';
   static const defaultHeatMapLayerId = 'asset-heatmap-layer';
-  static var markerCompleter = Completer()..complete();
-
-  static const defaultCircleLayerLayerProperties = CircleLayerProperties(
-    circleRadius: 10,
-    circleColor: "rgba(150,86,34,0.7)",
-    circleBlur: 1.0,
-    circleOpacity: 0.7,
-    circleStrokeWidth: 0.1,
-    circleStrokeColor: "rgba(203,46,19,0.5)",
-    circleStrokeOpacity: 0.7,
-  );
 
   static const defaultHeatmapLayerProperties = HeatmapLayerProperties(
     heatmapColor: [
@@ -124,10 +114,10 @@ class MapUtils {
 class _LocationServiceDisabledDialog extends ConfirmDialog {
   _LocationServiceDisabledDialog(BuildContext context)
     : super(
-        title: 'map_location_service_disabled_title'.t(context: context),
-        content: 'map_location_service_disabled_content'.t(context: context),
-        cancel: 'cancel'.t(context: context),
-        ok: 'yes'.t(context: context),
+        title: context.t.map_location_service_disabled_title,
+        content: context.t.map_location_service_disabled_content,
+        cancel: context.t.cancel,
+        ok: context.t.yes,
         onOk: () async {
           await Geolocator.openLocationSettings();
         },
@@ -137,10 +127,10 @@ class _LocationServiceDisabledDialog extends ConfirmDialog {
 class _LocationPermissionDisabledDialog extends ConfirmDialog {
   _LocationPermissionDisabledDialog(BuildContext context)
     : super(
-        title: 'map_no_location_permission_title'.t(context: context),
-        content: 'map_no_location_permission_content'.t(context: context),
-        cancel: 'cancel'.t(context: context),
-        ok: 'yes'.t(context: context),
+        title: context.t.map_no_location_permission_title,
+        content: context.t.map_no_location_permission_content,
+        cancel: context.t.cancel,
+        ok: context.t.yes,
         onOk: () {},
       );
 }

@@ -3,9 +3,8 @@ import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import sanitize from 'sanitize-filename';
-import { defaults, SystemConfig } from 'src/config';
-import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
-import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
+import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
+import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import {
   AuthDto,
   AuthStatusResponseDto,
@@ -21,15 +20,17 @@ import {
   SessionUnlockDto,
   SignUpDto,
   mapLoginResponse,
-} from 'src/dtos/auth.dto';
-import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum';
-import { OAuthProfile } from 'src/repositories/oauth.repository';
-import { BaseService } from 'src/services/base.service';
-import { isGranted } from 'src/utils/access';
-import { HumanReadableSize } from 'src/utils/bytes';
-import { generateProfileImage } from 'src/utils/profile-image';
-import { getUserAgentDetails } from 'src/utils/request';
+} from 'src/dtos/auth.dto.js';
+import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
+import { OAuthProfile } from 'src/repositories/oauth.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { isGranted } from 'src/utils/access.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
+import { generateProfileImage } from 'src/utils/profile-image.js';
+import { getUserAgentDetails } from 'src/utils/request.js';
+
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
@@ -44,10 +45,7 @@ interface ClaimOptions<T> {
   parse?: (raw: unknown) => T;
 }
 
-type OAuthClaimsConfig = Pick<
-  SystemConfig['oauth'],
-  'defaultStorageQuota' | 'storageLabelClaim' | 'storageQuotaClaim'
->;
+type OAuthClaimsConfig = Pick<SystemConfig['oauth'], 'defaultStorageQuota' | 'storageLabelClaim' | 'storageQuotaClaim'>;
 
 interface ParsedOAuthClaims {
   storageLabel?: string | null;
@@ -146,7 +144,10 @@ export class AuthService extends BaseService {
 
     const hashedPassword = await this.cryptoRepository.hashBcrypt(newPassword, SALT_ROUNDS);
 
-    const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
+    const updatedUser = await this.userRepository.update(user.id, {
+      password: hashedPassword,
+      shouldChangePassword: false,
+    });
 
     await this.eventRepository.emit('AuthChangePassword', {
       userId: user.id,
@@ -341,7 +342,9 @@ export class AuthService extends BaseService {
     }
 
     // register new user
-    if (!user) {
+    if (user) {
+      user = await this.syncOAuthClaims(user, profile, oauth);
+    } else {
       if (!autoRegister) {
         this.logger.warn(
           `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. User does not exist and auto registering is disabled. To enable set OAuth Auto Register to true in admin settings.`,
@@ -369,8 +372,6 @@ export class AuthService extends BaseService {
         storageLabel: claims.storageLabel ?? null,
         isAdmin,
       });
-    } else {
-      user = await this.syncOAuthClaims(user, profile, oauth);
     }
 
     if (!user.profileImagePath && profile.picture) {
@@ -383,7 +384,7 @@ export class AuthService extends BaseService {
   private async syncProfilePicture(user: UserAdmin, url: string) {
     try {
       const oldPath = user.profileImagePath;
-      const { data } = await this.oauthRepository.getProfilePicture(url);
+      const data = await this.oauthRepository.getProfilePicture(url);
 
       const config = await this.getConfig({ withCache: true });
       const profileImagePath = await generateProfileImage(
@@ -442,7 +443,7 @@ export class AuthService extends BaseService {
       await this.sessionRepository.update(auth.session.id, { oauthSid: null, oauthBearerToken: null });
     }
 
-    const user = await this.userRepository.update(auth.user.id, { oauthId: '' });
+    const user = await this.userRepository.update(auth.user.id, { oauthId: null });
     return mapUserAdmin(user);
   }
 
@@ -554,7 +555,7 @@ export class AuthService extends BaseService {
       const now = DateTime.now();
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
-      if (diff.hours > 1 || appVersion != session.appVersion) {
+      if (diff.hours > 1 || appVersion !== session.appVersion) {
         await this.sessionRepository.update(session.id, {
           id: session.id,
           updatedAt: new Date(),
@@ -667,9 +668,7 @@ export class AuthService extends BaseService {
       claims.quotaSizeInBytes = storageQuota === -1 ? null : storageQuota * HumanReadableSize.GiB;
     } else if (useDefaults) {
       claims.quotaSizeInBytes =
-        defaultStorageQuota === null || defaultStorageQuota === -1
-          ? null
-          : defaultStorageQuota * HumanReadableSize.GiB;
+        defaultStorageQuota === null || defaultStorageQuota === -1 ? null : defaultStorageQuota * HumanReadableSize.GiB;
     }
 
     return claims;
@@ -683,11 +682,7 @@ export class AuthService extends BaseService {
     return sanitize(label.replaceAll('.', ''));
   }
 
-  private async syncOAuthClaims(
-    user: UserAdmin,
-    profile: OAuthProfile,
-    oauth: OAuthClaimsConfig,
-  ): Promise<UserAdmin> {
+  private async syncOAuthClaims(user: UserAdmin, profile: OAuthProfile, oauth: OAuthClaimsConfig): Promise<UserAdmin> {
     const claims = this.parseOAuthClaims(profile, oauth, false);
     const updates: {
       storageLabel?: string | null;

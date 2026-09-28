@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class MediaTypePicker extends HookWidget {
   const MediaTypePicker({super.key, required this.onSelect, this.filter});
@@ -21,9 +21,9 @@ class MediaTypePicker extends HookWidget {
       groupValue: selectedMediaType.value,
       child: Column(
         children: [
-          RadioListTile(key: const Key("all"), title: const Text("all").tr(), value: AssetType.other),
-          RadioListTile(key: const Key("image"), title: const Text("image").tr(), value: AssetType.image),
-          RadioListTile(key: const Key("video"), title: const Text("video").tr(), value: AssetType.video),
+          RadioListTile(key: const Key("all"), title: Text(context.t.all), value: AssetType.other),
+          RadioListTile(key: const Key("image"), title: Text(context.t.image), value: AssetType.image),
+          RadioListTile(key: const Key("video"), title: Text(context.t.video), value: AssetType.video),
         ],
       ),
     );

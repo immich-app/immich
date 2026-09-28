@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { CalendarHeatmapType } from 'src/enum';
-import { isoDateToDate } from 'src/validation';
 import z from 'zod';
+import { CalendarHeatmapType } from 'src/enum.js';
+import { isoDateToDate } from 'src/validation.js';
 
 const CalendarHeatmapTypeSchema = z
   .enum(CalendarHeatmapType)

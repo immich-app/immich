@@ -1,4 +1,7 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+
+part 'store.model.freezed.dart';
 
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value
@@ -63,30 +66,7 @@ enum StoreKey<T> {
   Type get type => T;
 }
 
-class StoreDto<T> {
-  final StoreKey<T> key;
-  final T? value;
-
-  const StoreDto(this.key, this.value);
-
-  @override
-  String toString() {
-    return '''
-StoreDto: {
-  key: $key,
-  value: ${value ?? '<NA>'},
-}''';
-  }
-
-  @override
-  bool operator ==(covariant StoreDto<T> other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.key == key && other.value == value;
-  }
-
-  @override
-  int get hashCode => key.hashCode ^ value.hashCode;
+@freezed
+abstract class StoreDto<T> with _$StoreDto<T> {
+  const factory StoreDto(StoreKey<T> key, T? value) = _StoreDto<T>;
 }

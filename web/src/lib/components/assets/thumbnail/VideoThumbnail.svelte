@@ -94,7 +94,7 @@
   class="@container absolute inset-x-0 top-0 flex place-items-center justify-end gap-1 text-xs font-medium text-white text-shadow-[1px_1px_6px_rgb(0_0_0)]"
 >
   {#if showTime}
-    <span class="hidden pt-2 @min-[100px]:inline">
+    <span class="hidden pt-2 tabular-nums @min-[100px]:inline">
       {#if remainingSeconds < 60}
         {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
       {:else if remainingSeconds < 3600}

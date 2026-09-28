@@ -1,41 +1,39 @@
-from typing import Any
-
 import numpy as np
-from insightface.model_zoo import RetinaFace
+from immich_model.constants import FACE_DETECTION_SIZE as DET_SIZE
 from numpy.typing import NDArray
 
 from immich_ml.models.base import InferenceModel
-from immich_ml.models.transforms import decode_cv2
-from immich_ml.schemas import FaceDetectionOutput, ModelSession, ModelTask, ModelType
+from immich_ml.models.transforms import decode_pil, letterbox, normalize, widen
+from immich_ml.schemas import FaceDetectionOptions, FaceDetectionOutput, ModelSource, ModelTask, ModelType, Shape
+from immich_ml.sessions.policy import ShapePolicy
+
+from ._ops import decode_scrfd, nms
 
 
-class FaceDetector(InferenceModel):
+class FaceDetector(InferenceModel[FaceDetectionOptions]):
     depends = []
     identity = (ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
+    sources = (ModelSource.INSIGHTFACE,)
+    shape_policy = ShapePolicy(dims=(Shape(batch=1, height=DET_SIZE, width=DET_SIZE),))
 
-    def __init__(self, model_name: str, min_score: float = 0.7, **model_kwargs: Any) -> None:
-        self.min_score = model_kwargs.pop("minScore", min_score)
-        super().__init__(model_name, **model_kwargs)
+    def _predict(self, inputs: NDArray[np.uint8] | bytes, options: FaceDetectionOptions) -> FaceDetectionOutput:
+        session = self.session.for_shape(self.shape_policy.dims[0])
+        canvas, scale = letterbox(decode_pil(inputs), DET_SIZE)
+        blob: NDArray[np.float32] | NDArray[np.uint8] = (
+            canvas[None]
+            if session.normalizes_input
+            else normalize(canvas.astype(np.float32), 127.5, 128).transpose(2, 0, 1)[None]
+        )
 
-    def _load(self) -> ModelSession:
-        session = self._make_session(self.model_path)
-        self.model = RetinaFace(session=session)
-        self.model.prepare(ctx_id=0, det_thresh=self.min_score, input_size=(640, 640))
+        heads = [widen(head) for head in session.run(None, {session.get_inputs()[0].name: blob})]
+        scores, boxes, kps = decode_scrfd(heads, DET_SIZE)
 
-        return session
+        candidates = scores >= options.min_score
+        scores, boxes, kps = scores[candidates], boxes[candidates] / scale, kps[candidates] / scale
+        keep = nms(boxes, scores)
 
-    def _predict(self, inputs: NDArray[np.uint8] | bytes) -> FaceDetectionOutput:
-        inputs = decode_cv2(inputs)
-
-        bboxes, landmarks = self._detect(inputs)
         return {
-            "boxes": bboxes[:, :4].round(),
-            "scores": bboxes[:, 4],
-            "landmarks": landmarks,
+            "boxes": boxes[keep].round(),
+            "scores": scores[keep],
+            "landmarks": kps[keep].reshape(-1, 5, 2),
         }
-
-    def _detect(self, inputs: NDArray[np.uint8] | bytes) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
-        return self.model.detect(inputs)  # type: ignore
-
-    def configure(self, **kwargs: Any) -> None:
-        self.model.det_thresh = kwargs.pop("minScore", self.model.det_thresh)

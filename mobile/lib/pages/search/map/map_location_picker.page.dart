@@ -2,25 +2,24 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
-class MapLocationPickerPage extends HookConsumerWidget {
+class MapLocationPickerPage extends HookWidget {
   final LatLng initialLatLng;
 
   const MapLocationPickerPage({super.key, this.initialLatLng = const LatLng(0, 0)});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final selectedLatLng = useValueNotifier<LatLng>(initialLatLng);
     final controller = useRef<MapLibreMapController?>(null);
     final marker = useRef<Symbol?>(null);
@@ -141,7 +140,7 @@ class _BottomBar extends StatelessWidget {
                 const SizedBox(width: 15),
                 ValueListenableBuilder(
                   valueListenable: selectedLatLng,
-                  builder: (_, value, __) =>
+                  builder: (_, value, _) =>
                       Text("${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}"),
                 ),
               ],
@@ -149,10 +148,7 @@ class _BottomBar extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: onUseLocation,
-                  child: const Text("map_location_picker_page_use_location").tr(),
-                ),
+                ElevatedButton(onPressed: onUseLocation, child: Text(context.t.map_location_picker_page_use_location)),
                 ElevatedButton(onPressed: onGetCurrentLocation, child: const Icon(Icons.my_location)),
               ],
             ),

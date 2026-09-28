@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -46,20 +46,20 @@ class AppBarServerInfo extends HookConsumerWidget {
         children: [
           if (showVersionWarning) ...[const ServerUpdateNotification(), divider],
           _ServerInfoItem(
-            label: "server_info_box_app_version".tr(),
+            label: context.t.server_info_box_app_version,
             text: "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
           ),
           divider,
           _ServerInfoItem(
-            label: "server_version".tr(),
+            label: context.t.server_version,
             text: serverInfoState.serverVersion.major > 0 ? "${serverInfoState.serverVersion}" : "--",
           ),
           divider,
-          _ServerInfoItem(label: "server_info_box_server_url".tr(), text: getServerUrl() ?? '--', tooltip: true),
+          _ServerInfoItem(label: context.t.server_info_box_server_url, text: getServerUrl() ?? '--', tooltip: true),
           if (serverInfoState.latestVersion != null) ...[
             divider,
             _ServerInfoItem(
-              label: "latest_version".tr(),
+              label: context.t.latest_version,
               text: serverInfoState.latestVersion!.major > 0 ? "${serverInfoState.latestVersion!}" : "--",
               tooltip: true,
               icon: serverInfoState.versionStatus == VersionStatus.serverOutOfDate

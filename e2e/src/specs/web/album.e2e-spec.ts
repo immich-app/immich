@@ -1,7 +1,7 @@
 import { LoginResponseDto } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { testAssetDir, utils } from 'src/utils';
+import { testAssetDir, utils } from 'src/utils.js';
 
 test.describe('Album', () => {
   let admin: LoginResponseDto;

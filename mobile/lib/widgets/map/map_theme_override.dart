@@ -69,7 +69,7 @@ class _MapThemeOverrideState extends ConsumerState<MapThemeOverride> with Widget
     final appTheme = ref.watch(immichThemeProvider);
     final locale = ref.watch(localeProvider);
 
-    useValueChanged<ThemeMode, void>(_theme, (_, __) {
+    useValueChanged<ThemeMode, void>(_theme, (_, _) {
       if (_theme == ThemeMode.system) {
         WidgetsBinding.instance.addObserver(this);
       } else {

@@ -3,14 +3,14 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserTable } from 'src/schema/tables/user.table';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('workflow')
 @UpdatedAtTrigger('workflow_updatedAt')
@@ -41,4 +41,7 @@ export class WorkflowTable {
 
   @Column({ type: 'boolean', default: true })
   enabled!: Generated<boolean>;
+
+  @Column({ type: 'boolean', default: false })
+  logging!: Generated<boolean>;
 }

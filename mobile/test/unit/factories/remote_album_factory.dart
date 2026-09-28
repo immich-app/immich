@@ -3,8 +3,6 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import '../../utils.dart';
 
 class RemoteAlbumFactory {
-  const RemoteAlbumFactory();
-
   static RemoteAlbum create({
     String? id,
     String? name,
@@ -19,10 +17,10 @@ class RemoteAlbumFactory {
     String? ownerName,
     bool isShared = false,
   }) {
-    id = TestUtils.uuid(id);
+    final albumId = TestUtils.uuid(id);
     return RemoteAlbum(
-      id: id,
-      name: name ?? 'remote_album_$id',
+      id: albumId,
+      name: name ?? 'remote_album_$albumId',
       ownerId: TestUtils.uuid(ownerId),
       description: description ?? '',
       createdAt: TestUtils.date(createdAt),
@@ -31,7 +29,7 @@ class RemoteAlbumFactory {
       isActivityEnabled: isActivityEnabled,
       order: order,
       assetCount: assetCount,
-      ownerName: ownerName ?? 'owner_$id',
+      ownerName: ownerName ?? 'owner_$albumId',
       isShared: isShared,
     );
   }

@@ -40,7 +40,10 @@
     class:dark:border-immich-dark-primary={border}
     class:border-immich-primary={border}
   >
-    <ImageThumbnail {circle} url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" shadow />
+    <!-- Trigger a re-render on person change as <Image> captures only the first src -->
+    {#key person.id}
+      <ImageThumbnail {circle} url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" shadow />
+    {/key}
   </div>
 
   <div

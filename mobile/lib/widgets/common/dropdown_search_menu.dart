@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class DropdownSearchMenu<T> extends HookWidget {
   const DropdownSearchMenu({
@@ -81,7 +81,7 @@ class DropdownSearchMenu<T> extends HookWidget {
             autofocus: true,
             focusNode: focusNode,
             controller: textEditingController,
-            decoration: inputDecoration.copyWith(hintText: "search_timezone".tr()),
+            decoration: inputDecoration.copyWith(hintText: context.t.search_timezone),
             maxLines: 1,
             style: context.textTheme.bodyMedium,
             expands: false,

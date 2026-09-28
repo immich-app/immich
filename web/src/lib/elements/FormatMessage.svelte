@@ -23,7 +23,7 @@
   let { key, values = {}, children }: Props = $props();
 
   const getLocale = (locale?: string | null) => {
-    if (locale == null) {
+    if (!locale) {
       throw new Error('Cannot format a message without first setting the initial locale.');
     }
 

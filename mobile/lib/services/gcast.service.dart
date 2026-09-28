@@ -110,15 +110,6 @@ class GCastService {
     onReceiverName?.call(device.extras["fn"] ?? "Google Cast");
   }
 
-  CastDestinationType getType() {
-    return CastDestinationType.googleCast;
-  }
-
-  Future<bool> initialize() async {
-    // there is nothing blocking us from using Google Cast that we can check for
-    return true;
-  }
-
   Future<void> disconnect() async {
     onReceiverName?.call("");
     currentAssetId = null;

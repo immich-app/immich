@@ -1,5 +1,5 @@
-import { AuthSession } from 'src/database';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthSession } from 'src/database.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 
 const authUser = {
   admin: {
@@ -24,19 +24,6 @@ export const authStub = {
   admin: Object.freeze<AuthDto>({ user: authUser.admin }),
   user1: Object.freeze<AuthDto>({
     user: authUser.user1,
-    session: {
-      id: 'token-id',
-    } as AuthSession,
-  }),
-  user2: Object.freeze<AuthDto>({
-    user: {
-      id: 'user-2',
-      name: 'User 2',
-      email: 'user2@immich.cloud',
-      isAdmin: false,
-      quotaSizeInBytes: null,
-      quotaUsageInBytes: 0,
-    },
     session: {
       id: 'token-id',
     } as AuthSession,

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
-import androidx.exifinterface.media.ExifInterface
 import android.os.Build
 import android.os.Bundle
 import android.os.ext.SdkExtensions
@@ -30,6 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -174,11 +175,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
             MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2L
             else -> 0L
           }
-          // Date taken is milliseconds since epoch, Date added is seconds since epoch
-          val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
-            ?: c.getLong(dateAddedColumn)
-          // Date modified is seconds since epoch
+          // Date taken is in ms; added/modified are in seconds, and modified can be 0 when unset.
+          // If EXIF date taken exists use it, else if modified is empty use added, else the earliest of the two.
           val modifiedAt = c.getLong(dateModifiedColumn)
+          val addedAt = c.getLong(dateAddedColumn)
+          val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
+            ?: if (modifiedAt <= 0) addedAt else minOf(modifiedAt, addedAt)
           val width = c.getInt(widthColumn).toLong()
           val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
@@ -313,13 +315,14 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     val selection =
       "(${MediaStore.Files.FileColumns.BUCKET_ID} IS NOT NULL) AND $MEDIA_SELECTION"
 
-    getCursor(
+    val cursor = getCursor(
       MediaStore.VOLUME_EXTERNAL,
       selection,
       MEDIA_SELECTION_ARGS,
       projection,
       "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC"
-    )?.use { cursor ->
+    ) ?: error("MediaStore album query failed")
+    cursor.use {
       val bucketIdColumn =
         cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_ID)
       val bucketNameColumn =
@@ -377,7 +380,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     )?.use { cursor -> cursor.count.toLong() } ?: 0L
 
 
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?, callback: (Result<List<PlatformAsset>>) -> Unit) {
+  fun getAssetsForAlbum(
+    albumId: String,
+    updatedTimeCond: Long?,
+    callback: (Result<List<PlatformAsset>>) -> Unit
+  ) {
     runSync(callback) { getAssetsForAlbum(albumId, updatedTimeCond) }
   }
 
@@ -390,7 +397,9 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
       selectionArgs.addAll(listOf(updatedTimeCond.toString(), updatedTimeCond.toString()))
     }
 
-    return getAssets(getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray()))
+    val cursor = getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray())
+      ?: error("MediaStore asset query failed")
+    return getAssets(cursor)
       .mapNotNull { result -> (result as? AssetResult.ValidAsset)?.asset }
       .toList()
   }
@@ -419,7 +428,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
         }.awaitAll()
 
         completeWhenActive(callback, Result.success(results))
-      } catch (e: CancellationException) {
+      } catch (_: CancellationException) {
         completeWhenActive(
           callback, Result.failure(
             FlutterError(
@@ -437,29 +446,57 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
 
   private suspend fun hashAsset(assetId: String): HashResult {
     return try {
-      val assetUri = ContentUris.withAppendedId(
-        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-        assetId.toLong()
-      )
-
       val digest = MessageDigest.getInstance("SHA-1")
-      ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
-        var bytesRead: Int
+      openOriginalStream(assetId).use { inputStream ->
         val buffer = ByteArray(HASH_BUFFER_SIZE)
-        while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+        while (true) {
+          val bytesRead = inputStream.read(buffer)
+          if (bytesRead == -1) break
           currentCoroutineContext().ensureActive()
           digest.update(buffer, 0, bytesRead)
         }
-      } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
+      }
 
-      val hashString = Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
-      HashResult(assetId, null, hashString)
+      HashResult(assetId, null, Base64.encodeToString(digest.digest(), Base64.NO_WRAP))
+    } catch (e: CancellationException) {
+      throw e
     } catch (e: SecurityException) {
       HashResult(assetId, "Permission denied accessing asset: ${e.message}", null)
     } catch (e: Exception) {
       HashResult(assetId, "Failed to hash asset: ${e.message}", null)
     }
   }
+
+  private fun openOriginalStream(assetId: String): InputStream {
+    val id = assetId.toLong()
+    val collection = when (getMediaType(id)) {
+      MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+      else -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+    val uri = ContentUris.withAppendedId(collection, id)
+    val original = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      MediaStore.setRequireOriginal(uri)
+    } else {
+      uri
+    }
+
+    return ctx.contentResolver.openInputStream(original)
+      ?: throw IOException("Cannot open original stream for asset $assetId")
+  }
+
+  private fun getMediaType(id: Long): Int =
+    getCursor(
+      MediaStore.VOLUME_EXTERNAL,
+      "${MediaStore.MediaColumns._ID} = ?",
+      arrayOf(id.toString()),
+      arrayOf(MediaStore.Files.FileColumns.MEDIA_TYPE)
+    )?.use { cursor ->
+      if (cursor.moveToFirst()) {
+        cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE))
+      } else {
+        MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+      }
+    } ?: MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
 
   fun cancelHashing() {
     hashTask?.cancel()
@@ -476,8 +513,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     syncJob = CoroutineScope(Dispatchers.IO).launch {
       try {
         completeWhenActive(callback, Result.success(work()))
-      } catch (e: CancellationException) {
-        completeWhenActive(callback, Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null)))
+      } catch (_: CancellationException) {
+        completeWhenActive(
+          callback,
+          Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null))
+        )
       } catch (e: Exception) {
         completeWhenActive(callback, Result.failure(e))
       }

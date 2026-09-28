@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class SelectionSliverAppBar extends ConsumerStatefulWidget {
@@ -43,12 +43,12 @@ class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
         },
       ),
       centerTitle: true,
-      title: Text("Select {count}".t(context: context, args: {'count': filteredAssets.length.toString()})),
+      title: Text(context.t.selected_count(count: filteredAssets.length)),
       actions: [
         TextButton(
           onPressed: () => onDone(filteredAssets),
           child: Text(
-            'done'.t(context: context),
+            context.t.done,
             style: context.textTheme.titleSmall?.copyWith(color: context.colorScheme.primary),
           ),
         ),

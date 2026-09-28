@@ -1,52 +1,23 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:openapi/api.dart';
 
-class ServerConfig {
-  final int trashDays;
-  final String oauthButtonText;
-  final String externalDomain;
-  final String mapDarkStyleUrl;
-  final String mapLightStyleUrl;
+part 'server_config.model.freezed.dart';
 
-  const ServerConfig({
-    required this.trashDays,
-    required this.oauthButtonText,
-    required this.externalDomain,
-    required this.mapDarkStyleUrl,
-    required this.mapLightStyleUrl,
-  });
+@freezed
+abstract class ServerConfig with _$ServerConfig {
+  const factory ServerConfig({
+    required int trashDays,
+    required String oauthButtonText,
+    required String externalDomain,
+    required String mapDarkStyleUrl,
+    required String mapLightStyleUrl,
+  }) = _ServerConfig;
 
-  ServerConfig copyWith({int? trashDays, String? oauthButtonText, String? externalDomain}) {
-    return ServerConfig(
-      trashDays: trashDays ?? this.trashDays,
-      oauthButtonText: oauthButtonText ?? this.oauthButtonText,
-      externalDomain: externalDomain ?? this.externalDomain,
-      mapDarkStyleUrl: mapDarkStyleUrl,
-      mapLightStyleUrl: mapLightStyleUrl,
-    );
-  }
-
-  @override
-  String toString() =>
-      'ServerConfig(trashDays: $trashDays, oauthButtonText: $oauthButtonText, externalDomain: $externalDomain)';
-
-  ServerConfig.fromDto(ServerConfigDto dto)
-    : trashDays = dto.trashDays,
-      oauthButtonText = dto.oauthButtonText,
-      externalDomain = dto.externalDomain,
-      mapDarkStyleUrl = dto.mapDarkStyleUrl,
-      mapLightStyleUrl = dto.mapLightStyleUrl;
-
-  @override
-  bool operator ==(covariant ServerConfig other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.trashDays == trashDays &&
-        other.oauthButtonText == oauthButtonText &&
-        other.externalDomain == externalDomain;
-  }
-
-  @override
-  int get hashCode => trashDays.hashCode ^ oauthButtonText.hashCode ^ externalDomain.hashCode;
+  factory ServerConfig.fromDto(ServerConfigDto dto) => ServerConfig(
+    trashDays: dto.trashDays,
+    oauthButtonText: dto.oauthButtonText,
+    externalDomain: dto.externalDomain,
+    mapDarkStyleUrl: dto.mapDarkStyleUrl,
+    mapLightStyleUrl: dto.mapLightStyleUrl,
+  );
 }

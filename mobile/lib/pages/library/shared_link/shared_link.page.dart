@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/widgets/shared_link/shared_link_item.dart';
@@ -36,7 +36,7 @@ class SharedLinkPage extends HookConsumerWidget {
           children: [
             Icon(Icons.link_off, size: 100, color: Theme.of(context).colorScheme.onSurface.withAlpha(128)),
             const SizedBox(height: 20),
-            const Text("you_dont_have_any_shared_links", style: TextStyle(fontSize: 14)).tr(),
+            Text(context.t.you_dont_have_any_shared_links, style: const TextStyle(fontSize: 14)),
           ],
         ),
       );
@@ -68,7 +68,7 @@ class SharedLinkPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("shared_link_app_bar_title").tr(), elevation: 0, centerTitle: false),
+      appBar: AppBar(title: Text(context.t.shared_link_app_bar_title), elevation: 0, centerTitle: false),
       body: SafeArea(
         child: sharedLinks.widgetWhen(
           onError: (error, stackTrace) => buildNoShares(),

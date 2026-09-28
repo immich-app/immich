@@ -1,9 +1,9 @@
 // dart format width=80
-// ignore_for_file: unused_local_variable, unused_import
+// ignore_for_file: unused_import
 import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 
 import 'generated/schema.dart';
 import 'generated/schema_v1.dart' as v1;

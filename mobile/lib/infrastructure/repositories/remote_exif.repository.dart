@@ -1,14 +1,17 @@
-import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.drift.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class RemoteExifRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class RemoteExifRepository extends DatabaseAccessor<Drift> with $RemoteExifRepositoryMixin {
+  RemoteExifRepository(super.attachedDatabase);
 
-  const RemoteExifRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
-  Future<void> update(
+  Future<void> updateExif(
     List<String> ids, {
     Option<DateTime> dateTimeOriginal = const .none(),
     Option<String> timeZone = const .none(),

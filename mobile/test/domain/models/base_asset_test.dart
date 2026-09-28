@@ -43,4 +43,31 @@ void main() {
       expect(localOnly.refersToSameAsset(remoteOnly), isTrue);
     });
   });
+
+  group('BaseAsset.id', () {
+    test('survives the DB copy filling localId', () {
+      final searchCopy = RemoteAssetFactory.create(id: 'asset-1');
+      final mergedCopy = searchCopy.copyWith(localId: 'local-1');
+
+      expect(searchCopy.heroTag, isNot(mergedCopy.heroTag));
+      expect(mergedCopy.id, searchCopy.id);
+    });
+
+    test('survives a local asset gaining a remote id', () {
+      final localOnly = LocalAssetFactory.create(id: 'local-1');
+      final uploaded = localOnly.copyWith(remoteId: 'asset-1');
+
+      expect(localOnly.heroTag, isNot(uploaded.heroTag));
+      expect(uploaded.id, localOnly.id);
+    });
+
+    test('differs between assets', () {
+      final a = RemoteAssetFactory.create(id: 'asset-1');
+      final b = RemoteAssetFactory.create(id: 'asset-2');
+      final local = LocalAssetFactory.create(id: 'local-1');
+
+      expect(a.id, isNot(b.id));
+      expect(local.id, isNot(a.id));
+    });
+  });
 }

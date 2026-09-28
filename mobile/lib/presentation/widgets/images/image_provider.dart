@@ -47,7 +47,6 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     unawaited(
       completer.operation.valueOrCancellation().whenComplete(() {
         cachedStream.removeListener(listener);
-        cachedOperation = null;
       }),
     );
     cachedOperation = completer.operation;
@@ -98,6 +97,9 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       isFinished = isFinal;
       return codec;
     } catch (e) {
+      if (isCancelled) {
+        return null;
+      }
       if (isFinal) {
         isFinished = true;
         PaintingBinding.instance.imageCache.evict(this);
@@ -111,16 +113,20 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
   Stream<ImageInfo> initialImageStream() async* {
     final cachedOperation = this.cachedOperation;
-    if (cachedOperation == null) {
+    if (isCancelled || cachedOperation == null) {
       return;
     }
 
     try {
       final cachedImage = await cachedOperation.valueOrCancellation();
-      if (cachedImage != null && !isCancelled) {
-        yield cachedImage;
+      if (isCancelled || cachedImage == null) {
+        return;
       }
+      yield cachedImage;
     } catch (e, stack) {
+      if (isCancelled) {
+        return;
+      }
       _log.severe('Error loading initial image', e, stack);
     } finally {
       this.cachedOperation = null;
@@ -155,6 +161,7 @@ ImageProvider getFullImageProvider(
   Size size = const Size(1080, 1920),
   bool edited = true,
   String? localFilePath,
+  Size? remoteThumbnailSize,
 }) {
   // Create new provider and cache it
   final ImageProvider provider;
@@ -162,7 +169,15 @@ ImageProvider getFullImageProvider(
     provider = FileImage(File(localFilePath));
   } else if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type, isAnimated: asset.isAnimatedImage);
+    provider = LocalFullImageProvider(
+      id: id,
+      size: size,
+      assetType: asset.type,
+      isAnimated: asset.isAnimatedImage,
+      width: asset.width,
+      height: asset.height,
+      checksum: asset.checksum,
+    );
   } else {
     final String assetId;
     final String thumbhash;
@@ -181,21 +196,31 @@ ImageProvider getFullImageProvider(
       assetType: asset.type,
       isAnimated: asset.isAnimatedImage,
       edited: edited,
+      thumbnailSize: remoteThumbnailSize,
     );
   }
 
   return provider;
 }
 
-ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnailResolution, bool edited = true}) {
+ImageProvider? getThumbnailImageProvider(
+  BaseAsset asset, {
+  Size size = kThumbnailResolution,
+
+  /// Physical size to decode for remote thumbnails, or null for the source size.
+  Size? remoteSize,
+  bool edited = true,
+}) {
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    return LocalThumbProvider(id: id, size: size, assetType: asset.type);
+    return LocalThumbProvider(id: id, size: size, assetType: asset.type, checksum: asset.checksum);
   }
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
   final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
-  return assetId != null ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited) : null;
+  return assetId != null
+      ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited, decodeSize: remoteSize)
+      : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>

@@ -16,7 +16,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   const ThumbnailTile(
     this.asset, {
     this.size = kThumbnailResolution,
-    this.fit = BoxFit.cover,
+    this.remoteSize,
     this.showStorageIndicator = false,
     this.lockSelection = false,
     this.heroOffset,
@@ -26,7 +26,9 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 
   final BaseAsset? asset;
   final Size size;
-  final BoxFit fit;
+
+  /// Physical size to decode for remote thumbnails.
+  final Size? remoteSize;
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
@@ -108,7 +110,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     // but other solutions have failed thus far.
                     key: ValueKey(isCurrentAsset),
                     tag: '${asset?.heroTag}_$heroIndex',
-                    child: Thumbnail.fromAsset(asset: asset, size: widget.size),
+                    child: Thumbnail.fromAsset(asset: asset, size: widget.size, remoteSize: widget.remoteSize),
                     // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
                     placeholderBuilder: (context, heroSize, child) {
                       if (!_hideIndicators) {

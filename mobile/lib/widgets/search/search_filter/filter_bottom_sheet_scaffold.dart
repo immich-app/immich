@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class FilterBottomSheetScaffold extends StatelessWidget {
   const FilterBottomSheetScaffold({
@@ -46,7 +46,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
                     onClear();
                     context.pop();
                   },
-                  child: const Text('clear').tr(),
+                  child: Text(context.t.clear),
                 ),
                 if (onSearch != null) const SizedBox(width: 8),
                 if (onSearch != null)
@@ -56,7 +56,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
                       onSearch!();
                       context.pop();
                     },
-                    child: const Text('search_filter_apply').tr(),
+                    child: Text(context.t.search_filter_apply),
                   ),
               ],
             ),

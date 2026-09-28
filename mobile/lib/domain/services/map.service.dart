@@ -1,6 +1,5 @@
 import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 typedef MapMarkerSource = Future<List<Marker>> Function(LatLngBounds? bounds);
@@ -8,7 +7,7 @@ typedef MapMarkerSource = Future<List<Marker>> Function(LatLngBounds? bounds);
 typedef MapQuery = ({MapMarkerSource markerSource});
 
 class MapFactory {
-  final DriftMapRepository _mapRepository;
+  final MapRepository _mapRepository;
 
   const MapFactory({required this._mapRepository});
 

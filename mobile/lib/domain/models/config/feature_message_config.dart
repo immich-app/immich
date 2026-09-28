@@ -1,20 +1,11 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/utils/semver.dart';
 
-class FeatureMessageConfig {
-  final SemVer seenRelease;
+part 'feature_message_config.freezed.dart';
 
-  const FeatureMessageConfig({this.seenRelease = const SemVer(major: 0, minor: 0, patch: 0)});
-
-  FeatureMessageConfig copyWith({SemVer? seenRelease}) =>
-      FeatureMessageConfig(seenRelease: seenRelease ?? this.seenRelease);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) || (other is FeatureMessageConfig && other.seenRelease == seenRelease);
-
-  @override
-  int get hashCode => seenRelease.hashCode;
-
-  @override
-  String toString() => 'FeatureMessageConfig(seenRelease: $seenRelease)';
+@freezed
+abstract class FeatureMessageConfig with _$FeatureMessageConfig {
+  const factory FeatureMessageConfig({@Default(SemVer(major: 0, minor: 0, patch: 0)) SemVer seenRelease}) =
+      _FeatureMessageConfig;
 }

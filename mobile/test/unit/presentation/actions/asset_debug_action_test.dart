@@ -16,8 +16,8 @@ void main() {
     await StoreService.I.put(StoreKey.advancedTroubleshooting, true);
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   group('AssetDebugAction', () {

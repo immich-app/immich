@@ -1,3 +1,4 @@
+import type { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/types.js';
 import {
   AacProfile,
   ColorMatrix,
@@ -7,8 +8,7 @@ import {
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
-} from 'src/enum';
-import { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/types';
+} from 'src/enum.js';
 
 const probeStubDefaultFormat: VideoFormat = {
   formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
@@ -288,6 +288,31 @@ export const videoInfoStub = {
       },
     ],
   }),
+  videoStreamRotatedHorizontal2160p: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 3840,
+        width: 2160,
+        codecName: 'h264',
+        frameCount: 100,
+        rotation: 90,
+        bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
+        pixelFormat: 'yuv420p',
+        frameRate: 60,
+        timeBase: 600,
+        profile: H264Profile.High,
+        level: null,
+        dvBlSignalCompatibilityId: null,
+        dvLevel: null,
+        dvProfile: null,
+      },
+    ],
+  }),
   videoStreamOddHeight: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [
@@ -448,28 +473,6 @@ export const videoInfoStub = {
         dvLevel: 10,
         dvBlSignalCompatibilityId: DvSignalCompatibility.Hlg,
         timeBase: 600,
-      },
-    ],
-  }),
-  videoStreamWithProfileLevel: Object.freeze<VideoInfo>({
-    ...probeStubDefault,
-    videoStreams: [
-      {
-        ...probeStubDefaultVideoStream[0],
-        codecName: 'h264',
-        profile: 100,
-        level: 40,
-      },
-    ],
-  }),
-  audioStreamAAC: Object.freeze<VideoInfo>({
-    ...probeStubDefault,
-    audioStreams: [
-      {
-        index: 1,
-        codecName: 'aac',
-        profile: 2,
-        bitrate: 128_000,
       },
     ],
   }),

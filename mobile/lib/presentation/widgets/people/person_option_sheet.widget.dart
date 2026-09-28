@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
-class PersonOptionSheet extends ConsumerWidget {
+class PersonOptionSheet extends StatelessWidget {
   const PersonOptionSheet({super.key, this.onEditName, this.onEditBirthday, this.birthdayExists = false});
 
   final VoidCallback? onEditName;
@@ -10,7 +9,7 @@ class PersonOptionSheet extends ConsumerWidget {
   final bool birthdayExists;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final TextStyle textStyle = Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600);
 
     return SafeArea(
@@ -21,12 +20,12 @@ class PersonOptionSheet extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: Text('edit_name'.t(context: context), style: textStyle),
+              title: Text(context.t.edit_name, style: textStyle),
               onTap: onEditName,
             ),
             ListTile(
               leading: const Icon(Icons.cake),
-              title: Text((birthdayExists ? 'edit_birthday' : "add_birthday").t(context: context), style: textStyle),
+              title: Text(birthdayExists ? context.t.edit_birthday : context.t.add_birthday, style: textStyle),
               onTap: onEditBirthday,
             ),
           ],

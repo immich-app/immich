@@ -33,6 +33,7 @@ final assetsActionProvider = Provider.family.autoDispose<AssetFilter<BaseAsset>,
       null => const <BaseAsset>{},
     },
   }),
+  dependencies: [multiSelectProvider],
 );
 
 final clearSelectionProvider = Provider.family.autoDispose<VoidCallback, ActionSource>((ref, source) {
@@ -41,10 +42,11 @@ final clearSelectionProvider = Provider.family.autoDispose<VoidCallback, ActionS
   }
 
   return () {};
-});
+}, dependencies: [multiSelectProvider]);
 
 final ownedAssetsActionProvider = Provider.family.autoDispose<AssetFilter<RemoteAsset>, ActionSource>(
   (ref, source) => ref.watch(assetsActionProvider(source)).owned(ref.watch(authUserProvider).id),
+  dependencies: [assetsActionProvider],
 );
 
 abstract class AssetActionBuilder extends ActionBuilder {

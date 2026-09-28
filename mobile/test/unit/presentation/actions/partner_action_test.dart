@@ -19,8 +19,8 @@ void main() {
     partnerService = context.service.partner.service;
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   List<Override> overrides({List<User> candidates = const []}) => [

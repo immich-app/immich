@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'album.model.freezed.dart';
+
 enum AlbumAssetOrder {
   // do not change this order!
   asc,
@@ -12,118 +17,20 @@ enum AlbumUserRole {
 }
 
 // Model for an album stored in the server
-class RemoteAlbum {
-  final String id;
-  final String name;
-  final String ownerId;
-  final String description;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String? thumbnailAssetId;
-  final bool isActivityEnabled;
-  final AlbumAssetOrder order;
-  final int assetCount;
-  final String ownerName;
-  final bool isShared;
-
-  const RemoteAlbum({
-    required this.id,
-    required this.name,
-    required this.ownerId,
-    required this.description,
-    required this.createdAt,
-    required this.updatedAt,
-    this.thumbnailAssetId,
-    required this.isActivityEnabled,
-    required this.order,
-    required this.assetCount,
-    required this.ownerName,
-    required this.isShared,
-  });
-
-  @override
-  String toString() {
-    return '''Album {
-    id: $id,
-    name: $name,
-    ownerId: $ownerId,
-    description: $description,
-    createdAt: $createdAt,
-    updatedAt: $updatedAt,
-    isActivityEnabled: $isActivityEnabled,
-    order: $order,
-    thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
-    assetCount: $assetCount
-    ownerName: $ownerName
-    isShared: $isShared
- }''';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (other is! RemoteAlbum) {
-      return false;
-    }
-    if (identical(this, other)) {
-      return true;
-    }
-    return id == other.id &&
-        name == other.name &&
-        ownerId == other.ownerId &&
-        description == other.description &&
-        createdAt == other.createdAt &&
-        updatedAt == other.updatedAt &&
-        thumbnailAssetId == other.thumbnailAssetId &&
-        isActivityEnabled == other.isActivityEnabled &&
-        order == other.order &&
-        assetCount == other.assetCount &&
-        ownerName == other.ownerName &&
-        isShared == other.isShared;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        name.hashCode ^
-        ownerId.hashCode ^
-        description.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode ^
-        thumbnailAssetId.hashCode ^
-        isActivityEnabled.hashCode ^
-        order.hashCode ^
-        assetCount.hashCode ^
-        ownerName.hashCode ^
-        isShared.hashCode;
-  }
-
-  RemoteAlbum copyWith({
-    String? id,
-    String? name,
-    String? ownerId,
-    String? description,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+@freezed
+abstract class RemoteAlbum with _$RemoteAlbum {
+  const factory RemoteAlbum({
+    required String id,
+    required String name,
+    required String ownerId,
+    required String description,
+    required DateTime createdAt,
+    required DateTime updatedAt,
     String? thumbnailAssetId,
-    bool? isActivityEnabled,
-    AlbumAssetOrder? order,
-    int? assetCount,
-    String? ownerName,
-    bool? isShared,
-  }) {
-    return RemoteAlbum(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      ownerId: ownerId ?? this.ownerId,
-      description: description ?? this.description,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
-      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
-      order: order ?? this.order,
-      assetCount: assetCount ?? this.assetCount,
-      ownerName: ownerName ?? this.ownerName,
-      isShared: isShared ?? this.isShared,
-    );
-  }
+    required bool isActivityEnabled,
+    required AlbumAssetOrder order,
+    required int assetCount,
+    required String ownerName,
+    required bool isShared,
+  }) = _RemoteAlbum;
 }

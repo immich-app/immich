@@ -55,7 +55,7 @@ export abstract class VirtualScrollManager {
   }
 
   #setHeaderHeight(value: number) {
-    if (this.#headerHeight == value) {
+    if (this.#headerHeight === value) {
       return false;
     }
     this.#headerHeight = value;
@@ -67,7 +67,7 @@ export abstract class VirtualScrollManager {
   }
 
   #setGap(value: number) {
-    if (this.#gap == value) {
+    if (this.#gap === value) {
       return false;
     }
     this.#gap = value;
@@ -79,7 +79,7 @@ export abstract class VirtualScrollManager {
   }
 
   #setRowHeight(value: number) {
-    if (this.#rowHeight == value) {
+    if (this.#rowHeight === value) {
       return false;
     }
     this.#rowHeight = value;

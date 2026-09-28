@@ -35,7 +35,12 @@
 <section class="my-4">
   <div class="flex flex-col gap-2 sm:ms-8" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button leadingIcon={Create.icon} shape="round" size="small" onclick={() => Create.onAction(Create)}>
+      <Button
+        leadingIcon={Create.icon}
+        shape="round"
+        size="small"
+        onclick={(event: MouseEvent) => Create.onAction({ event, action: Create })}
+      >
         {Create.title}
       </Button>
     </div>
@@ -51,7 +56,7 @@
 
         <TableBody>
           {#each keys as key (key.id)}
-            {@const { Update, Delete } = getApiKeyActions($t, key)}
+            {@const { Update, Rotate, Delete } = getApiKeyActions($t, key)}
             <TableRow>
               <TableCell>{key.name}</TableCell>
               <TableCell>
@@ -64,6 +69,7 @@
               <TableCell>{new Date(key.createdAt).toLocaleDateString($locale, dateFormats.settings)}</TableCell>
               <TableCell class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1">
                 <TableButton action={Update} size="small" />
+                <TableButton action={Rotate} size="small" />
                 <TableButton action={Delete} size="small" />
               </TableCell>
             </TableRow>

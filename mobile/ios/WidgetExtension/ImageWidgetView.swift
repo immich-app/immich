@@ -3,10 +3,10 @@ import WidgetKit
 
 extension Image {
   @ViewBuilder
-  func tintedWidgetImageModifier() -> some View {
+  func tintedWidgetImageModifier(forceFullColor: Bool) -> some View {
     if #available(iOS 18.0, *) {
       self
-        .widgetAccentedRenderingMode(.accentedDesaturated)
+        .widgetAccentedRenderingMode(forceFullColor ? .accentedDesaturated : .fullColor)
     } else {
       self
     }
@@ -18,15 +18,24 @@ struct ImmichWidgetView: View {
 
   var body: some View {
     if let image = entry.image {
-      ImmichWidgetContentView(image: image, subtitle: entry.metadata.subtitle, deepLink: entry.metadata.deepLink)
+      ImmichWidgetContentView(
+        image: image,
+        subtitle: entry.metadata.subtitle,
+        deepLink: entry.metadata.deepLink,
+        forceFullColor: entry.metadata.forceFullColor
+      )
     } else {
-      ImmichWidgetLoadingView(message: entry.metadata.error?.errorDescription)
+      ImmichWidgetLoadingView(
+        message: entry.metadata.error?.errorDescription,
+        forceFullColor: entry.metadata.forceFullColor
+      )
     }
   }
 }
 
 private struct ImmichWidgetLoadingView: View {
   let message: String?
+  let forceFullColor: Bool
 
   var body: some View {
     let messageText = Text(message ?? "")
@@ -39,7 +48,7 @@ private struct ImmichWidgetLoadingView: View {
       messageText.hidden()
 
       Image("LaunchImage")
-        .tintedWidgetImageModifier()
+        .tintedWidgetImageModifier(forceFullColor: forceFullColor)
 
       messageText
     }
@@ -50,13 +59,14 @@ private struct ImmichWidgetContentView: View {
   let image: UIImage
   let subtitle: String?
   let deepLink: URL?
+  let forceFullColor: Bool
 
   var body: some View {
     ZStack(alignment: .leading) {
       Color.clear.overlay(
         Image(uiImage: image)
           .resizable()
-          .tintedWidgetImageModifier()
+          .tintedWidgetImageModifier(forceFullColor: forceFullColor)
           .scaledToFill()
       )
 

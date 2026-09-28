@@ -1,8 +1,8 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/forms/pin_input.dart';
 
@@ -58,7 +58,7 @@ class PinRegistrationForm extends HookConsumerWidget {
           SizedBox(
             width: context.width * 0.7,
             child: Text(
-              'setup_pin_code'.tr(),
+              context.t.setup_pin_code,
               style: context.textTheme.labelLarge!.copyWith(fontSize: 24),
               textAlign: TextAlign.center,
             ),
@@ -66,7 +66,7 @@ class PinRegistrationForm extends HookConsumerWidget {
           SizedBox(
             width: context.width * 0.8,
             child: Text(
-              'new_pin_code_subtitle'.tr(),
+              context.t.new_pin_code_subtitle,
               style: context.textTheme.bodyLarge!.copyWith(fontSize: 16),
               textAlign: TextAlign.center,
             ),
@@ -74,7 +74,7 @@ class PinRegistrationForm extends HookConsumerWidget {
           const SizedBox(height: 32),
           PinInput(
             controller: newPinCodeController,
-            label: 'new_pin_code'.tr(),
+            label: context.t.new_pin_code,
             length: 6,
             autoFocus: true,
             hasError: hasError.value,
@@ -87,7 +87,7 @@ class PinRegistrationForm extends HookConsumerWidget {
           const SizedBox(height: 32),
           PinInput(
             controller: confirmPinCodeController,
-            label: 'confirm_new_pin_code'.tr(),
+            label: context.t.confirm_new_pin_code,
             length: 6,
             hasError: hasError.value,
             onChanged: (input) {
@@ -102,7 +102,7 @@ class PinRegistrationForm extends HookConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(onPressed: createNewPinCode, child: Text('create'.tr())),
+                  child: ElevatedButton(onPressed: createNewPinCode, child: Text(context.t.create)),
                 ),
               ],
             ),

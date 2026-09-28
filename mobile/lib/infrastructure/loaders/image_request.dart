@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
@@ -18,6 +19,7 @@ abstract class ImageRequest {
   final int requestId = _nextRequestId++;
   bool _isCancelled = false;
 
+  // ignore: unused-code
   bool get isCancelled => _isCancelled;
 
   ImageRequest();
@@ -36,7 +38,11 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(int address, int length) async {
+  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(
+    int address,
+    int length, {
+    ui.Size? decodeSize,
+  }) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
       malloc.free(pointer);
@@ -62,7 +68,8 @@ abstract class ImageRequest {
       return null;
     }
 
-    final codec = await descriptor.instantiateCodec();
+    final target = _targetSize(descriptor.width, descriptor.height, decodeSize);
+    final codec = await descriptor.instantiateCodec(targetWidth: target?.$1, targetHeight: target?.$2);
     if (_isCancelled) {
       descriptor.dispose();
       codec.dispose();
@@ -72,8 +79,8 @@ abstract class ImageRequest {
     return (codec, descriptor);
   }
 
-  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
-    final result = await _codecFromEncodedPlatformImage(address, length);
+  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length, {ui.Size? decodeSize}) async {
+    final result = await _codecFromEncodedPlatformImage(address, length, decodeSize: decodeSize);
     if (result == null) {
       return null;
     }
@@ -94,6 +101,19 @@ abstract class ImageRequest {
     }
 
     return frame;
+  }
+
+  (int, int)? _targetSize(int width, int height, ui.Size? decodeSize) {
+    if (width <= 0 || height <= 0 || decodeSize == null || decodeSize.width <= 0 || decodeSize.height <= 0) {
+      return null;
+    }
+
+    final scale = math.max(decodeSize.width / width, decodeSize.height / height);
+    if (scale >= 1) {
+      return null;
+    }
+
+    return ((width * scale).ceil(), (height * scale).ceil());
   }
 
   Future<ui.FrameInfo?> _fromDecodedPlatformImage(int address, int width, int height, int rowBytes) async {

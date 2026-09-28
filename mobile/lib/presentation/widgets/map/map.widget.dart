@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
@@ -39,16 +39,16 @@ class CustomSourceProperties implements SourceProperties {
   }
 }
 
-class DriftMap extends ConsumerStatefulWidget {
+class MapView extends ConsumerStatefulWidget {
   final LatLng? initialLocation;
 
-  const DriftMap({super.key, this.initialLocation});
+  const MapView({super.key, this.initialLocation});
 
   @override
-  ConsumerState<DriftMap> createState() => _DriftMapState();
+  ConsumerState<MapView> createState() => _MapViewState();
 }
 
-class _DriftMapState extends ConsumerState<DriftMap> {
+class _MapViewState extends ConsumerState<MapView> {
   MapLibreMapController? mapController;
   final _reloadMutex = AsyncMutex();
   final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
@@ -164,7 +164,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
           context: context,
           gravity: ToastGravity.BOTTOM,
           toastType: ToastType.error,
-          msg: "map_cannot_get_user_location".t(context: context),
+          msg: context.t.map_cannot_get_user_location,
         );
       }
       return;

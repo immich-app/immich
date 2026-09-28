@@ -9,7 +9,6 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
@@ -37,20 +36,12 @@ class UploadRepository {
     );
   }
 
-  Future<void> enqueueBackground(UploadTask task) {
-    return FileDownloader().enqueue(task);
-  }
-
   Future<List<bool>> enqueueBackgroundAll(List<UploadTask> tasks) {
     return FileDownloader().enqueueAll(tasks);
   }
 
   Future<void> deleteDatabaseRecords(String group) {
     return FileDownloader().database.deleteAllRecords(group: group);
-  }
-
-  Future<bool> cancelAll(String group) {
-    return FileDownloader().cancelAll(group: group);
   }
 
   Future<int> reset(String group) {
@@ -66,28 +57,6 @@ class UploadRepository {
     return FileDownloader().start();
   }
 
-  Future<void> getUploadInfo() async {
-    final [enqueuedTasks, runningTasks, canceledTasks, waitingTasks, pausedTasks] = await Future.wait([
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.enqueued, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.running, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.canceled, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.waitingToRetry, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.paused, group: kBackupGroup),
-    ]);
-
-    dPrint(
-      () =>
-          """
-      Upload Info:
-      Enqueued: ${enqueuedTasks.length}
-      Running: ${runningTasks.length}
-      Canceled: ${canceledTasks.length}
-      Waiting: ${waitingTasks.length}
-      Paused: ${pausedTasks.length}
-    """,
-    );
-  }
-
   Future<UploadResult> uploadFile({
     required File file,
     required String originalFileName,
@@ -95,23 +64,34 @@ class UploadRepository {
     required Completer<void>? cancelToken,
     void Function(int bytes, int totalBytes)? onProgress,
     required String logContext,
+    Client? httpClient,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    final baseRequest = ProgressMultipartRequest(
-      'POST',
-      Uri.parse('$savedEndpoint/assets'),
-      abortTrigger: cancelToken?.future,
-      onProgress: onProgress,
-    );
+
+    ProgressMultipartRequest buildRequest() {
+      final request = ProgressMultipartRequest(
+        'POST',
+        Uri.parse('$savedEndpoint/assets'),
+        abortTrigger: cancelToken?.future,
+        onProgress: onProgress,
+      );
+      request.fields.addAll(fields);
+      request.files.add(MultipartFile("assetData", file.openRead(), file.lengthSync(), filename: originalFileName));
+      return request;
+    }
 
     try {
-      final fileStream = file.openRead();
-      final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
+      final client = httpClient ?? NetworkRepository.client;
+      StreamedResponse response;
+      try {
+        response = await client.send(buildRequest());
+      } on RequestAbortedException {
+        rethrow;
+      } on ClientException catch (error) {
+        logger.warning("Upload $logContext failed before a response, resending once: $error");
+        response = await client.send(buildRequest());
+      }
 
-      baseRequest.fields.addAll(fields);
-      baseRequest.files.add(assetRawUploadData);
-
-      final response = await NetworkRepository.client.send(baseRequest);
       final responseBodyString = await response.stream.bytesToString();
 
       if (![200, 201].contains(response.statusCode)) {

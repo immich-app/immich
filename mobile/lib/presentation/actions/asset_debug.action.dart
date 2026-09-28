@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -13,16 +14,16 @@ class AssetDebugAction extends AssetActionBuilder {
 
   @override
   ActionItem? create(BuildContext context, WidgetRef ref) {
-    final assets = ref.watch(assetsActionProvider(source)).assets;
+    final asset = ref.watch(assetsActionProvider(source)).assets.singleOrNull;
     final troubleshootEnabled = ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
-    if (!troubleshootEnabled || assets.length != 1) {
+    if (!troubleshootEnabled || asset == null) {
       return null;
     }
 
     return .new(
       icon: Icons.help_outline_rounded,
       label: context.t.troubleshoot,
-      onAction: () => unawaited(context.pushRoute(AssetTroubleshootRoute(asset: assets.single))),
+      onAction: () => unawaited(context.pushRoute(AssetTroubleshootRoute(asset: asset))),
     );
   }
 }

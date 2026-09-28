@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 // Error widget to be used in Scaffold when an AsyncError is received
 class ScaffoldErrorBody extends StatelessWidget {
@@ -15,7 +15,11 @@ class ScaffoldErrorBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("scaffold_body_error_occurred", style: context.textTheme.displayMedium, textAlign: TextAlign.center).tr(),
+        Text(
+          context.t.scaffold_body_error_occurred,
+          style: context.textTheme.displayMedium,
+          textAlign: TextAlign.center,
+        ),
         if (withIcon)
           Center(
             child: Padding(

@@ -1,17 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart' as beta_asset_service;
 import 'package:immich_mobile/domain/services/memory.service.dart';
-import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
-import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -21,8 +20,7 @@ final deepLinkServiceProvider = Provider(
     ref.watch(timelineFactoryProvider),
     ref.watch(beta_asset_provider.assetServiceProvider),
     ref.watch(remoteAlbumServiceProvider),
-    ref.watch(driftMemoryServiceProvider),
-    ref.watch(driftPeopleServiceProvider),
+    MemoryService(ref.watch(driftProvider).memoryRepository),
     ref.watch(currentUserProvider),
   ),
 );
@@ -31,8 +29,7 @@ class DeepLinkService {
   final TimelineFactory _betaTimelineFactory;
   final beta_asset_service.AssetService _betaAssetService;
   final RemoteAlbumService _betaRemoteAlbumService;
-  final DriftMemoryService _betaMemoryService;
-  final DriftPeopleService _betaPeopleService;
+  final MemoryService _betaMemoryService;
 
   final UserDto? _currentUser;
 
@@ -41,7 +38,6 @@ class DeepLinkService {
     this._betaAssetService,
     this._betaRemoteAlbumService,
     this._betaMemoryService,
-    this._betaPeopleService,
     this._currentUser,
   );
 
@@ -51,10 +47,10 @@ class DeepLinkService {
     final queryParams = link.uri.queryParameters;
 
     return switch (intent) {
-      "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
+      "memory" => await _buildMemoryDeepLink(queryParams['id']),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
-      "people" => await _buildPeopleDeepLink(queryParams['id'] ?? ''),
+      "people" => await _buildPeopleDeepLink(queryParams['id'] ?? '', ref),
       "activity" => await _buildActivityDeepLink(queryParams['albumId'] ?? ''),
       _ => null,
     };
@@ -81,14 +77,14 @@ class DeepLinkService {
     }
     if (peopleRegex.hasMatch(path)) {
       final peopleId = peopleRegex.firstMatch(path)?.group(1) ?? '';
-      return _buildPeopleDeepLink(peopleId);
+      return _buildPeopleDeepLink(peopleId, ref);
     }
 
     return null;
   }
 
   Future<PageRouteInfo?> _buildMemoryDeepLink(String? memoryId) async {
-    List<DriftMemory> memories = [];
+    List<Memory> memories = [];
 
     if (memoryId == null) {
       if (_currentUser == null) {
@@ -107,7 +103,7 @@ class DeepLinkService {
       return null;
     }
 
-    return DriftMemoryRoute(memories: memories, memoryIndex: 0);
+    return MemoryRoute(memories: memories, memoryIndex: 0);
   }
 
   Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref, {String? albumId}) async {
@@ -143,16 +139,16 @@ class DeepLinkService {
       return null;
     }
 
-    return DriftActivitiesRoute(album: album);
+    return ActivitiesRoute(album: album);
   }
 
-  Future<PageRouteInfo?> _buildPeopleDeepLink(String personId) async {
-    final person = await _betaPeopleService.get(personId);
+  Future<PageRouteInfo?> _buildPeopleDeepLink(String personId, WidgetRef ref) async {
+    final person = await ref.read(Store.people.byId(personId).future);
 
     if (person == null) {
       return null;
     }
 
-    return DriftPersonRoute(person: person);
+    return PersonRoute(person: person);
   }
 }

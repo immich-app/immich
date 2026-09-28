@@ -28,8 +28,8 @@ export default defineConfig({
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
       // eslint-disable-next-line unicorn/prefer-module
-      '@test-data': path.resolve(__dirname, './src/test-data'),
-      // '@immich/ui': path.resolve(__dirname, '../../ui/packages/ui'),
+      '@test-data': path.resolve(import.meta.dirname, './src/test-data'),
+      // '@immich/ui': path.resolve(import.meta.dirname, '../../ui/packages/ui'),
     },
   },
   server: {

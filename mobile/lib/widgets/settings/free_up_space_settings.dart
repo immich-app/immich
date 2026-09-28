@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -9,12 +8,13 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/cleanup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:intl/intl.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class FreeUpSpaceSettings extends ConsumerStatefulWidget {
@@ -39,11 +39,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   }
 
   Future<void> _initializeAlbumDefaults() async {
+    final notifier = ref.read(cleanupProvider.notifier);
     final albums = await ref.read(localAlbumProvider.future);
     final existingAlbumIds = albums.map((a) => a.id).toSet();
     final albumsWithNames = albums.map((a) => (a.id, a.name)).toList();
 
-    final notifier = ref.read(cleanupProvider.notifier);
     notifier.applyDefaultAlbumSelections(albumsWithNames);
     notifier.cleanupStaleAlbumIds(existingAlbumIds);
   }
@@ -105,7 +105,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       lastDate: DateTime.now(),
     );
 
-    if (picked != null) {
+    if (picked != null && context.mounted) {
       ref.read(cleanupProvider.notifier).setSelectedDate(picked);
       setState(() => _hasScanned = false);
     }
@@ -122,6 +122,10 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
 
     await ref.read(cleanupProvider.notifier).scanAssets();
+    if (!mounted) {
+      return;
+    }
+
     final state = ref.read(cleanupProvider);
 
     setState(() {
@@ -146,7 +150,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
           _DeleteConfirmationDialog(assetCount: state.assetsToDelete.length, cutoffDate: state.selectedDate!),
     );
 
-    if (confirmed != true) {
+    if (confirmed != true || !context.mounted) {
       return;
     }
 
@@ -232,21 +236,21 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       final parts = <String>[];
 
       if (state.keepMediaType == AssetKeepType.photosOnly) {
-        parts.add('all_photos'.t(context: context));
+        parts.add(context.t.all_photos);
       } else if (state.keepMediaType == AssetKeepType.videosOnly) {
-        parts.add('all_videos'.t(context: context));
+        parts.add(context.t.all_videos);
       }
 
       if (state.keepFavorites) {
-        parts.add('favorites'.t(context: context));
+        parts.add(context.t.favorites);
       }
 
       if (state.keepAlbumIds.isNotEmpty) {
-        parts.add('keep_albums_count'.t(context: context, args: {'count': state.keepAlbumIds.length.toString()}));
+        parts.add(context.t.keep_albums_count(count: state.keepAlbumIds.length));
       }
 
       if (parts.isEmpty) {
-        return 'none'.t(context: context);
+        return context.t.none;
       }
 
       return parts.join(', ');
@@ -270,7 +274,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   border: Border.all(color: context.primaryColor.withValues(alpha: 0.25)),
                 ),
-                child: Text('free_up_space_description'.t(context: context), style: context.textTheme.bodyMedium),
+                child: Text(context.t.free_up_space_description, style: context.textTheme.bodyMedium),
               ),
             ),
 
@@ -303,7 +307,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       color: hasKeepSettings ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
                     ),
                     title: Text(
-                      'keep_on_device'.t(context: context),
+                      context.t.keep_on_device,
                       style: context.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: hasKeepSettings ? context.colorScheme.primary : null,
@@ -311,8 +315,8 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                     ),
                     subtitle: Text(
                       hasKeepSettings
-                          ? 'keeping'.t(context: context, args: {'items': getKeepSettingsSummary()})
-                          : 'keep_on_device_hint'.t(context: context),
+                          ? context.t.keeping(items: getKeepSettingsSummary())
+                          : context.t.keep_on_device_hint,
                       style: context.textTheme.bodySmall?.copyWith(
                         color: hasKeepSettings ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
                       ),
@@ -323,12 +327,12 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('keep_description'.t(context: context), style: subtitleStyle),
+                            Text(context.t.keep_description, style: subtitleStyle),
                             const SizedBox(height: 4),
                             SwitchListTile(
                               contentPadding: EdgeInsets.zero,
                               title: Text(
-                                'keep_favorites'.t(context: context),
+                                context.t.keep_favorites,
                                 style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
                               ),
 
@@ -348,7 +352,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'always_keep'.t(context: context),
+                              context.t.always_keep,
                               style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
                             ),
                             const SizedBox(height: 4),
@@ -358,12 +362,12 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                                 const ButtonSegment(value: AssetKeepType.none, label: Text('—')),
                                 ButtonSegment(
                                   value: AssetKeepType.photosOnly,
-                                  label: Text('photos'.t(context: context)),
+                                  label: Text(context.t.photos),
                                   icon: const Icon(Icons.photo),
                                 ),
                                 ButtonSegment(
                                   value: AssetKeepType.videosOnly,
-                                  label: Text('videos'.t(context: context)),
+                                  label: Text(context.t.videos),
                                   icon: const Icon(Icons.videocam),
                                 ),
                               ],
@@ -377,8 +381,8 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                               const SizedBox(height: 8),
                               Text(
                                 state.keepMediaType == AssetKeepType.photosOnly
-                                    ? 'always_keep_photos_hint'.t(context: context)
-                                    : 'always_keep_videos_hint'.t(context: context),
+                                    ? context.t.always_keep_photos_hint
+                                    : context.t.always_keep_videos_hint,
                                 style: context.textTheme.bodySmall?.copyWith(
                                   color: context.colorScheme.onSurfaceVariant,
                                 ),
@@ -403,13 +407,13 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   setState(() => _currentStep = CleanupStep.values[step]);
                 }
               },
-              controlsBuilder: (_, __) => const SizedBox.shrink(),
+              controlsBuilder: (_, _) => const SizedBox.shrink(),
               steps: [
                 // Step 1: Select Cutoff Date
                 Step(
                   stepStyle: styleForState(step1State),
                   title: Text(
-                    'select_cutoff_date'.t(context: context),
+                    context.t.select_cutoff_date,
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: step1State == StepState.complete
@@ -429,7 +433,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   content: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('cutoff_date_description'.t(context: context), style: subtitleStyle),
+                      Text(context.t.cutoff_date_description, style: subtitleStyle),
                       const SizedBox(height: 16),
                       GridView.count(
                         shrinkWrap: true,
@@ -441,39 +445,39 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                         children: [
                           _DatePresetCard(
                             value: '30',
-                            unit: 'cutoff_day'.t(context: context, args: {'count': '30'}),
+                            unit: context.t.cutoff_day(count: 30),
                             onTap: () => _setPresetDate(30),
                             isSelected: _isPresetSelected(30),
                           ),
                           _DatePresetCard(
                             value: '60',
-                            unit: 'cutoff_day'.t(context: context, args: {'count': '60'}),
+                            unit: context.t.cutoff_day(count: 60),
 
                             onTap: () => _setPresetDate(60),
                             isSelected: _isPresetSelected(60),
                           ),
                           _DatePresetCard(
                             value: '90',
-                            unit: 'cutoff_day'.t(context: context, args: {'count': '90'}),
+                            unit: context.t.cutoff_day(count: 90),
 
                             onTap: () => _setPresetDate(90),
                             isSelected: _isPresetSelected(90),
                           ),
                           _DatePresetCard(
                             value: '1',
-                            unit: 'cutoff_year'.t(context: context, args: {'count': '1'}),
+                            unit: context.t.cutoff_year(count: 1),
                             onTap: () => _setPresetDate(365),
                             isSelected: _isPresetSelected(365),
                           ),
                           _DatePresetCard(
                             value: '2',
-                            unit: 'cutoff_year'.t(context: context, args: {'count': '2'}),
+                            unit: context.t.cutoff_year(count: 2),
                             onTap: () => _setPresetDate(730),
                             isSelected: _isPresetSelected(730),
                           ),
                           _DatePresetCard(
                             value: '3',
-                            unit: 'cutoff_year'.t(context: context, args: {'count': '3'}),
+                            unit: context.t.cutoff_year(count: 3),
                             onTap: () => _setPresetDate(1095),
                             isSelected: _isPresetSelected(1095),
                           ),
@@ -483,14 +487,14 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       OutlinedButton.icon(
                         onPressed: _selectDate,
                         icon: const Icon(Icons.calendar_today),
-                        label: Text('custom_date'.t(context: context)),
+                        label: Text(context.t.custom_date),
                         style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: hasDate ? _goToScanStep : null,
                         icon: const Icon(Icons.arrow_forward),
-                        label: Text('continue'.t(context: context)),
+                        label: Text(context.t.continue$),
                         style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
                       ),
                     ],
@@ -503,7 +507,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                 Step(
                   stepStyle: styleForState(step2State),
                   title: Text(
-                    'scan'.t(context: context),
+                    context.t.scan,
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: step2State == StepState.complete
@@ -516,17 +520,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   subtitle: _hasScanned
                       ? Text(
                           state.totalBytes > 0
-                              ? 'cleanup_found_assets_with_size'.t(
-                                  context: context,
-                                  args: {
-                                    'count': state.assetsToDelete.length.toString(),
-                                    'size': formatBytes(state.totalBytes),
-                                  },
+                              ? context.t.cleanup_found_assets_with_size(
+                                  count: state.assetsToDelete.length,
+                                  size: formatBytes(state.totalBytes),
                                 )
-                              : 'cleanup_found_assets'.t(
-                                  context: context,
-                                  args: {'count': state.assetsToDelete.length.toString()},
-                                ),
+                              : context.t.cleanup_found_assets(count: state.assetsToDelete.length),
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: state.assetsToDelete.isNotEmpty
                                 ? context.colorScheme.primary
@@ -537,7 +535,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       : null,
                   content: Column(
                     children: [
-                      Text('cleanup_step3_description'.t(context: context), style: subtitleStyle),
+                      Text(context.t.cleanup_step3_description, style: subtitleStyle),
                       if (CurrentPlatform.isIOS) ...[
                         const SizedBox(height: 12),
                         Container(
@@ -552,7 +550,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'cleanup_icloud_shared_albums_excluded'.t(context: context),
+                                  context.t.cleanup_icloud_shared_albums_excluded,
                                   style: context.textTheme.labelLarge,
                                 ),
                               ),
@@ -573,7 +571,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                           : ElevatedButton.icon(
                               onPressed: state.isScanning ? null : _scanAssets,
                               icon: const Icon(Icons.search),
-                              label: Text(_hasScanned ? 'rescan'.t(context: context) : 'scan'.t(context: context)),
+                              label: Text(_hasScanned ? context.t.rescan : context.t.scan),
                               style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
                             ),
                       if (_hasScanned && state.assetsToDelete.isEmpty) ...[
@@ -589,10 +587,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                               const Icon(Icons.info, color: Colors.orange),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
-                                  'cleanup_no_assets_found'.t(context: context),
-                                  style: context.textTheme.bodyMedium,
-                                ),
+                                child: Text(context.t.cleanup_no_assets_found, style: context.textTheme.bodyMedium),
                               ),
                             ],
                           ),
@@ -608,7 +603,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                 Step(
                   stepStyle: styleForState(step3State, isDestructive: true),
                   title: Text(
-                    'move_to_device_trash'.t(context: context),
+                    context.t.move_to_device_trash,
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: step3State == StepState.disabled
@@ -631,12 +626,9 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'cleanup_step4_summary'.t(
-                                      context: context,
-                                      args: {
-                                        'count': state.assetsToDelete.length.toString(),
-                                        'date': DateFormat.yMMMd().format(state.selectedDate!),
-                                      },
+                                    context.t.cleanup_step4_summary(
+                                      count: state.assetsToDelete.length,
+                                      date: DateFormat.yMMMd().format(state.selectedDate!),
                                     ),
                                     style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
                                   ),
@@ -648,7 +640,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       OutlinedButton.icon(
                         onPressed: () => _showAssetsPreview(state.assetsToDelete),
                         icon: const Icon(Icons.preview),
-                        label: Text('preview'.t(context: context)),
+                        label: Text(context.t.preview),
                         style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
                       ),
                       const SizedBox(height: 12),
@@ -661,11 +653,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
                             : const Icon(Icons.delete_forever),
-                        label: Text(
-                          state.isDeleting
-                              ? 'cleanup_deleting'.t(context: context)
-                              : 'move_to_device_trash'.t(context: context),
-                        ),
+                        label: Text(state.isDeleting ? context.t.cleanup_deleting : context.t.move_to_device_trash),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: context.colorScheme.error,
                           foregroundColor: context.colorScheme.onError,
@@ -697,26 +685,20 @@ class _DeleteConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('cleanup_confirm_prompt_title'.t(context: context)),
+      title: Text(context.t.cleanup_confirm_prompt_title),
       content: Text(
-        'cleanup_confirm_description'.t(
-          context: context,
-          args: {'count': assetCount.toString(), 'date': DateFormat.yMMMd().format(cutoffDate)},
-        ),
+        context.t.cleanup_confirm_description(count: assetCount, date: DateFormat.yMMMd().format(cutoffDate)),
         style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
       ),
       actions: [
-        TextButton(
-          onPressed: () => ContextHelper(context).pop(false),
-          child: Text('cancel'.t(context: context)),
-        ),
+        TextButton(onPressed: () => ContextHelper(context).pop(false), child: Text(context.t.cancel)),
         ElevatedButton(
           onPressed: () => ContextHelper(context).pop(true),
           style: ElevatedButton.styleFrom(
             backgroundColor: context.colorScheme.error,
             foregroundColor: context.colorScheme.onError,
           ),
-          child: Text('confirm'.t(context: context)),
+          child: Text(context.t.confirm),
         ),
       ],
     );
@@ -732,29 +714,24 @@ class _DeleteSuccessDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: Icon(Icons.check_circle, color: context.colorScheme.primary, size: 48),
-      title: Text('success'.t(context: context)),
+      title: Text(context.t.success),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'cleanup_deleted_assets'.t(context: context, args: {'count': deletedCount.toString()}),
+            context.t.cleanup_deleted_assets(count: deletedCount),
             style: context.textTheme.labelLarge?.copyWith(fontSize: 16),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
-            'cleanup_trash_hint'.t(context: context),
+            context.t.cleanup_trash_hint,
             style: context.textTheme.labelLarge?.copyWith(fontSize: 16, color: context.primaryColor),
             textAlign: TextAlign.center,
           ),
         ],
       ),
-      actions: [
-        ElevatedButton(
-          onPressed: () => ContextHelper(context).pop(),
-          child: Text('done'.t(context: context)),
-        ),
-      ],
+      actions: [ElevatedButton(onPressed: () => ContextHelper(context).pop(), child: Text(context.t.done))],
     );
   }
 }
@@ -820,7 +797,7 @@ class _KeepAlbumsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'keep_albums'.t(context: context),
+          context.t.keep_albums,
           style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
         ),
 
@@ -830,13 +807,13 @@ class _KeepAlbumsSection extends ConsumerWidget {
             child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2)),
           ),
           error: (error, stack) => Text(
-            'error_loading_albums'.t(context: context),
+            context.t.error_loading_albums,
             style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
           ),
           data: (albums) {
             if (albums.isEmpty) {
               return Text(
-                'no_albums_found'.t(context: context),
+                context.t.no_albums_found,
                 style: context.textTheme.bodyMedium?.copyWith(
                   color: context.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
@@ -866,7 +843,7 @@ class _KeepAlbumsSection extends ConsumerWidget {
         if (albumIds.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            'keep_albums_count'.t(context: context, args: {'count': albumIds.length.toString()}),
+            context.t.keep_albums_count(count: albumIds.length),
             style: context.textTheme.bodySmall?.copyWith(
               color: context.colorScheme.primary,
               fontWeight: FontWeight.w500,

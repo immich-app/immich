@@ -14,7 +14,7 @@
   let { array, label, description, albumIds = $bindable([]) }: Props = $props();
 
   const onAlbums = async () => {
-    const albums = await modalManager.show(AlbumPickerModal);
+    const albums = await modalManager.show(AlbumPickerModal, {});
     if (!albums || albums.length === 0) {
       return;
     }

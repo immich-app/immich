@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -29,11 +29,7 @@ class SheetTile extends ConsumerWidget {
 
   void copyTitle(BuildContext context, WidgetRef ref) {
     unawaited(Clipboard.setData(ClipboardData(text: title)));
-    ImmichToast.show(
-      context: context,
-      msg: 'copied_to_clipboard'.t(context: context),
-      toastType: ToastType.info,
-    );
+    ImmichToast.show(context: context, msg: context.t.copied_to_clipboard, toastType: ToastType.info);
     ref.read(hapticFeedbackProvider.notifier).selectionClick();
   }
 

@@ -9,7 +9,7 @@ class FeatureMessageService {
 
   bool shouldShow() {
     final seen = _settingsRepository.appConfig.featureMessage.seenRelease;
-    return featureMessageHighlights.isNotEmpty && featureMessageRelease > seen;
+    return visibleFeatureMessageHighlights.isNotEmpty && featureMessageRelease > seen;
   }
 
   Future<void> markSeen() => _settingsRepository.write(SettingsKey.featureMessageSeenRelease, featureMessageRelease);

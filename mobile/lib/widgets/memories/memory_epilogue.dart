@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class MemoryEpilogue extends StatefulWidget {
   final Function()? onStartOver;
@@ -45,23 +45,23 @@ class _MemoryEpilogueState extends State<MemoryEpilogue> with TickerProviderStat
                 ),
                 const SizedBox(height: 16.0),
                 Text(
-                  "memories_all_caught_up",
+                  context.t.memories_all_caught_up,
                   style: context.textTheme.headlineMedium?.copyWith(color: Colors.white),
-                ).tr(),
+                ),
                 const SizedBox(height: 16.0),
                 Text(
-                  "memories_check_back_tomorrow",
+                  context.t.memories_check_back_tomorrow,
                   style: context.textTheme.bodyMedium?.copyWith(color: Colors.white),
-                ).tr(),
+                ),
                 const SizedBox(height: 16.0),
                 TextButton(
                   onPressed: widget.onStartOver,
                   child: Text(
-                    "memories_start_over",
+                    context.t.memories_start_over,
                     style: context.textTheme.displayMedium?.copyWith(
                       color: context.isDarkTheme ? context.colorScheme.primary : context.colorScheme.inversePrimary,
                     ),
-                  ).tr(),
+                  ),
                 ),
               ],
             ),
@@ -85,9 +85,9 @@ class _MemoryEpilogueState extends State<MemoryEpilogue> with TickerProviderStat
                     ),
                   ),
                   Text(
-                    "memories_swipe_to_close",
+                    context.t.memories_swipe_to_close,
                     style: context.textTheme.bodyMedium?.copyWith(color: Colors.white),
-                  ).tr(),
+                  ),
                 ],
               ),
             ),

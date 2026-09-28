@@ -81,15 +81,6 @@ void main() {
         expect(favorites.toList(), [asset1]);
       });
 
-      test('type keeps only assets of the given type', () {
-        final image = RemoteAssetFactory.create();
-        final video = RemoteAssetFactory.create(ownerId: image.ownerId).copyWith(type: .video);
-
-        final videos = AssetFilter([image, video]).type(.video);
-
-        expect(videos.toList(), [video]);
-      });
-
       test('visibility keeps only assets with the given visibility', () {
         final locked = RemoteAssetFactory.create(visibility: AssetVisibility.locked);
         final onTimeline = RemoteAssetFactory.create(ownerId: locked.ownerId);
@@ -97,15 +88,6 @@ void main() {
         final lockedPhotos = AssetFilter([locked, onTimeline]).visibility(.locked);
 
         expect(lockedPhotos.toList(), [locked]);
-      });
-
-      test('archived keeps only archived assets', () {
-        final archived = RemoteAssetFactory.create(visibility: AssetVisibility.archive);
-        final onTimeline = RemoteAssetFactory.create(ownerId: archived.ownerId);
-
-        final archivedPhotos = AssetFilter([archived, onTimeline]).archived();
-
-        expect(archivedPhotos.toList(), [archived]);
       });
 
       test('stacked keeps only assets belonging to a stack', () {
@@ -119,17 +101,6 @@ void main() {
     });
 
     group('inversion', () {
-      test('notArchived keeps every non-archived visibility', () {
-        final archived = RemoteAssetFactory.create(visibility: AssetVisibility.archive);
-        final onTimeline = RemoteAssetFactory.create(ownerId: archived.ownerId, visibility: AssetVisibility.timeline);
-        final hidden = RemoteAssetFactory.create(ownerId: archived.ownerId, visibility: AssetVisibility.hidden);
-        final locked = RemoteAssetFactory.create(ownerId: archived.ownerId, visibility: AssetVisibility.locked);
-
-        final visiblePhotos = AssetFilter([archived, onTimeline, hidden, locked]).archived(isArchived: false);
-
-        expect(visiblePhotos.toSet(), {onTimeline, hidden, locked});
-      });
-
       test('notVisibility keeps every asset not at the target visibility', () {
         final archived = RemoteAssetFactory.create(visibility: AssetVisibility.archive);
         final onTimeline = RemoteAssetFactory.create(ownerId: archived.ownerId, visibility: AssetVisibility.timeline);
@@ -147,15 +118,6 @@ void main() {
         final loosePhotos = AssetFilter([stacked, loose]).stacked(isStacked: false);
 
         expect(loosePhotos.toList(), [loose]);
-      });
-
-      test('whereNot inverts an arbitrary predicate', () {
-        final favorite = RemoteAssetFactory.create(isFavorite: true);
-        final regular = RemoteAssetFactory.create(ownerId: favorite.ownerId);
-
-        final nonFavorites = AssetFilter([favorite, regular]).whereNot((asset) => asset.isFavorite);
-
-        expect(nonFavorites.toList(), [regular]);
       });
 
       test('notFavorites keeps only non-favorite assets', () {
@@ -182,7 +144,7 @@ void main() {
           archived,
           stacked,
           localPhoto,
-        ]).owned(asset.ownerId).archived(isArchived: false).stacked(isStacked: false);
+        ]).owned(asset.ownerId).notVisibility(AssetVisibility.archive).stacked(isStacked: false);
 
         expect(result.toList(), [asset]);
       });

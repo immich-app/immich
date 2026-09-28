@@ -76,7 +76,7 @@
 <img src={poster} alt="poster" class="m-4 rounded-xl" />
 
 <div class="flex place-content-center place-items-center">
-  {#if castManager.castState == CastState.BUFFERING}
+  {#if castManager.castState === CastState.BUFFERING}
     <div class="p-3">
       <LoadingSpinner />
     </div>
@@ -85,9 +85,9 @@
       color="primary"
       shape="round"
       variant="ghost"
-      icon={castManager.castState == CastState.PLAYING ? mdiPause : mdiPlay}
+      icon={castManager.castState === CastState.PLAYING ? mdiPause : mdiPlay}
       onclick={() => handlePlayPauseButton()}
-      aria-label={castManager.castState == CastState.PLAYING ? 'Pause' : 'Play'}
+      aria-label={castManager.castState === CastState.PLAYING ? 'Pause' : 'Play'}
     />
   {/if}
 

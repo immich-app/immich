@@ -1,14 +1,8 @@
-mobile/lib/**/*.g.dart -diff -merge
-mobile/lib/**/*.g.dart linguist-generated=true
-
 mobile/android/**/*.g.kt -diff -merge
 mobile/android/**/*.g.kt linguist-generated=true
 
 mobile/ios/**/*.g.swift -diff -merge
 mobile/ios/**/*.g.swift linguist-generated=true
-
-mobile/lib/**/*.drift.dart -diff -merge
-mobile/lib/**/*.drift.dart linguist-generated=true
 
 mobile/drift_schemas/main/drift_schema_*.json -diff -merge
 mobile/drift_schemas/main/drift_schema_*.json linguist-generated=true
