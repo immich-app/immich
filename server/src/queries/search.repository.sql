@@ -144,12 +144,12 @@ where
   and "asset"."ownerId" = any ($3::uuid[])
   and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
-  and "asset"."visibility" != $5
-  and "asset_exif"."fileSizeInByte" > $6
+  and "asset"."visibility" != 'hidden'
+  and "asset_exif"."fileSizeInByte" > $5
 order by
   "asset_exif"."fileSizeInByte" desc
 limit
-  $7
+  $6
 
 -- SearchRepository.searchSmart
 begin
