@@ -3,6 +3,7 @@ import { Kysely, sql } from 'kysely';
 export async function up(db: Kysely<any>): Promise<void> {
   await sql`ALTER TABLE "user" ALTER COLUMN "name" DROP NOT NULL;`.execute(db);
   await sql`ALTER TABLE "user" ALTER COLUMN "name" SET DEFAULT NULL;`.execute(db);
+  await sql`UPDATE "user" SET "name" = NULL WHERE "name" = '';`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
