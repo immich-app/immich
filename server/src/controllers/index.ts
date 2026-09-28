@@ -4,6 +4,7 @@ import { ApiKeyController } from 'src/controllers/api-key.controller.js';
 import { AppController } from 'src/controllers/app.controller.js';
 import { AssetFilesController } from 'src/controllers/asset-file.controller.js';
 import { AssetMediaController } from 'src/controllers/asset-media.controller.js';
+import { AssetUploadController } from 'src/controllers/asset-upload.controller.js';
 import { AssetController } from 'src/controllers/asset.controller.js';
 import { AuthAdminController } from 'src/controllers/auth-admin.controller.js';
 import { AuthController } from 'src/controllers/auth.controller.js';
@@ -53,6 +54,7 @@ export const controllers = [
   AssetController,
   AssetFilesController,
   AssetMediaController,
+  AssetUploadController,
   AuthController,
   AuthAdminController,
   ClusterGroupController,

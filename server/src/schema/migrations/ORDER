@@ -95,3 +95,4 @@
 1787148183729-ClusterGroups
 1787148183730-DeleteMismatchedMemoryAssets
 1789419229196-ConvertUserOAuthIdEmptyStringToNull
+1790289252000-AddPartialAssetStatus
