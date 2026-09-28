@@ -169,10 +169,20 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
 
 class _CustomLongPressGestureRecognizer extends LongPressGestureRecognizer {
   @override
+  void addPointer(PointerDownEvent event) {
+    // FIX: Only track the primary finger (pointer 0).
+    // If a second finger touches the screen, ignore it so it doesn't break our selection arena!
+    if (event.pointer == 0 || !isActive) {
+      super.addPointer(event);
+    }
+  }
+
+  @override
   void rejectGesture(int pointer) {
     acceptGesture(pointer);
   }
 }
+
 
 class TimelineAssetIndexWrapper extends SingleChildRenderObjectWidget {
   final int assetIndex;

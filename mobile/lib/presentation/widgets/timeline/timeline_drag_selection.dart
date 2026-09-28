@@ -23,6 +23,7 @@ class TimelineDragSelection extends ConsumerStatefulWidget {
 }
 
 class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
+  final _logger = const VoidCallback == null ? null : Logger('TimelineDragSelection');
   bool _dragging = false;
   TimelineAssetIndex? _dragAnchorIndex;
   final Set<BaseAsset> _draggedAssets = HashSet();
@@ -92,6 +93,10 @@ class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
         multiSelectNotifier.selectAsset(asset);
         _draggedAssets.add(asset);
       }
+    } else {
+      // FALLBACK FIX: If virtualization lags or has no range yet, 
+      // do not clear or deselect your current active drag tracking pool!
+      _logger.warning("Timeline range not ready yet at index: ${index.assetIndex}. Holding selection state.");
     }
   }
 

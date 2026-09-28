@@ -407,7 +407,7 @@ class ForegroundUploadService {
       _logger.severe(() => "Error backup asset: $error", stackTrace);
       callbacks.onError?.call(asset.localId!, error.toString());
     } finally {
-      if (CurrentPlatform.isIOS) {
+      if (Platform.isIOS) {
         try {
           await file?.delete();
           await livePhotoFile?.delete();
