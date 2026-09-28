@@ -9,6 +9,7 @@
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { QueryParameter, SessionStorageKey } from '$lib/constants';
+  import PeopleFilterModal from '$lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
@@ -18,8 +19,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, modalManager, toastManager } from '@immich/ui';
-  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
+  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
+  import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -72,7 +73,7 @@
           handlePromiseError(
             Promise.all(
               Array.from({ length: pagesToLoad }, (_, i) => {
-                return getAllPeople({ withHidden: true, page: startingPage + i });
+                return getAllPeople({ withHidden: true, page: startingPage + i, ...data.filter });
               }),
             ).then((pages) => {
               for (const page of pages) {
@@ -96,7 +97,11 @@
     }
 
     try {
-      const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
+      const { people: newPeople, hasNextPage } = await getAllPeople({
+        withHidden: true,
+        page: nextPage,
+        ...data.filter,
+      });
       people = people.concat(newPeople);
       if (nextPage !== null) {
         currentPage = nextPage;
@@ -161,48 +166,35 @@
     }
   };
 
-  const handleHidePerson = async (detail: PersonResponseDto) => {
-    try {
-      const updatedPerson = await updatePerson({
-        id: detail.id,
-        personUpdateDto: { isHidden: true },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-
-      toastManager.primary($t('changed_visibility_successfully'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_hide_person'));
-    }
-  };
-
-  const handleToggleFavorite = async (detail: PersonResponseDto) => {
-    try {
-      const updatedPerson = await updatePerson({
-        id: detail.id,
-        personUpdateDto: { isFavorite: !detail.isFavorite },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-
-      toastManager.primary(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
-    }
-  };
-
   const handleMergePeople = async (detail: PersonResponseDto) => {
     await goto(Route.viewPerson(detail, { previousRoute: Route.people(), action: 'merge' }));
+  };
+
+  const hasFilter = $derived(Object.values(data.filter).some((value) => value !== undefined));
+
+  const handleFilter = async () => {
+    const filter = await modalManager.show(PeopleFilterModal, { filter: data.filter });
+    if (!filter) {
+      return;
+    }
+
+    const url = new URL($page.url);
+    for (const [key, value] of [
+      [QueryParameter.SHARED_BY_ID, filter.sharedById],
+      [QueryParameter.SHARED_WITH_ID, filter.sharedWithId],
+      [QueryParameter.IS_FAVORITE, filter.isFavorite],
+      [QueryParameter.IS_HIDDEN, filter.isHidden],
+    ] as const) {
+      if (value === undefined) {
+        url.searchParams.delete(key);
+      } else {
+        url.searchParams.set(key, String(value));
+      }
+    }
+
+    await goto(url, { keepFocus: true });
+    currentPage = 1;
+    nextPage = data.people.hasNextPage ? 2 : null;
   };
 
   const onResetSearchBar = async () => {
@@ -211,8 +203,11 @@
 
   let people = $derived(data.people.people);
 
-  let visiblePeople = $derived(people.filter((people) => !people.isHidden));
-  let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
+  // hidden people are only shown when explicitly filtering for them
+  let visiblePeople = $derived(data.filter.isHidden ? people : people.filter((people) => !people.isHidden));
+  let countVisiblePeople = $derived(
+    searchName ? searchedPeopleLocal.length : data.people.total - (data.filter.isHidden ? 0 : data.people.hidden),
+  );
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
@@ -312,8 +307,8 @@
   ]}
 >
   {#snippet buttons()}
-    {#if people.length > 0}
-      <div class="flex items-center justify-center gap-2">
+    <div class="flex items-center justify-center gap-2">
+      {#if people.length > 0}
         <div class="hidden sm:block">
           <div class="h-10 w-40 lg:w-80">
             <SearchPeople
@@ -334,8 +329,17 @@
           variant="ghost"
           color="secondary">{$t('show_and_hide_people')}</Button
         >
-      </div>
-    {/if}
+      {/if}
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        indicator={hasFilter ? 'primary' : undefined}
+        icon={mdiTune}
+        aria-label={$t('filters')}
+        onclick={handleFilter}
+      />
+    </div>
   {/snippet}
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
@@ -344,12 +348,7 @@
         <div
           class="rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm hover:dark:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"
         >
-          <PeopleCard
-            {person}
-            onMergePeople={() => handleMergePeople(person)}
-            onHidePerson={() => handleHidePerson(person)}
-            onToggleFavorite={() => handleToggleFavorite(person)}
-          />
+          <PeopleCard {person} onMergePeople={() => handleMergePeople(person)} />
 
           <input
             type="text"

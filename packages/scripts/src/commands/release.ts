@@ -8,10 +8,10 @@ import {
   RELEASE_TYPES,
   ReleaseError,
   ReleaseInputError,
-  ReleaseOptions,
-  ReleaseType,
+  type ReleaseOptions,
+  type ReleaseType,
   TextFile,
-} from 'src/types';
+} from 'src/types.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../../');
 

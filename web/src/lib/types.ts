@@ -76,6 +76,13 @@ export type SearchFilter = {
   rating?: number | null;
 };
 
+export type PeopleFilter = {
+  sharedById?: string;
+  sharedWithId?: string;
+  isFavorite?: boolean;
+  isHidden?: boolean;
+};
+
 export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
 
 export type JSONSchemaProperty = {

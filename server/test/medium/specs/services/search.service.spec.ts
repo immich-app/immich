@@ -1,18 +1,18 @@
 import { Kysely } from 'kysely';
-import { SearchSuggestionType } from 'src/dtos/search.dto';
-import { AlbumUserRole, AssetOrder, AssetVisibility, SearchOrderField } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { SearchRepository } from 'src/repositories/search.repository';
-import { DB } from 'src/schema';
-import { SearchService } from 'src/services/search.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { SearchSuggestionType } from 'src/dtos/search.dto.js';
+import { AlbumUserRole, AssetOrder, AssetVisibility, SearchOrderField } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { SearchRepository } from 'src/repositories/search.repository.js';
+import { DB } from 'src/schema/index.js';
+import { SearchService } from 'src/services/search.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -62,6 +62,22 @@ describe(SearchService.name, () => {
       expect.objectContaining({ id: assets[2].id }),
       expect.objectContaining({ id: assets[0].id }),
       expect.objectContaining({ id: assets[1].id }),
+    ]);
+  });
+
+  it('should not return hidden assets', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+
+    const { asset: visibleAsset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newExif({ assetId: visibleAsset.id, fileSizeInByte: 1000 });
+    const { asset: hiddenAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Hidden });
+    await ctx.newExif({ assetId: hiddenAsset.id, fileSizeInByte: 2000 });
+
+    const auth = factory.auth({ user: { id: user.id } });
+
+    await expect(sut.searchLargeAssets(auth, { size: 250 })).resolves.toEqual([
+      expect.objectContaining({ id: visibleAsset.id }),
     ]);
   });
 

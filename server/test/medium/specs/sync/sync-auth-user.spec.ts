@@ -1,9 +1,9 @@
 import { Kysely } from 'kysely';
-import { SyncEntityType, SyncRequestType } from 'src/enum';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { SyncTestContext } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { SyncTestContext } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -17,11 +17,11 @@ beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
 
-describe(SyncEntityType.AuthUserV1, () => {
+describe(SyncEntityType.AuthUserV2, () => {
   it('should detect and sync the first user', async () => {
     const { auth, user, ctx } = await setup(await getKyselyDB());
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -40,13 +40,13 @@ describe(SyncEntityType.AuthUserV1, () => {
           quotaUsageInBytes: user.quotaUsageInBytes,
           storageLabel: user.storageLabel,
         },
-        type: 'AuthUserV1',
+        type: 'AuthUserV2',
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AuthUsersV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AuthUsersV2]);
   });
 
   it('should sync a change and then another change to that same user', async () => {
@@ -54,7 +54,7 @@ describe(SyncEntityType.AuthUserV1, () => {
 
     const userRepo = ctx.get(UserRepository);
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -62,7 +62,7 @@ describe(SyncEntityType.AuthUserV1, () => {
           id: user.id,
           isAdmin: false,
         }),
-        type: 'AuthUserV1',
+        type: 'AuthUserV2',
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
@@ -71,7 +71,7 @@ describe(SyncEntityType.AuthUserV1, () => {
 
     await userRepo.update(user.id, { isAdmin: true });
 
-    const newResponse = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV2]);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
@@ -79,7 +79,7 @@ describe(SyncEntityType.AuthUserV1, () => {
           id: user.id,
           isAdmin: true,
         }),
-        type: 'AuthUserV1',
+        type: 'AuthUserV2',
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
@@ -90,7 +90,7 @@ describe(SyncEntityType.AuthUserV1, () => {
 
     await ctx.newUser();
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -98,7 +98,7 @@ describe(SyncEntityType.AuthUserV1, () => {
           id: user.id,
           isAdmin: false,
         }),
-        type: 'AuthUserV1',
+        type: 'AuthUserV2',
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);

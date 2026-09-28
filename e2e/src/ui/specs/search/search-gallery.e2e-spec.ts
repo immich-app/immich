@@ -8,8 +8,8 @@ import {
   TimelineData,
   toAssetResponseDto,
 } from 'src/ui/generators/timeline';
-import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
-import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network';
+import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network.js';
+import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network.js';
 import { assetViewerUtils } from '../timeline/utils';
 
 const buildSearchUrl = (assetId: string) => {

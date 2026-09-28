@@ -1,5 +1,5 @@
 import { Column, ForeignKeyColumn, Table, Timestamp } from '@immich/sql-tools';
-import { AssetTable } from 'src/schema/tables/asset.table';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('asset_job_status')
 export class AssetJobStatusTable {

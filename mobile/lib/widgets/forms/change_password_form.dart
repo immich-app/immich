@@ -14,6 +14,7 @@ class ChangePasswordForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentPasswordController = useTextEditingController.fromValue(TextEditingValue.empty);
     final passwordController = useTextEditingController.fromValue(TextEditingValue.empty);
     final confirmPasswordController = useTextEditingController.fromValue(TextEditingValue.empty);
     final authState = ref.watch(authProvider);
@@ -43,7 +44,11 @@ class ChangePasswordForm extends HookConsumerWidget {
                 key: formKey,
                 child: Column(
                   children: [
-                    PasswordInput(controller: passwordController),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: PasswordInput(controller: currentPasswordController, label: context.t.password),
+                    ),
+                    PasswordInput(controller: passwordController, label: context.t.change_password_form_new_password),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: ConfirmPasswordInput(
@@ -52,12 +57,14 @@ class ChangePasswordForm extends HookConsumerWidget {
                       ),
                     ),
                     ChangePasswordButton(
-                      passwordController: passwordController,
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
                           final isSuccess = await ref
                               .read(authProvider.notifier)
-                              .changePassword(passwordController.value.text);
+                              .changePassword(
+                                currentPassword: currentPasswordController.text,
+                                newPassword: passwordController.text,
+                              );
 
                           if (!isSuccess && context.mounted) {
                             ImmichToast.show(
@@ -107,19 +114,16 @@ class ChangePasswordForm extends HookConsumerWidget {
 
 class PasswordInput extends StatelessWidget {
   final TextEditingController controller;
+  final String label;
 
-  const PasswordInput({super.key, required this.controller});
+  const PasswordInput({super.key, required this.controller, required this.label});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       obscureText: true,
       controller: controller,
-      decoration: InputDecoration(
-        labelText: context.t.change_password_form_new_password,
-        border: const OutlineInputBorder(),
-        hintText: context.t.change_password_form_new_password,
-      ),
+      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder(), hintText: label),
     );
   }
 }
@@ -154,9 +158,8 @@ class ConfirmPasswordInput extends StatelessWidget {
 }
 
 class ChangePasswordButton extends StatelessWidget {
-  final TextEditingController passwordController;
   final VoidCallback onPressed;
-  const ChangePasswordButton({super.key, required this.passwordController, required this.onPressed});
+  const ChangePasswordButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

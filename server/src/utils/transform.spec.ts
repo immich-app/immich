@@ -1,7 +1,7 @@
-import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { transformFaceBoundingBox, transformOcrBoundingBox } from 'src/utils/transform';
 import { describe, expect, it } from 'vitest';
+import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
+import { transformFaceBoundingBox, transformOcrBoundingBox } from 'src/utils/transform.js';
 
 describe('transformFaceBoundingBox', () => {
   const baseFace = {

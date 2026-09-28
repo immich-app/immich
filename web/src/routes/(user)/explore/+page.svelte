@@ -9,6 +9,7 @@
   import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
   import { Icon, ImageCarousel } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -40,6 +41,7 @@
       href: Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }),
       alt: $t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } }),
       src: getAssetMediaUrl({ id: memory.assets[0].id }),
+      type: memory.type,
     })),
   );
 
@@ -143,7 +145,11 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <ImageCarousel items={memories} />
+      <ImageCarousel items={memories}>
+        {#snippet child(item)}
+          <MemoryCard {item} />
+        {/snippet}
+      </ImageCarousel>
     </div>
   {/if}
 
