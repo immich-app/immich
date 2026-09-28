@@ -227,6 +227,10 @@ export class AssetRepository {
               formatName: ref('excluded.formatName'),
               formatLongName: ref('excluded.formatLongName'),
               pixelFormat: ref('excluded.pixelFormat'),
+              cropTop: ref('excluded.cropTop'),
+              cropBottom: ref('excluded.cropBottom'),
+              cropLeft: ref('excluded.cropLeft'),
+              cropRight: ref('excluded.cropRight'),
             })),
           ),
       );

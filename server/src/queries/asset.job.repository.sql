@@ -268,7 +268,11 @@ select
           "asset_video"."colorTransfer",
           "asset_video"."dvProfile",
           "asset_video"."dvLevel",
-          "asset_video"."dvBlSignalCompatibilityId"
+          "asset_video"."dvBlSignalCompatibilityId",
+          "asset_video"."cropTop",
+          "asset_video"."cropBottom",
+          "asset_video"."cropLeft",
+          "asset_video"."cropRight"
         from
           (
             select
@@ -665,7 +669,11 @@ select
           "asset_video"."colorTransfer",
           "asset_video"."dvProfile",
           "asset_video"."dvLevel",
-          "asset_video"."dvBlSignalCompatibilityId"
+          "asset_video"."dvBlSignalCompatibilityId",
+          "asset_video"."cropTop",
+          "asset_video"."cropBottom",
+          "asset_video"."cropLeft",
+          "asset_video"."cropRight"
         from
           (
             select

@@ -35,6 +35,23 @@ export const isVideoRotated = (videoStream: VideoStreamInfo): boolean => Math.ab
 export const isVideoVertical = (videoStream: VideoStreamInfo): boolean =>
   videoStream.height > videoStream.width !== isVideoRotated(videoStream);
 
+const getFrameCrop = (videoStream: VideoStreamInfo) => {
+  const top = videoStream.cropTop ?? 0;
+  const bottom = videoStream.cropBottom ?? 0;
+  const left = videoStream.cropLeft ?? 0;
+  const right = videoStream.cropRight ?? 0;
+  const width = videoStream.width - left - right;
+  const height = videoStream.height - top - bottom;
+  const isCropping = top > 0 || bottom > 0 || left > 0 || right > 0;
+  const isValid = Math.min(top, bottom, left, right) >= 0 && width > 0 && height > 0;
+  return isCropping && isValid ? { x: left, y: top, width, height } : null;
+};
+
+const applyFrameCrop = (videoStream: VideoStreamInfo): VideoStreamInfo => {
+  const crop = getFrameCrop(videoStream);
+  return crop ? { ...videoStream, width: crop.width, height: crop.height } : videoStream;
+};
+
 export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) => {
   const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
   let larger = Math.round(targetRes * factor);
@@ -1104,8 +1121,9 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
 }
 
 export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
-  getBaseInputOptions() {
-    return ['-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate'];
+  getBaseInputOptions(videoStream?: VideoStreamInfo): string[] {
+    const options = ['-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate'];
+    return videoStream && getFrameCrop(videoStream) ? ['-apply_cropping', 'codec', ...options] : options;
   }
 
   // -noautorotate keeps frames in their stored orientation
@@ -1119,7 +1137,7 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       if (this.interfaces.mali) {
         return [
           // use RKMPP for scaling, OpenCL for tone mapping
-          `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1:async_depth=4`,
+          this.getRgaFilter(videoStream, 'p010', true),
           'hwmap=derive_device=opencl:mode=read',
           `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
           'hwmap=derive_device=rkmpp:mode=write:reverse=1',
@@ -1128,16 +1146,44 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       }
       return [
         // use RKMPP for scaling, CPU for tone mapping (only works on RK3588, which supports 10-bit output)
-        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1:async_depth=4`,
+        this.getRgaFilter(videoStream, 'p010', true),
         'hwdownload',
         'format=p010',
         `tonemapx=tonemap=${this.config.tonemap}:desat=0:p=${primaries}:t=${transfer}:m=${matrix}:r=pc:peak=100:format=yuv420p`,
         'hwupload',
       ];
     }
-    if (this.shouldScale(videoStream)) {
-      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1:async_depth=4`];
+    const shouldScale = this.shouldScale(videoStream);
+    if (shouldScale || getFrameCrop(videoStream)) {
+      return [this.getRgaFilter(videoStream, 'nv12', shouldScale)];
     }
     return [];
+  }
+
+  shouldScale(videoStream: VideoStreamInfo) {
+    return super.shouldScale(applyFrameCrop(videoStream));
+  }
+
+  getScaling(videoStream: VideoStreamInfo) {
+    const cropped = applyFrameCrop(videoStream);
+    const target = this.getTargetResolution(cropped);
+    const vertical = isVideoVertical(cropped);
+    if (cropped === videoStream) {
+      return vertical ? `w=${target}:h=-2` : `w=-2:h=${target}`;
+    }
+    // vpp_rkrga resolves -2 against the uncropped input, so derive the other side from the cropped aspect ratio
+    const ratio = vertical ? cropped.height / cropped.width : cropped.width / cropped.height;
+    const other = Math.round((target * ratio) / 2) * 2;
+    return vertical ? `w=${target}:h=${other}` : `w=${other}:h=${target}`;
+  }
+
+  private getRgaFilter(videoStream: VideoStreamInfo, format: 'nv12' | 'p010', scale: boolean) {
+    const crop = getFrameCrop(videoStream);
+    const options = crop ? [`cw=${crop.width}:ch=${crop.height}:cx=${crop.x}:cy=${crop.y}`] : [];
+    if (scale) {
+      options.push(this.getScaling(videoStream));
+    }
+    options.push(`format=${format}:afbc=1:async_depth=4`);
+    return `${crop ? 'vpp_rkrga' : 'scale_rkrga'}=${options.join(':')}`;
   }
 }
