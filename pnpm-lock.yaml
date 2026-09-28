@@ -130,7 +130,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.5
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@types/pg':
         specifier: ^8.15.1
@@ -245,7 +245,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@typescript/native':
         specifier: npm:typescript@^7.0.2
@@ -351,7 +351,7 @@ importers:
         specifier: workspace:*
         version: link:../sdk
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       esbuild:
         specifier: ^0.28.0
@@ -373,7 +373,7 @@ importers:
         version: 7.8.5
     devDependencies:
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@types/semver':
         specifier: ^7.7.1
@@ -392,7 +392,7 @@ importers:
         version: 1.2.0
     devDependencies:
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       typescript:
         specifier: ^7.0.0
@@ -699,7 +699,7 @@ importers:
         specifier: ^2.0.0
         version: 2.2.0
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@types/nodemailer':
         specifier: ^8.0.0
