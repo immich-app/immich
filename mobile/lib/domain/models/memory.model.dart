@@ -26,6 +26,7 @@ abstract class MemoryData with _$MemoryData {
     return MemoryData(year: map['year'] as int);
   }
 
+  @visibleForTesting
   String toJson() => json.encode(toMap());
 
   factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);

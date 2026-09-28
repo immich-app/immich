@@ -112,6 +112,7 @@ import 'package:sqlite_async/sqlite_async.dart';
 class Drift extends $Drift {
   final SqliteConnectionPool? _updatePool;
 
+  @visibleForTesting
   Drift(super.executor) : _updatePool = null;
 
   Drift.sqlite(SqliteConnection db, SqliteConnectionPool updatePool)

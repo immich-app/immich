@@ -27,6 +27,9 @@ abstract class BackgroundWorkerFgHostApi {
   void configure(BackgroundWorkerSettings settings);
 
   void disable();
+
+  // iOS Only: true when the OS started the process in the background for one of its background tasks
+  bool wasLaunchedInBackground();
 }
 
 @HostApi()

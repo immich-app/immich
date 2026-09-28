@@ -51,8 +51,6 @@ class FakeAssetService extends Fake implements AssetService {
 class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
   int cleanupStaleTempFilesCalls = 0;
-  int cleanupManagedTempFileCalls = 0;
-  final List<String> managedTempPaths = [];
 
   TestViewIntentService() : super(MockViewIntentHostApi());
 
@@ -62,16 +60,6 @@ class TestViewIntentService extends ViewIntentService {
   @override
   Future<void> cleanupStaleTempFiles() async {
     cleanupStaleTempFilesCalls++;
-  }
-
-  @override
-  Future<void> cleanupManagedTempFile() async {
-    cleanupManagedTempFileCalls++;
-  }
-
-  @override
-  Future<void> setManagedTempFilePath(String path) async {
-    managedTempPaths.add(path);
   }
 }
 

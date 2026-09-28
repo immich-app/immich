@@ -291,12 +291,13 @@
     viewMode = AlbumPageViewMode.VIEW;
   };
 
-  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
+  const onAlbumAddAssets = async ({ albumIds, assetIds }: { albumIds: string[]; assetIds: string[] }) => {
     if (!albumIds.includes(album.id)) {
       return;
     }
 
-    await refreshAlbum();
+    album = { ...album, assetCount: album.assetCount + assetIds.length };
+
     timelineMultiSelectManager.clear();
     await setModeToView();
   };
@@ -327,7 +328,7 @@
   };
 
   const { Cast } = $derived(getGlobalActions($t));
-  const { Share } = $derived(getAlbumActions($t, album));
+  const { Share, Leave } = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
 
   const Close = $derived({
@@ -377,7 +378,7 @@
               <AlbumTitle
                 id={album.id}
                 albumName={album.albumName}
-                {isOwned}
+                {isEditor}
                 onUpdate={(albumName) => (album = { ...album, albumName })}
               />
 
@@ -427,7 +428,7 @@
               {/if}
               <AlbumDescription
                 id={album.id}
-                {isOwned}
+                {isEditor}
                 bind:description={() => album.description, (description) => (album = { ...album, description })}
               />
             </section>
@@ -560,7 +561,7 @@
               />
             {/if}
 
-            {#if isOwned || containsEditors}
+            {#if isOwned || album.albumUsers.length > 1}
               <ButtonContextMenu
                 icon={mdiDotsVertical}
                 title={$t('album_options')}
@@ -593,6 +594,8 @@
                     text={$t('delete_album')}
                     onClick={() => handleDeleteAlbum(album)}
                   />
+                {:else}
+                  <ActionMenuItem action={Leave} />
                 {/if}
               </ButtonContextMenu>
             {/if}

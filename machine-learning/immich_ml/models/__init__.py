@@ -1,5 +1,3 @@
-from typing import Any
-
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
@@ -38,10 +36,6 @@ def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTas
 
         case _:
             raise ValueError(f"Unknown model combination: {source}, {model_type}, {model_task}")
-
-
-def from_model_type(model_name: str, model_type: ModelType, model_task: ModelTask, **kwargs: Any) -> InferenceModel:
-    return get_model_class(model_name, model_type, model_task)(model_name, **kwargs)
 
 
 def get_model_deps(model_name: str, model_type: ModelType, model_task: ModelTask) -> list[tuple[ModelType, ModelTask]]:

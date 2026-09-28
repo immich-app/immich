@@ -19,7 +19,7 @@ from immich_ml.models.transforms import (
     serialize_np_array,
     to_numpy,
 )
-from immich_ml.schemas import ModelSession, ModelTask, ModelType
+from immich_ml.schemas import ModelGraph, ModelInput, ModelSession, ModelTask, ModelType
 
 
 class BaseCLIPVisualEncoder(InferenceModel):
@@ -28,11 +28,12 @@ class BaseCLIPVisualEncoder(InferenceModel):
 
     def _predict(self, inputs: Image.Image | bytes) -> str:
         image = decode_pil(inputs)
-        res: NDArray[np.float32] = self.session.run(None, self.transform(image))[0][0]
+        session = self.session.for_shape(self.shape_policy.dims[0])
+        res: NDArray[np.float32] = session.run(None, self.transform(session, image))[0][0]
         return serialize_np_array(res)
 
     @abstractmethod
-    def transform(self, image: Image.Image) -> dict[str, NDArray[np.float32]]:
+    def transform(self, session: ModelGraph, image: Image.Image) -> ModelInput:
         pass
 
     @property
@@ -69,9 +70,18 @@ class OpenClipVisualEncoder(BaseCLIPVisualEncoder):
 
         return super()._load()
 
-    def transform(self, image: Image.Image) -> dict[str, NDArray[np.float32]]:
-        image = resize_pil(image, self.size)
-        image = crop_pil(image, self.size)
-        image_np = to_numpy(image)
-        image_np = normalize(image_np, self.mean, self.std)
-        return {"image": np.expand_dims(image_np.transpose(2, 0, 1), 0)}
+    def transform(self, session: ModelGraph, image: Image.Image) -> ModelInput:
+        image = self._resize(image)
+        if session.normalizes_input:
+            rgb: NDArray[np.uint8] = np.asarray(image if image.mode == "RGB" else image.convert("RGB"))
+            return {"image": rgb[None]}
+        return {"image": normalize(to_numpy(image), self.mean, self.std).transpose(2, 0, 1)[None]}
+
+    def _resize(self, image: Image.Image) -> Image.Image:
+        match self.preprocess_cfg.get("resize_mode", "shortest"):  # open_clip's default for older configs
+            case "squash":
+                return image.resize((self.size, self.size), resample=self.resampling)
+            case "shortest":
+                return crop_pil(resize_pil(image, self.size, self.resampling), self.size)
+            case mode:
+                raise ValueError(f"Unsupported resize_mode {mode!r} in {self.preprocess_cfg_path}")

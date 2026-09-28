@@ -3,8 +3,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import '../../utils.dart';
 
 class LocalAssetFactory {
-  const LocalAssetFactory();
-
   static LocalAsset create({String? id, String? name, String? remoteId}) {
     final assetId = TestUtils.uuid(id);
 

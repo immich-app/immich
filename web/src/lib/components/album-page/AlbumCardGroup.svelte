@@ -66,8 +66,8 @@
   {#if !isCollapsed}
     <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
-        {@const { Edit, Share, Download, Delete } = getAlbumActions($t, album)}
-        {@const items = [Edit, Share, Download, Delete]}
+        {@const { Edit, Share, Download, Leave, Delete } = getAlbumActions($t, album)}
+        {@const items = [Edit, Share, Download, Leave, Delete]}
         <a
           href={Route.viewAlbum(album)}
           class="h-fit"

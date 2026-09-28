@@ -1,3 +1,6 @@
+// Types are used for direct JSON serialization
+// ignore_for_file: unused-code
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'asset_metadata.model.freezed.dart';

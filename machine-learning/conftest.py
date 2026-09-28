@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Callable, Iterator
 from unittest import mock
@@ -9,6 +10,16 @@ from PIL import Image
 
 from immich_ml.config import log
 from immich_ml.main import app
+from immich_ml.models.base import InferenceModel
+from immich_ml.schemas import Shape
+from immich_ml.sessions.ort import Device
+
+TEST_ASSETS = Path(__file__).parent.parent / "e2e/test-assets"
+
+
+@pytest.fixture(scope="session")
+def asset() -> Callable[[str], bytes]:
+    return lambda path: (TEST_ASSETS / path).read_bytes()
 
 
 @pytest.fixture
@@ -18,7 +29,8 @@ def pil_image() -> Image.Image:
 
 @pytest.fixture
 def mock_get_model() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.models.cache.from_model_type", autospec=True) as mocked:
+    with mock.patch("immich_ml.models.cache.get_model_class") as mocked:
+        mocked.return_value.graph_options = ()
         yield mocked
 
 
@@ -102,6 +114,15 @@ def providers(request: pytest.FixtureRequest) -> Iterator[mock.Mock]:
         yield providers
 
 
+@pytest.fixture(autouse=True)
+def gpus() -> Iterator[None]:
+    with (
+        mock.patch("immich_ml.sessions.ort._intel_gpu", return_value=Device("12.71.4-128eu", "26.22.38646.4")),
+        mock.patch("immich_ml.sessions.ort._amd_gpu", return_value=Device("gfx1100", "7.2.0")),
+    ):
+        yield
+
+
 @pytest.fixture(scope="function")
 def ort_pybind() -> Iterator[mock.Mock]:
     with mock.patch("immich_ml.sessions.ort.ort.capi._pybind_state") as mocked:
@@ -119,15 +140,29 @@ def ov_device_ids(request: pytest.FixtureRequest, ort_pybind: mock.Mock) -> Iter
 
 @pytest.fixture(scope="function")
 def ort_session() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.sessions.ort.ort.InferenceSession") as mocked:
+    # a graph is opened as it is: preparing one takes a child process and real files
+    with (
+        mock.patch("immich_ml.sessions.ort.ort.InferenceSession") as mocked,
+        mock.patch("immich_ml.sessions.ort.prepared", side_effect=lambda spec: spec.model_path),
+    ):
         yield mocked
 
 
 @pytest.fixture(scope="function")
 def stub_session() -> Callable[..., mock.Mock]:
-    def _make(shape: tuple[Any, ...], outputs: Any = None, name: str = "input.1") -> mock.Mock:
+    def _make(
+        shape: tuple[Any, ...],
+        outputs: Any = None,
+        name: str = "input.1",
+        normalizes_input: bool = False,
+        shapes: tuple[Shape, ...] = (Shape(batch=1),),
+    ) -> mock.Mock:
         session = mock.Mock()
         session.get_inputs.return_value = [SimpleNamespace(name=name, shape=shape)]
+        session.normalizes_input = normalizes_input
+        session.shapes = shapes
+        session.batches = tuple(sorted({shape.batch for shape in shapes}, reverse=True))
+        session.for_shape.return_value = session  # a stub is the session and the one graph in it
         if outputs is not None:
             session.run.return_value = outputs
         return session
@@ -138,12 +173,16 @@ def stub_session() -> Callable[..., mock.Mock]:
 @pytest.fixture(scope="function")
 def ann_session() -> Iterator[mock.Mock]:
     with mock.patch("immich_ml.sessions.ann.Ann") as mocked:
+        mocked.return_value.input_shapes.__getitem__.return_value = [(1, 3, 112, 112)]  # armnn compiles one batch
         yield mocked
 
 
 @pytest.fixture(scope="function")
 def rknn_session() -> Iterator[mock.Mock]:
     with mock.patch("immich_ml.sessions.rknn.RknnPoolExecutor") as mocked:
+        mocked.return_value.custom_string = ""  # an unstamped binary, i.e. one that wants normalized input
+        compiled = SimpleNamespace(name="input", shape=(1, 224, 224, 3))  # the compiler reports NHWC either way
+        mocked.return_value.inputs = [compiled, compiled]
         yield mocked
 
 
@@ -187,5 +226,9 @@ def exception() -> Iterator[mock.Mock]:
 
 @pytest.fixture(scope="function")
 def snapshot_download() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.models.base.snapshot_download") as mocked:
+    # a download that leaves the model cached, as one that found the artifact does
+    with (
+        mock.patch("immich_ml.models.base.snapshot_download") as mocked,
+        mock.patch.object(InferenceModel, "cached", new_callable=mock.PropertyMock, side_effect=lambda: mocked.called),
+    ):
         yield mocked

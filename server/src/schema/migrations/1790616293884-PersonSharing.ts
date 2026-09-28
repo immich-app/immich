@@ -57,11 +57,33 @@ export async function up(db: Kysely<any>): Promise<void> {
   BEFORE UPDATE ON "person_user"
   FOR EACH ROW
   EXECUTE FUNCTION updated_at();`.execute(db);
+  await sql`CREATE OR REPLACE FUNCTION person_user_after_insert()
+  RETURNS TRIGGER
+  LANGUAGE PLPGSQL
+  AS $$
+    BEGIN
+      INSERT INTO person ("ownerId", "personGroupId", "name", "birthDate")
+      SELECT DISTINCT ON (i."sharedWithId", i."personGroupId")
+        i."sharedWithId", i."personGroupId", shared."name", shared."birthDate"
+      FROM inserted_rows i
+      INNER JOIN person shared
+        ON shared."ownerId" = i."sharedById" AND shared."personGroupId" = i."personGroupId"
+      ORDER BY i."sharedWithId", i."personGroupId", shared."name" = '', shared."birthDate" IS NULL
+      ON CONFLICT ("ownerId", "personGroupId") DO UPDATE
+      SET
+        "name" = CASE WHEN person."name" = '' THEN EXCLUDED."name" ELSE person."name" END,
+        "birthDate" = COALESCE(person."birthDate", EXCLUDED."birthDate")
+      WHERE (person."name" = '' AND EXCLUDED."name" <> '')
+        OR (person."birthDate" IS NULL AND EXCLUDED."birthDate" IS NOT NULL);
+      RETURN NULL;
+    END
+  $$;`.execute(db);
   await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('function_person_user_after_insert', '{"type":"function","name":"person_user_after_insert","sql":"CREATE OR REPLACE FUNCTION person_user_after_insert()\\n  RETURNS TRIGGER\\n  LANGUAGE PLPGSQL\\n  AS $$\\n    BEGIN\\n      INSERT INTO person (\\"ownerId\\", \\"personGroupId\\", \\"name\\", \\"birthDate\\")\\n      SELECT i.\\"sharedWithId\\", i.\\"personGroupId\\", shared.\\"name\\", shared.\\"birthDate\\"\\n      FROM inserted_rows i\\n      INNER JOIN person shared\\n        ON shared.\\"ownerId\\" = i.\\"sharedById\\" AND shared.\\"personGroupId\\" = i.\\"personGroupId\\"\\n      ON CONFLICT (\\"ownerId\\", \\"personGroupId\\") DO NOTHING;\\n      RETURN NULL;\\n    END\\n  $$;"}'::jsonb);`.execute(db);
   await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('function_person_delete_shares', '{"type":"function","name":"person_delete_shares","sql":"CREATE OR REPLACE FUNCTION person_delete_shares()\\n  RETURNS TRIGGER\\n  LANGUAGE PLPGSQL\\n  AS $$\\n    BEGIN\\n      DELETE FROM person_user\\n      USING deleted_rows\\n      WHERE person_user.\\"personGroupId\\" = deleted_rows.\\"personGroupId\\"\\n        AND person_user.\\"sharedWithId\\" = deleted_rows.\\"ownerId\\";\\n      RETURN NULL;\\n    END\\n  $$;"}'::jsonb);`.execute(db);
   await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('trigger_person_delete_shares', '{"type":"trigger","name":"person_delete_shares","sql":"CREATE OR REPLACE TRIGGER \\"person_delete_shares\\"\\n  AFTER DELETE ON \\"person\\"\\n  REFERENCING OLD TABLE AS \\"deleted_rows\\"\\n  FOR EACH STATEMENT\\n  EXECUTE FUNCTION person_delete_shares();"}'::jsonb);`.execute(db);
   await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('trigger_person_user_after_insert', '{"type":"trigger","name":"person_user_after_insert","sql":"CREATE OR REPLACE TRIGGER \\"person_user_after_insert\\"\\n  AFTER INSERT ON \\"person_user\\"\\n  REFERENCING NEW TABLE AS \\"inserted_rows\\"\\n  FOR EACH STATEMENT\\n  EXECUTE FUNCTION person_user_after_insert();"}'::jsonb);`.execute(db);
   await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('trigger_person_user_updatedAt', '{"type":"trigger","name":"person_user_updatedAt","sql":"CREATE OR REPLACE TRIGGER \\"person_user_updatedAt\\"\\n  BEFORE UPDATE ON \\"person_user\\"\\n  FOR EACH ROW\\n  EXECUTE FUNCTION updated_at();"}'::jsonb);`.execute(db);
+  await sql`UPDATE "migration_overrides" SET "value" = '{"type":"function","name":"person_user_after_insert","sql":"CREATE OR REPLACE FUNCTION person_user_after_insert()\\n  RETURNS TRIGGER\\n  LANGUAGE PLPGSQL\\n  AS $$\\n    BEGIN\\n      INSERT INTO person (\\"ownerId\\", \\"personGroupId\\", \\"name\\", \\"birthDate\\")\\n      SELECT DISTINCT ON (i.\\"sharedWithId\\", i.\\"personGroupId\\")\\n        i.\\"sharedWithId\\", i.\\"personGroupId\\", shared.\\"name\\", shared.\\"birthDate\\"\\n      FROM inserted_rows i\\n      INNER JOIN person shared\\n        ON shared.\\"ownerId\\" = i.\\"sharedById\\" AND shared.\\"personGroupId\\" = i.\\"personGroupId\\"\\n      ORDER BY i.\\"sharedWithId\\", i.\\"personGroupId\\", shared.\\"name\\" = '''', shared.\\"birthDate\\" IS NULL\\n      ON CONFLICT (\\"ownerId\\", \\"personGroupId\\") DO UPDATE\\n      SET\\n        \\"name\\" = CASE WHEN person.\\"name\\" = '''' THEN EXCLUDED.\\"name\\" ELSE person.\\"name\\" END,\\n        \\"birthDate\\" = COALESCE(person.\\"birthDate\\", EXCLUDED.\\"birthDate\\")\\n      WHERE (person.\\"name\\" = '''' AND EXCLUDED.\\"name\\" <> '''')\\n        OR (person.\\"birthDate\\" IS NULL AND EXCLUDED.\\"birthDate\\" IS NOT NULL);\\n      RETURN NULL;\\n    END\\n  $$;"}'::jsonb WHERE "name" = 'function_person_user_after_insert';`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {

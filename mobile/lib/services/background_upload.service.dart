@@ -109,7 +109,9 @@ class BackgroundUploadService {
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
   final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
 
+  // ignore: unused-code
   Stream<TaskStatusUpdate> get taskStatusStream => _taskStatusController.stream;
+  // ignore: unused-code
   Stream<TaskProgressUpdate> get taskProgressStream => _taskProgressController.stream;
 
   bool shouldAbortQueuingTasks = false;

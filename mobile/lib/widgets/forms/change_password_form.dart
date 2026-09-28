@@ -57,7 +57,6 @@ class ChangePasswordForm extends HookConsumerWidget {
                       ),
                     ),
                     ChangePasswordButton(
-                      passwordController: passwordController,
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
                           final isSuccess = await ref
@@ -159,9 +158,8 @@ class ConfirmPasswordInput extends StatelessWidget {
 }
 
 class ChangePasswordButton extends StatelessWidget {
-  final TextEditingController passwordController;
   final VoidCallback onPressed;
-  const ChangePasswordButton({super.key, required this.passwordController, required this.onPressed});
+  const ChangePasswordButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
