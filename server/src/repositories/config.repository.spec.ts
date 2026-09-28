@@ -17,6 +17,7 @@ const resetEnv = () => {
     'IMMICH_API_METRICS_PORT',
     'IMMICH_MEDIA_LOCATION',
     'IMMICH_MICROSERVICES_METRICS_PORT',
+    'IMMICH_SOCKET',
     'IMMICH_TELEMETRY_INCLUDE',
     'IMMICH_TELEMETRY_EXCLUDE',
 
@@ -73,6 +74,7 @@ describe('getEnv', () => {
     expect(config).toMatchObject({
       host: undefined,
       port: 2283,
+      socket: undefined,
       environment: 'production',
       configFile: undefined,
       logLevel: undefined,
@@ -86,6 +88,18 @@ describe('getEnv', () => {
     it('should throw an error for relative paths', () => {
       process.env.IMMICH_MEDIA_LOCATION = './relative/path';
       expect(() => getEnv()).toThrowError('[IMMICH_MEDIA_LOCATION] Must be an absolute path');
+    });
+  });
+
+  describe('IMMICH_SOCKET', () => {
+    it('should throw an error for relative paths', () => {
+      process.env.IMMICH_SOCKET = './immich.sock';
+      expect(() => getEnv()).toThrowError('[IMMICH_SOCKET] Must be an absolute path');
+    });
+
+    it('should use the socket path', () => {
+      process.env.IMMICH_SOCKET = '/run/immich/immich.sock';
+      expect(getEnv()).toMatchObject({ socket: '/run/immich/immich.sock' });
     });
   });
 

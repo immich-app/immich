@@ -3,7 +3,7 @@ import { json, urlencoded } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmetMiddleware from 'helmet';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import sirv from 'sirv';
 import { IMMICH_SERVER_START, excludePaths, serverVersion } from 'src/constants.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
@@ -40,7 +40,7 @@ export async function configureExpress(
   },
 ) {
   const configRepository = app.get(ConfigRepository);
-  const { environment, host, port, helmet, resourcePaths, network } = configRepository.getEnv();
+  const { environment, host, port, socket, helmet, resourcePaths, network } = configRepository.getEnv();
 
   const logger = await app.resolve(LoggingRepository);
   logger.setContext('Bootstrap');
@@ -88,7 +88,11 @@ export async function configureExpress(
   app.use(app.get(ssr).ssr(excludePaths));
   app.use(compression());
 
-  const server = await (host ? app.listen(port, host) : app.listen(port));
+  if (socket) {
+    rmSync(socket, { force: true });
+  }
+
+  const server = await (socket ? app.listen(socket) : host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 24 * 60 * 60 * 1000;
 
   // make sure every socket always has an error handler

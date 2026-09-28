@@ -54,6 +54,7 @@ export const EnvSchema = z
     IMMICH_ALLOW_EXTERNAL_PLUGINS: stringBool.optional(),
     IMMICH_PLUGINS_INSTALL_FOLDER: absolutePath,
     IMMICH_PORT: z.coerce.number().int().optional(),
+    IMMICH_SOCKET: absolutePath,
     IMMICH_REPOSITORY: z.string().optional(),
     IMMICH_REPOSITORY_URL: z.string().optional(),
     IMMICH_SOURCE_REF: z.string().optional(),

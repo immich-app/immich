@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { rmSync } from 'node:fs';
 import { isMainThread } from 'node:worker_threads';
 import { MicroservicesModule } from 'src/app.module.js';
 import { serverVersion } from 'src/constants.js';
@@ -20,13 +21,18 @@ export async function bootstrap() {
   const configRepository = app.get(ConfigRepository);
   app.get(AppRepository).setCloseFn(() => app.close());
 
-  const { environment, host } = configRepository.getEnv();
+  const { environment, host, socket } = configRepository.getEnv();
 
   logger.setContext('Bootstrap');
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await (host ? app.listen(0, host) : app.listen(0));
+  const socketPath = socket ? `${socket}.microservices` : undefined;
+  if (socketPath) {
+    rmSync(socketPath, { force: true });
+  }
+
+  await (socketPath ? app.listen(socketPath) : host ? app.listen(0, host) : app.listen(0));
 
   logger.log(`Immich Microservices is running [v${serverVersion}] [${environment}] `);
 }

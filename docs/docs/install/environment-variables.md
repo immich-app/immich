@@ -67,10 +67,11 @@ Information on the current workers can be found [here](/administration/jobs-work
 
 ## Ports
 
-| Variable      | Description    |                  Default                   | Containers               |
-| :------------ | :------------- | :----------------------------------------: | :----------------------- |
-| `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  | server, machine learning |
-| `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) | server, machine learning |
+| Variable        | Description           |                  Default                   | Containers               |
+| :-------------- | :-------------------- | :----------------------------------------: | :----------------------- |
+| `IMMICH_HOST`   | Listening host        |                 `0.0.0.0`                  | server, machine learning |
+| `IMMICH_SOCKET` | Listening unix socket |                                            | server                   |
+| `IMMICH_PORT`   | Listening port        | `2283` (server), `3003` (machine learning) | server, machine learning |
 
 ## Database
 
