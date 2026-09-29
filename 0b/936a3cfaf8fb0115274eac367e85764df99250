@@ -1,0 +1,23 @@
+server/src/services/job.service.spec.ts
+  s_35e1aebfaf6920::t_3dd95bcde76020 23-34
+server/src/services/metadata.service.spec.ts
+  s_35e1aebfaf6920::t_e5a1675523ec11 1908-1919
+server/src/services/metadata.service.ts
+  s_35e1aebfaf6920::t_e83208dd9cc7ab 451
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0b936a3cfaf8fb0115274eac367e85764df99250",
+  "prompts": {},
+  "sessions": {
+    "s_35e1aebfaf6920": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0eebe-984e-78a1-9a80-f9f161cf4dc8",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
