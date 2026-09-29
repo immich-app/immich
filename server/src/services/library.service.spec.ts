@@ -204,6 +204,7 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(mockWalk);
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue([]);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
@@ -260,6 +261,7 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(mockWalk);
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue([]);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
