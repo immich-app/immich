@@ -365,6 +365,7 @@ export class MaintenanceWorkerService {
         action: action.action,
         task: 'error',
         error: '' + error,
+        yuccaLogId: this.#status.yuccaLogId,
       });
     }
   }
