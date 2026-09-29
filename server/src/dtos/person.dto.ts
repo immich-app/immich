@@ -22,7 +22,7 @@ const PersonCreateSchema = z
       .meta({ format: 'date' })
       .nullable()
       .optional()
-      .refine((val) => (val ? new Date(val) <= new Date() : true), { error: 'Birth date cannot be in the future' })
+      .refine((val) => !val || new Date(val) <= new Date(), { error: 'Birth date cannot be in the future' })
       .describe('Person date of birth'),
     isHidden: z.boolean().optional().describe('Person visibility (hidden)'),
     isFavorite: z.boolean().optional().describe('Mark as favorite'),
