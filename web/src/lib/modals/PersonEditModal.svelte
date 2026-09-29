@@ -1,9 +1,10 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import PeopleFilterUserPicker from '$lib/modals/PeopleFilterUserPicker.svelte';
-  import { handleUpdatePeople } from '$lib/services/person.service';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { PersonUserRole, type PersonResponseDto } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getPerson, PersonUpdateStrategy, PersonUserRole, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     Alert,
     Button,
@@ -48,7 +49,7 @@
 
   let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
   let targetPerson = $state(candidates[0]);
-  let applyToEveryone = $state(false);
+  let applyToEveryone = $state(authManager.preferences.people?.updateStrategy === PersonUpdateStrategy.Everyone);
 
   const isWritable = $derived.by(() => {
     if (!targetUserId) {
@@ -68,21 +69,18 @@
   });
 
   const onSubmit = async () => {
-    const userIdsToUpdate = applyToEveryone
-      ? candidates.map(({ sharedById }) => sharedById)
-      : [targetPerson.sharedById];
+    const userId = applyToEveryone ? undefined : targetPerson.sharedById;
 
-    const success = await handleUpdatePeople({
-      people: userIdsToUpdate.map((userId) => ({
+    try {
+      const response = await updatePerson({
         id: person.id,
-        name: targetPerson.name,
-        birthDate: targetPerson.birthDate,
-        userId,
-      })),
-    });
-
-    if (success) {
+        personUpdateDto: { name: targetPerson.name, birthDate: targetPerson.birthDate, userId },
+      });
+      const isOtherUser = userId && userId !== authManager.user.id;
+      eventManager.emit('PersonUpdate', isOtherUser ? await getPerson({ id: person.id }) : response);
       onClose();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
