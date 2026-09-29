@@ -107,11 +107,11 @@ void main() {
     expect(small, isNot(large));
   });
 
-  RemoteImageProvider providerFor(String url) => RemoteImageProvider(url: url);
-
   test('shares the cache key when no decode size is set', () {
-    final first = providerFor('https://example.test/thumbnail');
-    final second = providerFor('https://example.test/thumbnail');
+    // ignore: prefer_const_constructors
+    final first = RemoteImageProvider(url: 'https://example.test/thumbnail');
+    // ignore: prefer_const_constructors
+    final second = RemoteImageProvider(url: 'https://example.test/thumbnail');
 
     expect(first, second);
     expect(first.hashCode, second.hashCode);
