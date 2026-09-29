@@ -1907,6 +1907,18 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
+    it('should skip database writes if no sidecar exists or was previously recorded', async () => {
+      const asset = forSidecarJob();
+
+      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
+      mocks.storage.checkFileExists.mockResolvedValue(false);
+
+      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
+    });
+
     it('should detect a new sidecar at .jpg.xmp', async () => {
       const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg', files: [] });
 
