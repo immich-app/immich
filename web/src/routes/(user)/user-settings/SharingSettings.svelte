@@ -5,6 +5,7 @@
   import ClusterGroupUserSelectionModal from '$lib/modals/ClusterGroupUserSelectionModal.svelte';
   import ClusterGroupUsersModal from '$lib/modals/ClusterGroupUsersModal.svelte';
   import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
+  import PersonBulkShareModal from '$lib/modals/PersonBulkShareModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     acceptClusterGroupRequest,
@@ -267,6 +268,15 @@
           {#if user.id === authManager.user.id && canLeave}
             <Button shape="round" size="small" color="secondary" onclick={() => handleLeave()}>
               {$t('leave')}
+            </Button>
+          {:else if user.id !== authManager.user.id}
+            <Button
+              shape="round"
+              size="small"
+              color="secondary"
+              onclick={() => modalManager.show(PersonBulkShareModal, { user })}
+            >
+              {$t('configure')}
             </Button>
           {/if}
         </div>
