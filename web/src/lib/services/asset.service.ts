@@ -232,7 +232,13 @@ export const getAssetActions = (
     shortcuts: [{ key: 'l' }],
     $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
     onAction: async () => {
-      const assetIds = asset.stack ? (await getStack({ id: asset.stack.id })).assets.map((a) => a.id) : [asset.id];
+      let assetIds: string[];
+      if (asset.stack) {
+        const stack = await getStack({ id: asset.stack.id });
+        assetIds = stack.assets.map((a) => a.id);
+      } else {
+        assetIds = [asset.id];
+      }
       return modalManager.show(AssetAddToAlbumModal, { assetIds });
     },
   };
