@@ -1,24 +1,34 @@
-import { updatePerson, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+import {
+  getPerson,
+  updatePeople,
+  updatePerson,
+  type AssetResponseDto,
+  type PeopleUpdateDto,
+  type PersonResponseDto,
+  type PersonUpdateDto,
+} from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
-  mdiCalendarEditOutline,
+  mdiAccountMultipleOutline,
   mdiEyeOffOutline,
   mdiEyeOutline,
   mdiFaceManProfile,
   mdiHeartMinusOutline,
   mdiHeartOutline,
+  mdiPencilOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
+import PersonEditAccessModal from '$lib/modals/PersonEditAccessModal.svelte';
+import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
 export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
-  const SetDateOfBirth: ActionItem = {
-    title: $t('set_date_of_birth'),
-    icon: mdiCalendarEditOutline,
-    onAction: () => modalManager.show(PersonEditBirthDateModal, { person }),
+  const Edit: ActionItem = {
+    title: $t('edit_person'),
+    icon: mdiPencilOutline,
+    onAction: () => modalManager.show(PersonEditModal, { person }),
   };
 
   const Favorite: ActionItem = {
@@ -49,7 +59,13 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     onAction: () => handleShowPerson(person),
   };
 
-  return { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson };
+  const Access: ActionItem = {
+    title: 'Manage access',
+    icon: mdiAccountMultipleOutline,
+    onAction: () => modalManager.show(PersonEditAccessModal, { person }),
+  };
+
+  return { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access };
 };
 
 export const getPersonAssetActions = ($t: MessageFormatter, person: PersonResponseDto, asset: AssetResponseDto) => {
@@ -95,6 +111,41 @@ const handleHidePerson = async (person: { id: string }) => {
     eventManager.emit('PersonUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_hide_person'));
+  }
+};
+
+export const handleUpdatePerson = async (id: string, personUpdateDto: PersonUpdateDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await updatePerson({ id, personUpdateDto });
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
+  }
+};
+
+export const handleUpdatePeople = async (peopleUpdateDto: PeopleUpdateDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const bulkResponse = await updatePeople({ peopleUpdateDto });
+
+    const ids = new Set(peopleUpdateDto.people.map(({ id }) => id));
+    const responses = await Promise.all([...ids].map((id) => getPerson({ id })));
+    for (const response of responses) {
+      eventManager.emit('PersonUpdate', response);
+    }
+
+    if (bulkResponse.some((response) => !response.success)) {
+      toastManager.danger($t('errors.something_went_wrong'));
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log('uh oh');
+    handleError(error, $t('errors.something_went_wrong'));
   }
 };
 
