@@ -163,7 +163,7 @@ export class PersonService extends BaseService {
     const asset = await this.assetRepository.getForFaces(dto.id);
     const assetDimensions = getDimensions(asset);
 
-    return faces.map((face) => mapFaces(face, auth, asset.edits, assetDimensions));
+    return faces.map((face) => mapFaces(face, asset.edits, assetDimensions));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: PersonId[]) {
@@ -829,6 +829,10 @@ export class PersonService extends BaseService {
   }
 
   async addUsersToPeople(auth: AuthDto, dto: PersonUsersCreateDto) {
+    if (dto.sharedWithIds.includes(auth.user.id)) {
+      throw new BadRequestException('Cannot share a person with yourself');
+    }
+
     await this.requirePersonAccess({
       auth,
       permission: Permission.PersonUpdate,
@@ -847,7 +851,7 @@ export class PersonService extends BaseService {
 
     for (const sharedWithId of dto.sharedWithIds) {
       if (!clusterGroupUserIds.has(sharedWithId)) {
-        continue;
+        throw new BadRequestException('All users must be in the same cluster group');
       }
 
       for (const personGroupId of dto.personIds) {

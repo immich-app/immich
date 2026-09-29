@@ -248,3 +248,5 @@ export const hexColor = z
   .transform((val) => (val.startsWith('#') ? val : `#${val}`));
 
 export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));
+
+export const uniqueIds = z.array(z.uuid()).refine((ids) => ids.length === new Set(ids).size, 'Items must be unique');

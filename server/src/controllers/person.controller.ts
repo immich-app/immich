@@ -249,7 +249,7 @@ export class PersonController {
   }
 
   @Delete('users')
-  @Authenticated({ permission: Permission.PersonDelete })
+  @Authenticated({ permission: Permission.PersonUpdate })
   @Endpoint({
     summary: 'Remove users from people',
     description: 'Remove user access to people',
