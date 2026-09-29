@@ -123,6 +123,7 @@ export class TranscodingService extends BaseService {
     }
 
     const remaining = session.expiresAt.getTime() - Date.now();
+    // eslint-disable-next-line unicorn/prefer-early-return
     if (remaining < HLS_LEASE_DURATION_MS / 2) {
       session.expiresAt = new Date(Date.now() + HLS_LEASE_DURATION_MS);
       await this.videoStreamRepository.extendSession(sessionId, session.expiresAt);
@@ -317,14 +318,17 @@ export class TranscodingService extends BaseService {
       session.paused = false;
       session.process = null;
       session.lastCompletedSegment = null;
-      if (code) {
-        this.logger.error(
-          `FFmpeg exited with code ${code} for variant ${variantIndex} asset ${session.assetId}\n${stderr}`,
-        );
-        void this.failSession(session, `Transcoding process exited unexpectedly with code ${code}`).catch((error) =>
-          this.logger.error(`Failed to end session ${session.id} after ffmpeg exit: ${error}`),
-        );
+
+      if (!code) {
+        return;
       }
+
+      this.logger.error(
+        `FFmpeg exited with code ${code} for variant ${variantIndex} asset ${session.assetId}\n${stderr}`,
+      );
+      void this.failSession(session, `Transcoding process exited unexpectedly with code ${code}`).catch((error) =>
+        this.logger.error(`Failed to end session ${session.id} after ffmpeg exit: ${error}`),
+      );
     });
   }
 

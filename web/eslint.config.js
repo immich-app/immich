@@ -1,10 +1,11 @@
 import js from '@eslint/js';
 import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
-import prettier from 'eslint-config-prettier';
 import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import eslintPluginCompat from 'eslint-plugin-compat';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
@@ -19,14 +20,18 @@ const NAVIGATION_PARAM_READ = [
   " [arguments.0.property.name='PREVIOUS_ROUTE'])",
 ].join('');
 
-export default typescriptEslint.config(
+export default defineConfig(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
-  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
+      compat: eslintPluginCompat,
+    },
+    settings: {
+      polyfills: [],
+      lintAllEsApis: true,
     },
     rules: {
       'tscompat/tscompat': [
@@ -39,6 +44,7 @@ export default typescriptEslint.config(
             .filter((line) => line && !line.startsWith('#')),
         },
       ],
+      'compat/compat': 'error',
     },
     languageOptions: {
       parser,
@@ -48,18 +54,6 @@ export default typescriptEslint.config(
       },
     },
     // ignores: ['**/service-worker/**'],
-  },
-  {
-    plugins: {
-      compat: eslintPluginCompat,
-    },
-    settings: {
-      polyfills: [],
-      lintAllEsApis: true,
-    },
-    rules: {
-      'compat/compat': 'error',
-    },
   },
   {
     ignores: [
@@ -105,8 +99,6 @@ export default typescriptEslint.config(
         project: ['./tsconfig.json'],
       },
     },
-
-    ignores: ['**/service-worker/**'],
 
     rules: {
       '@typescript-eslint/no-unused-vars': [
@@ -173,6 +165,10 @@ export default typescriptEslint.config(
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      'unicorn/prefer-early-return': 'off',
+      'unicorn/prefer-ternary': 'off',
+      'unicorn/prefer-combined-guards': 'off',
+      'unicorn/no-immediate-mutation': 'off',
       eqeqeq: 'error',
     },
   },
@@ -201,4 +197,5 @@ export default typescriptEslint.config(
       },
     },
   },
+  eslintPluginPrettierRecommended,
 );

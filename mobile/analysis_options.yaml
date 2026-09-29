@@ -104,6 +104,19 @@ analyzer:
     deprecated_member_use_from_same_package: error
 
 dart_code_metrics:
+  exclude:
+    unused-code:
+      - '**/*.g.dart'
+      - '**/*.freezed.dart'
+      - '**/*.mapper.dart'
+      - '**/*.drift.dart'
+      - '**/*.gr.dart'
+      - 'lib/data/db/main/database.steps.dart'
+      # Ideally we wouldn't do this, as this allows for non-column used code, but not complaining
+      # about the columns is more important
+      - 'lib/data/db/**/table/**'
+      - 'lib/widgets/photo_view/**'
+      - 'test/drift/**/generated/**'
   rules:
     - banned-usage:
         entries:

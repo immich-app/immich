@@ -285,9 +285,18 @@ export class MetadataService extends BaseService {
 
       // camera
       make:
-        exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
+        exifTags.Make ??
+        exifTags.Device?.Manufacturer ??
+        exifTags.AndroidMake ??
+        exifTags.DeviceManufacturer ??
+        (exifTags.SamsungModel ? 'Samsung' : null),
       model:
-        exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
+        exifTags.Model ??
+        exifTags.Device?.ModelName ??
+        exifTags.AndroidModel ??
+        exifTags.DeviceModelName ??
+        exifTags.Author ??
+        null,
       fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
@@ -943,15 +952,17 @@ export class MetadataService extends BaseService {
       };
 
       facesToAdd.push(face);
-      if (!existingNameMap.has(loweredName)) {
-        missing.push({
-          personGroupId,
-          ownerId: asset.ownerId,
-          clusterGroupId: asset.clusterGroupId,
-          name: region.Name,
-        });
-        missingWithFaceAsset.push({ personGroupId, ownerId: asset.ownerId, faceAssetId: face.id });
+      if (existingNameMap.has(loweredName)) {
+        continue;
       }
+
+      missing.push({
+        personGroupId,
+        ownerId: asset.ownerId,
+        clusterGroupId: asset.clusterGroupId,
+        name: region.Name,
+      });
+      missingWithFaceAsset.push({ personGroupId, ownerId: asset.ownerId, faceAssetId: face.id });
     }
 
     if (missing.length > 0) {

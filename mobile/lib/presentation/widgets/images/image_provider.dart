@@ -48,7 +48,6 @@ class ImageLoader {
     unawaited(
       completer.operation.valueOrCancellation().whenComplete(() {
         cachedStream.removeListener(listener);
-        cachedOperation = null;
       }),
     );
     cachedOperation = completer.operation;
@@ -99,7 +98,10 @@ class ImageLoader {
       isFinished = isFinal;
       return codec;
     } catch (e) {
-      if (!isCancelled && isFinal) {
+      if (isCancelled) {
+        return null;
+      }
+      if (isFinal) {
         isFinished = true;
         PaintingBinding.instance.imageCache.evict(key);
         rethrow;
@@ -112,16 +114,20 @@ class ImageLoader {
 
   Stream<ImageInfo> initialImageStream() async* {
     final cachedOperation = this.cachedOperation;
-    if (cachedOperation == null) {
+    if (isCancelled || cachedOperation == null) {
       return;
     }
 
     try {
       final cachedImage = await cachedOperation.valueOrCancellation();
-      if (cachedImage != null && !isCancelled) {
-        yield cachedImage;
+      if (isCancelled || cachedImage == null) {
+        return;
       }
+      yield cachedImage;
     } catch (e, stack) {
+      if (isCancelled) {
+        return;
+      }
       _log.severe('Error loading initial image', e, stack);
     } finally {
       this.cachedOperation = null;

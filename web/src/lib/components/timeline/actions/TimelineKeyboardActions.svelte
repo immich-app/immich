@@ -15,12 +15,13 @@
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
+  import { handleStack } from '$lib/services/stack.service';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { deleteAssets } from '$lib/utils/actions';
+  import { archiveAssets, selectAllAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
 
@@ -59,10 +60,7 @@
   };
 
   const onStackAssets = async () => {
-    const result = await stackAssets(assetInteraction.assets);
-
-    updateStackedAssetInTimeline(timelineManager, result);
-
+    await handleStack(assetInteraction.assets.map((asset) => asset.id));
     onEscape?.();
   };
 

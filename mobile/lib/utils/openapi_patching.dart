@@ -42,9 +42,11 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
   'SearchAssetResponseDto': {'nextCursor': null},
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
+  'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'WorkflowResponseDto': {'logging': false},
 };
 
+// ignore: unused-code
 void upgradeDto(dynamic value, String targetType) {
   if (value is! Map) {
     return;
