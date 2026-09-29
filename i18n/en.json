@@ -2141,6 +2141,7 @@
   "storage_label": "Storage label",
   "storage_quota": "Storage Quota",
   "storage_usage": "{used} of {available} used",
+  "storage_usage_unlimited": "{used} used",
   "submit": "Submit",
   "success": "Success",
   "suggestions": "Suggestions",
