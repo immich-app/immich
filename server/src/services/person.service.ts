@@ -266,7 +266,7 @@ export class PersonService extends BaseService {
       await this.personRepository.updateForWritableOwners({ userId: auth.user.id, personGroupId }, { name, birthDate });
     }
 
-    let faceAssetId: string | undefined;
+    let faceId: string | undefined;
 
     if (assetId) {
       await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
@@ -275,13 +275,13 @@ export class PersonService extends BaseService {
         throw new BadRequestException('Invalid assetId for feature face or asset is offline');
       }
 
-      faceAssetId = face.id;
+      faceId = face.id;
     }
 
     const person = await this.personRepository.update({
       ownerId: targetOwnerId,
       personGroupId,
-      faceAssetId,
+      faceAssetId: faceId,
       name,
       birthDate,
       isHidden,
