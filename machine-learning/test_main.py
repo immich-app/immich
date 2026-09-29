@@ -28,15 +28,17 @@ from immich_ml import allocator
 from immich_ml.config import MaxBatchSize, PreloadModelData, Settings, settings
 from immich_ml.main import (
     MODEL_FILE_ERRORS,
+    PIPELINE_REQUEST,
     app,
     attempt,
+    get_entries,
     lifespan,
     load,
     preload_models,
     update_state,
 )
 from immich_ml.main import run_inference as run_request
-from immich_ml.models.base import InferenceModel
+from immich_ml.models.base import InferenceEntry, InferenceModel
 from immich_ml.models.cache import ModelCache
 from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
@@ -45,7 +47,19 @@ from immich_ml.models.facial_recognition.recognition import FaceRecognizer
 from immich_ml.models.ocr.ctc import logits, probabilities
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
-from immich_ml.schemas import ModelFormat, ModelTask, ModelType, Shape
+from immich_ml.schemas import (
+    FaceDetectionOptions,
+    FaceRecognitionOptions,
+    ModelFormat,
+    ModelSource,
+    ModelTask,
+    ModelType,
+    Shape,
+    TextDetectionOptions,
+    TextRecognitionOptions,
+    TextualOptions,
+    VisualOptions,
+)
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import Device, GraphSpec, OrtSession, flush_denormals, fresh, prepared
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
@@ -123,7 +137,7 @@ class TestBase:
         assert rknn_model_path(Path("/cache/visual")) == Path("/cache/visual/rknpu/rk3588/model.rknn")
         mocker.patch.object(settings, "model_revision", "v2")  # the older exports come as ONNX alone
         detector = TextDetector(
-            "PP-OCRv5_mobile", cache_dir="/cache", model_format=ModelFormat.RKNN, maxResolution=1088
+            "PP-OCRv5_mobile", cache_dir="/cache", model_format=ModelFormat.RKNN, max_resolution=1088
         )
         assert detector.model_path == Path("/cache/detection/rknpu/rk3588/res1088/model.rknn")
 
@@ -739,7 +753,11 @@ class TestPreparedGraphs:
     @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
     @pytest.mark.parametrize(
         ("provider", "reader"),
-        [("OpenVINOExecutionProvider", "_intel_gpu"), ("MIGraphXExecutionProvider", "_amd_gpu")],
+        [
+            ("OpenVINOExecutionProvider", "_intel_gpu"),
+            ("MIGraphXExecutionProvider", "_amd_gpu"),
+            ("nv_tensorrt_rtx", "_nvidia_gpu"),
+        ],
     )
     def test_prepares_once_per_kind_of_device_and_again_for_another_version(
         self, provider: str, reader: str, ov_device_ids: mock.Mock, mocker: MockerFixture
@@ -1006,7 +1024,7 @@ class TestCLIP:
         mocked.run.return_value = [[self.embedding]]
 
         clip_encoder = OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache")
-        embedding_str = clip_encoder.predict(pil_image)
+        embedding_str = clip_encoder.predict(pil_image, options=VisualOptions())
         assert isinstance(embedding_str, str)
         embedding = orjson.loads(embedding_str)
         assert isinstance(embedding, list)
@@ -1034,7 +1052,7 @@ class TestCLIP:
         session = stub_session(expected_shape, outputs=[[self.embedding]], normalizes_input=normalizes_input)
         mocker.patch.object(InferenceModel, "_make_session", return_value=session)
 
-        OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache").predict(pil_image)
+        OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache").predict(pil_image, options=VisualOptions())
 
         fed = session.run.call_args.args[1]["image"]
         assert fed.dtype == expected_dtype
@@ -1056,7 +1074,7 @@ class TestCLIP:
         # a stripe far enough left that a shortest-side crop of this frame would discard it
         image = Image.new("RGB", (600, 200), "black")
         image.paste(Image.new("RGB", (20, 200), "white"), (0, 0))
-        OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache").predict(image)
+        OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache").predict(image, options=VisualOptions())
 
         assert session.run.call_args.args[1]["image"][0, 0, 0].tolist() == [255, 255, 255]
 
@@ -1078,7 +1096,7 @@ class TestCLIP:
         mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True)
 
         clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
-        embedding_str = clip_encoder.predict("test search query")
+        embedding_str = clip_encoder.predict("test search query", options=TextualOptions())
         assert isinstance(embedding_str, str)
         embedding = orjson.loads(embedding_str)
         assert isinstance(embedding, list)
@@ -1117,7 +1135,7 @@ class TestCLIP:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=tmp_path)
         mocker.patch.object(encoder, "tokenize", return_value={"text": np.array([[1, 3, 2]], np.int32)})
 
-        encoder.predict("test search query")
+        encoder.predict("test search query", options=TextualOptions())
 
         feed = session.run.call_args.args[1]
         assert list(feed) == ["text", "token_embeds"]  # a binary reads its inputs in order
@@ -1352,7 +1370,7 @@ def expected_box(cell_x: int, cell_y: int) -> list[float]:
     return [cx - 8, cy - 16, cx + 24, cy + 32]
 
 
-M = TypeVar("M", bound=InferenceModel)
+M = TypeVar("M", bound=InferenceModel[Any])
 
 
 def given_options(ort_session: mock.Mock) -> Any:
@@ -1400,7 +1418,7 @@ class TestFaceRecognition:
         session = stub_session((1, 3, 640, 640), outputs=heads)
         face_detector.session = session
 
-        faces = face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.7)
+        faces = face_detector.predict(Image.new("RGB", (640, 640)), options=FaceDetectionOptions(min_score=0.7))
 
         assert isinstance(faces, dict)
         assert set(faces) == {"boxes", "scores", "landmarks"}
@@ -1421,8 +1439,18 @@ class TestFaceRecognition:
         face_detector.session = session
 
         # the threshold is a request parameter, so the same loaded model must honour both
-        assert face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.7)["boxes"].shape[0] == 1
-        assert face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.4)["boxes"].shape[0] == 2
+        assert (
+            face_detector.predict(Image.new("RGB", (640, 640)), options=FaceDetectionOptions(min_score=0.7))[
+                "boxes"
+            ].shape[0]
+            == 1
+        )
+        assert (
+            face_detector.predict(Image.new("RGB", (640, 640)), options=FaceDetectionOptions(min_score=0.4))[
+                "boxes"
+            ].shape[0]
+            == 2
+        )
 
     def test_detection_scales_boxes_back_to_the_original_image(
         self, stub_session: Callable[..., mock.Mock], mocker: MockerFixture
@@ -1434,7 +1462,7 @@ class TestFaceRecognition:
         face_detector.session = session
 
         # a 320x320 image is letterboxed up to 640, so coordinates come back halved
-        faces = face_detector.predict(Image.new("RGB", (320, 320)), minScore=0.7)
+        faces = face_detector.predict(Image.new("RGB", (320, 320)), options=FaceDetectionOptions(min_score=0.7))
 
         assert faces["boxes"].tolist() == [[v / 2 for v in expected_box(10, 10)]]
         assert np.allclose(faces["landmarks"][0], expected_landmarks(10, 10) / 2)
@@ -1459,7 +1487,9 @@ class TestFaceRecognition:
         session = stub_session(("batch", 3, 112, 112), outputs=[embeddings], shapes=(Shape(batch=num_faces),))
         face_recognizer.session = session
 
-        faces = face_recognizer.predict(image, {"boxes": bbox, "landmarks": kpss, "scores": scores})
+        faces = face_recognizer.predict(
+            image, {"boxes": bbox, "landmarks": kpss, "scores": scores}, options=FaceRecognitionOptions()
+        )
 
         assert isinstance(faces, list)
         assert len(faces) == num_faces
@@ -1497,7 +1527,7 @@ class TestFaceRecognition:
             expected_shape, outputs=make_scrfd_heads([(10, 10, 0.9)]), normalizes_input=normalizes_input
         )
 
-        faces = face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.7)
+        faces = face_detector.predict(Image.new("RGB", (640, 640)), options=FaceDetectionOptions(min_score=0.7))
 
         fed = face_detector.session.run.call_args.args[1]["input.1"]
         assert fed.dtype == expected_dtype
@@ -1531,7 +1561,7 @@ class TestFaceRecognition:
             "landmarks": np.stack([expected_landmarks(1, 1), expected_landmarks(8, 8)]),
         }
 
-        face_recognizer.predict(Image.new("RGB", (200, 200)), faces)
+        face_recognizer.predict(Image.new("RGB", (200, 200)), faces, options=FaceRecognitionOptions())
 
         fed = face_recognizer.session.run.call_args.args[1]["input.1"]
         assert fed.dtype == expected_dtype
@@ -1550,7 +1580,7 @@ class TestFaceRecognition:
             "scores": np.empty(0, dtype=np.float32),
         }
 
-        assert face_recognizer.predict(pil_image, empty) == []
+        assert face_recognizer.predict(pil_image, empty, options=FaceRecognitionOptions()) == []
         session.run.assert_not_called()
 
     def test_recognition_batches_when_batch_size_is_set(
@@ -1569,7 +1599,7 @@ class TestFaceRecognition:
             "landmarks": (np.random.rand(num_faces, 5, 2) * 100).astype(np.float32),
             "scores": np.array([0.67] * num_faces, dtype=np.float32),
         }
-        assert len(face_recognizer.predict(pil_image, faces)) == num_faces
+        assert len(face_recognizer.predict(pil_image, faces, options=FaceRecognitionOptions())) == num_faces
         assert session.run.call_count == 3  # 2 + 2 + 1
         assert [c.args[1]["input.1"].shape[0] for c in session.run.call_args_list] == [2, 2, 1]
 
@@ -1638,10 +1668,10 @@ class TestOcr:
         text_detector.session = stub_session((1, 3, 64, 64), outputs=[probs])
         image = Image.new("RGB", (64, 64))
 
-        assert len(text_detector._predict(image, minScore=0.5)["boxes"]) == 1
-        assert len(text_detector._predict(image, minScore=0.9)["boxes"]) == 0
+        assert len(text_detector._predict(image, TextDetectionOptions(min_score=0.5))["boxes"]) == 1
+        assert len(text_detector._predict(image, TextDetectionOptions(min_score=0.9))["boxes"]) == 0
         # the default must be unaffected by the request that just ran
-        assert len(text_detector._predict(image)["boxes"]) == 1
+        assert len(text_detector._predict(image, TextDetectionOptions())["boxes"]) == 1
 
     def test_fetches_the_older_exports_from_where_rapidocr_hosts_them(
         self, tmp_path: Path, snapshot_download: mock.Mock, mocker: MockerFixture
@@ -1671,7 +1701,7 @@ class TestOcr:
         box = np.array([[[0, 0], [crop, 0], [crop, 48], [0, 48]]], dtype=np.float32)
         texts: Any = {"boxes": box, "scores": np.array([0.9], dtype=np.float32)}
 
-        text_recognizer._predict(image, texts)
+        text_recognizer._predict(image, texts, TextRecognitionOptions())
 
         fed = session.run.call_args.args[1]["input.1"]
         assert fed.dtype == np.uint8 and fed.shape == (1, 48, fed_width, 3)
@@ -1681,7 +1711,7 @@ class TestOcr:
     def test_det_letterboxes_onto_the_canvas_the_session_takes(
         self, path: mock.Mock, stub_session: Callable[..., mock.Mock]
     ) -> None:
-        text_detector = TextDetector("PP-OCRv5_mobile", cache_dir=path)
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=64, cache_dir=path)
         text_detector.session = stub_session(
             (1, 64, 128, 3),
             outputs=[np.zeros((1, 64, 128), dtype=np.float32)],
@@ -1690,7 +1720,7 @@ class TestOcr:
             shapes=(Shape(batch=1, height=64, width=128), Shape(batch=1, height=128, width=64)),
         )
 
-        text_detector._predict(Image.new("RGB", (100, 100), (10, 20, 30)), maxResolution=64)
+        text_detector._predict(Image.new("RGB", (100, 100), (10, 20, 30)), TextDetectionOptions(max_resolution=64))
 
         fed = text_detector.session.run.call_args.args[1]["image"]
         assert fed.dtype == np.uint8 and fed.shape == (1, 64, 128, 3)  # the canvas costing it the least downscale
@@ -1714,7 +1744,7 @@ class TestOcr:
         box = np.array([[[0, 0], [384, 0], [384, 48], [0, 48]]], dtype=np.float32)
         texts: Any = {"boxes": box, "scores": np.array([0.9], dtype=np.float32)}
 
-        text_recognizer._predict(image, texts)
+        text_recognizer._predict(image, texts, TextRecognitionOptions())
 
         fed = session.run.call_args.args[1]["input.1"]
         assert fed.shape == (1, 48, 400, 3)  # 384 wide in its own right, run at the compiled width above it
@@ -1736,9 +1766,9 @@ class TestOcr:
         def texts() -> Any:  # _predict normalizes the boxes in place, so each call needs its own
             return {"boxes": box.copy(), "scores": np.array([0.9], dtype=np.float32)}
 
-        assert text_recognizer._predict(image, texts(), minScore=0.7)["text"] == ["hello"]
+        assert text_recognizer._predict(image, texts(), TextRecognitionOptions(min_score=0.7))["text"] == ["hello"]
         # the default (0.9) rejects a 0.8 score, and must be unaffected by the 0.7 request
-        assert text_recognizer._predict(image, texts())["text"] == []
+        assert text_recognizer._predict(image, texts(), TextRecognitionOptions())["text"] == []
 
     def test_rec_decodes_the_half_precision_probabilities_a_host_decode_graph_emits(self) -> None:
         probs = np.zeros((1, 3, 4), dtype=np.float16)
@@ -1792,59 +1822,62 @@ class TestOcr:
         assert {shape.batch for shape in text_recognizer.shape_policy.dims} == {1, 6}
 
 
+def stub_model() -> mock.MagicMock:
+    """A model class that makes mocks, where only what the cache does with its entries matters."""
+    model = mock.MagicMock(sources=(ModelSource.INSIGHTFACE,))
+    model.graph.return_value = None
+    return model
+
+
 @pytest.mark.asyncio
 class TestCache:
-    async def test_caches(self, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache()
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+    async def test_caches(self) -> None:
+        model_cache, model = ModelCache(), stub_model()
+        model_cache.get(InferenceEntry(model, "buffalo_l", FaceRecognitionOptions()))
+        model_cache.get(InferenceEntry(model, "buffalo_l", FaceRecognitionOptions()))
         assert len(model_cache._models) == 1
-        mock_get_model.return_value.assert_called_once()
+        model.create.assert_called_once()
 
     async def test_separate_instances_per_graph_option(self) -> None:
-        # the real TextDetector, so that dropping its graph_options fails this
+        # the real TextDetector, so that keying it on anything but its resolution fails this
         model_cache = ModelCache()
 
-        for max_resolution in (736, 1088, 1088):
-            model_cache.get("PP-OCRv5_mobile", ModelType.DETECTION, ModelTask.OCR, maxResolution=max_resolution)
-        # maxResolution picks the graphs a detector builds, so instances cannot share them
+        for options in (
+            TextDetectionOptions(),
+            TextDetectionOptions(max_resolution=736, min_score=0.3),
+            TextDetectionOptions(max_resolution=1088),
+        ):
+            model_cache.get(InferenceEntry(TextDetector, "PP-OCRv5_mobile", options))
+        # the resolution picks the graphs a detector builds, so instances cannot share them; a score does not
         assert len(model_cache._models) == 2
 
-    async def test_kwargs_used(self, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache()
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, cache_dir="test_cache")
-        mock_get_model.return_value.assert_called_once_with("test_model_name", cache_dir="test_cache")
+    async def test_creates_the_model_from_the_request_options(self) -> None:
+        model = stub_model()
+        ModelCache().get(InferenceEntry(model, "buffalo_l", FaceDetectionOptions(min_score=0.3)))
+        model.create.assert_called_once_with("buffalo_l", FaceDetectionOptions(min_score=0.3))
 
-    async def test_different_clip(self, mock_get_model: mock.Mock) -> None:
+    async def test_separate_instances_per_model(self) -> None:
         model_cache = ModelCache()
-        model_cache.get("test_model_name", ModelType.VISUAL, ModelTask.SEARCH)
-        model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
-        assert mock_get_model.call_args_list == [
-            mock.call("test_model_name", ModelType.VISUAL, ModelTask.SEARCH),
-            mock.call("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH),
-        ]
+        visual = model_cache.get(InferenceEntry(OpenClipVisualEncoder, "ViT-B-32__openai", VisualOptions()))
+        text = model_cache.get(InferenceEntry(OpenClipTextualEncoder, "ViT-B-32__openai", TextualOptions()))
+        assert isinstance(visual, OpenClipVisualEncoder) and isinstance(text, OpenClipTextualEncoder)
         assert len(model_cache._models) == 2
 
-    async def test_lets_go_of_a_model_unused_for_its_ttl_and_returns_its_memory(
-        self, mock_get_model: mock.Mock, mocker: MockerFixture
-    ) -> None:
+    async def test_lets_go_of_a_model_unused_for_its_ttl_and_returns_its_memory(self, mocker: MockerFixture) -> None:
         events: list[str] = []
 
-        class Model:
-            graph_options = ()
-
-            def __init__(self, *args: Any, **kwargs: Any) -> None:
-                pass
-
+        class Loaded:
             def __del__(self) -> None:
                 events.append("destroyed")
 
-        mock_get_model.return_value = Model
+        model = stub_model()
+        model.create.side_effect = lambda name, options: Loaded()
+
         mocker.patch("immich_ml.models.cache.allocator.release", side_effect=lambda: events.append("released"))
         loop = mocker.patch("immich_ml.models.cache.asyncio.get_running_loop").return_value
         model_cache = ModelCache()
 
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
+        model_cache.get(InferenceEntry(model, "buffalo_l", FaceRecognitionOptions()), ttl=100)
         delay, evict, key = loop.call_later.call_args.args
         evict(key)
 
@@ -1852,49 +1885,45 @@ class TestCache:
         assert events == ["destroyed", "released"]
         assert not model_cache._models
 
-    async def test_a_use_starts_the_ttl_over(self, mock_get_model: mock.Mock, mocker: MockerFixture) -> None:
+    async def test_a_use_starts_the_ttl_over(self, mocker: MockerFixture) -> None:
         loop = mocker.patch("immich_ml.models.cache.asyncio.get_running_loop").return_value
-        model_cache = ModelCache()
+        model_cache, entry = ModelCache(), InferenceEntry(stub_model(), "buffalo_l", FaceRecognitionOptions())
 
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
+        model_cache.get(entry, ttl=100)
+        model_cache.get(entry, ttl=100)
 
         loop.call_later.return_value.cancel.assert_called_once()
         assert loop.call_later.call_count == 2
 
-    async def test_keeps_a_preloaded_model_whatever_ttl_a_request_names(
-        self, mock_get_model: mock.Mock, mocker: MockerFixture
-    ) -> None:
+    async def test_keeps_a_preloaded_model_whatever_ttl_a_request_names(self, mocker: MockerFixture) -> None:
         loop = mocker.patch("immich_ml.models.cache.asyncio.get_running_loop").return_value
-        model_cache = ModelCache()
+        model_cache, entry = ModelCache(), InferenceEntry(stub_model(), "buffalo_l", FaceRecognitionOptions())
 
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
-        model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
+        model_cache.get(entry)
+        model_cache.get(entry, ttl=100)
 
         loop.call_later.assert_not_called()
 
     async def test_loads_mclip(self) -> None:
-        model_cache = ModelCache()
+        request = PIPELINE_REQUEST.validate_python(
+            {"clip": {"textual": {"modelName": "XLM-Roberta-Large-Vit-B-32", "options": {}}}}
+        )
 
-        model = model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.TEXTUAL, ModelTask.SEARCH)
+        [entry] = request.entries()
+        model = ModelCache().get(entry)
 
         assert isinstance(model, MClipTextualEncoder)
         assert model.model_name == "XLM-Roberta-Large-Vit-B-32"
 
-    async def test_raises_exception_if_invalid_model_type(self) -> None:
-        invalid: Any = SimpleNamespace(value="invalid")
-        model_cache = ModelCache()
-
+    async def test_refuses_a_model_its_slot_does_not_run(self) -> None:
         with pytest.raises(ValueError):
-            model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.TEXTUAL, invalid)
+            InferenceEntry(OpenClipVisualEncoder, "buffalo_l", VisualOptions())
 
-    async def test_raises_exception_if_unknown_model_name(self) -> None:
-        model_cache = ModelCache()
-
+    async def test_refuses_an_unknown_model_name(self) -> None:
         with pytest.raises(ValueError):
-            model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
+            InferenceEntry(OpenClipTextualEncoder, "test_model_name", TextualOptions())
 
-    async def test_preloads_clip_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
+    async def test_preloads_clip_models(self, mocker: MockerFixture) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = "ViT-B-32__openai"
 
@@ -1902,22 +1931,16 @@ class TestCache:
         assert settings.preload is not None
         assert settings.preload.clip.textual == "ViT-B-32__openai"
         assert settings.preload.clip.visual == "ViT-B-32__openai"
-
-        model_cache = ModelCache()
-        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
+        get = mocker.patch("immich_ml.main.model_cache.get")
 
         await preload_models(settings.preload)
-        mock_get_model.assert_has_calls(
-            [
-                mock.call("ViT-B-32__openai", ModelType.TEXTUAL, ModelTask.SEARCH),
-                mock.call("ViT-B-32__openai", ModelType.VISUAL, ModelTask.SEARCH),
-            ],
-            any_order=True,
-        )
 
-    async def test_preloads_facial_recognition_models(
-        self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock
-    ) -> None:
+        assert {call.args[0] for call in get.call_args_list} >= {
+            InferenceEntry(OpenClipTextualEncoder, "ViT-B-32__openai", TextualOptions()),
+            InferenceEntry(OpenClipVisualEncoder, "ViT-B-32__openai", VisualOptions()),
+        }
+
+    async def test_preloads_facial_recognition_models(self, mocker: MockerFixture) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = "buffalo_s"
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = "buffalo_s"
 
@@ -1925,20 +1948,16 @@ class TestCache:
         assert settings.preload is not None
         assert settings.preload.facial_recognition.detection == "buffalo_s"
         assert settings.preload.facial_recognition.recognition == "buffalo_s"
-
-        model_cache = ModelCache()
-        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
+        get = mocker.patch("immich_ml.main.model_cache.get")
 
         await preload_models(settings.preload)
-        mock_get_model.assert_has_calls(
-            [
-                mock.call("buffalo_s", ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION),
-                mock.call("buffalo_s", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION),
-            ],
-            any_order=True,
-        )
 
-    async def test_preloads_ocr_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
+        assert {call.args[0] for call in get.call_args_list} >= {
+            InferenceEntry(FaceDetector, "buffalo_s", FaceDetectionOptions()),
+            InferenceEntry(FaceRecognizer, "buffalo_s", FaceRecognitionOptions()),
+        }
+
+    async def test_preloads_ocr_models(self, mocker: MockerFixture) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__OCR__DETECTION"] = "PP-OCRv5_mobile"
         os.environ["MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION"] = "PP-OCRv5_mobile"
 
@@ -1946,52 +1965,15 @@ class TestCache:
         assert settings.preload is not None
         assert settings.preload.ocr.detection == "PP-OCRv5_mobile"
         assert settings.preload.ocr.recognition == "PP-OCRv5_mobile"
-
-        model_cache = ModelCache()
-        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
+        get = mocker.patch("immich_ml.main.model_cache.get")
 
         await preload_models(settings.preload)
-        mock_get_model.assert_has_calls(
-            [
-                mock.call("PP-OCRv5_mobile", ModelType.DETECTION, ModelTask.OCR),
-                mock.call("PP-OCRv5_mobile", ModelType.RECOGNITION, ModelTask.OCR),
-            ],
-            any_order=True,
-        )
-        mock_get_model.return_value.return_value.build.assert_called()  # so that no request waits on a graph
 
-    async def test_preloads_all_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = "ViT-B-32__openai"
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = "buffalo_s"
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = "buffalo_s"
-        os.environ["MACHINE_LEARNING_PRELOAD__OCR__DETECTION"] = "PP-OCRv5_mobile"
-        os.environ["MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION"] = "PP-OCRv5_mobile"
-
-        settings = Settings()
-        assert settings.preload is not None
-        assert settings.preload.clip.visual == "ViT-B-32__openai"
-        assert settings.preload.clip.textual == "ViT-B-32__openai"
-        assert settings.preload.facial_recognition.recognition == "buffalo_s"
-        assert settings.preload.facial_recognition.detection == "buffalo_s"
-        assert settings.preload.ocr.detection == "PP-OCRv5_mobile"
-        assert settings.preload.ocr.recognition == "PP-OCRv5_mobile"
-
-        model_cache = ModelCache()
-        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
-
-        await preload_models(settings.preload)
-        mock_get_model.assert_has_calls(
-            [
-                mock.call("ViT-B-32__openai", ModelType.TEXTUAL, ModelTask.SEARCH),
-                mock.call("ViT-B-32__openai", ModelType.VISUAL, ModelTask.SEARCH),
-                mock.call("buffalo_s", ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION),
-                mock.call("buffalo_s", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION),
-                mock.call("PP-OCRv5_mobile", ModelType.DETECTION, ModelTask.OCR),
-                mock.call("PP-OCRv5_mobile", ModelType.RECOGNITION, ModelTask.OCR),
-            ],
-            any_order=True,
-        )
+        assert {call.args[0] for call in get.call_args_list} >= {
+            InferenceEntry(TextDetector, "PP-OCRv5_mobile", TextDetectionOptions(settings.preload.ocr.max_resolution)),
+            InferenceEntry(TextRecognizer, "PP-OCRv5_mobile", TextRecognitionOptions()),
+        }
+        get.return_value.build.assert_called()  # so that no request waits on a graph
 
 
 @pytest.mark.asyncio
@@ -2001,7 +1983,7 @@ class TestLoad:
         mock_model.loaded = False
         mock_model.load_attempts = 0
 
-        res = await load(mock_model)
+        res: InferenceModel[Any] = await load(mock_model)
 
         assert res is mock_model
         mock_model.load.assert_called_once()
@@ -2011,7 +1993,7 @@ class TestLoad:
         mock_model = mock.Mock(spec=InferenceModel)
         mock_model.loaded = True
 
-        res = await load(mock_model)
+        res: InferenceModel[Any] = await load(mock_model)
 
         assert res is mock_model
         mock_model.load.assert_not_called()
@@ -2025,7 +2007,7 @@ class TestLoad:
         mock_model.loaded = False
         mock_model.load_attempts = 0
 
-        res = await load(mock_model)
+        res: InferenceModel[Any] = await load(mock_model)
 
         assert res is mock_model
         mock_model.unload.assert_called_once()  # so that the retry holds one copy while it loads
@@ -2078,14 +2060,86 @@ class TestLoad:
         mock_model.clear_cache.assert_not_called()
 
 
+def test_reads_each_entrys_options_as_its_model_takes_them(tmp_path: Path) -> None:
+    request = {
+        "ocr": {
+            "detection": {"modelName": "PP-OCRv5_mobile", "options": {"minScore": 0.3, "cache_dir": str(tmp_path)}},
+            "recognition": {"modelName": "PP-OCRv5_mobile"},
+        },
+        "clip": {"textual": {"modelName": "ViT-B-32__openai", "options": {"language": "de"}}},
+        "facial-recognition": {"recognition": {"modelName": "buffalo_l"}},
+    }
+
+    entries = get_entries(json.dumps(request))
+
+    # what a request leaves out keeps the default, which a preload of the same model shares; what no model takes,
+    # such as where a model is cached, goes nowhere
+    assert {entry.options for entry in entries} == {
+        TextDetectionOptions(max_resolution=736, min_score=0.3),
+        TextRecognitionOptions(min_score=0.9),
+        TextualOptions(language="de"),
+        FaceRecognitionOptions(),
+    }
+
+
+@pytest.mark.parametrize(
+    "request_",
+    [
+        {"ocr": {"detection": {"modelName": "PP-OCRv5_mobile", "options": {"minScore": "high"}}}},
+        {"clip": {"visual": {"modelName": "buffalo_l"}}},  # a model its slot does not run
+        {"facial_recognition": {"recognition": {"modelName": "buffalo_l"}}},
+        {"clip": {"visaul": {"modelName": "ViT-B-32__openai"}}},
+        {"clip": {"visual": {"modelName": "ViT-B-32__openai", "option": {}}}},
+        {},
+    ],
+)
+def test_refuses_what_a_model_cannot_take(request_: dict[str, Any]) -> None:
+    with pytest.raises(HTTPException) as refused:
+        get_entries(json.dumps(request_))
+
+    assert refused.value.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_feeds_a_model_the_output_of_the_one_it_depends_on(mocker: MockerFixture) -> None:
+    detection = (ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
+    models = {
+        FaceDetector: mock.Mock(spec=InferenceModel, depends=[], loaded=True),
+        FaceRecognizer: mock.Mock(spec=InferenceModel, depends=[detection], loaded=True),
+    }
+    models[FaceDetector].predict.return_value = "faces"
+    models[FaceRecognizer].predict.return_value = "embeddings"
+    mocker.patch("immich_ml.main.model_cache.get", side_effect=lambda entry, ttl: models[entry.model])
+    entries: list[InferenceEntry[Any]] = [  # the recognition first, so that only waiting on the detection feeds it
+        InferenceEntry(FaceRecognizer, "buffalo_l", FaceRecognitionOptions()),
+        InferenceEntry(FaceDetector, "buffalo_l", FaceDetectionOptions()),
+    ]
+
+    response = await run_request("image", entries)
+
+    models[FaceRecognizer].predict.assert_called_once_with("image", "faces", options=FaceRecognitionOptions())
+    assert response == {"facial-recognition": "embeddings"}
+
+
+@pytest.mark.asyncio
+async def test_refuses_a_model_whose_input_the_request_does_not_ask_for(mocker: MockerFixture) -> None:
+    recognition = mock.Mock(spec=InferenceModel, depends=[FaceDetector.identity], loaded=True)
+    mocker.patch("immich_ml.main.model_cache.get", return_value=recognition)
+    entries: list[InferenceEntry[Any]] = [InferenceEntry(FaceRecognizer, "buffalo_l", FaceRecognitionOptions())]
+
+    with pytest.raises(HTTPException) as refused:
+        await run_request("image", entries)
+
+    assert refused.value.status_code == 400
+    recognition.predict.assert_not_called()
+
+
 @pytest.mark.asyncio
 async def test_waits_for_every_entry_before_failing_the_request(mocker: MockerFixture) -> None:
     finished = threading.Event()
 
-    def model(task: ModelTask, load: Callable[[], None]) -> mock.Mock:
-        stub = mock.Mock(
-            spec=InferenceModel, depends=[], loaded=False, load_attempts=0, identity=(ModelType.VISUAL, task)
-        )
+    def model(load: Callable[[], None]) -> mock.Mock:
+        stub = mock.Mock(spec=InferenceModel, depends=[], loaded=False, load_attempts=0)
         stub.load.side_effect = load
         return stub
 
@@ -2094,18 +2148,18 @@ async def test_waits_for_every_entry_before_failing_the_request(mocker: MockerFi
         finished.set()
 
     models = {
-        ModelTask.SEARCH: model(ModelTask.SEARCH, slow),
-        ModelTask.OCR: model(ModelTask.OCR, mock.Mock(side_effect=RuntimeError("fails at once"))),
+        OpenClipVisualEncoder: model(slow),
+        TextDetector: model(mock.Mock(side_effect=RuntimeError("fails at once"))),
     }
-    mocker.patch("immich_ml.main.model_cache.get", side_effect=lambda name, type, task, **options: models[task])
-    entries: Any = [
-        {"name": "a", "task": ModelTask.SEARCH, "type": ModelType.VISUAL, "options": {}},
-        {"name": "b", "task": ModelTask.OCR, "type": ModelType.DETECTION, "options": {}},
+    mocker.patch("immich_ml.main.model_cache.get", side_effect=lambda entry, ttl: models[entry.model])
+    entries: list[InferenceEntry[Any]] = [
+        InferenceEntry(OpenClipVisualEncoder, "ViT-B-32__openai", VisualOptions()),
+        InferenceEntry(TextDetector, "PP-OCRv5_mobile", TextDetectionOptions()),
     ]
 
     with ThreadPoolExecutor(2) as pool, pytest.raises(RuntimeError, match="fails at once"):
         mocker.patch("immich_ml.main.thread_pool", pool)
-        await run_request("text", (entries, []))
+        await run_request("text", entries)
 
     assert finished.is_set()  # or it would still be loading with no request counted as active
 

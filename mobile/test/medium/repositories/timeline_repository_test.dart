@@ -113,7 +113,7 @@ void main() {
       await ctx.newFace(assetId: asset.id, personId: person.id);
       await ctx.newFace(assetId: asset.id, personId: person.id);
 
-      final query = sut.person(user.id, person.id, .day);
+      final query = sut.person([user.id], person.id, .day);
 
       final buckets = await query.bucketSource().first;
       expect(buckets, hasLength(1));
@@ -140,7 +140,7 @@ void main() {
       await ctx.newFace(assetId: shiftedLater.id, personId: person.id);
       await ctx.newFace(assetId: shiftedEarlier.id, personId: person.id);
 
-      final query = sut.person(user.id, person.id, .day);
+      final query = sut.person([user.id], person.id, .day);
 
       final buckets = await query.bucketSource().first;
       expect(buckets, hasLength(2));

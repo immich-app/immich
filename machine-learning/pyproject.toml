@@ -1,6 +1,6 @@
 [project]
 name = "immich-ml"
-version = "3.2.0"
+version = "3.3.0rc0"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
 requires-python = ">=3.12,<4.0"
@@ -48,7 +48,10 @@ dev = ["locust>=2.15.1", { include-group = "test" }, { include-group = "lint" }]
 
 [project.optional-dependencies]
 cpu = ["onnxruntime>=1.23.2,<2"]
-cuda = ["onnxruntime-gpu>=1.27.1,<1.28"] # TODO: last ORT release supporting CUDA 12.2, also need to handle CUDA 13
+cuda = [
+  "onnxruntime-gpu>=1.27.1,<1.28", # TODO: last ORT release supporting CUDA 12.2, also need to handle CUDA 13
+  "onnxruntime-ep-nv-tensorrt-rtx-cu12>=0.4.0,<0.5 ; platform_machine == 'x86_64'",
+]
 openvino = ["onnxruntime-openvino>=1.24.1,<2"]
 armnn = ["onnxruntime>=1.23.2,<2"]
 rknn = ["onnxruntime>=1.23.2,<2", "rknn-toolkit-lite2>=2.3.0,<3"]

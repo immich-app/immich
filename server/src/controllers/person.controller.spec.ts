@@ -149,13 +149,13 @@ describe(PersonController.name, () => {
 
   describe('DELETE /people/:id', () => {
     it('should require a valid uuid', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).delete(`/people/invalid`);
+      const { status, body } = await request(ctx.getHttpServer()).delete(`/people/invalid`).send({});
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should respond with 204', async () => {
-      const { status } = await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`);
+      const { status } = await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`).send({});
       expect(status).toBe(204);
       expect(service.delete).toHaveBeenCalled();
     });

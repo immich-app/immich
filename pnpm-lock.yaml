@@ -130,7 +130,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.5
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@types/pg':
         specifier: ^8.15.1
@@ -245,7 +245,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@typescript/native':
         specifier: npm:typescript@^7.0.2
@@ -351,7 +351,7 @@ importers:
         specifier: workspace:*
         version: link:../sdk
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       esbuild:
         specifier: ^0.28.0
@@ -373,7 +373,7 @@ importers:
         version: 7.8.5
     devDependencies:
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@types/semver':
         specifier: ^7.7.1
@@ -392,7 +392,7 @@ importers:
         version: 1.2.0
     devDependencies:
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       typescript:
         specifier: ^7.0.0
@@ -529,9 +529,6 @@ importers:
       helmet:
         specifier: ^8.1.0
         version: 8.3.0
-      i18n-iso-countries:
-        specifier: ^7.6.0
-        version: 7.14.0
       ioredis:
         specifier: ^5.8.2
         version: 5.11.1(supports-color@8.1.1)
@@ -702,7 +699,7 @@ importers:
         specifier: ^2.0.0
         version: 2.2.0
       '@types/node':
-        specifier: ^24.13.5
+        specifier: ^24.13.6
         version: 24.13.6
       '@types/nodemailer':
         specifier: ^8.0.0
@@ -1008,6 +1005,9 @@ importers:
       eslint-plugin-compat:
         specifier: ^7.0.0
         version: 7.0.2(eslint@10.10.0(jiti@2.7.0)(supports-color@8.1.1))
+      eslint-plugin-prettier:
+        specifier: ^5.5.6
+        version: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.10.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.10.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.8)
       eslint-plugin-svelte:
         specifier: ^3.12.4
         version: 3.23.0(eslint@10.10.0(jiti@2.7.0)(supports-color@8.1.1))(svelte@5.57.0(@typescript-eslint/types@8.70.0))
@@ -7436,9 +7436,6 @@ packages:
   dezalgo@1.0.4:
     resolution: {integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==}
 
-  diacritics@1.3.0:
-    resolution: {integrity: sha512-wlwEkqcsaxvPJML+rDh/2iS824jbREk6DUMUKkEaSlxdYHeS43cClJtsWglvw2RfeXGm6ohKDqsXteJ5sP5enA==}
-
   didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
 
@@ -8650,10 +8647,6 @@ packages:
   hyperdyperid@1.2.0:
     resolution: {integrity: sha512-Y93lCzHYgGWdrJ66yIktxiaGULYc6oGiABxhcO5AufBeOyoIdZF7bIfLaOrbM0iGIOXQQgxxRrFEnb+Y6w1n4A==}
     engines: {node: '>=10.18'}
-
-  i18n-iso-countries@7.14.0:
-    resolution: {integrity: sha512-nXHJZYtNrfsi1UQbyRqm3Gou431elgLjKl//CYlnBGt5aTWdRPH1PiS2T/p/n8Q8LnqYqzQJik3Q7mkwvLokeg==}
-    engines: {node: '>= 12'}
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -20614,8 +20607,6 @@ snapshots:
       asap: 2.0.6
       wrappy: 1.0.2
 
-  diacritics@1.3.0: {}
-
   didyoumean@1.2.2: {}
 
   diff-sequences@29.6.3: {}
@@ -22340,10 +22331,6 @@ snapshots:
   human-signals@2.1.0: {}
 
   hyperdyperid@1.2.0: {}
-
-  i18n-iso-countries@7.14.0:
-    dependencies:
-      diacritics: 1.3.0
 
   iconv-lite@0.4.24:
     dependencies:

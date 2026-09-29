@@ -102,7 +102,7 @@
 
       <div>
         <HStack fullWidth class="mb-2 justify-between">
-          <Text size="medium" fontWeight="semi-bold">{$t('people')}</Text>
+          <Text size="medium" fontWeight="semi-bold">{$t('users')}</Text>
           {#if !readOnly}
             <HeaderActionButton action={AddUsers} />
           {/if}
