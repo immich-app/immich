@@ -7,7 +7,7 @@
   import { IconButton, toastManager } from '@immich/ui';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { toggleFavoriteAssets } from '$lib/utils/asset-utils'
+  import { toggleFavoriteAssets } from '$lib/services/asset.service'
 
   interface Props {
     onFavorite?: OnFavorite;
