@@ -151,14 +151,17 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }
 
     Widget buildStorageInformation() {
+      final hasUnlimitedQuota = user != null && !user.hasQuota;
       var percentage = backupState.diskUsagePercentage / 100;
       var usedDiskSpace = backupState.diskUse;
       var totalDiskSpace = backupState.diskSize;
 
-      if (user != null && user.hasQuota) {
+      if (user != null) {
         usedDiskSpace = formatBytes(user.quotaUsageInBytes);
-        totalDiskSpace = formatBytes(user.quotaSizeInBytes);
-        percentage = user.quotaUsageInBytes / user.quotaSizeInBytes;
+        if (user.hasQuota) {
+          totalDiskSpace = formatBytes(user.quotaSizeInBytes);
+          percentage = user.quotaUsageInBytes / user.quotaSizeInBytes;
+        }
       }
 
       return Container(
@@ -168,15 +171,29 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           spacing: 12,
           children: [
             Text(context.t.backup_controller_page_server_storage, style: context.textTheme.labelLarge),
-            LinearProgressIndicator(
-              minHeight: 10.0,
-              value: percentage,
-              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            ),
-            Text(
-              context.t.backup_controller_page_storage_format(used: usedDiskSpace, total: totalDiskSpace),
-              style: context.textTheme.bodySmall,
-            ),
+            if (!hasUnlimitedQuota)
+              LinearProgressIndicator(
+                minHeight: 10.0,
+                value: percentage,
+                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+              ),
+            if (hasUnlimitedQuota)
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.t.storage_usage_unlimited(used: usedDiskSpace),
+                      style: context.textTheme.bodySmall,
+                    ),
+                  ),
+                  Semantics(label: context.t.unlimited, child: Text('∞', style: context.textTheme.titleLarge)),
+                ],
+              )
+            else
+              Text(
+                context.t.backup_controller_page_storage_format(used: usedDiskSpace, total: totalDiskSpace),
+                style: context.textTheme.bodySmall,
+              ),
           ],
         ),
       );
