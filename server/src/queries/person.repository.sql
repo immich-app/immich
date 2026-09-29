@@ -1116,6 +1116,23 @@ from
       1
   ) as "dummy"
 
+-- PersonRepository.updateForWritableOwners
+update "person"
+set
+  "name" = $1
+where
+  "person"."personGroupId" = $2
+  and "person"."ownerId" in (
+    select
+      "person_user"."sharedById"
+    from
+      "person_user"
+    where
+      "person_user"."personGroupId" = $3
+      and "person_user"."sharedWithId" = $4
+      and "person_user"."role" in ($5, $6)
+  )
+
 -- PersonRepository.getFacesByIds
 select
   "asset_face".*,
