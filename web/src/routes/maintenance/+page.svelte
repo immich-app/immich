@@ -44,6 +44,13 @@
   );
 </script>
 
+{#snippet errorLog()}
+  <Scrollable class="max-h-80">
+    <pre class="text-left text-sm"><code>{error}</code></pre>
+  </Scrollable>
+  <Button onclick={end}>{$t('maintenance_end')}</Button>
+{/snippet}
+
 <YuccaContext>
   <AuthPageLayout
     withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
@@ -53,10 +60,7 @@
       {#if $status?.action === MaintenanceAction.RestoreDatabase}
         <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
         {#if $status.error}
-          <Scrollable class="max-h-80">
-            <pre class="text-left text-sm"><code>{error}</code></pre>
-          </Scrollable>
-          <Button onclick={end}>{$t('maintenance_end')}</Button>
+          {@render errorLog()}
         {:else}
           <ProgressBar progress={$status.progress || 0} />
           {#if $status.task === 'backup'}
@@ -74,6 +78,9 @@
         {/if}
       {:else if $status?.action === MaintenanceAction.Rollback && $status.yuccaLogId}
         <ViewStatusModal logId={$status.yuccaLogId} onClose={() => void 0} />
+      {:else if $status?.action === MaintenanceAction.Rollback && $status.error}
+        <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_rollback')}</Heading>
+        {@render errorLog()}
       {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
         <MaintenanceRestoreFlow {end} expectedVersion={data.expectedVersion} />
       {:else}
