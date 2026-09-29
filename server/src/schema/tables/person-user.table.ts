@@ -1,3 +1,4 @@
+import { Check } from '@immich/sql-tools';
 import {
   AfterInsertTrigger,
   Column,
@@ -32,6 +33,7 @@ import { UserTable } from 'src/schema/tables/user.table.js';
   onUpdate: 'CASCADE',
   onDelete: 'CASCADE',
 })
+@Check({ name: 'person_user_sharedBy_sharedWith_chk', expression: `"sharedById" != "sharedWithId"` })
 export class PersonUserTable {
   @PrimaryColumn({ type: 'uuid' })
   personGroupId!: string;

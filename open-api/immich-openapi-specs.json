@@ -10128,7 +10128,7 @@
             "state": "Stable"
           }
         ],
-        "x-immich-permission": "person.delete",
+        "x-immich-permission": "person.update",
         "x-immich-state": "Stable"
       },
       "get": {
