@@ -291,43 +291,43 @@ url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762708"
 
 [[tools.pnpm]]
-version = "11.27.0"
+version = "11.27.1"
 backend = "aqua:pnpm/pnpm"
 
 [tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:1f3c5dbdfe20b011ea86950b4fd61b5918cbde874c099032fe9064f7a53816bf"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.0/pnpm-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/559064653"
+checksum = "sha256:dbf8f84263d2bc696306d4219be68256d881d9af409345374d878676a7edcf0c"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602580"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-arm64-musl"]
-checksum = "sha256:ee24db9e6beb2f7a8b40051e008dd4eae8d6feb4fc8d4d8447ed84a34bb7477c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.0/pnpm-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/559064657"
+checksum = "sha256:7a7854e90bdb7d339430d9943ea482b34d7bde817cfc1c749d3c04ddd464142d"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602583"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:14ed04e631e4563abf3570dda1a365316683149a482b741a2db37e495f6b9cdb"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.0/pnpm-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/559064655"
+checksum = "sha256:6be1426540406747b7731564a46c5b30d3023ea6c19e4ce99f994c4ec122f3d2"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602576"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl"]
-checksum = "sha256:27d5c9481f12fbb5dbcf85df5677b5bae1e164af1fe05a182481da6e5043cd07"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.0/pnpm-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/559064658"
+checksum = "sha256:cc66c1558a1a03b320ff5b4022f755386fa1de54db3f97ff624112015be1ccf1"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602579"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:9e8724db1d733d651cfe9a55d6de3d59fc8c5e472b9b4e9c2844acafd38c015e"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.0/pnpm-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/559064654"
+checksum = "sha256:352f67ceaaa5aba294a53f483da93c376005b4c7e785fe5411e0ce720fe74741"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602575"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64"]
-checksum = "sha256:fed6d7039f9379d446b9edebb7b9d6db79e5c336bc4a86bf854730ec6c7dd53a"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.0/pnpm-win32-x64.zip"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/559064652"
+checksum = "sha256:4b56d1184c3390b08146060fa4b414b8ceec9164aa41bf996e87a0f0bc135851"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-win32-x64.zip"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602578"
 provenance = "github-attestations"
 
 [[tools.terragrunt]]
