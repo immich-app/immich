@@ -346,10 +346,11 @@ export class SearchRepository {
   @GenerateSql({
     params: [
       {
-        userIds: [DummyValue.UUID],
+        clusterGroupId: DummyValue.UUID,
         embedding: DummyValue.VECTOR,
         numResults: 10,
         maxDistance: 0.6,
+        minBirthDate: DummyValue.DATE,
       },
     ],
   })
@@ -361,40 +362,48 @@ export class SearchRepository {
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Face])}`.execute(trx);
       return await trx
-        .with('cte', (qb) =>
+        .selectFrom((qb) =>
           qb
-            .selectFrom('asset_face')
-            .innerJoin('asset', 'asset.id', 'asset_face.assetId')
-            .innerJoin('face_search', 'face_search.faceId', 'asset_face.id')
-            .select([
-              'asset_face.id',
-              'asset_face.personGroupId',
-              sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
-            ])
-            .where('asset.ownerId', 'in', (eb) =>
-              eb.selectFrom('user').select('user.id').where('user.clusterGroupId', '=', clusterGroupId),
-            )
-            .where('asset.deletedAt', 'is', null)
-            .$if(!!hasPerson, (qb) => qb.where('asset_face.personGroupId', 'is not', null))
-            .$if(!!minBirthDate, (qb) =>
-              qb.where((eb) =>
-                eb.not(
-                  eb.exists(
-                    eb
-                      .selectFrom('person')
-                      .select('person.personGroupId')
-                      .whereRef('person.personGroupId', '=', 'asset_face.personGroupId')
-                      .where('person.birthDate', '>', minBirthDate!),
+            .selectFrom('face_search')
+            .select(['face_search.faceId', sql<number>`face_search.embedding <=> ${embedding}`.as('distance')])
+            .orderBy('distance')
+            // Prevent PostgreSQL from flattening this ordered subquery so it can use the vector index.
+            .offset(0)
+            .as('nearest'),
+        )
+        .innerJoinLateral(
+          (qb) =>
+            qb
+              .selectFrom('asset_face')
+              .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+              .select(['asset_face.id', 'asset_face.personGroupId'])
+              .whereRef('asset_face.id', '=', 'nearest.faceId')
+              .where('asset.ownerId', 'in', (eb) =>
+                eb.selectFrom('user').select('user.id').where('user.clusterGroupId', '=', clusterGroupId),
+              )
+              .where('asset.deletedAt', 'is', null)
+              .$if(!!hasPerson, (qb) => qb.where('asset_face.personGroupId', 'is not', null))
+              .$if(!!minBirthDate, (qb) =>
+                qb.where((eb) =>
+                  eb.not(
+                    eb.exists(
+                      eb
+                        .selectFrom('person')
+                        .select('person.personGroupId')
+                        .whereRef('person.personGroupId', '=', 'asset_face.personGroupId')
+                        .where('person.birthDate', '>', minBirthDate!),
+                    ),
                   ),
                 ),
-              ),
-            )
-            .orderBy('distance')
-            .limit(numResults),
+              )
+              .limit(1)
+              .as('filtered'),
+          (join) => join.onTrue(),
         )
-        .selectFrom('cte')
-        .selectAll()
-        .where('cte.distance', '<=', maxDistance)
+        .select(['filtered.id', 'filtered.personGroupId', 'nearest.distance'])
+        .where('nearest.distance', '<=', maxDistance)
+        .orderBy('nearest.distance')
+        .limit(numResults)
         .execute();
     });
   }

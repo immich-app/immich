@@ -215,38 +215,59 @@ where
 begin
 set
   local vchordrq.probes = 1
-with
-  "cte" as (
+select
+  "filtered"."id",
+  "filtered"."personGroupId",
+  "nearest"."distance"
+from
+  (
+    select
+      "face_search"."faceId",
+      face_search.embedding <=> $1 as "distance"
+    from
+      "face_search"
+    order by
+      "distance"
+    offset
+      $2
+  ) as "nearest"
+  inner join lateral (
     select
       "asset_face"."id",
-      "asset_face"."personGroupId",
-      face_search.embedding <=> $1 as "distance"
+      "asset_face"."personGroupId"
     from
       "asset_face"
       inner join "asset" on "asset"."id" = "asset_face"."assetId"
-      inner join "face_search" on "face_search"."faceId" = "asset_face"."id"
     where
-      "asset"."ownerId" in (
+      "asset_face"."id" = "nearest"."faceId"
+      and "asset"."ownerId" in (
         select
           "user"."id"
         from
           "user"
         where
-          "user"."clusterGroupId" = $2
+          "user"."clusterGroupId" = $3
       )
       and "asset"."deletedAt" is null
-    order by
-      "distance"
+      and not exists (
+        select
+          "person"."personGroupId"
+        from
+          "person"
+        where
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."birthDate" > $4
+      )
     limit
-      $3
-  )
-select
-  *
-from
-  "cte"
+      $5
+  ) as "filtered" on true
 where
-  "cte"."distance" <= $4
-rollback
+  "nearest"."distance" <= $6
+order by
+  "nearest"."distance"
+limit
+  $7
+commit
 
 -- SearchRepository.searchPlaces
 select
