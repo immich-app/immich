@@ -843,7 +843,7 @@ describe(LibraryService.name, () => {
   });
 
   describe('sidecar discovery during library scans', () => {
-    it('should keep associations directory-local across multiple scan batches and import paths', async () => {
+    it('should only associate with sidecars in the same directory across multiple scan batches and import paths', async () => {
       const { ctx } = setup();
       const secondImportPath = join(importRoot, 'second');
       const library = await ctx.createLibrary({

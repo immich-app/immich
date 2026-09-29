@@ -2071,7 +2071,7 @@ describe(MetadataService.name, () => {
       },
     );
 
-    it('should keep matching directory-local for identical basenames', async () => {
+    it('should not match xmp files across directories', async () => {
       const first = forSidecarJob({ originalPath: '/photos/first/photo.jpg' });
       const second = forSidecarJob({ originalPath: '/photos/second/photo.jpg' });
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValueOnce(first).mockResolvedValueOnce(second);
