@@ -22,7 +22,21 @@
   let isHidden = $state(untrack(() => filter.isHidden));
   let users = $state<UserResponseDto[]>([]);
 
-  const cycle = (value?: boolean) => (value === undefined ? true : value ? false : undefined);
+  const cycle = (value?: boolean) => {
+    switch (value) {
+      case undefined: {
+        return true;
+      }
+
+      case true: {
+        return false;
+      }
+
+      case false: {
+        return undefined;
+      }
+    }
+  };
 
   onMount(async () => {
     try {
