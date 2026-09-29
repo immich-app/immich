@@ -145,8 +145,8 @@ importers:
         specifier: npm:typescript@^7.0.2
         version: typescript@7.0.2
       dotenv:
-        specifier: ^17.2.3
-        version: 17.4.2
+        specifier: ^18.0.0
+        version: 18.0.4
       eslint:
         specifier: ^10.0.0
         version: 10.10.0(jiti@2.7.0)(supports-color@8.1.1)
@@ -991,8 +991,8 @@ importers:
         specifier: ^4.0.0
         version: 4.1.11(vitest@4.1.11)
       dotenv:
-        specifier: ^17.0.0
-        version: 17.4.2
+        specifier: ^18.0.0
+        version: 18.0.4
       eslint:
         specifier: ^10.2.1
         version: 10.10.0(jiti@2.7.0)(supports-color@8.1.1)
@@ -7533,9 +7533,10 @@ packages:
     resolution: {integrity: sha512-tE7ztYzXHIeyvc7N+hR3oi7FIbf/NIjVP9hmAt3yMXzrQ072/fpjGLx2GxNxGxUl5V73MEqYzioOMoVhGMJ5cA==}
     engines: {node: '>=10'}
 
-  dotenv@17.4.2:
-    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+  dotenv@18.0.4:
+    resolution: {integrity: sha512-jGt9uI5BIxpVO15kvy+iEFqNAwxYClKWnkptLjSNPnFLC003Imd0ofr3aEVsbpHdSBdSsbcApNIlz4nbyGMwdA==}
     engines: {node: '>=12'}
+    hasBin: true
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -20732,7 +20733,7 @@ snapshots:
     dependencies:
       is-obj: 2.0.0
 
-  dotenv@17.4.2: {}
+  dotenv@18.0.4: {}
 
   dunder-proto@1.0.1:
     dependencies:

@@ -36,7 +36,7 @@
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
     "@types/supertest": "^7.0.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^18.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.1.3",
