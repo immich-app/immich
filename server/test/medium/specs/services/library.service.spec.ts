@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import type { SystemConfig } from 'src/dtos/config.dto.js';
 import { StorageCore } from 'src/cores/storage.core.js';
-import { AssetStatus, JobName, JobStatus } from 'src/enum.js';
+import { AssetFileType, AssetStatus, JobName, JobStatus } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
@@ -18,8 +18,9 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
+import { MetadataService } from 'src/services/metadata.service.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
-import { MediumTestContext, testAssetsDir } from 'test/medium.factory.js';
+import { MediumTestContext, newMediumService } from 'test/medium.factory.js';
 import { newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
@@ -37,14 +38,9 @@ const createFile = async (filePath: string, modifiedAt: Date = fileModifiedAt) =
   return filePath;
 };
 
-const copyTestAsset = async (source: string, filePath: string, modifiedAt: Date = fileModifiedAt) => {
-  await mkdir(dirname(filePath), { recursive: true });
-  await copyFile(join(testAssetsDir, source), filePath);
-  await utimes(filePath, modifiedAt, modifiedAt);
-  return filePath;
-};
-
 class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
+  private metadataService: MetadataService;
+
   constructor(database: Kysely<DB>) {
     super(LibraryService, {
       database,
@@ -57,6 +53,12 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     jobs.queueAll.mockResolvedValue();
 
     this.getMock(EventRepository).emit.mockResolvedValue();
+
+    this.metadataService = newMediumService(MetadataService, {
+      database,
+      real: [AssetRepository, AssetJobRepository, StorageRepository],
+      mock: [LoggingRepository],
+    }).sut;
   }
 
   async createLibrary(options: { importPaths?: string[]; exclusionPatterns?: string[] } = {}) {
@@ -74,20 +76,45 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     const jobs = this.getMock(JobRepository);
 
     jobs.queue.mockClear();
+    jobs.queueAll.mockClear();
     await this.sut.handleQueueSyncFiles({ id: libraryId });
     for (const [job] of jobs.queue.mock.calls) {
       if (job.name === JobName.LibrarySyncFiles) {
         await this.sut.handleSyncFiles(job.data);
       }
     }
+    await this.discoverSidecars();
 
     jobs.queue.mockClear();
+    jobs.queueAll.mockClear();
     await this.sut.handleQueueSyncAssets({ id: libraryId });
     for (const [job] of jobs.queue.mock.calls) {
       if (job.name === JobName.LibrarySyncAssets) {
         await this.sut.handleSyncAssets(job.data);
       }
     }
+    await this.discoverSidecars();
+  }
+
+  private async discoverSidecars() {
+    for (const [jobs] of this.getMock(JobRepository).queueAll.mock.calls) {
+      for (const job of jobs) {
+        if (job.name === JobName.SidecarCheck) {
+          await this.metadataService.handleSidecarCheck(job.data);
+        }
+      }
+    }
+  }
+
+  getSidecarPaths(libraryId: string) {
+    return this.database
+      .selectFrom('asset')
+      .innerJoin('asset_file', 'asset_file.assetId', 'asset.id')
+      .where('libraryId', '=', libraryId)
+      .where('asset_file.type', '=', AssetFileType.Sidecar)
+      .select(['originalPath', 'asset_file.path as sidecarPath'])
+      .orderBy('originalPath')
+      .execute();
   }
 
   /** The paths a library scan left visible, i.e. neither offline nor trashed */
@@ -818,7 +845,7 @@ describe(LibraryService.name, () => {
       const { sut, ctx } = setup();
       const jobs = ctx.getMock(JobRepository);
       const library = await ctx.createLibrary({ importPaths: [importPath] });
-      const rawPath = await copyTestAsset('formats/raw/Nikon/D80/glarus.nef', join(importPath, 'glarus.nef'));
+      const rawPath = await createFile(join(importPath, 'glarus.nef'));
 
       const { asset } = await ctx.newAsset({
         ownerId: library.ownerId,
@@ -854,7 +881,7 @@ describe(LibraryService.name, () => {
       const { sut, ctx } = setup();
       const jobs = ctx.getMock(JobRepository);
       const library = await ctx.createLibrary({ importPaths: [importPath] });
-      const rawPath = await copyTestAsset('formats/raw/Nikon/D80/glarus.nef', join(importPath, 'glarus.nef'));
+      const rawPath = await createFile(join(importPath, 'glarus.nef'));
 
       const { asset } = await ctx.newAsset({
         ownerId: library.ownerId,
@@ -881,12 +908,112 @@ describe(LibraryService.name, () => {
     });
   });
 
+  describe('sidecar discovery during library scans', () => {
+    it.each(['photo.jpg.xmp', 'photo.xmp'])(
+      'should associate %s without importing it as an asset',
+      async (filename) => {
+        const { ctx } = setup();
+        const library = await ctx.createLibrary({ importPaths: [importPath] });
+        const originalPath = await createFile(join(importPath, 'photo.jpg'));
+        const sidecarPath = await createFile(join(importPath, filename));
+
+        await ctx.scan(library.id);
+
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([originalPath]);
+        await expect(ctx.getSidecarPaths(library.id)).resolves.toEqual([{ originalPath, sidecarPath }]);
+      },
+    );
+
+    it.each([false, true])(
+      'should resolve shared JPG and RAW sidecars independently (extended JPG sidecar: %s)',
+      async (extended) => {
+        const { ctx } = setup();
+        const library = await ctx.createLibrary({ importPaths: [importPath] });
+        const jpg = await createFile(join(importPath, 'photo.jpg'));
+        const raw = await createFile(join(importPath, 'photo.nef'));
+        const shared = await createFile(join(importPath, 'photo.xmp'));
+        const preferred = extended ? await createFile(join(importPath, 'photo.jpg.xmp')) : shared;
+
+        await ctx.scan(library.id);
+
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([jpg, raw]);
+        await expect(ctx.getSidecarPaths(library.id)).resolves.toEqual([
+          { originalPath: jpg, sidecarPath: preferred },
+          { originalPath: raw, sidecarPath: shared },
+        ]);
+      },
+    );
+
+    it('should discover sidecars even when an exclusion pattern matches only XMP files', async () => {
+      const { ctx } = setup();
+      const library = await ctx.createLibrary({
+        importPaths: [importPath],
+        exclusionPatterns: ['**/*.xmp'],
+      });
+      const originalPath = await createFile(join(importPath, 'photo.jpg'));
+      const sidecarPath = await createFile(join(importPath, 'photo.jpg.xmp'));
+
+      await ctx.scan(library.id);
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([originalPath]);
+      await expect(ctx.getSidecarPaths(library.id)).resolves.toEqual([{ originalPath, sidecarPath }]);
+    });
+
+    it('should not import media or associate sidecars from an excluded directory', async () => {
+      const { ctx } = setup();
+      const library = await ctx.createLibrary({
+        importPaths: [importPath],
+        exclusionPatterns: ['**/excluded/**'],
+      });
+      const originalPath = await createFile(join(importPath, 'included/photo.jpg'));
+      const sidecarPath = await createFile(join(importPath, 'included/photo.xmp'));
+      await createFile(join(importPath, 'excluded/photo.jpg'));
+      await createFile(join(importPath, 'excluded/photo.xmp'));
+
+      await ctx.scan(library.id);
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([originalPath]);
+      await expect(ctx.getSidecarPaths(library.id)).resolves.toEqual([{ originalPath, sidecarPath }]);
+    });
+
+    it('should keep associations directory-local across multiple scan batches and import paths', async () => {
+      const { ctx } = setup();
+      const secondImportPath = join(importRoot, 'second');
+      const library = await ctx.createLibrary({
+        importPaths: [importPath, secondImportPath],
+      });
+      const expected = [];
+      for (const directory of [importPath, secondImportPath]) {
+        for (const name of ['a', 'b', 'c']) {
+          const originalPath = await createFile(join(directory, name, 'photo.jpg'));
+          const sidecarPath = await createFile(join(directory, name, 'photo.xmp'));
+          expected.push({ originalPath, sidecarPath });
+        }
+      }
+      const storage = ctx.get(StorageRepository);
+      const walk = storage.walk.bind(storage);
+      const walker = vi.spyOn(storage, 'walk').mockImplementation((options) => walk({ ...options, take: 2 }));
+      const syncFiles = vi.spyOn(ctx.sut, 'handleSyncFiles');
+
+      try {
+        await ctx.scan(library.id);
+        expect(syncFiles).toHaveBeenCalledTimes(3);
+      } finally {
+        walker.mockRestore();
+        syncFiles.mockRestore();
+      }
+      await expect(ctx.getSidecarPaths(library.id)).resolves.toEqual(
+        expected.toSorted((a, b) => a.originalPath.localeCompare(b.originalPath)),
+      );
+    });
+  });
+
   describe('handleSyncFiles', () => {
     it('should queue sidecar checks for newly imported assets', async () => {
       const { sut, ctx } = setup();
       const jobs = ctx.getMock(JobRepository);
       const library = await ctx.createLibrary({ importPaths: [importPath] });
-      const rawPath = await copyTestAsset('formats/raw/Nikon/D80/glarus.nef', join(importPath, 'glarus.nef'));
+      const rawPath = await createFile(join(importPath, 'glarus.nef'));
 
       await expect(
         sut.handleSyncFiles({
