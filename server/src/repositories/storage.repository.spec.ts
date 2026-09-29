@@ -1,6 +1,6 @@
 import mockfs from 'mock-fs';
 import { R_OK } from 'node:constants';
-import { mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { vitest } from 'vitest';
