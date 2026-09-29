@@ -491,8 +491,8 @@ importers:
         specifier: ^5.51.0
         version: 5.81.5(supports-color@8.1.1)
       chokidar:
-        specifier: ^4.0.3
-        version: 4.0.3
+        specifier: ^5.0.0
+        version: 5.0.0
       compression:
         specifier: ^1.8.0
         version: 1.8.2(supports-color@8.1.1)
