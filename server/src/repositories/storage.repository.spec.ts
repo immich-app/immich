@@ -1,4 +1,8 @@
 import mockfs from 'mock-fs';
+import { R_OK } from 'node:constants';
+import { mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { vitest } from 'vitest';
 import { CrawlOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -229,6 +233,84 @@ describe(StorageRepository.name, () => {
         expect(actual.toSorted()).toEqual(expected.toSorted());
       });
     }
+  });
+
+  describe('walk', () => {
+    it.each([
+      { exclusionPatterns: [] },
+      { exclusionPatterns: ['**/*.xmp'] },
+      { exclusionPatterns: ['**/excluded/**'] },
+    ])(
+      'should emit only media and respect exclusions in small batches: $exclusionPatterns',
+      async ({ exclusionPatterns }) => {
+        mockfs({
+          '/photos/photo.jpg': '',
+          '/photos/photo.nef': '',
+          '/photos/photo.jpg.xmp': '',
+          '/photos/photo.xmp': '',
+          '/photos/excluded/photo.jpg': '',
+          '/photos/excluded/photo.xmp': '',
+        });
+
+        const batches = await Array.fromAsync(sut.walk({ pathsToCrawl: ['/photos'], exclusionPatterns, take: 1 }));
+
+        expect(batches.every((batch) => batch.length === 1)).toBe(true);
+        expect(batches.flat().toSorted()).toEqual(
+          [
+            '/photos/photo.jpg',
+            '/photos/photo.nef',
+            ...(exclusionPatterns.includes('**/excluded/**') ? [] : ['/photos/excluded/photo.jpg']),
+          ].toSorted(),
+        );
+      },
+    );
+  });
+
+  describe('checkFileExists', () => {
+    let tempDir: string;
+
+    beforeEach(async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'immich-storage-sidecar-'));
+    });
+
+    afterEach(async () => {
+      await rm(tempDir, { recursive: true, force: true });
+    });
+
+    it('should follow a readable sidecar symlink', async () => {
+      const target = join(tempDir, 'metadata.xmp');
+      const candidate = join(tempDir, 'photo.jpg.xmp');
+      await writeFile(target, 'test');
+      await symlink(target, candidate);
+
+      await expect(sut.checkFileExists(candidate, R_OK)).resolves.toBe(true);
+    });
+
+    it('should report a sidecar symlink as missing after its target disappears', async () => {
+      const target = join(tempDir, 'metadata.xmp');
+      const candidate = join(tempDir, 'photo.jpg.xmp');
+      await writeFile(target, 'test');
+      await symlink(target, candidate);
+      await expect(sut.checkFileExists(candidate, R_OK)).resolves.toBe(true);
+      await rm(target);
+
+      await expect(sut.checkFileExists(candidate, R_OK)).resolves.toBe(false);
+    });
+
+    it.for(['PHOTO.xmp', 'photo.XMP'])(
+      'should not match %s with different case on a case-sensitive filesystem',
+      async (filename, { skip }) => {
+        await writeFile(join(tempDir, 'case-probe'), 'test');
+        if (await sut.checkFileExists(join(tempDir, 'CASE-PROBE'), R_OK)) {
+          skip();
+        }
+        const candidate = join(tempDir, filename);
+        await writeFile(candidate, 'test');
+
+        await expect(sut.checkFileExists(candidate, R_OK)).resolves.toBe(true);
+        await expect(sut.checkFileExists(join(tempDir, 'photo.xmp'), R_OK)).resolves.toBe(false);
+      },
+    );
   });
 
   describe('watch', () => {
