@@ -203,6 +203,7 @@ describe(LibraryService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValue(true);
 
       mocks.library.get.mockResolvedValue(library);
+      mocks.storage.walk.mockImplementation(mockWalk);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
@@ -258,6 +259,7 @@ describe(LibraryService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValue(true);
 
       mocks.library.get.mockResolvedValue(library);
+      mocks.storage.walk.mockImplementation(mockWalk);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
