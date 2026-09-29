@@ -61,7 +61,7 @@ export class ActivityRepository {
         join.onRef('user2.id', '=', 'asset.ownerId').on('user2.deletedAt', 'is', null),
       )
       .innerJoinLateral(
-        (eb) => eb.selectFrom(dummy).select(columns.userWithPrefix).as('user'),
+        (eb) => eb.selectFrom(dummy).select(columns.user2).as('user'),
         (join) => join.onTrue(),
       )
       .select((eb) => [eb.ref('asset.type').as('assetType'), eb.fn.toJson('user').as('user')])
