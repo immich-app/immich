@@ -1,4 +1,3 @@
-import type { WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
@@ -17,6 +16,7 @@ import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
 import picomatch from 'picomatch';
+import type { WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
 import { WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
