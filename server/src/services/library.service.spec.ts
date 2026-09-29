@@ -15,7 +15,7 @@ import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
 async function* mockWalk() {
   // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
-  yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
+  yield await Promise.resolve([{ type: 'entry' as const, path: '/data/user1/photo.jpg' }]);
 }
 
 describe(LibraryService.name, () => {
