@@ -1,10 +1,9 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import PeopleFilterUserPicker from '$lib/modals/PeopleFilterUserPicker.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { handleUpdatePerson } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getPerson, PersonUpdateStrategy, PersonUserRole, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import { PersonUpdateStrategy, PersonUserRole, type PersonResponseDto } from '@immich/sdk';
   import {
     Alert,
     Button,
@@ -69,18 +68,15 @@
   });
 
   const onSubmit = async () => {
-    const userId = applyToEveryone ? undefined : targetPerson.sharedById;
+    const response = await handleUpdatePerson({
+      id: person.id,
+      name: targetPerson.name,
+      birthDate: targetPerson.birthDate,
+      userId: applyToEveryone ? undefined : targetPerson.sharedById,
+    });
 
-    try {
-      const response = await updatePerson({
-        id: person.id,
-        personUpdateDto: { name: targetPerson.name, birthDate: targetPerson.birthDate, userId },
-      });
-      const isOtherUser = userId && userId !== authManager.user.id;
-      eventManager.emit('PersonUpdate', isOtherUser ? await getPerson({ id: person.id }) : response);
+    if (response) {
       onClose();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 

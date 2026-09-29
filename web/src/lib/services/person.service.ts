@@ -1,4 +1,5 @@
 import {
+  getPerson,
   PersonUpdateStrategy,
   updatePerson,
   type AssetResponseDto,
@@ -113,12 +114,14 @@ const handleHidePerson = async (person: { id: string }) => {
   }
 };
 
-export const handleUpdatePerson = async (id: string, personUpdateDto: PersonUpdateDto) => {
+export const handleUpdatePerson = async ({ id, ...personUpdateDto }: { id: string } & PersonUpdateDto) => {
   const $t = await getFormatter();
 
   try {
-    await updatePerson({ id, personUpdateDto });
-    return true;
+    const response = await updatePerson({ id, personUpdateDto });
+    const isOtherUser = !!personUpdateDto.userId && personUpdateDto.userId !== authManager.user.id;
+    eventManager.emit('PersonUpdate', isOtherUser ? await getPerson({ id }) : response);
+    return response;
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }
@@ -145,18 +148,13 @@ export const handleUpdatePersonName = async (
   { id, name }: { id: string; name: string },
   options?: { notify: boolean },
 ) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updatePerson({ id, personUpdateDto: withUpdateStrategy({ name }) });
-    if (options?.notify) {
-      toastManager.primary($t('change_name_successfully'));
-    }
-    eventManager.emit('PersonUpdate', response);
-    return response;
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_save_name'));
+  const response = await handleUpdatePerson({ id, ...withUpdateStrategy({ name }) });
+  if (response && options?.notify) {
+    const $t = await getFormatter();
+    toastManager.primary($t('change_name_successfully'));
   }
+
+  return response;
 };
 
 const handleSetFeaturedPhoto = async (person: PersonResponseDto, featureFaceAssetId: string) => {
