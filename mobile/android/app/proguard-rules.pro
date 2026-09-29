@@ -37,3 +37,11 @@
 
 # Keep all widget model classes and their fields for Gson
 -keep class app.alextran.immich.widget.model.** { *; }
+
+##---------------Begin: proguard configuration for ok_http JNI ----------
+# The ok_http Dart plugin accesses OkHttp and Okio classes via JNI
+# string-based reflection (JClass.forName), which R8 cannot trace.
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }
+-keep class com.example.ok_http.** { *; }
+##---------------End: proguard configuration for ok_http JNI ----------

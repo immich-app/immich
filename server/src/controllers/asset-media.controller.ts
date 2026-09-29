@@ -8,7 +8,6 @@ import {
   Param,
   ParseFilePipe,
   Post,
-  Put,
   Query,
   Req,
   Res,
@@ -16,34 +15,30 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NextFunction, Request, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import { type NextFunction, type Request, type Response } from 'express';
+import type { UploadFiles } from 'src/types.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
   AssetMediaStatus,
-  CheckExistingAssetsResponseDto,
-} from 'src/dtos/asset-media-response.dto';
+} from 'src/dtos/asset-media-response.dto.js';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
-  AssetMediaReplaceDto,
   AssetMediaSize,
-  CheckExistingAssetsDto,
-  UploadFieldName,
-} from 'src/dtos/asset-media.dto';
-import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
-import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
-import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { AssetMediaService } from 'src/services/asset-media.service';
-import { UploadFiles } from 'src/types';
-import { ImmichFileResponse, sendFile } from 'src/utils/file';
-import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
+} from 'src/dtos/asset-media.dto.js';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto.js';
+import { type AuthDto } from 'src/dtos/auth.dto.js';
+import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum.js';
+import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor.js';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
+import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { AssetMediaService } from 'src/services/asset-media.service.js';
+import { ImmichFileResponse, sendFile } from 'src/utils/file.js';
+import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
@@ -112,36 +107,6 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.downloadOriginal(auth, id, dto), this.logger);
   }
 
-  @Put(':id/original')
-  @UseInterceptors(FileUploadInterceptor)
-  @ApiConsumes('multipart/form-data')
-  @ApiResponse({
-    status: 200,
-    description: 'Asset replaced successfully',
-    type: AssetMediaResponseDto,
-  })
-  @Endpoint({
-    summary: 'Replace asset',
-    description: 'Replace the asset with new file, without changing its id.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'copyAsset' }),
-  })
-  @Authenticated({ permission: Permission.AssetReplace, sharedLink: true })
-  async replaceAsset(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
-    files: UploadFiles,
-    @Body() dto: AssetMediaReplaceDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AssetMediaResponseDto> {
-    const { file } = getFiles(files);
-    const responseDto = await this.service.replaceAsset(auth, id, dto, file);
-    if (responseDto.status === AssetMediaStatus.DUPLICATE) {
-      res.status(HttpStatus.OK);
-    }
-    return responseDto;
-  }
-
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
@@ -159,6 +124,16 @@ export class AssetMediaController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    if (dto.size === AssetMediaSize.Original) {
+      this.logger.deprecate(
+        'Calling the thumbnail endpoint with size=original is deprecated. Use the :id/original endpoint instead',
+      );
+      const [_, reqSearch] = req.url.split('?', 2);
+      const redirSearchParams = new URLSearchParams(reqSearch);
+      redirSearchParams.delete('size');
+      return res.redirect('original?' + redirSearchParams.toString());
+    }
+
     const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
 
     if (viewThumbnailRes instanceof ImmichFileResponse) {
@@ -167,7 +142,7 @@ export class AssetMediaController {
       // viewThumbnailRes is a AssetMediaRedirectResponse
       // which redirects to the original asset or a specific size to make better use of caching
       const { targetSize } = viewThumbnailRes;
-      const [reqPath, reqSearch] = req.url.split('?');
+      const [reqPath, reqSearch] = req.url.split('?', 2);
       let redirPath: string;
       const redirSearchParams = new URLSearchParams(reqSearch);
       if (targetSize === 'original') {
@@ -200,21 +175,6 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
-  }
-
-  @Post('exist')
-  @Authenticated({ permission: Permission.AssetUpload })
-  @Endpoint({
-    summary: 'Check existing assets',
-    description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  @HttpCode(HttpStatus.OK)
-  checkExistingAssets(
-    @Auth() auth: AuthDto,
-    @Body() dto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return this.service.checkExistingAssets(auth, dto);
   }
 
   @Post('bulk-upload-check')

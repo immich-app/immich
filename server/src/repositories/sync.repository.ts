@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { SyncAck } from 'src/types';
+import type { SyncAck } from 'src/types.js';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
 
 export type SyncBackfillOptions = {
   nowId: string;
@@ -53,8 +53,10 @@ export class SyncRepository {
   albumUser: AlbumUserSync;
   asset: AssetSync;
   assetExif: AssetExifSync;
+  assetEdit: AssetEditSync;
   assetFace: AssetFaceSync;
   assetMetadata: AssetMetadataSync;
+  assetOcr: AssetOcrSync;
   authUser: AuthUserSync;
   memory: MemorySync;
   memoryToAsset: MemoryToAssetSync;
@@ -63,6 +65,7 @@ export class SyncRepository {
   partnerAssetExif: PartnerAssetExifsSync;
   partnerStack: PartnerStackSync;
   person: PersonSync;
+  personGroup: PersonGroupSync;
   stack: StackSync;
   user: UserSync;
   userMetadata: UserMetadataSync;
@@ -75,8 +78,10 @@ export class SyncRepository {
     this.albumUser = new AlbumUserSync(this.db);
     this.asset = new AssetSync(this.db);
     this.assetExif = new AssetExifSync(this.db);
+    this.assetEdit = new AssetEditSync(this.db);
     this.assetFace = new AssetFaceSync(this.db);
     this.assetMetadata = new AssetMetadataSync(this.db);
+    this.assetOcr = new AssetOcrSync(this.db);
     this.authUser = new AuthUserSync(this.db);
     this.memory = new MemorySync(this.db);
     this.memoryToAsset = new MemoryToAssetSync(this.db);
@@ -85,13 +90,14 @@ export class SyncRepository {
     this.partnerAssetExif = new PartnerAssetExifsSync(this.db);
     this.partnerStack = new PartnerStackSync(this.db);
     this.person = new PersonSync(this.db);
+    this.personGroup = new PersonGroupSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
     this.userMetadata = new UserMetadataSync(this.db);
   }
 }
 
-class BaseSync {
+export class BaseSync {
   constructor(protected db: Kysely<DB>) {}
 
   protected backfillQuery<T extends keyof DB>(t: T, { nowId, beforeUpdateId, afterUpdateId }: SyncBackfillOptions) {
@@ -102,7 +108,7 @@ class BaseSync {
       .selectFrom(table(t).as(t))
       .where(updateIdRef, '<', nowId)
       .where(updateIdRef, '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (qb) => qb.where(updateIdRef, '>=', afterUpdateId!))
+      .$if(!!afterUpdateId, (qb) => qb.where(updateIdRef, '>', afterUpdateId!))
       .orderBy(updateIdRef, 'asc');
   }
 
@@ -169,10 +175,9 @@ class AlbumSync extends BaseSync {
     return this.upsertQuery('album', options)
       .distinctOn(['album.id', 'album.updateId'])
       .leftJoin('album_user as album_users', 'album.id', 'album_users.albumId')
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_users.userId', '=', userId)]))
+      .where('album_users.userId', '=', userId)
       .select([
         'album.id',
-        'album.ownerId',
         'album.albumName as name',
         'album.description',
         'album.createdAt',
@@ -184,14 +189,28 @@ class AlbumSync extends BaseSync {
       ])
       .stream();
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getAlbumUsers(albumId: string) {
+    return this.db.selectFrom('album_user').select(['userId', 'role']).where('albumId', '=', albumId).execute();
+  }
 }
 
 class AlbumAssetSync extends BaseSync {
-  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
-  getBackfill(options: SyncBackfillOptions, albumId: string) {
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, albumId: string, userId: string) {
     return this.backfillQuery('album_asset', options)
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
-      .select(columns.syncAsset)
+      .select(columns.syncAlbumAsset)
+      .select((eb) =>
+        eb
+          .case()
+          .when('asset.ownerId', '=', userId)
+          .then(eb.ref('asset.isFavorite'))
+          .else(eb.val(false))
+          .end()
+          .as('isFavorite'),
+      )
       .select('album_asset.updateId')
       .where('album_asset.albumId', '=', albumId)
       .stream();
@@ -202,12 +221,20 @@ class AlbumAssetSync extends BaseSync {
     const userId = options.userId;
     return this.upsertQuery('asset', options)
       .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
-      .select(columns.syncAsset)
+      .select(columns.syncAlbumAsset)
+      .select((eb) =>
+        eb
+          .case()
+          .when('asset.ownerId', '=', userId)
+          .then(eb.ref('asset.isFavorite'))
+          .else(eb.val(false))
+          .end()
+          .as('isFavorite'),
+      )
       .select('asset.updateId')
       .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send updates for assets that the client already knows about
-      .innerJoin('album', 'album.id', 'album_asset.albumId')
-      .leftJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.userId', '=', userId)]))
+      .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
+      .where('album_user.userId', '=', userId)
       .stream();
   }
 
@@ -217,10 +244,18 @@ class AlbumAssetSync extends BaseSync {
     return this.upsertQuery('album_asset', options)
       .select('album_asset.updateId')
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
-      .select(columns.syncAsset)
-      .innerJoin('album', 'album.id', 'album_asset.albumId')
-      .leftJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.userId', '=', userId)]))
+      .select(columns.syncAlbumAsset)
+      .select((eb) =>
+        eb
+          .case()
+          .when('asset.ownerId', '=', userId)
+          .then(eb.ref('asset.isFavorite'))
+          .else(eb.val(false))
+          .end()
+          .as('isFavorite'),
+      )
+      .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
+      .where('album_user.userId', '=', userId)
       .stream();
   }
 }
@@ -244,9 +279,8 @@ class AlbumAssetExifSync extends BaseSync {
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
       .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send exif updates for assets that the client already knows about
-      .innerJoin('album', 'album.id', 'album_asset.albumId')
-      .leftJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.userId', '=', userId)]))
+      .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
+      .where('album_user.userId', '=', userId)
       .stream();
   }
 
@@ -259,7 +293,7 @@ class AlbumAssetExifSync extends BaseSync {
       .select(columns.syncAssetExif)
       .innerJoin('album', 'album.id', 'album_asset.albumId')
       .leftJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.userId', '=', userId)]))
+      .where('album_user.userId', '=', userId)
       .stream();
   }
 }
@@ -282,18 +316,7 @@ class AlbumToAssetSync extends BaseSync {
         eb(
           'albumId',
           'in',
-          eb
-            .selectFrom('album')
-            .select(['id'])
-            .where('ownerId', '=', userId)
-            .union((eb) =>
-              eb.parens(
-                eb
-                  .selectFrom('album_user')
-                  .select(['album_user.albumId as id'])
-                  .where('album_user.userId', '=', userId),
-              ),
-            ),
+          eb.selectFrom('album_user').select(['album_user.albumId as id']).where('album_user.userId', '=', userId),
         ),
       )
       .stream();
@@ -308,9 +331,8 @@ class AlbumToAssetSync extends BaseSync {
     const userId = options.userId;
     return this.upsertQuery('album_asset', options)
       .select(['album_asset.assetId as assetId', 'album_asset.albumId as albumId', 'album_asset.updateId'])
-      .innerJoin('album', 'album.id', 'album_asset.albumId')
-      .leftJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.userId', '=', userId)]))
+      .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
+      .where('album_user.userId', '=', userId)
       .stream();
   }
 }
@@ -334,18 +356,7 @@ class AlbumUserSync extends BaseSync {
         eb(
           'albumId',
           'in',
-          eb
-            .selectFrom('album')
-            .select(['id'])
-            .where('ownerId', '=', userId)
-            .union((eb) =>
-              eb.parens(
-                eb
-                  .selectFrom('album_user')
-                  .select(['album_user.albumId as id'])
-                  .where('album_user.userId', '=', userId),
-              ),
-            ),
+          eb.selectFrom('album_user').select(['album_user.albumId as id']).where('album_user.userId', '=', userId),
         ),
       )
       .stream();
@@ -366,17 +377,9 @@ class AlbumUserSync extends BaseSync {
           'album_user.albumId',
           'in',
           eb
-            .selectFrom('album')
-            .select(['id'])
-            .where('ownerId', '=', userId)
-            .union((eb) =>
-              eb.parens(
-                eb
-                  .selectFrom('album_user as albumUsers')
-                  .select(['albumUsers.albumId as id'])
-                  .where('albumUsers.userId', '=', userId),
-              ),
-            ),
+            .selectFrom('album_user as albumUsers')
+            .select(['albumUsers.albumId as id'])
+            .where('albumUsers.userId', '=', userId),
         ),
       )
       .stream();
@@ -421,7 +424,7 @@ class PersonSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getDeletes(options: SyncQueryOptions) {
     return this.auditQuery('person_audit', options)
-      .select(['id', 'personId'])
+      .select(['id', 'personGroupId as personId'])
       .where('ownerId', '=', options.userId)
       .stream();
   }
@@ -434,7 +437,7 @@ class PersonSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('person', options)
       .select([
-        'id',
+        'personGroupId as id',
         'createdAt',
         'updatedAt',
         'ownerId',
@@ -451,9 +454,16 @@ class PersonSync extends BaseSync {
   }
 }
 
+class PersonGroupSync extends BaseSync {
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('person_group_audit', daysAgo);
+  }
+}
+
 class AssetFaceSync extends BaseSync {
+  // TODO(v5) drop when AssetFacesV2 is removed
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
-  getDeletes(options: SyncQueryOptions) {
+  getDeletesV2(options: SyncQueryOptions) {
     return this.auditQuery('asset_face_audit', options)
       .select(['asset_face_audit.id', 'assetFaceId'])
       .leftJoin('asset', 'asset.id', 'asset_face_audit.assetId')
@@ -461,29 +471,43 @@ class AssetFaceSync extends BaseSync {
       .stream();
   }
 
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletesV3(options: SyncQueryOptions) {
+    return this.auditQuery('asset_face_audit', options)
+      .select(['asset_face_audit.id', 'assetFaceId'])
+      .innerJoin('asset', 'asset.id', 'asset_face_audit.assetId')
+      .innerJoin('user as owner', 'owner.id', 'asset.ownerId')
+      .where('owner.clusterGroupId', '=', ({ selectFrom }) =>
+        selectFrom('user').select('user.clusterGroupId').where('user.id', '=', options.userId),
+      )
+      .stream();
+  }
+
   cleanupAuditTable(daysAgo: number) {
     return this.auditCleanup('asset_face_audit', daysAgo);
   }
 
+  // TODO(v5) drop when AssetFacesV2 is removed
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
-  getUpserts(options: SyncQueryOptions) {
+  getUpsertsV2(options: SyncQueryOptions) {
     return this.upsertQuery('asset_face', options)
-      .select([
-        'asset_face.id',
-        'assetId',
-        'personId',
-        'imageWidth',
-        'imageHeight',
-        'boundingBoxX1',
-        'boundingBoxY1',
-        'boundingBoxX2',
-        'boundingBoxY2',
-        'sourceType',
-        'asset_face.updateId',
-      ])
+      .select(columns.syncAssetFace)
+      .select('asset_face.updateId')
       .leftJoin('asset', 'asset.id', 'asset_face.assetId')
       .where('asset.ownerId', '=', options.userId)
-      .where('asset_face.isVisible', '=', true)
+      .stream();
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpsertsV3(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_face', options)
+      .select(columns.syncAssetFace)
+      .select('asset_face.updateId')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .innerJoin('user as owner', 'owner.id', 'asset.ownerId')
+      .where('owner.clusterGroupId', '=', ({ selectFrom }) =>
+        selectFrom('user').select('user.clusterGroupId').where('user.id', '=', options.userId),
+      )
       .stream();
   }
 }
@@ -495,6 +519,30 @@ class AssetExifSync extends BaseSync {
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
       .where('assetId', 'in', (eb) => eb.selectFrom('asset').select('id').where('ownerId', '=', options.userId))
+      .stream();
+  }
+}
+
+class AssetEditSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('asset_edit_audit', options)
+      .select(['asset_edit_audit.id', 'editId'])
+      .innerJoin('asset', 'asset.id', 'asset_edit_audit.assetId')
+      .where('asset.ownerId', '=', options.userId)
+      .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('asset_edit_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_edit', options)
+      .select([...columns.syncAssetEdit, 'asset_edit.updateId'])
+      .innerJoin('asset', 'asset.id', 'asset_edit.assetId')
+      .where('asset.ownerId', '=', options.userId)
       .stream();
   }
 }
@@ -598,7 +646,8 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
-      .select(columns.syncAsset)
+      .select(columns.syncPartnerAsset)
+      .select(sql.val(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
       .stream();
@@ -617,7 +666,8 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
-      .select(columns.syncAsset)
+      .select(columns.syncPartnerAsset)
+      .select(sql.val(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
@@ -766,6 +816,30 @@ class AssetMetadataSync extends BaseSync {
     return this.upsertQuery('asset_metadata', options)
       .select(['assetId', 'key', 'value', 'asset_metadata.updateId'])
       .innerJoin('asset', 'asset.id', 'asset_metadata.assetId')
+      .where('asset.ownerId', '=', userId)
+      .stream();
+  }
+}
+
+class AssetOcrSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  getDeletes(options: SyncQueryOptions, userId: string) {
+    return this.auditQuery('asset_ocr_audit', options)
+      .select(['asset_ocr_audit.id', 'asset_ocr_audit.assetId', 'asset_ocr_audit.deletedAt'])
+      .leftJoin('asset', 'asset.id', 'asset_ocr_audit.assetId')
+      .where('asset.ownerId', '=', userId)
+      .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('asset_ocr_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  getUpserts(options: SyncQueryOptions, userId: string) {
+    return this.upsertQuery('asset_ocr', options)
+      .select(columns.syncAssetOcr)
+      .innerJoin('asset', 'asset.id', 'asset_ocr.assetId')
       .where('asset.ownerId', '=', userId)
       .stream();
   }

@@ -1,22 +1,22 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { OnEvent } from 'src/decorators';
+import { Injectable } from '@nestjs/common';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { MaintenanceModeState } from 'src/types.js';
+import { OnEvent } from 'src/decorators.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
-} from 'src/dtos/maintenance.dto';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { MaintenanceModeState } from 'src/types';
+} from 'src/dtos/maintenance.dto.js';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
 import {
   createMaintenanceLoginUrl,
   detectPriorInstall,
   generateMaintenanceSecret,
   signMaintenanceJwt,
-} from 'src/utils/maintenance';
-import { getExternalDomain } from 'src/utils/misc';
+} from 'src/utils/maintenance.js';
+import { getExternalDomain } from 'src/utils/misc.js';
 
 /**
  * This service is available outside of maintenance mode to manage maintenance mode
@@ -26,6 +26,7 @@ export class MaintenanceService extends BaseService {
   getMaintenanceMode(): Promise<MaintenanceModeState> {
     return this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
+
       .then((state) => state ?? { isMaintenanceMode: false });
   }
 
@@ -58,11 +59,6 @@ export class MaintenanceService extends BaseService {
   }
 
   async startRestoreFlow(): Promise<{ jwt: string }> {
-    const adminUser = await this.userRepository.getAdmin();
-    if (adminUser) {
-      throw new BadRequestException('The server already has an admin');
-    }
-
     return this.startMaintenance(
       {
         action: MaintenanceAction.SelectDatabaseRestore,

@@ -52,7 +52,7 @@ export function scrollMemory(
       const newScroll = sessionStorage.getItem(SessionStorageKey.SCROLL_POSITION);
       if (newScroll) {
         node.scroll({
-          top: Number.parseFloat(newScroll),
+          top: Number(newScroll),
           behavior: 'instant',
         });
       }
@@ -71,10 +71,12 @@ export function scrollMemory(
 export function scrollMemoryClearer(_node: HTMLElement, { routeStartsWith, beforeClear }: Options) {
   const unsubscribeNavigating = navigating.subscribe((navigation) => {
     // Forget scroll position from main page if going somewhere else.
-    if (navigation?.to && !navigation?.to.url.pathname.startsWith(routeStartsWith)) {
-      beforeClear?.();
-      sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
+    if (!navigation?.to || navigation?.to.url.pathname.startsWith(routeStartsWith)) {
+      return;
     }
+
+    beforeClear?.();
+    sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
   });
 
   return {

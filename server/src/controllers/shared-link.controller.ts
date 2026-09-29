@@ -14,26 +14,25 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetIdsDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { Request, Response } from 'express';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AssetIdsDto } from 'src/dtos/asset.dto.js';
 import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkLoginDto,
-  SharedLinkPasswordDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
-} from 'src/dtos/shared-link.dto';
-import { ApiTag, ImmichCookie, Permission } from 'src/enum';
-import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { LoginDetails } from 'src/services/auth.service';
-import { SharedLinkService } from 'src/services/shared-link.service';
-import { respondWithCookie } from 'src/utils/response';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/shared-link.dto.js';
+import { ApiTag, ImmichCookie, Permission } from 'src/enum.js';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
+import { respondWithCookie } from 'src/utils/response.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 const getAuthTokens = (cookies: Record<string, string> | undefined) => {
   return cookies?.[ImmichCookie.SharedLinkToken]?.split(',') || [];
@@ -96,21 +95,7 @@ export class SharedLinkController {
     description: 'Retrieve the current shared link associated with authentication method.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  async getMySharedLink(
-    @Auth() auth: AuthDto,
-    @Query() dto: SharedLinkPasswordDto,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-    @GetLoginDetails() loginDetails: LoginDetails,
-  ): Promise<SharedLinkResponseDto> {
-    if (dto.password) {
-      this.logger.deprecate(
-        'Passing shared link password via query parameters is deprecated and will be removed in the next major release. Please use POST /shared-links/login instead.',
-      );
-
-      return this.sharedLinkLogin(auth, { password: dto.password }, req, res, loginDetails);
-    }
-
+  getMySharedLink(@Auth() auth: AuthDto, @Req() req: Request): Promise<SharedLinkResponseDto> {
     return this.service.getMine(auth, getAuthTokens(req.cookies));
   }
 
@@ -164,7 +149,7 @@ export class SharedLinkController {
   }
 
   @Put(':id/assets')
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.SharedLinkUpdate })
   @Endpoint({
     summary: 'Add assets to a shared link',
     description:
@@ -180,7 +165,7 @@ export class SharedLinkController {
   }
 
   @Delete(':id/assets')
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.SharedLinkUpdate })
   @Endpoint({
     summary: 'Remove assets from a shared link',
     description:

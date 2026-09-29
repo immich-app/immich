@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "node16",
+    "module": "nodenext",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -8,22 +8,26 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "target": "es2022",
-    "moduleResolution": "node16",
-    "lib": ["dom", "es2023"],
+    "target": "es2024",
+    "moduleResolution": "nodenext",
+    "lib": ["dom", "esnext"],
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
     "preserveWatchOutput": true,
     "paths": {
       "src/*": ["./src/*"],
+      "test/*": ["./test/*"]
     },
-    "baseUrl": "./",
+    "rootDir": ".",
     "jsx": "react",
     "types": ["vitest/globals"],
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "noErrorTruncation": true
   },
+  "include": ["src", "test"],
   "exclude": ["dist", "node_modules", "upload"]
 }

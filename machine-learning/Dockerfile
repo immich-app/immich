@@ -1,15 +1,15 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:aa23850b91cb4c7faedac8ca9aa74ddc6eb03529a519145a589a7f35df4c5927 AS builder-cpu
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS builder-cpu
 
-FROM python:3.13-slim-trixie@sha256:3de9a8d7aedbb7984dc18f2dff178a7850f16c1ae7c34ba9d7ecc23d0755e35f AS builder-openvino
+FROM builder-cpu AS builder-openvino
 
-FROM builder-cpu AS builder-cuda
+FROM python:3.13-slim-bookworm@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26 AS builder-cuda
 
-FROM builder-cpu AS builder-armnn
+FROM python:3.13-trixie@sha256:4a0820d8b1b1a1e012a23ff9a1296a3e28b48896a4d27a328a91ee197ce619d9 AS builder-armnn
 
 # renovate: datasource=github-releases depName=ARM-software/armnn
-ARG ARMNN_VERSION="v24.05"
+ARG ARMNN_VERSION="v26.07"
 
 ENV ARMNN_PATH=/opt/armnn
 COPY ann /opt/ann
@@ -18,52 +18,11 @@ RUN mkdir /opt/armnn && \
     cd /opt/ann && \
     sh build.sh
 
-FROM builder-cpu AS builder-rknn
+FROM python:3.12-slim-trixie@sha256:78387bc3881b8273120a12ebe6c1ab22b018ccc2c9adf565ae1ac9b536e184ea AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS builder-rocm
-
-# renovate: datasource=github-releases depName=Microsoft/onnxruntime
-ARG ONNXRUNTIME_VERSION="v1.22.1"
-WORKDIR /code
-
-RUN apt-get update && apt-get install -y --no-install-recommends wget git
-RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh && \
-    chmod +x cmake-3.31.9-linux-x86_64.sh && \
-    mkdir -p /code/cmake-3.31.9-linux-x86_64 && \
-    ./cmake-3.31.9-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.31.9-linux-x86_64 && \
-    rm cmake-3.31.9-linux-x86_64.sh
-
-RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
-WORKDIR /code/onnxruntime
-# Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
-# TODO: find a way to fix this without disabling algo caching
-COPY ./patches/* /tmp/
-RUN git apply /tmp/*.patch
-
-RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
-
-ENV PATH=/opt/rocm-venv/bin:/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
-ENV CCACHE_DIR="/ccache"
-# Note: the `parallel` setting uses a substantial amount of RAM
-RUN --mount=type=cache,target=/ccache \
-    ./build.sh \
-    --allow_running_as_root \
-    --config Release \
-    --build_wheel \
-    --update \
-    --build \
-    --parallel 48 \
-    --cmake_extra_defines \
-    ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
-    CMAKE_HIP_ARCHITECTURES="gfx900;gfx906;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201" \
-    --skip_tests \
-    --use_rocm \
-    --rocm_home=/opt/rocm \
-    --use_cache \
-    --compile_no_warning_as_error
-RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
+FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS builder-rocm
 
 FROM builder-${DEVICE} AS builder
 
@@ -72,34 +31,30 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     VIRTUAL_ENV=/opt/venv
 
-RUN apt-get update && apt-get install -y --no-install-recommends g++
+RUN apt-get update && apt-get install -y --no-install-recommends g++ git
 
 COPY --from=ghcr.io/astral-sh/uv:0.8.15@sha256:a5727064a0de127bdb7c9d3c1383f3a9ac307d9f2d8a391edc7896c54289ced0 /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
-RUN if [ "$DEVICE" = "rocm" ]; then \
-    uv pip install /opt/onnxruntime_rocm-*.whl; \
-    fi
 
-FROM python:3.11-slim-bookworm@sha256:04cd27899595a99dfe77709d96f08876bf2ee99139ee2f0fe9ac948005034e5b AS prod-cpu
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS prod-cpu
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
-FROM python:3.13-slim-trixie@sha256:3de9a8d7aedbb7984dc18f2dff178a7850f16c1ae7c34ba9d7ecc23d0755e35f AS prod-openvino
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
-    wget -nv https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb &&  \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.36.3/intel-igc-core-2_2.36.3+21719_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.36.3/intel-igc-opencl-2_2.36.3+21719_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/26.22.38646.4/intel-opencl-icd_26.22.38646.4-0_amd64.deb &&  \
     wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17537.24/intel-igc-core_1.0.17537.24_amd64.deb && \
     wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17537.24/intel-igc-opencl_1.0.17537.24_amd64.deb && \
     wget -nv https://github.com/intel/compute-runtime/releases/download/24.35.30872.36/intel-opencl-icd-legacy1_24.35.30872.36_amd64.deb && \
     # TODO: Figure out how to get renovate to manage this differently versioned libigdgmm file
-    wget -nv https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libigdgmm12_22.9.0_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/26.22.38646.4/libigdgmm12_22.10.0_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
     apt-get remove wget -yqq && \
@@ -107,25 +62,27 @@ RUN apt-get update && \
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && \
     # Pascal support was dropped in 9.11
-    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12=9.10.2.21-1 && \
+    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12=9.10.2.21-1 tzdata && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
-COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
-COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
+COPY --from=builder-cuda /usr/local/lib/python3.13 /usr/local/lib/python3.13
+COPY --from=builder-cuda /usr/local/lib/libpython3.13.so /usr/local/lib/libpython3.13.so
 
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS prod-rocm
+FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS prod-rocm
+
+RUN apt-get update && apt-get install --no-install-recommends -yqq migraphx miopen-hip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn \
-    LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd libgomp1 && \
@@ -136,35 +93,38 @@ RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopen
 
 COPY --from=builder-armnn \
     /opt/armnn/libarmnn.so.?? \
-    /opt/armnn/libarmnnOnnxParser.so.?? \
     /opt/armnn/libarmnnDeserializer.so.?? \
-    /opt/armnn/libarmnnTfLiteParser.so.?? \
     /opt/armnn/libprotobuf.so.?.??.?.? \
     /opt/ann/libann.s[o] \
     /opt/ann/build.sh \
     /opt/armnn/
 
-FROM prod-cpu AS prod-rknn
+FROM python:3.12-slim-trixie@sha256:78387bc3881b8273120a12ebe6c1ab22b018ccc2c9adf565ae1ac9b536e184ea AS prod-rknn
 
 # renovate: datasource=github-tags depName=airockchip/rknn-toolkit2
 ARG RKNN_TOOLKIT_VERSION="v2.3.0"
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
-    MACHINE_LEARNING_MODEL_ARENA=false
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
-ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
+ADD --chmod=644 --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
+
+FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS mimalloc
+RUN echo "deb http://deb.debian.org/debian trixie-backports main" > /etc/apt/sources.list.d/backports.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends libmimalloc3/trixie-backports && \
+    cp /usr/lib/*-linux-gnu/libmimalloc.so.3 /libmimalloc.so
 
 FROM prod-${DEVICE} AS prod
 
 ARG DEVICE
 
+COPY --from=mimalloc /libmimalloc.so /usr/lib/libmimalloc.so
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get install -y --no-install-recommends tini ccache libgomp1 && \
     apt-get autoremove -yqq && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN ln -s "/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2" /usr/lib/libmimalloc.so.2
+    rm -rf /var/lib/apt/lists/* && \
+    case "$DEVICE" in openvino|rocm);; *) echo /usr/lib/libmimalloc.so > /etc/ld.so.preload;; esac
 
 WORKDIR /usr/src
 ENV TRANSFORMERS_CACHE=/cache \
@@ -199,6 +159,13 @@ ENV IMMICH_REPOSITORY_URL=https://github.com/immich-app/immich
 ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
+
+# store huggingface in /cache subfolder to enable rootless deployment with a single volume
+ENV HF_HOME=/cache/hf-cache
+
+ENV CUDA_CACHE_PATH=/cache/jit/cuda \
+    AMD_COMGR_CACHE_DIR=/cache/jit/comgr \
+    NEO_CACHE_DIR=/cache/jit/neo
 
 ENTRYPOINT ["tini", "--"]
 CMD ["python", "-m", "immich_ml"]

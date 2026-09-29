@@ -1,7 +1,7 @@
 name: Docs build
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/*']
   pull_request:
   release:
     types: [published]
@@ -21,14 +21,15 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@05e16407c0a5492138bb38139c9d9bf067b40886 # create-workflow-token-action-v1.0.1
+        uses: immich-app/devtools/actions/create-workflow-token@df46d635b905e618b88fc4c95baa920aeb30b309 # create-workflow-token-action-v3.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@eed0f8b8165ffcb951f2ba854b2dd031935e1d73 # pre-job-action-v2.0.2
+        uses: immich-app/devtools/actions/pre-job@75493d49052d536863fc96100086782c5279b145 # pre-job-action-v2.1.1
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -54,27 +55,22 @@ jobs:
 
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@05e16407c0a5492138bb38139c9d9bf067b40886 # create-workflow-token-action-v1.0.1
+        uses: immich-app/devtools/actions/create-workflow-token@df46d635b905e618b88fc4c95baa920aeb30b309 # create-workflow-token-action-v3.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-          fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-
-      - name: Setup Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
-          node-version-file: './docs/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
 
       - name: Run install
         run: pnpm install
@@ -86,7 +82,7 @@ jobs:
         run: pnpm build
 
       - name: Upload build output
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docs-build-output
           path: docs/build/

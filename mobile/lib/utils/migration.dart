@@ -1,398 +1,388 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:flutter/material.dart';
+import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/app/settings.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
+import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/android_device_asset.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart' as isar_backup_album;
-import 'package:immich_mobile/entities/etag.entity.dart';
-import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
-import 'package:immich_mobile/platform/network_api.g.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
+import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/diff.dart';
-import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 
-// ignore: import_rule_photo_manager
-import 'package:photo_manager/photo_manager.dart';
+const int targetVersion = 27;
 
-const int targetVersion = 21;
+Future<void> migrateDatabaseIfNeeded(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
+  final int? storedVersion = Store.tryGet(StoreKey.version);
+  final version = storedVersion ?? targetVersion;
 
-Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
-  final hasVersion = Store.tryGet(StoreKey.version) != null;
-  final int version = Store.get(StoreKey.version, targetVersion);
-  if (version < 9) {
-    await Store.put(StoreKey.version, targetVersion);
-    final value = await db.storeValues.get(StoreKey.currentUser.id);
-    if (value != null) {
-      final id = value.intValue;
-      if (id != null) {
-        await db.writeTxn(() async {
-          final user = await db.users.get(id);
-          await db.storeValues.put(StoreValue(StoreKey.currentUser.id, strValue: user?.id));
+  if (version < 25) {
+    await _migrateTo25();
+  }
+
+  if (version < 26) {
+    await _migrateTo26(drift);
+  }
+
+  if (version < 27) {
+    await _migrateTo27(drift, nativeSyncApi, permissionApi);
+  }
+
+  if (storedVersion == null) {
+    await FeatureMessageService(SettingsRepository.instance).markSeen();
+  }
+
+  await Store.put(StoreKey.version, targetVersion);
+  return;
+}
+
+// android photos without exif used to get the copy date as created_at,
+// mediastore still has the real one so read it once more and fix only the rows that differ
+Future<void> _migrateTo27(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
+  if (!CurrentPlatform.isAndroid) {
+    return;
+  }
+  try {
+    final dates = <String, DateTime>{};
+    void addDates(Iterable<PlatformAsset> assets) {
+      for (final asset in assets) {
+        final date = tryFromSecondsSinceEpoch(asset.createdAt, isUtc: true);
+        if (date != null) {
+          dates[asset.id] = date;
+        }
+      }
+    }
+
+    for (final album in await nativeSyncApi.getAlbums()) {
+      addDates(await nativeSyncApi.getAssetsForAlbum(album.id));
+    }
+    if (await permissionApi.hasManageMediaPermission()) {
+      final trashed = await nativeSyncApi.getTrashedAssets();
+      addDates(trashed.cast<String, List<Object?>>().values.flattened.cast<PlatformAsset>());
+    }
+
+    await drift.transaction(() async {
+      final localDates = {
+        for (final row in await (drift.selectOnly(
+          drift.localAssetEntity,
+        )..addColumns([drift.localAssetEntity.id, drift.localAssetEntity.createdAt])).get())
+          row.read(drift.localAssetEntity.id)!: row.read(drift.localAssetEntity.createdAt)!,
+      };
+      final trashedDates = {
+        for (final row in await (drift.selectOnly(
+          drift.trashedLocalAssetEntity,
+        )..addColumns([drift.trashedLocalAssetEntity.id, drift.trashedLocalAssetEntity.createdAt])).get())
+          row.read(drift.trashedLocalAssetEntity.id)!: row.read(drift.trashedLocalAssetEntity.createdAt)!,
+      };
+      for (final chunk in dates.entries.slices(kDriftMaxChunk)) {
+        await drift.batch((batch) {
+          for (final entry in chunk) {
+            final localDate = localDates[entry.key];
+            if (localDate != null && !localDate.isAtSameMomentAs(entry.value)) {
+              batch.update(
+                drift.localAssetEntity,
+                LocalAssetEntityCompanion(createdAt: Value(entry.value)),
+                where: (row) => row.id.equals(entry.key),
+              );
+            }
+            final trashedDate = trashedDates[entry.key];
+            if (trashedDate != null && !trashedDate.isAtSameMomentAs(entry.value)) {
+              batch.update(
+                drift.trashedLocalAssetEntity,
+                TrashedLocalAssetEntityCompanion(createdAt: Value(entry.value)),
+                where: (row) => row.id.equals(entry.key),
+              );
+            }
+          }
         });
+      }
+    });
+  } catch (error, stackTrace) {
+    Logger('Migration').warning("Error migrating to version 27", error, stackTrace);
+  }
+}
+
+Future<void> _migrateTo25() async {
+  final accessToken = Store.tryGet(StoreKey.accessToken);
+  if (accessToken == null || accessToken.isEmpty) {
+    return;
+  }
+
+  final urls = <String>[];
+  final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+  if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
+    urls.add(serverEndpoint);
+  }
+  final localEndpoint = Store.tryGet(StoreKey.legacyLocalEndpoint);
+  if (localEndpoint != null && localEndpoint.isNotEmpty) {
+    urls.add(localEndpoint);
+  }
+  final externalJson = Store.tryGet(StoreKey.legacyExternalEndpointList);
+  if (externalJson != null) {
+    final List<dynamic> list = jsonDecode(externalJson);
+    for (final entry in list) {
+      final url = AuxilaryEndpoint.fromJson(entry).url;
+      if (url.isNotEmpty) {
+        urls.add(url);
       }
     }
   }
-
-  if (version < 10) {
-    await Store.put(StoreKey.version, targetVersion);
-    await _migrateDeviceAsset(db);
-  }
-
-  if (version < 13) {
-    await Store.put(StoreKey.photoManagerCustomFilter, true);
-  }
-
-  // This means that the SQLite DB is just created and has no version
-  if (version < 14 || !hasVersion) {
-    await migrateStoreToSqlite(db, drift);
-    await Store.populateCache();
-  }
-
-  final syncStreamRepository = SyncStreamRepository(drift);
-  await handleBetaMigration(version, await _isNewInstallation(db, drift), syncStreamRepository);
-
-  if (version < 17 && Store.isBetaTimelineEnabled) {
-    final delay = Store.get(StoreKey.backupTriggerDelay, AppSettingsEnum.backupTriggerDelay.defaultValue);
-    if (delay >= 1000) {
-      await Store.put(StoreKey.backupTriggerDelay, (delay / 1000).toInt());
-    }
-  }
-
-  if (version < 18 && Store.isBetaTimelineEnabled) {
-    await syncStreamRepository.reset();
-    await Store.put(StoreKey.shouldResetSync, true);
-  }
-
-  if (version < 19 && Store.isBetaTimelineEnabled) {
-    if (!await _populateLocalAssetTime(drift)) {
-      return;
-    }
-  }
-
-  if (version < 20 && Store.isBetaTimelineEnabled) {
-    await _syncLocalAlbumIsIosSharedAlbum(drift);
-  }
-
-  if (version < 21) {
-    final certData = SSLClientCertStoreVal.load();
-    if (certData != null) {
-      await networkApi.addCertificate(ClientCertData(data: certData.data, password: certData.password ?? ""));
-    }
-  }
-
-  if (targetVersion >= 12) {
-    await Store.put(StoreKey.version, targetVersion);
+  if (urls.isEmpty) {
     return;
   }
 
-  final shouldTruncate = version < 8 || version < targetVersion;
+  final customHeadersStr = Store.get(StoreKey.legacyCustomHeaders, "");
+  final headers = customHeadersStr.isEmpty
+      ? const <String, String>{}
+      : (jsonDecode(customHeadersStr) as Map).cast<String, String>();
 
-  if (shouldTruncate) {
-    await _migrateTo(db, targetVersion);
-  }
+  await NetworkRepository.setHeaders(headers, urls, token: accessToken);
 }
 
-Future<void> handleBetaMigration(int version, bool isNewInstallation, SyncStreamRepository syncStreamRepository) async {
-  // Handle migration only for this version
-  // TODO: remove when old timeline is removed
-  final isBeta = Store.tryGet(StoreKey.betaTimeline);
-  final needBetaMigration = Store.tryGet(StoreKey.needBetaMigration);
-  if (version <= 15 && needBetaMigration == null) {
-    // For new installations, no migration needed
-    // For existing installations, only migrate if beta timeline is not enabled (null or false)
-    if (isNewInstallation || isBeta == true) {
-      await Store.put(StoreKey.needBetaMigration, false);
-      await Store.put(StoreKey.betaTimeline, true);
-    } else {
-      await Store.put(StoreKey.needBetaMigration, true);
-    }
+Future<void> _migrateTo26(Drift drift) async {
+  final migrator = _StoreMigrator(drift);
+  await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, SettingsKey.logLevel, LogLevel.values);
+  // Theme
+  await migrator.migrateEnumName(StoreKey.legacyThemeMode, SettingsKey.themeMode, ThemeMode.values);
+  await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, SettingsKey.themePrimaryColor, ImmichColorPreset.values);
+  await migrator.migrateBool(StoreKey.legacyDynamicTheme, SettingsKey.themeDynamic);
+  await migrator.migrateBool(StoreKey.legacyColorfulInterface, SettingsKey.themeColorfulInterface);
+  // Cleanup
+  final cleanupKeepAlbumIds = await migrator.readLegacyStoreString(StoreKey.legacyCleanupKeepAlbumIds.id);
+  if (cleanupKeepAlbumIds != null) {
+    final ids = cleanupKeepAlbumIds.split(',').where((id) => id.isNotEmpty).toList();
+    migrator.stage(StoreKey.legacyCleanupKeepAlbumIds, SettingsKey.cleanupKeepAlbumIds, ids);
   }
-
-  if (version > 15) {
-    if (isBeta == null || isBeta) {
-      await Store.put(StoreKey.needBetaMigration, false);
-      await Store.put(StoreKey.betaTimeline, true);
-    } else {
-      await Store.put(StoreKey.needBetaMigration, false);
-    }
-  }
-
-  if (version < 16) {
-    await syncStreamRepository.reset();
-    await Store.put(StoreKey.shouldResetSync, true);
-  }
-}
-
-Future<bool> _isNewInstallation(Isar db, Drift drift) async {
-  try {
-    final isarUserCount = await db.users.count();
-    if (isarUserCount > 0) {
-      return false;
-    }
-
-    final isarAssetCount = await db.assets.count();
-    if (isarAssetCount > 0) {
-      return false;
-    }
-
-    final driftStoreCount = await drift.storeEntity.select().get().then((list) => list.length);
-    if (driftStoreCount > 0) {
-      return false;
-    }
-
-    final driftAssetCount = await drift.localAssetEntity.select().get().then((list) => list.length);
-    if (driftAssetCount > 0) {
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error checking if new installation: $error");
-    return false;
-  }
-}
-
-Future<void> _migrateTo(Isar db, int version) async {
-  await Store.delete(StoreKey.assetETag);
-  await db.writeTxn(() async {
-    await db.assets.clear();
-    await db.exifInfos.clear();
-    await db.albums.clear();
-    await db.eTags.clear();
-    await db.users.clear();
-  });
-  await Store.put(StoreKey.version, version);
-}
-
-Future<void> _migrateDeviceAsset(Isar db) async {
-  final ids = Platform.isAndroid
-      ? (await db.androidDeviceAssets.where().findAll())
-            .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
-            .toList()
-      : (await db.iOSDeviceAssets.where().findAll()).map((i) => _DeviceAsset(assetId: i.id, hash: i.hash)).toList();
-
-  final PermissionState ps = await PhotoManager.requestPermissionExtend();
-  if (!ps.hasAccess) {
-    dPrint(() => "[MIGRATION] Photo library permission not granted. Skipping device asset migration.");
-    return;
-  }
-
-  List<_DeviceAsset> localAssets = [];
-  final List<AssetPathEntity> paths = await PhotoManager.getAssetPathList(onlyAll: true);
-
-  if (paths.isEmpty) {
-    localAssets = (await db.assets.where().anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId)).findAll())
-        .map((a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt))
-        .toList();
-  } else {
-    final AssetPathEntity albumWithAll = paths.first;
-    final int assetCount = await albumWithAll.assetCountAsync;
-
-    final List<AssetEntity> allDeviceAssets = await albumWithAll.getAssetListRange(start: 0, end: assetCount);
-
-    localAssets = allDeviceAssets.map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime)).toList();
-  }
-
-  dPrint(() => "[MIGRATION] Device Asset Ids length - ${ids.length}");
-  dPrint(() => "[MIGRATION] Local Asset Ids length - ${localAssets.length}");
-  ids.sort((a, b) => a.assetId.compareTo(b.assetId));
-  localAssets.sort((a, b) => a.assetId.compareTo(b.assetId));
-  final List<DeviceAssetEntity> toAdd = [];
-  await diffSortedLists(
-    ids,
-    localAssets,
-    compare: (a, b) => a.assetId.compareTo(b.assetId),
-    both: (deviceAsset, asset) {
-      toAdd.add(
-        DeviceAssetEntity(assetId: deviceAsset.assetId, hash: deviceAsset.hash!, modifiedTime: asset.dateTime!),
-      );
-      return false;
-    },
-    onlyFirst: (deviceAsset) {
-      dPrint(() => '[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}');
-    },
-    onlySecond: (asset) {
-      dPrint(() => '[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}');
-    },
+  await migrator.migrateBool(StoreKey.legacyCleanupKeepFavorites, SettingsKey.cleanupKeepFavorites);
+  await migrator.migrateEnumIndex(
+    StoreKey.legacyCleanupKeepMediaType,
+    SettingsKey.cleanupKeepMediaType,
+    AssetKeepType.values,
   );
-
-  dPrint(() => "[MIGRATION] Total number of device assets migrated - ${toAdd.length}");
-
-  await db.writeTxn(() async {
-    await db.deviceAssetEntitys.putAll(toAdd);
-  });
+  await migrator.migrateInt(StoreKey.legacyCleanupCutoffDaysAgo, SettingsKey.cleanupCutoffDaysAgo);
+  await migrator.migrateBool(StoreKey.legacyCleanupDefaultsInitialized, SettingsKey.cleanupDefaultsInitialized);
+  // Map
+  await migrator.migrateBool(StoreKey.legacyMapShowFavoriteOnly, SettingsKey.mapShowFavoriteOnly);
+  await migrator.migrateInt(StoreKey.legacyMapRelativeDate, SettingsKey.mapRelativeDate);
+  await migrator.migrateBool(StoreKey.legacyMapIncludeArchived, SettingsKey.mapIncludeArchived);
+  await migrator.migrateEnumIndex(StoreKey.legacyMapThemeMode, SettingsKey.mapThemeMode, ThemeMode.values);
+  await migrator.migrateBool(StoreKey.legacyMapwithPartners, SettingsKey.mapWithPartners);
+  // Timeline
+  await migrator.migrateInt(StoreKey.legacyTilesPerRow, SettingsKey.timelineTilesPerRow);
+  await migrator.migrateEnumIndex(
+    StoreKey.legacyGroupAssetsBy,
+    SettingsKey.timelineGroupAssetsBy,
+    GroupAssetsBy.values,
+  );
+  await migrator.migrateBool(StoreKey.legacyStorageIndicator, SettingsKey.timelineStorageIndicator);
+  // Image
+  await migrator.migrateBool(StoreKey.legacyPreferRemoteImage, SettingsKey.imagePreferRemote);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginal, SettingsKey.imageLoadOriginal);
+  // Viewer
+  await migrator.migrateBool(StoreKey.legacyLoopVideo, SettingsKey.viewerLoopVideo);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginalVideo, SettingsKey.viewerLoadOriginalVideo);
+  await migrator.migrateBool(StoreKey.legacyAutoPlayVideo, SettingsKey.viewerAutoPlayVideo);
+  await migrator.migrateBool(StoreKey.legacyTapToNavigate, SettingsKey.viewerTapToNavigate);
+  // Network
+  await migrator.migrateBool(StoreKey.legacyAutoEndpointSwitching, SettingsKey.networkAutoEndpointSwitching);
+  final preferredWifiName = await migrator.readLegacyStoreString(StoreKey.legacyPreferredWifiName.id);
+  migrator.stage(StoreKey.legacyPreferredWifiName, SettingsKey.networkPreferredWifiName, preferredWifiName);
+  final localEndpoint = await migrator.readLegacyStoreString(StoreKey.legacyLocalEndpoint.id);
+  migrator.stage(StoreKey.legacyLocalEndpoint, SettingsKey.networkLocalEndpoint, localEndpoint);
+  await _migrateExternalEndpointList(migrator);
+  await _migrateCustomHeaders(migrator);
+  // Album
+  await _migrateAlbumSortMode(migrator);
+  await migrator.migrateBool(StoreKey.legacySelectedAlbumSortReverse, SettingsKey.albumIsReverse);
+  await migrator.migrateBool(StoreKey.legacyAlbumGridView, SettingsKey.albumIsGrid);
+  // Backup
+  await migrator.migrateBool(StoreKey.legacyEnableBackup, SettingsKey.backupEnabled);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadVideos, SettingsKey.backupUseCellularForVideos);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadPhotos, SettingsKey.backupUseCellularForPhotos);
+  await migrator.migrateBool(StoreKey.legacyBackupRequireCharging, SettingsKey.backupRequireCharging);
+  await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, SettingsKey.backupTriggerDelay);
+  await migrator.migrateBool(StoreKey.legacySyncAlbums, SettingsKey.backupSyncAlbums);
+  await migrator.complete();
 }
 
-Future<bool> _populateLocalAssetTime(Drift db) async {
+Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreInt(StoreKey.legacySelectedAlbumSortOrder.id);
+  final mode = AlbumSortMode.values.firstWhereOrNull((e) => raw != null && e.storeIndex == raw);
+  if (mode == null) {
+    return;
+  }
+
+  migrator.stage(StoreKey.legacySelectedAlbumSortOrder, SettingsKey.albumSortMode, mode);
+}
+
+Future<void> _migrateExternalEndpointList(_StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreString(StoreKey.legacyExternalEndpointList.id);
+  if (raw == null) {
+    return;
+  }
+
+  final urls = <String>[];
   try {
-    final nativeApi = NativeSyncApi();
-    final albums = await nativeApi.getAlbums();
-    for (final album in albums) {
-      final assets = await nativeApi.getAssetsForAlbum(album.id);
-      await db.batch((batch) async {
-        for (final asset in assets) {
-          batch.update(
-            db.localAssetEntity,
-            LocalAssetEntityCompanion(
-              longitude: Value(asset.longitude),
-              latitude: Value(asset.latitude),
-              adjustmentTime: Value(tryFromSecondsSinceEpoch(asset.adjustmentTime, isUtc: true)),
-              updatedAt: Value(tryFromSecondsSinceEpoch(asset.updatedAt, isUtc: true) ?? DateTime.timestamp()),
-            ),
-            where: (t) => t.id.equals(asset.id),
-          );
+    final decoded = jsonDecode(raw);
+    if (decoded is List) {
+      for (final entry in decoded) {
+        final url = AuxilaryEndpoint.fromJson(entry).url;
+        if (url.isNotEmpty) {
+          urls.add(url);
+        }
+      }
+    }
+  } on FormatException {
+    // ignore invalid entries
+  }
+
+  migrator.stage(StoreKey.legacyExternalEndpointList, SettingsKey.networkExternalEndpointList, urls);
+}
+
+Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreString(StoreKey.legacyCustomHeaders.id);
+  if (raw == null) {
+    return;
+  }
+
+  final headers = <String, String>{};
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map) {
+      decoded.forEach((key, value) {
+        if (key is String && value is String) {
+          headers[key] = value;
         }
       });
     }
-
-    return true;
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while populating asset time: $error");
-    return false;
+  } on FormatException {
+    // ignore invalid entries
   }
+
+  migrator.stage(StoreKey.legacyCustomHeaders, SettingsKey.networkCustomHeaders, headers);
 }
 
-Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
-  try {
-    final nativeApi = NativeSyncApi();
-    final albums = await nativeApi.getAlbums();
-    await db.batch((batch) {
-      for (final album in albums) {
-        batch.update(
-          db.localAlbumEntity,
-          LocalAlbumEntityCompanion(isIosSharedAlbum: Value(album.isCloud)),
-          where: (t) => t.id.equals(album.id),
-        );
-      }
-    });
-    dPrint(() => "[MIGRATION] Successfully updated isIosSharedAlbum for ${albums.length} albums");
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while syncing local album isIosSharedAlbum: $error");
-  }
-}
+class _StoreMigrator {
+  final Drift _db;
+  final Map<SettingsKey, Object?> _cache = {};
+  final List<int> _migratedStoreIds = [];
 
-Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
-  try {
-    final isarDeviceAssets = await db.deviceAssetEntitys.where().findAll();
-    await drift.batch((batch) {
-      for (final deviceAsset in isarDeviceAssets) {
-        batch.update(
-          drift.localAssetEntity,
-          LocalAssetEntityCompanion(checksum: Value(base64.encode(deviceAsset.hash))),
-          where: (t) => t.id.equals(deviceAsset.assetId),
-        );
-      }
-    });
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while migrating device assets to SQLite: $error");
-  }
-}
+  _StoreMigrator(this._db);
 
-Future<void> migrateBackupAlbumsToSqlite(Isar db, Drift drift) async {
-  try {
-    final isarBackupAlbums = await db.backupAlbums.where().findAll();
-    // Recents is a virtual album on Android, and we don't have it with the new sync
-    // If recents is selected previously, select all albums during migration except the excluded ones
-    if (Platform.isAndroid) {
-      final recentAlbum = isarBackupAlbums.firstWhereOrNull((album) => album.id == 'isAll');
-      if (recentAlbum != null) {
-        await drift.localAlbumEntity.update().write(
-          const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.selected)),
-        );
-        final excluded = isarBackupAlbums
-            .where((album) => album.selection == isar_backup_album.BackupSelection.exclude)
-            .map((album) => album.id)
-            .toList();
-        await drift.batch((batch) async {
-          for (final id in excluded) {
-            batch.update(
-              drift.localAlbumEntity,
-              const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.excluded)),
-              where: (t) => t.id.equals(id),
-            );
-          }
-        });
-        return;
-      }
+  Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, SettingsKey<T> newKey, List<T> values) async {
+    final index = await readLegacyStoreInt(legacyKey.id);
+    if (index == null) {
+      return;
     }
 
-    await drift.batch((batch) {
-      for (final album in isarBackupAlbums) {
-        batch.update(
-          drift.localAlbumEntity,
-          LocalAlbumEntityCompanion(
-            backupSelection: Value(switch (album.selection) {
-              isar_backup_album.BackupSelection.none => BackupSelection.none,
-              isar_backup_album.BackupSelection.select => BackupSelection.selected,
-              isar_backup_album.BackupSelection.exclude => BackupSelection.excluded,
-            }),
-          ),
-          where: (t) => t.id.equals(album.id),
+    final enumValue = values.elementAtOrNull(index);
+    if (enumValue == null) {
+      return;
+    }
+
+    _cache[newKey] = enumValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateEnumName<T extends Enum>(
+    StoreKey<String> legacyKey,
+    SettingsKey<T> newKey,
+    List<T> values,
+  ) async {
+    final name = await readLegacyStoreString(legacyKey.id);
+    if (name == null) {
+      return;
+    }
+
+    final enumValue = values.firstWhereOrNull((e) => e.name == name);
+    if (enumValue == null) {
+      return;
+    }
+
+    _cache[newKey] = enumValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateBool(StoreKey<bool> legacyKey, SettingsKey<bool> newKey) async {
+    final intValue = await readLegacyStoreInt(legacyKey.id);
+    if (intValue == null) {
+      return;
+    }
+
+    final boolValue = intValue != 0;
+    _cache[newKey] = boolValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateInt(StoreKey<int> legacyKey, SettingsKey<int> newKey) async {
+    final intValue = await readLegacyStoreInt(legacyKey.id);
+    if (intValue == null) {
+      return;
+    }
+
+    _cache[newKey] = intValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  void stage<T, U extends T>(StoreKey legacyKey, SettingsKey<T> newKey, U value) {
+    _cache[newKey] = value;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> complete() async {
+    await _db.batch((batch) {
+      for (final entry in _cache.entries) {
+        if (entry.value == defaultConfig.read(entry.key)) {
+          continue;
+        }
+
+        String? resolvedValue;
+        if (entry.value != null) {
+          resolvedValue = entry.key.encode(entry.value);
+        }
+
+        batch.insert(
+          _db.settingsEntity,
+          SettingsEntityCompanion(key: Value(entry.key.name), value: Value(resolvedValue)),
+          mode: InsertMode.insertOrReplace,
         );
       }
     });
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while migrating backup albums to SQLite: $error");
+    await deleteLegacyStoreRows(_migratedStoreIds);
   }
-}
 
-Future<void> migrateStoreToSqlite(Isar db, Drift drift) async {
-  try {
-    final isarStoreValues = await db.storeValues.where().findAll();
-    await drift.batch((batch) {
-      for (final storeValue in isarStoreValues) {
-        final companion = StoreEntityCompanion(
-          id: Value(storeValue.id),
-          stringValue: Value(storeValue.strValue),
-          intValue: Value(storeValue.intValue),
-        );
-        batch.insert(drift.storeEntity, companion, onConflict: DoUpdate((_) => companion));
-      }
-    });
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while migrating store values to SQLite: $error");
+  Future<String?> readLegacyStoreString(int id) async {
+    final row = await (_db.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row?.stringValue;
   }
-}
 
-Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
-  try {
-    final driftStoreValues = await drift.storeEntity
-        .select()
-        .map((entity) => StoreValue(entity.id, intValue: entity.intValue, strValue: entity.stringValue))
-        .get();
-
-    await db.writeTxn(() async {
-      await db.storeValues.putAll(driftStoreValues);
-    });
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while migrating store values to Isar: $error");
+  Future<int?> readLegacyStoreInt(int id) async {
+    final row = await (_db.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row?.intValue;
   }
-}
 
-class _DeviceAsset {
-  final String assetId;
-  final List<int>? hash;
-  final DateTime? dateTime;
-
-  const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
+  Future<void> deleteLegacyStoreRows(List<int> ids) async {
+    if (ids.isEmpty) {
+      return;
+    }
+    await (_db.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
+  }
 }

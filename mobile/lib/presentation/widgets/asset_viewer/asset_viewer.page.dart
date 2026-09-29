@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,19 +12,18 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_page.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_preloader.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 @RoutePage()
@@ -66,82 +64,138 @@ class AssetViewer extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _AssetViewerState();
 
-  static void setAsset(WidgetRef ref, BaseAsset asset) {
+  /// Sets the asset and thumbnail size before opening the viewer.
+  static void setAsset(WidgetRef ref, BaseAsset asset, {Size? thumbnailSize}) {
     ref.read(assetViewerProvider.notifier).reset();
-    _setAsset(ref, asset);
-  }
 
-  static void _setAsset(WidgetRef ref, BaseAsset asset) {
-    // Always holds the current asset from the timeline
-    ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // The currentAssetNotifier actually holds the current asset that is displayed
-    // which could be stack children as well
-    ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    if (asset.isVideo || asset.isMotionPhoto) {
-      ref.read(videoPlaybackValueProvider.notifier).reset();
-      ref.read(videoPlayerControlsProvider.notifier).pause();
-    }
     // Hide controls by default for videos
-    if (asset.isVideo) ref.read(assetViewerProvider.notifier).setControls(false);
+    if (asset.isVideo) {
+      ref.read(assetViewerProvider.notifier).setControls(false);
+    }
+
+    ref.read(assetViewerProvider.notifier).setAsset(asset, thumbnailSize: thumbnailSize);
   }
 }
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
+  static const _viewerOverlayStyle = SystemUiOverlayStyle(
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.light,
+  );
+
   late final _heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
   late final _pageController = PageController(initialPage: widget.initialIndex);
   late final _preloader = AssetPreloader(timelineService: ref.read(timelineServiceProvider), mounted: () => mounted);
 
+  late int _currentPage = widget.initialIndex;
+  late int _totalAssets = ref.read(timelineServiceProvider).totalAssets;
+
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
 
-  bool _assetReloadRequested = false;
+  void _onTapNavigate(int direction) {
+    final page = _pageController.page?.toInt();
+    if (page == null) {
+      return;
+    }
+    final target = page + direction;
+    final maxPage = _totalAssets - 1;
+    if (target >= 0 && target <= maxPage) {
+      _pageController.jumpToPage(target);
+      unawaited(_onAssetChanged(target));
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
-    final asset = ref.read(currentAssetNotifier);
+    final asset = ref.read(assetViewerProvider).currentAsset;
     assert(asset != null, "Current asset should not be null when opening the AssetViewer");
-    if (asset != null) _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    if (asset != null) {
+      _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
 
     _reloadSubscription = EventStream.shared.listen(_onEvent);
 
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
+
+    final assetViewer = ref.read(assetViewerProvider);
+    unawaited(_setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails));
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _preloader.dispose();
-    _reloadSubscription?.cancel();
+    unawaited(_reloadSubscription?.cancel());
     _stackChildrenKeepAlive?.close();
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(restoreEdgeToEdge());
 
     super.dispose();
   }
 
+  // The normal onPageChange callback listens to OnScrollUpdate events, and will
+  // round the current page and update whenever that value changes. In practise,
+  // this means that the page will change when swiped half way, and may flip
+  // whilst dragging.
+  //
+  // Changing the page at the end of a scroll should be more robust, and allow
+  // the page to be dragged more than half way whilst keeping the current video
+  // playing, and preventing the video on the next page from becoming ready
+  // unnecessarily.
+  bool _onScrollEnd(ScrollEndNotification notification) {
+    if (notification.depth != 0) {
+      return false;
+    }
+
+    final page = _pageController.page?.round();
+    if (page != null && page != _currentPage) {
+      unawaited(_onAssetChanged(page));
+    }
+    return false;
+  }
+
   void _onAssetInit(Duration timeStamp) {
-    _preloader.preload(widget.initialIndex, context.sizeData);
+    _preloader.preload(
+      widget.initialIndex,
+      context.sizeData,
+      thumbnailSize: ref.read(assetViewerProvider).thumbnailSize,
+    );
     _handleCasting();
   }
 
-  void _onAssetChanged(int index) async {
-    final timelineService = ref.read(timelineServiceProvider);
-    final asset = await timelineService.getAssetAsync(index);
-    if (asset == null) return;
+  Future<void> _onAssetChanged(int index) async {
+    _currentPage = index;
 
-    AssetViewer._setAsset(ref, asset);
-    _preloader.preload(index, context.sizeData);
+    final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
+    if (asset == null) {
+      return;
+    }
+
+    // The viewer is closing; don't flip the current asset now. Flipping it swaps
+    // the grid tile hero keys mid pop and animates the close on two tiles (#23779).
+    if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) {
+      return;
+    }
+
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    _preloader.preload(index, context.sizeData, thumbnailSize: ref.read(assetViewerProvider).thumbnailSize);
     _handleCasting();
     _stackChildrenKeepAlive?.close();
     _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
   }
 
   void _handleCasting() {
-    if (!ref.read(castProvider).isCasting) return;
-    final asset = ref.read(currentAssetNotifier);
-    if (asset == null) return;
+    if (!ref.read(castProvider).isCasting) {
+      return;
+    }
+    final asset = ref.read(assetViewerProvider).currentAsset;
+    if (asset == null) {
+      return;
+    }
 
     if (asset is RemoteAsset) {
       context.scaffoldMessenger.hideCurrentSnackBar();
@@ -155,7 +209,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       SnackBar(
         duration: const Duration(seconds: 2),
         content: Text(
-          "local_asset_cast_failed".tr(),
+          context.t.local_asset_cast_failed,
           style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
         ),
       ),
@@ -166,8 +220,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     switch (event) {
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
-      case ViewerReloadAssetEvent():
-        _assetReloadRequested = true;
       default:
     }
   }
@@ -177,43 +229,36 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final totalAssets = timelineService.totalAssets;
 
     if (totalAssets == 0) {
-      context.maybePop();
+      unawaited(context.maybePop());
       return;
     }
 
-    var index = _pageController.page?.round() ?? 0;
-    final currentAsset = ref.read(currentAssetNotifier);
-    if (currentAsset != null) {
-      final newIndex = timelineService.getIndex(currentAsset.heroTag);
-      if (newIndex != null && newIndex != index) {
-        index = newIndex;
-        _pageController.jumpToPage(index);
-      }
-    }
+    final currentAsset = ref.read(assetViewerProvider).currentAsset;
+    final assetIndex = currentAsset != null ? timelineService.getIndex(currentAsset.heroTag) : null;
+    final index = (assetIndex ?? _currentPage).clamp(0, totalAssets - 1);
 
-    if (index >= totalAssets) {
-      index = totalAssets - 1;
+    if (index != _currentPage) {
       _pageController.jumpToPage(index);
+      unawaited(_onAssetChanged(index));
+    } else if (currentAsset is RemoteAsset && currentAsset.stackId != null && assetIndex == null) {
+      final timelineAsset = timelineService.getAssetSafe(index);
+      if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+        unawaited(_onAssetChanged(index));
+      }
+    } else if (currentAsset != null && assetIndex == null) {
+      unawaited(_onAssetChanged(index));
     }
 
-    if (_assetReloadRequested) {
-      _assetReloadRequested = false;
-      _onAssetReloadEvent(index);
+    if (_totalAssets != totalAssets) {
+      setState(() {
+        _totalAssets = totalAssets;
+      });
     }
   }
 
-  void _onAssetReloadEvent(int index) async {
-    final timelineService = ref.read(timelineServiceProvider);
-
-    final newAsset = await timelineService.getAssetAsync(index);
-    if (newAsset == null) return;
-
-    final currentAsset = ref.read(currentAssetNotifier);
-
-    // Do not reload if the asset has not changed
-    if (newAsset.heroTag == currentAsset?.heroTag) return;
-
-    _onAssetChanged(index);
+  Future<void> _setSystemUIMode(bool controls, bool details) {
+    final immersive = !controls || (CurrentPlatform.isIOS && details);
+    return immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge();
   }
 
   @override
@@ -227,7 +272,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     // Listen for casting changes and send initial asset to the cast provider
     ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) {
-      if (!isCasting) return;
+      if (!isCasting) {
+        return;
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _handleCasting();
       });
@@ -235,16 +282,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     ref.listen(assetViewerProvider.select((value) => (value.showingControls, value.showingDetails)), (_, state) {
       final (controls, details) = state;
-      final mode = !controls || (CurrentPlatform.isIOS && details)
-          ? SystemUiMode.immersiveSticky
-          : SystemUiMode.edgeToEdge;
-      unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+      unawaited(_setSystemUIMode(controls, details));
     });
 
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) => ref.read(currentAssetNotifier.notifier).dispose(),
+    return AnnotatedRegion(
+      value: _viewerOverlayStyle,
       child: Scaffold(
         backgroundColor: backgroundColor,
+        resizeToAvoidBottomInset: false,
         appBar: const ViewerTopAppBar(),
         extendBody: true,
         extendBodyBehindAppBar: true,
@@ -259,18 +304,21 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         bottomNavigationBar: const ViewerBottomAppBar(),
         body: Stack(
           children: [
-            PhotoViewGestureDetectorScope(
-              axis: Axis.horizontal,
-              child: PageView.builder(
-                controller: _pageController,
-                physics: isZoomed
-                    ? const NeverScrollableScrollPhysics()
-                    : CurrentPlatform.isIOS
-                    ? const FastScrollPhysics()
-                    : const FastClampingScrollPhysics(),
-                itemCount: ref.read(timelineServiceProvider).totalAssets,
-                onPageChanged: (index) => _onAssetChanged(index),
-                itemBuilder: (context, index) => AssetPage(index: index, heroOffset: _heroOffset),
+            NotificationListener<ScrollEndNotification>(
+              onNotification: _onScrollEnd,
+              child: PhotoViewGestureDetectorScope(
+                axis: Axis.horizontal,
+                child: PageView.builder(
+                  controller: _pageController,
+                  physics: isZoomed
+                      ? const NeverScrollableScrollPhysics()
+                      : CurrentPlatform.isIOS
+                      ? const FastScrollPhysics()
+                      : const FastClampingScrollPhysics(),
+                  itemCount: _totalAssets,
+                  itemBuilder: (context, index) =>
+                      AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
+                ),
               ),
             ),
             if (!CurrentPlatform.isIOS)

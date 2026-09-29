@@ -1,0 +1,51 @@
+[versions]
+agp = "8.11.2"
+kotlin = "2.2.20"
+ksp = "2.2.20-2.0.3"
+coroutines = "1.9.0"
+work = "2.9.1"
+concurrent = "1.2.0"
+guava = "33.3.1-android"
+glide = "4.16.0"
+serialization-json = "1.8.1"
+glance = "1.1.1"
+gson = "2.10.1"
+okhttp = "4.12.0"
+cronet = "143.7445.0"
+media3 = "1.10.0"
+desugar = "2.1.2"
+activity-compose = "1.8.2"
+compose-ui = "1.1.1"
+material3 = "1.2.1"
+lifecycle = "2.6.2"
+material = "1.12.0"
+
+[libraries]
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+cronet-embedded = { module = "org.chromium.net:cronet-embedded", version.ref = "cronet" }
+media3-datasource-okhttp = { module = "androidx.media3:media3-datasource-okhttp", version.ref = "media3" }
+media3-datasource-cronet = { module = "androidx.media3:media3-datasource-cronet", version.ref = "media3" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+glide-ksp = { module = "com.github.bumptech.glide:ksp", version.ref = "glide" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization-json" }
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
+glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-ui" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-ui" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+# TODO: update to version.ref = "kotlin" when background_downloader is removed
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.1.0" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

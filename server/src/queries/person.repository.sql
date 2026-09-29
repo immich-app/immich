@@ -3,18 +3,141 @@
 -- PersonRepository.reassignFaces
 update "asset_face"
 set
-  "personId" = $1
+  "personGroupId" = $1
+from
+  "asset"
 where
-  "asset_face"."personId" = $2
+  "asset_face"."assetId" = "asset"."id"
+  and "asset_face"."personGroupId" = $2
+
+-- PersonRepository.updateGroupId
+begin
+update "asset_face"
+set
+  "personGroupId" = $1
+from
+  "asset"
+where
+  "asset_face"."assetId" = "asset"."id"
+  and "asset_face"."personGroupId" = $2
+  and "asset"."ownerId" = $3
+rollback
+
+-- PersonRepository.unassignFaces
+update "asset_face"
+set
+  "personGroupId" = $1
+from
+  "asset"
+  inner join "user" on "user"."id" = "asset"."ownerId"
+where
+  "asset_face"."assetId" = "asset"."id"
+  and "asset_face"."sourceType" = $2
+  and "user"."clusterGroupId" = $3
 
 -- PersonRepository.delete
 delete from "person"
 where
-  "person"."id" in ($1)
+  "ownerId" = $1
+  and "person"."personGroupId" in ($2)
+returning
+  "personGroupId",
+  "ownerId",
+  "thumbnailPath"
+
+-- PersonRepository.deleteGroups
+delete from "person_group"
+where
+  "person_group"."id" in ($1)
+
+-- PersonRepository.deleteEmptyGroups
+delete from "person_group"
+where
+  not exists (
+    select
+      "person"."personGroupId"
+    from
+      "person"
+    where
+      "person"."personGroupId" = "person_group"."id"
+  )
+
+-- PersonRepository.deleteOrphanedClusterGroups
+delete from "cluster_group"
+where
+  not exists (
+    select
+      "user"."id"
+    from
+      "user"
+    where
+      "user"."clusterGroupId" = "cluster_group"."id"
+  )
+
+-- PersonRepository.getAllFaces
+select
+  "asset_face".*
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  inner join "user" on "user"."id" = "asset"."ownerId"
+where
+  "asset_face"."personGroupId" is null
+  and "asset_face"."sourceType" = $1
+  and "user"."clusterGroupId" = $2
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+
+-- PersonRepository.forBirthdayMemories
+select
+  "person"."personGroupId",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    date_part('month', person."birthDate")::int = $4
+    and date_part('day', person."birthDate")::int = $5
+  )
+  and date_part('year', person."birthDate")::int < $6
+
+-- PersonRepository.forBirthdayMemories (leap day fallback)
+select
+  "person"."personGroupId",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    (
+      date_part('month', person."birthDate")::int = $4
+      and date_part('day', person."birthDate")::int = $5
+    )
+    or (
+      date_part('month', person."birthDate")::int = $6
+      and date_part('day', person."birthDate")::int = $7
+    )
+  )
+  and date_part('year', person."birthDate")::int < $8
 
 -- PersonRepository.getFileSamples
 select
-  "id",
+  "ownerId",
+  "personGroupId",
   "thumbnailPath"
 from
   "person"
@@ -25,54 +148,6 @@ limit
 
 -- PersonRepository.getAllForUser
 select
-  "person".*
-from
-  "person"
-  inner join "asset_face" on "asset_face"."personId" = "person"."id"
-  inner join "asset" on "asset_face"."assetId" = "asset"."id"
-  and "asset"."visibility" = 'timeline'
-  and "asset"."deletedAt" is null
-where
-  "person"."ownerId" = $1
-  and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
-  and "person"."isHidden" = $2
-group by
-  "person"."id"
-having
-  (
-    "person"."name" != $3
-    or count("asset_face"."assetId") >= $4
-  )
-order by
-  "person"."isHidden" asc,
-  "person"."isFavorite" desc,
-  NULLIF(person.name, '') is null asc,
-  count("asset_face"."assetId") desc,
-  NULLIF(person.name, '') asc nulls last,
-  "person"."createdAt"
-limit
-  $5
-offset
-  $6
-
--- PersonRepository.getAllWithoutFaces
-select
-  "person".*
-from
-  "person"
-  left join "asset_face" on "asset_face"."personId" = "person"."id"
-where
-  "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
-group by
-  "person"."id"
-having
-  count("asset_face"."assetId") = $1
-
--- PersonRepository.getFaces
-select
-  "asset_face".*,
   (
     select
       to_json(obj)
@@ -83,15 +158,251 @@ select
         from
           "person"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."personGroupId" = "person_group"."id"
+          and "person"."ownerId" = $1
+      ) as obj
+  ) as "ownedPerson",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "person_user"."sharedById",
+          "person_user"."role",
+          "other"."name",
+          "other"."birthDate"
+        from
+          "person" as "other"
+          inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+          and "person_user"."sharedById" = "other"."ownerId"
+          and "person_user"."sharedWithId" = $2
+        where
+          "other"."personGroupId" = "person_group"."id"
+          and (
+            "other"."birthDate" is not null
+            or "other"."name" != $3
+          )
+      ) as agg
+  ) as "otherPeople",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedById"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person_group"."id"
+          and "person_user"."sharedWithId" = $4
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedBy",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedWithId"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person_group"."id"
+          and "person_user"."sharedById" = $5
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedWith"
+from
+  "person_group"
+  inner join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
+  and "owned"."ownerId" = $6
+  left join "asset_face" on "asset_face"."personGroupId" = "person_group"."id"
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+  left join "asset" on "asset"."id" = "asset_face"."assetId"
+  and "asset"."ownerId" = $7
+  and "asset"."visibility" = 'timeline'
+  and "asset"."deletedAt" is null
+where
+  "owned"."isHidden" = $8
+  and 1 = 1
+group by
+  "person_group"."id",
+  "owned"."ownerId",
+  "owned"."personGroupId"
+having
+  (
+    exists (
+      select
+        "person_user"."sharedWithId"
+      from
+        "person_user"
+      where
+        "person_user"."personGroupId" = "person_group"."id"
+        and "person_user"."sharedWithId" = $9
+    )
+    or (
+      count("asset"."id") > $10
+      and "owned"."name" != $11
+    )
+    or count("asset"."id") >= COALESCE(
+      (
+        SELECT
+          value -> 'people' ->> 'minimumFaces'
+        FROM
+          user_metadata
+        WHERE
+          "userId" = $12
+          AND key = 'preferences'
+      ),
+      '3'
+    )::int
+  )
+order by
+  "owned"."isHidden" asc,
+  "owned"."isFavorite" desc,
+  NULLIF("owned"."name", '') is null asc,
+  count("asset"."id") desc,
+  NULLIF("owned"."name", '') asc nulls last,
+  "owned"."createdAt"
+limit
+  $13
+offset
+  $14
+
+-- PersonRepository.getAllWithoutFaces
+select
+  "person".*
+from
+  "person"
+  left join "asset_face" on "asset_face"."personGroupId" = "person"."personGroupId"
+where
+  "asset_face"."deletedAt" is null
+  and (
+    "asset_face"."isVisible" is null
+    or "asset_face"."isVisible" = $1
+  )
+group by
+  "person"."ownerId",
+  "person"."personGroupId"
+having
+  count("asset_face"."assetId") = $2
+
+-- PersonRepository.getFaces
+select
+  "asset_face".*,
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "person".*,
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "person_user"."sharedById",
+                  "person_user"."role",
+                  "other"."name",
+                  "other"."birthDate"
+                from
+                  "person" as "other"
+                  inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+                  and "person_user"."sharedById" = "other"."ownerId"
+                  and "person_user"."sharedWithId" = $1
+                where
+                  "other"."personGroupId" = "person"."personGroupId"
+                  and (
+                    "other"."birthDate" is not null
+                    or "other"."name" != $2
+                  )
+              ) as agg
+          ) as "otherPeople",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedById"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedWithId" = $3
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedBy",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedWithId"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedById" = $4
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedWith"
+        from
+          "person"
+        where
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."ownerId" = $5
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."assetId" = $1
+  "asset_face"."assetId" = $6
   and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" = $2
+  and "asset_face"."isVisible" = $7
 order by
   "asset_face"."boundingBoxX1" asc
 
@@ -104,23 +415,95 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "person_user"."sharedById",
+                  "person_user"."role",
+                  "other"."name",
+                  "other"."birthDate"
+                from
+                  "person" as "other"
+                  inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+                  and "person_user"."sharedById" = "other"."ownerId"
+                  and "person_user"."sharedWithId" = $1
+                where
+                  "other"."personGroupId" = "person"."personGroupId"
+                  and (
+                    "other"."birthDate" is not null
+                    or "other"."name" != $2
+                  )
+              ) as agg
+          ) as "otherPeople",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedById"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedWithId" = $3
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedBy",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedWithId"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedById" = $4
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedWith"
         from
           "person"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."ownerId" = $5
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."id" = $1
+  "asset_face"."id" = $6
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getFaceForFacialRecognitionJob
 select
   "asset_face"."id",
-  "asset_face"."personId",
+  "asset_face"."personGroupId",
   "asset_face"."sourceType",
   (
     select
@@ -130,9 +513,11 @@ select
         select
           "asset"."ownerId",
           "asset"."visibility",
-          "asset"."fileCreatedAt"
+          "asset"."fileCreatedAt",
+          "user"."clusterGroupId"
         from
           "asset"
+          inner join "user" on "user"."id" = "asset"."ownerId"
         where
           "asset"."id" = "asset_face"."assetId"
       ) as obj
@@ -176,7 +561,7 @@ select
     where
       "asset_file"."assetId" = "asset"."id"
       and "asset_file"."type" = 'preview'
-      and "asset_file"."isEdited" = $1
+      and "asset_file"."isEdited" = false
   ) as "previewPath"
 from
   "person"
@@ -184,35 +569,321 @@ from
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
-  "person"."id" = $2
+  "person"."ownerId" = $1
+  and "person"."personGroupId" = $2
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.reassignFace
 update "asset_face"
 set
-  "personId" = $1
+  "personGroupId" = $1
 where
   "asset_face"."id" = $2
 
--- PersonRepository.getByName
+-- PersonRepository.getForUser
 select
-  "person".*
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "person".*
+        from
+          "person"
+        where
+          "person"."personGroupId" = "person_group"."id"
+          and "person"."ownerId" = $1
+      ) as obj
+  ) as "ownedPerson",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "person_user"."sharedById",
+          "person_user"."role",
+          "other"."name",
+          "other"."birthDate"
+        from
+          "person" as "other"
+          inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+          and "person_user"."sharedById" = "other"."ownerId"
+          and "person_user"."sharedWithId" = $2
+        where
+          "other"."personGroupId" = "person_group"."id"
+          and (
+            "other"."birthDate" is not null
+            or "other"."name" != $3
+          )
+      ) as agg
+  ) as "otherPeople",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedById"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person_group"."id"
+          and "person_user"."sharedWithId" = $4
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedBy",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedWithId"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person_group"."id"
+          and "person_user"."sharedById" = $5
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedWith"
+from
+  "person_group"
+where
+  "person_group"."id" = $6
+  and exists (
+    select
+      "person"."ownerId"
+    from
+      "person"
+    where
+      "person"."personGroupId" = "person_group"."id"
+      and "person"."ownerId" = $7
+  )
+
+-- PersonRepository.getByGroupId
+select
+  "person".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "person_user"."sharedById",
+          "person_user"."role",
+          "other"."name",
+          "other"."birthDate"
+        from
+          "person" as "other"
+          inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+          and "person_user"."sharedById" = "other"."ownerId"
+          and "person_user"."sharedWithId" = $1
+        where
+          "other"."personGroupId" = "person"."personGroupId"
+          and (
+            "other"."birthDate" is not null
+            or "other"."name" != $2
+          )
+      ) as agg
+  ) as "otherPeople",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedById"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person"."personGroupId"
+          and "person_user"."sharedWithId" = $3
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedBy",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedWithId"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person"."personGroupId"
+          and "person_user"."sharedById" = $4
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedWith"
 from
   "person"
 where
+  "person"."personGroupId" = $5
+  and "person"."ownerId" = $6
+
+-- PersonRepository.getForThumbnail
+select
   (
-    "person"."ownerId" = $1
-    and (
-      lower("person"."name") like $2
-      or lower("person"."name") like $3
-    )
+    select
+      "person"."thumbnailPath"
+    from
+      "person"
+    where
+      "person"."personGroupId" = "person_group"."id"
+      and "person"."ownerId" = $1
+  ) as "thumbnailPath",
+  (
+    select
+      "person"."thumbnailPath"
+    from
+      "person"
+      inner join "person_user" on "person_user"."personGroupId" = "person"."personGroupId"
+      and "person_user"."sharedById" = "person"."ownerId"
+      and "person_user"."sharedWithId" = $2
+    where
+      "person"."personGroupId" = "person_group"."id"
+      and "person"."thumbnailPath" != $3
+    limit
+      $4
+  ) as "sharedThumbnailPath"
+from
+  "person_group"
+where
+  "person_group"."id" = $5
+
+-- PersonRepository.getByName
+with
+  "similarity_threshold" as (
+    select
+      set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
   )
+select
+  "person".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "person_user"."sharedById",
+          "person_user"."role",
+          "other"."name",
+          "other"."birthDate"
+        from
+          "person" as "other"
+          inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+          and "person_user"."sharedById" = "other"."ownerId"
+          and "person_user"."sharedWithId" = $1
+        where
+          "other"."personGroupId" = "person"."personGroupId"
+          and (
+            "other"."birthDate" is not null
+            or "other"."name" != $2
+          )
+      ) as agg
+  ) as "otherPeople",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedById"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person"."personGroupId"
+          and "person_user"."sharedWithId" = $3
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedBy",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt",
+          "person_user"."role"
+        from
+          "person_user"
+          inner join "user" on "user"."id" = "person_user"."sharedWithId"
+          and "user"."deletedAt" is null
+        where
+          "person_user"."personGroupId" = "person"."personGroupId"
+          and "person_user"."sharedById" = $4
+        order by
+          "user"."name"
+      ) as agg
+  ) as "sharedWith"
+from
+  "similarity_threshold",
+  "person"
+where
+  "person"."ownerId" = $5
+  and f_unaccent ("person"."name") %> f_unaccent ($6)
+order by
+  f_unaccent ("person"."name") <->>> f_unaccent ($7)
 limit
-  $4
+  $8
 
 -- PersonRepository.getDistinctNames
 select distinct
-  on (lower("person"."name")) "person"."id",
+  on (lower("person"."name")) "person"."personGroupId",
   "person"."name"
 from
   "person"
@@ -222,51 +893,213 @@ where
     and "person"."name" != $2
   )
 
--- PersonRepository.getStatistics
-select
-  count(distinct ("asset"."id")) as "count"
-from
-  "asset_face"
-  left join "asset" on "asset"."id" = "asset_face"."assetId"
-  and "asset_face"."personId" = $1
-  and "asset"."visibility" = 'timeline'
-  and "asset"."deletedAt" is null
-where
-  "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
-
 -- PersonRepository.getNumberOfPeople
 select
   coalesce(count(*), 0) as "total",
   coalesce(
     count(*) filter (
       where
-        "isHidden" = $1
+        "owned"."isHidden" = $1
     ),
     0
   ) as "hidden"
 from
-  "person"
+  "person_group"
+  left join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
+  and "owned"."ownerId" = $2
 where
-  exists (
-    select
-    from
-      "asset_face"
-    where
-      "asset_face"."personId" = "person"."id"
-      and "asset_face"."deletedAt" is null
-      and "asset_face"."isVisible" = $2
+  (
+    (
+      "owned"."ownerId" is not null
       and exists (
         select
         from
-          "asset"
+          "asset_face"
         where
-          "asset"."id" = "asset_face"."assetId"
-          and "asset"."visibility" = 'timeline'
-          and "asset"."deletedAt" is null
+          "asset_face"."personGroupId" = "person_group"."id"
+          and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" = $3
+          and exists (
+            select
+            from
+              "asset"
+            where
+              "asset"."id" = "asset_face"."assetId"
+              and "asset"."ownerId" = $4
+              and "asset"."visibility" = 'timeline'
+              and "asset"."deletedAt" is null
+          )
       )
+    )
+    or exists (
+      select
+        "person_user"."sharedById"
+      from
+        "person_user"
+      where
+        "person_user"."personGroupId" = "person_group"."id"
+        and "person_user"."sharedWithId" = $5
+    )
   )
-  and "person"."ownerId" = $3
+  and 1 = 1
+
+-- PersonRepository.createGroup
+insert into
+  "person_group" ("clusterGroupId")
+select
+  "user"."clusterGroupId"
+from
+  "user"
+where
+  "user"."id" = $1
+returning
+  *
+
+-- PersonRepository.reassignCluster
+begin
+update "person_group"
+set
+  "clusterGroupId" = $1
+where
+  "person_group"."id" in (
+    select
+      "person"."personGroupId"
+    from
+      "person"
+    where
+      "person"."ownerId" = $2
+  )
+  and not exists (
+    select
+      "person"."personGroupId"
+    from
+      "person"
+    where
+      "person"."personGroupId" = "person_group"."id"
+      and "person"."ownerId" != $3
+  )
+with
+  "shared" as (
+    select distinct
+      "person"."personGroupId" as "oldId"
+    from
+      "person"
+    where
+      "person"."ownerId" = $1
+      and exists (
+        select
+          "other"."personGroupId"
+        from
+          "person" as "other"
+        where
+          "other"."personGroupId" = "person"."personGroupId"
+          and "other"."ownerId" != $2
+      )
+  ),
+  "mapping" as materialized (
+    select
+      "shared"."oldId",
+      uuid_generate_v4 () as "newId"
+    from
+      "shared"
+  ),
+  "created" as (
+    insert into
+      "person_group" ("id", "clusterGroupId")
+    select
+      "mapping"."newId",
+      $3 as "clusterGroupId"
+    from
+      "mapping"
+  )
+select
+  "mapping"."oldId",
+  "mapping"."newId"
+from
+  "mapping"
+commit
+
+-- PersonRepository.createGroups
+insert into
+  "person_group" (
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35"
+  )
+values
+  (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13,
+    $14,
+    $15,
+    $16,
+    $17,
+    $18,
+    $19,
+    $20,
+    $21,
+    $22,
+    $23,
+    $24,
+    $25,
+    $26,
+    $27,
+    $28,
+    $29,
+    $30,
+    $31,
+    $32,
+    $33,
+    $34,
+    $35,
+    $36
+  )
+returning
+  *
 
 -- PersonRepository.refreshFaces
 with
@@ -292,18 +1125,90 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "person_user"."sharedById",
+                  "person_user"."role",
+                  "other"."name",
+                  "other"."birthDate"
+                from
+                  "person" as "other"
+                  inner join "person_user" on "person_user"."personGroupId" = "other"."personGroupId"
+                  and "person_user"."sharedById" = "other"."ownerId"
+                  and "person_user"."sharedWithId" = $1
+                where
+                  "other"."personGroupId" = "person"."personGroupId"
+                  and (
+                    "other"."birthDate" is not null
+                    or "other"."name" != $2
+                  )
+              ) as agg
+          ) as "otherPeople",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedById"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedWithId" = $3
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedBy",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt",
+                  "person_user"."role"
+                from
+                  "person_user"
+                  inner join "user" on "user"."id" = "person_user"."sharedWithId"
+                  and "user"."deletedAt" is null
+                where
+                  "person_user"."personGroupId" = "person"."personGroupId"
+                  and "person_user"."sharedById" = $4
+                order by
+                  "user"."name"
+              ) as agg
+          ) as "sharedWith"
         from
           "person"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."personGroupId" = "asset_face"."personGroupId"
+          and "person"."ownerId" = $5
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."assetId" in ($1)
-  and "asset_face"."personId" in ($2)
+  "asset_face"."assetId" in ($6)
+  and "asset_face"."personGroupId" in ($7)
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getRandomFace
@@ -312,7 +1217,7 @@ select
 from
   "asset_face"
 where
-  "asset_face"."personId" = $1
+  "asset_face"."personGroupId" = $1
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 
@@ -334,15 +1239,6 @@ set
 where
   "asset_face"."id" = $2
 
--- PersonRepository.getForPeopleDelete
-select
-  "id",
-  "thumbnailPath"
-from
-  "person"
-where
-  "id" in ($1)
-
 -- PersonRepository.getForFeatureFaceUpdate
 select
   "asset_face"."id"
@@ -352,4 +1248,13 @@ from
   and "asset"."isOffline" = $1
 where
   "asset_face"."assetId" = $2
-  and "asset_face"."personId" = $3
+  and "asset_face"."personGroupId" = $3
+  and "asset_face"."deletedAt" is null
+
+-- PersonRepository.getForMergePerson
+select
+  "person".*
+from
+  "person"
+where
+  "person"."personGroupId" in ($1)

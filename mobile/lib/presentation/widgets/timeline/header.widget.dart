@@ -1,16 +1,19 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class TimelineHeader extends HookConsumerWidget {
+class TimelineHeader extends HookWidget {
   final Bucket bucket;
   final HeaderType header;
   final double height;
@@ -37,7 +40,7 @@ class TimelineHeader extends HookConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (bucket is! TimeBucket || header == HeaderType.none) {
       return const SizedBox.shrink();
     }
@@ -105,7 +108,7 @@ class _BulkSelectIconButton extends ConsumerWidget {
         ? const SizedBox.shrink()
         : IconButton(
             onPressed: () {
-              ref.read(multiSelectProvider.notifier).toggleBucketSelection(assetOffset, bucket.assetCount);
+              unawaited(ref.read(multiSelectProvider.notifier).toggleBucketSelection(assetOffset, bucket.assetCount));
               ref.read(hapticFeedbackProvider.notifier).heavyImpact();
             },
             icon: isAllSelected

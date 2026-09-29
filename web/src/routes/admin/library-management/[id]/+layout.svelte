@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, invalidate } from '$app/navigation';
   import emptyFoldersUrl from '$lib/assets/empty-folders.svg';
   import AdminCard from '$lib/components/AdminCard.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import TableButton from '$lib/components/TableButton.svelte';
   import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
   import { Route } from '$lib/route';
@@ -15,7 +15,6 @@
     getLibraryFolderActions,
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import type { LibraryResponseDto } from '@immich/sdk';
   import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
   import type { Snippet } from 'svelte';
@@ -29,16 +28,20 @@
 
   const { children, data }: Props = $props();
 
-  const statistics = data.statistics;
-  const [storageUsage, unit] = getBytesWithUnit(statistics.usage);
+  const photosPromise = $derived(data.statisticsPromise.then((stats) => ({ value: stats.photos })));
 
-  let library = $state(data.library);
+  const videosPromise = $derived(data.statisticsPromise.then((stats) => ({ value: stats.videos })));
 
-  const onLibraryUpdate = (newLibrary: LibraryResponseDto) => {
-    if (newLibrary.id === library.id) {
-      library = newLibrary;
-    }
-  };
+  const usagePromise = $derived(
+    data.statisticsPromise.then((stats) => {
+      const [value, unit] = getBytesWithUnit(stats.usage);
+      return { value, unit };
+    }),
+  );
+
+  const library = $derived(data.library);
+
+  const onLibraryUpdate = () => invalidate('app:library');
 
   const onLibraryDelete = async ({ id }: { id: string }) => {
     if (id === library.id) {
@@ -58,12 +61,12 @@
   actions={[Scan, Edit, Delete]}
 >
   <Container size="large" center>
-    <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
+    <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
       <Heading tag="h1" size="large" class="col-span-full my-4">{library.name}</Heading>
-      <div class="flex flex-col lg:flex-row gap-4 col-span-full">
-        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={statistics.photos} />
-        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={statistics.videos} />
-        <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} value={storageUsage} {unit} />
+      <div class="col-span-full flex flex-col gap-4 lg:flex-row">
+        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} valuePromise={photosPromise} />
+        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} valuePromise={videosPromise} />
+        <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} valuePromise={usagePromise} />
       </div>
 
       <AdminCard icon={mdiFolderOutline} title={$t('folders')} headerAction={AddFolder}>
@@ -83,7 +86,7 @@
                   <td>
                     <Code>{folder}</Code>
                   </td>
-                  <td class="flex gap-2 justify-end">
+                  <td class="flex justify-end gap-2">
                     <TableButton action={Edit} />
                     <TableButton action={Delete} />
                   </td>
@@ -103,7 +106,7 @@
                 <td>
                   <Code>{exclusionPattern}</Code>
                 </td>
-                <td class="flex gap-2 justify-end">
+                <td class="flex justify-end gap-2">
                   <TableButton action={Edit} />
                   <TableButton action={Delete} />
                 </td>

@@ -23,7 +23,7 @@ export class CryptoRepository {
   }
 
   hashSha256(value: string) {
-    return createHash('sha256').update(value).digest('base64');
+    return createHash('sha256').update(value).digest();
   }
 
   verifySha256(value: string, encryptedValue: string, publicKey: string) {
@@ -60,10 +60,12 @@ export class CryptoRepository {
   }
 
   signJwt(payload: string | object | Buffer, secret: string, options?: jwt.SignOptions): string {
+    // eslint-disable-next-line import-x/no-named-as-default-member
     return jwt.sign(payload, secret, { algorithm: 'HS256', ...options });
   }
 
   verifyJwt<T = any>(token: string, secret: string): T {
+    // eslint-disable-next-line import-x/no-named-as-default-member
     return jwt.verify(token, secret, { algorithms: ['HS256'] }) as T;
   }
 }

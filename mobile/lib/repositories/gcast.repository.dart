@@ -1,7 +1,7 @@
 import 'package:cast/device.dart';
+import 'package:cast/discovery_service.dart';
 import 'package:cast/session.dart';
 import 'package:cast/session_manager.dart';
-import 'package:cast/discovery_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final gCastRepositoryProvider = Provider((_) {

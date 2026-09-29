@@ -1,11 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
-import { StackService } from 'src/services/stack.service';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { StackFactory } from 'test/factories/stack.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { StackService } from 'src/services/stack.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { StackFactory } from 'test/factories/stack.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { getForStack } from 'test/mappers.js';
+import { newUuid } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(StackService.name, () => {
   let sut: StackService;
@@ -22,9 +23,11 @@ describe(StackService.name, () => {
   describe('search', () => {
     it('should search stacks', async () => {
       const auth = AuthFactory.create();
-      const asset = AssetFactory.create();
-      const stack = StackFactory.from().primaryAsset(asset).build();
-      mocks.stack.search.mockResolvedValue([stack]);
+      const asset = AssetFactory.from().exif().build();
+      const stack = StackFactory.from()
+        .primaryAsset(asset, (builder) => builder.exif())
+        .build();
+      mocks.stack.search.mockResolvedValue([getForStack(stack)]);
 
       await sut.search(auth, { primaryAssetId: asset.id });
       expect(mocks.stack.search).toHaveBeenCalledWith({
@@ -49,11 +52,14 @@ describe(StackService.name, () => {
 
     it('should create a stack', async () => {
       const auth = AuthFactory.create();
-      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
-      const stack = StackFactory.from().primaryAsset(primaryAsset).asset(asset).build();
+      const [primaryAsset, asset] = [AssetFactory.from().exif().build(), AssetFactory.from().exif().build()];
+      const stack = StackFactory.from()
+        .primaryAsset(primaryAsset, (builder) => builder.exif())
+        .asset(asset, (builder) => builder.exif())
+        .build();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([primaryAsset.id, asset.id]));
-      mocks.stack.create.mockResolvedValue(stack);
+      mocks.stack.create.mockResolvedValue(getForStack(stack));
 
       await expect(sut.create(auth, { assetIds: [primaryAsset.id, asset.id] })).resolves.toEqual({
         id: stack.id,
@@ -79,8 +85,9 @@ describe(StackService.name, () => {
 
     it('should fail if stack could not be found', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getById.mockResolvedValue(void 0);
 
-      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(Error);
+      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
@@ -88,11 +95,14 @@ describe(StackService.name, () => {
 
     it('should get stack', async () => {
       const auth = AuthFactory.create();
-      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
-      const stack = StackFactory.from().primaryAsset(primaryAsset).asset(asset).build();
+      const [primaryAsset, asset] = [AssetFactory.from().exif().build(), AssetFactory.from().exif().build()];
+      const stack = StackFactory.from()
+        .primaryAsset(primaryAsset, (builder) => builder.exif())
+        .asset(asset, (builder) => builder.exif())
+        .build();
 
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set([stack.id]));
-      mocks.stack.getById.mockResolvedValue(stack);
+      mocks.stack.getById.mockResolvedValue(getForStack(stack));
 
       await expect(sut.get(auth, stack.id)).resolves.toEqual({
         id: stack.id,
@@ -115,8 +125,9 @@ describe(StackService.name, () => {
 
     it('should fail if stack could not be found', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getById.mockResolvedValue(void 0);
 
-      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(Error);
+      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
       expect(mocks.stack.update).not.toHaveBeenCalled();
@@ -125,10 +136,13 @@ describe(StackService.name, () => {
 
     it('should fail if the provided primary asset id is not in the stack', async () => {
       const auth = AuthFactory.create();
-      const stack = StackFactory.from().primaryAsset().asset().build();
+      const stack = StackFactory.from()
+        .primaryAsset({}, (builder) => builder.exif())
+        .asset({}, (builder) => builder.exif())
+        .build();
 
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set([stack.id]));
-      mocks.stack.getById.mockResolvedValue(stack);
+      mocks.stack.getById.mockResolvedValue(getForStack(stack));
 
       await expect(sut.update(auth, stack.id, { primaryAssetId: 'unknown-asset' })).rejects.toBeInstanceOf(
         BadRequestException,
@@ -141,12 +155,15 @@ describe(StackService.name, () => {
 
     it('should update stack', async () => {
       const auth = AuthFactory.create();
-      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
-      const stack = StackFactory.from().primaryAsset(primaryAsset).asset(asset).build();
+      const [primaryAsset, asset] = [AssetFactory.from().exif().build(), AssetFactory.from().exif().build()];
+      const stack = StackFactory.from()
+        .primaryAsset(primaryAsset, (builder) => builder.exif())
+        .asset(asset, (builder) => builder.exif())
+        .build();
 
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set([stack.id]));
-      mocks.stack.getById.mockResolvedValue(stack);
-      mocks.stack.update.mockResolvedValue(stack);
+      mocks.stack.getById.mockResolvedValue(getForStack(stack));
+      mocks.stack.update.mockResolvedValue(getForStack(stack));
 
       await sut.update(auth, stack.id, { primaryAssetId: asset.id });
 

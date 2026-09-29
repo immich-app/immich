@@ -1,18 +1,19 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 
 /// Provides access to a persistent key-value store with an in-memory cache.
 /// Listens for repository changes to keep the cache updated.
 class StoreService {
-  final IStoreRepository _storeRepository;
+  final StoreRepository _storeRepository;
 
   /// In-memory cache. Keys are [StoreKey.id]
   final Map<int, Object?> _cache = {};
   StreamSubscription<List<StoreDto>>? _storeUpdateSubscription;
 
-  StoreService._({required IStoreRepository isarStoreRepository}) : _storeRepository = isarStoreRepository;
+  StoreService._({required StoreRepository isarStoreRepository}) : _storeRepository = isarStoreRepository;
 
   // TODO: Temporary typedef to make minimal changes. Remove this and make the presentation layer access store through a provider
   static StoreService? _instance;
@@ -24,12 +25,12 @@ class StoreService {
   }
 
   // TODO: Replace the implementation with the one from create after removing the typedef
-  static Future<StoreService> init({required IStoreRepository storeRepository, bool listenUpdates = true}) async {
+  static Future<StoreService> init({required StoreRepository storeRepository, bool listenUpdates = true}) async {
     _instance ??= await create(storeRepository: storeRepository, listenUpdates: listenUpdates);
     return _instance!;
   }
 
-  static Future<StoreService> create({required IStoreRepository storeRepository, bool listenUpdates = true}) async {
+  static Future<StoreService> create({required StoreRepository storeRepository, bool listenUpdates = true}) async {
     final instance = StoreService._(isarStoreRepository: storeRepository);
     await instance.populateCache();
     if (listenUpdates) {
@@ -54,7 +55,13 @@ class StoreService {
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
   Future<void> dispose() async {
     await _storeUpdateSubscription?.cancel();
+    _storeUpdateSubscription = null;
     _cache.clear();
+    // Allow a subsequent init() (e.g. when a worker isolate is reused) to
+    // create a fresh instance instead of returning this disposed one.
+    if (identical(_instance, this)) {
+      _instance = null;
+    }
   }
 
   /// Returns the cached value for [key], or `null`
@@ -72,7 +79,9 @@ class StoreService {
 
   /// Stores the [value] for the [key]. Skips write if value hasn't changed.
   Future<void> put<U extends StoreKey<T>, T>(U key, T value) async {
-    if (_cache[key.id] == value) return;
+    if (_cache[key.id] == value) {
+      return;
+    }
     await _storeRepository.upsert(key, value);
     _cache[key.id] = value;
   }
@@ -82,17 +91,16 @@ class StoreService {
 
   /// Removes the value for [key]
   Future<void> delete<T>(StoreKey<T> key) async {
-    await _storeRepository.delete(key);
+    await _storeRepository.deleteValue(key);
     _cache.remove(key.id);
   }
 
   /// Clears all values from the store (cache and DB)
+  @visibleForTesting
   Future<void> clear() async {
     await _storeRepository.deleteAll();
     _cache.clear();
   }
-
-  bool get isBetaTimelineEnabled => tryGet(StoreKey.betaTimeline) ?? true;
 }
 
 class StoreKeyNotFoundException implements Exception {

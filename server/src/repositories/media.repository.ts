@@ -1,33 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
-import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
+import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
+import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
-import sharp from 'sharp';
-import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
-import { Exif } from 'src/database';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import {
+import sharp, { Sharp } from 'sharp';
+import type {
+  Bitmap,
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
   ProbeOptions,
   TranscodeCommand,
+  TransformOptions,
   VideoInfo,
-} from 'src/types';
-import { handlePromiseError } from 'src/utils/misc';
-import { createAffineMatrix } from 'src/utils/transform';
+  VideoPacketInfo,
+} from 'src/types.js';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
+import { Exif } from 'src/database.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import {
+  AacProfile,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  Colorspace,
+  DvProfile,
+  DvSignalCompatibility,
+  H264Profile,
+  HevcProfile,
+  LogLevel,
+  RawExtractedFormat,
+} from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { handlePromiseError } from 'src/utils/misc.js';
+import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
+    // eslint-disable-next-line import-x/no-named-as-default-member
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
-sharp.concurrency(0);
-sharp.cache({ files: 0 });
+
+const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
 
 type ProgressEvent = {
   frames: number;
@@ -47,6 +66,10 @@ export type ExtractResult = {
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    sharp.concurrency(0);
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    sharp.cache({ files: 0 });
   }
 
   /**
@@ -55,34 +78,21 @@ export class MediaRepository {
    * @returns ExtractResult if succeeded, or null if failed
    */
   async extract(input: string): Promise<ExtractResult | null> {
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw2', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next: ${error}`);
+    for (const { tag, format } of [
+      { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
+      { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
+      { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
+      { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
+    ]) {
+      try {
+        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        this.logger.debug(`Successfully extracted ${tag} buffer from image`);
+        return { buffer, format };
+      } catch (error: any) {
+        this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
+      }
     }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JPEG buffer from image, trying PreviewJXL next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewJXL', input);
-      return { buffer, format: RawExtractedFormat.Jxl };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract PreviewJXL buffer from image, trying PreviewImage next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewImage', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract preview buffer from image: ${error}`);
-      return null;
-    }
+    return null;
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
@@ -107,7 +117,7 @@ export class MediaRepository {
         ExposureTime: tags.exposureTime,
         ProfileDescription: tags.profileDescription,
         ColorSpace: tags.colorspace,
-        Rating: tags.rating,
+        Rating: tags.rating === null ? 0 : tags.rating,
         // specially convert Orientation to numeric Orientation# for exiftool
         'Orientation#': tags.orientation ? Number(tags.orientation) : undefined,
       };
@@ -140,95 +150,104 @@ export class MediaRepository {
     }
   }
 
-  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
-    const pipeline = await this.getImageDecodingPipeline(input, options);
-    return pipeline.raw().toBuffer({ resolveWithObject: true });
+  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions): Promise<Bitmap> {
+    const decoded = await this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+    return await this.transform(decoded, options);
   }
 
-  private async applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): Promise<sharp.Sharp> {
-    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
-    const matrix = createAffineMatrix(affineEditOperations);
-
+  private edit(pipeline: Sharp, edits: AssetEditActionItem[]): Sharp {
     const crop = edits.find((edit) => edit.action === 'crop');
-    const dimensions = await pipeline.metadata();
-
     if (crop) {
       pipeline = pipeline.extract({
-        left: crop ? Math.round(crop.parameters.x) : 0,
-        top: crop ? Math.round(crop.parameters.y) : 0,
-        width: crop ? Math.round(crop.parameters.width) : dimensions.width || 0,
-        height: crop ? Math.round(crop.parameters.height) : dimensions.height || 0,
+        left: Math.round(crop.parameters.x),
+        top: Math.round(crop.parameters.y),
+        width: Math.round(crop.parameters.width),
+        height: Math.round(crop.parameters.height),
       });
     }
 
-    const { a, b, c, d } = matrix;
-    pipeline = pipeline.affine([
-      [a, b],
-      [c, d],
-    ]);
+    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+    if (affineEditOperations.length > 0) {
+      const { a, b, c, d } = createAffineMatrix(affineEditOperations);
+      pipeline = pipeline.affine([
+        [a, b],
+        [c, d],
+      ]);
+    }
 
     return pipeline;
   }
 
-  async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    const pipeline = await this.getImageDecodingPipeline(input, options);
-    const decoded = pipeline.toFormat(options.format, {
-      quality: options.quality,
-      // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-      chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
-      progressive: options.progressive,
-    });
-
-    await decoded.toFile(output);
+  async generateThumbnail(image: Bitmap, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    const transformed = await this.transform(image, options);
+    await this.tag(transformed, options.colorspace)
+      .toFormat(options.format, {
+        quality: options.quality,
+        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+        progressive: options.progressive,
+      })
+      .toFile(output);
   }
 
-  private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
-    let pipeline = sharp(input, {
-      // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
-      failOn: options.processInvalidImages ? 'none' : 'error',
-      limitInputPixels: false,
-      raw: options.raw,
-      unlimited: true,
-    })
-      .pipelineColorspace(options.colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16')
+  private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
+    // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
+    let pipeline = this.encoded(input, options.processInvalidImages ? 'none' : 'error')
+      .pipelineColorspace(this.getPipelineColorspace(options.colorspace))
       .withIccProfile(options.colorspace);
 
-    if (!options.raw) {
-      const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
-      pipeline = pipeline.rotate(angle);
-      if (flip) {
-        pipeline = pipeline.flip();
-      }
-
-      if (flop) {
-        pipeline = pipeline.flop();
-      }
+    const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
+    pipeline = pipeline.rotate(angle);
+    if (flip) {
+      pipeline = pipeline.flip();
     }
 
-    if (options.edits && options.edits.length > 0) {
-      pipeline = await this.applyEdits(pipeline, options.edits);
+    if (flop) {
+      pipeline = pipeline.flop();
     }
 
-    if (options.size !== undefined) {
-      pipeline = pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
-    }
     return pipeline;
   }
 
-  async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
-    const [{ rgbaToThumbHash }, decodingPipeline] = await Promise.all([
-      import('thumbhash'),
-      this.getImageDecodingPipeline(input, {
-        colorspace: options.colorspace,
-        processInvalidImages: options.processInvalidImages,
-        raw: options.raw,
-        edits: options.edits,
-      }),
-    ]);
+  private getPipelineColorspace(colorspace: string) {
+    return colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16';
+  }
 
-    const pipeline = decodingPipeline.resize(100, 100, { fit: 'inside', withoutEnlargement: true }).raw().ensureAlpha();
+  /* Resamples in linear light; averaging gamma-encoded values darkens the result and loses detail. `colorspace`
+   * always has a sRGB transfer function and scRGB applies no primaries matrix, so linearising as sRGB is exact. */
+  private transform(image: Bitmap, { size, fit = 'outside', edits = [] }: TransformOptions): Promise<Bitmap> {
+    if (!size && edits.length === 0) {
+      return Promise.resolve(image);
+    }
 
-    const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+    return this.edit(this.raw(image).pipelineColorspace('scrgb'), edits)
+      .resize(size, size, { fit, withoutEnlargement: true })
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+  }
+
+  private raw({ data, info: raw }: Bitmap) {
+    return sharp(data, { raw, limitInputChannels: false, limitInputPixels: false, unlimited: true });
+  }
+
+  private encoded(image: string | Buffer, failOn: 'none' | 'error') {
+    return sharp(image, { failOn, limitInputChannels: false, limitInputPixels: false, unlimited: true });
+  }
+
+  /** Re-attaches the profile, converting nothing: the pixels are already in that colourspace. */
+  private tag(image: Bitmap, colorspace: string): Sharp {
+    return this.raw(image).pipelineColorspace(this.getPipelineColorspace(colorspace)).withIccProfile(colorspace);
+  }
+
+  async generateThumbhash(image: Bitmap, options: GenerateThumbhashOptions): Promise<Buffer> {
+    const { rgbaToThumbHash } = await import('thumbhash');
+
+    const transformed = await this.transform(image, { edits: options.edits, fit: 'inside', size: 100 });
+
+    const { data, info } = await sharp(transformed.data, { raw: transformed.info })
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
 
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
   }
@@ -243,32 +262,136 @@ export class MediaRepository {
         bitrate: this.parseInt(results.format.bit_rate),
       },
       videoStreams: results.streams
-        .filter((stream) => stream.codec_type === 'video')
-        .filter((stream) => !stream.disposition?.attached_pic)
-        .map((stream) => ({
-          index: stream.index,
-          height: this.parseInt(stream.height),
-          width: this.parseInt(stream.width),
-          codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
-          codecType: stream.codec_type,
-          frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
-          rotation: this.parseInt(stream.rotation),
-          isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
-          bitrate: this.parseInt(stream.bit_rate),
-          pixelFormat: stream.pix_fmt || 'yuv420p',
-          colorPrimaries: stream.color_primaries,
-          colorSpace: stream.color_space,
-          colorTransfer: stream.color_transfer,
-        })),
+        .filter((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic)
+        .sort((a, b) => this.compareStreams(a, b))
+        .map((stream) => {
+          const height = this.parseInt(stream.height);
+          const dar = this.getDar(stream.display_aspect_ratio);
+          return {
+            index: stream.index,
+            height,
+            width: dar ? Math.round(height * dar) : this.parseInt(stream.width),
+            codecName: stream.codec_name === 'h265' ? 'hevc' : (stream.codec_name ?? null),
+            profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined) ?? null,
+            level: this.parseOptionalInt(stream.level),
+            frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
+            frameRate: this.parseFrameRate(stream.avg_frame_rate ?? stream.r_frame_rate),
+            timeBase: this.parseRational(stream.time_base)?.den ?? null,
+            rotation: this.parseInt(stream.rotation),
+            bitrate: this.parseInt(stream.bit_rate),
+            pixelFormat: stream.pix_fmt || 'yuv420p',
+            colorPrimaries: this.parseEnum(ColorPrimaries, stream.color_primaries) ?? ColorPrimaries.Unknown,
+            colorMatrix: this.parseEnum(ColorMatrix, stream.color_space) ?? ColorMatrix.Unknown,
+            colorTransfer: this.parseEnum(ColorTransfer, stream.color_transfer) ?? ColorTransfer.Unknown,
+            dvProfile: this.parseOptionalInt(stream.dv_profile) as DvProfile | null,
+            dvLevel: this.parseOptionalInt(stream.dv_level),
+            dvBlSignalCompatibilityId: this.parseOptionalInt(
+              stream.dv_bl_signal_compatibility_id,
+            ) as DvSignalCompatibility | null,
+          };
+        }),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
+        .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
-          codecType: stream.codec_type,
-          codecName: stream.codec_name,
+          codecName: stream.codec_name ?? null,
+          profile:
+            stream.codec_name === 'aac' ? this.parseEnum(AacProfile, stream.profile as string | undefined) : null,
           bitrate: this.parseInt(stream.bit_rate),
         })),
     };
+  }
+
+  /**
+   * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
+   * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
+   */
+  probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
+    const ffprobe = spawn(
+      'ffprobe',
+      [
+        '-v',
+        'error',
+        '-select_streams',
+        String(streamIndex),
+        '-show_entries',
+        'packet=pts,duration,flags',
+        '-of',
+        'csv=p=0',
+        input,
+      ],
+      { stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+
+    let totalDuration = 0;
+    const keyframePts: number[] = [];
+    const keyframeAccDuration: number[] = [];
+    const keyframeOwnDuration: number[] = [];
+    const postDiscard: { pts: number; duration: number }[] = [];
+    const parseLine = (line: string) => {
+      if (!line) {
+        return;
+      }
+      const [ptsStr, durationStr, flags] = line.split(',', 3);
+      const pts = Number.parseInt(ptsStr);
+      const duration = Number.parseInt(durationStr);
+      if (Number.isNaN(pts) || Number.isNaN(duration) || !flags) {
+        return;
+      }
+      // Discarded packets don't contribute to packet count, but still contribute to video duration
+      totalDuration += duration;
+      if (flags[1] !== 'D') {
+        postDiscard.push({ pts, duration });
+      }
+
+      if (flags[0] !== 'K') {
+        return;
+      }
+
+      keyframePts.push(pts);
+      keyframeAccDuration.push(totalDuration);
+      // VFR content can have variable duration keyframes,
+      // so we need to track their duration separately for accurate segment boundaries.
+      // Non-keyframes are accounted for in totalDuration.
+      keyframeOwnDuration.push(duration);
+    };
+
+    let stderr = '';
+    let remainder = '';
+    ffprobe.stderr.setEncoding('utf8');
+    ffprobe.stderr.on('data', (chunk: string) => (stderr += chunk));
+    ffprobe.stdout.setEncoding('utf8');
+    ffprobe.stdout.on('data', (chunk: string) => {
+      const lines = chunk.split('\n');
+      lines[0] = remainder + lines[0];
+      remainder = lines.pop() as string;
+      for (const line of lines) {
+        parseLine(line);
+      }
+    });
+
+    return new Promise<VideoPacketInfo | null>((resolve, reject) => {
+      ffprobe.on('error', reject);
+      ffprobe.on('close', (code) => {
+        if (code !== 0) {
+          return reject(new Error(`ffprobe exited with code ${code}: ${stderr.trim()}`));
+        }
+        parseLine(remainder);
+        if (postDiscard.length === 0) {
+          return resolve(null);
+        }
+
+        resolve({
+          totalDuration,
+          packetCount: postDiscard.length,
+          outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / totalDuration),
+          keyframePts,
+          keyframeAccDuration,
+          keyframeOwnDuration,
+        });
+      });
+    });
   }
 
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
@@ -309,9 +432,9 @@ export class MediaRepository {
     });
   }
 
-  async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
-    const { width = 0, height = 0 } = await sharp(input).metadata();
-    return { width, height };
+  async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input, { unlimited: true }).metadata();
+    return { width, height, isTransparent: hasAlpha };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
@@ -350,6 +473,109 @@ export class MediaRepository {
   }
 
   private parseFloat(value: string | number | undefined): number {
+    // eslint-disable-next-line unicorn/prefer-number-coercion
     return Number.parseFloat(value as string) || 0;
+  }
+
+  private parseOptionalInt(value: string | number | undefined): number | null {
+    const parsed = Number.parseInt(value as string);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
+    return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
+  }
+
+  /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */
+  private parseRational(value: string | undefined): { num: number; den: number } | null {
+    if (value) {
+      const [num, den = 1] = value.split('/').map(Number);
+      if (num && den) {
+        return { num, den };
+      }
+    }
+    return null;
+  }
+
+  private parseFrameRate(value: string | undefined): number | null {
+    const r = this.parseRational(value);
+    return r ? r.num / r.den : null;
+  }
+
+  private getDar(dar: string | undefined): number {
+    if (dar) {
+      const [darW, darH] = dar.split(':').map(Number);
+      if (darW && darH) {
+        return darW / darH;
+      }
+    }
+
+    return 0;
+  }
+
+  private parseVideoProfile(codec?: string, profile?: string) {
+    switch (codec) {
+      case 'h264': {
+        return this.parseEnum(H264Profile, profile);
+      }
+      case 'h265':
+      case 'hevc': {
+        return this.parseEnum(HevcProfile, profile);
+      }
+      case 'av1': {
+        return this.parseEnum(Av1Profile, profile);
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+
+  private compareStreams(a: FfprobeStream, b: FfprobeStream): number {
+    const d = (b.disposition?.default ?? 0) - (a.disposition?.default ?? 0);
+    if (d !== 0) {
+      return d;
+    }
+    return this.parseInt(b.bit_rate) - this.parseInt(a.bit_rate);
+  }
+
+  /* Ported from https://code.ffmpeg.org/FFmpeg/FFmpeg/src/commit/5c44245878e235ae64fe87fb9877644856d33d1d/fftools/ffmpeg_filter.c
+   * SPDX-License-Identifier: LGPL-2.1-or-later
+   * Copyright (c) FFmpeg authors and contributors — https://ffmpeg.org/
+   * Modifications: TS port operating on probe-derived packet metadata rather than decoded AVFrames. */
+  private cfrOutputFrames(packets: { pts: number; duration: number }[], slotsPerTick: number) {
+    packets.sort((a, b) => a.pts - b.pts);
+    const firstPts = packets[0].pts;
+    let outputFrames = 0;
+    let nextPts = 0;
+    const history = [0, 0, 0];
+    for (const pkt of packets) {
+      const syncIpts = (pkt.pts - firstPts) * slotsPerTick;
+      const duration = pkt.duration * slotsPerTick;
+      let delta0 = syncIpts - nextPts;
+      const delta = delta0 + duration;
+
+      if (delta0 < 0 && delta > 0) {
+        delta0 = 0;
+      }
+
+      let nb = 1;
+      let nbPrev = 0;
+      if (delta < -1.1) {
+        nb = 0;
+      } else if (delta > 1.1) {
+        nb = Math.round(delta);
+        if (delta0 > 1.1) {
+          nbPrev = Math.round(delta0 - 0.6);
+        }
+      }
+      outputFrames += nb;
+      nextPts += nb;
+      history[2] = history[1];
+      history[1] = history[0];
+      history[0] = nbPrev;
+    }
+    const median = history.sort((a, b) => a - b)[1];
+    return outputFrames + median;
   }
 }

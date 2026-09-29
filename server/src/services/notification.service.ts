@@ -1,17 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OnEvent, OnJob } from 'src/decorators';
-import { MapAlbumDto } from 'src/dtos/album.dto';
-import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { EmailImageAttachment, JobOf } from 'src/types.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { MapAlbumDto } from 'src/dtos/album.dto.js';
+import { mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import {
-  mapNotification,
   NotificationDeleteAllDto,
   NotificationDto,
   NotificationSearchDto,
   NotificationUpdateAllDto,
   NotificationUpdateDto,
-} from 'src/dtos/notification.dto';
-import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
+  mapNotification,
+} from 'src/dtos/notification.dto.js';
 import {
   AssetFileType,
   JobName,
@@ -20,15 +22,13 @@ import {
   NotificationType,
   Permission,
   QueueName,
-} from 'src/enum';
-import { EmailTemplate } from 'src/repositories/email.repository';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { EmailImageAttachment, JobOf } from 'src/types';
-import { getFilenameExtension } from 'src/utils/file';
-import { getExternalDomain } from 'src/utils/misc';
-import { isEqualObject } from 'src/utils/object';
-import { getPreferences } from 'src/utils/preferences';
+} from 'src/enum.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getFilenameExtension } from 'src/utils/file.js';
+import { getExternalDomain } from 'src/utils/misc.js';
+import { isEqualObject } from 'src/utils/object.js';
+import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
 export class NotificationService extends BaseService {
@@ -134,7 +134,7 @@ export class NotificationService extends BaseService {
       }
     } catch (error: Error | any) {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
-      throw new Error(`Invalid SMTP configuration: ${error}`);
+      throw new Error('Invalid SMTP configuration', { cause: error });
     }
   }
 
@@ -169,7 +169,7 @@ export class NotificationService extends BaseService {
       return;
     }
 
-    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
+    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId], userId);
     if (asset) {
       this.websocketRepository.clientSend(
         'on_asset_update',
@@ -217,17 +217,37 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'AlbumUpdate' })
-  async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
-    await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
-    await this.jobRepository.queue({
-      name: JobName.NotifyAlbumUpdate,
-      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
-    });
+  async onAlbumUpdate({ id, userIds, recipientIds }: ArgOf<'AlbumUpdate'>) {
+    for (const userId of userIds) {
+      this.websocketRepository.clientSend('on_album_update', userId, id);
+    }
+
+    for (const recipientId of recipientIds) {
+      await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
+      await this.jobRepository.queue({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
+      });
+    }
   }
 
   @OnEvent({ name: 'AlbumInvite' })
-  async onAlbumInvite({ id, userId }: ArgOf<'AlbumInvite'>) {
-    await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId } });
+  async onAlbumInvite({ id, userId, senderName }: ArgOf<'AlbumInvite'>) {
+    await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId, senderName } });
+  }
+
+  @OnEvent({ name: 'ClusterGroupRequest' })
+  async onClusterGroupRequest({ clusterGroupId, userId, senderName }: ArgOf<'ClusterGroupRequest'>) {
+    const item = await this.notificationRepository.create({
+      userId,
+      type: NotificationType.ClusterGroupRequest,
+      level: NotificationLevel.Info,
+      title: 'Cluster Group Request',
+      description: `${senderName} asked you to join their cluster group`,
+      data: JSON.stringify({ clusterGroupId }),
+    });
+
+    this.websocketRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 
   @OnEvent({ name: 'SessionDelete' })
@@ -303,7 +323,7 @@ export class NotificationService extends BaseService {
   }
 
   @OnJob({ name: JobName.NotifyAlbumInvite, queue: QueueName.Notification })
-  async handleAlbumInvite({ id, recipientId }: JobOf<JobName.NotifyAlbumInvite>) {
+  async handleAlbumInvite({ id, recipientId, senderName }: JobOf<JobName.NotifyAlbumInvite>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
     if (!album) {
       return JobStatus.Skipped;
@@ -314,7 +334,7 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, album.owner.name);
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, senderName);
 
     const { emailNotifications } = getPreferences(recipient.metadata);
 
@@ -331,7 +351,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server),
         albumId: album.id,
         albumName: album.albumName,
-        senderName: album.owner.name,
+        senderName,
         recipientName: recipient.name,
         cid: attachment ? attachment.cid : undefined,
       },
@@ -360,8 +380,8 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const owner = await this.userRepository.get(album.ownerId, { withDeleted: false });
-    if (!owner) {
+    const recipient = await this.userRepository.get(recipientId, { withDeleted: false });
+    if (!recipient) {
       return JobStatus.Skipped;
     }
 

@@ -1,0 +1,28 @@
+import request from 'supertest';
+import { DuplicateController } from 'src/controllers/duplicate.controller.js';
+import { DuplicateService } from 'src/services/duplicate.service.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
+
+describe(DuplicateController.name, () => {
+  let ctx: ControllerContext;
+  const service = mockBaseService(DuplicateService);
+
+  beforeAll(async () => {
+    ctx = await controllerSetup(DuplicateController, [{ provide: DuplicateService, useValue: service }]);
+    return () => ctx.close();
+  });
+
+  beforeEach(() => {
+    service.resetAllMocks();
+    ctx.reset();
+  });
+
+  describe('DELETE /duplicates/:id', () => {
+    it('should require a valid uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).delete(`/duplicates/123`);
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
+    });
+  });
+});

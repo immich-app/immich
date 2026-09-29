@@ -1,20 +1,3 @@
-import { goto } from '$app/navigation';
-import ToastAction from '$lib/components/ToastAction.svelte';
-import { AlbumPageViewMode } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
-import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { Route } from '$lib/route';
-import { user } from '$lib/stores/user.store';
-import { createAlbumAndRedirect } from '$lib/utils/album-utils';
-import { downloadArchive } from '$lib/utils/asset-utils';
-import { openFileUploadDialog } from '$lib/utils/file-uploader';
-
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addToAlbum,
   addAssetsToAlbums as addToAlbums,
@@ -27,14 +10,46 @@ import {
   updateAlbumUser,
   type AlbumResponseDto,
   type AlbumsAddAssetsResponseDto,
+  type AssetResponseDto,
   type BulkIdResponseDto,
   type UpdateAlbumDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiArrowLeft, mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
+import {
+  mdiDownload,
+  mdiImageOutline,
+  mdiLink,
+  mdiPlus,
+  mdiPlusBoxOutline,
+  mdiRenameOutline,
+  mdiShareVariantOutline,
+  mdiTrashCanOutline,
+  mdiExitToApp,
+  mdiUpload,
+  mdiCogOutline,
+} from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
-import { get } from 'svelte/store';
+import { goto } from '$app/navigation';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import AddUsersModal from '$lib/modals/AddUsersModal.svelte';
+import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
+import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
+import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { Route } from '$lib/route';
+import { userInteraction } from '$lib/stores/user.svelte';
+import { createAlbumAndRedirect } from '$lib/utils/album-utils';
+import { downloadArchive } from '$lib/utils/asset-utils';
+import { openFileUploadDialog } from '$lib/utils/file-uploader';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
+
+export const isAlbumOwner = (album: AlbumResponseDto) => album.albumUsers[0].user.id === authManager.user.id;
+export const isAlbumEditor = (album: AlbumResponseDto) =>
+  isAlbumOwner(album) ||
+  album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor;
 
 export const getAlbumsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -46,49 +61,87 @@ export const getAlbumsActions = ($t: MessageFormatter) => {
   return { Create };
 };
 
-export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto, viewMode: AlbumPageViewMode) => {
-  const isOwned = get(user).id === album.ownerId;
-
-  const Share: ActionItem = {
-    title: $t('share'),
-    type: $t('command'),
-    icon: mdiShareVariantOutline,
-    $if: () => isOwned,
-    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
-  };
+export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
+  const isOwned = isAlbumOwner(album);
+  const isEditor = isAlbumEditor(album);
 
   const AddUsers: ActionItem = {
-    title: $t('invite_people'),
-    type: $t('command'),
+    title: $t('add_user'),
     icon: mdiPlus,
     color: 'primary',
-    onAction: () => modalManager.show(AlbumAddUsersModal, { album }),
+    onAction: () =>
+      modalManager.show(AddUsersModal, {
+        excludedUserIds: album.albumUsers.map(({ user: { id } }) => id),
+        // TODO that explicit UserResponseDto[] shouldn't be necessary, but svelte's types seem to be messed up right now and AlbumAddUsersModal has a bad type
+        onAddUsers: (users: UserResponseDto[]) => handleAddUsersToAlbum(album, users),
+      }),
   };
 
   const CreateSharedLink: ActionItem = {
     title: $t('create_link'),
-    type: $t('command'),
     icon: mdiLink,
     color: 'primary',
     onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
   };
 
-  const Close: ActionItem = {
-    title: $t('go_back'),
-    type: $t('command'),
-    icon: mdiArrowLeft,
-    onAction: () => goto(Route.albums()),
-    $if: () => viewMode === AlbumPageViewMode.VIEW,
-    shortcuts: { key: 'Escape' },
+  const Delete: ActionItem = {
+    title: $t('delete_album'),
+    icon: mdiTrashCanOutline,
+    $if: () => isOwned,
+    onAction: () => handleDeleteAlbum(album),
   };
 
-  return { Share, AddUsers, CreateSharedLink, Close };
+  const Download: ActionItem = {
+    title: $t('download'),
+    icon: mdiDownload,
+    $if: () => album.assetCount > 0,
+    onAction: () => handleDownloadAlbum(album),
+  };
+
+  const Edit: ActionItem = {
+    title: $t('edit_album'),
+    icon: mdiRenameOutline,
+    $if: () => isEditor,
+    onAction: () => modalManager.show(AlbumEditModal, { album }),
+  };
+
+  const Leave: ActionItem = {
+    title: $t('leave_album'),
+    icon: mdiExitToApp,
+    $if: () => !isOwned,
+    onAction: () => handleLeaveAlbum(album),
+  };
+
+  const Options: ActionItem = {
+    title: $t('options'),
+    icon: mdiCogOutline,
+    $if: () => album.assetCount > 0,
+    onAction: () => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned }),
+  };
+
+  const Share: ActionItem = {
+    title: $t('share'),
+    icon: mdiShareVariantOutline,
+    $if: () => isOwned,
+    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
+  };
+
+  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Options, Share };
+};
+
+export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: AssetResponseDto) => {
+  const SetCover: ActionItem = {
+    title: $t('set_as_album_cover'),
+    icon: mdiImageOutline,
+    onAction: () => handleUpdateThumbnail(album, asset.id),
+  };
+
+  return { SetCover };
 };
 
 export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponseDto, assets: TimelineAsset[]) => {
   const AddAssets: ActionItem = {
     title: $t('add_assets'),
-    type: $t('command'),
     color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
@@ -103,7 +156,6 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
   const Upload: ActionItem = {
     title: $t('select_from_computer'),
     description: $t('album_upload_assets'),
-    type: $t('command'),
     icon: mdiUpload,
     onAction: () => void openFileUploadDialog({ albumId: album.id }),
   };
@@ -141,23 +193,24 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
 const notifyAddToAlbum = ($t: MessageFormatter, albumId: string, assetIds: string[], results: BulkIdResponseDto[]) => {
   const successCount = results.filter(({ success }) => success).length;
   const duplicateCount = results.filter(({ error }) => error === 'duplicate').length;
-  let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
-  if (successCount > 0) {
-    description = $t('assets_added_to_album_count', { values: { count: successCount } });
-  } else if (duplicateCount > 0) {
+  let description: string | undefined;
+
+  if (duplicateCount === assetIds.length) {
     description = $t('assets_were_part_of_album_count', { values: { count: duplicateCount } });
+  } else if (successCount === assetIds.length) {
+    description = $t('assets_added_to_album_count', { values: { count: successCount } });
+  } else if (successCount > 0) {
+    description = $t('assets_added_to_album_partial_count', { values: { successCount, totalCount: assetIds.length } });
   }
 
-  toastManager.custom(
-    {
-      component: ToastAction,
-      props: {
-        title: $t('info'),
-        color: 'primary',
-        description,
-        button: { text: $t('view_album'), color: 'primary', onClick: () => goto(Route.viewAlbum({ id: albumId })) },
-      },
-    },
+  const button = { label: $t('view_album'), onclick: () => goto(Route.viewAlbum({ id: albumId })) };
+  if (description) {
+    toastManager.primary({ description, button }, { timeout: 5000 });
+    return;
+  }
+
+  toastManager.danger(
+    { description: $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } }), button },
     { timeout: 5000 },
   );
 };
@@ -173,7 +226,7 @@ const notifyAddToAlbums = (
   } else if (results.error) {
     toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
   } else {
-    toastManager.success(
+    toastManager.primary(
       $t('assets_added_to_albums_count', {
         values: { albumTotal: albumIds.length, assetTotal: assetIds.length },
       }),
@@ -233,24 +286,55 @@ export const handleRemoveUserFromAlbum = async (album: AlbumResponseDto, albumUs
   }
 };
 
+export const handleLeaveAlbum = async (album: AlbumResponseDto) => {
+  const $t = await getFormatter();
+
+  const confirmed = await modalManager.showDialog({
+    title: $t('leave_album'),
+    prompt: $t('are_you_sure_to_do_this'),
+    confirmText: $t('leave'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await removeUserFromAlbum({ id: album.id, userId: 'me' });
+    userInteraction.recentAlbums = undefined;
+    eventManager.emit('AlbumDelete', album);
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_remove_album_users'));
+  }
+};
+
+const handleUpdateThumbnail = async (album: AlbumResponseDto, assetId: string) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAlbumInfo({
+      id: album.id,
+      updateAlbumDto: {
+        albumThumbnailAssetId: assetId,
+      },
+    });
+    eventManager.emit('AlbumUpdate', response);
+    toastManager.primary($t('album_cover_updated'));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_album_cover'));
+  }
+};
+
 export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbumDto) => {
   const $t = await getFormatter();
 
   try {
     const response = await updateAlbumInfo({ id, updateAlbumDto: dto });
     eventManager.emit('AlbumUpdate', response);
-    toastManager.custom({
-      component: ToastAction,
-      props: {
-        color: 'primary',
-        title: $t('success'),
-        description: $t('album_info_updated'),
-        button: {
-          text: $t('view_album'),
-          color: 'primary',
-          onClick: () => goto(Route.viewAlbum({ id })),
-        },
-      },
+    toastManager.primary({
+      description: $t('album_info_updated'),
+      button: { label: $t('view_album'), onclick: () => goto(Route.viewAlbum({ id })) },
     });
 
     return true;
@@ -279,28 +363,15 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
     await deleteAlbum({ id: album.id });
     eventManager.emit('AlbumDelete', album);
     if (notify) {
-      toastManager.success();
+      toastManager.primary();
     }
     return true;
   } catch (error) {
-    handleError(error, $t('errors.unable_to_delete_album'));
+    handleError(error, $t('errors.unable_to_delete_album'), { notify });
     return false;
   }
 };
 
 export const handleDownloadAlbum = async (album: AlbumResponseDto) => {
-  await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
-};
-
-export const handleConfirmAlbumDelete = async (album: AlbumResponseDto) => {
-  const $t = await getFormatter();
-  const confirmation =
-    album.albumName.length > 0
-      ? $t('album_delete_confirmation', { values: { album: album.albumName } })
-      : $t('unnamed_album_delete_confirmation');
-
-  const description = $t('album_delete_confirmation_description');
-  const prompt = `${confirmation} ${description}`;
-
-  return modalManager.showDialog({ prompt });
+  await downloadArchive(album.albumName, { albumId: album.id });
 };

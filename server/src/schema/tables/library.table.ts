@@ -1,16 +1,16 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('library')
 @UpdatedAtTrigger('library_updatedAt')

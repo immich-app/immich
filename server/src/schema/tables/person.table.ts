@@ -1,41 +1,63 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { person_delete_audit } from 'src/schema/functions';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Check,
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
-  PrimaryGeneratedColumn,
+  type Generated,
+  Index,
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
+import { person_delete_audit, person_delete_shares } from 'src/schema/functions.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('person')
+@Index({
+  name: 'idx_person_name_trigram',
+  using: 'gin',
+  expression: 'f_unaccent("name") gin_trgm_ops',
+})
 @UpdatedAtTrigger('person_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
   function: person_delete_audit,
   referencingOldTableAs: 'old',
-  when: 'pg_trigger_depth() = 0',
+  when: 'pg_trigger_depth() <= 1',
+})
+@AfterDeleteTrigger({
+  name: 'person_delete_shares',
+  scope: 'statement',
+  function: person_delete_shares,
+  referencingOldTableAs: 'deleted_rows',
 })
 @Check({ name: 'person_birthDate_chk', expression: `"birthDate" <= CURRENT_DATE` })
 export class PersonTable {
-  @PrimaryGeneratedColumn('uuid')
-  id!: Generated<string>;
+  @ForeignKeyColumn(() => UserTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    primary: true,
+    // [ownerId, personGroupId] is the PK constraint
+    index: false,
+  })
+  ownerId!: string;
+
+  @ForeignKeyColumn(() => PersonGroupTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    primary: true,
+  })
+  personGroupId!: string;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
-
-  @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  ownerId!: string;
 
   @Column({ default: '' })
   name!: Generated<string>;

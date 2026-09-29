@@ -50,6 +50,7 @@
     onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
+    // eslint-disable-next-line no-useless-assignment
     scrubberWidth = $bindable(),
   }: Props = $props();
 
@@ -91,20 +92,22 @@
     scrubberWidth = usingMobileDevice ? MOBILE_WIDTH : DESKTOP_WIDTH;
   });
 
-  const toScrollFromMonthGroupPercentage = (
+  const toScrollFromTimelineMonthPercentage = (
     scrubberMonth: ViewportTopMonth,
     scrubberMonthPercent: number,
     scrubOverallPercent: number,
   ) => {
     if (scrubberMonth === 'lead-in') {
       return relativeTopOffset * scrubberMonthPercent;
-    } else if (scrubberMonth === 'lead-out') {
+    }
+    if (scrubberMonth === 'lead-out') {
       let offset = relativeTopOffset;
       for (const segment of segments) {
         offset += segment.height;
       }
       return offset + relativeBottomOffset * scrubberMonthPercent;
-    } else if (scrubberMonth) {
+    }
+    if (scrubberMonth) {
       let offset = relativeTopOffset;
       let match = false;
       for (const segment of segments) {
@@ -119,12 +122,11 @@
         offset += scrubberMonthPercent * relativeBottomOffset;
       }
       return offset;
-    } else {
-      return scrubOverallPercent * (height - (PADDING_TOP + PADDING_BOTTOM));
     }
+    return scrubOverallPercent * (height - (PADDING_TOP + PADDING_BOTTOM));
   };
   const scrollY = $derived(
-    toScrollFromMonthGroupPercentage(viewportTopMonth, viewportTopMonthScrollPercent, timelineScrollPercent),
+    toScrollFromTimelineMonthPercentage(viewportTopMonth, viewportTopMonthScrollPercent, timelineScrollPercent),
   );
   const timelineFullHeight = $derived(timelineManager.scrubberTimelineHeight);
   const relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
@@ -228,14 +230,14 @@
     if (scrollY !== undefined) {
       if (scrollY < relativeTopOffset) {
         return segments.at(0)?.dateFormatted;
-      } else {
-        let offset = relativeTopOffset;
-        for (const segment of segments) {
-          offset += segment.height;
-        }
-        if (scrollY > offset) {
-          return segments.at(-1)?.dateFormatted;
-        }
+      }
+
+      let offset = relativeTopOffset;
+      for (const segment of segments) {
+        offset += segment.height;
+      }
+      if (scrollY > offset) {
+        return segments.at(-1)?.dateFormatted;
       }
     }
     return scrollSegment?.dateFormatted || '';
@@ -280,12 +282,12 @@
       const boundingClientRect = bestElement.boundingClientRect;
       const sy = boundingClientRect.y;
       const relativeY = y - sy;
-      const monthGroupPercentY = relativeY / boundingClientRect.height;
+      const timelineMonthPercentY = relativeY / boundingClientRect.height;
       return {
         isOnPaddingTop: false,
         isOnPaddingBottom: false,
         segment,
-        monthGroupPercentY,
+        timelineMonthPercentY,
       };
     }
 
@@ -308,7 +310,7 @@
       isOnPaddingTop,
       isOnPaddingBottom,
       segment: undefined,
-      monthGroupPercentY: 0,
+      timelineMonthPercentY: 0,
     };
   };
 
@@ -327,7 +329,7 @@
     const upper = rect?.height - (PADDING_TOP + PADDING_BOTTOM);
     hoverY = clamp(clientY - rect?.top - PADDING_TOP, lower, upper);
     const x = rect!.left + rect!.width / 2;
-    const { segment, monthGroupPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
+    const { segment, timelineMonthPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
     activeSegment = segment;
     isHoverOnPaddingTop = isOnPaddingTop;
     isHoverOnPaddingBottom = isOnPaddingBottom;
@@ -335,9 +337,9 @@
     const scrubData = {
       scrubberMonth: segmentDate,
       overallScrollPercent: toTimelineY(hoverY),
-      scrubberMonthScrollPercent: monthGroupPercentY,
+      scrubberMonthScrollPercent: timelineMonthPercentY,
     };
-    if (wasDragging === false && isDragging) {
+    if (!wasDragging && isDragging) {
       void startScrub?.(scrubData);
       void onScrub?.(scrubData);
     }
@@ -507,7 +509,7 @@
   aria-valuemax={toScrollY(1)}
   aria-valuemin={toScrollY(0)}
   data-id="scrubber"
-  class="absolute end-0 z-1 select-none hover:cursor-row-resize"
+  class="absolute inset-e-0 z-1 select-none hover:cursor-row-resize"
   style:padding-top={PADDING_TOP + 'px'}
   style:padding-bottom={PADDING_BOTTOM + 'px'}
   style:width
@@ -525,7 +527,7 @@
       class={[
         { 'border-b-2': isDragging },
         { 'rounded-bl-md': !isDragging },
-        'bg-light truncate opacity-85 pointer-events-none absolute end-0 min-w-20 max-w-64 w-fit rounded-ss-md border-b-2 border-primary py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] z-1',
+        'pointer-events-none absolute inset-e-0 z-1 w-fit max-w-64 min-w-20 truncate rounded-ss-md border-b-2 border-primary bg-light p-1 text-sm font-medium opacity-85 shadow-[0_0_8px_rgba(0,0,0,0.25)]',
       ]}
       style:top="{hoverY + 2}px"
     >
@@ -535,7 +537,7 @@
   {#if usingMobileDevice && ((timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging)}
     <div
       id="time-label"
-      class="rounded-s-full w-8 ps-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
+      class="w-8 rounded-s-full bg-immich-primary ps-2 text-white select-none hover:cursor-pointer dark:bg-gray-600"
       style:top="{PADDING_TOP + (scrollY - 50 / 2)}px"
       style:height="50px"
       style:right="0"
@@ -543,15 +545,15 @@
       in:fade={{ duration: 200 }}
       out:fade={{ duration: 200 }}
     >
-      <Icon icon={mdiPlay} size="20" class="-rotate-90 relative top-2.25 -end-0.5" />
-      <Icon icon={mdiPlay} size="20" class="rotate-90 relative top-px -end-0.5" />
+      <Icon icon={mdiPlay} size="20" class="relative -inset-e-0.5 top-2.25 -rotate-90" />
+      <Icon icon={mdiPlay} size="20" class="relative -inset-e-0.5 top-px rotate-90" />
       {#if (timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
           style:bottom={50 / 2 - 30 / 2 + 'px'}
           style:right="36px"
           style:width="fit-content"
-          class="truncate pointer-events-none absolute text-sm rounded-full w-8 py-2 px-4 text-white bg-immich-primary/90 dark:bg-gray-500 hover:cursor-pointer select-none font-semibold"
+          class="pointer-events-none absolute w-8 truncate rounded-full bg-immich-primary/90 px-4 py-2 text-sm font-semibold text-white select-none hover:cursor-pointer dark:bg-gray-500"
         >
           {scrollHoverLabel}
         </p>
@@ -560,11 +562,11 @@
   {/if}
   <!-- Scroll Position Indicator Line -->
   {#if !usingMobileDevice && !isDragging}
-    <div class="absolute end-0 h-0.5 w-10 bg-primary" style:top="{scrollY + PADDING_TOP - 2}px">
+    <div class="absolute inset-e-0 h-0.5 w-10 bg-primary" style:top="{scrollY + PADDING_TOP - 2}px">
       {#if timelineManager.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
-          class="truncate pointer-events-none absolute end-0 bottom-0 min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-subtle/90 z-1 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg"
+          class="pointer-events-none absolute inset-e-0 bottom-0 z-1 w-fit max-w-64 min-w-20 truncate rounded-tl-md border-b-2 border-immich-primary bg-subtle/90 p-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg"
         >
           {scrollHoverLabel}
         </p>
@@ -588,12 +590,12 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute end-5 text-[13px] dark:text-immich-dark-fg font-mono bottom-0">
+          <div class="absolute inset-e-5 bottom-0 font-mono text-[13px] dark:text-immich-dark-fg">
             {segment.year}
           </div>
         {/if}
         {#if segment.hasDot}
-          <div class="absolute end-3 bottom-0 h-1 w-1 rounded-full bg-gray-300"></div>
+          <div class="absolute inset-e-3 bottom-0 size-1 rounded-full bg-gray-300"></div>
         {/if}
       {/if}
     </div>

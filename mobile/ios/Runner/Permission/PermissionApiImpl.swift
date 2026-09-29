@@ -1,0 +1,19 @@
+import Foundation
+
+class PermissionApiImpl: PermissionApi {
+  func isIgnoringBatteryOptimizations() throws -> PermissionStatus {
+    return PermissionStatus.granted;
+  }
+  
+  func hasManageMediaPermission() throws -> Bool {
+    return false
+  }
+
+  func requestManageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void) {
+    completion(.success(false))
+  }
+
+  func manageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void) {
+    completion(.success(false))
+  }
+}

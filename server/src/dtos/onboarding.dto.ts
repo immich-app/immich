@@ -1,8 +1,10 @@
-import { ValidateBoolean } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
-export class OnboardingDto {
-  @ValidateBoolean({ description: 'Is user onboarded' })
-  isOnboarded!: boolean;
-}
+const OnboardingSchema = z.object({
+  isOnboarded: z.boolean().describe('Is user onboarded'),
+});
+
+export class OnboardingDto extends createZodDto(OnboardingSchema) {}
 
 export class OnboardingResponseDto extends OnboardingDto {}

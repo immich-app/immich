@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html class="dark">
   <head>
     <!-- (used for SSR) -->
     <!-- metadata:tags -->
@@ -15,12 +15,35 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
     <link rel="preload" as="font" type="font/ttf" href="%app.font%" crossorigin="anonymous" />
     <link rel="preload" as="font" type="font/ttf" href="%app.monofont%" crossorigin="anonymous" />
+
+    <script>
+      try {
+        const preference = JSON.parse(localStorage.getItem('immich-ui-theme'));
+        const prefersDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (preference === 'light' || (preference !== 'dark' && !prefersDark)) {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        }
+      } catch {
+        // noop
+      }
+    </script>
+
     %sveltekit.head%
+
     <style>
       /* prevent FOUC */
       html {
         height: 100%;
         width: 100%;
+      }
+
+      html.dark {
+        background-color: black;
+      }
+
+      html.light {
+        background-color: white;
       }
 
       body,
@@ -57,53 +80,11 @@
           0s linear 0.3s forwards delayedVisibility,
           loadspin 8s linear infinite;
       }
-
-      .bg-immich-bg {
-        background-color: white;
-      }
-
-      .dark .dark\:bg-immich-dark-bg {
-        background-color: black;
-      }
     </style>
-    <script>
-      /**
-       * Prevent FOUC on page load.
-       */
-      const colorThemeKeyName = 'color-theme';
-
-      let theme = localStorage.getItem(colorThemeKeyName);
-      if (!theme) {
-        theme = { value: 'light', system: true };
-      } else if (theme === 'dark' || theme === 'light') {
-        theme = { value: theme, system: false };
-        localStorage.setItem(colorThemeKeyName, JSON.stringify(theme));
-      } else {
-        theme = JSON.parse(theme);
-      }
-
-      let themeValue = theme.value;
-      if (theme.system) {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          themeValue = 'dark';
-        } else {
-          themeValue = 'light';
-        }
-      }
-
-      if (themeValue === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
-    </script>
-
     <link rel="stylesheet" href="/custom.css" />
   </head>
 
-  <noscript
-    class="absolute z-1000 flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
-  >
+  <noscript style="position: absolute; top: 0px; z-index: 1000; color: black; background-color: white">
     To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
   </noscript>
 

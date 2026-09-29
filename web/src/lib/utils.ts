@@ -1,13 +1,7 @@
-import { defaultLang, langs, locales } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
-import { isWebCompatibleImage } from '$lib/utils/asset-utils';
-import { handleError } from '$lib/utils/handle-error';
 import {
   AssetMediaSize,
   AssetTypeEnum,
   MemoryType,
-  QueueName,
   finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
@@ -26,8 +20,15 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
+import { DateTime } from 'luxon';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
+import { defaultLang, locales } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { alwaysLoadOriginalFile, lang, locale } from '$lib/stores/preferences.store';
+import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+import { handleError } from '$lib/utils/handle-error';
+import { convertBCP47, langs } from '$lib/utils/i18n';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -46,7 +47,7 @@ interface DateFormatter {
 export const initLanguage = async () => {
   const preferenceLang = get(lang);
   for (const { code, loader } of langs) {
-    register(code, loader);
+    register(convertBCP47(code), loader);
   }
 
   await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
@@ -79,14 +80,36 @@ export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+let unsubscribeId = 0;
+const uploads: Record<number, () => void> = {};
+
+const trackUpload = (unsubscribe: () => void) => {
+  const id = unsubscribeId++;
+  uploads[id] = unsubscribe;
+  return () => {
+    delete uploads[id];
+  };
+};
+
+export const cancelUploadRequests = () => {
+  for (const unsubscribe of Object.values(uploads)) {
+    unsubscribe();
+  }
+};
+
 export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
   const { onUploadProgress: onProgress, data, url } = options;
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const unsubscribe = trackUpload(() => xhr.abort());
 
-    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('error', (error) => {
+      unsubscribe();
+      reject(error);
+    });
+
     xhr.addEventListener('load', () => {
+      unsubscribe();
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
@@ -144,37 +167,10 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
-export const getQueueName = derived(t, ($t) => {
-  return (name: QueueName) => {
-    const names: Record<QueueName, string> = {
-      [QueueName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
-      [QueueName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
-      [QueueName.Sidecar]: $t('admin.sidecar_job'),
-      [QueueName.SmartSearch]: $t('admin.machine_learning_smart_search'),
-      [QueueName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
-      [QueueName.FaceDetection]: $t('admin.face_detection'),
-      [QueueName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
-      [QueueName.VideoConversion]: $t('admin.video_conversion_job'),
-      [QueueName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
-      [QueueName.Migration]: $t('admin.migration_job'),
-      [QueueName.BackgroundTask]: $t('admin.background_task_job'),
-      [QueueName.Search]: $t('search'),
-      [QueueName.Library]: $t('external_libraries'),
-      [QueueName.Notifications]: $t('notifications'),
-      [QueueName.BackupDatabase]: $t('admin.backup_database'),
-      [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
-      [QueueName.Workflow]: $t('workflows'),
-      [QueueName.Editor]: $t('editor'),
-    };
-
-    return names[name];
-  };
-});
-
 let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
-export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
+export const setSharedLink = (sharedLink: typeof _sharedLink) => (_sharedLink = sharedLink);
+export const getSharedLink = (): typeof _sharedLink => _sharedLink;
 
 const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const searchParameters = new URLSearchParams();
@@ -214,13 +210,23 @@ export const getAssetUrl = ({
   return getAssetMediaUrl({ id, size, cacheKey });
 };
 
+export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkResponseDto) {
+  return {
+    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, size: AssetMediaSize.Thumbnail }),
+    preview: getAssetUrl({ asset, sharedLink })!,
+    original: getAssetUrl({ asset, sharedLink, forceOriginal: true })!,
+  };
+}
+
 const forceUseOriginal = (asset: AssetResponseDto) => {
-  return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
+  return asset.type === AssetTypeEnum.Image && asset.duration;
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return isWebCompatibleImage(asset) ? AssetMediaSize.Original : AssetMediaSize.Fullsize;
+    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
+      ? AssetMediaSize.Original
+      : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };
@@ -237,21 +243,88 @@ export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
   return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
 
+export const getAssetHlsUrl = (id: string) => {
+  return createUrl(`/assets/${id}/video/stream/main.m3u8`, authManager.params);
+};
+
+export const getAssetHlsSessionUrl = (id: string, sessionId: string) => {
+  return createUrl(`/assets/${id}/video/stream/${sessionId}`, authManager.params);
+};
+
 export const getProfileImageUrl = (user: UserResponseDto) =>
   createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });
 
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
-export const copyToClipboard = async (secret: string) => {
+export const copyToClipboard = async (secret: string | unknown) => {
   const $t = get(t);
 
   try {
-    await navigator.clipboard.writeText(secret);
+    const value = typeof secret === 'string' ? secret : JSON.stringify(secret, jsonReplacer, 2);
+    await navigator.clipboard.writeText(value);
     toastManager.info($t('copied_to_clipboard'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
+};
+
+// https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify/43636793#43636793
+const jsonReplacer = (_key: string, value: unknown) =>
+  value instanceof Object && !Array.isArray(value)
+    ? Object.keys(value)
+        .sort()
+        // eslint-disable-next-line unicorn/no-array-reduce
+        .reduce((sorted: { [key: string]: unknown }, key) => {
+          sorted[key] = (value as { [key: string]: unknown })[key];
+          return sorted;
+        }, {})
+    : value;
+
+export const downloadUrl = (url: string, filename: string) => {
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+};
+
+export const downloadUrlPost = (url: string, assetIds: string[], archiveName: string) => {
+  const form = document.createElement('form');
+  form.method = 'post';
+  form.action = url;
+  form.target = '_blank';
+
+  function mkInput(name: string, value: string) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.append(input);
+  }
+
+  mkInput('assetIds', assetIds.join(','));
+  mkInput('archiveName', archiveName);
+  mkInput('edited', 'true');
+
+  document.body.append(form);
+  form.submit();
+  form.remove();
+};
+
+export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
+
+export const downloadJson = (data: unknown, filename: string) => {
+  const blob = new Blob([JSON.stringify(data, jsonReplacer, 2)], { type: 'application/json' });
+  const downloadKey = filename;
+  downloadBlob(blob, downloadKey);
+
+  const $t = get(t);
+  toastManager.info($t('downloading_filename', { values: { filename } }));
 };
 
 export const oauth = {
@@ -275,9 +348,9 @@ export const oauth = {
   authorize: async (location: Location) => {
     const $t = get(t);
     try {
-      const redirectUri = location.href.split('?')[0];
+      const redirectUri = location.href.split('?', 1)[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      globalThis.location.href = url;
+      globalThis.location.assign(url);
       return true;
     } catch (error) {
       handleError(error, $t('errors.unable_to_login_with_oauth'));
@@ -315,9 +388,17 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 
 export const memoryLaneTitle = derived(t, ($t) => {
   return (memory: MemoryResponseDto) => {
-    const now = new Date();
     if (memory.type === MemoryType.OnThisDay) {
-      return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
+      const now = DateTime.now();
+      const memoryDate = DateTime.fromISO(memory.memoryAt, { zone: 'utc' });
+
+      return memoryDate.day === now.day && memoryDate.month === now.month
+        ? $t('years_ago', { values: { years: now.year - memory.data.year } })
+        : memoryDate.toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
+    }
+
+    if (memory.type === MemoryType.Birthday && memory.data.personName) {
+      return $t('birthday_memory_title', { values: { name: memory.data.personName } });
     }
 
     return $t('unknown');
@@ -368,26 +449,8 @@ export function createDateFormatter(localeCode: string | undefined): DateFormatt
   };
 }
 
-export const getReleaseType = (
-  current: ServerVersionResponseDto,
-  newVersion: ServerVersionResponseDto,
-): 'major' | 'minor' | 'patch' | 'none' => {
-  if (current.major !== newVersion.major) {
-    return 'major';
-  }
-
-  if (current.minor !== newVersion.minor) {
-    return 'minor';
-  }
-
-  if (current.patch !== newVersion.patch) {
-    return 'patch';
-  }
-
-  return 'none';
-};
-
-export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+export const semverToName = ({ major, minor, patch, prerelease }: ServerVersionResponseDto) =>
+  `v${major}.${minor}.${patch}${prerelease === null ? '' : `-rc.${prerelease}`}`;
 
 export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));
@@ -397,7 +460,8 @@ export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
 export const transformToTitleCase = (text: string) => {
   if (text.length === 0) {
     return text;
-  } else if (text.length === 1) {
+  }
+  if (text.length === 1) {
     return text.charAt(0).toUpperCase();
   }
 

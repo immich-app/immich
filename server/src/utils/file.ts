@@ -1,23 +1,27 @@
-import { HttpException, StreamableFile } from '@nestjs/common';
+import { NotFoundException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import { promisify } from 'node:util';
-import { CacheControl } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { ImmichReadStream } from 'src/repositories/storage.repository';
-import { isConnectionAborted } from 'src/utils/misc';
+import { CacheControl } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ImmichReadStream } from 'src/repositories/storage.repository.js';
+import { onRouteError } from 'src/utils/logger.js';
 
 export function getFileNameWithoutExtension(path: string): string {
-  return basename(path, extname(path));
+  return basename(path, getFilenameExtension(path));
 }
 
-export function getFilenameExtension(path: string): string {
-  return extname(path);
+export function getFilenameExtension(path: string) {
+  const extension = extname(path);
+  if (!extension && path.startsWith('.') && !path.includes('.', 1)) {
+    return path;
+  }
+  return extension;
 }
 
 export function getLivePhotoMotionFilename(stillName: string, motionName: string) {
-  return getFileNameWithoutExtension(stillName) + extname(motionName);
+  return getFileNameWithoutExtension(stillName) + getFilenameExtension(motionName);
 }
 
 export class ImmichFileResponse {
@@ -52,10 +56,13 @@ export const sendFile = async (
 
   try {
     const file = await handler();
+
+    await access(file.path, constants.R_OK);
+
     const cacheControlHeader = cacheControlHeaders[file.cacheControl];
     if (cacheControlHeader) {
       // set the header to Cache-Control
-      res.set('Cache-Control', cacheControlHeader);
+      res.header('Cache-Control', cacheControlHeader);
     }
 
     res.header('Content-Type', file.contentType);
@@ -63,25 +70,15 @@ export const sendFile = async (
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
     }
 
-    await access(file.path, constants.R_OK);
-
     return await _sendFile(file.path, { dotfiles: 'allow' });
   } catch (error: Error | any) {
-    // ignore client-closed connection
-    if (isConnectionAborted(error) || res.headersSent) {
-      return;
+    const { canWrite } = onRouteError(undefined, res, error, logger);
+    if (canWrite) {
+      next(new NotFoundException());
     }
-
-    // log non-http errors
-    if (error instanceof HttpException === false) {
-      logger.error(`Unable to send file: ${error}`, error.stack);
-    }
-
-    res.header('Cache-Control', 'none');
-    next(error);
   }
 };
 
-export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => {
-  return new StreamableFile(stream, { type, length });
+export const asStreamableFile = ({ stream, type, disposition, length }: ImmichReadStream) => {
+  return new StreamableFile(stream, { type, disposition, length });
 };

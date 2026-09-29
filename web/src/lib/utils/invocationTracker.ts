@@ -30,10 +30,7 @@ export class InvocationTracker {
        * @throws {Error} If the invocation is no longer valid
        */
       isStillValid: () => {
-        if (invocation !== this.invocationsStarted) {
-          return false;
-        }
-        return true;
+        return invocation === this.invocationsStarted;
       },
 
       /**

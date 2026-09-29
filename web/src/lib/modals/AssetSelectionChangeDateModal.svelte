@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/combobox.svelte';
+  import Combobox from '$lib/components/shared-components/Combobox.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import DurationInput from '$lib/elements/DurationInput.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '$lib/modals/timezone-utils';
-  import { user } from '$lib/stores/user.store';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
@@ -31,7 +31,7 @@
   let selectedOption = $derived(getPreferredTimeZone(initialDate, initialTimeZone, timezones, lastSelectedTimezone));
 
   const onSubmit = async () => {
-    const ids = getOwnedAssetsWithWarning(assets, $user);
+    const ids = getOwnedAssetsWithWarning(assets, authManager.user);
     try {
       if (showRelative && (selectedDuration || selectedOption)) {
         await updateAssets({
@@ -76,11 +76,11 @@
     <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} class="mb-2" />
   </Field>
   {#if showRelative}
-    <Label for="relativedatetime" class="block mb-1">{$t('offset')}</Label>
-    <DurationInput class="immich-form-input w-full mb-2" id="relativedatetime" bind:value={selectedDuration} />
+    <Label for="relativedatetime" class="mb-1 block">{$t('offset')}</Label>
+    <DurationInput class="mb-2 immich-form-input w-full" id="relativedatetime" bind:value={selectedDuration} />
   {:else}
-    <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
-    <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
+    <Label for="datetime" class="mb-1 block">{$t('date_and_time')}</Label>
+    <DateInput class="mb-2 immich-form-input w-full" id="datetime" type="datetime-local" bind:value={selectedDate} />
   {/if}
   <div class="w-full">
     <Combobox

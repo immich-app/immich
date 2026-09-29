@@ -29,7 +29,6 @@ order by
 -- SyncRepository.album.getUpserts
 select distinct
   on ("album"."id", "album"."updateId") "album"."id",
-  "album"."ownerId",
   "album"."albumName" as "name",
   "album"."description",
   "album"."createdAt",
@@ -44,12 +43,18 @@ from
 where
   "album"."updateId" < $1
   and "album"."updateId" > $2
-  and (
-    "album"."ownerId" = $3
-    or "album_users"."userId" = $4
-  )
+  and "album_users"."userId" = $3
 order by
   "album"."updateId" asc
+
+-- SyncRepository.album.getAlbumUsers
+select
+  "userId",
+  "role"
+from
+  "album_user"
+where
+  "albumId" = $1
 
 -- SyncRepository.albumAsset.getBackfill
 select
@@ -60,10 +65,10 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -72,15 +77,19 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  case
+    when "asset"."ownerId" = $1 then "asset"."isFavorite"
+    else $2
+  end as "isFavorite",
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
 where
-  "album_asset"."updateId" < $1
-  and "album_asset"."updateId" <= $2
-  and "album_asset"."updateId" >= $3
-  and "album_asset"."albumId" = $4
+  "album_asset"."updateId" < $3
+  and "album_asset"."updateId" <= $4
+  and "album_asset"."updateId" > $5
+  and "album_asset"."albumId" = $6
 order by
   "album_asset"."updateId" asc
 
@@ -93,10 +102,10 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -105,20 +114,20 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  case
+    when "asset"."ownerId" = $1 then "asset"."isFavorite"
+    else $2
+  end as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
   inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
-  inner join "album" on "album"."id" = "album_asset"."albumId"
-  left join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
+  inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
-  "asset"."updateId" < $1
-  and "asset"."updateId" > $2
-  and "album_asset"."updateId" <= $3
-  and (
-    "album"."ownerId" = $4
-    or "album_user"."userId" = $5
-  )
+  "asset"."updateId" < $3
+  and "asset"."updateId" > $4
+  and "album_asset"."updateId" <= $5
+  and "album_user"."userId" = $6
 order by
   "asset"."updateId" asc
 
@@ -132,10 +141,10 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -143,19 +152,19 @@ select
   "asset"."libraryId",
   "asset"."width",
   "asset"."height",
-  "asset"."isEdited"
+  "asset"."isEdited",
+  case
+    when "asset"."ownerId" = $1 then "asset"."isFavorite"
+    else $2
+  end as "isFavorite"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
-  inner join "album" on "album"."id" = "album_asset"."albumId"
-  left join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
+  inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
-  "album_asset"."updateId" < $1
-  and "album_asset"."updateId" > $2
-  and (
-    "album"."ownerId" = $3
-    or "album_user"."userId" = $4
-  )
+  "album_asset"."updateId" < $3
+  and "album_asset"."updateId" > $4
+  and "album_user"."userId" = $5
 order by
   "album_asset"."updateId" asc
 
@@ -193,7 +202,7 @@ from
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" <= $2
-  and "album_asset"."updateId" >= $3
+  and "album_asset"."updateId" > $3
   and "album_asset"."albumId" = $4
 order by
   "album_asset"."updateId" asc
@@ -229,16 +238,12 @@ select
 from
   "asset_exif" as "asset_exif"
   inner join "album_asset" on "album_asset"."assetId" = "asset_exif"."assetId"
-  inner join "album" on "album"."id" = "album_asset"."albumId"
-  left join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
+  inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
   "asset_exif"."updateId" < $1
   and "asset_exif"."updateId" > $2
   and "album_asset"."updateId" <= $3
-  and (
-    "album"."ownerId" = $4
-    or "album_user"."userId" = $5
-  )
+  and "album_user"."userId" = $4
 order by
   "asset_exif"."updateId" asc
 
@@ -278,10 +283,7 @@ from
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" > $2
-  and (
-    "album"."ownerId" = $3
-    or "album_user"."userId" = $4
-  )
+  and "album_user"."userId" = $3
 order by
   "album_asset"."updateId" asc
 
@@ -295,7 +297,7 @@ from
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" <= $2
-  and "album_asset"."updateId" >= $3
+  and "album_asset"."updateId" > $3
   and "album_asset"."albumId" = $4
 order by
   "album_asset"."updateId" asc
@@ -312,20 +314,11 @@ where
   and "album_asset_audit"."id" > $2
   and "albumId" in (
     select
-      "id"
+      "album_user"."albumId" as "id"
     from
-      "album"
+      "album_user"
     where
-      "ownerId" = $3
-    union
-    (
-      select
-        "album_user"."albumId" as "id"
-      from
-        "album_user"
-      where
-        "album_user"."userId" = $4
-    )
+      "album_user"."userId" = $3
   )
 order by
   "album_asset_audit"."id" asc
@@ -337,15 +330,11 @@ select
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
-  inner join "album" on "album"."id" = "album_asset"."albumId"
-  left join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
+  inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" > $2
-  and (
-    "album"."ownerId" = $3
-    or "album_user"."userId" = $4
-  )
+  and "album_user"."userId" = $3
 order by
   "album_asset"."updateId" asc
 
@@ -360,7 +349,7 @@ from
 where
   "album_user"."updateId" < $1
   and "album_user"."updateId" <= $2
-  and "album_user"."updateId" >= $3
+  and "album_user"."updateId" > $3
   and "albumId" = $4
 order by
   "album_user"."updateId" asc
@@ -377,20 +366,11 @@ where
   and "album_user_audit"."id" > $2
   and "albumId" in (
     select
-      "id"
+      "album_user"."albumId" as "id"
     from
-      "album"
+      "album_user"
     where
-      "ownerId" = $3
-    union
-    (
-      select
-        "album_user"."albumId" as "id"
-      from
-        "album_user"
-      where
-        "album_user"."userId" = $4
-    )
+      "album_user"."userId" = $3
   )
 order by
   "album_user_audit"."id" asc
@@ -408,20 +388,11 @@ where
   and "album_user"."updateId" > $2
   and "album_user"."albumId" in (
     select
-      "id"
+      "albumUsers"."albumId" as "id"
     from
-      "album"
+      "album_user" as "albumUsers"
     where
-      "ownerId" = $3
-    union
-    (
-      select
-        "albumUsers"."albumId" as "id"
-      from
-        "album_user" as "albumUsers"
-      where
-        "albumUsers"."userId" = $4
-    )
+      "albumUsers"."userId" = $3
   )
 order by
   "album_user"."updateId" asc
@@ -448,6 +419,7 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
@@ -514,7 +486,39 @@ where
 order by
   "asset_exif"."updateId" asc
 
--- SyncRepository.assetFace.getDeletes
+-- SyncRepository.assetEdit.getDeletes
+select
+  "asset_edit_audit"."id",
+  "editId"
+from
+  "asset_edit_audit" as "asset_edit_audit"
+  inner join "asset" on "asset"."id" = "asset_edit_audit"."assetId"
+where
+  "asset_edit_audit"."id" < $1
+  and "asset_edit_audit"."id" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_edit_audit"."id" asc
+
+-- SyncRepository.assetEdit.getUpserts
+select
+  "asset_edit"."id",
+  "asset_edit"."assetId",
+  "asset_edit"."sequence",
+  "asset_edit"."action",
+  "asset_edit"."parameters",
+  "asset_edit"."updateId"
+from
+  "asset_edit" as "asset_edit"
+  inner join "asset" on "asset"."id" = "asset_edit"."assetId"
+where
+  "asset_edit"."updateId" < $1
+  and "asset_edit"."updateId" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_edit"."updateId" asc
+
+-- SyncRepository.assetFace.getDeletesV2
 select
   "asset_face_audit"."id",
   "assetFaceId"
@@ -528,18 +532,42 @@ where
 order by
   "asset_face_audit"."id" asc
 
--- SyncRepository.assetFace.getUpserts
+-- SyncRepository.assetFace.getDeletesV3
+select
+  "asset_face_audit"."id",
+  "assetFaceId"
+from
+  "asset_face_audit" as "asset_face_audit"
+  inner join "asset" on "asset"."id" = "asset_face_audit"."assetId"
+  inner join "user" as "owner" on "owner"."id" = "asset"."ownerId"
+where
+  "asset_face_audit"."id" < $1
+  and "asset_face_audit"."id" > $2
+  and "owner"."clusterGroupId" = (
+    select
+      "user"."clusterGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $3
+  )
+order by
+  "asset_face_audit"."id" asc
+
+-- SyncRepository.assetFace.getUpsertsV2
 select
   "asset_face"."id",
-  "assetId",
-  "personId",
-  "imageWidth",
-  "imageHeight",
-  "boundingBoxX1",
-  "boundingBoxY1",
-  "boundingBoxX2",
-  "boundingBoxY2",
-  "sourceType",
+  "asset_face"."assetId",
+  "asset_face"."personGroupId" as "personId",
+  "asset_face"."imageWidth",
+  "asset_face"."imageHeight",
+  "asset_face"."boundingBoxX1",
+  "asset_face"."boundingBoxY1",
+  "asset_face"."boundingBoxX2",
+  "asset_face"."boundingBoxY2",
+  "asset_face"."sourceType",
+  "asset_face"."isVisible",
+  "asset_face"."deletedAt",
   "asset_face"."updateId"
 from
   "asset_face" as "asset_face"
@@ -548,7 +576,39 @@ where
   "asset_face"."updateId" < $1
   and "asset_face"."updateId" > $2
   and "asset"."ownerId" = $3
-  and "asset_face"."isVisible" = $4
+order by
+  "asset_face"."updateId" asc
+
+-- SyncRepository.assetFace.getUpsertsV3
+select
+  "asset_face"."id",
+  "asset_face"."assetId",
+  "asset_face"."personGroupId" as "personId",
+  "asset_face"."imageWidth",
+  "asset_face"."imageHeight",
+  "asset_face"."boundingBoxX1",
+  "asset_face"."boundingBoxY1",
+  "asset_face"."boundingBoxX2",
+  "asset_face"."boundingBoxY2",
+  "asset_face"."sourceType",
+  "asset_face"."isVisible",
+  "asset_face"."deletedAt",
+  "asset_face"."updateId"
+from
+  "asset_face" as "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  inner join "user" as "owner" on "owner"."id" = "asset"."ownerId"
+where
+  "asset_face"."updateId" < $1
+  and "asset_face"."updateId" > $2
+  and "owner"."clusterGroupId" = (
+    select
+      "user"."clusterGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $3
+  )
 order by
   "asset_face"."updateId" asc
 
@@ -582,6 +642,48 @@ where
   and "asset"."ownerId" = $3
 order by
   "asset_metadata"."updateId" asc
+
+-- SyncRepository.assetOcr.getDeletes
+select
+  "asset_ocr_audit"."id",
+  "asset_ocr_audit"."assetId",
+  "asset_ocr_audit"."deletedAt"
+from
+  "asset_ocr_audit" as "asset_ocr_audit"
+  left join "asset" on "asset"."id" = "asset_ocr_audit"."assetId"
+where
+  "asset_ocr_audit"."id" < $1
+  and "asset_ocr_audit"."id" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_ocr_audit"."id" asc
+
+-- SyncRepository.assetOcr.getUpserts
+select
+  "asset_ocr"."id",
+  "asset_ocr"."assetId",
+  "asset_ocr"."x1",
+  "asset_ocr"."y1",
+  "asset_ocr"."x2",
+  "asset_ocr"."y2",
+  "asset_ocr"."x3",
+  "asset_ocr"."y3",
+  "asset_ocr"."x4",
+  "asset_ocr"."y4",
+  "asset_ocr"."text",
+  "asset_ocr"."boxScore",
+  "asset_ocr"."textScore",
+  "asset_ocr"."updateId",
+  "asset_ocr"."isVisible"
+from
+  "asset_ocr" as "asset_ocr"
+  inner join "asset" on "asset"."id" = "asset_ocr"."assetId"
+where
+  "asset_ocr"."updateId" < $1
+  and "asset_ocr"."updateId" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_ocr"."updateId" asc
 
 -- SyncRepository.authUser.getUpserts
 select
@@ -745,9 +847,9 @@ select
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
   "asset"."localDateTime",
+  "asset"."createdAt",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -756,14 +858,15 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  $1 as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
 where
-  "asset"."updateId" < $1
-  and "asset"."updateId" <= $2
-  and "asset"."updateId" >= $3
-  and "ownerId" = $4
+  "asset"."updateId" < $2
+  and "asset"."updateId" <= $3
+  and "asset"."updateId" > $4
+  and "ownerId" = $5
 order by
   "asset"."updateId" asc
 
@@ -797,9 +900,9 @@ select
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
   "asset"."localDateTime",
+  "asset"."createdAt",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -808,19 +911,20 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  $1 as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
 where
-  "asset"."updateId" < $1
-  and "asset"."updateId" > $2
+  "asset"."updateId" < $2
+  and "asset"."updateId" > $3
   and "ownerId" in (
     select
       "sharedById"
     from
       "partner"
     where
-      "sharedWithId" = $3
+      "sharedWithId" = $4
   )
 order by
   "asset"."updateId" asc
@@ -859,7 +963,7 @@ from
 where
   "asset_exif"."updateId" < $1
   and "asset_exif"."updateId" <= $2
-  and "asset_exif"."updateId" >= $3
+  and "asset_exif"."updateId" > $3
   and "asset"."ownerId" = $4
 order by
   "asset_exif"."updateId" asc
@@ -948,7 +1052,7 @@ from
 where
   "stack"."updateId" < $1
   and "stack"."updateId" <= $2
-  and "stack"."updateId" >= $3
+  and "stack"."updateId" > $3
   and "ownerId" = $4
 order by
   "stack"."updateId" asc
@@ -980,7 +1084,7 @@ order by
 -- SyncRepository.person.getDeletes
 select
   "id",
-  "personId"
+  "personGroupId" as "personId"
 from
   "person_audit" as "person_audit"
 where
@@ -992,7 +1096,7 @@ order by
 
 -- SyncRepository.person.getUpserts
 select
-  "id",
+  "personGroupId" as "id",
   "createdAt",
   "updatedAt",
   "ownerId",

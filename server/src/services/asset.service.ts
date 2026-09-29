@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import _ from 'lodash';
+import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { AssetFile } from 'src/database';
-import { OnJob } from 'src/decorators';
-import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import type { AssetFile } from 'src/database.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import type { JobItem, JobOf } from 'src/types.js';
+import { OnJob } from 'src/decorators.js';
+import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -19,10 +20,14 @@ import {
   AssetStatsDto,
   UpdateAssetDto,
   mapStats,
-} from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionCrop, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
+} from 'src/dtos/asset.dto.js';
+import {
+  AssetEditAction,
+  type AssetEditActionItem,
+  AssetEditsCreateDto,
+  AssetEditsResponseDto,
+} from 'src/dtos/editing.dto.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 import {
   AssetFileType,
   AssetStatus,
@@ -32,22 +37,21 @@ import {
   JobStatus,
   Permission,
   QueueName,
-} from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
-import { requireElevatedPermission } from 'src/utils/access';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { requireElevatedPermission } from 'src/utils/access.js';
 import {
   getAssetFiles,
   getDimensions,
-  getMyPartnerIds,
   isPanorama,
   onAfterUnlink,
   onBeforeLink,
   onBeforeUnlink,
-} from 'src/utils/asset.util';
-import { updateLockedColumns } from 'src/utils/database';
-import { extractTimeZone } from 'src/utils/date';
-import { transformOcrBoundingBox } from 'src/utils/transform';
+} from 'src/utils/asset.util.js';
+import { updateLockedColumns } from 'src/utils/database.js';
+import { extractTimeZone } from 'src/utils/date.js';
+import { batched, findOrFail } from 'src/utils/misc.js';
+import { transformOcrBoundingBox } from 'src/utils/transform.js';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -60,27 +64,13 @@ export class AssetService extends BaseService {
     return mapStats(stats);
   }
 
-  async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
-    return assets.map((a) => mapAsset(a, { auth }));
-  }
-
-  async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
-    return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
-  }
-
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
 
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      faces: { person: true },
+      faces: { person: true, viewingUserId: auth.user.id },
       stack: { assets: true },
       edits: true,
       tags: true,
@@ -100,7 +90,7 @@ export class AssetService extends BaseService {
       delete data.owner;
     }
 
-    if (data.ownerId !== auth.user.id || auth.sharedLink) {
+    if (auth.sharedLink) {
       data.people = [];
     }
 
@@ -123,7 +113,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    const wroteMetadata = await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
@@ -139,7 +129,11 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
-    return mapAsset(asset, { auth });
+    if (!wroteMetadata) {
+      this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
+    }
+
+    return this.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
@@ -158,8 +152,8 @@ export class AssetService extends BaseService {
     } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    const assetDto = _.omitBy({ isFavorite, visibility, duplicateId }, _.isUndefined);
-    const exifDto = _.omitBy(
+    const assetDto = omitBy({ isFavorite, visibility, duplicateId }, isUndefined);
+    const exifDto = omitBy(
       {
         latitude,
         longitude,
@@ -167,11 +161,13 @@ export class AssetService extends BaseService {
         description,
         dateTimeOriginal,
       },
-      _.isUndefined,
+      isUndefined,
     );
 
+    let shouldWriteSidecar = false;
     if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
+      shouldWriteSidecar = true;
     }
 
     const extractedTimeZone = extractTimeZone(dateTimeOriginal);
@@ -182,6 +178,7 @@ export class AssetService extends BaseService {
       extractedTimeZone?.type === 'fixed'
     ) {
       await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone ?? extractedTimeZone?.name);
+      shouldWriteSidecar = true;
     }
 
     if (Object.keys(assetDto).length > 0) {
@@ -192,7 +189,14 @@ export class AssetService extends BaseService {
       await this.albumRepository.removeAssetsFromAll(ids);
     }
 
-    await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    if (shouldWriteSidecar) {
+      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    } else {
+      const assets = await this.assetRepository.getByIds(ids);
+      for (const asset of assets) {
+        this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
+      }
+    }
   }
 
   async copy(
@@ -293,28 +297,16 @@ export class AssetService extends BaseService {
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
 
-    let chunk: Array<{ id: string; isOffline: boolean }> = [];
-    const queueChunk = async () => {
-      if (chunk.length > 0) {
-        await this.jobRepository.queueAll(
-          chunk.map(({ id, isOffline }) => ({
-            name: JobName.AssetDelete,
-            data: { id, deleteOnDisk: !isOffline },
-          })),
-        );
-        chunk = [];
-      }
-    };
-
-    const assets = this.assetJobRepository.streamForDeletedJob(trashedBefore);
-    for await (const asset of assets) {
-      chunk.push(asset);
-      if (chunk.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueChunk();
-      }
+    let count = 0;
+    for await (const assets of batched(this.assetJobRepository.streamForDeletedJob(trashedBefore))) {
+      await this.jobRepository.queueAll(
+        assets.map(({ id, isOffline }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: !isOffline } })),
+      );
+      count += assets.length;
     }
-
-    await queueChunk();
+    if (count > 0) {
+      this.logger.log(`Automatically queued ${count} expired trash asset(s) for deletion`);
+    }
 
     return JobStatus.Success;
   }
@@ -329,18 +321,25 @@ export class AssetService extends BaseService {
       return JobStatus.Failed;
     }
 
-    // replace the parent of the stack children with a new asset
-    if (asset.stack?.primaryAssetId === id) {
-      // this only includes timeline visible assets and excludes the primary asset
-      const stackAssetIds = asset.stack.assets.map((a) => a.id);
-      if (stackAssetIds.length >= 2) {
-        const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
+    if (asset.stack) {
+      // asset.stack.assets only includes timeline visible assets and excludes the primary asset
+      const remainingStackAssetIds = asset.stack.assets.map((a) => a.id).filter((assetId) => assetId !== id);
+
+      // the primary survives unless it is the asset being deleted
+      let remainingCount = remainingStackAssetIds.length;
+      if (asset.stack.primaryAssetId !== id) {
+        remainingCount++;
+      }
+
+      if (remainingCount < 2) {
+        // 0 or 1 asset would remain: dissolve the stack so it does not linger as a single-asset stack
+        await this.stackRepository.delete(asset.stack.id);
+      } else if (asset.stack.primaryAssetId === id) {
+        // the primary is being deleted but others remain: promote a new primary
         await this.stackRepository.update(asset.stack.id, {
           id: asset.stack.id,
-          primaryAssetId: newPrimaryAssetId,
+          primaryAssetId: remainingStackAssetIds[0],
         });
-      } else {
-        await this.stackRepository.delete(asset.stack.id);
       }
     }
 
@@ -370,7 +369,7 @@ export class AssetService extends BaseService {
       assetFiles.editedFullsizeFile?.path,
       assetFiles.editedPreviewFile?.path,
       assetFiles.editedThumbnailFile?.path,
-      asset.encodedVideoPath,
+      assetFiles.encodedVideoFile?.path,
     ];
 
     if (deleteOnDisk && !asset.isOffline) {
@@ -502,12 +501,8 @@ export class AssetService extends BaseService {
     await this.jobRepository.queueAll(jobs);
   }
 
-  private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id);
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-    return asset;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.assetRepository.getById(id), 'Asset');
   }
 
   private async updateExif(dto: {
@@ -516,10 +511,10 @@ export class AssetService extends BaseService {
     dateTimeOriginal?: string;
     latitude?: number;
     longitude?: number;
-    rating?: number;
+    rating?: number | null;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const writes = _.omitBy(
+    const writes = omitBy(
       {
         description,
         dateTimeOriginal,
@@ -528,31 +523,35 @@ export class AssetService extends BaseService {
         longitude,
         rating,
       },
-      _.isUndefined,
+      isUndefined,
     );
 
-    if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif(
-        updateLockedColumns({
-          assetId: id,
-          ...writes,
-        }),
-        { lockedPropertiesBehavior: 'append' },
-      );
-      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    if (Object.keys(writes).length === 0) {
+      return false;
     }
+
+    await this.assetRepository.upsertExif({
+      exif: updateLockedColumns({
+        assetId: id,
+        ...writes,
+      }),
+      lockedPropertiesBehavior: 'append',
+    });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    return true;
   }
 
-  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
+  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
     const edits = await this.assetEditRepository.getAll(id);
+
     return {
       assetId: id,
       edits,
     };
   }
 
-  async editAsset(auth: AuthDto, id: string, dto: AssetEditActionListDto): Promise<AssetEditsDto> {
+  async editAsset(auth: AuthDto, id: string, dto: AssetEditsCreateDto): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetEditCreate, ids: [id] });
 
     const asset = await this.assetRepository.getForEdit(id);
@@ -587,12 +586,13 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset dimensions are not available for editing');
     }
 
-    const cropIndex = dto.edits.findIndex((e) => e.action === AssetEditAction.Crop);
-    if (cropIndex > 0) {
-      throw new BadRequestException('Crop action must be the first edit action');
-    }
-    const crop = cropIndex === -1 ? null : (dto.edits[cropIndex] as AssetEditActionCrop);
+    const edits = dto.edits as AssetEditActionItem[];
+    const crop = edits.find((e) => e.action === AssetEditAction.Crop);
     if (crop) {
+      if (edits[0].action !== AssetEditAction.Crop) {
+        throw new BadRequestException('Crop action must be the first edit action');
+      }
+
       // check that crop parameters will not go out of bounds
       const { width: assetWidth, height: assetHeight } = getDimensions(asset);
 
@@ -606,7 +606,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    const newEdits = await this.assetEditRepository.replaceAll(id, dto.edits);
+    const newEdits = await this.assetEditRepository.replaceAll(id, edits);
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
 
     // Return the asset and its applied edits

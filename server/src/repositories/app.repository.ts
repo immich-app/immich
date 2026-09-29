@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { createAdapter } from '@socket.io/redis-adapter';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { Server as SocketIO } from 'socket.io';
-import { ExitCode } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { AppRestartEvent } from 'src/repositories/event.repository';
+import { ExitCode } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { AppRestartEvent } from 'src/repositories/event.repository.js';
 
 @Injectable()
 export class AppRepository {

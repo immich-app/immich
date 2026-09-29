@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto';
-import { BaseService } from 'src/services/base.service';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getMyPartnerIds } from 'src/utils/asset.util.js';
 
 @Injectable()
 export class MapService extends BaseService {
@@ -13,17 +13,9 @@ export class MapService extends BaseService {
       userIds.push(...partnerIds);
     }
 
-    // TODO convert to SQL join
-    const albumIds: string[] = [];
-    if (options.withSharedAlbums) {
-      const [ownedAlbums, sharedAlbums] = await Promise.all([
-        this.albumRepository.getOwned(auth.user.id),
-        this.albumRepository.getShared(auth.user.id),
-      ]);
-      albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
-    }
+    const albumIds = options.withSharedAlbums ? await this.albumRepository.getAllIds(auth.user.id) : [];
 
-    return this.mapRepository.getMapMarkers(userIds, albumIds, options);
+    return this.mapRepository.getMapMarkers(auth.user.id, userIds, albumIds, options);
   }
 
   async reverseGeocode(dto: MapReverseGeocodeDto) {

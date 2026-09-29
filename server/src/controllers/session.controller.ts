@@ -1,12 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { SessionCreateDto, SessionCreateResponseDto, SessionResponseDto, SessionUpdateDto } from 'src/dtos/session.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { SessionService } from 'src/services/session.service';
-import { UUIDParamDto } from 'src/validation';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import {
+  SessionCreateDto,
+  SessionCreateResponseDto,
+  SessionResponseDto,
+  SessionUpdateDto,
+} from 'src/dtos/session.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { SessionService } from 'src/services/session.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Sessions)
 @Controller('sessions')
@@ -52,9 +57,24 @@ export class SessionController {
   @Endpoint({
     summary: 'Update a session',
     description: 'Update a specific session identified by id.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateSession' }),
   })
   updateSession(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: SessionUpdateDto,
+  ): Promise<SessionResponseDto> {
+    return this.service.update(auth, id, dto);
+  }
+
+  @Patch(':id')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.SessionUpdate })
+  updateSessionV3(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: SessionUpdateDto,

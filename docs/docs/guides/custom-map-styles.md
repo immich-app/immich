@@ -3,8 +3,8 @@
 You may decide that you'd like to modify the style document which is used to
 draw the maps in Immich. In addition to visual customization, this also allows
 you to pick your own map tile provider instead of the default one. The default
-`style.json` for [light theme](https://github.com/immich-app/immich/tree/main/server/resources/style-light.json)
-and [dark theme](https://github.com/immich-app/immich/blob/main/server/resources/style-dark.json)
+`style.json` for [light theme](https://tiles.immich.cloud/v1/style/light.json)
+and [dark theme](https://tiles.immich.cloud/v1/style/dark.json)
 can be used as a basis for creating your own style.
 
 There are several sources for already-made `style.json` map themes, as well as

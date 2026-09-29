@@ -3,27 +3,26 @@
   import { page } from '$app/stores';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
-  import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
-  import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
-  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import PeopleCard from './PeopleCard.svelte';
+  import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
+  import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { QueryParameter, SessionStorageKey } from '$lib/constants';
+  import PeopleFilterModal from '$lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, modalManager, toastManager } from '@immich/ui';
-  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
+  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
+  import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { quintOut } from 'svelte/easing';
-  import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
 
   interface Props {
@@ -32,7 +31,6 @@
 
   let { data }: Props = $props();
 
-  let selectHidden = $state(false);
   let searchName = $state('');
   let newName = $state('');
   let currentPage = $state(1);
@@ -74,8 +72,8 @@
         if (pagesToLoad) {
           handlePromiseError(
             Promise.all(
-              Array.from({ length: pagesToLoad }).map((_, i) => {
-                return getAllPeople({ withHidden: true, page: startingPage + i });
+              Array.from({ length: pagesToLoad }, (_, i) => {
+                return getAllPeople({ withHidden: true, page: startingPage + i, ...data.filter });
               }),
             ).then((pages) => {
               for (const page of pages) {
@@ -99,7 +97,11 @@
     }
 
     try {
-      const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
+      const { people: newPeople, hasNextPage } = await getAllPeople({
+        withHidden: true,
+        page: nextPage,
+        ...data.filter,
+      });
       people = people.concat(newPeople);
       if (nextPage !== null) {
         currentPage = nextPage;
@@ -157,55 +159,42 @@
             break;
           }
         }
-        toastManager.success($t('change_name_successfully'));
+        toastManager.primary($t('change_name_successfully'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
     }
   };
 
-  const handleHidePerson = async (detail: PersonResponseDto) => {
-    try {
-      const updatedPerson = await updatePerson({
-        id: detail.id,
-        personUpdateDto: { isHidden: true },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-
-      toastManager.success($t('changed_visibility_successfully'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_hide_person'));
-    }
-  };
-
-  const handleToggleFavorite = async (detail: PersonResponseDto) => {
-    try {
-      const updatedPerson = await updatePerson({
-        id: detail.id,
-        personUpdateDto: { isFavorite: !detail.isFavorite },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
-    }
-  };
-
   const handleMergePeople = async (detail: PersonResponseDto) => {
     await goto(Route.viewPerson(detail, { previousRoute: Route.people(), action: 'merge' }));
+  };
+
+  const hasFilter = $derived(Object.values(data.filter).some((value) => value !== undefined));
+
+  const handleFilter = async () => {
+    const filter = await modalManager.show(PeopleFilterModal, { filter: data.filter });
+    if (!filter) {
+      return;
+    }
+
+    const url = new URL($page.url);
+    for (const [key, value] of [
+      [QueryParameter.SHARED_BY_ID, filter.sharedById],
+      [QueryParameter.SHARED_WITH_ID, filter.sharedWithId],
+      [QueryParameter.IS_FAVORITE, filter.isFavorite],
+      [QueryParameter.IS_HIDDEN, filter.isHidden],
+    ] as const) {
+      if (value === undefined) {
+        url.searchParams.delete(key);
+      } else {
+        url.searchParams.set(key, String(value));
+      }
+    }
+
+    await goto(url, { keepFocus: true });
+    currentPage = 1;
+    nextPage = data.people.hasNextPage ? 2 : null;
   };
 
   const onResetSearchBar = async () => {
@@ -214,8 +203,11 @@
 
   let people = $derived(data.people.people);
 
-  let visiblePeople = $derived(people.filter((people) => !people.isHidden));
-  let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
+  // hidden people are only shown when explicitly filtering for them
+  let visiblePeople = $derived(data.filter.isHidden ? people : people.filter((people) => !people.isHidden));
+  let countVisiblePeople = $derived(
+    searchName ? searchedPeopleLocal.length : data.people.total - (data.filter.isHidden ? 0 : data.people.hidden),
+  );
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
@@ -225,7 +217,7 @@
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
     try {
-      if (name == targetPerson.name) {
+      if (name === targetPerson.name) {
         return;
       }
 
@@ -241,8 +233,8 @@
         potentialMergePeople = people
           .filter(
             (person: PersonResponseDto) =>
-              personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
-              person.id !== personMerge2.id &&
+              normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
+              person.id !== personMerge2?.id &&
               person.id !== personMerge1?.id &&
               !person.isHidden,
           )
@@ -273,8 +265,9 @@
 
   const findPeopleWithSimilarName = async (name: string, personId: string) => {
     const searchResult = await searchPerson({ name, withHidden: true });
+    const normalizedName = normalizeSearchString(name);
     return searchResult.find(
-      (person) => person.name.toLowerCase() === name.toLowerCase() && person.id !== personId && person.name,
+      (person) => normalizeSearchString(person.name) === normalizedName && person.id !== personId && person.name,
     );
   };
 
@@ -314,10 +307,10 @@
   ]}
 >
   {#snippet buttons()}
-    {#if people.length > 0}
-      <div class="flex gap-2 items-center justify-center">
+    <div class="flex items-center justify-center gap-2">
+      {#if people.length > 0}
         <div class="hidden sm:block">
-          <div class="w-40 lg:w-80 h-10">
+          <div class="h-10 w-40 lg:w-80">
             <SearchPeople
               bind:this={searchPeopleElement}
               type="searchBar"
@@ -331,31 +324,35 @@
         </div>
         <Button
           leadingIcon={mdiEyeOutline}
-          onclick={() => (selectHidden = !selectHidden)}
+          onclick={() => goto('/people/manage')}
           size="small"
           variant="ghost"
           color="secondary">{$t('show_and_hide_people')}</Button
         >
-      </div>
-    {/if}
+      {/if}
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        indicator={hasFilter ? 'primary' : undefined}
+        icon={mdiTune}
+        aria-label={$t('filters')}
+        onclick={handleFilter}
+      />
+    </div>
   {/snippet}
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
       {#snippet children({ person })}
         <div
-          class="p-2 rounded-xl hover:bg-gray-200 border-2 hover:border-immich-primary/50 hover:shadow-sm dark:hover:bg-immich-dark-primary/20 hover:dark:border-immich-dark-primary/25 border-transparent transition-all"
+          class="rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm hover:dark:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"
         >
-          <PeopleCard
-            {person}
-            onMergePeople={() => handleMergePeople(person)}
-            onHidePerson={() => handleHidePerson(person)}
-            onToggleFavorite={() => handleToggleFavorite(person)}
-          />
+          <PeopleCard {person} onMergePeople={() => handleMergePeople(person)} />
 
           <input
             type="text"
-            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-primary"
+            class="mt-2 w-full rounded-2xl border-gray-100 bg-white py-2 text-center text-sm text-primary placeholder-gray-400 dark:border-gray-900 dark:bg-immich-dark-gray"
             value={person.name}
             placeholder={$t('add_a_name')}
             use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
@@ -370,28 +367,10 @@
     <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon icon={mdiAccountOff} size="3.5em" />
-        <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
+        <p class="mt-5 line-clamp-2 max-w-lg overflow-hidden text-3xl font-medium">
           {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>
       </div>
     </div>
   {/if}
 </UserPageLayout>
-
-{#if selectHidden}
-  <dialog
-    transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="fixed inset-0 h-full w-full max-w-none max-h-none bg-light"
-    aria-labelledby="manage-visibility-title"
-    {@attach (dialog) => dialog.showModal()}
-  >
-    <ManagePeopleVisibility
-      {people}
-      totalPeopleCount={data.people.total}
-      titleId="manage-visibility-title"
-      onClose={() => (selectHidden = false)}
-      onUpdate={(updatedPeople) => (people = updatedPeople.slice())}
-      {loadNextPage}
-    />
-  </dialog>
-{/if}

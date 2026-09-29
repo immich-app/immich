@@ -1,6 +1,6 @@
-import { MediaRepository } from 'src/repositories/media.repository';
-import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { MediaRepository } from 'src/repositories/media.repository.js';
 
 export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaRepository>> => {
   return {
@@ -11,7 +11,15 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
     extract: vitest.fn().mockResolvedValue(null),
     probe: vitest.fn(),
+    probePackets: vitest.fn().mockResolvedValue({
+      totalDuration: 0,
+      packetCount: 0,
+      outputFrames: 0,
+      keyframePts: [],
+      keyframeAccDuration: [],
+      keyframeOwnDuration: [],
+    }),
     transcode: vitest.fn(),
-    getImageDimensions: vitest.fn(),
+    getImageMetadata: vitest.fn(),
   };
 };

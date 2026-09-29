@@ -14,6 +14,7 @@ Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an i
 - [Authelia](https://www.authelia.com/integration/openid-connect/immich/)
 - [Okta](https://www.okta.com/openid-connect/)
 - [Google](https://developers.google.com/identity/openid-connect/openid-connect)
+- [Keycloak](https://www.keycloak.org)
 
 ## Prerequisites
 
@@ -49,6 +50,10 @@ Before enabling OAuth in Immich, a new client application needs to be configured
    - `https://immich.example.com/auth/login`
    - `https://immich.example.com/user-settings`
 
+3. Configure Backchannel logout URL
+
+   If the authentication server supports it, the **Backchannel logout URL** can be specified, and it is of the form: `http://DOMAIN:PORT/api/oauth/backchannel-logout`.
+
 ## Enable OAuth
 
 Once you have a new OAuth client application configured, Immich can be configured using the Administration Settings page, available on the web (Administration -> Settings).
@@ -62,6 +67,8 @@ Once you have a new OAuth client application configured, Immich can be configure
 | `scope`                                              | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |
 | `id_token_signed_response_alg`                       | string  | RS256                | The algorithm used to sign the id token (examples: RS256, HS256)                    |
 | `userinfo_signed_response_alg`                       | string  | none                 | The algorithm used to sign the userinfo response (examples: RS256, HS256)           |
+| `prompt`                                             | string  | (empty)              | Prompt parameter for authorization url (examples: select_account, login, consent)   |
+| `end_session_endpoint`                               | URL     | (empty)              | Http(s) alternative end session endpoint (logout URI)                               |
 | Request timeout                                      | string  | 30,000 (30 seconds)  | Number of milliseconds to wait for http requests to complete before giving up       |
 | Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label**¹**                                     |
 | Role Claim                                           | string  | immich_role          | Claim mapping for the user's role. (should return "user" or "admin")**¹**           |
@@ -74,7 +81,11 @@ Once you have a new OAuth client application configured, Immich can be configure
 
 :::note Claim Options [1]
 
-Claim is only used on user creation and not synchronized after that.
+Claims are applied when a user is first registered. On subsequent logins, claims present in the OAuth profile are synchronized to the Immich user profile. Claims that are absent from the profile are left unchanged.
+
+The storage label is an exception: with the default claim (`preferred_username`), it is only set at registration and is not updated on later logins. To keep the storage label in sync with the IdP, configure a different Storage Label Claim (for example `uid`).
+
+The storage quota claim is a number in GiB: `-1` for unlimited, `0` to block uploads, any positive value for a fixed quota.
 
 :::
 
@@ -147,9 +158,10 @@ identity_providers:
       - client_id: 'immich'
         client_name: 'Immich'
         # https://www.authelia.com/integration/openid-connect/frequently-asked-questions/#how-do-i-generate-a-client-identifier-or-client-secret
-        client_secret: $pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'
+        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'
         public: false
-        require_pkce: false
+        require_pkce: true
+        pkce_challenge_method: 'S256'
         redirect_uris:
           - 'https://example.immich.app/auth/login'
           - 'https://example.immich.app/user-settings'
@@ -173,13 +185,14 @@ Configuration of OAuth in Immich System Settings
 
 | Setting                            | Value                                                               |
 | ---------------------------------- | ------------------------------------------------------------------- |
-| Issuer URL                         | `https://example.immich.app/.well-known/openid-configuration`       |
+| Issuer URL                         | `https://auth.example.com`                                          |
 | Client ID                          | immich                                                              |
 | Client Secret                      | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw... |
 | Token Endpoint Auth Method         | client_secret_post                                                  |
 | Scope                              | openid email profile immich_scope                                   |
 | ID Token Signed Response Algorithm | RS256                                                               |
 | Userinfo Signed Response Algorithm | RS256                                                               |
+| End Session Endpoint               | https://auth.example.com/logout?rd=https://immich.example.com/      |
 | Storage Label Claim                | uid                                                                 |
 | Storage Quota Claim                | immich_quota                                                        |
 | Default Storage Quota (GiB)        | 0 (empty for unlimited quota)                                       |
@@ -204,21 +217,21 @@ Configuration of Authorised redirect URIs (Authentik OAuth2/OpenID Provider)
 
 Configuration of OAuth in Immich System Settings
 
-| Setting                      | Value                                                                              |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
-| Issuer URL                   | `https://example.immich.app/application/o/immich/.well-known/openid-configuration` |
-| Client ID                    | AFCj2rM1f4rps**\*\*\*\***\***\*\*\*\***lCLEum6hH9...                               |
-| Client Secret                | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw...                |
-| Scope                        | openid email profile                                                               |
-| Signing Algorithm            | RS256                                                                              |
-| Storage Label Claim          | preferred_username                                                                 |
-| Storage Quota Claim          | immich_quota                                                                       |
-| Default Storage Quota (GiB)  | 0 (empty for unlimited quota)                                                      |
-| Button Text                  | Sign in with Authentik (optional)                                                  |
-| Auto Register                | Enabled (optional)                                                                 |
-| Auto Launch                  | Enabled (optional)                                                                 |
-| Mobile Redirect URI Override | Disable                                                                            |
-| Mobile Redirect URI          |                                                                                    |
+| Setting                      | Value                                                               |
+| ---------------------------- | ------------------------------------------------------------------- |
+| Issuer URL                   | `https://authentik.example.com/application/o/immich/`               |
+| Client ID                    | AFCj2rM1f4rps**\*\*\*\***\***\*\*\*\***lCLEum6hH9...                |
+| Client Secret                | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw... |
+| Scope                        | openid email profile                                                |
+| Signing Algorithm            | RS256                                                               |
+| Storage Label Claim          | preferred_username                                                  |
+| Storage Quota Claim          | immich_quota                                                        |
+| Default Storage Quota (GiB)  | 0 (empty for unlimited quota)                                       |
+| Button Text                  | Sign in with Authentik (optional)                                   |
+| Auto Register                | Enabled (optional)                                                  |
+| Auto Launch                  | Enabled (optional)                                                  |
+| Mobile Redirect URI Override | Disable                                                             |
+| Mobile Redirect URI          |                                                                     |
 
 </details>
 
@@ -250,6 +263,42 @@ Configuration of OAuth in Immich System Settings
 | Auto Launch                  | Enabled                                                                      |
 | Mobile Redirect URI Override | Enabled (required)                                                           |
 | Mobile Redirect URI          | `https://example.immich.app/api/oauth/mobile-redirect`                       |
+
+</details>
+
+<details>
+<summary>Keycloak Example</summary>
+
+### Keycloak Example
+
+Here's an example of OAuth configured for Keycloak:
+
+Create your immich client on your Keycloak Realm.
+
+<img src={require('./img/keycloak-general-settings.webp').default} width='100%' title="Keycloak Client general Settings" />
+<img src={require('./img/keycloak-access-settings.webp').default} width='100%' title="Keycloak Client Access Settings" />
+<img src={require('./img/keycloak-capability-config.webp').default} width='100%' title="Keycloak Client Capability Configuration" />
+
+Configuration of OAuth in Immich System Settings
+
+| Setting                      | Value                                                 |
+| ---------------------------- | ----------------------------------------------------- |
+| Issuer URL                   | `https://<KEYCLOAK_DOMAIN>/realms/<YOUR_REALM>`       |
+| Client ID                    | immich                                                |
+| Client Secret                | can be obtained from Clients -> immich -> Credentials |
+| Scope                        | openid email profile                                  |
+| Signing Algorithm            | RS256                                                 |
+| Storage Label Claim          | preferred_username                                    |
+| Role Claim                   | immich_role                                           |
+| Storage Quota Claim          | immich_quota                                          |
+| Default Storage Quota (GiB)  | 0 (empty for unlimited quota)                         |
+| Button Text                  | Sign in with Keycloak (recommended)                   |
+| Auto Register                | Enabled (optional)                                    |
+| Auto Launch                  | Enabled (optional)                                    |
+| Mobile Redirect URI Override | Disabled                                              |
+| Mobile Redirect URI          |                                                       |
+
+Role Claim can be managed via Client Role. Remember to create a mapper with claim name `immich_role`.
 
 </details>
 

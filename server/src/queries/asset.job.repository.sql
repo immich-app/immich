@@ -163,6 +163,7 @@ where
           '%.jp2',
           '%.jpe',
           '%.jxl',
+          '%.mpo',
           '%.svg',
           '%.tif',
           '%.tiff'
@@ -175,7 +176,6 @@ where
 select
   "asset"."id",
   "asset"."ownerId",
-  "asset"."encodedVideoPath",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -216,7 +216,8 @@ select
           "asset_file"."path",
           "asset_file"."type",
           "asset_file"."isEdited",
-          "asset_file"."isProgressive"
+          "asset_file"."isProgressive",
+          "asset_file"."isTransparent"
         from
           "asset_file"
         where
@@ -238,10 +239,68 @@ select
           "asset_edit"."assetId" = "asset"."id"
       ) as agg
   ) as "edits",
-  to_json("asset_exif") as "exifInfo"
+  to_json("asset_exif") as "exifInfo",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."index",
+          "asset_video"."codecName",
+          "asset_video"."profile",
+          "asset_video"."level",
+          "asset_video"."bitrate",
+          "asset_exif"."exifImageWidth" as "width",
+          "asset_exif"."exifImageHeight" as "height",
+          "asset_video"."pixelFormat",
+          "asset_video"."frameCount",
+          "asset_exif"."fps" as "frameRate",
+          "asset_video"."timeBase",
+          case
+            when "asset_exif"."orientation" = '6' then -90
+            when "asset_exif"."orientation" = '8' then 90
+            when "asset_exif"."orientation" = '3' then 180
+            else 0
+          end as "rotation",
+          "asset_video"."colorPrimaries",
+          "asset_video"."colorMatrix",
+          "asset_video"."colorTransfer",
+          "asset_video"."dvProfile",
+          "asset_video"."dvLevel",
+          "asset_video"."dvBlSignalCompatibilityId"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "videoStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."formatName",
+          "asset_video"."formatLongName",
+          "asset"."duration",
+          "asset_video"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "format"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_video" on "asset_video"."assetId" = "asset"."id"
 where
   "asset"."id" = $4
 
@@ -249,8 +308,7 @@ where
 select
   "asset"."id",
   "asset"."checksum",
-  "asset"."deviceAssetId",
-  "asset"."deviceId",
+  "asset"."checksumAlgorithm",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
   "asset"."isExternal",
@@ -264,6 +322,7 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
+  "asset"."isEdited",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -295,9 +354,11 @@ select
           "asset_file"."assetId" = "asset"."id"
           and "asset_file"."type" = $2
       ) as agg
-  ) as "files"
+  ) as "files",
+  "user"."clusterGroupId"
 from
   "asset"
+  inner join "user" on "user"."id" = "asset"."ownerId"
 where
   "asset"."id" = $3
 
@@ -404,7 +465,7 @@ select
   ) as "faces",
   (
     select
-      coalesce(json_agg(agg), '[]')
+      to_json(obj)
     from
       (
         select
@@ -416,14 +477,18 @@ select
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
-          and "asset_file"."type" = $1
-      ) as agg
-  ) as "files"
+          and "asset_file"."type" = 'preview'
+        order by
+          "asset_file"."isEdited" desc
+        limit
+          1
+      ) as obj
+  ) as "previewFile"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."id" = $2
+  "asset"."id" = $1
 
 -- AssetJobRepository.getForOcr
 select
@@ -435,12 +500,13 @@ select
       "asset_file"
     where
       "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $1
+      and "asset_file"."type" = 'preview'
+      and "asset_file"."isEdited" = false
   ) as "previewFile"
 from
   "asset"
 where
-  "asset"."id" = $2
+  "asset"."id" = $1
 
 -- AssetJobRepository.getForSyncAssets
 select
@@ -462,7 +528,6 @@ select
   "asset"."libraryId",
   "asset"."ownerId",
   "asset"."livePhotoVideoId",
-  "asset"."encodedVideoPath",
   "asset"."originalPath",
   "asset"."isOffline",
   to_json("asset_exif") as "exifInfo",
@@ -520,12 +585,16 @@ select
 from
   "asset"
 where
-  "asset"."type" = $1
-  and (
-    "asset"."encodedVideoPath" is null
-    or "asset"."encodedVideoPath" = $2
+  "asset"."type" = 'VIDEO'
+  and not exists (
+    select
+      "asset_file"."id"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'encoded_video'
   )
-  and "asset"."visibility" != $3
   and "asset"."deletedAt" is null
 
 -- AssetJobRepository.getForVideoConversion
@@ -533,12 +602,106 @@ select
   "asset"."id",
   "asset"."ownerId",
   "asset"."originalPath",
-  "asset"."encodedVideoPath"
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type",
+          "asset_file"."isEdited"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+      ) as agg
+  ) as "files",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_audio"."index",
+          "asset_audio"."codecName",
+          "asset_audio"."profile",
+          "asset_audio"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_audio"."assetId" is not null
+      ) as obj
+  ) as "audioStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."index",
+          "asset_video"."codecName",
+          "asset_video"."profile",
+          "asset_video"."level",
+          "asset_video"."bitrate",
+          "asset_exif"."exifImageWidth" as "width",
+          "asset_exif"."exifImageHeight" as "height",
+          "asset_video"."pixelFormat",
+          "asset_video"."frameCount",
+          "asset_exif"."fps" as "frameRate",
+          "asset_video"."timeBase",
+          case
+            when "asset_exif"."orientation" = '6' then -90
+            when "asset_exif"."orientation" = '8' then 90
+            when "asset_exif"."orientation" = '3' then 180
+            else 0
+          end as "rotation",
+          "asset_video"."colorPrimaries",
+          "asset_video"."colorMatrix",
+          "asset_video"."colorTransfer",
+          "asset_video"."dvProfile",
+          "asset_video"."dvLevel",
+          "asset_video"."dvBlSignalCompatibilityId"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "videoStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."formatName",
+          "asset_video"."formatLongName",
+          "asset"."duration",
+          "asset_video"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "format"
 from
   "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "asset_video" on "asset_video"."assetId" = "asset"."id"
+  left join "asset_audio" on "asset_audio"."assetId" = "asset"."id"
 where
   "asset"."id" = $1
-  and "asset"."type" = $2
+  and "asset"."type" = 'VIDEO'
 
 -- AssetJobRepository.streamForMetadataExtraction
 select
@@ -561,6 +724,7 @@ select
   "asset"."checksum",
   "asset"."originalPath",
   "asset"."isExternal",
+  "asset"."visibility",
   "asset"."originalFileName",
   "asset"."livePhotoVideoId",
   "asset"."fileCreatedAt",
@@ -592,6 +756,7 @@ from
 where
   "asset"."deletedAt" is null
   and "asset"."id" = $2
+  and "asset"."visibility" != $3
 
 -- AssetJobRepository.streamForStorageTemplateJob
 select
@@ -601,6 +766,7 @@ select
   "asset"."checksum",
   "asset"."originalPath",
   "asset"."isExternal",
+  "asset"."visibility",
   "asset"."originalFileName",
   "asset"."livePhotoVideoId",
   "asset"."fileCreatedAt",
@@ -631,6 +797,7 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."deletedAt" is null
+  and "asset"."visibility" != $2
 
 -- AssetJobRepository.streamForDeletedJob
 select

@@ -1,13 +1,13 @@
 import { Selectable } from 'kysely';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { StackTable } from 'src/schema/tables/stack.table';
-import { AssetEditFactory } from 'test/factories/asset-edit.factory';
-import { AssetExifFactory } from 'test/factories/asset-exif.factory';
-import { AssetFaceFactory } from 'test/factories/asset-face.factory';
-import { AssetFileFactory } from 'test/factories/asset-file.factory';
-import { build } from 'test/factories/builder.factory';
-import { StackFactory } from 'test/factories/stack.factory';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { StackTable } from 'src/schema/tables/stack.table.js';
+import { AssetEditFactory } from 'test/factories/asset-edit.factory.js';
+import { AssetExifFactory } from 'test/factories/asset-exif.factory.js';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
+import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
+import { build } from 'test/factories/builder.factory.js';
+import { StackFactory } from 'test/factories/stack.factory.js';
 import {
   AssetEditLike,
   AssetExifLike,
@@ -17,9 +17,9 @@ import {
   FactoryBuilder,
   StackLike,
   UserLike,
-} from 'test/factories/types';
-import { UserFactory } from 'test/factories/user.factory';
-import { newDate, newSha1, newUuid, newUuidV7 } from 'test/small.factory';
+} from 'test/factories/types.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { newSha1, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class AssetFactory {
   #owner!: UserFactory;
@@ -43,27 +43,27 @@ export class AssetFactory {
 
     const originalFileName = dto.originalFileName ?? (dto.type === AssetType.Video ? `MOV_${id}.mp4` : `IMG_${id}.jpg`);
 
+    let now = Date.now();
+
     return new AssetFactory({
       id,
-      createdAt: newDate(),
-      updatedAt: newDate(),
+      createdAt: new Date(now++),
+      updatedAt: new Date(now++),
       deletedAt: null,
       updateId: newUuidV7(),
       status: AssetStatus.Active,
       checksum: newSha1(),
-      deviceAssetId: '',
-      deviceId: '',
+      checksumAlgorithm: ChecksumAlgorithm.sha1File,
       duplicateId: null,
       duration: null,
-      encodedVideoPath: null,
-      fileCreatedAt: newDate(),
-      fileModifiedAt: newDate(),
+      fileCreatedAt: new Date(now++),
+      fileModifiedAt: new Date(now++),
       isExternal: false,
       isFavorite: false,
       isOffline: false,
       libraryId: null,
       livePhotoVideoId: null,
-      localDateTime: newDate(),
+      localDateTime: new Date(now),
       originalFileName,
       originalPath: `/data/library/${originalFileName}`,
       ownerId: newUuid(),

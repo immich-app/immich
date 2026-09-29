@@ -1,0 +1,400 @@
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/person.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/cloud_id.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/utils/option.dart';
+import 'package:uuid/uuid.dart';
+
+import '../utils.dart';
+
+class MediumRepositoryContext {
+  final Drift db;
+
+  MediumRepositoryContext() : db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+
+  Future<void> dispose() async {
+    await db.close();
+  }
+
+  static Value<T> _resolveUndefined<T>(T? plain, Option<T>? option, T fallback) {
+    if (plain != null) {
+      return .new(plain);
+    }
+
+    return _resolveOption(option, fallback);
+  }
+
+  static Value<T> _resolveOption<T>(Option<T>? option, T fallback) {
+    if (option != null) {
+      return option.fold(Value.new, Value.absent);
+    }
+
+    return .new(fallback);
+  }
+
+  Future<UserEntityData> newUser({
+    String? id,
+    String? email,
+    AvatarColor? avatarColor,
+    DateTime? profileChangedAt,
+    bool? hasProfileImage,
+  }) async {
+    id ??= TestUtils.uuid();
+    return await db
+        .into(db.userEntity)
+        .insertReturning(
+          UserEntityCompanion(
+            id: .new(id),
+            email: .new(email ?? '$id@test.com'),
+            name: .new(email ?? 'user_$id'),
+            avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
+            profileChangedAt: .new(TestUtils.date(profileChangedAt)),
+            hasProfileImage: .new(hasProfileImage ?? false),
+          ),
+        );
+  }
+
+  /// Seeds a user into `authUserEntity` as the currently authenticated user
+  Future<AuthUserEntityData> newAuthUser({String? id, String? email, bool? isAdmin, AvatarColor? avatarColor}) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.authUserEntity)
+        .insertReturning(
+          AuthUserEntityCompanion(
+            id: .new(id),
+            email: .new(email ?? '$id@test.com'),
+            name: .new('user_$id'),
+            isAdmin: .new(isAdmin ?? false),
+            avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
+          ),
+        );
+  }
+
+  Future<void> newPartner({required String sharedById, required String sharedWithId, bool? inTimeline}) {
+    return db
+        .into(db.partnerEntity)
+        .insert(
+          PartnerEntityCompanion(
+            sharedById: .new(sharedById),
+            sharedWithId: .new(sharedWithId),
+            inTimeline: .new(inTimeline ?? false),
+          ),
+        );
+  }
+
+  Future<RemoteAssetEntityData> newRemoteAsset({
+    String? id,
+    String? checksum,
+    String? ownerId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? deletedAt,
+    AssetType? type,
+    AssetVisibility? visibility,
+    int? durationMs,
+    int? width,
+    int? height,
+    bool? isFavorite,
+    bool? isEdited,
+    String? livePhotoVideoId,
+    String? stackId,
+    String? thumbHash,
+    String? libraryId,
+    DateTime? localDateTime,
+  }) async {
+    id ??= TestUtils.uuid();
+    createdAt ??= TestUtils.date();
+    return db
+        .into(db.remoteAssetEntity)
+        .insertReturning(
+          RemoteAssetEntityCompanion(
+            id: .new(id),
+            name: .new('remote_$id.jpg'),
+            checksum: .new(TestUtils.uuid(checksum)),
+            type: .new(type ?? .image),
+            createdAt: .new(createdAt),
+            updatedAt: .new(TestUtils.date(updatedAt)),
+            ownerId: .new(TestUtils.uuid(ownerId)),
+            visibility: .new(visibility ?? .timeline),
+            deletedAt: .new(deletedAt),
+            durationMs: .new(durationMs ?? 0),
+            width: .new(width ?? TestUtils.randInt(1000)),
+            height: .new(height ?? TestUtils.randInt(1000)),
+            isFavorite: .new(isFavorite ?? false),
+            isEdited: .new(isEdited ?? false),
+            livePhotoVideoId: .new(livePhotoVideoId),
+            stackId: .new(stackId),
+            localDateTime: .new(localDateTime ?? createdAt.toLocal()),
+            thumbHash: .new(TestUtils.uuid(thumbHash)),
+            libraryId: .new(TestUtils.uuid(libraryId)),
+          ),
+        );
+  }
+
+  Future<RemoteAssetCloudIdEntityData> newRemoteAssetCloudId({
+    String? id,
+    String? cloudId,
+    DateTime? createdAt,
+    DateTime? adjustmentTime,
+    Option<DateTime>? adjustmentTimeOption,
+    Option<double>? latitude,
+    Option<double>? longitude,
+  }) {
+    return db
+        .into(db.remoteAssetCloudIdEntity)
+        .insertReturning(
+          RemoteAssetCloudIdEntityCompanion(
+            assetId: .new(TestUtils.uuid(id)),
+            cloudId: .new(TestUtils.uuid(cloudId)),
+            createdAt: .new(TestUtils.date(createdAt)),
+            adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
+            latitude: _resolveOption(latitude, TestUtils.randDouble(-90, 90)),
+            longitude: _resolveOption(longitude, TestUtils.randDouble(-180, 180)),
+          ),
+        );
+  }
+
+  Future<RemoteAlbumEntityData> newRemoteAlbum({
+    String? id,
+    String? name,
+    String? ownerId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? description,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+    String? thumbnailAssetId,
+  }) async {
+    id ??= TestUtils.uuid();
+    final album = await db
+        .into(db.remoteAlbumEntity)
+        .insertReturning(
+          RemoteAlbumEntityCompanion(
+            id: .new(id),
+            name: .new(name ?? 'remote_album_$id'),
+            createdAt: .new(TestUtils.date(createdAt)),
+            updatedAt: .new(TestUtils.date(updatedAt)),
+            description: .new(description ?? 'Description for album $id'),
+            isActivityEnabled: .new(isActivityEnabled ?? false),
+            order: .new(order ?? .asc),
+            thumbnailAssetId: .new(thumbnailAssetId),
+          ),
+        );
+
+    await db
+        .into(db.remoteAlbumUserEntity)
+        .insert(
+          RemoteAlbumUserEntityCompanion(
+            albumId: .new(id),
+            userId: .new(TestUtils.uuid(ownerId)),
+            role: const .new(.owner),
+          ),
+        );
+
+    return album;
+  }
+
+  Future<void> newRemoteAlbumAsset({required String albumId, required String assetId}) {
+    return db
+        .into(db.remoteAlbumAssetEntity)
+        .insert(RemoteAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+  }
+
+  Future<PersonEntityData> newPerson({String? id, String? ownerId, String? name, bool? isFavorite, bool? isHidden}) {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.personEntity)
+        .insertReturning(
+          PersonEntityCompanion(
+            id: .new(id),
+            ownerId: .new(TestUtils.uuid(ownerId)),
+            name: .new(name ?? 'person_$id'),
+            isFavorite: .new(isFavorite ?? false),
+            isHidden: .new(isHidden ?? false),
+          ),
+        );
+  }
+
+  Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {
+    imageWidth ??= TestUtils.randInt(999) + 2;
+    imageHeight ??= TestUtils.randInt(999) + 2;
+
+    final x1 = TestUtils.randInt(imageWidth - 1);
+    final y1 = TestUtils.randInt(imageHeight - 1);
+    final x2 = x1 + 1 + TestUtils.randInt(imageWidth - x1 - 1);
+    final y2 = y1 + 1 + TestUtils.randInt(imageHeight - y1 - 1);
+
+    return db
+        .into(db.assetFaceEntity)
+        .insertReturning(
+          AssetFaceEntityCompanion(
+            id: .new(TestUtils.uuid()),
+            assetId: .new(TestUtils.uuid(assetId)),
+            personId: .new(TestUtils.uuid(personId)),
+            imageWidth: .new(imageWidth),
+            imageHeight: .new(imageHeight),
+            boundingBoxX1: .new(x1),
+            boundingBoxY1: .new(y1),
+            boundingBoxX2: .new(x2),
+            boundingBoxY2: .new(y2),
+            sourceType: const .new('machine-learning'),
+          ),
+        );
+  }
+
+  Future<LocalAssetEntityData> newLocalAsset({
+    String? id,
+    String? name,
+    String? checksum,
+    Option<String>? checksumOption,
+    String? previousChecksum,
+    DateTime? createdAt,
+    AssetType? type,
+    bool? isFavorite,
+    String? iCloudId,
+    Option<String>? iCloudIdOption,
+    DateTime? adjustmentTime,
+    Option<DateTime>? adjustmentTimeOption,
+    double? latitude,
+    double? longitude,
+    int? width,
+    int? height,
+    int? durationMs,
+    int? orientation,
+    DateTime? updatedAt,
+  }) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.localAssetEntity)
+        .insertReturning(
+          LocalAssetEntityCompanion(
+            id: .new(id),
+            name: .new(name ?? 'local_$id.jpg'),
+            height: .new(height ?? TestUtils.randInt(1000)),
+            width: .new(width ?? TestUtils.randInt(1000)),
+            durationMs: .new(durationMs ?? 0),
+            orientation: .new(orientation ?? 0),
+            updatedAt: .new(TestUtils.date(updatedAt)),
+            checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
+            previousChecksum: .new(previousChecksum),
+            createdAt: .new(TestUtils.date(createdAt)),
+            type: .new(type ?? .image),
+            isFavorite: .new(isFavorite ?? false),
+            iCloudId: _resolveUndefined(iCloudId, iCloudIdOption, TestUtils.uuid()),
+            adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
+            latitude: .new(latitude ?? TestUtils.randDouble(-90, 90)),
+            longitude: .new(longitude ?? TestUtils.randDouble(-180, 180)),
+          ),
+        );
+  }
+
+  /// Seeds a trashed local asset into `trashedLocalAssetEntity`
+  Future<TrashedLocalAssetEntityData> newTrashedLocalAsset({
+    String? id,
+    required String albumId,
+    String? checksum,
+    TrashOrigin? source,
+    AssetType? type,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isFavorite,
+  }) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.trashedLocalAssetEntity)
+        .insertReturning(
+          TrashedLocalAssetEntityCompanion(
+            id: .new(id),
+            albumId: .new(albumId),
+            name: .new('trashed_$id.jpg'),
+            type: .new(type ?? .image),
+            checksum: .new(checksum),
+            source: .new(source ?? TrashOrigin.remoteSync),
+            isFavorite: .new(isFavorite ?? false),
+            createdAt: .new(TestUtils.date(createdAt)),
+            updatedAt: .new(TestUtils.date(updatedAt)),
+          ),
+        );
+  }
+
+  Future<LocalAlbumEntityData> newLocalAlbum({
+    String? id,
+    String? name,
+    DateTime? updatedAt,
+    BackupSelection? backupSelection,
+    bool? isIosSharedAlbum,
+    String? linkedRemoteAlbumId,
+  }) {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.localAlbumEntity)
+        .insertReturning(
+          LocalAlbumEntityCompanion(
+            id: .new(id),
+            name: .new(name ?? 'local_album_$id'),
+            updatedAt: .new(TestUtils.date(updatedAt)),
+            backupSelection: .new(backupSelection ?? .none),
+            isIosSharedAlbum: .new(isIosSharedAlbum ?? false),
+            linkedRemoteAlbumId: .new(linkedRemoteAlbumId),
+          ),
+        );
+  }
+
+  Future<void> newLocalAlbumAsset({required String albumId, required String assetId}) => db
+      .into(db.localAlbumAssetEntity)
+      .insert(LocalAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+
+  Future<MemoryEntityData> newMemory({
+    String? id,
+    String? ownerId,
+    MemoryTypeEnum? type,
+    int? year,
+    DateTime? memoryAt,
+    DateTime? showAt,
+    DateTime? hideAt,
+    DateTime? deletedAt,
+    bool? isSaved,
+  }) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.memoryEntity)
+        .insertReturning(
+          MemoryEntityCompanion(
+            id: .new(id),
+            ownerId: .new(TestUtils.uuid(ownerId)),
+            type: .new(type ?? MemoryTypeEnum.onThisDay),
+            data: .new(MemoryData(year: year ?? 2020).toJson()),
+            isSaved: .new(isSaved ?? false),
+            memoryAt: .new(TestUtils.date(memoryAt)),
+            showAt: .new(showAt),
+            hideAt: .new(hideAt),
+            deletedAt: .new(deletedAt),
+          ),
+        );
+  }
+
+  Future<void> newMemoryAsset({required String memoryId, required String assetId}) => db
+      .into(db.memoryAssetEntity)
+      .insert(MemoryAssetEntityCompanion(memoryId: .new(memoryId), assetId: .new(assetId)));
+}

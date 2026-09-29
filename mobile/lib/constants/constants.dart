@@ -1,9 +1,5 @@
 import 'dart:io';
 
-const int noDbId = -9223372036854775808; // from Isar
-const double downloadCompleted = -1;
-const double downloadFailed = -2;
-
 const String kMobileMetadataKey = "mobile-app";
 
 // Number of log entries to retain on app start
@@ -11,11 +7,9 @@ const int kLogTruncateLimit = 2000;
 
 // Sync
 const int kSyncEventBatchSize = 5000;
-const int kFetchLocalAssetsBatchSize = 40000;
 
 // Hash batch limits
 final int kBatchHashFileLimit = Platform.isIOS ? 32 : 512;
-const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
 const String kSecuredPinCode = "secured_pin_code";
@@ -27,14 +21,13 @@ const String kBackupLivePhotoGroup = 'backup_live_photo_group';
 const String kDownloadGroupImage = 'group_image';
 const String kDownloadGroupVideo = 'group_video';
 const String kDownloadGroupLivePhoto = 'group_livephoto';
+const String kShareDownloadGroup = 'group_share';
 
 // Timeline constants
-const int kTimelineNoneSegmentSize = 120;
 const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 
 // Widget keys
-const String appShareGroupId = "group.app.immich.share";
 const String kWidgetAuthToken = "widget_auth_token";
 const String kWidgetServerEndpoint = "widget_server_url";
 const String kWidgetCustomHeaders = "widget_custom_headers";
@@ -47,9 +40,6 @@ const List<(String, String)> kWidgetNames = [
   ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiver'),
 ];
 
-const double kUploadStatusFailed = -1.0;
-const double kUploadStatusCanceled = -2.0;
-
 const int kMinMonthsToEnableScrubberSnap = 12;
 
 const String kImmichAppStoreLink = "https://apps.apple.com/app/immich/id1613945652";
@@ -59,6 +49,7 @@ const String kImmichLatestRelease = "https://github.com/immich-app/immich/releas
 const int kPhotoTabIndex = 0;
 const int kSearchTabIndex = 1;
 const int kAlbumTabIndex = 2;
+// ignore: unused-code
 const int kLibraryTabIndex = 3;
 
 // Workaround for SQLite's variable limit (SQLITE_MAX_VARIABLE_NUMBER = 32766)

@@ -1,26 +1,27 @@
-import { INestApplication } from '@nestjs/common';
+import { BadRequestException, INestApplication } from '@nestjs/common';
 import {
+  ApiBodyOptions,
   DocumentBuilder,
   OpenAPIObject,
   SwaggerCustomOptions,
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import {
-  OperationObject,
-  ReferenceObject,
-  SchemaObject,
-} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import _ from 'lodash';
+import { get, isArray, isDate, isEmpty, isObject, orderBy, unset } from 'lodash-es';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
-import parse from 'picomatch/lib/parse';
-import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
-import { extraSyncModels } from 'src/dtos/sync.dto';
-import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants.js';
+import { extraModels } from 'src/decorators.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+
+type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
+type ReferenceOrSchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
+type ReferenceObject = Extract<ReferenceOrSchemaObject, { $ref: unknown }>;
+type SchemaObject = Exclude<ReferenceOrSchemaObject, ReferenceObject>;
 
 export class ImmichStartupError extends Error {}
 export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
@@ -68,7 +69,7 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
       continue;
     }
 
-    if (_.isObject(value) && !_.isArray(value) && !_.isDate(value)) {
+    if (isObject(value) && !isArray(value) && !isDate(value)) {
       properties.push(...getKeysDeep(value, [...path, key]));
       continue;
     }
@@ -82,14 +83,14 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
 export const unsetDeep = (object: unknown, key: string) => {
   const parts = key.split('.');
   while (parts.length > 0) {
-    _.unset(object, parts);
+    unset(object, parts);
     parts.pop();
-    if (!_.isEmpty(_.get(object, parts))) {
+    if (!isEmpty(get(object, parts))) {
       break;
     }
   }
 
-  return _.isEmpty(object) ? undefined : object;
+  return isEmpty(object) ? undefined : object;
 };
 
 const isMachineLearningEnabled = (machineLearning: SystemConfig['machineLearning']) => machineLearning.enabled;
@@ -103,11 +104,37 @@ export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machi
   isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metadata.faces.import;
 
-export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
-
 export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingRepository): void => {
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
+
+export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
+  const value = await find();
+  if (!value) {
+    throw new BadRequestException(`${entity} not found`);
+  }
+
+  return value;
+};
+
+export async function* batched<T>(items: AsyncIterable<T>, size = JOBS_ASSET_PAGINATION_SIZE): AsyncGenerator<T[]> {
+  let batch: T[] = [];
+
+  for await (const item of items) {
+    batch.push(item);
+
+    if (batch.length < size) {
+      continue;
+    }
+
+    yield batch;
+    batch = [];
+  }
+
+  if (batch.length > 0) {
+    yield batch;
+  }
+}
 
 export interface OpenGraphTags {
   title: string;
@@ -150,35 +177,93 @@ export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
 const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is SchemaObject => {
-  if (typeof schema === 'string' || '$ref' in schema) {
-    return false;
-  }
-
-  return true;
+  return !(typeof schema === 'string' || '$ref' in schema);
 };
 
 const patchOpenAPI = (document: OpenAPIObject) => {
+  const removeOpenApi30IncompatibleKeys = (target: unknown) => {
+    if (!target || typeof target !== 'object') {
+      return;
+    }
+
+    if (Array.isArray(target)) {
+      for (const item of target) {
+        removeOpenApi30IncompatibleKeys(item);
+      }
+      return;
+    }
+
+    const object = target as Record<string, unknown>;
+    delete object.propertyNames;
+    delete object.contentEncoding;
+
+    for (const value of Object.values(object)) {
+      removeOpenApi30IncompatibleKeys(value);
+    }
+  };
+
   document.paths = sortKeys(document.paths);
+  // Allowed in OpenAPI v3.1 (JSON Schema 2020-12), but not in OpenAPI v3.0 (current spec).
+  removeOpenApi30IncompatibleKeys(document);
 
   if (document.components?.schemas) {
     const schemas = document.components.schemas as Record<string, SchemaObject>;
 
+    for (const schema of Object.values(schemas)) {
+      delete (schema as Record<string, unknown>).id;
+
+      // documents a property as required even though it is optional during body validation
+      for (const [key, value] of Object.entries(schema.properties ?? {})) {
+        if (!(ApiCustomExtension.Required in value)) {
+          continue;
+        }
+
+        delete (value as Record<string, unknown>)[ApiCustomExtension.Required];
+        (schema.required ??= []).push(key);
+      }
+    }
+
     document.components.schemas = sortKeys(schemas);
 
+    const errors: string[] = [];
+
     for (const [schemaName, schema] of Object.entries(schemas)) {
-      if (schema.properties) {
-        schema.properties = sortKeys(schema.properties);
+      if (!schema.properties) {
+        continue;
+      }
 
-        for (const [key, value] of Object.entries(schema.properties)) {
-          if (typeof value === 'string') {
-            continue;
-          }
+      schema.properties = sortKeys(schema.properties);
 
-          if (isSchema(value) && value.type === 'number' && value.format === 'float') {
-            throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-          }
+      for (const [key, initialValue] of Object.entries(schema.properties)) {
+        if (typeof initialValue === 'string' || !isSchema(initialValue)) {
+          continue;
         }
-        schema.required?.sort();
+
+        // check array types
+        let value: SchemaObject | ReferenceObject = initialValue;
+        if (value.type === 'array' && value.items) {
+          value = value.items;
+        }
+
+        if (!(isSchema(value) && value.type === 'number')) {
+          continue;
+        }
+
+        if (value.format === 'float') {
+          errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        }
+
+        // verify it was meant to be a number (and not an integer)
+        if (!value.format) {
+          errors.push(
+            `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
+          );
+        }
+      }
+      schema.required?.sort();
+
+      if (errors.length > 0) {
+        throw new Error(`Schema validation failed:\n  ${errors.join('\n  ')}`);
       }
     }
   }
@@ -224,7 +309,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       }
 
       if (operation.parameters) {
-        operation.parameters = _.orderBy(operation.parameters, 'name');
+        operation.parameters = orderBy(operation.parameters, 'name');
       }
     }
   }
@@ -260,11 +345,12 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
-    extraModels: extraSyncModels,
+    extraModels,
     ignoreGlobalPrefix: true,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);
+  const openApiDoc = cleanupOpenApiDoc(specification);
 
   const customOptions: SwaggerCustomOptions = {
     swaggerOptions: {
@@ -275,46 +361,21 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     customSiteTitle: 'Immich API Documentation',
   };
 
-  SwaggerModule.setup('doc', app, specification, customOptions);
+  SwaggerModule.setup('doc', app, openApiDoc, customOptions);
 
-  if (write) {
-    // Generate API Documentation only in development mode
-    const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
+  // Generate API Documentation only in development mode
+  if (!write) {
+    return;
   }
+
+  const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
+  writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
 };
 
-const convertTokenToSqlPattern = (token: parse.Token): string => {
-  switch (token.type) {
-    case 'slash': {
-      return '/';
-    }
-    case 'text': {
-      return token.value;
-    }
-    case 'globstar':
-    case 'star': {
-      return '%';
-    }
-    case 'underscore': {
-      return String.raw`\_`;
-    }
-    case 'qmark': {
-      return '_';
-    }
-    case 'dot': {
-      return '.';
-    }
-    default: {
-      return '';
-    }
-  }
-};
-
-export const globToSqlPattern = (glob: string) => {
-  const tokens = picomatch.parse(glob).tokens;
-  return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
-};
+// Compiles a glob to the equivalent Postgres regex (Postgres's Advanced Regular Expression
+// dialect is a superset of what picomatch emits, so the two stay in sync with `picomatch.isMatch`,
+// including which paths a lone `*` may cross vs `/`).
+export const globToPostgresRegex = (glob: string) => picomatch.makeRe(glob).source;
 
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));

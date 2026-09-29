@@ -1,5 +1,7 @@
 # External Libraries
 
+import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
+
 :::info
 Currently an external library can only belong to a single user which is selected when the library is initially created.
 :::
@@ -50,6 +52,8 @@ Some basic examples:
 - `**/Raw/**` will exclude all files in any directory named `Raw`
 - `**/*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
 
+Note that `*` is a wildcard matching zero or more characters (i.e., withinin a filename or single directory name). `**` matches zero or more subdirectories, recursively. It also includes any/all files within a subdirectory, i.e., when used at the end of a pattern. For example, `**/exclude_me/**` will exclude all files in any directory named `exclude_me`, as well as all files in any subdirectories of `exclude_me`, recursively.
+
 Special characters such as @ should be escaped, for instance:
 
 - `**/\@eaDir/**` will exclude all files in any directory named `@eaDir`
@@ -80,6 +84,10 @@ There is an automatic scan job that is scheduled to run once a day. Its schedule
 
 This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
 
+### Deleting a Library
+
+When deleting an external library, all assets inside are immediately deleted along with the library. Note that while a library can take a long time to fully delete in the background, it is immediately removed from the library list. If the deletion process is interrupted (for example, due to server restart), it will be cleaned up in the next nightly cron job. The cleanup process can also be manually initiated by clicking the "Scan All Libraries" button in the library list.
+
 ## Usage
 
 Let's show a concrete example where we add an existing gallery to Immich. Here, we have the following folders we want to add:
@@ -91,6 +99,8 @@ Let's show a concrete example where we add an existing gallery to Immich. Here, 
 First, we need to plan how we want to organize the libraries. The christmas trip photos should belong to its own library since we want to exclude the raw files. The videos and old photos can be in the same library since we want to import all files. We could also add all three folders to the same library if there are no files matching the Raw exclusion pattern in the other folders.
 
 ### Mount Docker Volumes
+
+<ComposeBuilder query="storage.externalLibraries.0.path=&storage.externalLibraries.0.readOnly=true" />
 
 The `immich-server` container will need access to the gallery. Modify your docker compose file as follows
 

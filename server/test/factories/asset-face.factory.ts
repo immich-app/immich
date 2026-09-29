@@ -1,10 +1,10 @@
 import { Selectable } from 'kysely';
-import { SourceType } from 'src/enum';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { build } from 'test/factories/builder.factory';
-import { PersonFactory } from 'test/factories/person.factory';
-import { AssetFaceLike, FactoryBuilder, PersonLike } from 'test/factories/types';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { SourceType } from 'src/enum.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { build } from 'test/factories/builder.factory.js';
+import { PersonFactory } from 'test/factories/person.factory.js';
+import { AssetFaceLike, FactoryBuilder, PersonLike } from 'test/factories/types.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class AssetFaceFactory {
   #person: PersonFactory | null = null;
@@ -27,7 +27,7 @@ export class AssetFaceFactory {
       imageHeight: 500,
       imageWidth: 400,
       isVisible: true,
-      personId: null,
+      personGroupId: null,
       sourceType: SourceType.MachineLearning,
       updatedAt: newDate(),
       updateId: newUuidV7(),
@@ -37,7 +37,7 @@ export class AssetFaceFactory {
 
   person(dto: PersonLike = {}, builder?: FactoryBuilder<PersonFactory>) {
     this.#person = build(PersonFactory.from(dto), builder);
-    this.value.personId = this.#person.build().id;
+    this.value.personGroupId = this.#person.build().personGroupId;
     return this;
   }
 

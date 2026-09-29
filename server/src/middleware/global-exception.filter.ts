@@ -1,8 +1,11 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
-import { Response } from 'express';
+import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { logGlobalError } from 'src/utils/logger';
+import { ZodSerializationException, ZodValidationException } from 'nestjs-zod';
+import { ZodError } from 'zod';
+import { ImmichHeader } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { isHttpException, onRouteError } from 'src/utils/logger.js';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter<Error> {
@@ -14,33 +17,48 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   }
 
   catch(error: Error, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const { status, body } = this.fromError(error);
-    if (!response.headersSent) {
-      response.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
-    }
+    const http = host.switchToHttp();
+    this.handleError(http.getRequest<Request>(), http.getResponse<Response>(), error);
   }
 
-  handleError(res: Response, error: Error) {
-    const { status, body } = this.fromError(error);
-    if (!res.headersSent) {
-      res.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
+  handleError(req: Request, res: Response, error: Error) {
+    const { canWrite } = onRouteError(req, res, error, this.logger);
+    if (!canWrite) {
+      return;
     }
+
+    const { status, body } = this.fromError(error);
+
+    res
+      .header({
+        [ImmichHeader.CorrelationId]: this.cls.getId(),
+        'Content-Type': 'application/json',
+      })
+      .status(status)
+      .json(body);
   }
 
   private fromError(error: Error) {
-    logGlobalError(this.logger, error);
-
-    if (error instanceof HttpException) {
+    if (isHttpException(error)) {
       const status = error.getStatus();
-      let body = error.getResponse();
+      const response = error.getResponse();
+      const body: Record<string, unknown> =
+        typeof response === 'string' ? { message: response } : { ...(response as object) };
 
-      // unclear what circumstances would return a string
-      if (typeof body === 'string') {
-        body = { message: body };
+      // handle both request and response validation errors
+      if (error instanceof ZodValidationException || error instanceof ZodSerializationException) {
+        const zodError = error.getZodError();
+        if (zodError instanceof ZodError && zodError.issues.length > 0) {
+          return {
+            status,
+            body: { message: 'Validation failed', errors: zodError.issues },
+          };
+        }
       }
 
+      // remove fields injected by NestJS that duplicate the HTTP response line
+      delete body['error'];
+      delete body['statusCode'];
       return { status, body };
     }
 

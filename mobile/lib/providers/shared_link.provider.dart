@@ -8,7 +8,7 @@ class SharedLinksNotifier extends StateNotifier<AsyncValue<List<SharedLink>>> {
   final SharedLinkService _sharedLinkService;
 
   SharedLinksNotifier(this._sharedLinkService) : super(const AsyncLoading()) {
-    fetchLinks();
+    unawaited(fetchLinks());
   }
 
   Future<void> fetchLinks() async {

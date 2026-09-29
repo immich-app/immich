@@ -161,6 +161,30 @@ describe('CancellableTask', () => {
       expect(task.executed).toBe(true);
     });
 
+    it('should return CANCELED when concurrent caller is waiting and task is canceled', async () => {
+      const task = new CancellableTask();
+      let resolveTask: () => void;
+      const taskPromise = new Promise<void>((resolve) => {
+        resolveTask = resolve;
+      });
+      const taskFn = async (signal: AbortSignal) => {
+        await taskPromise;
+        if (signal.aborted) {
+          throw new DOMException('Aborted', 'AbortError');
+        }
+      };
+
+      const promise1 = task.execute(taskFn, true);
+      const promise2 = task.execute(taskFn, true);
+
+      task.cancel();
+      resolveTask!();
+
+      const [result1, result2] = await Promise.all([promise1, promise2]);
+      expect(result1).toBe('CANCELED');
+      expect(result2).toBe('CANCELED');
+    });
+
     it('should not cancel if task is already executed', async () => {
       const task = new CancellableTask();
       const taskFn = vi.fn(async () => {});

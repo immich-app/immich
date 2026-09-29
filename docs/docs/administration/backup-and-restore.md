@@ -19,7 +19,7 @@ Immich stores [file paths](https://github.com/immich-app/immich/discussions/3299
 
 Immich automatically creates database backups for disaster-recovery purposes. These backups are stored in `UPLOAD_LOCATION/backups` and can be managed through the web interface.
 
-You can adjust the backup schedule and retention settings in **Administration > Settings > Backup** (default: keep last 14 backups, create daily at 2:00 AM).
+You can adjust the backup schedule and retention settings in **Administration > Settings > Database Dump Settings** (default: keep last 14 backups, create daily at 2:00 AM).
 
 :::caution
 Database backups do **not** contain photos or videos — only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.
@@ -31,7 +31,7 @@ You can trigger a database backup manually:
 
 1. Go to **Administration > Job Queues**
 2. Click **Create job** in the top right
-3. Select **Create Database Backup** and click **Confirm**
+3. Select **Create Database Dump** and click **Confirm**
 
 The backup will appear in `UPLOAD_LOCATION/backups` and counts toward your retention limit.
 
@@ -210,7 +210,7 @@ The provided restore process ensures your database is never in a broken state by
 
 ## Filesystem
 
-Immich stores two types of content in the filesystem: (a) original, unmodified assets (photos and videos), and (b) generated content. We recommend backing up the entire contents of `UPLOAD_LOCATION`, but only the original content is critical, which is stored in the following folders:
+Immich does not handle filesystem backups for you. You have to arrange these yourself! Immich stores two types of content in the filesystem: (a) original, unmodified assets (photos and videos), and (b) generated content. We recommend backing up the entire contents of `UPLOAD_LOCATION`, but only the original content is critical, which is stored in the following folders:
 
 1. `UPLOAD_LOCATION/library`
 2. `UPLOAD_LOCATION/upload`

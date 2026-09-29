@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 
 export enum SlideshowState {
   PlaySlideshow = 'play-slideshow',
+  PauseSlideshow = 'pause-slideshow',
   StopSlideshow = 'stop-slideshow',
   None = 'none',
 }
@@ -19,11 +20,10 @@ export enum SlideshowLook {
   BlurredBackground = 'blurred-background',
 }
 
-export const slideshowLookCssMapping: Record<SlideshowLook, string> = {
-  [SlideshowLook.Contain]: 'object-contain',
-  [SlideshowLook.Cover]: 'object-cover',
-  [SlideshowLook.BlurredBackground]: 'object-contain',
-};
+export enum SlideshowMetadataOverlayMode {
+  DescriptionOnly = 'description-only',
+  Full = 'full',
+}
 
 function createSlideshowStore() {
   const restartState = writable<boolean>(false);
@@ -41,6 +41,11 @@ function createSlideshowStore() {
   const slideshowTransition = persisted<boolean>('slideshow-transition', true);
   const slideshowAutoplay = persisted<boolean>('slideshow-autoplay', true, {});
   const slideshowRepeat = persisted<boolean>('slideshow-repeat', false);
+  const slideshowShowMetadataOverlay = persisted<boolean>('slideshow-show-metadata-overlay', false);
+  const slideshowMetadataOverlayMode = persisted<SlideshowMetadataOverlayMode>(
+    'slideshow-metadata-overlay-mode',
+    SlideshowMetadataOverlayMode.Full,
+  );
 
   return {
     restartProgress: {
@@ -48,10 +53,12 @@ function createSlideshowStore() {
       set: (value: boolean) => {
         // Trigger an action whenever the restartProgress is set to true. Automatically
         // reset the restart state after that
-        if (value) {
-          restartState.set(true);
-          restartState.set(false);
+        if (!value) {
+          return;
         }
+
+        restartState.set(true);
+        restartState.set(false);
       },
     },
     stopProgress: {
@@ -59,10 +66,12 @@ function createSlideshowStore() {
       set: (value: boolean) => {
         // Trigger an action whenever the stopProgress is set to true. Automatically
         // reset the stop state after that
-        if (value) {
-          stopState.set(true);
-          stopState.set(false);
+        if (!value) {
+          return;
         }
+
+        stopState.set(true);
+        stopState.set(false);
       },
     },
     slideshowNavigation,
@@ -73,6 +82,8 @@ function createSlideshowStore() {
     slideshowTransition,
     slideshowAutoplay,
     slideshowRepeat,
+    slideshowShowMetadataOverlay,
+    slideshowMetadataOverlayMode,
   };
 }
 

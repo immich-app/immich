@@ -1,6 +1,6 @@
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { MaintenanceService } from 'src/services/maintenance.service';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(MaintenanceService.name, () => {
   let sut: MaintenanceService;
@@ -130,6 +130,22 @@ describe(MaintenanceService.name, () => {
 
       expect(mocks.event.emit).toHaveBeenCalledWith('AppRestart', {
         isMaintenanceMode: true,
+      });
+    });
+  });
+
+  describe('startRestoreFlow', () => {
+    it('should start maintenance mode and return a jwt', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
+
+      await expect(sut.startRestoreFlow()).resolves.toMatchObject({ jwt: expect.any(String) });
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
+        isMaintenanceMode: true,
+        secret: expect.stringMatching(/^\w{128}$/),
+        action: {
+          action: MaintenanceAction.SelectDatabaseRestore,
+        },
       });
     });
   });

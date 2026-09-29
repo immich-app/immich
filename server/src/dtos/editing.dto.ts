@@ -1,7 +1,5 @@
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transformer';
-import { ArrayMinSize, IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
-import { IsAxisAlignedRotation, IsUniqueEditActions, ValidateUUID } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
 export enum AssetEditAction {
   Crop = 'crop',
@@ -9,130 +7,130 @@ export enum AssetEditAction {
   Mirror = 'mirror',
 }
 
+export const AssetEditActionSchema = z
+  .enum(AssetEditAction)
+  .describe('Type of edit action to perform')
+  .meta({ id: 'AssetEditAction' });
+
 export enum MirrorAxis {
   Horizontal = 'horizontal',
   Vertical = 'vertical',
 }
 
-export class CropParameters {
-  @IsInt()
-  @Min(0)
-  @ApiProperty({ description: 'Top-Left X coordinate of crop' })
-  x!: number;
+const MirrorAxisSchema = z.enum(['horizontal', 'vertical']).describe('Axis to mirror along').meta({ id: 'MirrorAxis' });
 
-  @IsInt()
-  @Min(0)
-  @ApiProperty({ description: 'Top-Left Y coordinate of crop' })
-  y!: number;
+const CropParametersSchema = z
+  .object({
+    x: z.int().min(0).describe('Top-Left X coordinate of crop'),
+    y: z.int().min(0).describe('Top-Left Y coordinate of crop'),
+    width: z.int().min(1).describe('Width of the crop'),
+    height: z.int().min(1).describe('Height of the crop'),
+  })
+  .meta({ id: 'CropParameters' });
 
-  @IsInt()
-  @Min(1)
-  @ApiProperty({ description: 'Width of the crop' })
-  width!: number;
+const RotateParametersSchema = z
+  .object({
+    angle: z
+      .int()
+      .min(0)
+      .max(270)
+      .refine((v) => [0, 90, 180, 270].includes(v), {
+        error: 'Angle must be one of the following values: 0, 90, 180, 270',
+      })
+      .describe('Rotation angle in degrees'),
+  })
+  .meta({ id: 'RotateParameters' });
 
-  @IsInt()
-  @Min(1)
-  @ApiProperty({ description: 'Height of the crop' })
-  height!: number;
-}
+const MirrorParametersSchema = z
+  .object({
+    axis: MirrorAxisSchema,
+  })
+  .meta({ id: 'MirrorParameters' });
 
-export class RotateParameters {
-  @IsAxisAlignedRotation()
-  @ApiProperty({ description: 'Rotation angle in degrees' })
-  angle!: number;
-}
+// TODO: ideally we would use the discriminated union directly in the future not only for type support but also for validation and openapi generation
+const __AssetEditActionItemSchema = z.discriminatedUnion('action', [
+  z.object({ action: AssetEditActionSchema.extract(['Crop']), parameters: CropParametersSchema }),
+  z.object({ action: AssetEditActionSchema.extract(['Rotate']), parameters: RotateParametersSchema }),
+  z.object({ action: AssetEditActionSchema.extract(['Mirror']), parameters: MirrorParametersSchema }),
+]);
 
-export class MirrorParameters {
-  @IsEnum(MirrorAxis)
-  @ApiProperty({ enum: MirrorAxis, enumName: 'MirrorAxis', description: 'Axis to mirror along' })
-  axis!: MirrorAxis;
-}
+const AssetEditParametersSchema = z
+  .union([CropParametersSchema, RotateParametersSchema, MirrorParametersSchema], {
+    error: getExpectedKeysByActionMessage,
+  })
+  .describe('List of edit actions to apply (crop, rotate, or mirror)');
 
-class AssetEditActionBase {
-  @IsEnum(AssetEditAction)
-  @ApiProperty({ enum: AssetEditAction, enumName: 'AssetEditAction', description: 'Type of edit action to perform' })
-  action!: AssetEditAction;
-}
-
-export class AssetEditActionCrop extends AssetEditActionBase {
-  @ValidateNested()
-  @Type(() => CropParameters)
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  parameters!: CropParameters;
-}
-
-export class AssetEditActionRotate extends AssetEditActionBase {
-  @ValidateNested()
-  @Type(() => RotateParameters)
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  parameters!: RotateParameters;
-}
-
-export class AssetEditActionMirror extends AssetEditActionBase {
-  @ValidateNested()
-  @Type(() => MirrorParameters)
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  parameters!: MirrorParameters;
-}
-
-export type AssetEditActionItem =
-  | {
-      action: AssetEditAction.Crop;
-      parameters: CropParameters;
-    }
-  | {
-      action: AssetEditAction.Rotate;
-      parameters: RotateParameters;
-    }
-  | {
-      action: AssetEditAction.Mirror;
-      parameters: MirrorParameters;
-    };
-
-export type AssetEditActionParameter = {
-  [AssetEditAction.Crop]: CropParameters;
-  [AssetEditAction.Rotate]: RotateParameters;
-  [AssetEditAction.Mirror]: MirrorParameters;
-};
-
-type AssetEditActions = AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror;
-const actionToClass: Record<AssetEditAction, ClassConstructor<AssetEditActions>> = {
-  [AssetEditAction.Crop]: AssetEditActionCrop,
-  [AssetEditAction.Rotate]: AssetEditActionRotate,
-  [AssetEditAction.Mirror]: AssetEditActionMirror,
+const actionParameterMap = {
+  [AssetEditAction.Crop]: CropParametersSchema,
+  [AssetEditAction.Rotate]: RotateParametersSchema,
+  [AssetEditAction.Mirror]: MirrorParametersSchema,
 } as const;
 
-const getActionClass = (item: { action: AssetEditAction }): ClassConstructor<AssetEditActions> =>
-  actionToClass[item.action];
+function getExpectedKeysByActionMessage(): string {
+  const expectedByAction = Object.entries(actionParameterMap)
+    .map(([action, schema]) => `${action}: [${Object.keys(schema.shape).join(', ')}]`)
+    .join('; ');
 
-@ApiExtraModels(AssetEditActionRotate, AssetEditActionMirror, AssetEditActionCrop)
-export class AssetEditActionListDto {
-  /** list of edits */
-  @ArrayMinSize(1)
-  @IsUniqueEditActions()
-  @ValidateNested({ each: true })
-  @Transform(({ value: edits }) =>
-    Array.isArray(edits) ? edits.map((item) => plainToInstance(getActionClass(item), item)) : edits,
-  )
-  @ApiProperty({
-    items: {
-      anyOf: Object.values(actionToClass).map((type) => ({ $ref: getSchemaPath(type) })),
-      discriminator: {
-        propertyName: 'action',
-        mapping: Object.fromEntries(
-          Object.entries(actionToClass).map(([action, type]) => [action, getSchemaPath(type)]),
-        ),
-      },
-    },
-    description: 'List of edit actions to apply (crop, rotate, or mirror)',
+  return `Invalid parameters for action, expected keys by action: ${expectedByAction}`;
+}
+
+function isParametersValidForAction(edit: z.infer<typeof AssetEditActionItemSchema>): boolean {
+  return actionParameterMap[edit.action].safeParse(edit.parameters).success;
+}
+
+const AssetEditActionItemSchema = z
+  .object({
+    action: AssetEditActionSchema,
+    parameters: AssetEditParametersSchema,
   })
-  edits!: AssetEditActionItem[];
+  .superRefine((edit, ctx) => {
+    if (!isParametersValidForAction(edit)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['parameters'],
+        message: `Invalid parameters for action '${edit.action}', expecting keys: ${Object.keys(actionParameterMap[edit.action].shape).join(', ')}`,
+      });
+    }
+  })
+  .meta({ id: 'AssetEditActionItemDto' });
+
+export type AssetEditActionItem = z.infer<typeof __AssetEditActionItemSchema>;
+export type AssetEditParameters = AssetEditActionItem['parameters'];
+
+function uniqueEditActions(edits: z.infer<typeof AssetEditActionItemSchema>[]): boolean {
+  const keys = new Set<string>();
+  for (const edit of edits) {
+    const key = edit.action === 'mirror' ? `mirror-${JSON.stringify(edit.parameters)}` : edit.action;
+    if (keys.has(key)) {
+      return false;
+    }
+    keys.add(key);
+  }
+  return true;
 }
 
-export class AssetEditsDto extends AssetEditActionListDto {
-  @ValidateUUID({ description: 'Asset ID to apply edits to' })
-  assetId!: string;
-}
+const AssetEditsCreateSchema = z
+  .object({
+    edits: z
+      .array(AssetEditActionItemSchema)
+      .min(1)
+      .describe('List of edit actions to apply (crop, rotate, or mirror)')
+      .refine(uniqueEditActions, { error: 'Duplicate edit actions are not allowed' }),
+  })
+  .meta({ id: 'AssetEditsCreateDto' });
+
+const AssetEditActionItemResponseSchema = AssetEditActionItemSchema.extend({
+  id: z.uuidv4().describe('Asset edit ID'),
+}).meta({ id: 'AssetEditActionItemResponseDto' });
+
+const AssetEditsResponseSchema = z
+  .object({
+    assetId: z.uuidv4().describe('Asset ID these edits belong to'),
+    edits: z.array(AssetEditActionItemResponseSchema).describe('List of edit actions applied to the asset'),
+  })
+  .meta({ id: 'AssetEditsResponseDto' });
+
+export class AssetEditActionItemResponseDto extends createZodDto(AssetEditActionItemResponseSchema) {}
+export class AssetEditsCreateDto extends createZodDto(AssetEditsCreateSchema) {}
+export class AssetEditsResponseDto extends createZodDto(AssetEditsResponseSchema) {}
+export type CropParameters = z.infer<typeof CropParametersSchema>;

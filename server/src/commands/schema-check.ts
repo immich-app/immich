@@ -1,7 +1,7 @@
+import { asHuman } from '@immich/sql-tools';
 import { Command, CommandRunner } from 'nest-commander';
-import { ErrorMessages } from 'src/constants';
-import { CliService } from 'src/services/cli.service';
-import { asHuman } from 'src/sql-tools/schema-diff';
+import { ErrorMessages } from 'src/constants.js';
+import { CliService } from 'src/services/cli.service.js';
 
 @Command({
   name: 'schema-check',
@@ -28,8 +28,12 @@ export class SchemaCheck extends CommandRunner {
             }
 
             case 'missing': {
-              console.log(`  - ${migration.name} exists, but has not been applied to the database`);
+              console.log(`  - ${migration.name} exists on disk, but has not been applied to the database`);
               break;
+            }
+
+            case 'applied': {
+              break; // happy path, do nothing
             }
           }
         }

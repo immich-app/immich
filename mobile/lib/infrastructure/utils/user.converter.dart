@@ -40,7 +40,7 @@ abstract final class UserConverter {
     updatedAt: DateTime.now(),
     avatarColor: dto.avatarColor.toAvatarColor(),
     memoryEnabled: false,
-    inTimeline: dto.inTimeline ?? false,
+    inTimeline: dto.inTimeline.orElse(null) ?? false,
     isPartnerSharedBy: false,
     isPartnerSharedWith: false,
     profileChangedAt: dto.profileChangedAt,

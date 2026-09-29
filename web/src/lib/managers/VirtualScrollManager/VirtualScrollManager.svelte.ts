@@ -55,7 +55,7 @@ export abstract class VirtualScrollManager {
   }
 
   #setHeaderHeight(value: number) {
-    if (this.#headerHeight == value) {
+    if (this.#headerHeight === value) {
       return false;
     }
     this.#headerHeight = value;
@@ -67,7 +67,7 @@ export abstract class VirtualScrollManager {
   }
 
   #setGap(value: number) {
-    if (this.#gap == value) {
+    if (this.#gap === value) {
       return false;
     }
     this.#gap = value;
@@ -79,7 +79,7 @@ export abstract class VirtualScrollManager {
   }
 
   #setRowHeight(value: number) {
-    if (this.#rowHeight == value) {
+    if (this.#rowHeight === value) {
       return false;
     }
     this.#rowHeight = value;
@@ -138,7 +138,7 @@ export abstract class VirtualScrollManager {
     return this.viewportWidth === 0 || this.viewportHeight === 0;
   }
 
-  protected updateIntersections(): void {}
+  protected updateViewportProximities(): void {}
 
   protected updateViewportGeometry(_: boolean) {}
 
@@ -156,12 +156,12 @@ export abstract class VirtualScrollManager {
     const scrollTop = this.scrollTop;
     if (this.#scrollTop !== scrollTop) {
       this.#scrollTop = scrollTop;
-      this.updateIntersections();
+      this.updateViewportProximities();
     }
   }
 
   refreshLayout() {
-    this.updateIntersections();
+    this.updateViewportProximities();
   }
 
   destroy(): void {}

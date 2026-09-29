@@ -1,19 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { escape } from 'lodash-es';
 import { readFileSync } from 'node:fs';
-import sanitizeHtml from 'sanitize-html';
-import { ONE_HOUR } from 'src/constants';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { AuthService } from 'src/services/auth.service';
-import { SharedLinkService } from 'src/services/shared-link.service';
-import { VersionService } from 'src/services/version.service';
-import { OpenGraphTags } from 'src/utils/misc';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { AuthService } from 'src/services/auth.service.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
+import { OpenGraphTags } from 'src/utils/misc.js';
 
 export const render = (index: string, meta: OpenGraphTags) => {
   const [title, description, imageUrl] = [meta.title, meta.description, meta.imageUrl].map((item) =>
-    item ? sanitizeHtml(item, { allowedTags: [] }) : '',
+    item ? escape(item) : '',
   );
 
   const tags = `
@@ -23,16 +20,9 @@ export const render = (index: string, meta: OpenGraphTags) => {
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}
+    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}`;
 
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${title}" />
-    <meta name="twitter:description" content="${description}" />
-
-    ${imageUrl ? `<meta name="twitter:image" content="${imageUrl}" />` : ''}`;
-
-  return index.replace('<!-- metadata:tags -->', tags);
+  return index.replace('<!-- metadata:tags -->', () => tags);
 };
 
 @Injectable()
@@ -40,16 +30,10 @@ export class ApiService {
   constructor(
     private authService: AuthService,
     private sharedLinkService: SharedLinkService,
-    private versionService: VersionService,
     private configRepository: ConfigRepository,
     private logger: LoggingRepository,
   ) {
     this.logger.setContext(ApiService.name);
-  }
-
-  @Interval(ONE_HOUR.as('milliseconds'))
-  async onVersionCheck() {
-    await this.versionService.handleQueueVersionCheck();
   }
 
   ssr(excludePaths: string[]) {
@@ -70,6 +54,13 @@ export class ApiService {
         excludePaths.some((item) => request.url.startsWith(item))
       ) {
         return next();
+      }
+
+      const responseType = request.accepts('text/html');
+      if (!responseType) {
+        throw new NotAcceptableException(
+          `The route ${request.path} was requested as ${request.header('accept')}, but only returns text/html`,
+        );
       }
 
       let status = 200;
@@ -105,7 +96,7 @@ export class ApiService {
         html = render(index, meta);
       }
 
-      res.status(status).type('text/html').header('Cache-Control', 'no-store').send(html);
+      res.status(status).type(responseType).header('Cache-Control', 'no-store').send(html);
     };
   }
 }

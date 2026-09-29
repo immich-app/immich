@@ -1,4 +1,4 @@
-import { mimeTypes } from 'src/utils/mime-types';
+import { mimeTypes } from 'src/utils/mime-types.js';
 
 describe('mimeTypes', () => {
   for (const { mimetype, extension } of [
@@ -23,9 +23,11 @@ describe('mimeTypes', () => {
     { mimetype: 'image/hif', extension: '.hif' },
     { mimetype: 'image/iiq', extension: '.iiq' },
     { mimetype: 'image/jp2', extension: '.jp2' },
+    { mimetype: 'image/jpeg', extension: '.jfif' },
     { mimetype: 'image/jpeg', extension: '.jpe' },
     { mimetype: 'image/jpeg', extension: '.jpeg' },
     { mimetype: 'image/jpeg', extension: '.jpg' },
+    { mimetype: 'image/jpeg', extension: '.mpo' },
     { mimetype: 'image/jxl', extension: '.jxl' },
     { mimetype: 'image/k25', extension: '.k25' },
     { mimetype: 'image/kdc', extension: '.kdc' },
@@ -83,6 +85,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/mp2t', extension: '.m2t' },
     { mimetype: 'video/mp2t', extension: '.m2ts' },
     { mimetype: 'video/mp2t', extension: '.mts' },
+    { mimetype: 'video/mp2t', extension: '.ts' },
     { mimetype: 'video/mp4', extension: '.mp4' },
     { mimetype: 'video/mpeg', extension: '.mpe' },
     { mimetype: 'video/mpeg', extension: '.mpeg' },
@@ -149,6 +152,33 @@ describe('mimeTypes', () => {
     for (const [extension, v] of Object.entries(mimeTypes.image)) {
       it(`should lookup ${extension}`, () => {
         expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
+      });
+    }
+  });
+
+  describe('canBeTransparent', () => {
+    for (const img of [
+      'a.avif',
+      'a.bmp',
+      'a.gif',
+      'a.heic',
+      'a.heif',
+      'a.hif',
+      'a.jxl',
+      'a.png',
+      'a.svg',
+      'a.tif',
+      'a.tiff',
+      'a.webp',
+    ]) {
+      it(`should return true for ${img}`, () => {
+        expect(mimeTypes.canBeTransparent(img)).toBe(true);
+      });
+    }
+
+    for (const img of ['a.jpg', 'a.jpeg', 'a.jpe', 'a.insp', 'a.jp2', 'a.cr3', 'a.dng', 'a.nef', 'a.arw']) {
+      it(`should return false for ${img}`, () => {
+        expect(mimeTypes.canBeTransparent(img)).toBe(false);
       });
     }
   });

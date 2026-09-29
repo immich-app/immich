@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:immich_ui/src/components/icon_button.dart';
 import 'package:immich_ui/src/types.dart';
-
-import 'icon_button.dart';
 
 class ImmichCloseButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -17,10 +16,9 @@ class ImmichCloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ImmichIconButton(
-        key: key,
-        icon: Icons.close,
-        color: color,
-        variant: variant,
-        onPressed: onPressed ?? () => Navigator.of(context).pop(),
-      );
+    icon: Icons.close,
+    color: color,
+    variant: variant,
+    onPressed: onPressed ?? () => Navigator.of(context).pop(),
+  );
 }

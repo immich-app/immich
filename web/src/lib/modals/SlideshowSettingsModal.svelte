@@ -1,17 +1,13 @@
 <script lang="ts">
-  import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
-  import { Field, FormModal, HelperText, NumberInput, Switch } from '@immich/ui';
-  import {
-    mdiArrowDownThin,
-    mdiArrowUpThin,
-    mdiFitToPageOutline,
-    mdiFitToScreenOutline,
-    mdiPanorama,
-    mdiShuffle,
-  } from '@mdi/js';
+  import { Field, FormModal, HelperText, NumberInput, Select, Switch } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
-  import { SlideshowLook, SlideshowNavigation, SlideshowState, slideshowStore } from '../stores/slideshow.store';
+  import {
+    SlideshowLook,
+    SlideshowMetadataOverlayMode,
+    SlideshowNavigation,
+    SlideshowState,
+    slideshowStore,
+  } from '../stores/slideshow.store';
 
   const {
     slideshowDelay,
@@ -22,6 +18,8 @@
     slideshowAutoplay,
     slideshowRepeat,
     slideshowState,
+    slideshowShowMetadataOverlay,
+    slideshowMetadataOverlayMode,
   } = slideshowStore;
 
   type Props = {
@@ -38,29 +36,31 @@
   let tempSlideshowTransition = $state($slideshowTransition);
   let tempSlideshowAutoplay = $state($slideshowAutoplay);
   let tempSlideshowRepeat = $state($slideshowRepeat);
+  let tempSlideshowShowMetadataOverlay = $state($slideshowShowMetadataOverlay);
+  let tempSlideshowMetadataOverlayMode = $state($slideshowMetadataOverlayMode);
 
-  const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
-    [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
-    [SlideshowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: $t('backward') },
-    [SlideshowNavigation.DescendingOrder]: { icon: mdiArrowDownThin, title: $t('forward') },
-  };
+  const navigationOptions = [
+    { value: SlideshowNavigation.Shuffle, label: $t('shuffle') },
+    { value: SlideshowNavigation.AscendingOrder, label: $t('backward') },
+    { value: SlideshowNavigation.DescendingOrder, label: $t('forward') },
+  ];
 
-  const lookOptions: Record<SlideshowLook, RenderedOption> = {
-    [SlideshowLook.Contain]: { icon: mdiFitToScreenOutline, title: $t('contain') },
-    [SlideshowLook.Cover]: { icon: mdiFitToPageOutline, title: $t('cover') },
-    [SlideshowLook.BlurredBackground]: { icon: mdiPanorama, title: $t('blurred_background') },
-  };
+  const lookOptions = [
+    { value: SlideshowLook.Contain, label: $t('contain') },
+    { value: SlideshowLook.Cover, label: $t('cover') },
+    { value: SlideshowLook.BlurredBackground, label: $t('blurred_background') },
+  ];
 
-  const handleToggle = <Type extends SlideshowNavigation | SlideshowLook>(
-    record: RenderedOption,
-    options: Record<Type, RenderedOption>,
-  ): undefined | Type => {
-    for (const [key, option] of Object.entries(options)) {
-      if (option === record) {
-        return key as Type;
-      }
-    }
-  };
+  const metadataOverlayModeOptions = [
+    {
+      value: SlideshowMetadataOverlayMode.DescriptionOnly,
+      label: $t('slideshow_metadata_overlay_mode_description_only'),
+    },
+    {
+      value: SlideshowMetadataOverlayMode.Full,
+      label: $t('slideshow_metadata_overlay_mode_full'),
+    },
+  ];
 
   const onSubmit = () => {
     $slideshowDelay = tempSlideshowDelay;
@@ -71,29 +71,21 @@
     $slideshowAutoplay = tempSlideshowAutoplay;
     $slideshowRepeat = tempSlideshowRepeat;
     $slideshowState = SlideshowState.PlaySlideshow;
+    $slideshowShowMetadataOverlay = tempSlideshowShowMetadataOverlay;
+    $slideshowMetadataOverlayMode = tempSlideshowMetadataOverlayMode;
     onClose();
   };
 </script>
 
 <FormModal size="small" title={$t('slideshow_settings')} {onClose} {onSubmit}>
   <div class="flex flex-col gap-4">
-    <SettingDropdown
-      title={$t('direction')}
-      options={Object.values(navigationOptions)}
-      selectedOption={navigationOptions[tempSlideshowNavigation]}
-      onToggle={(option) => {
-        tempSlideshowNavigation = handleToggle(option, navigationOptions) || tempSlideshowNavigation;
-      }}
-    />
+    <Field label={$t('direction')}>
+      <Select bind:value={tempSlideshowNavigation} options={navigationOptions} />
+    </Field>
 
-    <SettingDropdown
-      title={$t('look')}
-      options={Object.values(lookOptions)}
-      selectedOption={lookOptions[tempSlideshowLook]}
-      onToggle={(option) => {
-        tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
-      }}
-    />
+    <Field label={$t('look')}>
+      <Select bind:value={tempSlideshowLook} options={lookOptions} />
+    </Field>
 
     <Field label={$t('autoplay_slideshow')}>
       <Switch bind:checked={tempSlideshowAutoplay} />
@@ -109,6 +101,14 @@
 
     <Field label={$t('slideshow_repeat')} description={$t('slideshow_repeat_description')}>
       <Switch bind:checked={tempSlideshowRepeat} />
+    </Field>
+
+    <Field label={$t('show_slideshow_metadata_overlay')}>
+      <Switch bind:checked={tempSlideshowShowMetadataOverlay} />
+    </Field>
+
+    <Field label={$t('slideshow_metadata_overlay_mode')} disabled={!tempSlideshowShowMetadataOverlay}>
+      <Select bind:value={tempSlideshowMetadataOverlayMode} options={metadataOverlayModeOptions} />
     </Field>
 
     <Field label={$t('duration')}>

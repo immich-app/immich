@@ -11,7 +11,8 @@ import {
   randomThumbnail,
   TimelineData,
 } from 'src/ui/generators/timeline';
-import { sleep } from 'src/ui/specs/timeline/utils';
+import { sleep } from 'src/ui/specs/timeline/utils.js';
+import { MINIMAL_MP4_BUFFER } from './face-editor-network';
 
 export class TimelineTestContext {
   slowBucket = false;
@@ -39,7 +40,8 @@ export const setupTimelineMockApiRoutes = async (
         contentType: 'application/json',
         json: getTimeBuckets(timelineRestData, isTrashed, isArchived, isFavorite, albumId, changes),
       });
-    } else if (pathname === '/api/timeline/bucket') {
+    }
+    if (pathname === '/api/timeline/bucket') {
       const timeBucket = url.searchParams.get('timeBucket');
       if (!timeBucket) {
         return route.continue();
@@ -133,6 +135,14 @@ export const setupTimelineMockApiRoutes = async (
       });
     }
     return route.continue();
+  });
+
+  await context.route('**/api/assets/*/video/playback*', async (route) => {
+    return route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'video/mp4' },
+      body: MINIMAL_MP4_BUFFER,
+    });
   });
 
   await context.route('**/api/albums/**', async (route, request) => {

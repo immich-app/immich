@@ -1,8 +1,8 @@
 import { LoginResponseDto, ManualJobName } from '@immich/sdk';
-import { errorDto } from 'src/responses';
-import { app, utils } from 'src/utils';
+import { errorDto } from 'src/responses.js';
+import { app, utils } from 'src/utils.js';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 describe('/admin/database-backups', () => {
   let cookie: string | undefined;
@@ -10,7 +10,12 @@ describe('/admin/database-backups', () => {
 
   beforeAll(async () => {
     await utils.resetDatabase();
-    admin = await utils.adminSetup();
+    admin = await utils.adminSetup({
+      onboarding: false,
+    });
+  });
+
+  beforeEach(async () => {
     await utils.resetBackups(admin.accessToken);
   });
 
@@ -94,14 +99,16 @@ describe('/admin/database-backups', () => {
         ({ status, body }) => status === 200 && !body.maintenanceMode,
       );
 
-      admin = await utils.adminSetup();
+      admin = await utils.adminSetup({
+        onboarding: false,
+      });
     });
 
     it.sequential('should not work when the server is configured', async () => {
       const { status, body } = await request(app).post('/admin/database-backups/start-restore').send();
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('The server already has an admin'));
+      expect(body).toEqual(errorDto.badRequest('Admin setup is not available'));
     });
 
     it.sequential('should enter maintenance mode in "database restore mode"', async () => {
@@ -111,7 +118,7 @@ describe('/admin/database-backups', () => {
 
       expect(status).toBe(201);
 
-      cookie = headers['set-cookie'][0].split(';')[0];
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
 
       await expect
         .poll(
@@ -217,7 +224,7 @@ describe('/admin/database-backups', () => {
         });
 
       expect(status).toBe(201);
-      cookie = headers['set-cookie'][0].split(';')[0];
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
 
       await expect
         .poll(
@@ -288,7 +295,7 @@ describe('/admin/database-backups', () => {
         });
 
       expect(status).toBe(201);
-      cookie = headers['set-cookie'][0].split(';')[0];
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
 
       await expect
         .poll(

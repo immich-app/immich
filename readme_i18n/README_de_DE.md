@@ -31,14 +31,18 @@
   <a href="README_zh_TW.md">正體中文</a>
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_bg_BG.md">Български</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_vi_VN.md">Tiếng Việt</a>
   <a href="README_th_TH.md">ภาษาไทย</a>
+  <a href="README_ml_IN.md">മലയാളം</a>
 </p>
 
-- ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
+> [!WARNING]
+> ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
+>
 
 > [!NOTE]
 > Die Hauptdokumentation, einschließlich der Installationsanleitungen, befinden sich unter https://immich.app/.
@@ -49,7 +53,7 @@
 - [Offizielle Dokumentation](https://docs.immich.app)
 - [Über Immich](https://docs.immich.app/overview/introduction)
 - [Installation](https://docs.immich.app/install/requirements)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
+- [Roadmap](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Funktionen](#funktionen)
 - [Übersetzungen](https://docs.immich.app/developer/translations)

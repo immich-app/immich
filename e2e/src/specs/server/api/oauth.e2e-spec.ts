@@ -1,15 +1,16 @@
-import { OAuthClient, OAuthUser } from '@immich/e2e-auth-server';
+import { OAuthClient, OAuthUser, generateLogoutToken } from '@immich/e2e-auth-server';
 import {
+  AdminConfigOAuthDto,
   LoginResponseDto,
-  SystemConfigOAuthDto,
   getConfigDefaults,
   getMyUser,
+  getSessions,
   startOAuth,
   updateConfig,
 } from '@immich/sdk';
 import { createHash, randomBytes } from 'node:crypto';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, baseUrl, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -43,7 +44,7 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   });
 
   // login
-  const response1 = await redirect(url.replace(authServer.internal, authServer.external));
+  const response1 = await redirect(url.replace(authServer.internal, () => authServer.external));
   const response2 = await request(authServer.external + response1.location)
     .post('')
     .set('Cookie', response1.cookies)
@@ -69,16 +70,18 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   return { url: redirectUrl, state, codeVerifier };
 };
 
-const setupOAuth = async (token: string, dto: Partial<SystemConfigOAuthDto>) => {
+const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
   const options = { headers: asBearerAuth(token) };
   const defaults = await getConfigDefaults(options);
   const merged = {
     ...defaults.oauth,
     buttonText: 'Login with Immich',
     issuerUrl: `${authServer.internal}/.well-known/openid-configuration`,
+    accountManagementUrl: authServer.internal,
+    allowInsecureRequests: true,
     ...dto,
   };
-  await updateConfig({ systemConfigDto: { ...defaults, oauth: merged } }, options);
+  await updateConfig({ adminConfigDto: { ...defaults, oauth: merged } }, options);
 };
 
 describe(`/oauth`, () => {
@@ -87,21 +90,17 @@ describe(`/oauth`, () => {
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-
-    await setupOAuth(admin.accessToken, {
-      enabled: true,
-      clientId: OAuthClient.DEFAULT,
-      clientSecret: OAuthClient.DEFAULT,
-      buttonText: 'Login with Immich',
-      storageLabelClaim: 'immich_username',
-    });
   });
 
   describe('POST /oauth/authorize', () => {
-    it(`should throw an error if a redirect uri is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/authorize').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['redirectUri must be a string', 'redirectUri should not be empty']));
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        buttonText: 'Login with Immich',
+        storageLabelClaim: 'immich_username',
+      });
     });
 
     it('should return a redirect uri', async () => {
@@ -117,19 +116,44 @@ describe(`/oauth`, () => {
       expect(params.get('redirect_uri')).toBe('http://127.0.0.1:2285/auth/login');
       expect(params.get('state')).toBeDefined();
     });
+
+    it('should not include the prompt parameter when not configured', async () => {
+      const { status, body } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
+      expect(status).toBe(201);
+
+      const params = new URL(body.url).searchParams;
+      expect(params.get('prompt')).toBeNull();
+    });
+
+    it('should include the prompt parameter when configured', async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        prompt: 'select_account',
+      });
+
+      const { status, body } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
+      expect(status).toBe(201);
+
+      const params = new URL(body.url).searchParams;
+      expect(params.get('prompt')).toBe('select_account');
+    });
   });
 
   describe('POST /oauth/callback', () => {
-    it(`should throw an error if a url is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/callback').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['url must be a string', 'url should not be empty']));
-    });
-
-    it(`should throw an error if the url is empty`, async () => {
-      const { status, body } = await request(app).post('/oauth/callback').send({ url: '' });
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['url should not be empty']));
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        buttonText: 'Login with Immich',
+        storageLabelClaim: 'immich_username',
+      });
     });
 
     it(`should throw an error if the state is not provided`, async () => {
@@ -158,10 +182,9 @@ describe(`/oauth`, () => {
     it(`should throw an error if the codeVerifier doesn't match the challenge`, async () => {
       const callbackParams = await loginWithOAuth('oauth-auto-register');
       const { codeVerifier } = await loginWithOAuth('oauth-auto-register');
-      const { status, body } = await request(app)
+      const { status } = await request(app)
         .post('/oauth/callback')
         .send({ ...callbackParams, codeVerifier });
-      console.log(body);
       expect(status).toBeGreaterThanOrEqual(400);
     });
 
@@ -258,9 +281,24 @@ describe(`/oauth`, () => {
         accessToken: expect.any(String),
         isAdmin: false,
         name: 'OAuth User',
-        userEmail: 'oauth-RS256-token@immich.app',
+        userEmail: 'oauth-rs256-token@immich.app',
         userId: expect.any(String),
       });
+    });
+
+    it('should set the profile picture from a picture claim with an embedded image', async () => {
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_EMBEDDED_PROFILE_PICTURE);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        userId: expect.any(String),
+        userEmail: 'oauth-with-embedded-profile-picture@immich.app',
+        profileImagePath: expect.any(String),
+      });
+
+      const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+      expect(user.profileImagePath.length).toBeGreaterThan(0);
     });
 
     it('should work with RS256 signed user profiles', async () => {
@@ -292,9 +330,7 @@ describe(`/oauth`, () => {
       const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(500);
       expect(body).toMatchObject({
-        error: 'Internal Server Error',
         message: 'Failed to finish oauth',
-        statusCode: 500,
       });
     });
 
@@ -313,7 +349,7 @@ describe(`/oauth`, () => {
         const callbackParams = await loginWithOAuth('oauth-no-auto-register');
         const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest('User does not exist and auto registering is disabled.'));
+        expect(body).toEqual(errorDto.badRequest('OAuth authentication failed'));
       });
 
       it('should link to an existing user by email', async () => {
@@ -329,6 +365,44 @@ describe(`/oauth`, () => {
           userId,
           userEmail: 'oauth-user3@immich.app',
         });
+      });
+    });
+  });
+
+  describe(`POST /oauth/backchannel-logout`, () => {
+    it(`should throw an error if an invalid logout token is provided`, async () => {
+      const { status, body } = await request(app)
+        .post('/oauth/backchannel-logout')
+        .send({ logout_token: 'invalid token' });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Error backchannel logout: token validation failed'));
+    });
+
+    it(`should logout user if a valid logout token is provided`, async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        autoRegister: true,
+        signingAlgorithm: 'RS256',
+        buttonText: 'Login with Immich',
+      });
+
+      const callbackParams = await loginWithOAuth('backchannel-logout-user');
+      const { status: callbackStatus, body: callbackBody } = await request(app)
+        .post('/oauth/callback')
+        .send(callbackParams);
+      expect(callbackStatus).toBe(201);
+
+      await expect(getSessions({ headers: asBearerAuth(callbackBody.accessToken) })).resolves.toHaveLength(1);
+
+      const logoutToken = await generateLogoutToken('http://0.0.0.0:2286', 'backchannel-logout-user');
+      const { status, body } = await request(app).post('/oauth/backchannel-logout').send({ logout_token: logoutToken });
+      expect(status).toBe(200);
+      expect(body).toMatchObject({});
+
+      await expect(getSessions({ headers: asBearerAuth(callbackBody.accessToken) })).rejects.toMatchObject({
+        status: 401,
       });
     });
   });
@@ -378,6 +452,43 @@ describe(`/oauth`, () => {
         userEmail: 'oauth-mobile-override@immich.app',
         userId: expect.any(String),
       });
+    });
+  });
+
+  describe('idTokenClaims', () => {
+    it('should use claims from the ID token if IDP includes them', async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+      });
+      const callbackParams = await loginWithOAuth(OAuthUser.ID_TOKEN_CLAIMS);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        name: 'ID Token User',
+        userEmail: 'oauth-id-token-claims@immich.app',
+        userId: expect.any(String),
+      });
+    });
+  });
+
+  describe('allowInsecureRequests: false', () => {
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        allowInsecureRequests: false,
+      });
+    });
+
+    it('should reject OAuth discovery over HTTP', async () => {
+      const { status } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
+      expect(status).toBe(500);
     });
   });
 });

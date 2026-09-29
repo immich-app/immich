@@ -1,113 +1,86 @@
-import 'dart:io';
-
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/data_controller.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/android_device_asset.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
-import 'package:immich_mobile/entities/etag.entity.dart';
-import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/services/api.service.dart';
+import 'package:logging/logging.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 void configureFileDownloaderNotifications() {
+  final t = StaticTranslations.instance;
+
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupImage,
-    running: TaskNotification('downloading_media'.t(), '${'file_name_text'.t()}: {filename}'),
-    complete: TaskNotification('download_finished'.t(), '${'file_name_text'.t()}: {filename}'),
+    running: TaskNotification(t.downloading_media, '${t.file_name_text}: {filename}'),
+    complete: TaskNotification(t.download_finished, '${t.file_name_text}: {filename}'),
     progressBar: true,
   );
 
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupVideo,
-    running: TaskNotification('downloading_media'.t(), '${'file_name_text'.t()}: {filename}'),
-    complete: TaskNotification('download_finished'.t(), '${'file_name_text'.t()}: {filename}'),
+    running: TaskNotification(t.downloading_media, '${t.file_name_text}: {filename}'),
+    complete: TaskNotification(t.download_finished, '${t.file_name_text}: {filename}'),
     progressBar: true,
   );
 
   FileDownloader().configureNotificationForGroup(
     kManualUploadGroup,
-    running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
-    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_complete_notification'.t()),
+    running: TaskNotification(t.uploading_media, t.backup_background_service_in_progress_notification),
+    complete: TaskNotification(t.upload_finished, t.backup_background_service_complete_notification),
     groupNotificationId: kManualUploadGroup,
   );
 
   FileDownloader().configureNotificationForGroup(
     kBackupGroup,
-    running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
-    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_complete_notification'.t()),
+    running: TaskNotification(t.uploading_media, t.backup_background_service_in_progress_notification),
+    complete: TaskNotification(t.upload_finished, t.backup_background_service_complete_notification),
     groupNotificationId: kBackupGroup,
   );
 }
 
 abstract final class Bootstrap {
-  static Future<(Isar isar, Drift drift, DriftLogger logDb)> initDB() async {
-    final drift = Drift();
-    final logDb = DriftLogger();
+  /// Initalize the base data system. Sets up primary/logging DBs, the [ApiService], and the settings store
+  ///
+  /// `disableStoreWatching` prevents continually updating the setting store's cache on change
+  static Future<(DataController, ApiService)> initDomain({
+    bool shouldBufferLogs = true,
+    bool disableStoreWatching = false,
+  }) async {
+    await NetworkRepository.init();
 
-    Isar? isar = Isar.getInstance();
-
-    if (isar != null) {
-      return (isar, drift, logDb);
-    }
-
-    final dir = await getApplicationDocumentsDirectory();
-    isar = await Isar.open(
-      [
-        StoreValueSchema,
-        AssetSchema,
-        AlbumSchema,
-        ExifInfoSchema,
-        UserSchema,
-        BackupAlbumSchema,
-        DuplicatedAssetSchema,
-        ETagSchema,
-        if (Platform.isAndroid) AndroidDeviceAssetSchema,
-        if (Platform.isIOS) IOSDeviceAssetSchema,
-        DeviceAssetEntitySchema,
-      ],
-      directory: dir.path,
-      maxSizeMiB: 2048,
-      inspector: kDebugMode,
+    final apiService = ApiService();
+    final (dataController, loggerDatabaseWasRecreated) = await DataController.init(
+      apiClient: apiService.apiClient,
+      disableStoreWatching: disableStoreWatching,
     );
 
-    return (isar, drift, logDb);
-  }
+    final settingsRepo = await SettingsRepository.ensureInitialized(dataController.db);
 
-  static Future<void> initDomain(
-    Isar db,
-    Drift drift,
-    DriftLogger logDb, {
-    bool listenStoreUpdates = true,
-    bool shouldBufferLogs = true,
-  }) async {
-    final isBeta = await IsarStoreRepository(db).tryGet(StoreKey.betaTimeline) ?? true;
-    final IStoreRepository storeRepo = isBeta ? DriftStoreRepository(drift) : IsarStoreRepository(db);
+    // TODO(rewrite): This is bad DB coupling and should be removed
+    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
+    if (endpoint != null && endpoint.isNotEmpty) {
+      apiService.setEndpoint(endpoint);
+    }
 
-    await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
-
+    // Take DataController's logging DB and register it with the logging service
     await LogService.init(
-      logRepository: LogRepository(logDb),
-      storeRepository: storeRepo,
+      logRepository: LogRepository(dataController.logDb),
+      settingsRepository: settingsRepo,
       shouldBuffer: shouldBufferLogs,
     );
 
-    await NetworkRepository.init();
+    if (loggerDatabaseWasRecreated) {
+      Logger('bootstrap:initLogger').warning('Logs database was corrupt and has been recreated');
+    }
+
+    // TODO: Remove once all asset operations are migrated to Native APIs
+    await PhotoManager.setIgnorePermissionCheck(true);
+    return (dataController, apiService);
   }
 }

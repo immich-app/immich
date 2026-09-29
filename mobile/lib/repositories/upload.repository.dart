@@ -3,20 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
-
-class UploadTaskWithFile {
-  final File file;
-  final UploadTask task;
-
-  const UploadTaskWithFile({required this.file, required this.task});
-}
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
@@ -43,20 +36,12 @@ class UploadRepository {
     );
   }
 
-  Future<void> enqueueBackground(UploadTask task) {
-    return FileDownloader().enqueue(task);
-  }
-
   Future<List<bool>> enqueueBackgroundAll(List<UploadTask> tasks) {
     return FileDownloader().enqueueAll(tasks);
   }
 
   Future<void> deleteDatabaseRecords(String group) {
     return FileDownloader().database.deleteAllRecords(group: group);
-  }
-
-  Future<bool> cancelAll(String group) {
-    return FileDownloader().cancelAll(group: group);
   }
 
   Future<int> reset(String group) {
@@ -72,51 +57,41 @@ class UploadRepository {
     return FileDownloader().start();
   }
 
-  Future<void> getUploadInfo() async {
-    final [enqueuedTasks, runningTasks, canceledTasks, waitingTasks, pausedTasks] = await Future.wait([
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.enqueued, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.running, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.canceled, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.waitingToRetry, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.paused, group: kBackupGroup),
-    ]);
-
-    dPrint(
-      () =>
-          """
-      Upload Info:
-      Enqueued: ${enqueuedTasks.length}
-      Running: ${runningTasks.length}
-      Canceled: ${canceledTasks.length}
-      Waiting: ${waitingTasks.length}
-      Paused: ${pausedTasks.length}
-    """,
-    );
-  }
-
   Future<UploadResult> uploadFile({
     required File file,
     required String originalFileName,
-    required Map<String, String> headers,
     required Map<String, String> fields,
-    required Client httpClient,
-    required CancellationToken cancelToken,
-    required void Function(int bytes, int totalBytes) onProgress,
+    required Completer<void>? cancelToken,
+    void Function(int bytes, int totalBytes)? onProgress,
     required String logContext,
+    Client? httpClient,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
 
+    ProgressMultipartRequest buildRequest() {
+      final request = ProgressMultipartRequest(
+        'POST',
+        Uri.parse('$savedEndpoint/assets'),
+        abortTrigger: cancelToken?.future,
+        onProgress: onProgress,
+      );
+      request.fields.addAll(fields);
+      request.files.add(MultipartFile("assetData", file.openRead(), file.lengthSync(), filename: originalFileName));
+      return request;
+    }
+
     try {
-      final fileStream = file.openRead();
-      final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
+      final client = httpClient ?? NetworkRepository.client;
+      StreamedResponse response;
+      try {
+        response = await client.send(buildRequest());
+      } on RequestAbortedException {
+        rethrow;
+      } on ClientException catch (error) {
+        logger.warning("Upload $logContext failed before a response, resending once: $error");
+        response = await client.send(buildRequest());
+      }
 
-      final baseRequest = _CustomMultipartRequest('POST', Uri.parse('$savedEndpoint/assets'), onProgress: onProgress);
-
-      baseRequest.headers.addAll(headers);
-      baseRequest.fields.addAll(fields);
-      baseRequest.files.add(assetRawUploadData);
-
-      final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
       final responseBodyString = await response.stream.bytesToString();
 
       if (![200, 201].contains(response.statusCode)) {
@@ -145,13 +120,43 @@ class UploadRepository {
       } catch (e) {
         return UploadResult.error(errorMessage: 'Failed to parse server response');
       }
-    } on CancelledException {
+    } on RequestAbortedException {
       logger.warning("Upload $logContext was cancelled");
       return UploadResult.cancelled();
     } catch (error, stackTrace) {
-      logger.warning("Error uploading $logContext: ${error.toString()}: $stackTrace");
+      logger.warning("Error uploading $logContext: $error: $stackTrace");
       return UploadResult.error(errorMessage: error.toString());
     }
+  }
+}
+
+class ProgressMultipartRequest extends MultipartRequest with Abortable {
+  ProgressMultipartRequest(super.method, super.url, {this.abortTrigger, this.onProgress});
+
+  @override
+  final Future<void>? abortTrigger;
+
+  final void Function(int bytes, int totalBytes)? onProgress;
+
+  @override
+  ByteStream finalize() {
+    final byteStream = super.finalize();
+    if (onProgress == null) {
+      return byteStream;
+    }
+
+    final total = contentLength;
+    var bytes = 0;
+    final stream = byteStream.transform(
+      StreamTransformer.fromHandlers(
+        handleData: (List<int> data, EventSink<List<int>> sink) {
+          bytes += data.length;
+          onProgress!(bytes, total);
+          sink.add(data);
+        },
+      ),
+    );
+    return ByteStream(stream);
   }
 }
 
@@ -180,28 +185,5 @@ class UploadResult {
 
   factory UploadResult.cancelled() {
     return const UploadResult(isSuccess: false, isCancelled: true);
-  }
-}
-
-class _CustomMultipartRequest extends MultipartRequest {
-  _CustomMultipartRequest(super.method, super.url, {required this.onProgress});
-
-  final void Function(int bytes, int totalBytes) onProgress;
-
-  @override
-  ByteStream finalize() {
-    final byteStream = super.finalize();
-    final total = contentLength;
-    var bytes = 0;
-
-    final t = StreamTransformer.fromHandlers(
-      handleData: (List<int> data, EventSink<List<int>> sink) {
-        bytes += data.length;
-        onProgress.call(bytes, total);
-        sink.add(data);
-      },
-    );
-    final stream = byteStream.transform(t);
-    return ByteStream(stream);
   }
 }

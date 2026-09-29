@@ -1,5 +1,5 @@
-import { AuthSession } from 'src/database';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthSession } from 'src/database.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 
 const authUser = {
   admin: {
@@ -28,17 +28,11 @@ export const authStub = {
       id: 'token-id',
     } as AuthSession,
   }),
-  user2: Object.freeze<AuthDto>({
-    user: {
-      id: 'user-2',
-      name: 'User 2',
-      email: 'user2@immich.cloud',
-      isAdmin: false,
-      quotaSizeInBytes: null,
-      quotaUsageInBytes: 0,
-    },
+  adminWithElevatedPermission: Object.freeze<AuthDto>({
+    user: authUser.admin,
     session: {
-      id: 'token-id',
+      id: 'token-id-elevated',
+      hasElevatedPermission: true,
     } as AuthSession,
   }),
   adminSharedLink: Object.freeze({
@@ -48,6 +42,7 @@ export const authStub = {
       showExif: true,
       allowDownload: true,
       allowUpload: true,
+      albumId: null,
       expiresAt: null,
       password: null,
       userId: '42',

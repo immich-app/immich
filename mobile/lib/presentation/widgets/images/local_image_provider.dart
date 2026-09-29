@@ -1,14 +1,17 @@
-import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+
+// iOS GPU textures max out at 16384px; larger images squish.
+const _kMaxPixelSize = 16384;
 
 class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
     with CancellableImageProviderMixin<LocalThumbProvider> {
@@ -16,7 +19,10 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   final Size size;
   final AssetType assetType;
 
-  LocalThumbProvider({required this.id, required this.assetType, this.size = kThumbnailResolution});
+  // an edit on the device keeps the id and changes the bytes, so the checksum is what separates two renders
+  final String? checksum;
+
+  LocalThumbProvider({required this.id, required this.assetType, this.checksum, this.size = kThumbnailResolution});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -37,20 +43,22 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
     final request = this.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalThumbProvider) {
-      return id == other.id;
+      return id == other.id && checksum == other.checksum;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(id, checksum);
 }
 
 class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
@@ -58,8 +66,39 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final String id;
   final Size size;
   final AssetType assetType;
+  final bool isAnimated;
+  final int? width;
+  final int? height;
+  final String? checksum;
 
-  LocalFullImageProvider({required this.id, required this.assetType, required this.size});
+  LocalFullImageProvider({
+    required this.id,
+    required this.assetType,
+    required this.size,
+    required this.isAnimated,
+    this.width,
+    this.height,
+    this.checksum,
+  });
+
+  Size _previewTarget(double dpr, bool previewIsFinal) =>
+      previewTargetSize(size.width * dpr, size.height * dpr, width, height, previewIsFinal: previewIsFinal);
+
+  // Use an aspect-correct target when aspectFill would exceed the texture limit.
+  @visibleForTesting
+  static Size previewTargetSize(double boxW, double boxH, int? width, int? height, {required bool previewIsFinal}) {
+    if (width == null || height == null || width <= 0 || height <= 0) {
+      return Size(boxW, boxH);
+    }
+    final imgLong = math.max(width, height).toDouble();
+    final coverLong = imgLong * math.max(boxW / width, boxH / height);
+    if (coverLong <= _kMaxPixelSize) {
+      return Size(boxW, boxH);
+    }
+    final bound = previewIsFinal ? _kMaxPixelSize.toDouble() : math.max(boxW, boxH);
+    final scale = math.min(1.0, bound / imgLong);
+    return Size(math.max(1.0, width * scale), math.max(1.0, height * scale));
+  }
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -68,13 +107,29 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   @override
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
+    if (key.isAnimated) {
+      return AnimatedImageStreamCompleter(
+        stream: _animatedCodec(key, decode),
+        scale: 1.0,
+        initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
+        informationCollector: () => <DiagnosticsNode>[
+          DiagnosticsProperty<ImageProvider>('Image provider', this),
+          DiagnosticsProperty<String>('Id', key.id),
+          DiagnosticsProperty<Size>('Size', key.size),
+          DiagnosticsProperty<bool>('isAnimated', key.isAnimated),
+        ],
+        onLastListenerRemoved: cancel,
+      );
+    }
+
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
+        DiagnosticsProperty<bool>('isAnimated', key.isAnimated),
       ],
       onLastListenerRemoved: cancel,
     );
@@ -84,42 +139,78 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
+    final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     var request = this.request = LocalImageRequest(
       localId: key.id,
-      size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+      size: _previewTarget(devicePixelRatio, !loadOriginal),
       assetType: key.assetType,
     );
+    yield* loadRequest(request, decode, isFinal: !loadOriginal);
 
-    yield* loadRequest(request, decode);
-
-    if (!Store.get(StoreKey.loadOriginal, false)) {
+    if (!loadOriginal) {
       return;
     }
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
 
-    yield* loadRequest(request, decode);
+    yield* loadRequest(request, decode, isFinal: true);
+  }
+
+  Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
+    yield* initialImageStream();
+
+    if (isCancelled) {
+      return;
+    }
+
+    final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
+    final previewRequest = request = LocalImageRequest(
+      localId: key.id,
+      size: _previewTarget(devicePixelRatio, false),
+      assetType: key.assetType,
+    );
+    yield* loadRequest(previewRequest, decode, isFinal: false);
+
+    if (isCancelled) {
+      return;
+    }
+
+    // always try original for animated, since previews don't support animation
+    final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
+    final codec = await loadCodecRequest(originalRequest, isFinal: true);
+    if (codec == null) {
+      if (isCancelled) {
+        return;
+      }
+      throw StateError('Failed to load animated codec for local asset ${key.id}');
+    }
+    yield codec;
   }
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalFullImageProvider) {
-      return id == other.id && size == other.size;
+      return id == other.id &&
+          size == other.size &&
+          isAnimated == other.isAnimated &&
+          width == other.width &&
+          height == other.height &&
+          checksum == other.checksum;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode;
+  int get hashCode => Object.hash(id, size, isAnimated, width, height, checksum);
 }

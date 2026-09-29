@@ -1,27 +1,34 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Insertable, Updateable } from 'kysely';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { Person } from 'src/database';
-import { Chunked, OnJob } from 'src/decorators';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { Insertable } from 'kysely';
+import { isUndefined, omitBy } from 'lodash-es';
+import type { JobItem, JobOf } from 'src/types.js';
+import { Chunked, OnJob } from 'src/decorators.js';
+import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetFaceCreateDto,
   AssetFaceDeleteDto,
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
   FaceDto,
-  mapFaces,
-  mapPerson,
   MergePersonDto,
+  PeopleDeleteDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonCreateDto,
+  PersonDeleteDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-} from 'src/dtos/person.dto';
+  PersonUsersCreateDto,
+  PersonUsersDeleteDto,
+  PersonUsersResponseDto,
+  PersonUsersSearchDto,
+  mapFaces,
+  mapPerson,
+  mapPersonUsers,
+} from 'src/dtos/person.dto.js';
 import {
   AssetVisibility,
   CacheControl,
@@ -33,23 +40,27 @@ import {
   SourceType,
   SystemMetadataKey,
   VectorIndex,
-} from 'src/enum';
-import { BoundingBox } from 'src/repositories/machine-learning.repository';
-import { UpdateFacesData } from 'src/repositories/person.repository';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { FaceSearchTable } from 'src/schema/tables/face-search.table';
-import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
-import { getDimensions } from 'src/utils/asset.util';
-import { ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled } from 'src/utils/misc';
-import { Point, transformPoints } from 'src/utils/transform';
+} from 'src/enum.js';
+import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
+import { PersonId } from 'src/repositories/person.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
+import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import { getDimensions, getMyPartnerIds } from 'src/utils/asset.util.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { isHttpException } from 'src/utils/logger.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc.js';
+import { Point, transformPoints } from 'src/utils/transform.js';
+
+const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${personGroupId}`;
 
 @Injectable()
 export class PersonService extends BaseService {
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const { withHidden = false, closestAssetId, closestPersonId, page, size } = dto;
+    const { withHidden = false, closestAssetId, closestPersonId, page, size, ...filters } = dto;
     let closestFaceAssetId = closestAssetId;
     const pagination = {
       take: size,
@@ -57,19 +68,21 @@ export class PersonService extends BaseService {
     };
 
     if (closestPersonId) {
-      const person = await this.personRepository.getById(closestPersonId);
+      const person = await this.personRepository.getByGroupId({
+        ownerId: auth.user.id,
+        personGroupId: closestPersonId,
+      });
       if (!person?.faceAssetId) {
         throw new NotFoundException('Person not found');
       }
       closestFaceAssetId = person.faceAssetId;
     }
-    const { machineLearning } = await this.getConfig({ withCache: false });
     const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
-      minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
       closestFaceAssetId,
+      ...filters,
     });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
+    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, filters);
 
     return {
       people: items.map((person) => mapPerson(person)),
@@ -79,106 +92,150 @@ export class PersonService extends BaseService {
     };
   }
 
-  async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.PersonUpdate, ids: [personId] });
-    const person = await this.findOrFail(personId);
+  async reassignFaces(auth: AuthDto, personGroupId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
+    const ids = dto.data.map((item) => ({ personGroupId: item.personId, ownerId: item.userId ?? auth.user.id }));
+
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonUpdate,
+      ids: [{ personGroupId, ownerId: auth.user.id }, ...ids],
+    });
+
+    const person = await this.findOrFail(auth, personGroupId);
+
     const result: PersonResponseDto[] = [];
-    const changeFeaturePhoto: string[] = [];
+    const changeFeaturePhoto = new Map<string, PersonId>();
     for (const data of dto.data) {
-      const faces = await this.personRepository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
+      const faces = await this.personRepository.getFacesByIds(
+        [{ personGroupId: data.personId, assetId: data.assetId }],
+        { viewingUserId: auth.user.id },
+      );
 
       for (const face of faces) {
-        await this.requireAccess({ auth, permission: Permission.PersonCreate, ids: [face.id] });
-        if (person.faceAssetId === null) {
-          changeFeaturePhoto.push(person.id);
-        }
-        if (face.person && face.person.faceAssetId === face.id) {
-          changeFeaturePhoto.push(face.person.id);
+        const ids = await this.checkAccess({ auth, permission: Permission.PersonCreate, ids: [face.id] });
+
+        if (ids.size !== 1) {
+          continue;
         }
 
-        await this.personRepository.reassignFace(face.id, personId);
+        if (person.faceAssetId === null) {
+          changeFeaturePhoto.set(personKey(person), person);
+        }
+        if (face.person && face.person.faceAssetId === face.id) {
+          changeFeaturePhoto.set(personKey(face.person), face.person);
+        }
+
+        await this.personRepository.reassignFace(face.id, person.personGroupId);
       }
 
       result.push(mapPerson(person));
     }
-    if (changeFeaturePhoto.length > 0) {
-      // Remove duplicates
-      await this.createNewFeaturePhoto([...new Set(changeFeaturePhoto)]);
+    if (changeFeaturePhoto.size > 0) {
+      await this.createNewFeaturePhoto(changeFeaturePhoto.values().toArray());
     }
     return result;
   }
 
-  async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.PersonUpdate, ids: [personId] });
+  async reassignFacesById(auth: AuthDto, personGroupId: string, dto: FaceDto): Promise<PersonResponseDto> {
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonUpdate,
+      ids: [{ personGroupId, ownerId: auth.user.id }],
+    });
     await this.requireAccess({ auth, permission: Permission.PersonCreate, ids: [dto.id] });
-    const face = await this.personRepository.getFaceById(dto.id);
-    const person = await this.findOrFail(personId);
+    const face = await this.personRepository.getFaceById(dto.id, { viewingUserId: auth.user.id });
+    const person = await this.findOrFail(auth, personGroupId);
 
-    await this.personRepository.reassignFace(face.id, personId);
+    await this.personRepository.reassignFace(face.id, person.personGroupId);
     if (person.faceAssetId === null) {
-      await this.createNewFeaturePhoto([person.id]);
+      await this.createNewFeaturePhoto([person]);
     }
     if (face.person && face.person.faceAssetId === face.id) {
-      await this.createNewFeaturePhoto([face.person.id]);
+      await this.createNewFeaturePhoto([face.person]);
     }
 
-    return await this.findOrFail(personId).then(mapPerson);
+    return mapPerson(await this.findOrFail(auth, personGroupId));
   }
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.id] });
-    const faces = await this.personRepository.getFaces(dto.id);
+    const faces = await this.personRepository.getFaces(dto.id, { viewingUserId: auth.user.id, isVisible: true });
     const asset = await this.assetRepository.getForFaces(dto.id);
     const assetDimensions = getDimensions(asset);
 
-    return faces.map((face) => mapFaces(face, auth, asset.edits, assetDimensions));
+    return faces.map((face) => mapFaces(face, asset.edits, assetDimensions));
   }
 
-  async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
+  async createNewFeaturePhoto(changeFeaturePhoto: PersonId[]) {
     this.logger.debug(
       `Changing feature photos for ${changeFeaturePhoto.length} ${changeFeaturePhoto.length > 1 ? 'people' : 'person'}`,
     );
 
     const jobs: JobItem[] = [];
-    for (const personId of changeFeaturePhoto) {
-      const assetFace = await this.personRepository.getRandomFace(personId);
+    for (const { ownerId, personGroupId } of changeFeaturePhoto) {
+      const assetFace = await this.personRepository.getRandomFace(personGroupId);
 
-      if (assetFace) {
-        await this.personRepository.update({ id: personId, faceAssetId: assetFace.id });
-        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: personId } });
+      if (!assetFace) {
+        continue;
       }
+
+      await this.personRepository.update({ ownerId, personGroupId, faceAssetId: assetFace.id });
+      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
     }
 
     await this.jobRepository.queueAll(jobs);
   }
 
-  async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return this.findOrFail(id).then(mapPerson);
+  async getById(auth: AuthDto, personGroupId: string): Promise<PersonResponseDto> {
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonRead,
+      ids: [{ personGroupId, ownerId: auth.user.id }],
+    });
+    return mapPerson(
+      await findOrFail(() => this.personRepository.getForUser({ userId: auth.user.id, personGroupId }), 'Person'),
+    );
   }
 
-  async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return this.personRepository.getStatistics(id);
+  async getStatistics(auth: AuthDto, personGroupId: string): Promise<PersonStatisticsResponseDto> {
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonRead,
+      ids: [{ personGroupId, ownerId: auth.user.id }],
+    });
+
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
+    return this.personRepository.getStatistics(personGroupId, { ownerId: auth.user.id, partnerIds });
   }
 
-  async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    const person = await this.personRepository.getById(id);
-    if (!person || !person.thumbnailPath) {
+  async getThumbnail(auth: AuthDto, personGroupId: string): Promise<ImmichFileResponse> {
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonRead,
+      ids: [{ personGroupId, ownerId: auth.user.id }],
+    });
+    const personGroup = await this.personRepository.getForThumbnail({ ownerId: auth.user.id, personGroupId });
+    const thumbnailPath = personGroup?.thumbnailPath || personGroup?.sharedThumbnailPath;
+    if (!thumbnailPath) {
       throw new NotFoundException();
     }
 
     return new ImmichFileResponse({
-      path: person.thumbnailPath,
-      contentType: mimeTypes.lookup(person.thumbnailPath),
+      path: thumbnailPath,
+      contentType: mimeTypes.lookup(thumbnailPath),
       cacheControl: CacheControl.PrivateWithoutCache,
     });
   }
 
   async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
+    const group = await this.personRepository.createGroup(auth.user.id);
     const person = await this.personRepository.create({
       ownerId: auth.user.id,
+      personGroupId: group.id,
       name: dto.name,
       birthDate: dto.birthDate,
       isHidden: dto.isHidden,
@@ -189,15 +246,21 @@ export class PersonService extends BaseService {
     return mapPerson(person);
   }
 
-  async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.PersonUpdate, ids: [id] });
+  async update(auth: AuthDto, personGroupId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
+    const ownerId = dto.userId ?? auth.user.id;
+
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonUpdate,
+      ids: [{ personGroupId, ownerId }],
+    });
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
     // TODO: set by faceId directly
-    let faceId: string | undefined = undefined;
+    let faceId: string | undefined;
     if (assetId) {
       await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
-      const face = await this.personRepository.getForFeatureFaceUpdate({ personId: id, assetId });
+      const face = await this.personRepository.getForFeatureFaceUpdate({ personGroupId, assetId });
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face or asset is offline');
       }
@@ -206,7 +269,8 @@ export class PersonService extends BaseService {
     }
 
     const person = await this.personRepository.update({
-      id,
+      ownerId,
+      personGroupId,
       faceAssetId: faceId,
       name,
       birthDate,
@@ -216,14 +280,14 @@ export class PersonService extends BaseService {
     });
 
     if (assetId) {
-      await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id } });
+      await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
     }
 
     return mapPerson(person);
   }
 
-  delete(auth: AuthDto, id: string): Promise<void> {
-    return this.deleteAll(auth, { ids: [id] });
+  delete(auth: AuthDto, id: string, dto: PersonDeleteDto): Promise<void> {
+    return this.deleteAll(auth, { ids: [id], ...dto });
   }
 
   async updateAll(auth: AuthDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
@@ -236,33 +300,52 @@ export class PersonService extends BaseService {
           birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
           isFavorite: person.isFavorite,
+          userId: person.userId,
         });
         results.push({ id: person.id, success: true });
       } catch (error: Error | any) {
-        this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
+        if (!isHttpException(error)) {
+          this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
+        }
         results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
     return results;
   }
 
-  async deleteAll(auth: AuthDto, { ids }: BulkIdsDto): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.PersonDelete, ids });
-    const people = await this.personRepository.getForPeopleDelete(ids);
-    await this.removeAllPeople(people);
+  async deleteAll(auth: AuthDto, { ids, userId }: PeopleDeleteDto): Promise<void> {
+    const ownerId = userId ?? auth.user.id;
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonDelete,
+      ids: ids.map((id) => ({ personGroupId: id, ownerId })),
+    });
+    await this.removeAllPersonGroups(ids, ownerId);
+    await this.personRepository.deleteEmptyGroups();
   }
 
   @Chunked()
-  private async removeAllPeople(people: { id: string; thumbnailPath: string }[]) {
+  private async removeAllPersonGroups(groupIds: string[], ownerId?: string) {
+    if (groupIds.length === 0) {
+      return;
+    }
+
+    const people = await this.personRepository.delete(groupIds, ownerId);
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
-    await this.personRepository.delete(people.map((person) => person.id));
-    this.logger.debug(`Deleted ${people.length} people`);
+    this.logger.debug(`Deleted ${groupIds.length} people`);
   }
 
   @OnJob({ name: JobName.PersonCleanup, queue: QueueName.BackgroundTask })
   async handlePersonCleanup(): Promise<JobStatus> {
+    // each step can leave the next one something to clean up, so the order matters
     const people = await this.personRepository.getAllWithoutFaces();
-    await this.removeAllPeople(people);
+    await this.removeAllPersonGroups(people.map((person) => person.personGroupId));
+
+    const personGroups = await this.personRepository.deleteEmptyGroups();
+    const clusterGroups = await this.personRepository.deleteOrphanedClusterGroups();
+
+    this.logger.debug(`Deleted ${personGroups} empty person groups and ${clusterGroups} orphaned cluster groups`);
+
     return JobStatus.Success;
   }
 
@@ -276,21 +359,14 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
-      await this.personRepository.vacuum({ reindexVectors: true });
+      await this.vacuum('asset_face', 'person', 'face_search');
     }
 
-    let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.AssetDetectFaces, data: { id: asset.id } });
-
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForDetectFacesJob(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetDetectFaces, data: { id: asset.id } })),
+      );
     }
-
-    await this.jobRepository.queueAll(jobs);
 
     if (force === undefined) {
       await this.jobRepository.queue({ name: JobName.PersonCleanup });
@@ -307,8 +383,8 @@ export class PersonService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
-    const previewFile = asset?.files[0];
-    if (!asset || asset.files.length !== 1 || !previewFile) {
+    const previewFile = asset?.previewFile;
+    if (!asset || !previewFile) {
       return JobStatus.Failed;
     }
 
@@ -401,7 +477,11 @@ export class PersonService extends BaseService {
   }
 
   @OnJob({ name: JobName.FacialRecognitionQueueAll, queue: QueueName.FacialRecognition })
-  async handleQueueRecognizeFaces({ force, nightly }: JobOf<JobName.FacialRecognitionQueueAll>): Promise<JobStatus> {
+  async handleQueueRecognizeFaces({
+    force,
+    nightly,
+    clusterGroupId,
+  }: JobOf<JobName.FacialRecognitionQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -424,9 +504,9 @@ export class PersonService extends BaseService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FacialRecognition);
 
     if (force) {
-      await this.personRepository.unassignFaces({ sourceType: SourceType.MachineLearning });
+      await this.personRepository.unassignFaces({ clusterGroupId, sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
-      await this.personRepository.vacuum({ reindexVectors: false });
+      await this.vacuum('asset_face', 'person');
     } else if (waiting) {
       this.logger.debug(
         `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,
@@ -437,21 +517,17 @@ export class PersonService extends BaseService {
     await this.databaseRepository.prewarm(VectorIndex.Face);
 
     const lastRun = new Date().toISOString();
-    const facePagination = this.personRepository.getAllFaces(
-      force ? undefined : { personId: null, sourceType: SourceType.MachineLearning },
+
+    const faces = this.personRepository.getAllFaces(
+      force
+        ? { clusterGroupId, sourceType: clusterGroupId ? SourceType.MachineLearning : undefined }
+        : { personGroupId: null, clusterGroupId, sourceType: SourceType.MachineLearning },
     );
-
-    let jobs: { name: JobName.FacialRecognition; data: { id: string; deferred: false } }[] = [];
-    for await (const face of facePagination) {
-      jobs.push({ name: JobName.FacialRecognition, data: { id: face.id, deferred: false } });
-
-      if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const batch of batched(faces)) {
+      await this.jobRepository.queueAll(
+        batch.map((face) => ({ name: JobName.FacialRecognition, data: { id: face.id, deferred: false } })),
+      );
     }
-
-    await this.jobRepository.queueAll(jobs);
 
     await this.systemMetadataRepository.set(SystemMetadataKey.FacialRecognitionState, { lastRun });
 
@@ -481,17 +557,18 @@ export class PersonService extends BaseService {
       return JobStatus.Failed;
     }
 
-    if (face.personId) {
+    if (face.personGroupId) {
       this.logger.debug(`Face ${id} already has a person assigned`);
       return JobStatus.Skipped;
     }
 
+    const { ownerId, clusterGroupId } = face.asset;
     const matches = await this.searchRepository.searchFaces({
-      userIds: [face.asset.ownerId],
+      clusterGroupId,
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
-      minBirthDate: face.asset.fileCreatedAt ?? undefined,
+      minBirthDate: new Date(face.asset.fileCreatedAt),
     });
 
     // `matches` also includes the face itself
@@ -511,40 +588,49 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    let personId = matches.find((match) => match.personId)?.personId;
-    if (!personId) {
-      const matchWithPerson = await this.searchRepository.searchFaces({
-        userIds: [face.asset.ownerId],
+    let personGroupId = matches.find((match) => match.personGroupId)?.personGroupId;
+    if (!personGroupId) {
+      const [matchWithPerson] = await this.searchRepository.searchFaces({
+        clusterGroupId,
         embedding: face.faceSearch.embedding,
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
-        minBirthDate: face.asset.fileCreatedAt ?? undefined,
+        minBirthDate: new Date(face.asset.fileCreatedAt),
       });
 
-      if (matchWithPerson.length > 0) {
-        personId = matchWithPerson[0].personId;
+      personGroupId = matchWithPerson?.personGroupId ?? undefined;
+    }
+
+    if (!personGroupId && isCore) {
+      const group = await this.personRepository.createGroup(ownerId);
+      personGroupId = group.id;
+      this.logger.log(`Created person group ${personGroupId} for face ${id}`);
+    }
+
+    if (personGroupId) {
+      const person = await this.personRepository.getByGroupId({ ownerId, personGroupId });
+      if (person) {
+        this.logger.debug(`Face ${id} matched person ${person.personGroupId}`);
+      } else {
+        await this.personRepository.create({ ownerId, faceAssetId: face.id, personGroupId });
+        this.logger.log(`Created person for face ${id} in group ${personGroupId}`);
+        await this.jobRepository.queue({
+          name: JobName.PersonGenerateThumbnail,
+          data: { ownerId, personGroupId },
+        });
       }
-    }
 
-    if (isCore && !personId) {
-      this.logger.log(`Creating new person for face ${id}`);
-      const newPerson = await this.personRepository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
-      await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id: newPerson.id } });
-      personId = newPerson.id;
-    }
-
-    if (personId) {
-      this.logger.debug(`Assigning face ${id} to person ${personId}`);
-      await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: personId });
+      this.logger.debug(`Assigning face ${id} to person group ${personGroupId}`);
+      await this.personRepository.reassignFaces({ faceIds: [id], newPersonGroupId: personGroupId });
     }
 
     return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.PersonFileMigration, queue: QueueName.Migration })
-  async handlePersonMigration({ id }: JobOf<JobName.PersonFileMigration>): Promise<JobStatus> {
-    const person = await this.personRepository.getById(id);
+  async handlePersonMigration({ ownerId, personGroupId }: JobOf<JobName.PersonFileMigration>): Promise<JobStatus> {
+    const person = await this.personRepository.getByGroupId({ ownerId, personGroupId });
     if (!person) {
       return JobStatus.Failed;
     }
@@ -554,84 +640,122 @@ export class PersonService extends BaseService {
     return JobStatus.Success;
   }
 
-  async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
-    const mergeIds = dto.ids;
-    if (mergeIds.includes(id)) {
+  async mergePeople(auth: AuthDto, { ids }: MergePersonDto): Promise<BulkIdResponseDto[]> {
+    if (ids.length < 2) {
+      throw new BadRequestException('At least two people are required for merging');
+    }
+
+    if (new Set(ids).size !== ids.length) {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
-    await this.requireAccess({ auth, permission: Permission.PersonUpdate, ids: [id] });
-    let primaryPerson = await this.findOrFail(id);
-    const primaryName = primaryPerson.name || primaryPerson.id;
-
-    const results: BulkIdResponseDto[] = [];
-
-    const allowedIds = await this.checkAccess({
+    const allowed = await this.checkPersonAccess({
       auth,
       permission: Permission.PersonMerge,
-      ids: mergeIds,
+      ids: ids.map((id) => ({ personGroupId: id, ownerId: auth.user.id })),
     });
+    const allowedIds = new Set(allowed.values().map((item) => item.personGroupId));
+    const results = new Map<string, BulkIdResponseDto>(
+      ids.map((id) => [
+        id,
+        {
+          id,
+          success: false,
+          error: allowedIds.has(id) ? BulkIdErrorReason.NOT_FOUND : BulkIdErrorReason.NO_PERMISSION,
+        },
+      ]),
+    );
 
-    for (const mergeId of mergeIds) {
-      const hasAccess = allowedIds.has(mergeId);
-      if (!hasAccess) {
-        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
-        continue;
-      }
+    const orderedIds = ids.filter((id) => allowedIds.has(id));
+    const [targetId, ...sourceIds] = orderedIds;
+    const people = targetId ? await this.personRepository.getForMergePerson(orderedIds) : [];
+    const lookup = new Map(people.map((person) => [personKey(person), person]));
+    const ownerIds = new Set([auth.user.id, ...people.map((person) => person.ownerId)]);
+    const targets = new Map(
+      people.filter((person) => person.personGroupId === targetId).map((person) => [person.ownerId, person]),
+    );
 
-      try {
-        const mergePerson = await this.personRepository.getById(mergeId);
-        if (!mergePerson) {
-          results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
+    if (targets.has(auth.user.id)) {
+      results.set(targetId, { id: targetId, success: true });
+    }
+
+    for (const id of sourceIds) {
+      for (const ownerId of ownerIds) {
+        const isAuthUser = ownerId === auth.user.id;
+        const source = lookup.get(personKey({ ownerId, personGroupId: id }));
+        let target = targets.get(ownerId);
+        if (!source) {
           continue;
         }
 
-        const update: Updateable<Person> & { id: string } = { id: primaryPerson.id };
-        if (!primaryPerson.name && mergePerson.name) {
-          update.name = mergePerson.name;
+        // skip other users when there are conflicts
+        if (!isAuthUser && target && ((target.name && source.name) || (target.birthDate && source.birthDate))) {
+          continue;
         }
 
-        if (!primaryPerson.birthDate && mergePerson.birthDate) {
-          update.birthDate = mergePerson.birthDate;
+        try {
+          if (!target) {
+            // user has no person in the target group yet, so this one is updated to it
+            targets.set(
+              ownerId,
+              await this.personRepository.updateGroupId({ ownerId, oldPersonGroupId: id, newPersonGroupId: targetId }),
+            );
+            continue;
+          }
+
+          const changes = omitBy(
+            {
+              name: source.name && !target.name ? source.name : undefined,
+              birthDate: source.birthDate && !target.birthDate ? source.birthDate : undefined,
+            },
+            isUndefined,
+          );
+          if (Object.keys(changes).length > 0) {
+            target = await this.personRepository.update({ ownerId, personGroupId: targetId, ...changes });
+            targets.set(ownerId, target);
+          }
+
+          await this.personRepository.reassignFaces({ oldPersonGroupId: id, newPersonGroupId: targetId, ownerId });
+          await this.removeAllPersonGroups([id], ownerId);
+          this.logger.log(`Merged ${source.name || id} into ${target.name || targetId}`);
+
+          if (isAuthUser) {
+            results.set(id, { id, success: true });
+          }
+        } catch (error: any) {
+          this.logger.error(`Unable to merge ${id} into ${targetId}: ${error}`, error?.stack);
+          if (isAuthUser) {
+            results.set(id, { id, success: false, error: BulkIdErrorReason.UNKNOWN });
+          }
         }
-
-        if (Object.keys(update).length > 0) {
-          primaryPerson = await this.personRepository.update(update);
-        }
-
-        const mergeName = mergePerson.name || mergePerson.id;
-        const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
-        this.logger.log(`Merging ${mergeName} into ${primaryName}`);
-
-        await this.personRepository.reassignFaces(mergeData);
-        await this.removeAllPeople([mergePerson]);
-
-        this.logger.log(`Merged ${mergeName} into ${primaryName}`);
-        results.push({ id: mergeId, success: true });
-      } catch (error: Error | any) {
-        this.logger.error(`Unable to merge ${mergeId} into ${id}: ${error}`, error?.stack);
-        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
-    return results;
+
+    await this.personRepository.deleteEmptyGroups();
+
+    return results.values().toArray();
   }
 
-  private async findOrFail(id: string) {
-    const person = await this.personRepository.getById(id);
-    if (!person) {
-      throw new BadRequestException('Person not found');
-    }
-    return person;
+  private findOrFail(auth: AuthDto, personGroupId: string) {
+    return findOrFail(() => this.personRepository.getByGroupId({ ownerId: auth.user.id, personGroupId }), 'Person');
   }
 
   // TODO return a asset face response
   async createFace(auth: AuthDto, dto: AssetFaceCreateDto): Promise<void> {
     await Promise.all([
-      this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.assetId] }),
-      this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] }),
+      this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [dto.assetId] }),
+      this.requirePersonAccess({
+        auth,
+        permission: Permission.PersonRead,
+        ids: [{ personGroupId: dto.personId, ownerId: auth.user.id }],
+      }),
     ]);
 
-    const asset = await this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true });
+    const [asset, person] = await Promise.all([
+      this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true }),
+      this.findOrFail(auth, dto.personId),
+    ]);
+
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -652,15 +776,12 @@ export class PersonService extends BaseService {
       const scaleFactor = asset.width / dto.imageWidth;
       topLeft = { x: topLeft.x * scaleFactor, y: topLeft.y * scaleFactor };
       bottomRight = { x: bottomRight.x * scaleFactor, y: bottomRight.y * scaleFactor };
-
-      const {
-        points: [invertedTopLeft, invertedBottomRight],
-      } = transformPoints(
+      const [invertedTopLeft, invertedBottomRight] = transformPoints(
         [topLeft, bottomRight],
         edits,
         { width: asset.width, height: asset.height },
         { inverse: true },
-      );
+      ).points;
 
       // make sure topLeft is top-left and bottomRight is bottom-right
       topLeft = {
@@ -679,7 +800,7 @@ export class PersonService extends BaseService {
     }
 
     await this.personRepository.createAssetFace({
-      personId: dto.personId,
+      personGroupId: person.personGroupId,
       assetId: dto.assetId,
       imageHeight: dto.imageHeight,
       imageWidth: dto.imageWidth,
@@ -689,11 +810,74 @@ export class PersonService extends BaseService {
       boundingBoxY2: Math.round(bottomRight.y),
       sourceType: SourceType.Manual,
     });
+
+    if (!person.faceAssetId) {
+      await this.createNewFeaturePhoto([person]);
+    }
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
 
     return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+  }
+
+  async getUsersForPeople(auth: AuthDto, dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {
+    const sharedUsers = await this.personUserRepository.searchPeopleUsers(auth.user.id, dto);
+
+    return mapPersonUsers(sharedUsers);
+  }
+
+  async addUsersToPeople(auth: AuthDto, dto: PersonUsersCreateDto) {
+    if (dto.sharedWithIds.includes(auth.user.id)) {
+      throw new BadRequestException('Cannot share a person with yourself');
+    }
+
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonUpdate,
+      ids: dto.personIds.map((item) => ({ personGroupId: item, ownerId: auth.user.id })),
+    });
+
+    const user = await findOrFail(() => this.userRepository.get(auth.user.id, {}), 'User');
+    const clusterGroupUsers = await this.clusterGroupRepository.getUsers({
+      clusterGroupId: user.clusterGroupId,
+      userId: user.id,
+    });
+    const clusterGroupUserIds = new Set(clusterGroupUsers.map(({ id }) => id));
+
+    const items: Insertable<PersonUserTable>[] = [];
+    const sharedById = auth.user.id;
+
+    for (const sharedWithId of dto.sharedWithIds) {
+      if (!clusterGroupUserIds.has(sharedWithId)) {
+        throw new BadRequestException('All users must be in the same cluster group');
+      }
+
+      for (const personGroupId of dto.personIds) {
+        items.push({ personGroupId, sharedById, sharedWithId, role: dto.role });
+      }
+    }
+
+    await this.personUserRepository.createAll(items);
+  }
+
+  async removeUsersFromPeople(auth: AuthDto, dto: PersonUsersDeleteDto) {
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonUpdate,
+      ids: dto.map((item) => ({ personGroupId: item.personId, ownerId: item.sharedById ?? auth.user.id })),
+    });
+    await this.personUserRepository.deleteAll(auth.user.id, dto);
+  }
+
+  private vacuum(...tables: (keyof DB)[]): Promise<unknown> {
+    return Promise.all(
+      tables.map((table) =>
+        this.databaseRepository
+          .vacuum({ analyze: true, table })
+          .then(() => this.databaseRepository.reindex(table, { concurrently: true })),
+      ),
+    );
   }
 }

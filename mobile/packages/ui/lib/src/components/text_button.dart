@@ -1,85 +1,91 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:immich_ui/src/constants.dart';
-import 'package:immich_ui/src/types.dart';
+import 'package:immich_ui/immich_ui.dart';
 
-class ImmichTextButton extends StatelessWidget {
+class ImmichTextButton extends StatefulWidget {
   final String labelText;
   final IconData? icon;
   final FutureOr<void> Function() onPressed;
+  final FutureOr<void> Function()? onLongPress;
   final ImmichVariant variant;
-  final ImmichColor color;
   final bool expanded;
-  final bool loading;
   final bool disabled;
+  final bool? loading;
 
   const ImmichTextButton({
     super.key,
     required this.labelText,
     this.icon,
     required this.onPressed,
-    this.variant = ImmichVariant.filled,
-    this.color = ImmichColor.primary,
+    this.onLongPress,
+    this.variant = .filled,
     this.expanded = true,
-    this.loading = false,
+
     this.disabled = false,
+    this.loading,
   });
 
-  Widget _buildButton(ImmichVariant variant) {
-    final Widget? effectiveIcon = loading
+  @override
+  State<ImmichTextButton> createState() => _ImmichTextButtonState();
+}
+
+class _ImmichTextButtonState extends State<ImmichTextButton> {
+  bool _running = false;
+  bool get _isLoading => widget.loading ?? _running;
+  bool get _isDisabled => widget.disabled || _isLoading;
+
+  Future<void> _runAction(FutureOr<void> Function() action) async {
+    setState(() => _running = true);
+    try {
+      await action();
+    } finally {
+      if (mounted) {
+        setState(() => _running = false);
+      }
+    }
+  }
+
+  VoidCallback? get _onPressed => _isDisabled ? null : () => _runAction(widget.onPressed);
+
+  VoidCallback? get _onLongPress =>
+      _isDisabled || widget.onLongPress == null ? null : () => _runAction(widget.onLongPress!);
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget? icon = _isLoading
         ? const SizedBox.square(
             dimension: ImmichIconSize.md,
             child: CircularProgressIndicator(strokeWidth: ImmichBorderWidth.lg),
           )
-        : icon != null
-            ? Icon(icon, fontWeight: FontWeight.w600)
-            : null;
-    final hasIcon = effectiveIcon != null;
+        : widget.icon != null
+        ? Icon(widget.icon, fontWeight: .w600)
+        : null;
 
-    final label = Text(labelText, style: const TextStyle(fontSize: ImmichTextSize.body, fontWeight: FontWeight.bold));
-    final style = ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: ImmichSpacing.md));
+    final label = Text(
+      widget.labelText,
+      style: const .new(fontSize: ImmichTextSize.body, fontWeight: .bold),
+    );
+    final style = ElevatedButton.styleFrom(padding: const .symmetric(vertical: ImmichSpacing.md));
 
-    final effectiveOnPressed = disabled || loading ? null : onPressed;
+    final button = switch (widget.variant) {
+      ImmichVariant.filled => ElevatedButton.icon(
+        style: style,
+        onPressed: _onPressed,
+        onLongPress: _onLongPress,
+        icon: icon,
+        label: label,
+      ),
+      ImmichVariant.ghost => TextButton.icon(
+        style: style,
+        onPressed: _onPressed,
+        onLongPress: _onLongPress,
+        icon: icon,
+        label: label,
+      ),
+    };
 
-    switch (variant) {
-      case ImmichVariant.filled:
-        if (hasIcon) {
-          return ElevatedButton.icon(
-            style: style,
-            onPressed: effectiveOnPressed,
-            icon: effectiveIcon,
-            label: label,
-          );
-        }
-
-        return ElevatedButton(
-          style: style,
-          onPressed: effectiveOnPressed,
-          child: label,
-        );
-      case ImmichVariant.ghost:
-        if (hasIcon) {
-          return TextButton.icon(
-            style: style,
-            onPressed: effectiveOnPressed,
-            icon: effectiveIcon,
-            label: label,
-          );
-        }
-
-        return TextButton(
-          style: style,
-          onPressed: effectiveOnPressed,
-          child: label,
-        );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final button = _buildButton(variant);
-    if (expanded) {
+    if (widget.expanded) {
       return SizedBox(width: double.infinity, child: button);
     }
     return button;

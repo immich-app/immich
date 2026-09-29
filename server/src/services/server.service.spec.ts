@@ -1,6 +1,7 @@
-import { SystemMetadataKey } from 'src/enum';
-import { ServerService } from 'src/services/server.service';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { SystemMetadataKey } from 'src/enum.js';
+import { ServerService } from 'src/services/server.service.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
@@ -148,6 +149,7 @@ describe(ServerService.name, () => {
         configFile: false,
         trash: true,
         email: false,
+        realtimeTranscoding: false,
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
     });
@@ -158,17 +160,32 @@ describe(ServerService.name, () => {
       await expect(sut.getSystemConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
+        oauthAccountManagementUrl: '',
         trashDays: 30,
         userDeleteDelay: 7,
-        isInitialized: undefined,
+        isInitialized: false,
         isOnboarded: false,
         externalDomain: '',
         publicUsers: true,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
         maintenanceMode: false,
+        minFaces: 3,
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
+    });
+
+    it('should be initialized once an admin exists', async () => {
+      mocks.user.hasAdmin.mockResolvedValue(true);
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({ isInitialized: true });
+    });
+
+    it('should be initialized when setup is disabled', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ setup: { allow: false } }));
+      mocks.user.hasAdmin.mockResolvedValue(false);
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({ isInitialized: true });
     });
   });
 

@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import semver from 'semver';
-import { ErrorMessages, EXTENSION_NAMES, VECTOR_EXTENSIONS } from 'src/constants';
-import { OnEvent } from 'src/decorators';
-import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { VectorExtension } from 'src/types';
+import { coerce, eq, gt, lt, satisfies } from 'semver';
+import type { VectorExtension } from 'src/types.js';
+import { EXTENSION_NAMES, ErrorMessages, VECTOR_EXTENSIONS } from 'src/constants.js';
+import { OnEvent } from 'src/decorators.js';
+import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
 
 type CreateFailedArgs = { name: string; extension: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
 type DropFailedArgs = { name: string; extension: string };
-type RestartRequiredArgs = { name: string; availableVersion: string };
 type NightlyVersionArgs = { name: string; extension: string; version: string };
 type OutOfRangeArgs = { name: string; extension: string; version: string; range: string };
 type InvalidDowngradeArgs = { name: string; extension: string; installedVersion: string; availableVersion: string };
@@ -46,16 +45,10 @@ const messages = {
 
     Please run 'DROP EXTENSION ${extension};' manually as a superuser.
     See https://docs.immich.app/guides/database-queries for how to query the database.`,
-  restartRequired: ({ name, availableVersion }: RestartRequiredArgs) =>
-    `The ${name} extension has been updated to ${availableVersion}.
-    Please restart the Postgres instance to complete the update.`,
   invalidDowngrade: ({ name, installedVersion, availableVersion }: InvalidDowngradeArgs) =>
     `The database currently has ${name} ${installedVersion} activated, but the Postgres instance only has ${availableVersion} available.
     This most likely means the extension was downgraded.
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
-  deprecatedExtension: (name: string) =>
-    `DEPRECATION WARNING: The ${name} extension is deprecated and support for it will be removed very soon.
-     See https://docs.immich.app/install/upgrading#migrating-to-vectorchord in order to switch to the VectorChord extension instead.`,
 };
 
 @Injectable()
@@ -63,9 +56,9 @@ export class DatabaseService extends BaseService {
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
-    const current = semver.coerce(version);
+    const current = coerce(version);
     const postgresRange = this.databaseRepository.getPostgresVersionRange();
-    if (!current || !semver.satisfies(current, postgresRange)) {
+    if (!current || !satisfies(current, postgresRange)) {
       throw new Error(
         `Invalid PostgreSQL version. Found ${version}, but needed ${postgresRange}. Please use a supported version.`,
       );
@@ -74,9 +67,6 @@ export class DatabaseService extends BaseService {
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
       const extension = await this.databaseRepository.getVectorExtension();
       const name = EXTENSION_NAMES[extension];
-      if (extension === DatabaseExtension.Vectors) {
-        this.logger.warn(messages.deprecatedExtension(name));
-      }
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
       const extensionVersions = await this.databaseRepository.getExtensionVersions(VECTOR_EXTENSIONS);
@@ -85,11 +75,11 @@ export class DatabaseService extends BaseService {
         throw new Error(messages.notInstalled(name));
       }
 
-      if ([availableVersion, installedVersion].some((version) => version && semver.eq(version, '0.0.0'))) {
+      if ([availableVersion, installedVersion].some((version) => version && eq(version, '0.0.0'))) {
         throw new Error(messages.nightlyVersion({ name, extension, version: '0.0.0' }));
       }
 
-      if (!semver.satisfies(availableVersion, extensionRange)) {
+      if (!satisfies(availableVersion, extensionRange)) {
         throw new Error(messages.outOfRange({ name, extension, version: availableVersion, range: extensionRange }));
       }
 
@@ -97,11 +87,11 @@ export class DatabaseService extends BaseService {
         await this.createExtension(extension);
       }
 
-      if (installedVersion && semver.gt(availableVersion, installedVersion)) {
+      if (installedVersion && gt(availableVersion, installedVersion)) {
         await this.updateExtension(extension, availableVersion);
-      } else if (installedVersion && !semver.satisfies(installedVersion, extensionRange)) {
+      } else if (installedVersion && !satisfies(installedVersion, extensionRange)) {
         throw new Error(messages.outOfRange({ name, extension, version: installedVersion, range: extensionRange }));
-      } else if (installedVersion && semver.lt(availableVersion, installedVersion)) {
+      } else if (installedVersion && lt(availableVersion, installedVersion)) {
         throw new Error(messages.invalidDowngrade({ name, extension, availableVersion, installedVersion }));
       }
 
@@ -121,26 +111,34 @@ export class DatabaseService extends BaseService {
         }
       }
 
+      const preparation = [];
       const { database } = this.configRepository.getEnv();
       if (!database.skipMigrations) {
-        await this.databaseRepository.runMigrations();
-
-        this.logger.log('Checking for schema drift');
-        const drift = await this.databaseRepository.getSchemaDrift();
-        if (drift.items.length === 0) {
-          this.logger.log('No schema drift detected');
-        } else {
-          this.logger.warn(`${ErrorMessages.SchemaDrift} or run \`immich-admin schema-check\``);
-          for (const warning of drift.asHuman()) {
-            this.logger.warn(`  - ${warning}`);
-          }
+        const migrationCount = await this.databaseRepository.runMigrations();
+        preparation.push(this.checkSchemaDrift());
+        if (migrationCount > 0) {
+          preparation.push(this.databaseRepository.vacuum({ analyze: true }));
         }
       }
-      await Promise.all([
+      preparation.push(
         this.databaseRepository.prewarm(VectorIndex.Clip),
         this.databaseRepository.prewarm(VectorIndex.Face),
-      ]);
+      );
+      await Promise.all(preparation);
     });
+  }
+
+  private async checkSchemaDrift() {
+    this.logger.log('Checking for schema drift');
+    const drift = await this.databaseRepository.getSchemaDrift();
+    if (drift.items.length === 0) {
+      this.logger.log('No schema drift detected');
+    } else {
+      this.logger.warn(`${ErrorMessages.SchemaDrift} or run \`immich-admin schema-check\``);
+      for (const warning of drift.asHuman()) {
+        this.logger.warn(`  - ${warning}`);
+      }
+    }
   }
 
   private async createExtension(extension: DatabaseExtension) {
@@ -156,10 +154,7 @@ export class DatabaseService extends BaseService {
   private async updateExtension(extension: VectorExtension, availableVersion: string) {
     this.logger.log(`Updating ${EXTENSION_NAMES[extension]} extension to ${availableVersion}`);
     try {
-      const { restartRequired } = await this.databaseRepository.updateVectorExtension(extension, availableVersion);
-      if (restartRequired) {
-        this.logger.warn(messages.restartRequired({ name: EXTENSION_NAMES[extension], availableVersion }));
-      }
+      await this.databaseRepository.updateVectorExtension(extension, availableVersion);
     } catch (error) {
       this.logger.warn(messages.updateFailed({ name: EXTENSION_NAMES[extension], extension, availableVersion }));
       throw error;

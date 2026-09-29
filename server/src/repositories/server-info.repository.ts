@@ -4,17 +4,13 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ReleaseChannel } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
-export interface GitHubRelease {
-  id: number;
-  url: string;
-  tag_name: string;
-  name: string;
-  created_at: string;
+export interface VersionResponse {
+  version: string;
   published_at: string;
-  body: string;
 }
 
 export interface ServerBuildVersions {
@@ -29,7 +25,7 @@ const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
   try {
     const { stdout } = await exec(command);
-    return stdout.trim().split('\n')[0] || '';
+    return stdout.trim().split('\n', 1)[0] || '';
   } catch {
     return '';
   }
@@ -59,17 +55,29 @@ export class ServerInfoRepository {
     this.logger.setContext(ServerInfoRepository.name);
   }
 
-  async getGitHubRelease(): Promise<GitHubRelease> {
+  async getLatestRelease(channel: ReleaseChannel): Promise<VersionResponse> {
     try {
-      const response = await fetch('https://api.github.com/repos/immich-app/immich/releases/latest');
+      const { versionCheck } = this.configRepository.getEnv();
+      const url = new URL(versionCheck.url);
+      switch (channel) {
+        case ReleaseChannel.Stable: {
+          url.searchParams.append('channel', 'stable');
+          break;
+        }
+        case ReleaseChannel.ReleaseCandidate: {
+          url.searchParams.append('channel', 'rc');
+          break;
+        }
+      }
+      const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error(`GitHub API request failed with status ${response.status}: ${await response.text()}`);
+        throw new Error(`Version check request failed with status ${response.status}: ${await response.text()}`);
       }
 
       return response.json();
     } catch (error) {
-      throw new Error(`Failed to fetch GitHub release: ${error}`);
+      throw new Error('Failed to fetch latest release', { cause: error });
     }
   }
 
@@ -93,6 +101,7 @@ export class ServerInfoRepository {
 
       const lockfile: BuildLockfile | undefined = await readFile(resourcePaths.lockFile)
         .then((buffer) => JSON.parse(buffer.toString()))
+
         .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
       const [nodejsVersion, ffmpegVersion, magickVersion, exiftoolVersion] = await Promise.all([
@@ -110,6 +119,7 @@ export class ServerInfoRepository {
         exiftool.version(),
       ]);
 
+      // eslint-disable-next-line import-x/no-named-as-default-member
       const libvipsVersion = getLockfileVersion('libvips', lockfile) || sharp.versions.vips;
 
       this.buildVersions = {

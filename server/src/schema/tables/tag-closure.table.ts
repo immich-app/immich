@@ -1,5 +1,5 @@
-import { TagTable } from 'src/schema/tables/tag.table';
-import { ForeignKeyColumn, Table } from 'src/sql-tools';
+import { ForeignKeyColumn, Table } from '@immich/sql-tools';
+import { TagTable } from 'src/schema/tables/tag.table.js';
 
 @Table('tag_closure')
 export class TagClosureTable {

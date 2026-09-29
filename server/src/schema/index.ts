@@ -1,11 +1,19 @@
-import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
+import { Database, Extensions, Generated, Int8 } from '@immich/sql-tools';
 import {
-  album_delete_audit,
+  album_user_role_enum,
+  asset_face_source_type,
+  asset_visibility_enum,
+  assets_status_enum,
+  person_user_role_enum,
+} from 'src/schema/enums.js';
+import {
   album_user_after_insert,
+  album_user_delete,
   album_user_delete_audit,
   asset_delete_audit,
   asset_face_audit,
   asset_metadata_audit,
+  asset_ocr_delete_audit,
   f_concat_ws,
   f_unaccent,
   immich_uuid_v7,
@@ -14,65 +22,81 @@ import {
   memory_delete_audit,
   partner_delete_audit,
   person_delete_audit,
+  person_group_delete_audit,
   stack_delete_audit,
   updated_at,
   user_delete_audit,
   user_metadata_audit,
-} from 'src/schema/functions';
-import { ActivityTable } from 'src/schema/tables/activity.table';
-import { AlbumAssetAuditTable } from 'src/schema/tables/album-asset-audit.table';
-import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
-import { AlbumAuditTable } from 'src/schema/tables/album-audit.table';
-import { AlbumUserAuditTable } from 'src/schema/tables/album-user-audit.table';
-import { AlbumUserTable } from 'src/schema/tables/album-user.table';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { ApiKeyTable } from 'src/schema/tables/api-key.table';
-import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
-import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetFaceAuditTable } from 'src/schema/tables/asset-face-audit.table';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { AssetFileTable } from 'src/schema/tables/asset-file.table';
-import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
-import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table';
-import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
-import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { AuditTable } from 'src/schema/tables/audit.table';
-import { FaceSearchTable } from 'src/schema/tables/face-search.table';
-import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
-import { LibraryTable } from 'src/schema/tables/library.table';
-import { MemoryAssetAuditTable } from 'src/schema/tables/memory-asset-audit.table';
-import { MemoryAssetTable } from 'src/schema/tables/memory-asset.table';
-import { MemoryAuditTable } from 'src/schema/tables/memory-audit.table';
-import { MemoryTable } from 'src/schema/tables/memory.table';
-import { MoveTable } from 'src/schema/tables/move.table';
-import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
-import { NotificationTable } from 'src/schema/tables/notification.table';
-import { OcrSearchTable } from 'src/schema/tables/ocr-search.table';
-import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
-import { PartnerTable } from 'src/schema/tables/partner.table';
-import { PersonAuditTable } from 'src/schema/tables/person-audit.table';
-import { PersonTable } from 'src/schema/tables/person.table';
-import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
-import { SessionTable } from 'src/schema/tables/session.table';
-import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table';
-import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
-import { SmartSearchTable } from 'src/schema/tables/smart-search.table';
-import { StackAuditTable } from 'src/schema/tables/stack-audit.table';
-import { StackTable } from 'src/schema/tables/stack.table';
-import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
-import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
-import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
-import { TagClosureTable } from 'src/schema/tables/tag-closure.table';
-import { TagTable } from 'src/schema/tables/tag.table';
-import { UserAuditTable } from 'src/schema/tables/user-audit.table';
-import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.table';
-import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
-import { UserTable } from 'src/schema/tables/user.table';
-import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
-import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
-import { Database, Extensions, Generated, Int8 } from 'src/sql-tools';
+} from 'src/schema/functions.js';
+import { ActivityTable } from 'src/schema/tables/activity.table.js';
+import { AlbumAssetAuditTable } from 'src/schema/tables/album-asset-audit.table.js';
+import { AlbumAssetTable } from 'src/schema/tables/album-asset.table.js';
+import { AlbumAuditTable } from 'src/schema/tables/album-audit.table.js';
+import { AlbumUserAuditTable } from 'src/schema/tables/album-user-audit.table.js';
+import { AlbumUserTable } from 'src/schema/tables/album-user.table.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { ApiKeyTable } from 'src/schema/tables/api-key.table.js';
+import { AssetAuditTable } from 'src/schema/tables/asset-audit.table.js';
+import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table.js';
+import { AssetEditAuditTable } from 'src/schema/tables/asset-edit-audit.table.js';
+import { AssetEditTable } from 'src/schema/tables/asset-edit.table.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetFaceAuditTable } from 'src/schema/tables/asset-face-audit.table.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
+import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js';
+import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table.js';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
+import { AssetOcrAuditTable } from 'src/schema/tables/asset-ocr-audit.table.js';
+import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table.js';
+import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
+import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
+import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table.js';
+import { LibraryTable } from 'src/schema/tables/library.table.js';
+import { MemoryAssetAuditTable } from 'src/schema/tables/memory-asset-audit.table.js';
+import { MemoryAssetTable } from 'src/schema/tables/memory-asset.table.js';
+import { MemoryAuditTable } from 'src/schema/tables/memory-audit.table.js';
+import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import { MoveTable } from 'src/schema/tables/move.table.js';
+import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
+import { NotificationTable } from 'src/schema/tables/notification.table.js';
+import { OcrSearchTable } from 'src/schema/tables/ocr-search.table.js';
+import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table.js';
+import { PartnerTable } from 'src/schema/tables/partner.table.js';
+import { PersonAuditTable } from 'src/schema/tables/person-audit.table.js';
+import { PersonGroupAuditTable } from 'src/schema/tables/person-group-audit.table.js';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
+import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
+import { PersonTable } from 'src/schema/tables/person.table.js';
+import { PluginMethodTable } from 'src/schema/tables/plugin-method.table.js';
+import { PluginTable } from 'src/schema/tables/plugin.table.js';
+import { SessionTable } from 'src/schema/tables/session.table.js';
+import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table.js';
+import { SharedLinkTable } from 'src/schema/tables/shared-link.table.js';
+import { SmartSearchTable } from 'src/schema/tables/smart-search.table.js';
+import { StackAuditTable } from 'src/schema/tables/stack-audit.table.js';
+import { StackTable } from 'src/schema/tables/stack.table.js';
+import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table.js';
+import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table.js';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
+import { TagClosureTable } from 'src/schema/tables/tag-closure.table.js';
+import { TagTable } from 'src/schema/tables/tag.table.js';
+import { UserAuditTable } from 'src/schema/tables/user-audit.table.js';
+import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.table.js';
+import { UserMetadataTable } from 'src/schema/tables/user-metadata.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
+import { VersionHistoryTable } from 'src/schema/tables/version-history.table.js';
+import {
+  VideoStreamSegmentTable,
+  VideoStreamSessionTable,
+  VideoStreamVariantTable,
+} from 'src/schema/tables/video-stream.table.js';
+import { WorkflowLogTable } from 'src/schema/tables/workflow-log.table.js';
+import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table.js';
+import { WorkflowTable } from 'src/schema/tables/workflow.table.js';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
 @Database({ name: 'immich' })
@@ -88,18 +112,22 @@ export class ImmichDatabase {
     ApiKeyTable,
     AssetAuditTable,
     AssetEditTable,
+    AssetEditAuditTable,
     AssetFaceTable,
     AssetFaceAuditTable,
     AssetMetadataTable,
     AssetMetadataAuditTable,
     AssetJobStatusTable,
     AssetOcrTable,
+    AssetOcrAuditTable,
     AssetTable,
     AssetFileTable,
-    AuditTable,
     AssetExifTable,
+    ClusterGroupTable,
+    ClusterGroupRequestTable,
     FaceSearchTable,
     GeodataPlacesTable,
+    IntegrityReportTable,
     LibraryTable,
     MemoryTable,
     MemoryAuditTable,
@@ -113,6 +141,9 @@ export class ImmichDatabase {
     PartnerTable,
     PersonTable,
     PersonAuditTable,
+    PersonUserTable,
+    PersonGroupTable,
+    PersonGroupAuditTable,
     SessionTable,
     SharedLinkAssetTable,
     SharedLinkTable,
@@ -129,12 +160,13 @@ export class ImmichDatabase {
     UserMetadataAuditTable,
     UserTable,
     VersionHistoryTable,
+    VideoStreamSessionTable,
+    VideoStreamVariantTable,
+    VideoStreamSegmentTable,
     PluginTable,
-    PluginFilterTable,
-    PluginActionTable,
+    PluginMethodTable,
     WorkflowTable,
-    WorkflowFilterTable,
-    WorkflowActionTable,
+    WorkflowStepTable,
   ];
 
   functions = [
@@ -146,19 +178,27 @@ export class ImmichDatabase {
     user_delete_audit,
     partner_delete_audit,
     asset_delete_audit,
-    album_delete_audit,
     album_user_after_insert,
     album_user_delete_audit,
     memory_delete_audit,
     memory_asset_delete_audit,
     stack_delete_audit,
     person_delete_audit,
+    person_group_delete_audit,
     user_metadata_audit,
     asset_metadata_audit,
     asset_face_audit,
+    asset_ocr_delete_audit,
+    album_user_delete,
   ];
 
-  enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
+  enum = [
+    album_user_role_enum,
+    assets_status_enum,
+    asset_face_source_type,
+    asset_visibility_enum,
+    person_user_role_enum,
+  ];
 }
 
 export interface Migrations {
@@ -184,6 +224,7 @@ export interface DB {
   asset: AssetTable;
   asset_audit: AssetAuditTable;
   asset_edit: AssetEditTable;
+  asset_edit_audit: AssetEditAuditTable;
   asset_exif: AssetExifTable;
   asset_face: AssetFaceTable;
   asset_face_audit: AssetFaceAuditTable;
@@ -192,13 +233,17 @@ export interface DB {
   asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
   asset_ocr: AssetOcrTable;
+  asset_ocr_audit: AssetOcrAuditTable;
+  asset_audio: AssetAudioTable;
+  asset_video: AssetVideoTable;
+  asset_keyframe: AssetKeyframeTable;
   ocr_search: OcrSearchTable;
-
-  audit: AuditTable;
 
   face_search: FaceSearchTable;
 
   geodata_places: GeodataPlacesTable;
+
+  integrity_report: IntegrityReportTable;
 
   library: LibraryTable;
 
@@ -220,6 +265,12 @@ export interface DB {
 
   person: PersonTable;
   person_audit: PersonAuditTable;
+  person_user: PersonUserTable;
+  person_group: PersonGroupTable;
+  person_group_audit: PersonGroupAuditTable;
+
+  cluster_group: ClusterGroupTable;
+  cluster_group_request: ClusterGroupRequestTable;
 
   session: SessionTable;
   session_sync_checkpoint: SessionSyncCheckpointTable;
@@ -245,11 +296,14 @@ export interface DB {
 
   version_history: VersionHistoryTable;
 
+  video_stream_session: VideoStreamSessionTable;
+  video_stream_variant: VideoStreamVariantTable;
+  video_stream_segment: VideoStreamSegmentTable;
+
   plugin: PluginTable;
-  plugin_filter: PluginFilterTable;
-  plugin_action: PluginActionTable;
+  plugin_method: PluginMethodTable;
 
   workflow: WorkflowTable;
-  workflow_filter: WorkflowFilterTable;
-  workflow_action: WorkflowActionTable;
+  workflow_step: WorkflowStepTable;
+  workflow_log: WorkflowLogTable;
 }

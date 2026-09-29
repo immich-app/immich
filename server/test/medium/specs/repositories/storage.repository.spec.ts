@@ -1,15 +1,15 @@
-import type { WalkError, WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
 import { Kysely } from 'kysely';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path, { join } from 'node:path';
-import { WalkOptionsDto } from 'src/dtos/library.dto';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { DB } from 'src/schema';
-import { BaseService } from 'src/services/base.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import type { WalkError, WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
+import { WalkOptionsDto } from 'src/dtos/library.dto.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { DB } from 'src/schema/index.js';
+import { BaseService } from 'src/services/base.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

@@ -1,8 +1,8 @@
 import { ChokidarOptions } from 'chokidar';
-import { StorageCore } from 'src/cores/storage.core';
-import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository';
-import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository.js';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
@@ -13,7 +13,7 @@ export const makeMockWatcher =
   ({ items, close }: MockWatcherOptions) =>
   (paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) => {
     events.onReady?.();
-    for (const item of items || []) {
+    for (const item of items ?? []) {
       switch (item.event) {
         case 'add': {
           events.onAdd?.(item.value);
@@ -48,12 +48,13 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
 
   return {
     createZipStream: vitest.fn(),
-    createReadStream: vitest.fn(),
     createPlainReadStream: vitest.fn(),
+    createReadStream: vitest.fn(),
     createGzip: vitest.fn(),
     createGunzip: vitest.fn(),
     readFile: vitest.fn(),
-    readTextFile: vitest.fn(),
+    readJsonFile: vitest.fn() as Mocked<StorageRepository>['readJsonFile'],
+    readdirWithTypes: vitest.fn(),
     createFile: vitest.fn(),
     createWriteStream: vitest.fn(),
     createOrOverwriteFile: vitest.fn(),
@@ -73,5 +74,6 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
     copyFile: vitest.fn(),
     utimes: vitest.fn(),
     watch: vitest.fn().mockImplementation(makeMockWatcher({})),
+    watchDir: vitest.fn().mockImplementation(() => ({ close: vitest.fn(), on: vitest.fn() })),
   };
 };

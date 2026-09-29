@@ -1,245 +1,318 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Selectable } from 'kysely';
-import { DateTime } from 'luxon';
-import { AssetFace, Person } from 'src/database';
-import { HistoryBuilder, Property } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { SourceType } from 'src/enum';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { ImageDimensions } from 'src/types';
-import { asDateString } from 'src/utils/date';
-import { transformFaceBoundingBox } from 'src/utils/transform';
-import {
-  IsDateStringFormat,
-  MaxDateString,
-  Optional,
-  ValidateBoolean,
-  ValidateEnum,
-  ValidateHexColor,
-  ValidateUUID,
-} from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
+import type { ImageDimensions, MaybeDehydrated } from 'src/types.js';
+import { AssetFace, Person, PersonUser, User } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
+import { SharingDirectionSchema, SourceTypeSchema } from 'src/enum.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { asDateString, asDateTimeString } from 'src/utils/date.js';
+import { transformFaceBoundingBox } from 'src/utils/transform.js';
+import { hexColor, stringToBool, uniqueIds } from 'src/validation.js';
 
-export class PersonCreateDto {
-  @ApiPropertyOptional({ description: 'Person name' })
-  @Optional()
-  @IsString()
-  name?: string;
-
-  // Note: the mobile app cannot currently set the birth date to null.
-  @ApiProperty({ format: 'date', description: 'Person date of birth', required: false })
-  @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
-  @IsDateStringFormat('yyyy-MM-dd')
-  @Optional({ nullable: true, emptyToNull: true })
-  birthDate?: Date | null;
-
-  @ValidateBoolean({ optional: true, description: 'Person visibility (hidden)' })
-  isHidden?: boolean;
-
-  @ValidateBoolean({ optional: true, description: 'Mark as favorite' })
-  isFavorite?: boolean;
-
-  @ApiPropertyOptional({ description: 'Person color (hex)' })
-  @Optional({ emptyToNull: true, nullable: true })
-  @ValidateHexColor()
-  color?: string | null;
-}
-
-export class PersonUpdateDto extends PersonCreateDto {
-  @ValidateUUID({ optional: true, description: 'Asset ID used for feature face thumbnail' })
-  featureFaceAssetId?: string;
-}
-
-export class PeopleUpdateDto {
-  @ApiProperty({ description: 'People to update' })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PeopleUpdateItem)
-  people!: PeopleUpdateItem[];
-}
-
-export class PeopleUpdateItem extends PersonUpdateDto {
-  @ApiProperty({ description: 'Person ID' })
-  @IsString()
-  @IsNotEmpty()
-  id!: string;
-}
-
-export class MergePersonDto {
-  @ValidateUUID({ each: true, description: 'Person IDs to merge' })
-  ids!: string[];
-}
-
-export class PersonSearchDto {
-  @ValidateBoolean({ optional: true, description: 'Include hidden people' })
-  withHidden?: boolean;
-  @ValidateUUID({ optional: true, description: 'Closest person ID for similarity search' })
-  closestPersonId?: string;
-  @ValidateUUID({ optional: true, description: 'Closest asset ID for similarity search' })
-  closestAssetId?: string;
-
-  @ApiPropertyOptional({ description: 'Page number for pagination', default: 1 })
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  page: number = 1;
-
-  @ApiPropertyOptional({ description: 'Number of items per page', default: 500 })
-  @IsInt()
-  @Min(1)
-  @Max(1000)
-  @Type(() => Number)
-  size: number = 500;
-}
-
-export class PersonResponseDto {
-  @ApiProperty({ description: 'Person ID' })
-  id!: string;
-  @ApiProperty({ description: 'Person name' })
-  name!: string;
-  @ApiProperty({ format: 'date', description: 'Person date of birth' })
-  birthDate!: string | null;
-  @ApiProperty({ description: 'Thumbnail path' })
-  thumbnailPath!: string;
-  @ApiProperty({ description: 'Is hidden' })
-  isHidden!: boolean;
-  @Property({ description: 'Last update date', history: new HistoryBuilder().added('v1.107.0').stable('v2') })
-  updatedAt?: Date;
-  @Property({ description: 'Is favorite', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
-  isFavorite?: boolean;
-  @Property({ description: 'Person color (hex)', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
-  color?: string;
-}
-
-export class PersonWithFacesResponseDto extends PersonResponseDto {
-  @ApiProperty({ description: 'Face detections' })
-  faces!: AssetFaceWithoutPersonResponseDto[];
-}
-
-export class AssetFaceWithoutPersonResponseDto {
-  @ValidateUUID({ description: 'Face ID' })
-  id!: string;
-  @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
-  imageHeight!: number;
-  @ApiProperty({ type: 'integer', description: 'Image width in pixels' })
-  imageWidth!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box X1 coordinate' })
-  boundingBoxX1!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box X2 coordinate' })
-  boundingBoxX2!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box Y1 coordinate' })
-  boundingBoxY1!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box Y2 coordinate' })
-  boundingBoxY2!: number;
-  @ValidateEnum({ enum: SourceType, name: 'SourceType', optional: true, description: 'Face detection source type' })
-  sourceType?: SourceType;
-}
-
-export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
-  @ApiProperty({ description: 'Person associated with face' })
-  person!: PersonResponseDto | null;
-}
-
-export class AssetFaceUpdateDto {
-  @ApiProperty({ description: 'Face update items' })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AssetFaceUpdateItem)
-  data!: AssetFaceUpdateItem[];
-}
-
-export class FaceDto {
-  @ValidateUUID({ description: 'Face ID' })
-  id!: string;
-}
-
-export class AssetFaceUpdateItem {
-  @ValidateUUID({ description: 'Person ID' })
-  personId!: string;
-
-  @ValidateUUID({ description: 'Asset ID' })
-  assetId!: string;
-}
-
-export class AssetFaceCreateDto extends AssetFaceUpdateItem {
-  @ApiProperty({ type: 'integer', description: 'Image width in pixels' })
-  @IsNotEmpty()
-  @IsNumber()
-  imageWidth!: number;
-
-  @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
-  @IsNotEmpty()
-  @IsNumber()
-  imageHeight!: number;
-
-  @ApiProperty({ type: 'integer', description: 'Face bounding box X coordinate' })
-  @IsNotEmpty()
-  @IsNumber()
-  x!: number;
-
-  @ApiProperty({ type: 'integer', description: 'Face bounding box Y coordinate' })
-  @IsNotEmpty()
-  @IsNumber()
-  y!: number;
-
-  @ApiProperty({ type: 'integer', description: 'Face bounding box width' })
-  @IsNotEmpty()
-  @IsNumber()
-  width!: number;
-
-  @ApiProperty({ type: 'integer', description: 'Face bounding box height' })
-  @IsNotEmpty()
-  @IsNumber()
-  height!: number;
-}
-
-export class AssetFaceDeleteDto {
-  @ApiProperty({ description: 'Force delete even if person has other faces' })
-  @IsNotEmpty()
-  force!: boolean;
-}
-
-export class PersonStatisticsResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Number of assets' })
-  assets!: number;
-}
-
-export class PeopleResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Total number of people' })
-  total!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of hidden people' })
-  hidden!: number;
-  @ApiProperty({ description: 'List of people' })
-  people!: PersonResponseDto[];
-
-  // TODO: make required after a few versions
-  @Property({
-    description: 'Whether there are more pages',
-    history: new HistoryBuilder().added('v1.110.0').stable('v2'),
+const PersonCreateSchema = z
+  .object({
+    name: z.string().optional().describe('Person name'),
+    birthDate: z
+      .string()
+      .meta({ format: 'date' })
+      .nullable()
+      .optional()
+      .refine((val) => !val || new Date(val) <= new Date(), { error: 'Birth date cannot be in the future' })
+      .describe('Person date of birth'),
+    isHidden: z.boolean().optional().describe('Person visibility (hidden)'),
+    isFavorite: z.boolean().optional().describe('Mark as favorite'),
+    color: hexColor.nullable().optional().describe('Person color (hex)'),
   })
-  hasNextPage?: boolean;
+  .meta({ id: 'PersonCreateDto' });
+
+const PersonUpdateSchema = PersonCreateSchema.extend({
+  featureFaceAssetId: z.uuidv4().optional().describe('Asset ID used for feature face thumbnail'),
+  userId: z.uuid().optional().describe('User ID'),
+}).meta({ id: 'PersonUpdateDto' });
+
+const PeopleUpdateItemSchema = PersonUpdateSchema.extend({
+  id: z.uuidv4().describe('Person ID'),
+}).meta({ id: 'PeopleUpdateItem' });
+
+const PeopleUpdateSchema = z
+  .object({
+    people: z.array(PeopleUpdateItemSchema).describe('People to update'),
+  })
+  .meta({ id: 'PeopleUpdateDto' });
+
+const MergePersonSchema = z
+  .object({
+    ids: z.array(z.uuidv4()).describe('Person IDs to merge'),
+  })
+  .meta({ id: 'MergePersonDto' });
+
+const PersonSearchSchema = z
+  .object({
+    withHidden: stringToBool.optional().describe('Include hidden people'),
+    closestPersonId: z.uuidv4().optional().describe('Closest person ID for similarity search'),
+    closestAssetId: z.uuidv4().optional().describe('Closest asset ID for similarity search'),
+    page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
+    size: z.coerce.number().int().min(1).max(1000).default(500).describe('Number of items per page'),
+    sharedById: z.uuid().optional().describe('Only include people to which the user gave access'),
+    sharedWithId: z.uuid().optional().describe('Only include people to which the user was given access'),
+    isFavorite: stringToBool.optional().describe('Filter by favorite status'),
+    isHidden: stringToBool.optional().describe('Filter by hidden status'),
+  })
+  .meta({ id: 'PersonSearchDto' });
+
+export enum PersonUserRole {
+  Read = 'read',
+  Write = 'write',
+  Admin = 'admin',
 }
 
-export function mapPerson(person: Person): PersonResponseDto {
+const PersonUserRoleSchema = z
+  .enum(PersonUserRole)
+  .describe('Levels of access for managing people resources on behalf of another user.')
+  .meta({ id: 'PersonUserRole' });
+
+const PersonOtherResponseSchema = z
+  .object({
+    sharedById: z.uuid(),
+    name: z.string(),
+    birthDate: z.string().nullable(),
+    role: PersonUserRoleSchema,
+  })
+  .meta({ id: 'PersonOtherResponseDto' });
+
+const PeopleUserResponseSchema = UserResponseSchema.extend({
+  role: PersonUserRoleSchema.describe('Access role'),
+}).meta({ id: 'PeopleUserResponseDto' });
+
+export const PersonResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Person ID'),
+    name: z.string().describe('Person name'),
+    // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
+    birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
+    thumbnailPath: z.string().describe('Thumbnail path'),
+    isHidden: z.boolean().describe('Is hidden'),
+    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
+    updatedAt: z
+      .string()
+      .meta({ format: 'date-time' })
+      .optional()
+      .describe('Last update date')
+      .meta(new HistoryBuilder().added('v1.107.0').stable('v2').getExtensions()),
+    isFavorite: z
+      .boolean()
+      .optional()
+      .describe('Is favorite')
+      .meta(new HistoryBuilder().added('v1.126.0').stable('v2').getExtensions()),
+    color: z
+      .string()
+      .optional()
+      .describe('Person color (hex)')
+      .meta(new HistoryBuilder().added('v1.126.0').stable('v2').getExtensions()),
+    otherPeople: z.array(PersonOtherResponseSchema),
+    sharedBy: z.array(PeopleUserResponseSchema).describe('Users that gave the current user access to this person'),
+    sharedWith: z.array(PeopleUserResponseSchema).describe('Users the current user gave access to this person'),
+  })
+  .meta({ id: 'PersonResponseDto' });
+
+const PersonDeleteSchema = z
+  .object({ userId: z.string().optional() })
+  .default({})
+  .meta({ id: 'PersonDeleteDto', ...new HistoryBuilder().added('v3.3').stable('v3.3').getExtensions() });
+// TODO(v4) change to {userId: string, personId: string}[]
+const PeopleDeleteSchema = BulkIdsSchema.extend({ userId: z.string().optional() }).meta({
+  id: 'PeopleDeleteDto',
+  ...new HistoryBuilder().added('v3.3').getExtensions(),
+});
+
+export class PersonCreateDto extends createZodDto(PersonCreateSchema) {}
+export class PersonUpdateDto extends createZodDto(PersonUpdateSchema) {}
+export class PersonDeleteDto extends createZodDto(PersonDeleteSchema) {}
+export class PeopleDeleteDto extends createZodDto(PeopleDeleteSchema) {}
+export class PeopleUpdateDto extends createZodDto(PeopleUpdateSchema) {}
+export class MergePersonDto extends createZodDto(MergePersonSchema) {}
+export class PersonSearchDto extends createZodDto(PersonSearchSchema) {}
+export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
+export class PeopleUserResponseDto extends createZodDto(PeopleUserResponseSchema) {}
+
+const AssetFaceResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Face ID'),
+    imageHeight: z.int().min(0).describe('Image height in pixels'),
+    imageWidth: z.int().min(0).describe('Image width in pixels'),
+    boundingBoxX1: z.int().describe('Bounding box X1 coordinate'),
+    boundingBoxX2: z.int().describe('Bounding box X2 coordinate'),
+    boundingBoxY1: z.int().describe('Bounding box Y1 coordinate'),
+    boundingBoxY2: z.int().describe('Bounding box Y2 coordinate'),
+    sourceType: SourceTypeSchema.optional(),
+    person: PersonResponseSchema.nullable(),
+  })
+  .describe('Asset face with person')
+  .meta({ id: 'AssetFaceResponseDto' });
+
+export class AssetFaceResponseDto extends createZodDto(AssetFaceResponseSchema) {}
+
+const AssetFaceUpdateItemSchema = z
+  .object({
+    personId: z.uuidv4().describe('Person ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
+    userId: z.uuidv4().optional().describe('User ID'),
+  })
+  .meta({ id: 'AssetFaceUpdateItem' });
+
+const AssetFaceUpdateSchema = z
+  .object({
+    data: z.array(AssetFaceUpdateItemSchema).describe('Face update items'),
+  })
+  .meta({ id: 'AssetFaceUpdateDto' });
+
+const FaceSchema = z
+  .object({
+    id: z.uuidv4().describe('Face ID'),
+  })
+  .meta({ id: 'FaceDto' });
+
+const AssetFaceCreateSchema = AssetFaceUpdateItemSchema.extend({
+  imageWidth: z.int().describe('Image width in pixels'),
+  imageHeight: z.int().describe('Image height in pixels'),
+  x: z.int().describe('Face bounding box X coordinate'),
+  y: z.int().describe('Face bounding box Y coordinate'),
+  width: z.int().describe('Face bounding box width'),
+  height: z.int().describe('Face bounding box height'),
+}).meta({ id: 'AssetFaceCreateDto' });
+
+const AssetFaceDeleteSchema = z
+  .object({
+    force: z.boolean().describe('Force delete even if person has other faces'),
+  })
+  .meta({ id: 'AssetFaceDeleteDto' });
+
+const PersonStatisticsResponseSchema = z
+  .object({
+    assets: z.int().describe('Number of assets'),
+  })
+  .meta({ id: 'PersonStatisticsResponseDto' });
+
+const PersonUsersResponseSchema = z
+  .array(
+    z.object({
+      personId: z.uuid().describe('Person ID'),
+      sharedById: z.uuid().describe('User ID of the user that gave access to this person'),
+      sharedWithId: z.uuid().describe('User ID of the user that was given access to this person'),
+      sharedBy: UserResponseSchema.describe('The user that gave access to this person'),
+      sharedWith: UserResponseSchema.describe('The user that was given access to this person'),
+      role: PersonUserRoleSchema.describe('Access role'),
+    }),
+  )
+  .meta({ id: 'PersonUsersResponseDto' });
+
+const PersonUsersSearchSchema = z
+  .object({
+    personId: z.uuid().optional().describe('Person ID'),
+    direction: SharingDirectionSchema.optional(),
+    sharedById: z.uuid().optional().describe('User ID of the user that gave access'),
+    sharedWithId: z.uuid().optional().describe('User ID of the user that was given access'),
+    role: PersonUserRoleSchema.optional().describe('Role of user'),
+  })
+  .meta({ id: 'PersonUsersSearchDto' });
+
+const PersonUsersCreateSchema = z
+  .object({
+    personIds: uniqueIds.describe('Person IDs'),
+    sharedWithIds: uniqueIds.describe('User IDs that should be given access to the person'),
+    role: PersonUserRoleSchema.describe('Role that should be applied'),
+  })
+  .meta({ id: 'PersonUsersCreateDto' });
+
+const PersonUsersDeleteSchema = z
+  .array(
+    z.object({
+      personId: z.uuid().describe('Person ID'),
+      sharedWithId: z.uuid().describe('User ID of the user that was given access to the person'),
+      sharedById: z.uuid().optional().describe('User ID of the user that gave access to the person'),
+    }),
+  )
+  .meta({ id: 'PersonUsersDeleteDto' });
+
+export class AssetFaceUpdateDto extends createZodDto(AssetFaceUpdateSchema) {}
+export class FaceDto extends createZodDto(FaceSchema) {}
+export class AssetFaceCreateDto extends createZodDto(AssetFaceCreateSchema) {}
+export class AssetFaceDeleteDto extends createZodDto(AssetFaceDeleteSchema) {}
+export class PersonStatisticsResponseDto extends createZodDto(PersonStatisticsResponseSchema) {}
+export class PersonUsersResponseDto extends createZodDto(PersonUsersResponseSchema) {}
+export class PersonUsersSearchDto extends createZodDto(PersonUsersSearchSchema) {}
+export class PersonUsersCreateDto extends createZodDto(PersonUsersCreateSchema) {}
+export class PersonUsersDeleteDto extends createZodDto(PersonUsersDeleteSchema) {}
+
+const PeopleResponseSchema = z
+  .object({
+    total: z.int().min(0).describe('Total number of people'),
+    hidden: z.int().min(0).describe('Number of hidden people'),
+    people: z.array(PersonResponseSchema),
+    // TODO: make required after a few versions
+    hasNextPage: z
+      .boolean()
+      .optional()
+      .describe('Whether there are more pages')
+      .meta(new HistoryBuilder().added('v1.110.0').stable('v2').getExtensions()),
+  })
+  .describe('People response');
+export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
+
+type OptionalKeys = 'otherPeople' | 'sharedBy' | 'sharedWith';
+
+export function mapPerson(
+  person: MaybeDehydrated<Omit<Person, OptionalKeys> & Partial<Pick<Person, OptionalKeys>>>,
+): PersonResponseDto {
   return {
-    id: person.id,
+    id: person.personGroupId,
     name: person.name,
     birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: person.updatedAt,
+    updatedAt: asDateTimeString(person.updatedAt),
+    // TODO: use different response dtos for asset faces, which do not load the sharing properties
+    otherPeople: person.otherPeople ?? [],
+    sharedBy: (person.sharedBy ?? []).map((user) => mapPeopleUser(user)),
+    sharedWith: (person.sharedWith ?? []).map((user) => mapPeopleUser(user)),
   };
 }
 
-export function mapFacesWithoutPerson(
-  face: Selectable<AssetFaceTable>,
+const mapPeopleUser = (user: MaybeDehydrated<PersonUser>): PeopleUserResponseDto => ({
+  ...mapUser(user),
+  role: user.role,
+});
+
+type PersonUserShare = {
+  personId: string;
+  sharedById: string;
+  sharedWithId: string;
+  role: PersonUserRole;
+  sharedBy: MaybeDehydrated<User>;
+  sharedWith: MaybeDehydrated<User>;
+};
+
+export const mapPersonUsers = (shares: PersonUserShare[]): PersonUsersResponseDto =>
+  shares.map((share) => ({
+    personId: share.personId,
+    sharedById: share.sharedById,
+    sharedWithId: share.sharedWithId,
+    role: share.role,
+    sharedBy: mapUser(share.sharedBy),
+    sharedWith: mapUser(share.sharedWith),
+  }));
+
+function mapFacesWithoutPerson(
+  face: MaybeDehydrated<Selectable<AssetFaceTable>>,
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
-): AssetFaceWithoutPersonResponseDto {
+) {
   return {
     id: face.id,
     ...transformFaceBoundingBox(
@@ -260,12 +333,11 @@ export function mapFacesWithoutPerson(
 
 export function mapFaces(
   face: AssetFace,
-  auth: AuthDto,
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
 ): AssetFaceResponseDto {
   return {
     ...mapFacesWithoutPerson(face, edits, assetDimensions),
-    person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
+    person: face.person ? mapPerson(face.person) : null,
   };
 }

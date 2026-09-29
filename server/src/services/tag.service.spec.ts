@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
-import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { JobStatus } from 'src/enum';
-import { TagService } from 'src/services/tag.service';
-import { authStub } from 'test/fixtures/auth.stub';
-import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { JobName, JobStatus } from 'src/enum.js';
+import { TagService } from 'src/services/tag.service.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(TagService.name, () => {
   let sut: TagService;
@@ -104,7 +104,15 @@ describe(TagService.name, () => {
   describe('update', () => {
     it('should throw an error for no update permission', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set());
-      await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).rejects.toBeInstanceOf(
+      await expect(sut.update(authStub.admin, 'tag-1', { name: 'tag', color: '#000000' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mocks.tag.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if updated tag name has a slash', async () => {
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-parent']));
+      await expect(sut.update(authStub.admin, 'tag-1', { name: 'tag/test2', color: '#000000' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(mocks.tag.update).not.toHaveBeenCalled();
@@ -113,8 +121,31 @@ describe(TagService.name, () => {
     it('should update a tag', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
       mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
-      await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).resolves.toEqual(tagResponseStub.color1);
-      expect(mocks.tag.update).toHaveBeenCalledWith('tag-1', { color: '#000000' });
+      mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.getAssetIdsByTagId.mockResolvedValue(['asset-1']);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag' }] });
+      await expect(sut.update(authStub.admin, 'tag-1', { name: 'tag', color: '#000000' })).resolves.toEqual(
+        tagResponseStub.color1,
+      );
+      expect(mocks.tag.getAssetIdsByTagId).toHaveBeenCalledWith('tag-1');
+      expect(mocks.tag.update).toHaveBeenCalledWith('tag-1', { value: 'tag', color: '#000000' });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
+        exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag'] },
+        lockedPropertiesBehavior: 'append',
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
+    });
+
+    it('should not sync assets when only the tag color changes', async () => {
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
+      mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
+      mocks.tag.get.mockResolvedValue(tagStub.tag);
+
+      await sut.update(authStub.admin, 'tag-1', { color: '#000000' });
+
+      expect(mocks.tag.getAssetIdsByTagId).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
   });
 
@@ -172,9 +203,17 @@ describe(TagService.name, () => {
     it('should remove a tag', async () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.delete.mockResolvedValue();
+      mocks.tag.getAssetIdsByTagId.mockResolvedValue(['asset-1']);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] });
 
       await sut.remove(authStub.admin, 'tag-1');
+      expect(mocks.tag.getAssetIdsByTagId).toHaveBeenCalledWith('tag-1');
       expect(mocks.tag.delete).toHaveBeenCalledWith('tag-1');
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
+        exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: [] },
+        lockedPropertiesBehavior: 'append',
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
   });
 
@@ -206,16 +245,22 @@ describe(TagService.name, () => {
         count: 6,
       });
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-3', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-3', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([
         { tagId: 'tag-1', assetId: 'asset-1' },
@@ -255,12 +300,16 @@ describe(TagService.name, () => {
       ]);
 
       expect(mocks.asset.upsertExif).not.toHaveBeenCalledWith(
-        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.addAssetIds).toHaveBeenCalledWith('tag-1', ['asset-2']);

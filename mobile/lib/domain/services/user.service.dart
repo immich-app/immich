@@ -10,17 +10,11 @@ import 'package:logging/logging.dart';
 
 class UserService {
   final Logger _log = Logger("UserService");
-  final IsarUserRepository _isarUserRepository;
   final UserApiRepository _userApiRepository;
+  final UserRepository _userRepository;
   final StoreService _storeService;
 
-  UserService({
-    required IsarUserRepository isarUserRepository,
-    required UserApiRepository userApiRepository,
-    required StoreService storeService,
-  }) : _isarUserRepository = isarUserRepository,
-       _userApiRepository = userApiRepository,
-       _storeService = storeService;
+  UserService({required this._userApiRepository, required this._userRepository, required this._storeService});
 
   UserDto getMyUser() {
     return _storeService.get(StoreKey.currentUser);
@@ -36,9 +30,10 @@ class UserService {
 
   Future<UserDto?> refreshMyUser() async {
     final user = await _userApiRepository.getMyUser();
-    if (user == null) return null;
+    if (user == null) {
+      return null;
+    }
     await _storeService.put(StoreKey.currentUser, user);
-    await _isarUserRepository.update(user);
     return user;
   }
 
@@ -47,7 +42,6 @@ class UserService {
       final path = await _userApiRepository.createProfileImage(name: name, data: image);
       final updatedUser = getMyUser();
       await _storeService.put(StoreKey.currentUser, updatedUser);
-      await _isarUserRepository.update(updatedUser);
       return path;
     } catch (e) {
       _log.warning("Failed to upload profile image", e);
@@ -55,11 +49,5 @@ class UserService {
     }
   }
 
-  Future<List<UserDto>> getAll() async {
-    return await _isarUserRepository.getAll();
-  }
-
-  Future<void> deleteAll() {
-    return _isarUserRepository.deleteAll();
-  }
+  Stream<User?> watch(String id) => _userRepository.watch(id);
 }

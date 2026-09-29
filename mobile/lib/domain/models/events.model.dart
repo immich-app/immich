@@ -20,10 +20,6 @@ class ViewerShowDetailsEvent extends Event {
   const ViewerShowDetailsEvent();
 }
 
-class ViewerReloadAssetEvent extends Event {
-  const ViewerReloadAssetEvent();
-}
-
 // Multi-Select Events
 class MultiSelectToggleEvent extends Event {
   final bool isEnabled;

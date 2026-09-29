@@ -30,9 +30,7 @@ machine-learning/
 misc/
 mobile/
 
-open-api/typescript-sdk/build/
-!open-api/typescript-sdk/package.json
-!open-api/typescript-sdk/package-lock.json
+packages/sdk/build/
 
 server/upload/
 server/src/queries

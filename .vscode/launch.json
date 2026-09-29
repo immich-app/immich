@@ -23,15 +23,17 @@
       "type": "node",
       "request": "launch",
       "name": "Immich CLI",
-      "program": "${workspaceFolder}/cli/dist/index.js",
+      "program": "${workspaceFolder}/packages/cli/dist/index.js",
       "args": ["upload", "--help"],
       "runtimeArgs": ["--enable-source-maps"],
       "console": "integratedTerminal",
-      "resolveSourceMapLocations": ["${workspaceFolder}/cli/dist/**/*.js.map"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/packages/cli/dist/**/*.js.map"
+      ],
       "sourceMaps": true,
-      "outFiles": ["${workspaceFolder}/cli/dist/**/*.js"],
+      "outFiles": ["${workspaceFolder}/packages/cli/dist/**/*.js"],
       "skipFiles": ["<node_internals>/**"],
-      "preLaunchTask": "Build Immich CLI"
+      "preLaunchTask": "Build @immich/cli"
     }
   ]
 }

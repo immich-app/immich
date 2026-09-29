@@ -3,37 +3,45 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/asset/edit.drift.dart';
+import 'package:immich_mobile/data/db/main/table/asset/ocr.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/memory/memory.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
+import 'package:immich_mobile/data/db/main/table/people/person.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/cloud_id.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/stack.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey;
-import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole, UserMetadataKey;
+import 'package:openapi/api.dart' as api show AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
+import 'package:openapi/api.dart' hide AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
 
-class SyncStreamRepository extends DriftDatabaseRepository {
-  final Logger _logger = Logger('DriftSyncStreamRepository');
-  final Drift _db;
+@DriftAccessor()
+class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepositoryMixin {
+  final Logger _logger = Logger('SyncStreamRepository');
 
-  SyncStreamRepository(super.db) : _db = db;
+  SyncStreamRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<void> reset() async {
     _logger.fine("SyncResetV1 received. Resetting remote entities");
@@ -42,24 +50,36 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         // foreign_keys PRAGMA is no-op within transactions
         // https://www.sqlite.org/pragma.html#pragma_foreign_keys
         await _db.customStatement('PRAGMA foreign_keys = OFF');
-        await transaction(() async {
-          await _db.assetFaceEntity.deleteAll();
-          await _db.memoryAssetEntity.deleteAll();
-          await _db.memoryEntity.deleteAll();
-          await _db.partnerEntity.deleteAll();
-          await _db.personEntity.deleteAll();
-          await _db.remoteAlbumAssetEntity.deleteAll();
-          await _db.remoteAlbumEntity.deleteAll();
-          await _db.remoteAlbumUserEntity.deleteAll();
-          await _db.remoteAssetEntity.deleteAll();
-          await _db.remoteExifEntity.deleteAll();
-          await _db.stackEntity.deleteAll();
-          await _db.authUserEntity.deleteAll();
-          await _db.userEntity.deleteAll();
-          await _db.userMetadataEntity.deleteAll();
-          await _db.remoteAssetCloudIdEntity.deleteAll();
-        });
-        await _db.customStatement('PRAGMA foreign_keys = ON');
+        try {
+          await transaction(() async {
+            // FK cascade (ON DELETE SET NULL) does not fire while foreign_keys = OFF,
+            // so null linkedRemoteAlbumId manually to avoid dangling pointers in local_album_entity.
+            await _db.localAlbumEntity.update().write(
+              const LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(null)),
+            );
+            await _db.assetFaceEntity.deleteAll();
+            await _db.memoryAssetEntity.deleteAll();
+            await _db.memoryEntity.deleteAll();
+            await _db.partnerEntity.deleteAll();
+            await _db.personEntity.deleteAll();
+            await _db.remoteAlbumAssetEntity.deleteAll();
+            await _db.remoteAlbumEntity.deleteAll();
+            await _db.remoteAlbumUserEntity.deleteAll();
+            await _db.remoteAssetEntity.deleteAll();
+            await _db.remoteExifEntity.deleteAll();
+            await _db.stackEntity.deleteAll();
+            await _db.authUserEntity.deleteAll();
+            await _db.userEntity.deleteAll();
+            await _db.userMetadataEntity.deleteAll();
+            await _db.remoteAssetCloudIdEntity.deleteAll();
+            await _db.assetEditEntity.deleteAll();
+            await _db.assetOcrEntity.deleteAll();
+          });
+        } finally {
+          // re-enable FK even if the transaction throws, otherwise the connection
+          // would be left with foreign_keys = OFF, silently disabling cascades.
+          await _db.customStatement('PRAGMA foreign_keys = ON');
+        }
       });
     } catch (error, stack) {
       _logger.severe('Error: SyncResetV1', error, stack);
@@ -76,7 +96,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             email: Value(user.email),
             hasProfileImage: Value(user.hasProfileImage),
             profileChangedAt: Value(user.profileChangedAt),
-            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
+            avatarColor: Value(user.avatarColor.orElse(null)?.toAvatarColor() ?? AvatarColor.primary),
             isAdmin: Value(user.isAdmin),
             pinCode: Value(user.pinCode),
             quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
@@ -92,6 +112,35 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stack) {
       _logger.severe('Error: SyncAuthUserV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAuthUsersV2(Iterable<SyncAuthUserV2> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final user in data) {
+          final companion = AuthUserEntityCompanion(
+            name: Value(user.name),
+            email: Value(user.email),
+            hasProfileImage: Value(user.hasProfileImage),
+            profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor.orElse(null)?.toAvatarColor() ?? AvatarColor.primary),
+            isAdmin: Value(user.isAdmin),
+            pinCode: Value(user.pinCode),
+            quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
+            quotaUsageInBytes: Value(user.quotaUsageInBytes),
+          );
+
+          batch.insert(
+            _db.authUserEntity,
+            companion.copyWith(id: Value(user.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncAuthUserV2', error, stack);
       rethrow;
     }
   }
@@ -118,7 +167,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             email: Value(user.email),
             hasProfileImage: Value(user.hasProfileImage),
             profileChangedAt: Value(user.profileChangedAt),
-            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
+            avatarColor: Value(user.avatarColor.orElse(null)?.toAvatarColor() ?? AvatarColor.primary),
           );
 
           batch.insert(_db.userEntity, companion.copyWith(id: Value(user.id)), onConflict: DoUpdate((_) => companion));
@@ -169,6 +218,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          // cannot use FK here, so manually cascade
+          batch.deleteWhere(_db.assetFaceEntity, (row) => row.assetId.equals(asset.assetId));
           batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(asset.assetId));
         }
       });
@@ -187,7 +238,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
-            durationInSeconds: Value(asset.duration?.toDuration()?.inSeconds ?? 0),
+            uploadedAt: Value(asset.createdAt),
+            durationMs: Value(asset.duration?.toDuration()?.inMilliseconds ?? 0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
@@ -206,12 +258,53 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
       });
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetsV2(Iterable<SyncAssetV2> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        for (final asset in data) {
+          final companion = RemoteAssetEntityCompanion(
+            name: Value(asset.originalFileName),
+            type: Value(asset.type.toAssetType()),
+            createdAt: Value.absentIfNull(asset.fileCreatedAt),
+            updatedAt: Value.absentIfNull(asset.fileModifiedAt),
+            uploadedAt: Value(asset.createdAt),
+            durationMs: Value(asset.duration),
+            checksum: Value(asset.checksum),
+            isFavorite: Value(asset.isFavorite),
+            ownerId: Value(asset.ownerId),
+            localDateTime: Value(asset.localDateTime),
+            thumbHash: Value(asset.thumbhash),
+            deletedAt: Value(asset.deletedAt),
+            visibility: Value(asset.visibility.toAssetVisibility()),
+            livePhotoVideoId: Value(asset.livePhotoVideoId),
+            stackId: Value(asset.stackId),
+            libraryId: Value(asset.libraryId),
+            width: Value(asset.width),
+            height: Value(asset.height),
+            isEdited: Value(asset.isEdited),
+          );
+
+          batch.insert(
+            _db.remoteAssetEntity,
+            companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsV2 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -230,8 +323,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             fNumber: Value(exif.fNumber),
             fileSize: Value(exif.fileSizeInByte),
             focalLength: Value(exif.focalLength),
-            latitude: Value(exif.latitude?.toDouble()),
-            longitude: Value(exif.longitude?.toDouble()),
+            latitude: Value(exif.latitude),
+            longitude: Value(exif.longitude),
             iso: Value(exif.iso),
             make: Value(exif.make),
             model: Value(exif.model),
@@ -301,12 +394,12 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             final map = metadata.value as Map<String, Object?>;
             final companion = RemoteAssetCloudIdEntityCompanion(
               cloudId: Value(map['iCloudId']?.toString()),
-              createdAt: Value(map['createdAt'] != null ? DateTime.parse(map['createdAt'] as String) : null),
+              createdAt: Value(map['createdAt'] != null ? DateTime.parse(map['createdAt']! as String) : null),
               adjustmentTime: Value(
-                map['adjustmentTime'] != null ? DateTime.parse(map['adjustmentTime'] as String) : null,
+                map['adjustmentTime'] != null ? DateTime.parse(map['adjustmentTime']! as String) : null,
               ),
-              latitude: Value(map['latitude'] != null ? (double.tryParse(map['latitude'] as String)) : null),
-              longitude: Value(map['longitude'] != null ? (double.tryParse(map['longitude'] as String)) : null),
+              latitude: Value(map['latitude'] != null ? (double.tryParse(map['latitude']! as String)) : null),
+              longitude: Value(map['longitude'] != null ? (double.tryParse(map['longitude']! as String)) : null),
             );
             batch.insert(
               _db.remoteAssetCloudIdEntity,
@@ -318,6 +411,63 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsMetadataV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetEditsV1(Iterable<SyncAssetEditV1> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        for (final edit in data) {
+          final companion = AssetEditEntityCompanion(
+            id: Value(edit.id),
+            assetId: Value(edit.assetId),
+            action: Value(edit.action.toAssetEditAction()),
+            parameters: Value(edit.parameters as Map<String, Object?>),
+            sequence: Value(edit.sequence),
+          );
+
+          batch.insert(_db.assetEditEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetEditsV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> replaceAssetEditsV1(String assetId, Iterable<SyncAssetEditV1> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        batch.deleteWhere(_db.assetEditEntity, (row) => row.assetId.equals(assetId));
+
+        for (final edit in data) {
+          final companion = AssetEditEntityCompanion(
+            id: Value(edit.id),
+            assetId: Value(edit.assetId),
+            action: Value(edit.action.toAssetEditAction()),
+            parameters: Value(edit.parameters as Map<String, Object?>),
+            sequence: Value(edit.sequence),
+          );
+
+          batch.insert(_db.assetEditEntity, companion);
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: replaceAssetEditsV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetEditsV1(Iterable<SyncAssetEditDeleteV1> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        for (final edit in data) {
+          batch.deleteWhere(_db.assetEditEntity, (row) => row.id.equals(edit.editId));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetEditsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -337,6 +487,47 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> updateAlbumsV1(Iterable<SyncAlbumV1> data) async {
     try {
+      await _db.transaction(() async {
+        await _db.batch((batch) {
+          for (final album in data) {
+            final companion = RemoteAlbumEntityCompanion(
+              name: Value(album.name),
+              description: Value(album.description),
+              isActivityEnabled: Value(album.isActivityEnabled),
+              order: Value(album.order.toAlbumAssetOrder()),
+              thumbnailAssetId: Value(album.thumbnailAssetId),
+              createdAt: Value(album.createdAt),
+              updatedAt: Value(album.updatedAt),
+            );
+
+            batch.insert(
+              _db.remoteAlbumEntity,
+              companion.copyWith(id: Value(album.id)),
+              onConflict: DoUpdate((_) => companion),
+            );
+          }
+        });
+
+        await _db.batch((batch) {
+          for (final album in data) {
+            final companion = RemoteAlbumUserEntityCompanion(
+              albumId: Value(album.id),
+              userId: Value(album.ownerId),
+              role: const Value(AlbumUserRole.owner),
+            );
+
+            batch.insert(_db.remoteAlbumUserEntity, companion, onConflict: DoUpdate((_) => companion));
+          }
+        });
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAlbumsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAlbumsV2(Iterable<SyncAlbumV2> data) async {
+    try {
       await _db.batch((batch) {
         for (final album in data) {
           final companion = RemoteAlbumEntityCompanion(
@@ -345,7 +536,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             isActivityEnabled: Value(album.isActivityEnabled),
             order: Value(album.order.toAlbumAssetOrder()),
             thumbnailAssetId: Value(album.thumbnailAssetId),
-            ownerId: Value(album.ownerId),
             createdAt: Value(album.createdAt),
             updatedAt: Value(album.updatedAt),
           );
@@ -358,7 +548,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateAlbumsV1', error, stack);
+      _logger.severe('Error: updateAlbumsV2', error, stack);
       rethrow;
     }
   }
@@ -652,6 +842,37 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  Future<void> updateAssetFacesV3(Iterable<SyncAssetFaceV3> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetFace in data) {
+          final companion = AssetFaceEntityCompanion(
+            assetId: Value(assetFace.assetId),
+            personId: Value(assetFace.personId),
+            imageWidth: Value(assetFace.imageWidth),
+            imageHeight: Value(assetFace.imageHeight),
+            boundingBoxX1: Value(assetFace.boundingBoxX1),
+            boundingBoxY1: Value(assetFace.boundingBoxY1),
+            boundingBoxX2: Value(assetFace.boundingBoxX2),
+            boundingBoxY2: Value(assetFace.boundingBoxY2),
+            sourceType: Value(assetFace.sourceType),
+            deletedAt: Value(assetFace.deletedAt),
+            isVisible: Value(assetFace.isVisible),
+          );
+
+          batch.insert(
+            _db.assetFaceEntity,
+            companion.copyWith(id: Value(assetFace.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetFacesV3', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteAssetFacesV1(Iterable<SyncAssetFaceDeleteV1> data) async {
     try {
       await _db.batch((batch) {
@@ -665,37 +886,49 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> pruneAssets() async {
+  Future<void> updateAssetOcrV1(Iterable<SyncAssetOcrV1> data) async {
     try {
-      await _db.transaction(() async {
-        final authQuery = _db.authUserEntity.selectOnly()
-          ..addColumns([_db.authUserEntity.id])
-          ..limit(1);
-        final currentUserId = await authQuery.map((row) => row.read(_db.authUserEntity.id)).getSingleOrNull();
-        if (currentUserId == null) {
-          _logger.warning('No authenticated user found during pruneAssets. Skipping asset pruning.');
-          return;
+      await _db.batch((batch) {
+        for (final assetOcr in data) {
+          final companion = AssetOcrEntityCompanion(
+            assetId: Value(assetOcr.assetId),
+            recognizedText: Value(assetOcr.text),
+            x1: Value(assetOcr.x1),
+            y1: Value(assetOcr.y1),
+            x2: Value(assetOcr.x2),
+            y2: Value(assetOcr.y2),
+            x3: Value(assetOcr.x3),
+            y3: Value(assetOcr.y3),
+            x4: Value(assetOcr.x4),
+            y4: Value(assetOcr.y4),
+            boxScore: Value(assetOcr.boxScore),
+            textScore: Value(assetOcr.textScore),
+            isVisible: Value(assetOcr.isVisible),
+          );
+
+          batch.insert(
+            _db.assetOcrEntity,
+            companion.copyWith(id: Value(assetOcr.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
         }
-
-        final partnerQuery = _db.partnerEntity.selectOnly()
-          ..addColumns([_db.partnerEntity.sharedById])
-          ..where(_db.partnerEntity.sharedWithId.equals(currentUserId));
-        final partnerIds = await partnerQuery.map((row) => row.read(_db.partnerEntity.sharedById)).get();
-
-        final validUsers = {currentUserId, ...partnerIds.nonNulls};
-
-        // Asset is not owned by the current user or any of their partners and is not part of any (shared) album
-        // Likely a stale asset that was previously shared but has been removed
-        await _db.remoteAssetEntity.deleteWhere((asset) {
-          return asset.ownerId.isNotIn(validUsers) &
-              asset.id.isNotInQuery(
-                _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]),
-              );
-        });
       });
     } catch (error, stack) {
-      _logger.severe('Error: pruneAssets', error, stack);
-      // We do not rethrow here as this is a client-only cleanup and should not affect the sync process
+      _logger.severe('Error: updateAssetOcrV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetOcrV1(Iterable<SyncAssetOcrDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetOcr in data) {
+          batch.deleteWhere(_db.assetOcrEntity, (row) => row.id.equals(assetOcr.id));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetOcrV1', error, stack);
+      rethrow;
     }
   }
 }
@@ -706,7 +939,6 @@ extension on AssetTypeEnum {
     AssetTypeEnum.VIDEO => AssetType.video,
     AssetTypeEnum.AUDIO => AssetType.audio,
     AssetTypeEnum.OTHER => AssetType.other,
-    _ => throw Exception('Unknown AssetType value: $this'),
   };
 }
 
@@ -714,14 +946,13 @@ extension on AssetOrder {
   AlbumAssetOrder toAlbumAssetOrder() => switch (this) {
     AssetOrder.asc => AlbumAssetOrder.asc,
     AssetOrder.desc => AlbumAssetOrder.desc,
-    _ => throw Exception('Unknown AssetOrder value: $this'),
   };
 }
 
 extension on MemoryType {
   MemoryTypeEnum toMemoryType() => switch (this) {
     MemoryType.onThisDay => MemoryTypeEnum.onThisDay,
-    _ => throw Exception('Unknown MemoryType value: $this'),
+    MemoryType.birthday => MemoryTypeEnum.birthday,
   };
 }
 
@@ -729,7 +960,7 @@ extension on api.AlbumUserRole {
   AlbumUserRole toAlbumUserRole() => switch (this) {
     api.AlbumUserRole.editor => AlbumUserRole.editor,
     api.AlbumUserRole.viewer => AlbumUserRole.viewer,
-    _ => throw Exception('Unknown AlbumUserRole value: $this'),
+    api.AlbumUserRole.owner => AlbumUserRole.owner,
   };
 }
 
@@ -739,7 +970,6 @@ extension on api.AssetVisibility {
     api.AssetVisibility.hidden => AssetVisibility.hidden,
     api.AssetVisibility.archive => AssetVisibility.archive,
     api.AssetVisibility.locked => AssetVisibility.locked,
-    _ => throw Exception('Unknown AssetVisibility value: $this'),
   };
 }
 
@@ -748,22 +978,17 @@ extension on api.UserMetadataKey {
     api.UserMetadataKey.onboarding => UserMetadataKey.onboarding,
     api.UserMetadataKey.preferences => UserMetadataKey.preferences,
     api.UserMetadataKey.license => UserMetadataKey.license,
-    _ => throw Exception('Unknown UserMetadataKey value: $this'),
   };
 }
 
-extension on String {
-  Duration? toDuration() {
-    try {
-      final parts = split(':').map((e) => double.parse(e).toInt()).toList(growable: false);
-
-      return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);
-    } catch (_) {
-      return null;
-    }
-  }
+extension on UserAvatarColor {
+  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == toString());
 }
 
-extension on UserAvatarColor {
-  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == value);
+extension on api.AssetEditAction {
+  AssetEditAction toAssetEditAction() => switch (this) {
+    api.AssetEditAction.crop => AssetEditAction.crop,
+    api.AssetEditAction.rotate => AssetEditAction.rotate,
+    api.AssetEditAction.mirror => AssetEditAction.mirror,
+  };
 }

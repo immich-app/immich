@@ -1,27 +1,15 @@
-import { BrowserContext, expect, Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { DateTime } from 'luxon';
-import { TimelineAssetConfig } from 'src/ui/generators/timeline';
+import { TimelineAssetConfig } from 'src/ui/generators/timeline.js';
 
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 export const padYearMonth = (yearMonth: string) => {
-  const [year, month] = yearMonth.split('-');
+  const [year, month] = yearMonth.split('-', 2);
   return `${year}-${month.padStart(2, '0')}`;
 };
-
-export async function throttlePage(context: BrowserContext, page: Page) {
-  const session = await context.newCDPSession(page);
-  await session.send('Network.emulateNetworkConditions', {
-    offline: false,
-    downloadThroughput: (1.5 * 1024 * 1024) / 8,
-    uploadThroughput: (750 * 1024) / 8,
-    latency: 40,
-    connectionType: 'cellular3g',
-  });
-  await session.send('Emulation.setCPUThrottlingRate', { rate: 10 });
-}
 
 export const poll = async <T>(
   page: Page,
@@ -62,16 +50,17 @@ export const thumbnailUtils = {
     return page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"]`);
   },
   selectButton(page: Page, assetId: string) {
-    return page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"] button`);
+    return page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"] button[role="checkbox"]`);
   },
   selectedAsset(page: Page) {
-    return page.locator('[data-thumbnail-focus-container]:has(button[aria-checked])');
+    return page.locator('[data-thumbnail-focus-container][data-selected]');
   },
   async clickAssetId(page: Page, assetId: string) {
     await thumbnailUtils.withAssetId(page, assetId).click();
   },
   async queryThumbnailInViewport(page: Page, collector: (assetId: string) => boolean) {
     const assetIds: string[] = [];
+    // eslint-disable-next-line unicorn/no-this-outside-of-class
     for (const thumb of await this.locator(page).all()) {
       const box = await thumb.boundingBox();
       if (box) {
@@ -102,12 +91,9 @@ export const thumbnailUtils = {
   async expectThumbnailIsNotArchive(page: Page, assetId: string) {
     await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-archive]')).toHaveCount(0);
   },
-  async expectSelectedReadonly(page: Page, assetId: string) {
-    // todo - need a data attribute for selected
+  async expectSelectedDisabled(page: Page, assetId: string) {
     await expect(
-      page.locator(
-        `[data-thumbnail-focus-container][data-asset="${assetId}"] > .group.cursor-not-allowed > .rounded-xl`,
-      ),
+      page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"][data-selected][data-disabled]`),
     ).toBeVisible();
   },
   async expectTimelineHasOnScreenAssets(page: Page) {
@@ -146,6 +132,7 @@ export const timelineUtils = {
     return page.locator('#asset-grid');
   },
   async waitForTimelineLoad(page: Page) {
+    await expect(timelineUtils.locator(page)).toHaveCount(1);
     await expect(timelineUtils.locator(page)).toBeInViewport();
     await expect.poll(() => thumbnailUtils.locator(page).count()).toBeGreaterThan(0);
   },
@@ -154,6 +141,7 @@ export const timelineUtils = {
       page.evaluate(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
+
         return document.querySelector('#asset-grid').scrollTop;
       });
     await expect.poll(queryTop).toBeGreaterThan(0);
@@ -180,6 +168,7 @@ export const assetViewerUtils = {
       page.evaluate(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
+        // eslint-disable-next-line unicorn/no-optional-chaining-on-undeclared-variable
         return document.activeElement?.dataset?.asset;
       });
     await expect(poll(page, activeElement, (result) => result === assetId)).resolves.toBe(assetId);
@@ -218,11 +207,12 @@ export const pageUtils = {
     await page.getByText('Confirm').click();
   },
   async selectDay(page: Page, day: string) {
-    await page.getByTitle(day).hover();
-    await page.locator('[data-group] .w-8').click();
+    const section = page.getByTitle(day).locator('xpath=ancestor::section[@data-group]');
+    await section.hover();
+    await section.locator('.w-8').click();
   },
   async pauseTestDebug() {
-    console.log('NOTE: pausing test indefinately for debug');
+    console.log('NOTE: pausing test indefinitely for debug');
     await new Promise(() => void 0);
   },
 };

@@ -1,31 +1,34 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/map.model.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
-import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class MapState {
-  final ThemeMode themeMode;
-  final LatLngBounds bounds;
-  final bool onlyFavorites;
-  final bool includeArchived;
-  final bool withPartners;
-  final int relativeDays;
+part 'map.state.freezed.dart';
 
-  const MapState({
-    this.themeMode = ThemeMode.system,
-    required this.bounds,
-    this.onlyFavorites = false,
-    this.includeArchived = false,
-    this.withPartners = false,
-    this.relativeDays = 0,
-  });
+@Freezed(equal: false)
+abstract class MapState with _$MapState {
+  const MapState._();
 
+  const factory MapState({
+    @Default(ThemeMode.system) ThemeMode themeMode,
+    required LatLngBounds bounds,
+    @Default(false) bool onlyFavorites,
+    @Default(false) bool includeArchived,
+    @Default(false) bool withPartners,
+    @Default(0) int relativeDays,
+    @Default(TimeRange()) TimeRange timeRange,
+  }) = _MapState;
+
+  // We only care about bounds changes, overriding Freezed
   @override
   bool operator ==(covariant MapState other) {
     return bounds == other.bounds;
@@ -34,30 +37,13 @@ class MapState {
   @override
   int get hashCode => bounds.hashCode;
 
-  MapState copyWith({
-    LatLngBounds? bounds,
-    ThemeMode? themeMode,
-    bool? onlyFavorites,
-    bool? includeArchived,
-    bool? withPartners,
-    int? relativeDays,
-  }) {
-    return MapState(
-      bounds: bounds ?? this.bounds,
-      themeMode: themeMode ?? this.themeMode,
-      onlyFavorites: onlyFavorites ?? this.onlyFavorites,
-      includeArchived: includeArchived ?? this.includeArchived,
-      withPartners: withPartners ?? this.withPartners,
-      relativeDays: relativeDays ?? this.relativeDays,
-    );
-  }
-
   TimelineMapOptions toOptions() => TimelineMapOptions(
     bounds: bounds,
     onlyFavorites: onlyFavorites,
     includeArchived: includeArchived,
     withPartners: withPartners,
     relativeDays: relativeDays,
+    timeRange: timeRange,
   );
 }
 
@@ -81,39 +67,47 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapShowFavoriteOnly, isFavoriteOnly);
+    unawaited(ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly));
     state = state.copyWith(onlyFavorites: isFavoriteOnly);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapIncludeArchived, isIncludeArchived);
+    unawaited(ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived));
     state = state.copyWith(includeArchived: isIncludeArchived);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapwithPartners, isWithPartners);
+    unawaited(ref.read(settingsProvider).write(.mapWithPartners, isWithPartners));
     state = state.copyWith(withPartners: isWithPartners);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void setRelativeTime(int relativeDays) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapRelativeDate, relativeDays);
+    unawaited(ref.read(settingsProvider).write(.mapRelativeDate, relativeDays));
     state = state.copyWith(relativeDays: relativeDays);
+    EventStream.shared.emit(const MapMarkerReloadEvent());
+  }
+
+  void setCustomTimeRange(TimeRange range) {
+    unawaited(ref.read(settingsProvider).write(.mapCustomFrom, range.from));
+    unawaited(ref.read(settingsProvider).write(.mapCustomTo, range.to));
+    state = state.copyWith(timeRange: range);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   @override
   MapState build() {
-    final appSettingsService = ref.read(appSettingsServiceProvider);
+    final mapConfig = ref.read(appConfigProvider.select((config) => config.map));
     return MapState(
-      themeMode: ThemeMode.values[appSettingsService.getSetting(AppSettingsEnum.mapThemeMode)],
-      onlyFavorites: appSettingsService.getSetting(AppSettingsEnum.mapShowFavoriteOnly),
-      includeArchived: appSettingsService.getSetting(AppSettingsEnum.mapIncludeArchived),
-      withPartners: appSettingsService.getSetting(AppSettingsEnum.mapwithPartners),
-      relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
+      themeMode: mapConfig.themeMode,
+      onlyFavorites: mapConfig.favoritesOnly,
+      includeArchived: mapConfig.includeArchived,
+      withPartners: mapConfig.withPartners,
+      relativeDays: mapConfig.relativeDays,
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
+      timeRange: TimeRange(from: mapConfig.customFrom, to: mapConfig.customTo),
     );
   }
 }

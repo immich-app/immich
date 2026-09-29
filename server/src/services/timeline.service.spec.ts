@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
-import { AssetVisibility } from 'src/enum';
-import { TimelineService } from 'src/services/timeline.service';
-import { authStub } from 'test/fixtures/auth.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { AssetVisibility } from 'src/enum.js';
+import { TimelineService } from 'src/services/timeline.service.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(TimelineService.name, () => {
   let sut: TimelineService;
@@ -19,9 +19,33 @@ describe(TimelineService.name, () => {
       await expect(sut.getTimeBuckets(authStub.admin, {})).resolves.toEqual(
         expect.arrayContaining([{ timeBucket: 'bucket', count: 1 }]),
       );
-      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith({
-        userIds: [authStub.admin.user.id],
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        {
+          userIds: [authStub.admin.user.id],
+        },
+        authStub.admin,
+      );
+    });
+
+    it('should pass bbox options to repository when all bbox fields are provided', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+      await sut.getTimeBuckets(authStub.admin, {
+        bbox: {
+          west: -70,
+          south: -30,
+          east: 120,
+          north: 55,
+        },
       });
+
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        {
+          userIds: [authStub.admin.user.id],
+          bbox: { west: -70, south: -30, east: 120, north: 55 },
+        },
+        authStub.admin,
+      );
     });
   });
 
@@ -183,6 +207,17 @@ describe(TimelineService.name, () => {
           isTrashed: true,
           withPartners: true,
           userId: authStub.admin.user.id,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw an error if withPartners is true and visibility is locked', async () => {
+      await expect(
+        sut.getTimeBucket(authStub.adminWithElevatedPermission, {
+          timeBucket: 'bucket',
+          visibility: AssetVisibility.Locked,
+          withPartners: true,
+          userId: authStub.adminWithElevatedPermission.user.id,
         }),
       ).rejects.toThrow(BadRequestException);
     });

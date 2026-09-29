@@ -1,18 +1,14 @@
 import { Kysely } from 'kysely';
-import { AssetFileType } from 'src/enum';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { DB } from 'src/schema';
-import { BaseService } from 'src/services/base.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetFileType } from 'src/enum.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { DB } from 'src/schema/index.js';
+import { BaseService } from 'src/services/base.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 const consume = async <T>(generator: AsyncIterableIterator<T>) => {
-  const values: T[] = [];
-
-  for await (const value of generator) {
-    values.push(value);
-  }
+  const values: T[] = await Array.fromAsync(generator);
 
   return values;
 };
@@ -112,6 +108,35 @@ describe(AssetJobRepository.name, () => {
       const stream = sut.streamForThumbnailJob({ force: false, fullsizeEnabled: true });
       await expect(consume(stream)).resolves.not.toEqual(
         expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
+      );
+    });
+  });
+
+  describe('getForOcr', () => {
+    it('should not return the edited preview file', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newAssetFile({
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        path: 'preview_edited.jpg',
+        isEdited: true,
+      });
+      await ctx.newAssetFile({
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        path: 'preview_unedited.jpg',
+        isEdited: false,
+      });
+
+      const result = await sut.getForOcr(asset.id);
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          previewFile: 'preview_unedited.jpg',
+        }),
       );
     });
   });

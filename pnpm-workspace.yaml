@@ -1,75 +1,74 @@
 packages:
-  - cli
+  - packages/**
   - docs
   - e2e
-  - e2e-auth-server
   - i18n
-  - open-api/typescript-sdk
   - server
   - plugins
   - web
   - .github
-
-dedupePeerDependents: false
-
-ignoredBuiltDependencies:
-  - '@nestjs/core'
-  - '@parcel/watcher'
-  - '@scarf/scarf'
-  - '@swc/core'
-  - canvas
-  - core-js
-  - core-js-pure
-  - cpu-features
-  - es5-ext
-  - esbuild
-  - msgpackr-extract
-  - postman-code-generators
-  - protobufjs
-  - ssh2
-  - utimes
-
-injectWorkspacePackages: true
-
-onlyBuiltDependencies:
-  - sharp
-  - '@tailwindcss/oxide'
-  - bcrypt
-
+  - packages/*
+allowBuilds:
+  '@nestjs/core': false
+  '@parcel/watcher': false
+  '@scarf/scarf': false
+  '@swc/core': false
+  bcrypt: true
+  canvas: false
+  core-js: false
+  cpu-features: false
+  es5-ext: false
+  esbuild: false
+  msgpackr-extract: false
+  protobufjs: false
+  sharp: true
+  ssh2: false
+  utimes: false
+  '@tailwindcss/oxide': true
+  core-js-pure: false
+  postman-code-generators: false
+  unrs-resolver: false
 overrides:
-  canvas: 2.11.2
-  sharp: ^0.34.5
-
+  canvas: 3.2.3
+  sharp: ^0.35.3
+  # 1.9.3-1.9.5 are confirmed broken
+  tsc-alias: 1.9.2
 packageExtensions:
-  '@immich/ui':
-    dependencies:
-      tailwindcss: '>=4.1'
-  '@photo-sphere-viewer/equirectangular-video-adapter':
-    dependencies:
-      three: '*'
-  '@photo-sphere-viewer/video-plugin':
-    dependencies:
-      three: '*'
-  bcrypt:
-    dependencies:
-      node-addon-api: '*'
-      node-gyp: '*'
   nestjs-kysely:
     dependencies:
       tslib: '*'
   nestjs-otel:
     dependencies:
       tslib: '*'
+  '@photo-sphere-viewer/equirectangular-video-adapter':
+    dependencies:
+      three: '*'
+  '@photo-sphere-viewer/video-plugin':
+    dependencies:
+      three: '*'
   sharp:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
+  '@immich/ui':
+    dependencies:
+      tailwindcss: '>=4.1'
   tailwind-variants:
     dependencies:
       tailwindcss: '>=4.1'
-
+  bcrypt:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  '@nestjs/swagger':
+    peerDependencies:
+      typescript: '*'
+dedupePeerDependents: false
 preferWorkspacePackages: true
-
+injectWorkspacePackages: true
 shamefullyHoist: false
-
 verifyDepsBeforeRun: install
+minimumReleaseAgeExclude:
+  - '@immich/ui'
+  - '@immich/sql-tools@0.6.3'
+  - '@nestjs/cli@12.0.1'

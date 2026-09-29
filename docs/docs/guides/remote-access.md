@@ -39,7 +39,7 @@ You can learn how to set up Tailscale together with Immich with the [tutorial vi
 ### Cons
 
 - The Tailscale client usually needs to run as root on your devices and it increases the attack surface slightly compared to a minimal Wireguard server. e.g., an [RCE vulnerability](https://github.com/tailscale/tailscale/security/advisories/GHSA-vqp6-rc3h-83cp) was discovered in the Windows Tailscale client in November 2022.
-- Tailscale is a paid service. However, there is a generous [free tier](https://tailscale.com/pricing/) that permits up to 3 users and up to 100 devices.
+- Tailscale is a paid service. However, there is a generous [free tier](https://tailscale.com/pricing/) suitable for personal use.
 - Tailscale needs to be installed and running on both server-side and client-side.
 
 ## Option 3: Reverse Proxy

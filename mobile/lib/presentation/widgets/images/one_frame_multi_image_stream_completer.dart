@@ -6,14 +6,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:immich_mobile/presentation/widgets/images/cache_aware_listener_tracker.mixin.dart';
 
 /// An ImageStreamCompleter with support for loading multiple images.
-class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
-  void Function()? _onLastListenerRemoved;
-  int _listenerCount = 0;
-  // True once setImage() has been called at least once.
-  bool didProvideImage = false;
-
+class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter with CacheAwareListenerTrackerMixin {
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
   /// The [initialImage] is an optional image that will be emitted synchronously
@@ -24,14 +20,14 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     InformationCollector? informationCollector,
     void Function()? onLastListenerRemoved,
   }) {
+    setupListenerTracking(hadInitialImage: initialImage != null, onLastListenerRemoved: onLastListenerRemoved);
+
     if (initialImage != null) {
-      didProvideImage = true;
       setImage(initialImage);
     }
-    _onLastListenerRemoved = onLastListenerRemoved;
+
     images.listen(
       (image) {
-        didProvideImage = true;
         setImage(image);
       },
       onError: (Object error, StackTrace stack) {
@@ -44,27 +40,5 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
         );
       },
     );
-  }
-
-  @override
-  void addListener(ImageStreamListener listener) {
-    super.addListener(listener);
-    _listenerCount = _listenerCount + 1;
-  }
-
-  @override
-  void removeListener(ImageStreamListener listener) {
-    super.removeListener(listener);
-    _listenerCount = _listenerCount - 1;
-
-    final bool onlyCacheListenerLeft = _listenerCount == 1 && !didProvideImage;
-    final bool noListenersAfterImage = _listenerCount == 0 && didProvideImage;
-
-    final onLastListenerRemoved = _onLastListenerRemoved;
-
-    if (onLastListenerRemoved != null && (noListenersAfterImage || onlyCacheListenerLeft)) {
-      _onLastListenerRemoved = null;
-      onLastListenerRemoved();
-    }
   }
 }

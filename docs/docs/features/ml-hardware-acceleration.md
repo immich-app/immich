@@ -1,5 +1,7 @@
 # Hardware-Accelerated Machine Learning
 
+import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
+
 This feature allows you to use a GPU to accelerate machine learning tasks, such as Smart Search and Facial Recognition, while reducing CPU load.
 As this is a new feature, it is still experimental and may not work on all systems.
 
@@ -47,9 +49,11 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 #### ROCm
 
+- On Linux, The [AMDGPU driver module](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/how-to/docker.html) needs to be installed on the server and, if secure boot is used, the signing key of DKMS [needs to be enrolled in UEFI BIOS](https://wiki.debian.org/SecureBoot)
 - The GPU must be supported by ROCm. If it isn't officially supported, you can attempt to use the `HSA_OVERRIDE_GFX_VERSION` environmental variable: `HSA_OVERRIDE_GFX_VERSION=<a supported version, e.g. 10.3.0>`. If this doesn't work, you might need to also set `HSA_USE_SVM=0`.
 - The ROCm image is quite large and requires at least 35GiB of free disk space. However, pulling later updates to the service through Docker will generally only amount to a few hundred megabytes as the rest will be cached.
 - This backend is new and may experience some issues. For example, GPU power consumption can be higher than usual after running inference, even if the machine learning service is idle. In this case, it will only go back to normal after being idle for 5 minutes (configurable with the [MACHINE_LEARNING_MODEL_TTL](/install/environment-variables) setting).
+- MIGraphX is a new backend for AMD cards, which compiles models at runtime. As such, the first few inferences will be slow.
 
 #### OpenVINO
 
@@ -84,6 +88,8 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - In particular, setting `MACHINE_LEARNING_RKNN_THREADS` to 2 or 3 can _dramatically_ improve performance for RK3576 and RK3588 compared to the default of 1, at the expense of multiplying the amount of RAM each model uses by that amount.
 
 ## Setup
+
+<ComposeBuilder />
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino, rknn] to the `image` section's tag at the end of the line.

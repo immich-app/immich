@@ -1,5 +1,5 @@
 import type { AssetVisibility } from '@immich/sdk';
-import { DayPattern, MonthDistribution } from 'src/ui/generators/timeline/distribution-patterns';
+import { DayPattern, MonthDistribution } from 'src/ui/generators/timeline/distribution-patterns.js';
 
 // Constants for generation parameters
 export const GENERATION_CONSTANTS = {
@@ -24,13 +24,6 @@ export const ASPECT_RATIO_WEIGHTS = {
   '3:1': 0.01, // 1% 3:1 panorama
 } as const;
 
-export type AspectRatio = {
-  width: number;
-  height: number;
-  ratio: number;
-  name: string;
-};
-
 // Mock configuration for asset generation - will be transformed to API response formats
 export type MockTimelineAsset = {
   id: string;
@@ -43,7 +36,7 @@ export type MockTimelineAsset = {
   isTrashed: boolean;
   isVideo: boolean;
   isImage: boolean;
-  duration: string | null;
+  duration: number | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
   city: string | null;
@@ -143,7 +136,7 @@ export function validateTimelineConfig(config: TimelineConfig): void {
   }
 
   // Validate seed if provided
-  if (config.seed !== undefined && (config.seed < 0 || !Number.isInteger(config.seed))) {
+  if (config.seed !== undefined && (config.seed < 0 || !Number.isSafeInteger(config.seed))) {
     throw new Error('Seed must be a non-negative integer');
   }
 

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
+import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { mimeTypes } from 'src/utils/mime-types';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 
 interface ExifDuration {
   Value: number;
@@ -20,7 +20,8 @@ type TagsWithWrongTypes =
   | 'TagsList'
   | 'Keywords'
   | 'HierarchicalSubject'
-  | 'ISO';
+  | 'ISO'
+  | 'LensModel';
 
 export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
@@ -43,6 +44,9 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   Description?: StringOrNumber;
   ImageDescription?: StringOrNumber;
 
+  // Apparently LensModel can also be a float: https://github.com/immich-app/immich/issues/30492
+  LensModel?: StringOrNumber;
+
   // Extended properties for image regions, such as faces
   RegionInfo?: {
     AppliedToDimensions: {
@@ -53,10 +57,10 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
     RegionList: {
       Area: {
         // (X,Y) // center of the rectangle
-        X: number;
-        Y: number;
-        W: number;
-        H: number;
+        X: number | string;
+        Y: number | string;
+        W: number | string;
+        H: number | string;
         Unit: string;
       };
       Rotation?: number;
@@ -72,6 +76,12 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
   AndroidMake?: string;
   AndroidModel?: string;
+  DeviceManufacturer?: string;
+  DeviceModelName?: string;
+
+  // Samsung specific tags
+  Author?: string;
+  SamsungModel?: string;
 }
 
 @Injectable()
@@ -82,12 +92,23 @@ export class MetadataRepository {
     inferTimezoneFromDatestamps: true,
     inferTimezoneFromTimeStamp: true,
     useMWG: true,
-    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize'],
+    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
+    // eslint-disable-next-line import-x/no-named-as-default-member
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     geolocation: true,
-    // Enable exiftool LFS to parse metadata for files larger than 2GB.
-    readArgs: ['-api', 'largefilesupport=1'],
+    readArgs: [
+      // Enable exiftool LFS to parse metadata for files larger than 2GB.
+      '-api',
+      'largefilesupport=1',
+      '--ICC_Profile:DeviceManufacturer',
+      '--ICC_Profile:DeviceModelName',
+      // Ignore embedded thumbnail dimensions/orientation for the main asset.
+      '--IFD1:Orientation',
+      '--MWG:Orientation',
+      '--IFD1:ImageWidth',
+      '--IFD1:ImageHeight',
+    ],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,
   });
@@ -105,8 +126,9 @@ export class MetadataRepository {
   }
 
   readTags(path: string): Promise<ImmichTags> {
-    const args = mimeTypes.isVideo(path) ? ['-ee'] : [];
-    return this.exiftool.read(path, { readArgs: args }).catch((error) => {
+    const options: ReadTaskOptions | undefined = mimeTypes.isVideo(path) ? { readArgs: ['-ee'] } : undefined;
+
+    return this.exiftool.read(path, options).catch((error) => {
       this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
       return {};
     }) as Promise<ImmichTags>;
@@ -117,8 +139,12 @@ export class MetadataRepository {
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+    // If exiftool assigns a field with ^= instead of =, empty values will be written too.
+    // Since exiftool-vendored doesn't support an option for this, we append the ^ to the name of the tag instead.
+    // https://exiftool.org/exiftool_pod.html#:~:text=is%20used%20to%20write%20an%20empty%20string
+    const tagsToWrite = Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key}^`, value]));
     try {
-      await this.exiftool.write(path, tags);
+      await this.exiftool.write(path, tagsToWrite);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }

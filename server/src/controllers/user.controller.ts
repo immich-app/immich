@@ -7,28 +7,31 @@ import {
   HttpStatus,
   Next,
   Param,
+  Patch,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
-import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
-import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
-import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { UserService } from 'src/services/user.service';
-import { sendFile } from 'src/utils/file';
-import { UUIDParamDto } from 'src/validation';
+import { ApiBody, ApiConsumes, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import type { NextFunction, Response } from 'express';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto.js';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
+import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto.js';
+import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto.js';
+import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto.js';
+import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto.js';
+import { ApiTag, Permission, RouteKey } from 'src/enum.js';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js';
+import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { UserService } from 'src/services/user.service.js';
+import { sendFile } from 'src/utils/file.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Users)
 @Controller(RouteKey.User)
@@ -60,14 +63,36 @@ export class UserController {
     return this.service.getMe(auth);
   }
 
+  @Get('me/calendar-heatmap')
+  @Authenticated({ permission: Permission.UserRead })
+  @Endpoint({
+    summary: 'Retrieve calendar heatmap activity',
+    description: 'Retrieve activity counts for a specified period, in a calendar heatmap format.',
+    history: new HistoryBuilder().added('v3').stable('v3'),
+  })
+  getMyCalendarHeatmap(@Auth() auth: AuthDto, @Query() dto: CalendarHeatmapDto): Promise<CalendarHeatmapResponseDto> {
+    return this.service.getCalendarHeatmap(auth, dto);
+  }
+
   @Put('me')
   @Authenticated({ permission: Permission.UserUpdate })
   @Endpoint({
     summary: 'Update current user',
-    description: 'Update the current user making teh API request.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    description: 'Update the current user making the API request.',
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateMyUser' }),
   })
   updateMyUser(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
+    return this.service.updateMe(auth, dto);
+  }
+
+  @Patch('me')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.UserUpdate })
+  updateMyUserV3(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
     return this.service.updateMe(auth, dto);
   }
 
@@ -87,9 +112,23 @@ export class UserController {
   @Endpoint({
     summary: 'Update my preferences',
     description: 'Update the preferences of the current user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateMyPreferences' }),
   })
   updateMyPreferences(
+    @Auth() auth: AuthDto,
+    @Body() dto: UserPreferencesUpdateDto,
+  ): Promise<UserPreferencesResponseDto> {
+    return this.service.updateMyPreferences(auth, dto);
+  }
+
+  @Patch('me/preferences')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.UserPreferenceUpdate })
+  updateMyPreferencesV3(
     @Auth() auth: AuthDto,
     @Body() dto: UserPreferencesUpdateDto,
   ): Promise<UserPreferencesResponseDto> {

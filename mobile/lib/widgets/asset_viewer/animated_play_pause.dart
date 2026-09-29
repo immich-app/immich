@@ -1,12 +1,16 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 /// A widget that animates implicitly between a play and a pause icon.
 class AnimatedPlayPause extends StatefulWidget {
-  const AnimatedPlayPause({super.key, required this.playing, this.size, this.color});
+  const AnimatedPlayPause({super.key, required this.playing, this.size, this.color, this.shadows});
 
   final double? size;
   final bool playing;
   final Color? color;
+  final List<Shadow>? shadows;
 
   @override
   State<StatefulWidget> createState() => AnimatedPlayPauseState();
@@ -24,9 +28,9 @@ class AnimatedPlayPauseState extends State<AnimatedPlayPause> with SingleTickerP
     super.didUpdateWidget(oldWidget);
     if (widget.playing != oldWidget.playing) {
       if (widget.playing) {
-        animationController.forward();
+        unawaited(animationController.forward());
       } else {
-        animationController.reverse();
+        unawaited(animationController.reverse());
       }
     }
   }
@@ -39,12 +43,32 @@ class AnimatedPlayPauseState extends State<AnimatedPlayPause> with SingleTickerP
 
   @override
   Widget build(BuildContext context) {
+    final icon = AnimatedIcon(
+      color: widget.color,
+      size: widget.size,
+      icon: AnimatedIcons.play_pause,
+      progress: animationController,
+    );
+
     return Center(
-      child: AnimatedIcon(
-        color: widget.color,
-        size: widget.size,
-        icon: AnimatedIcons.play_pause,
-        progress: animationController,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          for (final shadow in widget.shadows ?? const <Shadow>[])
+            Transform.translate(
+              offset: shadow.offset,
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: shadow.blurRadius / 2, sigmaY: shadow.blurRadius / 2),
+                child: AnimatedIcon(
+                  color: shadow.color,
+                  size: widget.size,
+                  icon: AnimatedIcons.play_pause,
+                  progress: animationController,
+                ),
+              ),
+            ),
+          icon,
+        ],
       ),
     );
   }

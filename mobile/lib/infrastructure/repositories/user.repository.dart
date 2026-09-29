@@ -1,81 +1,36 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/dao/user_metadata.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/user/auth_user.drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
-import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as entity;
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.drift.dart';
 
-class IsarUserRepository extends IsarDatabaseRepository {
-  final Isar _db;
-  const IsarUserRepository(super.db) : _db = db;
+@DriftAccessor()
+class UserRepository extends DatabaseAccessor<Drift> with $UserRepositoryMixin {
+  UserRepository(super.attachedDatabase);
 
-  Future<void> delete(List<String> ids) async {
-    await transaction(() async {
-      await _db.users.deleteAllById(ids);
-    });
-  }
+  Drift get _db => attachedDatabase;
 
-  Future<void> deleteAll() async {
-    await transaction(() async {
-      await _db.users.clear();
-    });
-  }
+  Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
 
-  Future<List<UserDto>> getAll({SortUserBy? sortBy}) async {
-    return (await _db.users
-            .where()
-            .optional(
-              sortBy != null,
-              (query) => switch (sortBy!) {
-                SortUserBy.id => query.sortById(),
-              },
-            )
-            .findAll())
-        .map((u) => u.toDto())
-        .toList();
-  }
-
-  Future<UserDto?> getByUserId(String id) async {
-    return (await _db.users.getById(id))?.toDto();
-  }
-
-  Future<List<UserDto?>> getByUserIds(List<String> ids) async {
-    return (await _db.users.getAllById(ids)).map((u) => u?.toDto()).toList();
-  }
-
-  Future<bool> insert(UserDto user) async {
-    await transaction(() async {
-      await _db.users.put(entity.User.fromDto(user));
-    });
-    return true;
-  }
-
-  Future<UserDto> update(UserDto user) async {
-    await transaction(() async {
-      await _db.users.put(entity.User.fromDto(user));
-    });
-    return user;
-  }
-
-  Future<bool> updateAll(List<UserDto> users) async {
-    await transaction(() async {
-      await _db.users.putAll(users.map(entity.User.fromDto).toList());
-    });
-    return true;
-  }
+  Stream<User?> watch(String id) =>
+      (_db.select(_db.userEntity)..where((u) => u.id.equals(id))).map(mapToUser).watchSingleOrNull();
 }
 
-class DriftAuthUserRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftAuthUserRepository(super.db) : _db = db;
+@DriftAccessor()
+class AuthUserRepository extends DatabaseAccessor<Drift> with $AuthUserRepositoryMixin {
+  AuthUserRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<UserDto?> get(String id) async {
     final user = await _db.managers.authUserEntity.filter((user) => user.id.equals(id)).getSingleOrNull();
 
-    if (user == null) return null;
+    if (user == null) {
+      return null;
+    }
 
     final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(id));
     final metadata = await query.map((row) => row.toDto()).get();
@@ -117,6 +72,7 @@ extension on AuthUserEntityData {
       id: id,
       email: email,
       name: name,
+      updatedAt: profileChangedAt,
       profileChangedAt: profileChangedAt,
       hasProfileImage: hasProfileImage,
       avatarColor: avatarColor,

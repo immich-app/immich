@@ -1,18 +1,18 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserMetadataKey } from 'src/enum';
-import { user_metadata_audit } from 'src/schema/functions';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
-import { UserMetadata, UserMetadataItem } from 'src/types';
+} from '@immich/sql-tools';
+import type { UserMetadata, UserMetadataItem } from 'src/types.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
+import { UserMetadataKey } from 'src/enum.js';
+import { user_metadata_audit } from 'src/schema/functions.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @UpdatedAtTrigger('user_metadata_updated_at')
 @Table('user_metadata')

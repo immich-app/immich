@@ -1,24 +1,30 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/album_asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.drift.dart';
 
 enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount, newestAsset }
 
-class DriftLocalAlbumRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepositoryMixin {
+  LocalAlbumRepository(super.attachedDatabase);
 
-  const DriftLocalAlbumRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
-  Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
+  Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) => _selectAll(sortBy: sortBy).get();
+
+  Stream<List<LocalAlbum>> watchAll({Set<SortLocalAlbumsBy> sortBy = const {}}) => _selectAll(sortBy: sortBy).watch();
+
+  Selectable<LocalAlbum> _selectAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
 
     final query = _db.localAlbumEntity.select().join([
@@ -47,7 +53,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       query.orderBy(orderings);
     }
 
-    return query.map((row) => row.readTable(_db.localAlbumEntity).toDto(assetCount: row.read(assetCount) ?? 0)).get();
+    return query.map((row) => row.readTable(_db.localAlbumEntity).toDto(assetCount: row.read(assetCount) ?? 0));
   }
 
   Future<List<LocalAlbum>> getBackupAlbums() async {
@@ -57,7 +63,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<void> delete(String albumId) => transaction(() async {
+  Future<void> deleteAlbum(String albumId) => transaction(() async {
     // Remove all assets that are only in this particular album
     // We cannot remove all assets in the album because they might be in other albums in iOS
     // That is not the case on Android since asset <-> album has one:one mapping
@@ -210,17 +216,19 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       await _deleteAssets(deletes);
 
       await _upsertAssets(updates);
+      // Drop every existing album link for each changed asset before re-adding the
+      // ones the native side reports. A moved asset only reports its new album here,
+      // so leaving the old link around makes the per-album delete sweep wipe the
+      // asset entirely (it is still linked to a bucket it no longer lives in).
+      await _db.batch((batch) async {
+        for (final assetId in assetAlbums.keys) {
+          batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.assetId.equals(assetId));
+        }
+      });
       // The ugly casting below is required for now because the generated code
       // casts the returned values from the platform during decoding them
       // and iterating over them causes the type to be List<Object?> instead of
       // List<String>
-      await _db.batch((batch) async {
-        assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
-          for (final albumId in albumIds.cast<String?>().nonNulls) {
-            batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.albumId.equals(albumId) & f.assetId.equals(assetId));
-          }
-        });
-      });
       await _db.batch((batch) async {
         assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
           batch.insertAll(
@@ -241,7 +249,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
-          ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)]);
 
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
@@ -276,9 +284,10 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     // Reset checksum if asset changed
     await _db.batch((batch) async {
       for (final asset in localAssets) {
-        final companion = LocalAssetEntityCompanion(
-          checksum: const Value(null),
-          adjustmentTime: Value(asset.adjustmentTime),
+        final companion = LocalAssetEntityCompanion.custom(
+          checksum: const Constant(null),
+          adjustmentTime: Variable(asset.adjustmentTime),
+          previousChecksum: coalesce([_db.localAssetEntity.previousChecksum, _db.localAssetEntity.checksum]),
         );
         batch.update(
           _db.localAssetEntity,
@@ -297,10 +306,11 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           updatedAt: Value(asset.updatedAt),
           width: Value(asset.width),
           height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
+          durationMs: Value(asset.durationMs),
           id: asset.id,
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
+          playbackStyle: Value(asset.playbackStyle),
           latitude: Value(asset.latitude),
           longitude: Value(asset.longitude),
           adjustmentTime: Value(asset.adjustmentTime),
@@ -328,16 +338,24 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           updatedAt: Value(asset.updatedAt),
           width: Value(asset.width),
           height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
+          durationMs: Value(asset.durationMs),
           id: asset.id,
           checksum: const Value(null),
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
+          playbackStyle: Value(asset.playbackStyle),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
           companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+          onConflict: DoUpdate(
+            // SET reads the existing row, so this keeps the checksum being cleared
+            (_) => RawValuesInsertable({
+              ...companion.toColumns(true),
+              'previous_checksum': coalesce([_db.localAssetEntity.previousChecksum, _db.localAssetEntity.checksum]),
+            }),
+            where: (old) => old.updatedAt.isNotValue(asset.updatedAt),
+          ),
         );
       }
     });
@@ -352,7 +370,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return _deleteAssets(assetIds);
     }
 
-    List<String> assetsToDelete = [];
+    final List<String> assetsToDelete = [];
     List<String> assetsToUnLink = [];
 
     final uniqueAssets = await _getUniqueAssetsInAlbum(albumId);

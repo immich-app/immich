@@ -22,12 +22,14 @@ class ThumbHashProvider extends CancellableImageProvider<ThumbHashProvider>
 
   Stream<ImageInfo> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) {
     final request = this.request = ThumbhashImageRequest(thumbhash: key.thumbHash);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is ThumbHashProvider) {
       return thumbHash == other.thumbHash;
     }

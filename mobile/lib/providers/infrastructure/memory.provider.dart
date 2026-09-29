@@ -1,25 +1,32 @@
+import 'dart:async';
+
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/memory.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'db.provider.dart';
-
-final driftMemoryRepositoryProvider = Provider<DriftMemoryRepository>(
-  (ref) => DriftMemoryRepository(ref.watch(driftProvider)),
-);
-
-final driftMemoryServiceProvider = Provider<DriftMemoryService>(
-  (ref) => DriftMemoryService(ref.watch(driftMemoryRepositoryProvider)),
-);
-
-final driftMemoryFutureProvider = FutureProvider.autoDispose<List<DriftMemory>>((ref) {
+final memoryLaneProvider = FutureProvider.autoDispose<List<Memory>>((ref) {
   final (userId, enabled) = ref.watch(currentUserProvider.select((user) => (user?.id, user?.memoryEnabled ?? true)));
   if (userId == null || !enabled) {
     return const [];
   }
 
-  final service = ref.watch(driftMemoryServiceProvider);
+  final now = DateTime.now();
+  final nextMidnight = DateTime(now.year, now.month, now.day + 1);
+  final timer = Timer(nextMidnight.difference(now) + const Duration(seconds: 5), ref.invalidateSelf);
+  ref.onDispose(timer.cancel);
+
+  final service = MemoryService(ref.watch(driftProvider).memoryRepository);
   return service.getMemoryLane(userId);
+});
+
+final allMemoriesProvider = FutureProvider.autoDispose.family<List<Memory>, bool>((ref, onlyFavorites) {
+  final (userId, enabled) = ref.watch(currentUserProvider.select((user) => (user?.id, user?.memoryEnabled ?? true)));
+  if (userId == null || !enabled) {
+    return const [];
+  }
+
+  final service = MemoryService(ref.watch(driftProvider).memoryRepository);
+  return service.getAll(userId, onlyFavorites: onlyFavorites);
 });

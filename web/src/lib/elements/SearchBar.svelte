@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { SearchOptions } from '$lib/utils/dipatch';
   import { IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -9,7 +8,7 @@
     roundedBottom?: boolean;
     showLoadingSpinner: boolean;
     placeholder: string;
-    onSearch?: (options: SearchOptions) => void;
+    onSearch?: (options: { force?: boolean }) => void;
     onReset?: () => void;
   }
 
@@ -40,7 +39,7 @@
 <div
   class="flex items-center text-sm {roundedBottom
     ? 'rounded-2xl'
-    : 'rounded-t-lg'} bg-gray-200 p-2 dark:bg-immich-dark-gray gap-2 place-items-center h-full"
+    : 'rounded-t-lg'} h-full place-items-center gap-2 bg-gray-200 p-2 dark:bg-gray-800"
 >
   <IconButton
     shape="round"
@@ -52,7 +51,7 @@
     onclick={() => onSearch({ force: true })}
   />
   <input
-    class="w-full gap-2 bg-gray-200 dark:bg-immich-dark-gray dark:text-white"
+    class="w-full gap-2 bg-gray-200 dark:bg-gray-800 dark:text-white"
     type="text"
     {placeholder}
     bind:value={name}

@@ -15,6 +15,7 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import app.alextran.immich.MainActivity
 import app.alextran.immich.R
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import io.flutter.FlutterInjector
@@ -23,6 +24,7 @@ import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 private const val TAG = "BackgroundWorker"
 
@@ -58,47 +60,68 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   companion object {
     private const val NOTIFICATION_CHANNEL_ID = "immich::background_worker::notif"
     private const val NOTIFICATION_ID = 100
+    private val activeWorker = AtomicReference<BackgroundWorker?>(null)
   }
 
   override fun startWork(): ListenableFuture<Result> {
-    Log.i(TAG, "Starting background upload worker")
-
-    if (!loader.initialized()) {
-      loader.startInitialization(ctx)
+    if (!activeWorker.compareAndSet(null, this)) {
+      Log.i(TAG, "Another background worker is running, skipping")
+      return Futures.immediateFuture(Result.success())
     }
 
-    val notificationChannel = NotificationChannel(
-      NOTIFICATION_CHANNEL_ID,
-      NOTIFICATION_CHANNEL_ID,
-      NotificationManager.IMPORTANCE_LOW
-    )
-    notificationManager.createNotificationChannel(notificationChannel)
-    val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
-    showNotification(notificationConfig.first, notificationConfig.second)
+    if (BackgroundWorkerPreferences(ctx).isLocked() && BackgroundEngineLock.connectEngines > 0) {
+      Log.i(TAG, "Foreground engine active, skipping background worker")
+      activeWorker.compareAndSet(this, null)
+      return Futures.immediateFuture(Result.success())
+    }
 
-    loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
-      engine = FlutterEngine(ctx)
-      FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
+    try {
+      Log.i(TAG, "Starting background upload worker")
 
-      // Register custom plugins
-      MainActivity.registerPlugins(ctx, engine!!)
-      flutterApi =
-        BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
-      BackgroundWorkerBgHostApi.setUp(
-        binaryMessenger = engine!!.dartExecutor.binaryMessenger,
-        api = this
+      if (!loader.initialized()) {
+        loader.startInitialization(ctx)
+      }
+
+      val notificationChannel = NotificationChannel(
+        NOTIFICATION_CHANNEL_ID,
+        ctx.getString(R.string.background_worker_notification_channel_name),
+        NotificationManager.IMPORTANCE_LOW
       )
+      notificationManager.createNotificationChannel(notificationChannel)
+      val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
+      showNotification(notificationConfig.first, notificationConfig.second)
 
-      engine!!.dartExecutor.executeDartEntrypoint(
-        DartExecutor.DartEntrypoint(
-          loader.findAppBundlePath(),
-          "package:immich_mobile/domain/services/background_worker.service.dart",
-          "backgroundSyncNativeEntrypoint"
+      loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
+        if (isStopped || isComplete) {
+          return@ensureInitializationCompleteAsync
+        }
+
+        engine = FlutterEngine(ctx)
+        FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
+
+        // Register custom plugins
+        MainActivity.registerPlugins(ctx, engine!!)
+        flutterApi =
+          BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
+        BackgroundWorkerBgHostApi.setUp(
+          binaryMessenger = engine!!.dartExecutor.binaryMessenger,
+          api = this
         )
-      )
-    }
 
-    return completionHandler
+        engine!!.dartExecutor.executeDartEntrypoint(
+          DartExecutor.DartEntrypoint(
+            loader.findAppBundlePath(),
+            "package:immich_mobile/domain/services/background_worker.service.dart",
+            "backgroundSyncNativeEntrypoint"
+          )
+        )
+      }
+
+      return completionHandler
+    } catch (error: Throwable) {
+      activeWorker.compareAndSet(this, null)
+      throw error
+    }
   }
 
   /**
@@ -107,7 +130,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    * This method acts as a bridge between the native Android background task system and Flutter.
    */
   override fun onInitialized() {
-    flutterApi?.onAndroidUpload { handleHostResult(it) }
+    flutterApi?.onAndroidUpload(maxMinutesArg = 20) { handleHostResult(it) }
   }
 
   // TODO: Move this to a separate NotificationManager class
@@ -143,11 +166,17 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       return
     }
 
+    val api = flutterApi
+    if (api == null) {
+      Handler(Looper.getMainLooper()).postAtFrontOfQueue {
+        complete(Result.failure())
+      }
+      return
+    }
+
     Handler(Looper.getMainLooper()).postAtFrontOfQueue {
-      if (flutterApi != null) {
-        flutterApi?.cancel {
-          complete(Result.failure())
-        }
+      api.cancel {
+        complete(Result.failure())
       }
     }
 
@@ -168,13 +197,21 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     close()
   }
 
-  private fun handleHostResult(result: kotlin.Result<Unit>) {
+  private fun handleHostResult(result: kotlin.Result<Boolean>) {
     if (isComplete) {
       return
     }
 
     result.fold(
-      onSuccess = { _ -> complete(Result.success()) },
+      onSuccess = { needsRetry ->
+        // The connected worker cannot enqueue itself while it is running, so it retries in place
+        if (needsRetry && !tags.contains(BackgroundWorkerApiImpl.RETRY_TAG)) {
+          BackgroundWorkerApiImpl.enqueueBackgroundWorkerWhenConnected(ctx)
+          complete(Result.success())
+        } else {
+          complete(if (needsRetry) Result.retry() else Result.success())
+        }
+      },
       onFailure = { _ -> onStopped() }
     )
   }
@@ -198,6 +235,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     flutterApi = null
     notificationManager.cancel(NOTIFICATION_ID)
     FlutterEngineCache.getInstance().remove(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY)
+    activeWorker.compareAndSet(this, null)
     waitForForegroundPromotion()
     completionHandler.set(success)
   }

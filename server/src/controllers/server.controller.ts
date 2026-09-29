@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
 import {
   ServerAboutResponseDto,
   ServerApkLinksDto,
@@ -11,16 +11,15 @@ import {
   ServerPingResponse,
   ServerStatsResponseDto,
   ServerStorageResponseDto,
-  ServerThemeDto,
   ServerVersionHistoryResponseDto,
   ServerVersionResponseDto,
-} from 'src/dtos/server.dto';
-import { VersionCheckStateResponseDto } from 'src/dtos/system-metadata.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
-import { ServerService } from 'src/services/server.service';
-import { SystemMetadataService } from 'src/services/system-metadata.service';
-import { VersionService } from 'src/services/version.service';
+} from 'src/dtos/server.dto.js';
+import { VersionCheckStateResponseDto } from 'src/dtos/system-metadata.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Authenticated } from 'src/middleware/auth.guard.js';
+import { ServerService } from 'src/services/server.service.js';
+import { SystemMetadataService } from 'src/services/system-metadata.service.js';
+import { VersionService } from 'src/services/version.service.js';
 
 @ApiTags(ApiTag.Server)
 @Controller('server')
@@ -65,6 +64,7 @@ export class ServerController {
   }
 
   @Get('ping')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Ping',
     description: 'Pong',
@@ -75,6 +75,7 @@ export class ServerController {
   }
 
   @Get('version')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Get server version',
     description: 'Retrieve the current server version in semantic versioning (semver) format.',
@@ -85,6 +86,7 @@ export class ServerController {
   }
 
   @Get('version-history')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Get version history',
     description: 'Retrieve a list of past versions the server has been on.',
@@ -95,30 +97,30 @@ export class ServerController {
   }
 
   @Get('features')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Get features',
     description: 'Retrieve available features supported by this server.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3.2.0', { replacementId: 'getPublicConfig' }),
   })
   getServerFeatures(): Promise<ServerFeaturesDto> {
     return this.service.getFeatures();
   }
 
-  @Get('theme')
-  @Endpoint({
-    summary: 'Get theme',
-    description: 'Retrieve the custom CSS, if existent.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  getTheme(): Promise<ServerThemeDto> {
-    return this.service.getTheme();
-  }
-
   @Get('config')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Get config',
     description: 'Retrieve the current server configuration.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3.2.0', { replacementId: 'getPublicConfig' }),
   })
   getServerConfig(): Promise<ServerConfigDto> {
     return this.service.getSystemConfig();
@@ -136,6 +138,7 @@ export class ServerController {
   }
 
   @Get('media-types')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Get supported media types',
     description: 'Retrieve all media types supported by the server.',

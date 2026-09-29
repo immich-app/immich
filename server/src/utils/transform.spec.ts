@@ -1,7 +1,7 @@
-import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { transformFaceBoundingBox, transformOcrBoundingBox } from 'src/utils/transform';
 import { describe, expect, it } from 'vitest';
+import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
+import { transformFaceBoundingBox, transformOcrBoundingBox } from 'src/utils/transform.js';
 
 describe('transformFaceBoundingBox', () => {
   const baseFace = {
@@ -154,6 +154,33 @@ describe('transformFaceBoundingBox', () => {
       expect(result.boundingBoxY1).toBe(0);
       expect(result.boundingBoxX2).toBe(50);
       expect(result.boundingBoxY2).toBe(50);
+    });
+
+    it('should always return whole numbers', () => {
+      const edits: AssetEditActionItem[] = [
+        { action: AssetEditAction.Crop, parameters: { x: 50, y: 50, width: 250, height: 250 } },
+      ];
+
+      expect(transformFaceBoundingBox(baseFace, edits, { width: 1000, height: 400 })).toMatchObject({
+        boundingBoxX1: 50,
+        boundingBoxY1: 0,
+        boundingBoxX2: 150,
+        boundingBoxY2: 50,
+      });
+
+      expect(transformFaceBoundingBox(baseFace, edits, { width: 1001, height: 401 })).toMatchObject({
+        boundingBoxX1: 50,
+        boundingBoxY1: 0,
+        boundingBoxX2: 150,
+        boundingBoxY2: 50,
+      });
+
+      expect(transformFaceBoundingBox(baseFace, edits, { width: 999, height: 399 })).toMatchObject({
+        boundingBoxX1: 49,
+        boundingBoxY1: -0,
+        boundingBoxX2: 149,
+        boundingBoxY2: 49,
+      });
     });
   });
 });

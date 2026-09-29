@@ -1,106 +1,67 @@
 import 'package:drift/drift.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
+import 'package:immich_mobile/infrastructure/repositories/partner.repository.drift.dart';
 
-class DriftPartnerRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftPartnerRepository(this._db) : super(_db);
+@DriftAccessor()
+class PartnerRepository extends DatabaseAccessor<Drift> with $PartnerRepositoryMixin {
+  PartnerRepository(super.attachedDatabase);
 
-  Future<List<PartnerUserDto>> getPartners(String userId) {
-    final query = _db.select(_db.partnerEntity).join([
-      innerJoin(_db.userEntity, _db.userEntity.id.equalsExp(_db.partnerEntity.sharedById)),
-    ])..where(_db.partnerEntity.sharedWithId.equals(userId));
+  Drift get _db => attachedDatabase;
 
-    return query.map((row) {
-      final user = row.readTable(_db.userEntity);
-      final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(id: user.id, email: user.email, name: user.name, inTimeline: partner.inTimeline);
-    }).get();
-  }
+  @visibleForTesting
+  Future<Partner> get({required String sharedById, required String sharedWithId}) =>
+      (_db.select(_db.partnerEntity).join([
+            innerJoin(_db.userEntity, _db.userEntity.id.equalsExp(_db.partnerEntity.sharedById)),
+          ])..where(
+            _db.partnerEntity.sharedById.equals(sharedById) & _db.partnerEntity.sharedWithId.equals(sharedWithId),
+          ))
+          .map(_resultToPartner)
+          .getSingle();
 
-  // Get users who we can share our library with
-  Future<List<PartnerUserDto>> getAvailablePartners(String currentUserId) {
-    final query = _db.select(_db.userEntity)..where((row) => row.id.equals(currentUserId).not());
+  Stream<Iterable<Partner>> search(String userId, PartnerDirection direction) =>
+      (_db.select(_db.partnerEntity).join([
+            innerJoin(
+              _db.userEntity,
+              _db.userEntity.id.equalsExp(switch (direction) {
+                .sharedBy => _db.partnerEntity.sharedWithId,
+                .sharedWith => _db.partnerEntity.sharedById,
+              }),
+            ),
+          ])..where(
+            switch (direction) {
+                  .sharedBy => _db.partnerEntity.sharedById,
+                  .sharedWith => _db.partnerEntity.sharedWithId,
+                }.equals(userId) &
+                _db.userEntity.id.equals(userId).not(),
+          ))
+          .map(_resultToPartner)
+          .watch();
 
-    return query.map((user) {
-      return PartnerUserDto(id: user.id, email: user.email, name: user.name, inTimeline: false);
-    }).get();
-  }
+  Future<void> create({required String sharedById, required String sharedWithId, bool inTimeline = false}) =>
+      _db.partnerEntity.insertOnConflictUpdate(
+        PartnerEntityCompanion(
+          sharedById: Value(sharedById),
+          sharedWithId: Value(sharedWithId),
+          inTimeline: Value(inTimeline),
+        ),
+      );
 
-  // Get users who are sharing their photos WITH the current user
-  Future<List<PartnerUserDto>> getSharedWith(String partnerId) {
-    final query = _db.select(_db.partnerEntity).join([
-      innerJoin(_db.userEntity, _db.userEntity.id.equalsExp(_db.partnerEntity.sharedById)),
-    ])..where(_db.partnerEntity.sharedWithId.equals(partnerId));
+  Future<void> updatePartner({required String sharedById, required String sharedWithId, required bool inTimeline}) =>
+      (_db.partnerEntity.update()..where((t) => t.sharedById.equals(sharedById) & t.sharedWithId.equals(sharedWithId)))
+          .write(PartnerEntityCompanion(inTimeline: Value(inTimeline)));
 
-    return query.map((row) {
-      final user = row.readTable(_db.userEntity);
-      final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(id: user.id, email: user.email, name: user.name, inTimeline: partner.inTimeline);
-    }).get();
-  }
+  Future<void> deletePartner({required String sharedById, required String sharedWithId}) =>
+      (_db.partnerEntity.delete()..where((t) => t.sharedById.equals(sharedById) & t.sharedWithId.equals(sharedWithId)))
+          .go();
 
-  // Get users who the current user is sharing their photos TO
-  Future<List<PartnerUserDto>> getSharedBy(String userId) {
-    final query = _db.select(_db.partnerEntity).join([
-      innerJoin(_db.userEntity, _db.userEntity.id.equalsExp(_db.partnerEntity.sharedWithId)),
-    ])..where(_db.partnerEntity.sharedById.equals(userId));
-
-    return query.map((row) {
-      final user = row.readTable(_db.userEntity);
-      final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(id: user.id, email: user.email, name: user.name, inTimeline: partner.inTimeline);
-    }).get();
-  }
-
-  Future<List<String>> getAllPartnerIds(String userId) async {
-    // Get users who are sharing with me (sharedWithId = userId)
-    final sharingWithMeQuery = _db.select(_db.partnerEntity)..where((tbl) => tbl.sharedWithId.equals(userId));
-    final sharingWithMe = await sharingWithMeQuery.map((row) => row.sharedById).get();
-
-    // Get users who I am sharing with (sharedById = userId)
-    final sharingWithThemQuery = _db.select(_db.partnerEntity)..where((tbl) => tbl.sharedById.equals(userId));
-    final sharingWithThem = await sharingWithThemQuery.map((row) => row.sharedWithId).get();
-
-    // Combine both lists and remove duplicates
-    final allPartnerIds = <String>{...sharingWithMe, ...sharingWithThem}.toList();
-    return allPartnerIds;
-  }
-
-  Future<PartnerUserDto?> getPartner(String partnerId, String userId) {
-    final query = _db.select(_db.partnerEntity).join([
-      innerJoin(_db.userEntity, _db.userEntity.id.equalsExp(_db.partnerEntity.sharedById)),
-    ])..where(_db.partnerEntity.sharedById.equals(partnerId) & _db.partnerEntity.sharedWithId.equals(userId));
-
-    return query.map((row) {
-      final user = row.readTable(_db.userEntity);
-      final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(id: user.id, email: user.email, name: user.name, inTimeline: partner.inTimeline);
-    }).getSingleOrNull();
-  }
-
-  Future<bool> toggleShowInTimeline(PartnerUserDto partner, String userId) {
-    return _db.partnerEntity.update().replace(
-      PartnerEntityCompanion(
-        sharedById: Value(partner.id),
-        sharedWithId: Value(userId),
-        inTimeline: Value(!partner.inTimeline),
-      ),
-    );
-  }
-
-  Future<int> create(String partnerId, String userId) {
-    final entity = PartnerEntityCompanion(
-      sharedById: Value(userId),
-      sharedWithId: Value(partnerId),
-      inTimeline: const Value(false),
-    );
-
-    return _db.partnerEntity.insertOne(entity);
-  }
-
-  Future<void> delete(String partnerId, String userId) {
-    return _db.partnerEntity.deleteWhere((t) => t.sharedById.equals(userId) & t.sharedWithId.equals(partnerId));
+  Partner _resultToPartner(TypedResult result) {
+    final user = result.readTable(_db.userEntity);
+    final partner = result.readTable(_db.partnerEntity);
+    return mapToPartner(user, partner);
   }
 }

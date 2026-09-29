@@ -4,12 +4,13 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.drift.dart';
 
 class RemovalCandidatesResult {
   final List<LocalAsset> assets;
@@ -18,19 +19,28 @@ class RemovalCandidatesResult {
   const RemovalCandidatesResult({required this.assets, required this.totalBytes});
 }
 
-class DriftLocalAssetRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepositoryMixin {
+  LocalAssetRepository(super.attachedDatabase);
 
-  const DriftLocalAssetRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
-    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
-      leftOuterJoin(
-        _db.remoteAssetEntity,
-        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-        useColumns: false,
-      ),
-    ])..where(_db.localAssetEntity.id.equals(id));
+    final query =
+        _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
+                  _db.remoteAssetEntity.ownerId.isInQuery(
+                    _db.selectOnly(_db.authUserEntity)
+                      ..addColumns([_db.authUserEntity.id])
+                      ..limit(1),
+                  ),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.localAssetEntity.id.equals(id))
+          ..limit(1);
 
     return query.map((row) {
       final asset = row.readTable(_db.localAssetEntity).toDto();
@@ -64,7 +74,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> delete(List<String> ids) {
+  Future<void> deleteAssets(List<String> ids) {
     if (ids.isEmpty) {
       return Future.value();
     }
@@ -109,31 +119,40 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Iterable<String> checksums) async {
-    if (checksums.isEmpty) {
+  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Iterable<String> remoteIds) async {
+    if (remoteIds.isEmpty) {
       return {};
     }
 
     final result = <String, List<LocalAsset>>{};
 
-    for (final slice in checksums.toSet().slices(kDriftMaxChunk)) {
+    for (final slice in remoteIds.toSet().slices(kDriftMaxChunk)) {
       final rows =
           await (_db.select(_db.localAlbumAssetEntity).join([
-                innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                innerJoin(
+                  _db.localAlbumEntity,
+                  _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+                  useColumns: false,
+                ),
                 innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                innerJoin(
+                  _db.remoteAssetEntity,
+                  _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+                  useColumns: false,
+                ),
               ])..where(
                 _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                    _db.localAssetEntity.checksum.isIn(slice),
+                    _db.remoteAssetEntity.id.isIn(slice),
               ))
               .get();
 
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-        final assetData = row.readTable(_db.localAssetEntity);
-        final asset = assetData.toDto();
+        final asset = row.readTable(_db.localAssetEntity).toDto();
         (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
     }
+
     return result;
   }
 
@@ -184,7 +203,8 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     }
 
     if (keepFavorites) {
-      whereClause = whereClause & _db.localAssetEntity.isFavorite.equals(false);
+      whereClause =
+          whereClause & _db.localAssetEntity.isFavorite.equals(false) & _db.remoteAssetEntity.isFavorite.equals(false);
     }
 
     query.where(whereClause);
@@ -197,11 +217,6 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
 
     return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
-  }
-
-  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
-    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
   }
 
   Future<void> reconcileHashesFromCloudId() async {
@@ -222,5 +237,26 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       updates: {_db.localAssetEntity},
       updateKind: UpdateKind.update,
     );
+  }
+
+  Future<String?> getPreviousRemoteId(String id) {
+    final query = _db.selectOnly(_db.localAssetEntity)
+      ..join([
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.previousChecksum),
+        ),
+        innerJoin(_db.authUserEntity, _db.authUserEntity.id.equalsExp(_db.remoteAssetEntity.ownerId)),
+      ])
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..where(_db.localAssetEntity.id.equals(id))
+      ..limit(1);
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.id)).getSingleOrNull();
+  }
+
+  Future<void> updatePreviousChecksum(String id, String checksum) async {
+    final query = _db.localAssetEntity.update()..where((row) => row.id.equals(id));
+    await query.write(LocalAssetEntityCompanion(previousChecksum: Value(checksum)));
   }
 }

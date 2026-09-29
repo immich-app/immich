@@ -1,15 +1,24 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
-import { AssetStats } from 'src/repositories/asset.repository';
-import { AssetService } from 'src/services/asset.service';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { factory, newUuid } from 'test/small.factory';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto.js';
+import { AssetEditAction } from 'src/dtos/editing.dto.js';
+import {
+  AssetFileType,
+  AssetMetadataKey,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+} from 'src/enum.js';
+import { AssetStats } from 'src/repositories/asset.repository.js';
+import { AssetService } from 'src/services/asset.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { getForAsset, getForAssetDeletion } from 'test/mappers.js';
+import { factory, newUuid } from 'test/small.factory.js';
+import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
 const stats: AssetStats = {
   [AssetType.Image]: 10,
@@ -68,46 +77,11 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('getRandom', () => {
-    it('should get own random assets', async () => {
-      mocks.partner.getAll.mockResolvedValue([]);
-      mocks.asset.getRandom.mockResolvedValue([AssetFactory.create()]);
-
-      await sut.getRandom(authStub.admin, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([authStub.admin.user.id], 1);
-    });
-
-    it('should not include partner assets if not in timeline', async () => {
-      const partner = factory.partner({ inTimeline: false });
-      const auth = factory.auth({ user: { id: partner.sharedWithId } });
-
-      mocks.asset.getRandom.mockResolvedValue([AssetFactory.create()]);
-      mocks.partner.getAll.mockResolvedValue([partner]);
-
-      await sut.getRandom(auth, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id], 1);
-    });
-
-    it('should include partner assets if in timeline', async () => {
-      const partner = factory.partner({ inTimeline: true });
-      const auth = factory.auth({ user: { id: partner.sharedWithId } });
-
-      mocks.asset.getRandom.mockResolvedValue([AssetFactory.create()]);
-      mocks.partner.getAll.mockResolvedValue([partner]);
-
-      await sut.getRandom(auth, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id, partner.sharedById], 1);
-    });
-  });
-
   describe('get', () => {
     it('should allow owner access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.admin, asset.id);
 
@@ -121,7 +95,7 @@ describe(AssetService.name, () => {
     it('should allow shared link access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.adminSharedLink, asset.id);
 
@@ -134,7 +108,7 @@ describe(AssetService.name, () => {
     it('should strip metadata for shared link if exif is disabled', async () => {
       const asset = AssetFactory.from().exif({ description: 'foo' }).build();
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       const result = await sut.get(
         { ...authStub.adminSharedLink, sharedLink: { ...authStub.adminSharedLink.sharedLink!, showExif: false } },
@@ -152,7 +126,7 @@ describe(AssetService.name, () => {
     it('should allow partner sharing access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.admin, asset.id);
 
@@ -162,7 +136,7 @@ describe(AssetService.name, () => {
     it('should allow shared album access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkAlbumAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.admin, asset.id);
 
@@ -204,44 +178,55 @@ describe(AssetService.name, () => {
     it('should update the asset', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
-      mocks.asset.update.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.update.mockResolvedValue(getForAsset(asset));
 
       await sut.update(authStub.admin, asset.id, { isFavorite: true });
 
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, isFavorite: true });
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith(
+        'on_asset_update',
+        authStub.admin.user.id,
+        expect.objectContaining({ id: asset.id }),
+      );
     });
 
     it('should update the exif description', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
-      mocks.asset.update.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.update.mockResolvedValue(getForAsset(asset));
 
       await sut.update(authStub.admin, asset.id, { description: 'Test description' });
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: asset.id, description: 'Test description', lockedProperties: ['description'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: asset.id, description: 'Test description', lockedProperties: ['description'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
     });
 
     it('should update the exif rating', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValueOnce(asset);
-      mocks.asset.update.mockResolvedValueOnce(asset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset));
+      mocks.asset.update.mockResolvedValueOnce(getForAsset(asset));
 
       await sut.update(authStub.admin, asset.id, { rating: 3 });
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        {
-          assetId: asset.id,
-          rating: 3,
-          lockedProperties: ['rating'],
-        },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: {
+            assetId: asset.id,
+            rating: 3,
+            lockedProperties: ['rating'],
+          },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SidecarWrite, data: { id: asset.id } });
     });
 
     it('should fail linking a live video if the motion part could not be found', async () => {
@@ -274,7 +259,7 @@ describe(AssetService.name, () => {
       const motionAsset = AssetFactory.from().owner(auth.user).build();
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await expect(
         sut.update(authStub.admin, asset.id, {
@@ -301,7 +286,7 @@ describe(AssetService.name, () => {
       const motionAsset = AssetFactory.create({ type: AssetType.Video });
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(motionAsset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(motionAsset));
 
       await expect(
         sut.update(auth, asset.id, {
@@ -327,9 +312,9 @@ describe(AssetService.name, () => {
       const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Timeline });
       const stillAsset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([stillAsset.id]));
-      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
-      mocks.asset.getById.mockResolvedValueOnce(stillAsset);
-      mocks.asset.update.mockResolvedValue(stillAsset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(stillAsset));
+      mocks.asset.update.mockResolvedValue(getForAsset(stillAsset));
       const auth = AuthFactory.from(motionAsset.owner).build();
 
       await sut.update(auth, stillAsset.id, { livePhotoVideoId: motionAsset.id });
@@ -354,9 +339,10 @@ describe(AssetService.name, () => {
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
       const unlinkedAsset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValueOnce(asset);
-      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
-      mocks.asset.update.mockResolvedValueOnce(unlinkedAsset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(unlinkedAsset));
+      mocks.asset.update.mockResolvedValueOnce(getForAsset(unlinkedAsset));
 
       await sut.update(auth, asset.id, { livePhotoVideoId: null });
 
@@ -403,6 +389,22 @@ describe(AssetService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], {
         visibility: AssetVisibility.Archive,
       });
+    });
+
+    it('should emit a websocket event if a sidecar write is not necessary', async () => {
+      const auth = AuthFactory.create();
+      const asset1 = AssetFactory.from().owner(auth.user).build();
+      const asset2 = AssetFactory.from().owner(auth.user).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
+
+      await sut.updateAll(auth, { ids: [asset1.id, asset2.id], visibility: AssetVisibility.Archive });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset1.id, asset2.id], {
+        visibility: AssetVisibility.Archive,
+      });
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.websocket.clientSend).toHaveBeenCalledTimes(2);
     });
 
     it('should not update Assets table if no relevant fields are provided', async () => {
@@ -532,7 +534,7 @@ describe(AssetService.name, () => {
     });
 
     it('should immediately queue assets for deletion if trash is disabled', async () => {
-      const asset = factory.asset({ isOffline: false });
+      const asset = AssetFactory.create();
 
       mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: false } });
@@ -546,7 +548,7 @@ describe(AssetService.name, () => {
     });
 
     it('should queue assets for deletion after trash duration', async () => {
-      const asset = factory.asset({ isOffline: false });
+      const asset = AssetFactory.create();
 
       mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
@@ -566,8 +568,10 @@ describe(AssetService.name, () => {
         .file({ type: AssetFileType.Thumbnail })
         .file({ type: AssetFileType.Preview })
         .file({ type: AssetFileType.FullSize })
+        .file({ type: AssetFileType.Preview, isEdited: true })
+        .file({ type: AssetFileType.Thumbnail, isEdited: true })
         .build();
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
@@ -581,7 +585,7 @@ describe(AssetService.name, () => {
           },
         ],
       ]);
-      expect(mocks.asset.remove).toHaveBeenCalledWith(asset);
+      expect(mocks.asset.remove).toHaveBeenCalledWith(getForAssetDeletion(asset));
     });
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
@@ -589,21 +593,45 @@ describe(AssetService.name, () => {
         .stack({}, (builder) => builder.asset())
         .build();
       mocks.stack.delete.mockResolvedValue();
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
-        ...asset,
-        // TODO the specific query filters out the primary asset from `stack.assets`. This should be in a mapper eventually
-        stack: { ...asset.stack!, assets: asset.stack!.assets.filter(({ id }) => id !== asset.stack!.primaryAssetId) },
-      });
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
       expect(mocks.stack.delete).toHaveBeenCalledWith(asset.stackId);
     });
 
+    it('should delete the stack when a non-primary asset is deleted and only the primary would remain', async () => {
+      const asset = AssetFactory.from().build();
+      const deletionAsset = {
+        ...getForAssetDeletion(asset),
+        stack: { id: newUuid(), primaryAssetId: newUuid(), assets: [{ id: asset.id }] },
+      };
+      mocks.stack.delete.mockResolvedValue();
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(deletionAsset);
+
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+
+      expect(mocks.stack.delete).toHaveBeenCalledWith(deletionAsset.stack.id);
+    });
+
+    it('should keep the stack when a non-primary asset is deleted and the primary plus another asset remain', async () => {
+      const asset = AssetFactory.from().build();
+      const deletionAsset = {
+        ...getForAssetDeletion(asset),
+        stack: { id: newUuid(), primaryAssetId: newUuid(), assets: [{ id: asset.id }, { id: newUuid() }] },
+      };
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(deletionAsset);
+
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+
+      expect(mocks.stack.delete).not.toHaveBeenCalled();
+      expect(mocks.stack.update).not.toHaveBeenCalled();
+    });
+
     it('should delete a live photo', async () => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden }).build();
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
 
       await sut.handleAssetDeletion({
@@ -620,7 +648,7 @@ describe(AssetService.name, () => {
     it('should not delete a live motion part if it is being used by another asset', async () => {
       const asset = AssetFactory.create({ livePhotoVideoId: newUuid() });
       mocks.asset.getLivePhotoCount.mockResolvedValue(2);
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
@@ -631,7 +659,7 @@ describe(AssetService.name, () => {
 
     it('should update usage', async () => {
       const asset = AssetFactory.from().exif({ fileSizeInByte: 5000 }).build();
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, -5000);
     });
@@ -721,23 +749,9 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('getUserAssetsByDeviceId', () => {
-    it('get assets by device id', async () => {
-      const assets = [AssetFactory.create(), AssetFactory.create()];
-
-      mocks.asset.getAllByDeviceId.mockResolvedValue(assets.map((asset) => asset.deviceAssetId));
-
-      const deviceId = 'device-id';
-      const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
-
-      expect(result.length).toEqual(2);
-      expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
-    });
-  });
-
   describe('upsertMetadata', () => {
     it('should throw a bad request exception if duplicate keys are sent', async () => {
-      const asset = factory.asset();
+      const asset = AssetFactory.create();
       const items = [
         { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
         { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
@@ -745,7 +759,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
 
-      await expect(sut.upsertMetadata(authStub.admin, asset.id, { items })).rejects.toThrowError(
+      await expect(sut.upsertMetadata(authStub.admin, asset.id, { items })).rejects.toThrow(
         'Duplicate items are not allowed:',
       );
 
@@ -755,7 +769,7 @@ describe(AssetService.name, () => {
 
   describe('upsertBulkMetadata', () => {
     it('should throw a bad request exception if duplicate keys are sent', async () => {
-      const asset = factory.asset();
+      const asset = AssetFactory.create();
       const items = [
         { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
         { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
@@ -763,7 +777,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
 
-      await expect(sut.upsertBulkMetadata(authStub.admin, { items })).rejects.toThrowError(
+      await expect(sut.upsertBulkMetadata(authStub.admin, { items })).rejects.toThrow(
         'Duplicate items are not allowed:',
       );
 

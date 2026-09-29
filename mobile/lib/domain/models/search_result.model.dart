@@ -1,32 +1,15 @@
-import 'package:collection/collection.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
-class SearchResult {
-  final List<BaseAsset> assets;
-  final double scrollOffset;
-  final int? nextPage;
+part 'search_result.model.freezed.dart';
 
-  const SearchResult({required this.assets, this.scrollOffset = 0.0, this.nextPage});
+@Freezed(toStringOverride: false)
+abstract class SearchResult with _$SearchResult {
+  const SearchResult._();
 
-  SearchResult copyWith({List<BaseAsset>? assets, int? nextPage, double? scrollOffset}) {
-    return SearchResult(
-      assets: assets ?? this.assets,
-      nextPage: nextPage ?? this.nextPage,
-      scrollOffset: scrollOffset ?? this.scrollOffset,
-    );
-  }
+  const factory SearchResult({required List<BaseAsset> assets, int? nextPage}) = _SearchResult;
 
+  // Explicitly don't log results, only attributes
   @override
-  String toString() => 'SearchResult(assets: ${assets.length}, nextPage: $nextPage, scrollOffset: $scrollOffset)';
-
-  @override
-  bool operator ==(covariant SearchResult other) {
-    if (identical(this, other)) return true;
-    final listEquals = const DeepCollectionEquality().equals;
-
-    return listEquals(other.assets, assets) && other.nextPage == nextPage && other.scrollOffset == scrollOffset;
-  }
-
-  @override
-  int get hashCode => assets.hashCode ^ nextPage.hashCode ^ scrollOffset.hashCode;
+  String toString() => 'SearchResult(assets: ${assets.length}, nextPage: $nextPage)';
 }

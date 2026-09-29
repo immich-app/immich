@@ -1,9 +1,9 @@
-import { MaintenanceController } from 'src/controllers/maintenance.controller';
-import { MaintenanceAction } from 'src/enum';
-import { MaintenanceService } from 'src/services/maintenance.service';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { MaintenanceController } from 'src/controllers/maintenance.controller.js';
+import { MaintenanceAction } from 'src/enum.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(MaintenanceController.name, () => {
   let ctx: ControllerContext;
@@ -20,18 +20,15 @@ describe(MaintenanceController.name, () => {
   });
 
   describe('POST /admin/maintenance', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/admin/maintenance').send();
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a backup file when action is restore', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/admin/maintenance').send({
         action: MaintenanceAction.RestoreDatabase,
       });
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['restoreBackupFilename must be a string', 'restoreBackupFilename should not be empty']),
+        errorDto.validationError([
+          { path: ['restoreBackupFilename'], message: 'Backup filename is required when action is restore_database' },
+        ]),
       );
       expect(ctx.authenticate).toHaveBeenCalled();
     });

@@ -1,29 +1,28 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/backup/available_album.model.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoListTile extends HookConsumerWidget {
-  final AvailableAlbum album;
+  final LocalAlbum album;
 
   const AlbumInfoListTile({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isSelected = ref.watch(backupProvider).selectedBackupAlbums.contains(album);
-    final bool isExcluded = ref.watch(backupProvider).excludedBackupAlbums.contains(album);
-    final syncAlbum = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+    final bool isSelected = album.backupSelection == BackupSelection.selected;
+    final bool isExcluded = album.backupSelection == BackupSelection.excluded;
 
-    buildTileColor() {
+    Color? buildTileColor() {
       if (isSelected) {
         return context.isDarkTheme ? context.primaryColor.withAlpha(100) : context.primaryColor.withAlpha(25);
       } else if (isExcluded) {
@@ -33,7 +32,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
       }
     }
 
-    buildIcon() {
+    Icon buildIcon() {
       if (isSelected) {
         return Icon(Icons.check_circle_rounded, color: context.colorScheme.primary);
       }
@@ -45,16 +44,20 @@ class AlbumInfoListTile extends HookConsumerWidget {
       return Icon(Icons.circle, color: context.colorScheme.surfaceContainerHighest);
     }
 
+    Widget buildSubtitle() {
+      return Text(
+        album.isIosSharedAlbum ? '${album.assetCount} (iCloud Shared Album)' : album.assetCount.toString(),
+        style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+      );
+    }
+
     return GestureDetector(
       onDoubleTap: () {
-        ref.watch(hapticFeedbackProvider.notifier).selectionClick();
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
 
         if (isExcluded) {
-          // Remove from exclude album list
-          ref.read(backupProvider.notifier).removeExcludedAlbumForBackup(album);
+          unawaited(ref.read(backupAlbumProvider.notifier).deselectAlbum(album));
         } else {
-          // Add to exclude album list
-
           if (album.id == 'isAll' || album.name == 'Recents') {
             ImmichToast.show(
               context: context,
@@ -65,7 +68,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
             return;
           }
 
-          ref.read(backupProvider.notifier).addExcludedAlbumForBackup(album);
+          unawaited(ref.read(backupAlbumProvider.notifier).excludeAlbum(album));
         }
       },
       child: ListTile(
@@ -74,20 +77,17 @@ class AlbumInfoListTile extends HookConsumerWidget {
         onTap: () {
           ref.read(hapticFeedbackProvider.notifier).selectionClick();
           if (isSelected) {
-            ref.read(backupProvider.notifier).removeAlbumForBackup(album);
+            unawaited(ref.read(backupAlbumProvider.notifier).deselectAlbum(album));
           } else {
-            ref.read(backupProvider.notifier).addAlbumForBackup(album);
-            if (syncAlbum) {
-              ref.read(albumProvider.notifier).createSyncAlbum(album.name);
-            }
+            unawaited(ref.read(backupAlbumProvider.notifier).selectAlbum(album));
           }
         },
         leading: buildIcon(),
-        title: Text(album.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        subtitle: Text(album.assetCount.toString()),
+        title: Text(album.name, style: context.textTheme.titleSmall),
+        subtitle: buildSubtitle(),
         trailing: IconButton(
           onPressed: () {
-            context.pushRoute(AlbumPreviewRoute(album: album.album));
+            unawaited(context.pushRoute(LocalTimelineRoute(album: album)));
           },
           icon: Icon(Icons.image_outlined, color: context.primaryColor, size: 24),
           splashRadius: 25,

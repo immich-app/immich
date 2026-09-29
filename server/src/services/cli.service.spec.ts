@@ -1,9 +1,9 @@
 import { jwtVerify } from 'jose';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { CliService } from 'src/services/cli.service';
-import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
 import { describe, it } from 'vitest';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { CliService } from 'src/services/cli.service.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(CliService.name, () => {
   let sut: CliService;
@@ -15,7 +15,7 @@ describe(CliService.name, () => {
 
   describe('listUsers', () => {
     it('should list users', async () => {
-      mocks.user.getList.mockResolvedValue([factory.userAdmin({ isAdmin: true })]);
+      mocks.user.getList.mockResolvedValue([UserFactory.create({ isAdmin: true })]);
       await expect(sut.listUsers()).resolves.toEqual([expect.objectContaining({ isAdmin: true })]);
       expect(mocks.user.getList).toHaveBeenCalledWith({ withDeleted: true });
     });
@@ -32,12 +32,12 @@ describe(CliService.name, () => {
     });
 
     it('should default to a random password', async () => {
-      const admin = factory.userAdmin({ isAdmin: true });
+      const admin = UserFactory.create({ isAdmin: true });
 
       mocks.user.getAdmin.mockResolvedValue(admin);
-      mocks.user.update.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.update.mockResolvedValue(UserFactory.create({ isAdmin: true }));
 
-      const ask = vitest.fn().mockImplementation(() => {});
+      const ask = vitest.fn().mockResolvedValue({ newPassword: undefined, invalidateSessions: false });
 
       const response = await sut.resetAdminPassword(ask);
 
@@ -47,15 +47,16 @@ describe(CliService.name, () => {
       expect(ask).toHaveBeenCalled();
       expect(id).toEqual(admin.id);
       expect(update.password).toBeDefined();
+      expect(mocks.session.invalidateAll).not.toHaveBeenCalled();
     });
 
     it('should use the supplied password', async () => {
-      const admin = factory.userAdmin({ isAdmin: true });
+      const admin = UserFactory.create({ isAdmin: true });
 
       mocks.user.getAdmin.mockResolvedValue(admin);
       mocks.user.update.mockResolvedValue(admin);
 
-      const ask = vitest.fn().mockResolvedValue('new-password');
+      const ask = vitest.fn().mockResolvedValue({ newPassword: 'new-password', invalidateSessions: false });
 
       const response = await sut.resetAdminPassword(ask);
 
@@ -65,6 +66,20 @@ describe(CliService.name, () => {
       expect(ask).toHaveBeenCalled();
       expect(id).toEqual(admin.id);
       expect(update.password).toBeDefined();
+    });
+
+    it('should invalidate existing sessions when requested', async () => {
+      const admin = UserFactory.create({ isAdmin: true });
+
+      mocks.user.getAdmin.mockResolvedValue(admin);
+      mocks.user.update.mockResolvedValue(admin);
+      mocks.session.invalidateAll.mockResolvedValue(void 0);
+
+      const ask = vitest.fn().mockResolvedValue({ newPassword: 'new-password', invalidateSessions: true });
+
+      await sut.resetAdminPassword(ask);
+
+      expect(mocks.session.invalidateAll).toHaveBeenCalledWith({ userId: admin.id });
     });
   });
 

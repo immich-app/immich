@@ -1,5 +1,30 @@
 # System Integrity
 
+## Integrity report
+
+At a [customizable interval](https://my.immich.app/admin/system-settings?isOpen=integrity-checks), Immich runs integrity checks to ensure that your library is still intact and there are no corrupt files.
+There are three kind of issues Immich checks for:
+
+- Untracked files: the path was found in Immich's directories but it is not referenced in Immich's database
+- Missing files: the path is found in the Immich internal database, but does not actually exist on disk
+- Checksum mismatches: the checksum of the file stored in Immich's database does not match the actual file's checksum anymore
+
+All three run nightly at 3am by default. For the "Checksum files" check, there are additional time and progress limits, as those are the most taxing checks. With these additional limits, Immich can slowly check checksums of your files over the course of a couple of days.
+
+You can see the results of these checks on the [maintenance](https://my.immich.app/admin/maintenance) page. Here, you can also trigger a full scan (a _check_) for specific jobs, or all of them. In addition, you can also _refresh_ checks. This will only look at items that have currently been reported on, and check if those have been fixed.
+
+### Common causes
+
+Most common are untracked files. In many cases those are corrupted thumbnails or encoded videos that have been partially generated at some point and never got cleaned up properly. These are usually fine to delete, as both can always be regenerated at a later point. Other files will need to be investigated on a case-by-case basis by checking they already exist in Immich and thinking about how they might have gotten untracked.
+
+:::info
+You might want to run the _missing_ jobs for thumbnails and encoded videos (https://my.immich.app/admin/queues) to make sure all your assets have proper thumbnails and encoded videos. Watch the server logs while running the jobs, in case there are any issues with some assets.
+:::
+
+Missing files are files where Immich references them internally, but they don't actually exist on disk in that location. It could be that you deleted a file on disk from the internal library (don't do that, Immich doesn't support it). It could also be that there are issues with your file storage. Please carefully investigate missing files, and never hesitate to reach out on [our Discord](https://discord.immich.app) if you have any questions!
+
+Checksum mismatches are often indicative of file system corruption. It could also be that you previously edited a file from the internal library on the disk, which is also not supported and will cause a checksum mismatch. Again, the recommended action is to look at any reported item individually, check it out, try to remember if you changed it or some metadata on it at some point. If you edited the file, the supported resolution is to delete the mismatched asset from Immich and reupload it as a new asset.
+
 ## Folder checks
 
 :::info
@@ -40,7 +65,7 @@ The above error messages show that the server has previously (successfully) writ
 
 ### Ignoring the checks
 
-:::warning
+:::danger
 The checks are designed to catch common problems that we have seen users have in the past, and often indicate there's something wrong that you should solve. If you know what you're doing and you want to disable them you can set the following environment variable:
 :::
 

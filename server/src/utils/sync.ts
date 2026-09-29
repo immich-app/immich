@@ -1,6 +1,6 @@
-import { SyncItem } from 'src/dtos/sync.dto';
-import { SyncEntityType } from 'src/enum';
-import { SyncAck } from 'src/types';
+import type { SyncAck } from 'src/types.js';
+import { SyncItem } from 'src/dtos/sync.dto.js';
+import { SyncEntityType } from 'src/enum.js';
 
 type Impossible<K extends keyof any> = {
   [P in K]: never;
@@ -9,7 +9,7 @@ type Impossible<K extends keyof any> = {
 type Exact<T, U extends T = T> = U & Impossible<Exclude<keyof U, keyof T>>;
 
 export const fromAck = (ack: string): SyncAck => {
-  const [type, updateId, extraId] = ack.split('|');
+  const [type, updateId, extraId] = ack.split('|', 3);
   return { type: type as SyncEntityType, updateId, extraId };
 };
 

@@ -1,6 +1,6 @@
-import { Tag } from 'src/database';
-import { TagResponseDto } from 'src/dtos/tag.dto';
-import { newUuidV7 } from 'test/small.factory';
+import { Tag } from 'src/database.js';
+import { TagResponseDto } from 'src/dtos/tag.dto.js';
+import { newUuidV7 } from 'test/small.factory.js';
 
 const parent = Object.freeze<Tag>({
   id: 'tag-parent',
@@ -55,15 +55,15 @@ export const tagStub = {
 export const tagResponseStub = {
   tag1: Object.freeze<TagResponseDto>({
     id: 'tag-1',
-    createdAt: new Date('2021-01-01T00:00:00Z'),
-    updatedAt: new Date('2021-01-01T00:00:00Z'),
+    createdAt: '2021-01-01T00:00:00.000Z',
+    updatedAt: '2021-01-01T00:00:00.000Z',
     name: 'Tag1',
     value: 'Tag1',
   }),
   color1: Object.freeze<TagResponseDto>({
     id: 'tag-1',
-    createdAt: new Date('2021-01-01T00:00:00Z'),
-    updatedAt: new Date('2021-01-01T00:00:00Z'),
+    createdAt: '2021-01-01T00:00:00.000Z',
+    updatedAt: '2021-01-01T00:00:00.000Z',
     color: '#000000',
     name: 'Tag1',
     value: 'Tag1',

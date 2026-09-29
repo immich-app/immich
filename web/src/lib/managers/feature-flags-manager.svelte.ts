@@ -1,5 +1,5 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
 import { getServerFeatures, type ServerFeaturesDto } from '@immich/sdk';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class FeatureFlagsManager {
   #value?: ServerFeaturesDto = $state();

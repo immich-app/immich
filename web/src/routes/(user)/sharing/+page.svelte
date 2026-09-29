@@ -1,9 +1,9 @@
 <script lang="ts">
   import empty2Url from '$lib/assets/empty-2.svg';
-  import Albums from '$lib/components/album-page/albums-list.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import Albums from '$lib/components/album-page/AlbumsList.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import { Route } from '$lib/route';
   import { getAlbumsActions } from '$lib/services/album.service';
   import { getSharedLinksActions } from '$lib/services/shared-link.service';
@@ -41,7 +41,7 @@
 <UserPageLayout title={data.meta.title} actions={[CreateAlbum, ViewSharedLinks]}>
   <div class="flex flex-col">
     {#if data.partners.length > 0}
-      <div class="mb-6 mt-2">
+      <div class="mt-2 mb-6">
         <div>
           <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('partners')}</p>
         </div>
@@ -69,7 +69,7 @@
       <hr class="mb-4 dark:border-immich-dark-gray" />
     {/if}
 
-    <div class="mb-6 mt-2">
+    <div class="mt-2 mb-6">
       <div>
         <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('albums')}</p>
       </div>
@@ -79,7 +79,7 @@
         <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
           <!-- Empty List -->
           {#snippet empty()}
-            <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} class="mt-10 mx-auto" />
+            <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} class="mx-auto mt-10" />
           {/snippet}
         </Albums>
       </div>

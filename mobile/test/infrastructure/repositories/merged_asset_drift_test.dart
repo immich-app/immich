@@ -1,11 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 void main() {
   late Drift db;
@@ -38,6 +38,7 @@ void main() {
             visibility: AssetVisibility.timeline,
             createdAt: Value(createdAt),
             updatedAt: Value(createdAt),
+            uploadedAt: Value(createdAt),
             localDateTime: const Value(null),
           ),
         );

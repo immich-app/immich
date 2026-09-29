@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -8,38 +10,25 @@ final hapticFeedbackProvider = StateNotifierProvider<HapticNotifier, void>((ref)
 });
 
 class HapticNotifier extends StateNotifier<void> {
-  void build() {}
   final Ref _ref;
 
   HapticNotifier(this._ref) : super(null);
 
-  selectionClick() {
+  void selectionClick() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
-      HapticFeedback.selectionClick();
+      unawaited(HapticFeedback.selectionClick());
     }
   }
 
-  lightImpact() {
+  void mediumImpact() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
-      HapticFeedback.lightImpact();
+      unawaited(HapticFeedback.mediumImpact());
     }
   }
 
-  mediumImpact() {
+  void heavyImpact() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
-      HapticFeedback.mediumImpact();
-    }
-  }
-
-  heavyImpact() {
-    if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
-      HapticFeedback.heavyImpact();
-    }
-  }
-
-  vibrate() {
-    if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
-      HapticFeedback.vibrate();
+      unawaited(HapticFeedback.heavyImpact());
     }
   }
 }

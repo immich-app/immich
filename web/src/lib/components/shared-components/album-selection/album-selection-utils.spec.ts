@@ -1,10 +1,10 @@
+import type { AlbumResponseDto } from '@immich/sdk';
 import {
   type AlbumModalRow,
   AlbumModalRowConverter,
   AlbumModalRowType,
 } from '$lib/components/shared-components/album-selection/album-selection-utils';
 import { AlbumSortBy, SortOrder } from '$lib/stores/preferences.store';
-import type { AlbumResponseDto } from '@immich/sdk';
 import { albumFactory } from '@test-data/factories/album-factory';
 
 // Some helper functions to make tests below more readable
@@ -105,6 +105,19 @@ describe('Album Modal', () => {
       createNewAlbumRow(false),
       createSectionRow('ALBUMS'),
       createAlbumRow(constructionAlbum, false),
+    ]);
+  });
+
+  it('search matches on description as well as name', () => {
+    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+    const holidayAlbum = albumFactory.build({ albumName: 'Vacances 2019', description: 'Crete' });
+    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
+    const modalRows = converter.toModalRows('Crete', [], [holidayAlbum, constructionAlbum], -1, []);
+
+    expect(modalRows).toStrictEqual([
+      createNewAlbumRow(false),
+      createSectionRow('ALBUMS'),
+      createAlbumRow(holidayAlbum, false),
     ]);
   });
 

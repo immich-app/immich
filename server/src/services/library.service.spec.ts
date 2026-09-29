@@ -1,17 +1,22 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
-import { defaults, SystemConfig } from 'src/config';
-import { mapLibrary } from 'src/dtos/library.dto';
-import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
-import { LibraryService } from 'src/services/library.service';
-import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { makeMockWatcher } from 'test/repositories/storage.repository.mock';
-import { factory, newDate, newUuid } from 'test/small.factory';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
+import type { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types.js';
+import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { mapLibrary } from 'src/dtos/library.dto.js';
+import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
+import { LibraryService } from 'src/services/library.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
+import { makeMockWatcher } from 'test/repositories/storage.repository.mock.js';
+import { factory, newDate, newUuid } from 'test/small.factory.js';
+import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
+
+async function* mockWalk() {
+  // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
+  yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
+}
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
@@ -160,11 +165,7 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockReturnValue(
-        (async function* () {
-          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
-        })(),
-      );
+      mocks.storage.walk.mockImplementation(mockWalk);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -200,13 +201,8 @@ describe(LibraryService.name, () => {
       });
 
       mocks.storage.checkFileExists.mockResolvedValue(true);
-      mocks.storage.walk.mockReturnValue(
-        (async function* () {
-          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
-        })(),
-      );
+
       mocks.library.get.mockResolvedValue(library);
-      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
@@ -223,11 +219,7 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockReturnValue(
-        (async function* () {
-          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
-        })(),
-      );
+      mocks.storage.walk.mockImplementation(mockWalk);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -249,6 +241,32 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.Skipped);
     });
+
+    it('should ignore import paths that do not exist', async () => {
+      const library = factory.library({ importPaths: ['/foo', '/bar'] });
+
+      mocks.storage.stat.mockImplementation((path): Promise<Stats> => {
+        if (path === library.importPaths[0]) {
+          const error = { code: 'ENOENT' } as any;
+          throw error;
+        }
+        return Promise.resolve({
+          isDirectory: () => true,
+        } as Stats);
+      });
+
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+
+      mocks.library.get.mockResolvedValue(library);
+
+      await sut.handleQueueSyncFiles({ id: library.id });
+
+      expect(mocks.storage.walk).toHaveBeenCalledWith({
+        pathsToWalk: [library.importPaths[1]],
+        exclusionPatterns: [],
+        includeHidden: false,
+      });
+    });
   });
 
   describe('handleQueueSyncAssets', () => {
@@ -256,11 +274,7 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockReturnValue(
-        (async function* () {
-          yield await Promise.resolve([]);
-        })(),
-      );
+      mocks.storage.walk.mockImplementation(async function* generator() {});
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -278,11 +292,7 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockReturnValue(
-        (async function* () {
-          yield await Promise.resolve([]);
-        })(),
-      );
+      mocks.storage.walk.mockImplementation(async function* generator() {});
       mocks.asset.getLibraryAssetCount.mockResolvedValue(0);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -297,11 +307,7 @@ describe(LibraryService.name, () => {
       const asset = AssetFactory.create({ libraryId: library.id, isExternal: true });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockReturnValue(
-        (async function* () {
-          yield await Promise.resolve([]);
-        })(),
-      );
+      mocks.storage.walk.mockImplementation(async function* generator() {});
       mocks.library.streamAssetIds.mockReturnValue(makeStream([asset]));
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });
@@ -552,7 +558,7 @@ describe(LibraryService.name, () => {
         paths: ['/data/user1/photo.jpg'],
       };
 
-      mocks.asset.createAll.mockResolvedValue([asset]);
+      mocks.asset.createAll.mockResolvedValue([asset.id]);
       mocks.library.get.mockResolvedValue(library);
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
@@ -562,12 +568,15 @@ describe(LibraryService.name, () => {
           ownerId: library.ownerId,
           libraryId: library.id,
           originalPath: '/data/user1/photo.jpg',
-          deviceId: 'Library Import',
           type: AssetType.Image,
           originalFileName: 'photo.jpg',
           isExternal: true,
         }),
       ]);
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
+        asset: { id: asset.id, ownerId: library.ownerId },
+      });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
@@ -928,6 +937,24 @@ describe(LibraryService.name, () => {
         await sut.watchAll();
 
         expect(mocks.storage.watch).toHaveBeenCalledWith(library.importPaths, expect.anything(), expect.anything());
+      });
+
+      it('should exclude paths from the watcher', async () => {
+        const library = factory.library({
+          importPaths: ['/foo', '/bar'],
+          exclusionPatterns: ['**/excluded/**'],
+        });
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.library.getAll.mockResolvedValue([library]);
+
+        await sut.watchAll();
+
+        expect(mocks.storage.watch).toHaveBeenCalledWith(
+          library.importPaths,
+          expect.objectContaining({ ignored: library.exclusionPatterns }),
+          expect.anything(),
+        );
       });
 
       it('should watch and unwatch library', async () => {

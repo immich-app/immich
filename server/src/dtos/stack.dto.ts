@@ -1,34 +1,40 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMinSize } from 'class-validator';
-import { Stack } from 'src/database';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { ValidateUUID } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
+import { Stack } from 'src/database.js';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 
-export class StackCreateDto {
-  @ValidateUUID({ each: true, description: 'Asset IDs (first becomes primary, min 2)' })
-  @ArrayMinSize(2)
-  assetIds!: string[];
-}
+const StackSearchSchema = z
+  .object({
+    primaryAssetId: z.uuidv4().optional().describe('Filter by primary asset ID'),
+  })
+  .meta({ id: 'StackSearchDto' });
 
-export class StackSearchDto {
-  @ValidateUUID({ optional: true, description: 'Filter by primary asset ID' })
-  primaryAssetId?: string;
-}
+const StackCreateSchema = z
+  .object({
+    assetIds: z.array(z.uuidv4()).min(2).describe('Asset IDs (first becomes primary, min 2)'),
+  })
+  .meta({ id: 'StackCreateDto' });
 
-export class StackUpdateDto {
-  @ValidateUUID({ optional: true, description: 'Primary asset ID' })
-  primaryAssetId?: string;
-}
+const StackUpdateSchema = z
+  .object({
+    primaryAssetId: z.uuidv4().optional().describe('Primary asset ID'),
+  })
+  .meta({ id: 'StackUpdateDto' });
 
-export class StackResponseDto {
-  @ApiProperty({ description: 'Stack ID' })
-  id!: string;
-  @ApiProperty({ description: 'Primary asset ID' })
-  primaryAssetId!: string;
-  @ApiProperty({ description: 'Stack assets' })
-  assets!: AssetResponseDto[];
-}
+const StackResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Stack ID'),
+    primaryAssetId: z.uuidv4().describe('Primary asset ID'),
+    assets: z.array(AssetResponseSchema),
+  })
+  .describe('Stack response')
+  .meta({ id: 'StackResponseDto' });
+
+export class StackSearchDto extends createZodDto(StackSearchSchema) {}
+export class StackCreateDto extends createZodDto(StackCreateSchema) {}
+export class StackUpdateDto extends createZodDto(StackUpdateSchema) {}
+export class StackResponseDto extends createZodDto(StackResponseSchema) {}
 
 export const mapStack = (stack: Stack, { auth }: { auth?: AuthDto }) => {
   const primary = stack.assets.filter((asset) => asset.id === stack.primaryAssetId);

@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/store.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/rating_bar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 
 class RatingDetails extends ConsumerWidget {
-  const RatingDetails({super.key});
+  final ExifInfo? exifInfo;
+
+  const RatingDetails({super.key, this.exifInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isRatingEnabled = ref
-        .watch(userMetadataPreferencesProvider)
+        .watch(Store.userMetadata.preferences())
         .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
-    if (!isRatingEnabled) return const SizedBox.shrink();
-
-    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+    if (!isRatingEnabled) {
+      return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.only(left: 16.0, top: 16.0),
@@ -30,7 +32,7 @@ class RatingDetails extends ConsumerWidget {
         spacing: 8,
         children: [
           Text(
-            'rating'.t(context: context),
+            context.t.rating,
             style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
           ),
           RatingBar(
@@ -39,10 +41,10 @@ class RatingDetails extends ConsumerWidget {
             unfilledColor: context.themeData.colorScheme.onSurface.withAlpha(100),
             itemSize: 40,
             onRatingUpdate: (rating) async {
-              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
+              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating);
             },
             onClearRating: () async {
-              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
+              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, null);
             },
           ),
         ],

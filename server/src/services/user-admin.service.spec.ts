@@ -1,12 +1,13 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { mapUserAdmin } from 'src/dtos/user.dto';
-import { JobName, UserStatus } from 'src/enum';
-import { UserAdminService } from 'src/services/user-admin.service';
-import { authStub } from 'test/fixtures/auth.stub';
-import { userStub } from 'test/fixtures/user.stub';
-import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
 import { describe } from 'vitest';
+import { mapUserAdmin } from 'src/dtos/user.dto.js';
+import { JobName, UserStatus } from 'src/enum.js';
+import { UserAdminService } from 'src/services/user-admin.service.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { userStub } from 'test/fixtures/user.stub.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(UserAdminService.name, () => {
   let sut: UserAdminService;
@@ -52,6 +53,7 @@ describe(UserAdminService.name, () => {
         name: userStub.user1.name,
         storageLabel: 'label',
         password: expect.anything(),
+        clusterGroupId: expect.any(String),
       });
     });
   });
@@ -126,8 +128,8 @@ describe(UserAdminService.name, () => {
     });
 
     it('should not allow deleting own account', async () => {
-      const user = factory.userAdmin({ isAdmin: false });
-      const auth = factory.auth({ user });
+      const user = UserFactory.create({ isAdmin: false });
+      const auth = AuthFactory.create(user);
       mocks.user.get.mockResolvedValue(user);
       await expect(sut.delete(auth, user.id, {})).rejects.toBeInstanceOf(ForbiddenException);
 

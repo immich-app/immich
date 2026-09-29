@@ -1,9 +1,9 @@
 import { Readable } from 'node:stream';
-import { DownloadController } from 'src/controllers/download.controller';
-import { DownloadService } from 'src/services/download.service';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { DownloadController } from 'src/controllers/download.controller.js';
+import { DownloadService } from 'src/services/download.service.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(DownloadController.name, () => {
   let ctx: ControllerContext;
@@ -19,28 +19,30 @@ describe(DownloadController.name, () => {
     ctx.reset();
   });
 
-  describe('POST /download/info', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer())
-        .post('/download/info')
-        .send({ assetIds: [factory.uuid()] });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /download/archive', () => {
-    it('should be an authenticated route', async () => {
-      const stream = new Readable({
-        read() {
-          this.push('test');
-          this.push(null);
-        },
+    it('should accept comma-separated assetIds string', async () => {
+      const downloadArchiveSpy = vi.spyOn(service, 'downloadArchive');
+      service.downloadArchive.mockResolvedValue({ stream: Readable.from('') });
+
+      const ids = [factory.uuid(), factory.uuid()];
+      const { status } = await request(ctx.getHttpServer())
+        .post(`/download/archive`)
+        .type('form')
+        .send({ assetIds: ids.join(',') });
+      expect(status).toBe(200);
+      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids });
+    });
+
+    it('should accept assetIds array', async () => {
+      const downloadArchiveSpy = vi.spyOn(service, 'downloadArchive');
+      service.downloadArchive.mockResolvedValue({ stream: Readable.from('') });
+
+      const ids = [factory.uuid(), factory.uuid()];
+      const { status } = await request(ctx.getHttpServer()).post(`/download/archive`).send({
+        assetIds: ids,
       });
-      service.downloadArchive.mockResolvedValue({ stream });
-      await request(ctx.getHttpServer())
-        .post('/download/archive')
-        .send({ assetIds: [factory.uuid()] });
-      expect(ctx.authenticate).toHaveBeenCalled();
+      expect(status).toBe(200);
+      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids });
     });
   });
 });

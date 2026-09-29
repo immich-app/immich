@@ -20,8 +20,6 @@ def upload(file):
     }
 
     data = {
-        'deviceAssetId': f'{file}-{stats.st_mtime}',
-        'deviceId': 'python',
         'fileCreatedAt': datetime.fromtimestamp(stats.st_mtime),
         'fileModifiedAt': datetime.fromtimestamp(stats.st_mtime),
         'isFavorite': 'false',

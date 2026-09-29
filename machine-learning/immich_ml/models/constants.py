@@ -89,8 +89,9 @@ _PADDLE_MODELS = {
 }
 
 SUPPORTED_PROVIDERS = [
+    "nv_tensorrt_rtx",
     "CUDAExecutionProvider",
-    "ROCMExecutionProvider",
+    "MIGraphXExecutionProvider",
     "OpenVINOExecutionProvider",
     "CoreMLExecutionProvider",
     "CPUExecutionProvider",

@@ -1,9 +1,9 @@
+/* eslint-disable unicorn/no-top-level-assignment-in-function */
 import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
   AssetResponseDto,
   AssetVisibility,
-  CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
   JobCreateDto,
@@ -20,7 +20,6 @@ import {
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
   ValidateLibraryDto,
-  checkExistingAssets,
   createAlbum,
   createApiKey,
   createJob,
@@ -68,8 +67,8 @@ import { promisify } from 'node:util';
 import { createGzip } from 'node:zlib';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
-import { loginDto, signupDto } from 'src/fixtures';
-import { makeRandomImage } from 'src/generators';
+import { loginDto, signupDto } from 'src/fixtures.js';
+import { makeRandomImage } from 'src/generators.js';
 import request from 'supertest';
 import { playwrightDbHost, playwrightHost, playwriteBaseUrl } from '../playwright.config';
 
@@ -92,7 +91,7 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../cli' }).promise;
+  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../packages/cli' }).promise;
 export const dockerExec = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', args.join(' ')]);
 export const immichAdmin = (args: string[]) => dockerExec([`immich-admin ${args.join(' ')}`]);
@@ -177,40 +176,54 @@ export const utils = {
   },
 
   resetDatabase: async (tables?: string[]) => {
-    try {
-      client = await utils.connectDatabase();
+    client = await utils.connectDatabase();
 
-      tables = tables || [
-        // TODO e2e test for deleting a stack, since it is quite complex
-        'stack',
-        'library',
-        'shared_link',
-        'person',
-        'album',
-        'asset',
-        'asset_face',
-        'activity',
-        'api_key',
-        'session',
-        'user',
-        'system_metadata',
-        'tag',
-      ];
+    tables ||= [
+      // TODO e2e test for deleting a stack, since it is quite complex
+      'stack',
+      'library',
+      'shared_link',
+      'person',
+      'person_group',
+      'cluster_group',
+      'album',
+      'asset',
+      'asset_face',
+      'activity',
+      'api_key',
+      'session',
+      'user',
+      'system_metadata',
+      'tag',
+      'integrity_report',
+    ];
 
-      const sql: string[] = [];
+    const truncateTables = tables.filter((table) => table !== 'system_metadata');
+    const sql: string[] = [];
 
-      for (const table of tables) {
-        if (table === 'system_metadata') {
-          sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
-        } else {
-          sql.push(`DELETE FROM "${table}" CASCADE;`);
+    if (truncateTables.length > 0) {
+      sql.push(`TRUNCATE "${truncateTables.join('", "')}" CASCADE;`);
+    }
+
+    if (tables.includes('system_metadata')) {
+      sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
+    }
+
+    const query = sql.join('\n');
+    const maxRetries = 3;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await client.query(query);
+        return;
+      } catch (error: any) {
+        if (error?.code === '40P01' && attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+          continue;
         }
+        console.error('Failed to reset database', error);
+        throw error;
       }
-
-      await client.query(sql.join('\n'));
-    } catch (error) {
-      console.error('Failed to reset database', error);
-      throw error;
     }
   },
 
@@ -294,7 +307,7 @@ export const utils = {
   },
 
   adminSetup: async (options?: AdminSetupOptions) => {
-    options = options || { onboarding: true };
+    options ||= { onboarding: true };
 
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
@@ -332,8 +345,6 @@ export const utils = {
     },
   ) => {
     const _dto = {
-      deviceAssetId: 'test-1',
-      deviceId: 'test',
       fileCreatedAt: new Date().toISOString(),
       fileModifiedAt: new Date().toISOString(),
       ...dto,
@@ -354,40 +365,6 @@ export const utils = {
     if (dto?.sidecarData?.bytes) {
       void builder.attach('sidecarData', dto.sidecarData.bytes, dto.sidecarData.filename);
     }
-
-    for (const [key, value] of Object.entries(_dto)) {
-      void builder.field(key, String(value));
-    }
-
-    const { body } = await builder;
-
-    return body as AssetMediaResponseDto;
-  },
-
-  replaceAsset: async (
-    accessToken: string,
-    assetId: string,
-    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: FileData },
-  ) => {
-    const _dto = {
-      deviceAssetId: 'test-1',
-      deviceId: 'test',
-      fileCreatedAt: new Date().toISOString(),
-      fileModifiedAt: new Date().toISOString(),
-      ...dto,
-    };
-
-    const assetData = dto?.assetData?.bytes || makeRandomImage();
-    const filename = dto?.assetData?.filename || 'example.png';
-
-    if (dto?.assetData?.bytes) {
-      console.log(`Uploading ${filename}`);
-    }
-
-    const builder = request(app)
-      .put(`/assets/${assetId}/original`)
-      .attach('assetData', assetData, filename)
-      .set('Authorization', `Bearer ${accessToken}`);
 
     for (const [key, value] of Object.entries(_dto)) {
       void builder.field(key, String(value));
@@ -439,9 +416,6 @@ export const utils = {
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 
-  checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
-    checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
-
   searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
@@ -462,12 +436,12 @@ export const utils = {
     return person;
   },
 
-  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
+  createFace: async ({ assetId, personGroupId }: { assetId: string; personGroupId: string }) => {
     if (!client) {
       return;
     }
 
-    await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
+    await client.query('INSERT INTO asset_face ("assetId", "personGroupId") VALUES ($1, $2)', [assetId, personGroupId]);
   },
 
   setPersonThumbnail: async (personId: string) => {
@@ -475,7 +449,9 @@ export const utils = {
       return;
     }
 
-    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
+    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "personGroupId" = $1`, [
+      personId,
+    ]);
   },
 
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
@@ -498,6 +474,9 @@ export const utils = {
 
   createStack: (accessToken: string, assetIds: string[]) =>
     createStack({ stackCreateDto: { assetIds } }, { headers: asBearerAuth(accessToken) }),
+
+  setAssetDuplicateId: (accessToken: string, assetId: string, duplicateId: string | null) =>
+    updateAssets({ assetBulkUpdateDto: { ids: [assetId], duplicateId } }, { headers: asBearerAuth(accessToken) }),
 
   upsertTags: (accessToken: string, tags: string[]) =>
     upsertTags({ tagUpsertDto: { tags } }, { headers: asBearerAuth(accessToken) }),
@@ -571,6 +550,7 @@ export const utils = {
       {
         headers: asBearerAuth(accessToken),
         fetch: (...args: Parameters<typeof fetch>) =>
+          // eslint-disable-next-line unicorn/no-invalid-argument-count, unicorn/prefer-await
           fetch(...args).then((response) => {
             setCookie = response.headers.getSetCookie();
             return response;
@@ -586,14 +566,60 @@ export const utils = {
     mkdirSync(`${testAssetDir}/temp`, { recursive: true });
   },
 
+  putFile(source: string, dest: string) {
+    return executeCommand('docker', ['cp', source, `immich-e2e-server:${dest}`]).promise;
+  },
+
+  async putTextFile(contents: string, dest: string) {
+    const dir = await mkdtemp(join(tmpdir(), 'test-'));
+    const fn = join(dir, 'file');
+    await pipeline(Readable.from(contents), createWriteStream(fn));
+    return executeCommand('docker', ['cp', fn, `immich-e2e-server:${dest}`]).promise;
+  },
+
   async move(source: string, dest: string) {
     return executeCommand('docker', ['exec', 'immich-e2e-server', 'mv', source, dest]).promise;
+  },
+
+  async copyFolder(source: string, dest: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'cp', '-r', source, dest]).promise;
+  },
+
+  async deleteFile(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', path]).promise;
+  },
+
+  async deleteFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', '-r', path]).promise;
+  },
+
+  async truncateFolder(path: string) {
+    return executeCommand('docker', [
+      'exec',
+      'immich-e2e-server',
+      'find',
+      path,
+      '-type',
+      'f',
+      '-exec',
+      'truncate',
+      '-s',
+      '1',
+      '{}',
+      ';',
+    ]).promise;
+  },
+
+  async mkFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mkdir', '-p', path]).promise;
   },
 
   createBackup: async (accessToken: string) => {
     await utils.createJob(accessToken, {
       name: ManualJobName.BackupDatabase,
     });
+
+    await utils.waitForQueueFinish(accessToken, 'backupDatabase');
 
     return utils.poll(
       () => request(app).get('/admin/database-backups').set('Authorization', `Bearer ${accessToken}`),
@@ -604,10 +630,8 @@ export const utils = {
 
   resetBackups: async (accessToken: string) => {
     const { backups } = await listDatabaseBackups({ headers: asBearerAuth(accessToken) });
-
-    const backupFiles = backups.map((b) => b.filename);
     await deleteDatabaseBackup(
-      { databaseBackupDeleteDto: { backups: backupFiles } },
+      { databaseBackupDeleteDto: { backups: backups.map((dto) => dto.filename) } },
       { headers: asBearerAuth(accessToken) },
     );
   },
@@ -627,7 +651,7 @@ export const utils = {
 
   resetAdminConfig: async (accessToken: string) => {
     const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
-    await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
+    await updateConfig({ adminConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
   },
 
   isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseLegacyDto) => {
@@ -655,9 +679,9 @@ export const utils = {
   },
 
   cliLogin: async (accessToken: string) => {
-    const key = await utils.createApiKey(accessToken, [Permission.All]);
-    await immichCli(['login', app, `${key.secret}`]);
-    return key.secret;
+    const { secret } = await utils.createApiKey(accessToken, [Permission.All]);
+    await immichCli(['login', app, secret]);
+    return secret;
   },
 
   scan: async (accessToken: string, id: string) => {
@@ -688,6 +712,7 @@ export const utils = {
   },
 };
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 utils.initSdk();
 
 if (!existsSync(`${testAssetDir}/albums`)) {

@@ -1,17 +1,17 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { NotificationLevel, NotificationType } from 'src/enum';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
+import { NotificationLevel, NotificationType } from 'src/enum.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('notification')
 @UpdatedAtTrigger('notification_updatedAt')
@@ -41,7 +41,7 @@ export class NotificationTable {
   type!: Generated<NotificationType>;
 
   @Column({ type: 'jsonb', nullable: true })
-  data!: any | null;
+  data!: unknown | null;
 
   @Column()
   title!: string;

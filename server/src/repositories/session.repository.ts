@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { SessionTable } from 'src/schema/tables/session.table';
-import { asUuid } from 'src/utils/database';
-
-export type SessionSearchOptions = { updatedBefore: Date };
+import type { Insertable, Kysely, Updateable } from 'kysely';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import { SessionTable } from 'src/schema/tables/session.table.js';
+import { asUuid } from 'src/utils/database.js';
 
 @Injectable()
 export class SessionRepository {
@@ -32,7 +30,7 @@ export class SessionRepository {
   get(id: string) {
     return this.db
       .selectFrom('session')
-      .select(['id', 'expiresAt', 'pinExpiresAt'])
+      .select(['id', 'expiresAt', 'pinExpiresAt', 'oauthBearerToken'])
       .where('id', '=', id)
       .executeTakeFirst();
   }
@@ -48,7 +46,7 @@ export class SessionRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getByToken(token: string) {
+  getByToken(token: Buffer) {
     return this.db
       .selectFrom('session')
       .select((eb) => [
@@ -102,12 +100,34 @@ export class SessionRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, excludeId: DummyValue.UUID }] })
-  async invalidate({ userId, excludeId }: { userId: string; excludeId?: string }) {
+  async invalidateAll({ userId, excludeId }: { userId: string; excludeId?: string }) {
     await this.db
       .deleteFrom('session')
       .where('userId', '=', userId)
       .$if(!!excludeId, (qb) => qb.where('id', '!=', excludeId!))
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING, DummyValue.STRING] })
+  async invalidateOAuth({ oauthSid, oauthId }: { oauthSid?: string; oauthId?: string }): Promise<string[]> {
+    let query = this.db.deleteFrom('session').returning('session.id');
+
+    if (oauthSid && oauthId) {
+      query = query
+        .using('user')
+        .whereRef('user.id', '=', 'session.userId')
+        .where('session.oauthSid', '=', oauthSid)
+        .where('user.oauthId', '=', oauthId);
+    } else if (!oauthSid && oauthId) {
+      query = query.using('user').whereRef('user.id', '=', 'session.userId').where('user.oauthId', '=', oauthId);
+    } else if (oauthSid && !oauthId) {
+      query = query.where('session.oauthSid', '=', oauthSid);
+    } else {
+      throw new Error('Invalid arguments: at least one of oauthSid or oauthId must be present');
+    }
+
+    const deletedRows = await query.execute();
+    return deletedRows.map((row) => row.id);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

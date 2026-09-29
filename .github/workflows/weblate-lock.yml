@@ -2,7 +2,7 @@ name: Weblate checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 'release/*']
     types:
       - opened
       - synchronize
@@ -24,19 +24,20 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@05e16407c0a5492138bb38139c9d9bf067b40886 # create-workflow-token-action-v1.0.1
+        uses: immich-app/devtools/actions/create-workflow-token@df46d635b905e618b88fc4c95baa920aeb30b309 # create-workflow-token-action-v3.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@eed0f8b8165ffcb951f2ba854b2dd031935e1d73 # pre-job-action-v2.0.2
+        uses: immich-app/devtools/actions/pre-job@75493d49052d536863fc96100086782c5279b145 # pre-job-action-v2.1.1
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
             i18n:
-              - modified: 'i18n/!(en|package)**\.json'
+              - modified: 'i18n/!(en)**\.json'
           skip-force-logic: 'true'
 
   enforce-lock:
@@ -47,10 +48,11 @@ jobs:
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).i18n == true }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@05e16407c0a5492138bb38139c9d9bf067b40886 # create-workflow-token-action-v1.0.1
+        uses: immich-app/devtools/actions/create-workflow-token@df46d635b905e618b88fc4c95baa920aeb30b309 # create-workflow-token-action-v3.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-pull-requests: read
 
       - name: Bot review status
         env:
@@ -68,6 +70,6 @@ jobs:
     permissions: {}
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
+      - uses: immich-app/devtools/actions/success-check@81113db03f6d743efee81e0058c0b43f6cd6f36d # success-check-action-v0.0.6
         with:
           needs: ${{ toJSON(needs) }}

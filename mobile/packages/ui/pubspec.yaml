@@ -2,12 +2,12 @@ name: immich_ui
 publish_to: none
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.13.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  html: ^0.15.6
+  material_color_utilities: any
 
 dev_dependencies:
   flutter_test:

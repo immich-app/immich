@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -6,38 +7,42 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class AppearsInDetails extends ConsumerWidget {
-  const AppearsInDetails({super.key});
+  final BaseAsset asset;
+
+  const AppearsInDetails({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetNotifier);
-    if (asset == null || !asset.hasRemote) return const SizedBox.shrink();
-
-    String? remoteAssetId;
-    if (asset is RemoteAsset) {
-      remoteAssetId = asset.id;
-    } else if (asset is LocalAsset) {
-      remoteAssetId = asset.remoteAssetId;
+    if (!asset.hasRemote) {
+      return const SizedBox.shrink();
     }
 
-    if (remoteAssetId == null) return const SizedBox.shrink();
+    final remoteAssetId = switch (asset) {
+      RemoteAsset(:final id) => id,
+      LocalAsset(:final remoteAssetId) => remoteAssetId,
+    };
+
+    if (remoteAssetId == null) {
+      return const SizedBox.shrink();
+    }
 
     final userId = ref.watch(currentUserProvider)?.id;
     final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAssetId));
 
     return assetAlbums.when(
       data: (albums) {
-        if (albums.isEmpty) return const SizedBox.shrink();
+        if (albums.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
         albums.sortBy((a) => a.name);
 
@@ -47,7 +52,7 @@ class AppearsInDetails extends ConsumerWidget {
             spacing: 12,
             children: [
               SheetTile(
-                title: 'appears_in'.t(context: context),
+                title: context.t.appears_in,
                 titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
               Padding(
@@ -72,7 +77,7 @@ class AppearsInDetails extends ConsumerWidget {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

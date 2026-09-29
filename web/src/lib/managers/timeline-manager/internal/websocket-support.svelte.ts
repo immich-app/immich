@@ -1,9 +1,9 @@
+import { throttle } from 'lodash-es';
+import type { Unsubscriber } from 'svelte/store';
 import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { PendingChange, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { websocketEvents } from '$lib/stores/websocket';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
-import { throttle } from 'lodash-es';
-import type { Unsubscriber } from 'svelte/store';
 
 export class WebsocketSupport {
   #pendingChanges: PendingChange[] = [];
@@ -13,10 +13,10 @@ export class WebsocketSupport {
   #processPendingChanges = throttle(() => {
     const { add, update, remove } = this.#getPendingChangeBatches();
     if (add.length > 0) {
-      this.#timelineManager.upsertAssets(add);
+      this.#timelineManager.upsertAssetsFromLiveEvent(add);
     }
     if (update.length > 0) {
-      this.#timelineManager.upsertAssets(update);
+      this.#timelineManager.upsertAssetsFromLiveEvent(update);
     }
     if (remove.length > 0) {
       this.#timelineManager.removeAssets(remove);

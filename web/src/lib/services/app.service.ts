@@ -1,8 +1,8 @@
-import { CastDestinationType, castManager } from '$lib/managers/cast-manager.svelte';
-import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 import type { ActionItem } from '@immich/ui';
 import { mdiCast, mdiCastConnected } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { CastDestinationType, castManager } from '$lib/managers/cast-manager.svelte';
+import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 
 export const getGlobalActions = ($t: MessageFormatter) => {
   const Cast: ActionItem = {

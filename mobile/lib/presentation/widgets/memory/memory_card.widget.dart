@@ -9,17 +9,17 @@ import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 
-class DriftMemoryCard extends StatelessWidget {
+class MemoryCard extends StatelessWidget {
   final RemoteAsset asset;
   final String title;
   final bool showTitle;
-  final Function()? onVideoEnded;
+  final bool isCurrent;
 
-  const DriftMemoryCard({
+  const MemoryCard({
     required this.asset,
     required this.title,
     required this.showTitle,
-    this.onVideoEnded,
+    this.isCurrent = false,
     super.key,
   });
 
@@ -37,33 +37,36 @@ class DriftMemoryCard extends StatelessWidget {
           SizedBox.expand(child: _BlurredBackdrop(asset: asset)),
           LayoutBuilder(
             builder: (context, constraints) {
+              final r = asset.width != null && asset.height != null
+                  ? asset.width! / asset.height!
+                  : constraints.maxWidth / constraints.maxHeight;
+
               // Determine the fit using the aspect ratio
               BoxFit fit = BoxFit.contain;
               if (asset.width != null && asset.height != null) {
-                final aspectRatio = asset.width! / asset.height!;
                 final phoneAspectRatio = constraints.maxWidth / constraints.maxHeight;
                 // Look for a 25% difference in either direction
-                if (phoneAspectRatio * .75 < aspectRatio && phoneAspectRatio * 1.25 > aspectRatio) {
+                if (phoneAspectRatio * .75 < r && phoneAspectRatio * 1.25 > r) {
                   // Cover to look nice if we have nearly the same aspect ratio
                   fit = BoxFit.cover;
                 }
               }
 
               if (asset.isImage) {
-                return FullImage(asset, fit: fit, size: const Size(double.infinity, double.infinity));
-              } else {
-                return SizedBox(
-                  width: context.width,
-                  height: context.height,
+                return FullImage(asset, fit: fit, size: Size.infinite);
+              }
+
+              return Center(
+                child: AspectRatio(
+                  aspectRatio: r,
                   child: NativeVideoViewer(
                     key: ValueKey(asset.id),
                     asset: asset,
-                    showControls: false,
-                    playbackDelayFactor: 2,
-                    image: FullImage(asset, size: Size(context.width, context.height), fit: BoxFit.contain),
+                    isCurrent: isCurrent,
+                    image: FullImage(asset, size: context.sizeData, fit: BoxFit.contain),
                   ),
-                );
-              }
+                ),
+              );
             },
           ),
           if (showTitle)
@@ -91,7 +94,7 @@ class _BlurredBackdrop extends HookWidget {
     final blurhash = useDriftBlurHashRef(asset).value;
     if (blurhash != null) {
       // Use a nice cheap blur hash image decoration
-      return Container(
+      return DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(image: MemoryImage(blurhash), fit: BoxFit.cover),
         ),
@@ -103,7 +106,7 @@ class _BlurredBackdrop extends HookWidget {
       // safely use that as the image provider
       return ImageFiltered(
         imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             image: DecorationImage(
               image: getFullImageProvider(asset, size: Size(context.width, context.height)),

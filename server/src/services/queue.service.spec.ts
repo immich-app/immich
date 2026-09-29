@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
-import { defaults, SystemConfig } from 'src/config';
-import { ImmichWorker, JobName, QueueCommand, QueueName } from 'src/enum';
-import { QueueService } from 'src/services/queue.service';
-import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { ImmichWorker, JobName, QueueCommand, QueueName } from 'src/enum.js';
+import { QueueService } from 'src/services/queue.service.js';
+import { factory } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(QueueService.name, () => {
   let sut: QueueService;
@@ -23,7 +23,7 @@ describe(QueueService.name, () => {
     it('should update concurrency', () => {
       sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
-      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(18);
+      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(19);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FacialRecognition, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DuplicateDetection, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BackgroundTask, 5);
@@ -41,8 +41,8 @@ describe(QueueService.name, () => {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.HlsSessionCleanup },
         { name: JobName.AuditTableCleanup },
-        { name: JobName.AuditLogCleanup },
         { name: JobName.MemoryGenerate },
         { name: JobName.UserSyncUsage },
         { name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } },
@@ -77,6 +77,7 @@ describe(QueueService.name, () => {
         [QueueName.BackupDatabase]: expected,
         [QueueName.Ocr]: expected,
         [QueueName.Workflow]: expected,
+        [QueueName.IntegrityCheck]: expected,
         [QueueName.Editor]: expected,
       });
     });

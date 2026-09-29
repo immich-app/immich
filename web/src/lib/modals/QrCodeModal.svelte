@@ -1,5 +1,5 @@
 <script lang="ts">
-  import QRCode from '$lib/components/shared-components/qrcode.svelte';
+  import Qrcode from '$lib/components/shared-components/Qrcode.svelte';
   import { copyToClipboard } from '$lib/utils';
   import { HStack, IconButton, Input, Modal, ModalBody } from '@immich/ui';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
@@ -18,9 +18,9 @@
 
 <Modal {title} icon={mdiLink} {onClose} size="small">
   <ModalBody>
-    <div class="w-full py-2 px-10">
+    <div class="w-full px-10 py-2">
       <div bind:clientWidth={modalWidth} class="w-full">
-        <QRCode {value} width={modalWidth} />
+        <Qrcode {value} width={modalWidth} />
       </div>
     </div>
     <HStack class="w-full pt-3" gap={1}>

@@ -1,6 +1,6 @@
-import { CryptoRepository } from 'src/repositories/crypto.repository';
-import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 
 export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepository>> => {
   return {
@@ -8,7 +8,7 @@ export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepo
     randomBytes: vitest.fn().mockReturnValue(Buffer.from('random-bytes', 'utf8')),
     compareBcrypt: vitest.fn().mockReturnValue(true),
     hashBcrypt: vitest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
-    hashSha256: vitest.fn().mockImplementation((input) => `${input} (hashed)`),
+    hashSha256: vitest.fn().mockImplementation((input) => Buffer.from(`${input} (hashed)`)),
     verifySha256: vitest.fn().mockImplementation(() => true),
     hashSha1: vitest.fn().mockImplementation((input) => Buffer.from(`${input.toString()} (hashed)`)),
     hashFile: vitest.fn().mockImplementation((input) => `${input} (file-hashed)`),

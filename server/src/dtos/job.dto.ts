@@ -1,7 +1,11 @@
-import { ManualJobName } from 'src/enum';
-import { ValidateEnum } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
+import { ManualJobNameSchema } from 'src/enum.js';
 
-export class JobCreateDto {
-  @ValidateEnum({ enum: ManualJobName, name: 'ManualJobName', description: 'Job name' })
-  name!: ManualJobName;
-}
+const JobCreateSchema = z
+  .object({
+    name: ManualJobNameSchema,
+  })
+  .meta({ id: 'JobCreateDto' });
+
+export class JobCreateDto extends createZodDto(JobCreateSchema) {}

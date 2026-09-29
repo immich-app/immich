@@ -1,51 +1,32 @@
 import js from '@eslint/js';
 import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
-import prettier from 'eslint-config-prettier';
+import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import eslintPluginCompat from 'eslint-plugin-compat';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
+import fs from 'node:fs';
+import path from 'node:path';
+import './lint-env.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const ROUTE_CONTINUE = "CallExpression[callee.object.name='Route'][callee.property.name='continue']";
+const NAVIGATION_PARAM_READ = [
+  "CallExpression[callee.property.name='get']",
+  ":matches([arguments.0.value='continue'], [arguments.0.value='previousRoute'],",
+  " [arguments.0.property.name='PREVIOUS_ROUTE'])",
+].join('');
 
-export default typescriptEslint.config(
+export default defineConfig(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
-  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
-    },
-    rules: {
-      'tscompat/tscompat': [
-        'error',
-        {
-          browserslist: fs
-            .readFileSync(path.join(__dirname, '.browserslistrc'), 'utf8')
-            .split('\n')
-            .map((line) => line.trim())
-            .filter((line) => line && !line.startsWith('#')),
-        },
-      ],
-    },
-    languageOptions: {
-      parser,
-      parserOptions: {
-        project: ['./tsconfig.json'],
-        tsconfigRootDir: __dirname,
-      },
-    },
-    ignores: ['**/service-worker/**'],
-  },
-  {
-    plugins: {
       compat: eslintPluginCompat,
     },
     settings: {
@@ -53,8 +34,26 @@ export default typescriptEslint.config(
       lintAllEsApis: true,
     },
     rules: {
+      'tscompat/tscompat': [
+        'error',
+        {
+          browserslist: fs
+            .readFileSync(path.join(import.meta.dirname, '.browserslistrc'), 'utf8')
+            .split('\n')
+            .map((line) => line.trim())
+            .filter((line) => line && !line.startsWith('#')),
+        },
+      ],
       'compat/compat': 'error',
     },
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    // ignores: ['**/service-worker/**'],
   },
   {
     ignores: [
@@ -71,8 +70,10 @@ export default typescriptEslint.config(
       '**/yarn.lock',
       '**/svelte.config.js',
       'eslint.config.js',
+      'lint-env.js',
       'tailwind.config.js',
       'coverage',
+      'vite.config.ts',
     ],
   },
   typescriptEslint.configs.recommended,
@@ -94,12 +95,10 @@ export default typescriptEslint.config(
 
       parserOptions: {
         extraFileExtensions: ['.svelte'],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
         project: ['./tsconfig.json'],
       },
     },
-
-    ignores: ['**/service-worker/**'],
 
     rules: {
       '@typescript-eslint/no-unused-vars': [
@@ -111,11 +110,19 @@ export default typescriptEslint.config(
       ],
 
       curly: 2,
+      // navigation-target query params must be origin-checked at the read site, not at the goto/redirect sink
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: `${NAVIGATION_PARAM_READ}:not(${ROUTE_CONTINUE} > ${NAVIGATION_PARAM_READ})`,
+          message: 'Pass this navigation-target query param through Route.continue() to reject cross-origin values.',
+        },
+      ],
       'unicorn/no-array-reverse': 'off', // toReversed() is not supported in Chrome 109 or Safari 15.4
       'unicorn/no-useless-undefined': 'off',
       'unicorn/prefer-spread': 'off',
       'unicorn/no-null': 'off',
-      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
       'unicorn/no-nested-ternary': 'off',
       'unicorn/consistent-function-scoping': 'off',
       'unicorn/filename-case': 'off',
@@ -123,16 +130,61 @@ export default typescriptEslint.config(
       'unicorn/import-style': 'off',
       'unicorn/no-array-sort': 'off',
       'unicorn/no-for-loop': 'off',
-      'svelte/button-has-type': 'error',
+      'unicorn/no-unreadable-for-of-expression': 'off',
+      'unicorn/no-break-in-nested-loop': 'off',
+      'unicorn/no-top-level-assignment-in-function': 'off',
+      'unicorn/prefer-uint8array-base64': 'off',
+      'unicorn/max-nested-calls': 'off',
+      'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/no-unreadable-object-destructuring': 'off',
+      // not yet compatible with all our supported browsers
+      'unicorn/prefer-promise-with-resolvers': 'off',
+      // not yet compatible with all our supported browsers
+      'unicorn/prefer-iterator-to-array': 'off',
+      // not yet compatible with all our supported browsers
+      'unicorn/prefer-array-from-async': 'off',
+      // maybe we do want to enable this later. TBD
+      'unicorn/prefer-await': 'off',
+      'unicorn/consistent-class-member-order': 'off',
+      'unicorn/class-reference-in-static-methods': ['error', { preferThis: false, preferSuper: false }],
+      'unicorn/no-unsafe-property-key': 'off',
+      'unicorn/consistent-boolean-name': 'off',
+      'unicorn/no-non-function-verb-prefix': 'off',
+      'unicorn/prefer-minimal-ternary': 'off',
+      'unicorn/no-empty-file': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
+      // prefer the typescript-eslint type-aware version
+      'unicorn/require-array-sort-compare': 'off',
+      '@typescript-eslint/require-array-sort-compare': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
+      'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      'unicorn/prefer-early-return': 'off',
+      'unicorn/prefer-ternary': 'off',
+      'unicorn/prefer-combined-guards': 'off',
+      'unicorn/no-immediate-mutation': 'off',
+      eqeqeq: 'error',
     },
   },
   {
+    extends: [eslintPluginBetterTailwindcss.configs.recommended],
+    settings: {
+      'better-tailwindcss': {
+        entryPoint: 'src/app.css',
+      },
+    },
+
+    rules: {
+      'better-tailwindcss/enforce-consistent-line-wrapping': 'off',
+      'better-tailwindcss/no-unknown-classes': 'off',
+    },
+
     files: ['**/*.svelte'],
 
     languageOptions: {
@@ -145,4 +197,5 @@ export default typescriptEslint.config(
       },
     },
   },
+  eslintPluginPrettierRecommended,
 );

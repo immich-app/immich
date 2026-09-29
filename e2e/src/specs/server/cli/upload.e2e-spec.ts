@@ -1,7 +1,7 @@
 import { LoginResponseDto, getAllAlbums, getAssetStatistics } from '@immich/sdk';
 import { cpSync, readFileSync } from 'node:fs';
 import { mkdir, readdir, rm, symlink } from 'node:fs/promises';
-import { asKeyAuth, immichCli, specialCharStrings, testAssetDir, utils } from 'src/utils';
+import { asKeyAuth, immichCli, specialCharStrings, testAssetDir, utils } from 'src/utils.js';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 interface Test {
@@ -119,7 +119,9 @@ describe(`immich upload`, () => {
           const baseDir = `/tmp/upload/`;
 
           const testPaths = Object.keys(files).map((filePath) => `${baseDir}/${filePath}`);
-          testPaths.map((filePath) => utils.createImageFile(filePath));
+          for (const filePath of testPaths) {
+            utils.createImageFile(filePath);
+          }
 
           const commandLine = paths.map((argument) => `${baseDir}/${argument}`);
 
@@ -135,7 +137,9 @@ describe(`immich upload`, () => {
           const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
           expect(assets.total).toBe(expectedCount);
 
-          testPaths.map((filePath) => utils.removeImageFile(filePath));
+          for (const filePath of testPaths) {
+            utils.removeImageFile(filePath);
+          }
         });
       }
     });
@@ -646,7 +650,7 @@ describe(`immich upload`, () => {
       ]);
 
       expect(stdout).toBe('');
-      expect(stderr).toEqual(`error: option '-n, --dry-run' cannot be used with option '-h, --skip-hash'`);
+      expect(stderr).toEqual(`error: option '-n, --dry-run' cannot be used with option '--skip-hash'`);
       expect(exitCode).not.toBe(0);
 
       const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });

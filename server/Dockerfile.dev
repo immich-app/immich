@@ -1,14 +1,10 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202601131104@sha256:8d907eb3fe10dba4a1e034fd0060ea68c01854d92fcc9debc6b868b98f888ba7 AS dev
+FROM ghcr.io/immich-app/base-server-dev:202609291109@sha256:2985290fa839a44c577972103744a888c03338b330dcdb110c5a310120c715e7 AS dev
 
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
-  CI=1 \
-  COREPACK_HOME=/tmp \ 
-  PNPM_HOME=/buildcache/pnpm-store
 
-RUN npm install --global corepack@latest && \
-  corepack enable pnpm && \
-  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
+COPY --from=ghcr.io/jdx/mise:2026.9.17@sha256:4ad8e4e194bf8185a54f1b1f4aafda56d8f4431f19f6e0799fcbdceaa849a427 /usr/local/bin/mise /usr/local/bin/mise
+
+RUN echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
   echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
   echo "cache-dir=/buildcache/pnpm-cache" >> /usr/local/etc/npmrc && \
   echo "# Retry configuration - default is 2" >> /usr/local/etc/npmrc && \
@@ -16,27 +12,30 @@ RUN npm install --global corepack@latest && \
   mkdir -p /buildcache/pnpm-store /buildcache/pnpm-cache /buildcache/node-gyp && \
   chmod -R o+rw /buildcache
 
+ENV CI=1
+ENV PNPM_HOME=/buildcache/pnpm-store
+ENV MISE_DATA_DIR=/buildcache/mise
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml
+ENV PATH="${MISE_DATA_DIR}/shims:${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin"
+ENV IMMICH_ENV=development
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+ENV NVIDIA_VISIBLE_DEVICES=all
+
 WORKDIR /usr/src/app
 
-ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \
-  IMMICH_ENV=development \
-  NVIDIA_DRIVER_CAPABILITIES=all \
-  NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 
 FROM dev AS dev-container-server
 
 RUN apt-get update --allow-releaseinfo-change && \
-  apt-get install sudo inetutils-ping openjdk-21-jre-headless \
+  apt-get install inetutils-ping openjdk-21-jre-headless \
   vim nano curl \
   -y --no-install-recommends --fix-missing
 
-RUN usermod -aG sudo node && \
-  echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-  mkdir -p /workspaces/immich
+RUN mkdir -p /workspaces && \
+  ln -s /usr/src/app /workspaces/immich
 
-RUN chown node:node -R /workspaces
-COPY --chown=node:node --chmod=755 ../.devcontainer/server/*.sh /immich-devcontainer/
+COPY --chmod=755 ../.devcontainer/server/*.sh /immich-devcontainer/
 
 WORKDIR /workspaces/immich
 

@@ -1,34 +1,33 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { mapFaces, mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
-import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
-import { FaceSearchResult } from 'src/repositories/search.repository';
-import { PersonService } from 'src/services/person.service';
-import { ImmichFileResponse } from 'src/utils/file';
-import { AssetFaceFactory } from 'test/factories/asset-face.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { AuthFactory } from 'test/factories/auth.factory';
-import { PersonFactory } from 'test/factories/person.factory';
-import { UserFactory } from 'test/factories/user.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { personStub } from 'test/fixtures/person.stub';
-import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { getAsDetectedFace, getForFacialRecognitionJob } from 'test/mappers';
-import { newDate, newUuid } from 'test/small.factory';
-import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { PersonUserRole, mapFaces, mapPerson } from 'src/dtos/person.dto.js';
+import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum.js';
+import { PersonService } from 'src/services/person.service.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { PartnerFactory } from 'test/factories/partner.factory.js';
+import { PersonGroupFactory } from 'test/factories/person-group.factory.js';
+import { PersonFactory } from 'test/factories/person.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
+import {
+  getAsDetectedFace,
+  getDehydrated,
+  getForAsset,
+  getForAssetFace,
+  getForDetectedFaces,
+  getForFaceSearch,
+  getForFacialRecognitionJob,
+  getForPartner,
+} from 'test/mappers.js';
+import { newDate, newUuid } from 'test/small.factory.js';
+import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
-const responseDto: PersonResponseDto = {
-  id: 'person-1',
-  name: 'Person 1',
-  birthDate: null,
-  thumbnailPath: '/path/to/thumbnail.jpg',
-  isHidden: false,
-  updatedAt: expect.any(Date),
-  isFavorite: false,
-  color: expect.any(String),
-};
-
-const statistics = { assets: 3 };
+const PERSON_READ_ROLES = [PersonUserRole.Read, PersonUserRole.Write, PersonUserRole.Admin];
+const PERSON_WRITE_ROLES = [PersonUserRole.Write, PersonUserRole.Admin];
 
 describe(PersonService.name, () => {
   let sut: PersonService;
@@ -44,61 +43,53 @@ describe(PersonService.name, () => {
 
   describe('getAll', () => {
     it('should get all hidden and visible people with thumbnails', async () => {
+      const auth = AuthFactory.create();
+      const [person, hiddenPerson] = [PersonFactory.create(), PersonFactory.create({ isHidden: true })];
+
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [personStub.withName, personStub.hidden],
+        items: [getDehydrated(person), getDehydrated(hiddenPerson)],
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
-      await expect(sut.getAll(authStub.admin, { withHidden: true, page: 1, size: 10 })).resolves.toEqual({
+      await expect(sut.getAll(auth, { withHidden: true, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
         hidden: 1,
         people: [
-          responseDto,
-          {
-            id: 'person-1',
-            name: '',
-            birthDate: null,
-            thumbnailPath: '/path/to/thumbnail.jpg',
+          expect.objectContaining({ id: person.personGroupId, isHidden: false }),
+          expect.objectContaining({
+            id: hiddenPerson.personGroupId,
             isHidden: true,
-            isFavorite: false,
-            updatedAt: expect.any(Date),
-            color: expect.any(String),
-          },
+          }),
         ],
       });
-      expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, authStub.admin.user.id, {
-        minimumFaceCount: 3,
+      expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
         withHidden: true,
       });
     });
 
     it('should get all visible people and favorites should be first in the array', async () => {
+      const auth = AuthFactory.create();
+      const [isFavorite, person] = [PersonFactory.create({ isFavorite: true }), PersonFactory.create()];
+
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [personStub.isFavorite, personStub.withName],
+        items: [getDehydrated(isFavorite), getDehydrated(person)],
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
-      await expect(sut.getAll(authStub.admin, { withHidden: false, page: 1, size: 10 })).resolves.toEqual({
+      await expect(sut.getAll(auth, { withHidden: false, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
         hidden: 1,
         people: [
-          {
-            id: 'person-4',
-            name: personStub.isFavorite.name,
-            birthDate: null,
-            thumbnailPath: '/path/to/thumbnail.jpg',
-            isHidden: false,
+          expect.objectContaining({
+            id: isFavorite.personGroupId,
             isFavorite: true,
-            updatedAt: expect.any(Date),
-            color: personStub.isFavorite.color,
-          },
-          responseDto,
+          }),
+          expect.objectContaining({ id: person.personGroupId, isFavorite: false }),
         ],
       });
-      expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, authStub.admin.user.id, {
-        minimumFaceCount: 3,
+      expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
         withHidden: false,
       });
     });
@@ -106,213 +97,368 @@ describe(PersonService.name, () => {
 
   describe('getById', () => {
     it('should require person.read permission', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.withName);
-      await expect(sut.getById(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+      mocks.person.getForUser.mockResolvedValue(getDehydrated(person));
+      await expect(sut.getById(auth, person.personGroupId)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
+        auth.user.id,
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        PERSON_READ_ROLES,
+      );
     });
 
     it('should throw a bad request when person is not found', async () => {
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await expect(sut.getById(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const ids = [{ personGroupId: 'unknown', ownerId: auth.user.id }];
+
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getById(auth, 'unknown')).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
     });
 
     it('should get a person by id', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.withName);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await expect(sut.getById(authStub.admin, 'person-1')).resolves.toEqual(responseDto);
-      expect(mocks.person.getById).toHaveBeenCalledWith('person-1');
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.person.getForUser.mockResolvedValue(getDehydrated(person));
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getById(auth, person.personGroupId)).resolves.toEqual(
+        expect.objectContaining({ id: person.personGroupId }),
+      );
+      expect(mocks.person.getForUser).toHaveBeenCalledWith({
+        userId: auth.user.id,
+        personGroupId: person.personGroupId,
+      });
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
     });
   });
 
   describe('getThumbnail', () => {
     it('should require person.read permission', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.noName);
-      await expect(sut.getThumbnail(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+
+      mocks.person.getForThumbnail.mockResolvedValue({
+        thumbnailPath: person.thumbnailPath,
+        sharedThumbnailPath: null,
+      });
+      await expect(sut.getThumbnail(auth, person.personGroupId)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
+        auth.user.id,
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        PERSON_READ_ROLES,
+      );
     });
 
     it('should throw an error when personId is invalid', async () => {
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await expect(sut.getThumbnail(authStub.admin, 'person-1')).rejects.toBeInstanceOf(NotFoundException);
+      const auth = AuthFactory.create();
+      const ids = [{ personGroupId: 'unknown', ownerId: auth.user.id }];
+
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      mocks.person.getForThumbnail.mockResolvedValue(undefined);
+      await expect(sut.getThumbnail(auth, 'unknown')).rejects.toBeInstanceOf(NotFoundException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
     });
 
     it('should throw an error when person has no thumbnail', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.noThumbnail);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await expect(sut.getThumbnail(authStub.admin, 'person-1')).rejects.toBeInstanceOf(NotFoundException);
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ thumbnailPath: '' });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.person.getForThumbnail.mockResolvedValue({ thumbnailPath: '', sharedThumbnailPath: null });
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getThumbnail(auth, person.personGroupId)).rejects.toBeInstanceOf(NotFoundException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
     });
 
     it('should serve the thumbnail', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.noName);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await expect(sut.getThumbnail(authStub.admin, 'person-1')).resolves.toEqual(
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.person.getForThumbnail.mockResolvedValue({
+        thumbnailPath: person.thumbnailPath,
+        sharedThumbnailPath: null,
+      });
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getThumbnail(auth, person.personGroupId)).resolves.toEqual(
         new ImmichFileResponse({
-          path: '/path/to/thumbnail.jpg',
+          path: person.thumbnailPath,
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+    });
+
+    it('should fall back to a shared thumbnail', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.person.getForThumbnail.mockResolvedValue({
+        thumbnailPath: '',
+        sharedThumbnailPath: person.thumbnailPath,
+      });
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getThumbnail(auth, person.personGroupId)).resolves.toEqual(
+        new ImmichFileResponse({
+          path: person.thumbnailPath,
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithoutCache,
+        }),
+      );
     });
   });
 
   describe('update', () => {
     it('should require person.write permission', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.noName);
-      await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id });
+
+      await expect(sut.update(auth, person.personGroupId, { name: 'Person 1' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(mocks.person.update).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
+        auth.user.id,
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        PERSON_WRITE_ROLES,
+      );
     });
 
     it('should throw an error when personId is invalid', async () => {
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
-      await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      const auth = AuthFactory.create();
+
+      mocks.access.person.checkAccess.mockResolvedValue(new Set());
+      await expect(sut.update(auth, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.person.update).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
+        auth.user.id,
+        new Set([{ personGroupId: 'person-1', ownerId: auth.user.id }]),
+        PERSON_WRITE_ROLES,
+      );
     });
 
     it("should update a person's name", async () => {
-      mocks.person.update.mockResolvedValue(personStub.withName);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, name: 'Person 1' });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).resolves.toEqual(responseDto);
+      mocks.person.update.mockResolvedValue(person);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
 
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', name: 'Person 1' });
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      await expect(sut.update(auth, person.personGroupId, { name: 'Person 1' })).resolves.toEqual(
+        expect.objectContaining({ id: person.personGroupId, name: 'Person 1' }),
+      );
+
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        name: 'Person 1',
+      });
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+    });
+
+    it("should update another user's person when userId is provided", async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ name: 'Person 1' });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: person.ownerId }];
+
+      mocks.person.update.mockResolvedValue(person);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+
+      await expect(
+        sut.update(auth, person.personGroupId, { name: 'Person 1', userId: person.ownerId }),
+      ).resolves.toEqual(expect.objectContaining({ id: person.personGroupId, name: 'Person 1' }));
+
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        name: 'Person 1',
+      });
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
     it("should update a person's date of birth", async () => {
-      mocks.person.update.mockResolvedValue(personStub.withBirthDate);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, birthDate: new Date('1976-06-30') });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      await expect(sut.update(authStub.admin, 'person-1', { birthDate: new Date('1976-06-30') })).resolves.toEqual({
-        id: 'person-1',
-        name: 'Person 1',
+      mocks.person.update.mockResolvedValue(person);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+
+      await expect(sut.update(auth, person.personGroupId, { birthDate: '1976-06-30' })).resolves.toEqual({
+        id: person.personGroupId,
+        name: person.name,
         birthDate: '1976-06-30',
-        thumbnailPath: '/path/to/thumbnail.jpg',
+        thumbnailPath: person.thumbnailPath,
         isHidden: false,
         isFavorite: false,
-        updatedAt: expect.any(Date),
-        color: expect.any(String),
+        otherPeople: [],
+        sharedBy: [],
+        sharedWith: [],
+        updatedAt: expect.any(String),
       });
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        birthDate: '1976-06-30',
+      });
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
     it('should update a person visibility', async () => {
-      mocks.person.update.mockResolvedValue(personStub.withName);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, isHidden: true });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
+      mocks.person.update.mockResolvedValue(person);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
 
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: false });
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      await expect(sut.update(auth, person.personGroupId, { isHidden: true })).resolves.toEqual(
+        expect.objectContaining({ isHidden: true }),
+      );
+
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        isHidden: true,
+      });
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
     it('should update a person favorite status', async () => {
-      mocks.person.update.mockResolvedValue(personStub.withName);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, isFavorite: true });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      await expect(sut.update(authStub.admin, 'person-1', { isFavorite: true })).resolves.toEqual(responseDto);
+      mocks.person.update.mockResolvedValue(person);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
 
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', isFavorite: true });
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      await expect(sut.update(auth, person.personGroupId, { isFavorite: true })).resolves.toEqual(
+        expect.objectContaining({ isFavorite: true }),
+      );
+
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        isFavorite: true,
+      });
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
     it("should update a person's thumbnailPath", async () => {
       const face = AssetFaceFactory.create();
       const auth = AuthFactory.create();
-      mocks.person.update.mockResolvedValue(personStub.withName);
+      const person = PersonFactory.create({ ownerId: auth.user.id });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.person.update.mockResolvedValue(person);
       mocks.person.getForFeatureFaceUpdate.mockResolvedValue(face);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([face.assetId]));
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
 
-      await expect(sut.update(auth, 'person-1', { featureFaceAssetId: face.assetId })).resolves.toEqual(responseDto);
+      await expect(sut.update(auth, person.personGroupId, { featureFaceAssetId: face.assetId })).resolves.toEqual(
+        expect.objectContaining({ id: person.personGroupId }),
+      );
 
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', faceAssetId: face.id });
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        faceAssetId: face.id,
+      });
       expect(mocks.person.getForFeatureFaceUpdate).toHaveBeenCalledWith({
         assetId: face.assetId,
-        personId: 'person-1',
+        personGroupId: person.personGroupId,
       });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.PersonGenerateThumbnail,
-        data: { id: 'person-1' },
+        data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
       });
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
     it('should throw an error when the face feature assetId is invalid', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.withName);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      await expect(sut.update(authStub.admin, 'person-1', { featureFaceAssetId: '-1' })).rejects.toThrow(
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['-1']));
+      mocks.person.getForFeatureFaceUpdate.mockResolvedValue(undefined);
+
+      await expect(sut.update(auth, person.personGroupId, { featureFaceAssetId: '-1' })).rejects.toThrow(
         BadRequestException,
       );
       expect(mocks.person.update).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
   });
 
   describe('updateAll', () => {
     it('should throw an error when personId is invalid', async () => {
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.person.checkAccess.mockResolvedValue(new Set());
 
       await expect(sut.updateAll(authStub.admin, { people: [{ id: 'person-1', name: 'Person 1' }] })).resolves.toEqual([
         { error: BulkIdErrorReason.UNKNOWN, id: 'person-1', success: false },
       ]);
       expect(mocks.person.update).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([{ personGroupId: 'person-1', ownerId: authStub.admin.user.id }]),
+        PERSON_WRITE_ROLES,
+      );
     });
   });
 
   describe('reassignFaces', () => {
     it('should throw an error if user has no access to the person', async () => {
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.person.checkAccess.mockResolvedValue(new Set());
 
       await expect(
-        sut.reassignFaces(authStub.admin, personStub.noName.id, {
+        sut.reassignFaces(AuthFactory.create(), 'person-id', {
           data: [{ personId: 'asset-face-1', assetId: '' }],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.job.queue).not.toHaveBeenCalledWith();
       expect(mocks.job.queueAll).not.toHaveBeenCalledWith();
     });
+
     it('should reassign a face', async () => {
       const face = AssetFaceFactory.create();
       const auth = AuthFactory.create();
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.withName.id]));
-      mocks.person.getById.mockResolvedValue(personStub.noName);
+      const person = PersonFactory.create();
+
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+      );
+      mocks.person.getByGroupId.mockResolvedValue(person);
       mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
-      mocks.person.getFacesByIds.mockResolvedValue([face]);
+      mocks.person.getFacesByIds.mockResolvedValue([getForAssetFace(face)]);
       mocks.person.reassignFace.mockResolvedValue(1);
       mocks.person.getRandomFace.mockResolvedValue(AssetFaceFactory.create());
       mocks.person.refreshFaces.mockResolvedValue();
       mocks.person.reassignFace.mockResolvedValue(5);
-      mocks.person.update.mockResolvedValue(personStub.noName);
+      mocks.person.update.mockResolvedValue(person);
 
       await expect(
-        sut.reassignFaces(auth, personStub.noName.id, {
-          data: [{ personId: personStub.withName.id, assetId: face.assetId }],
+        sut.reassignFaces(auth, person.personGroupId, {
+          data: [{ personId: person.personGroupId, assetId: face.assetId }],
         }),
       ).resolves.toBeDefined();
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.PersonGenerateThumbnail,
-          data: { id: personStub.newThumbnail.id },
+          data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
         },
       ]);
     });
@@ -320,7 +466,7 @@ describe(PersonService.name, () => {
 
   describe('handlePersonMigration', () => {
     it('should not move person files', async () => {
-      await expect(sut.handlePersonMigration(personStub.noName)).resolves.toBe(JobStatus.Failed);
+      await expect(sut.handlePersonMigration(PersonFactory.create())).resolves.toBe(JobStatus.Failed);
     });
   });
 
@@ -330,29 +476,150 @@ describe(PersonService.name, () => {
       const face = AssetFaceFactory.create();
       const asset = AssetFactory.from({ id: face.assetId }).exif().build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.person.getFaces.mockResolvedValue([face]);
+      mocks.person.getFaces.mockResolvedValue([getForAssetFace(face)]);
       mocks.asset.getForFaces.mockResolvedValue({ edits: [], ...asset.exifInfo });
-      await expect(sut.getFacesById(auth, { id: face.assetId })).resolves.toStrictEqual([mapFaces(face, auth)]);
+      await expect(sut.getFacesById(auth, { id: face.assetId })).resolves.toStrictEqual([
+        mapFaces(getForAssetFace(face)),
+      ]);
     });
 
     it('should reject if the user has not access to the asset', async () => {
       const face = AssetFaceFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
-      mocks.person.getFaces.mockResolvedValue([face]);
+      mocks.person.getFaces.mockResolvedValue([getForAssetFace(face)]);
       await expect(sut.getFacesById(AuthFactory.create(), { id: face.assetId })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
   });
 
-  describe('createNewFeaturePhoto', () => {
-    it('should change person feature photo', async () => {
-      mocks.person.getRandomFace.mockResolvedValue(AssetFaceFactory.create());
-      await sut.createNewFeaturePhoto([personStub.newThumbnail.id]);
+  describe('createFace', () => {
+    it('should create a manual face and initialize the person feature photo creation', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create({ faceAssetId: null });
+      const featureFace = AssetFaceFactory.create({
+        assetId: asset.id,
+        personGroupId: person.personGroupId,
+        sourceType: SourceType.Manual,
+      });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+      );
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.person.getByGroupId.mockResolvedValue(person);
+      mocks.person.getRandomFace.mockResolvedValue(featureFace);
+      mocks.person.update.mockResolvedValue({ ...person, faceAssetId: featureFace.id });
+
+      await expect(
+        sut.createFace(auth, {
+          assetId: asset.id,
+          personId: person.personGroupId,
+          imageHeight: 500,
+          imageWidth: 400,
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 110,
+        }),
+      ).resolves.toBeUndefined();
+
+      expect(mocks.asset.getById).toHaveBeenCalledWith(asset.id, { edits: true, exifInfo: true });
+      expect(mocks.person.createAssetFace).toHaveBeenCalledWith({
+        assetId: asset.id,
+        personGroupId: person.personGroupId,
+        imageHeight: 500,
+        imageWidth: 400,
+        boundingBoxX1: 10,
+        boundingBoxX2: 110,
+        boundingBoxY1: 20,
+        boundingBoxY2: 130,
+        sourceType: SourceType.Manual,
+      });
+      expect(mocks.person.getRandomFace).toHaveBeenCalledWith(person.personGroupId);
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        faceAssetId: featureFace.id,
+      });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.PersonGenerateThumbnail,
-          data: { id: personStub.newThumbnail.id },
+          data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
+        },
+      ]);
+    });
+
+    it('should not update the person feature photo if one already exists', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create({ faceAssetId: newUuid() });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+      );
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.person.getByGroupId.mockResolvedValue(person);
+
+      await expect(
+        sut.createFace(auth, {
+          assetId: asset.id,
+          personId: person.personGroupId,
+          imageHeight: 500,
+          imageWidth: 400,
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 110,
+        }),
+      ).resolves.toBeUndefined();
+
+      expect(mocks.person.createAssetFace).toHaveBeenCalledOnce();
+      expect(mocks.person.getRandomFace).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should reject creating a face on an asset the user does not own', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create({ faceAssetId: null });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+      );
+
+      await expect(
+        sut.createFace(auth, {
+          assetId: asset.id,
+          personId: person.personGroupId,
+          imageHeight: 500,
+          imageWidth: 400,
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 110,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.person.createAssetFace).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('createNewFeaturePhoto', () => {
+    it('should change person feature photo', async () => {
+      const person = PersonFactory.create();
+
+      mocks.person.getRandomFace.mockResolvedValue(AssetFaceFactory.create());
+      await sut.createNewFeaturePhoto([person]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.PersonGenerateThumbnail,
+          data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
         },
       ]);
     });
@@ -360,37 +627,48 @@ describe(PersonService.name, () => {
 
   describe('reassignFacesById', () => {
     it('should create a new person', async () => {
+      const auth = AuthFactory.create();
       const face = AssetFaceFactory.create();
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
-      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
-      mocks.person.getFaceById.mockResolvedValue(face);
-      mocks.person.reassignFace.mockResolvedValue(1);
-      mocks.person.getById.mockResolvedValue(personStub.noName);
-      await expect(sut.reassignFacesById(AuthFactory.create(), personStub.noName.id, { id: face.id })).resolves.toEqual(
-        {
-          birthDate: personStub.noName.birthDate,
-          isHidden: personStub.noName.isHidden,
-          isFavorite: personStub.noName.isFavorite,
-          id: personStub.noName.id,
-          name: personStub.noName.name,
-          thumbnailPath: personStub.noName.thumbnailPath,
-          updatedAt: expect.any(Date),
-          color: personStub.noName.color,
-        },
+      const person = PersonFactory.create({ ownerId: auth.user.id, faceAssetId: newUuid() });
+
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
       );
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+      mocks.person.reassignFace.mockResolvedValue(1);
+      mocks.person.getByGroupId.mockResolvedValue(person);
+      await expect(sut.reassignFacesById(auth, person.personGroupId, { id: face.id })).resolves.toEqual({
+        birthDate: person.birthDate,
+        isHidden: person.isHidden,
+        isFavorite: person.isFavorite,
+        id: person.personGroupId,
+        name: person.name,
+        otherPeople: [],
+        sharedBy: [],
+        sharedWith: [],
+        thumbnailPath: person.thumbnailPath,
+        updatedAt: expect.any(String),
+      });
 
       expect(mocks.job.queue).not.toHaveBeenCalledWith();
       expect(mocks.job.queueAll).not.toHaveBeenCalledWith();
     });
 
     it('should fail if user has not the correct permissions on the asset', async () => {
+      const auth = AuthFactory.create();
       const face = AssetFaceFactory.create();
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
-      mocks.person.getFaceById.mockResolvedValue(face);
+      const person = PersonFactory.create({ ownerId: auth.user.id });
+
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+      );
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set());
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
       mocks.person.reassignFace.mockResolvedValue(1);
-      mocks.person.getById.mockResolvedValue(personStub.noName);
+      mocks.person.getByGroupId.mockResolvedValue(person);
       await expect(
-        sut.reassignFacesById(AuthFactory.create(), personStub.noName.id, {
+        sut.reassignFacesById(auth, person.personGroupId, {
           id: face.id,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -401,23 +679,31 @@ describe(PersonService.name, () => {
   });
 
   describe('createPerson', () => {
-    it('should create a new person', async () => {
-      mocks.person.create.mockResolvedValue(personStub.primaryPerson);
+    it('should create a new person in a new group', async () => {
+      const auth = AuthFactory.create();
+      const group = PersonGroupFactory.create();
 
-      await expect(sut.create(authStub.admin, {})).resolves.toBeDefined();
+      mocks.person.createGroup.mockResolvedValue(group);
+      mocks.person.create.mockResolvedValue(PersonFactory.create({ personGroupId: group.id }));
+      await expect(sut.create(auth, {})).resolves.toBeDefined();
 
-      expect(mocks.person.create).toHaveBeenCalledWith({ ownerId: authStub.admin.user.id });
+      expect(mocks.person.createGroup).toHaveBeenCalledWith(auth.user.id);
+      expect(mocks.person.create).toHaveBeenCalledWith({ ownerId: auth.user.id, personGroupId: group.id });
     });
   });
 
   describe('handlePersonCleanup', () => {
     it('should delete people without faces', async () => {
-      mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.noName]);
+      const person = PersonFactory.create();
+
+      mocks.person.getAllWithoutFaces.mockResolvedValue([person]);
+      mocks.person.delete.mockResolvedValue([person]);
 
       await sut.handlePersonCleanup();
 
-      expect(mocks.person.delete).toHaveBeenCalledWith([personStub.noName.id]);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.noName.thumbnailPath);
+      expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
+      expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
     });
   });
 
@@ -438,7 +724,7 @@ describe(PersonService.name, () => {
       await sut.handleQueueDetectFaces({ force: false });
 
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(false);
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
@@ -449,15 +735,21 @@ describe(PersonService.name, () => {
 
     it('should queue all assets', async () => {
       const asset = AssetFactory.create();
+      const person = PersonFactory.create();
+
       mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
-      mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.withName]);
+      mocks.person.getAllWithoutFaces.mockResolvedValue([person]);
+      mocks.person.delete.mockResolvedValue([person]);
 
       await sut.handleQueueDetectFaces({ force: true });
 
       expect(mocks.person.deleteFaces).toHaveBeenCalledWith({ sourceType: SourceType.MachineLearning });
-      expect(mocks.person.delete).toHaveBeenCalledWith([personStub.withName.id]);
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: true });
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.withName.thumbnailPath);
+      expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
+      expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'face_search' });
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
@@ -473,9 +765,9 @@ describe(PersonService.name, () => {
 
       await sut.handleQueueDetectFaces({ force: undefined });
 
-      expect(mocks.person.delete).not.toHaveBeenCalled();
+      expect(mocks.person.deleteGroups).not.toHaveBeenCalled();
       expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -490,10 +782,13 @@ describe(PersonService.name, () => {
     it('should delete existing people and faces if forced', async () => {
       const asset = AssetFactory.create();
       const face = AssetFaceFactory.from().person().build();
-      mocks.person.getAll.mockReturnValue(makeStream([face.person!, personStub.randomPerson]));
+      const person = PersonFactory.create();
+
+      mocks.person.getAll.mockReturnValue(makeStream([face.person!, person]));
       mocks.person.getAllFaces.mockReturnValue(makeStream([face]));
       mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
-      mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.randomPerson]);
+      mocks.person.getAllWithoutFaces.mockResolvedValue([person]);
+      mocks.person.delete.mockResolvedValue([person]);
       mocks.person.deleteFaces.mockResolvedValue();
 
       await sut.handleQueueDetectFaces({ force: true });
@@ -505,9 +800,12 @@ describe(PersonService.name, () => {
           data: { id: asset.id },
         },
       ]);
-      expect(mocks.person.delete).toHaveBeenCalledWith([personStub.randomPerson.id]);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.randomPerson.thumbnailPath);
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: true });
+      expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
+      expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'face_search' });
     });
   });
 
@@ -560,7 +858,7 @@ describe(PersonService.name, () => {
       await sut.handleQueueRecognizeFaces({});
 
       expect(mocks.person.getAllFaces).toHaveBeenCalledWith({
-        personId: null,
+        personGroupId: null,
         sourceType: SourceType.MachineLearning,
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -572,7 +870,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState, {
         lastRun: expect.any(String),
       });
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
     });
 
     it('should queue all assets', async () => {
@@ -591,7 +889,7 @@ describe(PersonService.name, () => {
 
       await sut.handleQueueRecognizeFaces({ force: true });
 
-      expect(mocks.person.getAllFaces).toHaveBeenCalledWith(undefined);
+      expect(mocks.person.getAllFaces).toHaveBeenCalledWith({});
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FacialRecognition,
@@ -601,7 +899,8 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState, {
         lastRun: expect.any(String),
       });
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: false });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
     });
 
     it('should run nightly if new face has been added since last run', async () => {
@@ -626,7 +925,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.get).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState);
       expect(mocks.person.getLatestFaceDate).toHaveBeenCalledOnce();
       expect(mocks.person.getAllFaces).toHaveBeenCalledWith({
-        personId: null,
+        personGroupId: null,
         sourceType: SourceType.MachineLearning,
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -638,7 +937,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState, {
         lastRun: expect.any(String),
       });
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
     });
 
     it('should skip nightly if no new face has been added since last run', async () => {
@@ -656,11 +955,13 @@ describe(PersonService.name, () => {
       expect(mocks.person.getAllFaces).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
-      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.database.vacuum).not.toHaveBeenCalled();
     });
 
     it('should delete existing people if forced', async () => {
       const face = AssetFaceFactory.from().person().build();
+      const person = PersonFactory.create();
+
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
@@ -669,9 +970,10 @@ describe(PersonService.name, () => {
         failed: 0,
         delayed: 0,
       });
-      mocks.person.getAll.mockReturnValue(makeStream([face.person!, personStub.randomPerson]));
+      mocks.person.getAll.mockReturnValue(makeStream([face.person!, person]));
       mocks.person.getAllFaces.mockReturnValue(makeStream([face]));
-      mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.randomPerson]);
+      mocks.person.getAllWithoutFaces.mockResolvedValue([person]);
+      mocks.person.delete.mockResolvedValue([person]);
       mocks.person.unassignFaces.mockResolvedValue();
 
       await sut.handleQueueRecognizeFaces({ force: true });
@@ -684,9 +986,11 @@ describe(PersonService.name, () => {
           data: { id: face.id, deferred: false },
         },
       ]);
-      expect(mocks.person.delete).toHaveBeenCalledWith([personStub.randomPerson.id]);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.randomPerson.thumbnailPath);
-      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: false });
+      expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
+      expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'asset_face' });
+      expect(mocks.database.vacuum).toHaveBeenCalledWith({ analyze: true, table: 'person' });
     });
   });
 
@@ -700,18 +1004,18 @@ describe(PersonService.name, () => {
     });
 
     it('should skip when no resize path', async () => {
-      const asset = AssetFactory.create();
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      const asset = AssetFactory.from().exif().build();
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       await sut.handleDetectFaces({ id: asset.id });
       expect(mocks.machineLearning.detectFaces).not.toHaveBeenCalled();
     });
 
     it('should handle no results', async () => {
       const start = Date.now();
-      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).exif().build();
 
       mocks.machineLearning.detectFaces.mockResolvedValue({ imageHeight: 500, imageWidth: 400, faces: [] });
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       await sut.handleDetectFaces({ id: asset.id });
       expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
         asset.files[0].path,
@@ -729,12 +1033,12 @@ describe(PersonService.name, () => {
     });
 
     it('should create a face with no person and queue recognition job', async () => {
-      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).exif().build();
       const face = AssetFaceFactory.create({ assetId: asset.id });
       mocks.crypto.randomUUID.mockReturnValue(face.id);
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
-      mocks.search.searchFaces.mockResolvedValue([{ ...face, distance: 0.7 }]);
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.search.searchFaces.mockResolvedValue([getForFaceSearch(face, 0.7)]);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.person.refreshFaces.mockResolvedValue();
 
       await sut.handleDetectFaces({ id: asset.id });
@@ -753,9 +1057,9 @@ describe(PersonService.name, () => {
     });
 
     it('should delete an existing face not among the new detected faces', async () => {
-      const asset = AssetFactory.from().face().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().face().file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue({ faces: [], imageHeight: 500, imageWidth: 400 });
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
 
       await sut.handleDetectFaces({ id: asset.id });
 
@@ -774,9 +1078,9 @@ describe(PersonService.name, () => {
         boundingBoxY1: 200,
         boundingBoxY2: 300,
       });
-      const asset = AssetFactory.from({ id: assetId }).face().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from({ id: assetId }).face().file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.crypto.randomUUID.mockReturnValue(face.id);
       mocks.person.refreshFaces.mockResolvedValue();
 
@@ -797,9 +1101,9 @@ describe(PersonService.name, () => {
 
     it('should add embedding to matching metadata face', async () => {
       const face = AssetFaceFactory.create({ sourceType: SourceType.Exif });
-      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.person.refreshFaces.mockResolvedValue();
 
       await sut.handleDetectFaces({ id: asset.id });
@@ -813,9 +1117,9 @@ describe(PersonService.name, () => {
     it('should not add embedding to non-matching metadata face', async () => {
       const assetId = newUuid();
       const face = AssetFaceFactory.create({ assetId, sourceType: SourceType.Exif });
-      const asset = AssetFactory.from({ id: assetId }).file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from({ id: assetId }).file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.crypto.randomUUID.mockReturnValue(face.id);
 
       await sut.handleDetectFaces({ id: asset.id });
@@ -869,20 +1173,21 @@ describe(PersonService.name, () => {
       const [noPerson1, noPerson2, primaryFace, face] = [
         AssetFaceFactory.create({ assetId: asset.id }),
         AssetFaceFactory.create(),
-        AssetFaceFactory.from().person().build(),
-        AssetFaceFactory.from().person().build(),
+        AssetFaceFactory.from().person({ ownerId: asset.ownerId }).build(),
+        AssetFaceFactory.from().person({ ownerId: asset.ownerId }).build(),
       ];
 
       const faces = [
-        { ...noPerson1, distance: 0 },
-        { ...primaryFace, distance: 0.2 },
-        { ...noPerson2, distance: 0.3 },
-        { ...face, distance: 0.4 },
-      ] as FaceSearchResult[];
+        getForFaceSearch(noPerson1, 0),
+        getForFaceSearch(primaryFace, 0.2),
+        getForFaceSearch(noPerson2, 0.3),
+        getForFaceSearch(face, 0.4),
+      ];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       mocks.search.searchFaces.mockResolvedValue(faces);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+      mocks.person.getByGroupId.mockResolvedValue(primaryFace.person!);
       mocks.person.create.mockResolvedValue(primaryFace.person!);
 
       await sut.handleRecognizeFaces({ id: noPerson1.id });
@@ -891,11 +1196,11 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.arrayContaining([noPerson1.id]),
-        newPersonId: primaryFace.person!.id,
+        newPersonGroupId: primaryFace.person!.personGroupId,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([face.id]),
-        newPersonId: primaryFace.person!.id,
+        newPersonGroupId: primaryFace.person!.personGroupId,
       });
     });
 
@@ -903,19 +1208,20 @@ describe(PersonService.name, () => {
       const asset = AssetFactory.create();
       const [noPerson, face, faceWithBirthDate] = [
         AssetFaceFactory.create({ assetId: asset.id }),
-        AssetFaceFactory.from().person().build(),
-        AssetFaceFactory.from().person({ birthDate: newDate() }).build(),
+        AssetFaceFactory.from().person({ ownerId: asset.ownerId }).build(),
+        AssetFaceFactory.from().person({ ownerId: asset.ownerId, birthDate: newDate() }).build(),
       ];
 
       const faces = [
-        { ...noPerson, distance: 0 },
-        { ...face, distance: 0.2 },
-        { ...faceWithBirthDate, distance: 0.3 },
-      ] as FaceSearchResult[];
+        getForFaceSearch(noPerson, 0),
+        getForFaceSearch(face, 0.2),
+        getForFaceSearch(faceWithBirthDate, 0.3),
+      ];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       mocks.search.searchFaces.mockResolvedValue(faces);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson, asset));
+      mocks.person.getByGroupId.mockResolvedValue(face.person!);
       mocks.person.create.mockResolvedValue(face.person!);
 
       await sut.handleRecognizeFaces({ id: noPerson.id });
@@ -924,11 +1230,11 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.arrayContaining([noPerson.id]),
-        newPersonId: face.person!.id,
+        newPersonGroupId: face.person!.personGroupId,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([face.id]),
-        newPersonId: face.person!.id,
+        newPersonGroupId: face.person!.personGroupId,
       });
     });
 
@@ -936,19 +1242,20 @@ describe(PersonService.name, () => {
       const asset = AssetFactory.create();
       const [noPerson, face, faceWithBirthDate] = [
         AssetFaceFactory.create({ assetId: asset.id }),
-        AssetFaceFactory.from().person().build(),
-        AssetFaceFactory.from().person({ birthDate: newDate() }).build(),
+        AssetFaceFactory.from().person({ ownerId: asset.ownerId }).build(),
+        AssetFaceFactory.from().person({ ownerId: asset.ownerId, birthDate: newDate() }).build(),
       ];
 
       const faces = [
-        { ...noPerson, distance: 0 },
-        { ...faceWithBirthDate, distance: 0.2 },
-        { ...face, distance: 0.3 },
-      ] as FaceSearchResult[];
+        getForFaceSearch(noPerson, 0),
+        getForFaceSearch(faceWithBirthDate, 0.2),
+        getForFaceSearch(face, 0.3),
+      ];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       mocks.search.searchFaces.mockResolvedValue(faces);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson, asset));
+      mocks.person.getByGroupId.mockResolvedValue(faceWithBirthDate.person!);
       mocks.person.create.mockResolvedValue(face.person!);
 
       await sut.handleRecognizeFaces({ id: noPerson.id });
@@ -957,11 +1264,11 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.arrayContaining([noPerson.id]),
-        newPersonId: faceWithBirthDate.person!.id,
+        newPersonGroupId: faceWithBirthDate.person!.personGroupId,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([face.id]),
-        newPersonId: faceWithBirthDate.person!.id,
+        newPersonGroupId: faceWithBirthDate.person!.personGroupId,
       });
     });
 
@@ -970,32 +1277,64 @@ describe(PersonService.name, () => {
       const [noPerson1, noPerson2] = [AssetFaceFactory.create({ assetId: asset.id }), AssetFaceFactory.create()];
       const person = PersonFactory.create();
 
-      const faces = [
-        { ...noPerson1, distance: 0 },
-        { ...noPerson2, distance: 0.3 },
-      ] as FaceSearchResult[];
+      const faces = [getForFaceSearch(noPerson1, 0), getForFaceSearch(noPerson2, 0.3)];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       mocks.search.searchFaces.mockResolvedValue(faces);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+      mocks.person.createGroup.mockResolvedValue(PersonGroupFactory.create({ id: person.personGroupId }));
       mocks.person.create.mockResolvedValue(person);
 
       await sut.handleRecognizeFaces({ id: noPerson1.id });
 
+      expect(mocks.person.createGroup).toHaveBeenCalledWith(asset.ownerId);
       expect(mocks.person.create).toHaveBeenCalledWith({
         ownerId: asset.ownerId,
         faceAssetId: noPerson1.id,
+        personGroupId: person.personGroupId,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: [noPerson1.id],
-        newPersonId: person.id,
+        newPersonGroupId: person.personGroupId,
+      });
+    });
+
+    it('should create a person in the matched group when the match belongs to another user', async () => {
+      const asset = AssetFactory.create();
+      const [noPerson, otherOwnerFace] = [
+        AssetFaceFactory.create({ assetId: asset.id }),
+        AssetFaceFactory.from().person().build(),
+      ];
+      const person = PersonFactory.create({
+        ownerId: asset.ownerId,
+        personGroupId: otherOwnerFace.person!.personGroupId,
+      });
+
+      const faces = [getForFaceSearch(noPerson, 0), getForFaceSearch(otherOwnerFace, 0.2)];
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
+      mocks.search.searchFaces.mockResolvedValue(faces);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson, asset));
+      mocks.person.create.mockResolvedValue(person);
+
+      await sut.handleRecognizeFaces({ id: noPerson.id });
+
+      expect(mocks.person.createGroup).not.toHaveBeenCalled();
+      expect(mocks.person.create).toHaveBeenCalledWith({
+        ownerId: asset.ownerId,
+        faceAssetId: noPerson.id,
+        personGroupId: otherOwnerFace.person!.personGroupId,
+      });
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: [noPerson.id],
+        newPersonGroupId: otherOwnerFace.person!.personGroupId,
       });
     });
 
     it('should not queue face with no matches', async () => {
       const asset = AssetFactory.create();
       const face = AssetFaceFactory.create({ assetId: asset.id });
-      const faces = [{ ...face, distance: 0 }] as FaceSearchResult[];
+      const faces = [getForFaceSearch(face, 0)];
 
       mocks.search.searchFaces.mockResolvedValue(faces);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(face, asset));
@@ -1013,10 +1352,7 @@ describe(PersonService.name, () => {
       const asset = AssetFactory.create();
       const [noPerson1, noPerson2] = [AssetFaceFactory.create({ assetId: asset.id }), AssetFaceFactory.create()];
 
-      const faces = [
-        { ...noPerson1, distance: 0 },
-        { ...noPerson2, distance: 0.4 },
-      ] as FaceSearchResult[];
+      const faces = [getForFaceSearch(noPerson1, 0), getForFaceSearch(noPerson2, 0.4)];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       mocks.search.searchFaces.mockResolvedValue(faces);
@@ -1038,10 +1374,7 @@ describe(PersonService.name, () => {
       const asset = AssetFactory.create();
       const [noPerson1, noPerson2] = [AssetFaceFactory.create({ assetId: asset.id }), AssetFaceFactory.create()];
 
-      const faces = [
-        { ...noPerson1, distance: 0 },
-        { ...noPerson2, distance: 0.4 },
-      ] as FaceSearchResult[];
+      const faces = [getForFaceSearch(noPerson1, 0), getForFaceSearch(noPerson2, 0.4)];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       mocks.search.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
@@ -1057,128 +1390,64 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('mergePerson', () => {
-    it('should require person.write and person.merge permission', async () => {
-      mocks.person.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      mocks.person.getById.mockResolvedValueOnce(personStub.mergePerson);
-
-      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-
-      expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
-
-      expect(mocks.person.delete).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-
-    it('should merge two people without smart merge', async () => {
-      mocks.person.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      mocks.person.getById.mockResolvedValueOnce(personStub.mergePerson);
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
-
-      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
-        { id: 'person-2', success: true },
-      ]);
-
-      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
-        newPersonId: personStub.primaryPerson.id,
-        oldPersonId: personStub.mergePerson.id,
-      });
-
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-
-    it('should merge two people with smart merge', async () => {
-      mocks.person.getById.mockResolvedValueOnce(personStub.randomPerson);
-      mocks.person.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      mocks.person.update.mockResolvedValue({ ...personStub.randomPerson, name: personStub.primaryPerson.name });
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-3']));
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
-
-      await expect(sut.mergePerson(authStub.admin, 'person-3', { ids: ['person-1'] })).resolves.toEqual([
-        { id: 'person-1', success: true },
-      ]);
-
-      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
-        newPersonId: personStub.randomPerson.id,
-        oldPersonId: personStub.primaryPerson.id,
-      });
-
-      expect(mocks.person.update).toHaveBeenCalledWith({
-        id: personStub.randomPerson.id,
-        name: personStub.primaryPerson.name,
-      });
-
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-
-    it('should throw an error when the primary person is not found', async () => {
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-
-      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-
-      expect(mocks.person.delete).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-
-    it('should handle invalid merge ids', async () => {
-      mocks.person.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
-
-      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
-        { id: 'person-2', success: false, error: BulkIdErrorReason.NOT_FOUND },
-      ]);
-
-      expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
-      expect(mocks.person.delete).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-
-    it('should handle an error reassigning faces', async () => {
-      mocks.person.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      mocks.person.getById.mockResolvedValueOnce(personStub.mergePerson);
-      mocks.person.reassignFaces.mockRejectedValue(new Error('update failed'));
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
-      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
-
-      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
-        { id: 'person-2', success: false, error: BulkIdErrorReason.UNKNOWN },
-      ]);
-
-      expect(mocks.person.delete).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-  });
-
   describe('getStatistics', () => {
     it('should get correct number of person', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.primaryPerson);
-      mocks.person.getStatistics.mockResolvedValue(statistics);
-      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await expect(sut.getStatistics(authStub.admin, 'person-1')).resolves.toEqual({ assets: 3 });
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.person.getStatistics.mockResolvedValue({ assets: 3 });
+      mocks.partner.getAll.mockResolvedValue([]);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getStatistics(auth, person.personGroupId)).resolves.toEqual({ assets: 3 });
+      expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.personGroupId, {
+        ownerId: auth.user.id,
+        partnerIds: [],
+      });
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+    });
+
+    it('should only include partners that are shown in the timeline', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+      const inTimeline = UserFactory.create();
+      const notInTimeline = UserFactory.create();
+
+      mocks.person.getStatistics.mockResolvedValue({ assets: 3 });
+      mocks.partner.getAll.mockResolvedValue([
+        getForPartner(PartnerFactory.from({ inTimeline: true }).sharedBy(inTimeline).sharedWith(auth.user).build()),
+        getForPartner(PartnerFactory.from({ inTimeline: false }).sharedBy(notInTimeline).sharedWith(auth.user).build()),
+      ]);
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      await expect(sut.getStatistics(auth, person.personGroupId)).resolves.toEqual({ assets: 3 });
+      expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.personGroupId, {
+        ownerId: auth.user.id,
+        partnerIds: [inTimeline.id],
+      });
     });
 
     it('should require person.read permission', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.primaryPerson);
-      await expect(sut.getStatistics(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+
+      await expect(sut.getStatistics(auth, person.personGroupId)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.person.getStatistics).not.toHaveBeenCalled();
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
+        auth.user.id,
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        PERSON_READ_ROLES,
+      );
     });
   });
 
   describe('mapFace', () => {
     it('should map a face', () => {
       const user = UserFactory.create();
-      const auth = AuthFactory.create({ id: user.id });
       const person = PersonFactory.create({ ownerId: user.id });
       const face = AssetFaceFactory.from().person(person).build();
 
-      expect(mapFaces(face, auth)).toEqual({
+      expect(mapFaces(getForAssetFace(face))).toEqual({
         boundingBoxX1: 100,
         boundingBoxX2: 200,
         boundingBoxY1: 100,
@@ -1192,11 +1461,7 @@ describe(PersonService.name, () => {
     });
 
     it('should not map person if person is null', () => {
-      expect(mapFaces(AssetFaceFactory.create(), AuthFactory.create()).person).toBeNull();
-    });
-
-    it('should not map person if person does not match auth user id', () => {
-      expect(mapFaces(AssetFaceFactory.from().person().build(), AuthFactory.create()).person).toBeNull();
+      expect(mapFaces(getForAssetFace(AssetFaceFactory.create())).person).toBeNull();
     });
   });
 });

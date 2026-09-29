@@ -2,6 +2,8 @@ import { useWindowSize } from '@docusaurus/theme-common';
 import DropdownNavbarItem from '@theme/NavbarItem/DropdownNavbarItem';
 import React, { useEffect, useState } from 'react';
 
+const ARCHIVED_VERSIONS_URL = 'https://version.immich.cloud/v1/docs/versions';
+
 export default function VersionSwitcher(): JSX.Element {
   const [versions, setVersions] = useState([]);
   const [activeLabel, setLabel] = useState('Versions');
@@ -11,12 +13,7 @@ export default function VersionSwitcher(): JSX.Element {
   useEffect(() => {
     async function getVersions() {
       try {
-        let baseUrl = 'https://docs.immich.app';
-        if (window.location.origin === 'http://localhost:3005') {
-          baseUrl = window.location.origin;
-        }
-
-        const response = await fetch(`${baseUrl}/archived-versions.json`);
+        const response = await fetch(ARCHIVED_VERSIONS_URL);
 
         const archiveVersions = await response.json();
 

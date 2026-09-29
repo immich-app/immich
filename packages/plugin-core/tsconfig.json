@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "allowJs": true, // Allow JavaScript files to be compiled
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "esModuleInterop": true, // Enables compatibility with Babel-style module imports
+    "lib": ["es2020", "DOM"], // Specify a list of library files to be included in the compilation
+    "module": "nodenext", // Specify module code generation
+    "moduleResolution": "nodenext",
+    "noEmit": true, // Do not emit outputs (no .js or .d.ts files)
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "strict": true, // Enable all strict type-checking options
+    "target": "es2020", // Specify ECMAScript target version
+    "types": ["./dist/index.d.ts", "./node_modules/@extism/js-pdk"] // Specify a list of type definition files to be included in the compilation
+  },
+  "exclude": [
+    "node_modules" // Exclude the node_modules directory
+  ],
+  "include": [
+    "src/**/*.ts" // Include all TypeScript files in src directory
+  ]
+}

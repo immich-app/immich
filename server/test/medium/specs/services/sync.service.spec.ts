@@ -1,14 +1,15 @@
+import { schemaFromCode } from '@immich/sql-tools';
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { AssetMetadataKey, UserMetadataKey } from 'src/enum';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SyncRepository } from 'src/repositories/sync.repository';
-import { DB } from 'src/schema';
-import { SyncService } from 'src/services/sync.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
 import { v4 } from 'uuid';
+import { AssetMetadataKey, UserMetadataKey } from 'src/enum.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { BaseSync, SyncRepository } from 'src/repositories/sync.repository.js';
+import { DB } from 'src/schema/index.js';
+import { SyncService } from 'src/services/sync.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -221,6 +222,22 @@ describe(SyncService.name, () => {
       const after = await ctx.database.selectFrom('asset_audit').select(['id']).execute();
       expect(after).toHaveLength(1);
       expect(after[0].id).toBe(keep.id);
+    });
+
+    it('should cleanup every table', async () => {
+      const { sut } = setup();
+
+      const auditTables = schemaFromCode()
+        .tables.filter((table) => table.name.endsWith('_audit'))
+        .map(({ name }) => name);
+
+      const auditCleanupSpy = vi.spyOn(BaseSync.prototype as any, 'auditCleanup');
+      await expect(sut.onAuditTableCleanup()).resolves.toBeUndefined();
+
+      expect(auditCleanupSpy).toHaveBeenCalledTimes(auditTables.length);
+      for (const table of auditTables) {
+        expect(auditCleanupSpy, `Audit table ${table} was not cleaned up`).toHaveBeenCalledWith(table, 31);
+      }
     });
   });
 });
