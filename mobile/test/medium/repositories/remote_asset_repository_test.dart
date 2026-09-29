@@ -66,7 +66,7 @@ void main() {
     });
   });
 
-  group('getCounterpartByChecksum', () {
+  group('getCandidatesByChecksum', () {
     late String currentUserId;
     late String partnerId;
     late List<String> userIds;
@@ -78,56 +78,95 @@ void main() {
       userIds = [currentUserId, partnerId];
     });
 
-    test('returns only assets visible on the main timeline by default', () async {
-      const checksum = 'visible-only';
+    test('returns the own candidate independently of timeline users', () async {
+      const checksum = 'own-without-timeline-users';
+      final ownAsset = await ctx.newRemoteAsset(
+        ownerId: currentUserId,
+        checksum: checksum,
+        visibility: AssetVisibility.archive,
+      );
+
+      final candidates = await sut.getCandidatesByChecksum(const [], checksum);
+
+      expect(candidates.own?.id, ownAsset.id);
+      expect(candidates.timelineVisible, isNull);
+    });
+
+    test('filters out partner assets that are not visible on the timeline', () async {
+      const checksum = 'excluded-partner-assets';
       final excludedPartnerId = (await ctx.newUser()).id;
-      await ctx.newRemoteAsset(ownerId: currentUserId, checksum: checksum, deletedAt: DateTime(2026, 8, 21));
       await ctx.newRemoteAsset(ownerId: excludedPartnerId, checksum: checksum);
       await ctx.newRemoteAsset(ownerId: partnerId, checksum: checksum, visibility: AssetVisibility.archive);
-      expect(await sut.getCounterpartByChecksum(userIds, checksum), isNull);
+      await ctx.newRemoteAsset(ownerId: partnerId, checksum: checksum, deletedAt: DateTime(2026, 8, 21));
 
+      final candidates = await sut.getCandidatesByChecksum(userIds, checksum);
+
+      expect(candidates.own, isNull);
+      expect(candidates.timelineVisible, isNull);
+    });
+
+    test('returns own and partner timeline candidates independently', () async {
+      const checksum = 'own-locked-partner-timeline';
+      final ownAsset = await ctx.newRemoteAsset(
+        ownerId: currentUserId,
+        checksum: checksum,
+        visibility: AssetVisibility.locked,
+      );
       final partnerAsset = await ctx.newRemoteAsset(ownerId: partnerId, checksum: checksum);
 
-      expect((await sut.getCounterpartByChecksum(userIds, checksum))?.id, partnerAsset.id);
+      final candidates = await sut.getCandidatesByChecksum(userIds, checksum);
+
+      expect(candidates.own?.id, ownAsset.id);
+      expect(candidates.timelineVisible?.id, partnerAsset.id);
     });
 
-    test('does not return the current user\'s asset hidden from the main timeline by default', () async {
-      final hidden = AssetVisibility.values.where((visibility) => visibility != AssetVisibility.timeline);
-      for (final visibility in hidden) {
-        final checksum = 'own-default-${visibility.name}';
-        await ctx.newRemoteAsset(ownerId: currentUserId, checksum: checksum, visibility: visibility);
-
-        expect(await sut.getCounterpartByChecksum(userIds, checksum), isNull, reason: visibility.name);
-      }
-    });
-
-    test('prefers the current user\'s asset over a partner\'s', () async {
+    test('uses the current user\'s timeline asset for both candidates', () async {
       const checksum = 'owner-preference';
       final ownAsset = await ctx.newRemoteAsset(id: 'z-own', ownerId: currentUserId, checksum: checksum);
       await ctx.newRemoteAsset(id: 'a-partner', ownerId: partnerId, checksum: checksum);
 
-      expect((await sut.getCounterpartByChecksum(userIds, checksum))?.id, ownAsset.id);
+      final candidates = await sut.getCandidatesByChecksum(userIds, checksum);
+
+      expect(candidates.own?.id, ownAsset.id);
+      expect(candidates.timelineVisible?.id, ownAsset.id);
     });
 
-    group('with ownInAnyVisibility', () {
-      test('returns the current user\'s asset in any visibility', () async {
-        for (final visibility in AssetVisibility.values) {
-          final checksum = 'own-${visibility.name}';
-          final ownAsset = await ctx.newRemoteAsset(ownerId: currentUserId, checksum: checksum, visibility: visibility);
+    test('prefers an own timeline asset when duplicate own checksums exist', () async {
+      const checksum = 'duplicate-own-checksum';
+      final ownTimeline = await ctx.newRemoteAsset(ownerId: currentUserId, checksum: checksum);
+      await ctx.newRemoteAsset(ownerId: currentUserId, checksum: checksum, visibility: AssetVisibility.locked);
 
-          final asset = await sut.getCounterpartByChecksum(userIds, checksum, ownInAnyVisibility: true);
+      final candidates = await sut.getCandidatesByChecksum(userIds, checksum);
 
-          expect(asset?.id, ownAsset.id, reason: visibility.name);
-        }
-      });
+      expect(candidates.own?.id, ownTimeline.id);
+      expect(candidates.timelineVisible?.id, ownTimeline.id);
+    });
 
-      test('returns nothing when the current user\'s asset is trashed, even if a partner has a copy', () async {
-        const checksum = 'own-trashed';
-        await ctx.newRemoteAsset(ownerId: currentUserId, checksum: checksum, deletedAt: DateTime(2026, 8, 21));
-        await ctx.newRemoteAsset(ownerId: partnerId, checksum: checksum);
+    test('returns a trashed own candidate without hiding a partner timeline candidate', () async {
+      const checksum = 'own-trashed';
+      final ownAsset = await ctx.newRemoteAsset(
+        ownerId: currentUserId,
+        checksum: checksum,
+        deletedAt: DateTime(2026, 8, 21),
+      );
+      final partnerAsset = await ctx.newRemoteAsset(ownerId: partnerId, checksum: checksum);
 
-        expect(await sut.getCounterpartByChecksum(userIds, checksum, ownInAnyVisibility: true), isNull);
-      });
+      final candidates = await sut.getCandidatesByChecksum(userIds, checksum);
+
+      expect(candidates.own?.id, ownAsset.id);
+      expect(candidates.own?.isTrashed, isTrue);
+      expect(candidates.timelineVisible?.id, partnerAsset.id);
+    });
+
+    test('never returns hidden assets as top-level candidates', () async {
+      const checksum = 'own-hidden';
+      await ctx.newRemoteAsset(ownerId: currentUserId, checksum: checksum, visibility: AssetVisibility.hidden);
+      final partnerAsset = await ctx.newRemoteAsset(ownerId: partnerId, checksum: checksum);
+
+      final candidates = await sut.getCandidatesByChecksum(userIds, checksum);
+
+      expect(candidates.own, isNull);
+      expect(candidates.timelineVisible?.id, partnerAsset.id);
     });
   });
 }

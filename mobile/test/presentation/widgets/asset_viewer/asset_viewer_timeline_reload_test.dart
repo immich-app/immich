@@ -111,6 +111,8 @@ void main() {
     await tester.pump();
 
     expect(container.read(assetViewerProvider).currentAsset, same(_uploadedAsset));
+    expect(find.byKey(Key(_uploadedAsset.heroTag)), findsOneWidget);
+    expect(find.byKey(Key(LocalAssetStub.image1.heroTag)), findsNothing);
   });
 
   testWidgets('keeps a view-intent asset during reload of the previous timeline', (tester) async {

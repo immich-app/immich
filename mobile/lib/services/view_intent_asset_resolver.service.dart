@@ -60,14 +60,10 @@ class ViewIntentAssetResolver {
       await _localAssetRepository.updateHashes({localAsset.id: checksum});
     }
 
-    final remoteAsset = checksum == null
+    final candidates = checksum == null
         ? null
-        : await _remoteAssetRepository.getCounterpartByChecksum(
-            await _timelineUsers(),
-            checksum,
-            // An existing local row is linked to the user's own asset in any visibility.
-            ownInAnyVisibility: localAsset != null,
-          );
+        : await _remoteAssetRepository.getCandidatesByChecksum(await _timelineUsers(), checksum);
+    final remoteAsset = candidates == null ? null : _selectRemoteAsset(candidates, localAsset);
     if (remoteAsset != null) {
       _logger.fine('resolve matched remote asset by checksum: $checksum, asset=$remoteAsset');
       return _resolution(remoteAsset.copyWith(localId: localAssetId));
@@ -78,6 +74,28 @@ class ViewIntentAssetResolver {
     }
 
     return _resolution(_toTransientAsset(attachment, checksum), viewIntentFilePath: path);
+  }
+
+  RemoteAsset? _selectRemoteAsset(
+    ({RemoteAsset? own, RemoteAsset? timelineVisible}) candidates,
+    LocalAsset? localAsset,
+  ) {
+    final own = candidates.own;
+    if (own == null) {
+      return candidates.timelineVisible;
+    }
+
+    if (own.isTrashed) {
+      return localAsset == null ? candidates.timelineVisible : null;
+    }
+
+    if (localAsset != null) {
+      return own;
+    }
+
+    final isSelectableWithoutLocalAssociation =
+        own.visibility == AssetVisibility.timeline || own.visibility == AssetVisibility.archive;
+    return isSelectableWithoutLocalAssociation ? own : candidates.timelineVisible;
   }
 
   ViewIntentResolution _resolution(BaseAsset asset, {String? viewIntentFilePath}) => ViewIntentResolution(

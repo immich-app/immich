@@ -51,33 +51,44 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return query.map((row) => row.toDto()).get();
   }
 
-  /// Returns the timeline-visible counterpart of [checksum], preferring the current user's asset.
-  /// With [ownInAnyVisibility], the user's own asset wins in any visibility; a trashed one yields `null`.
-  Future<RemoteAsset?> getCounterpartByChecksum(
-    List<String> userIds,
-    String checksum, {
-    bool ownInAnyVisibility = false,
-  }) async {
-    if (userIds.isEmpty) {
-      return null;
-    }
-
-    final currentUserId = _db.selectOnly(_db.authUserEntity)
+  /// Returns independently selected own and timeline-visible candidates.
+  Future<({RemoteAsset? own, RemoteAsset? timelineVisible})> getCandidatesByChecksum(
+    List<String> timelineUserIds,
+    String checksum,
+  ) async {
+    final currentUserIdQuery = _db.selectOnly(_db.authUserEntity)
       ..addColumns([_db.authUserEntity.id])
       ..limit(1);
+    final currentUserId = await currentUserIdQuery.map((row) => row.read(_db.authUserEntity.id)).getSingleOrNull();
+
     final query = _db.remoteAssetEntity.select()
       ..where((row) {
-        final visibleOnTimeline = row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline);
-        final matched = ownInAnyVisibility
-            ? visibleOnTimeline | row.ownerId.isInQuery(currentUserId)
-            : visibleOnTimeline;
-        return row.checksum.equals(checksum) & row.ownerId.isIn(userIds) & matched;
-      })
-      ..orderBy([(row) => OrderingTerm(expression: row.ownerId.isInQuery(currentUserId), mode: OrderingMode.desc)])
-      ..limit(1);
+        final timelineCandidate =
+            row.ownerId.isIn(timelineUserIds) &
+            row.deletedAt.isNull() &
+            row.visibility.equalsValue(AssetVisibility.timeline);
+        final ownCandidate = currentUserId == null
+            ? const Constant(false)
+            : row.ownerId.equals(currentUserId) & row.visibility.equalsValue(AssetVisibility.hidden).not();
+        return row.checksum.equals(checksum) & (ownCandidate | timelineCandidate);
+      });
 
-    final asset = await query.map((row) => row.toDto()).getSingleOrNull();
-    return asset == null || asset.isTrashed ? null : asset;
+    RemoteAsset? own;
+    RemoteAsset? timelineVisible;
+    for (final asset in await query.map((row) => row.toDto()).get()) {
+      if (asset.ownerId == currentUserId) {
+        if (!asset.isTrashed && asset.visibility == AssetVisibility.timeline) {
+          own = asset;
+          timelineVisible = asset;
+        } else {
+          own ??= asset;
+        }
+      } else if (timelineVisible == null && !asset.isTrashed && asset.visibility == AssetVisibility.timeline) {
+        timelineVisible = asset;
+      }
+    }
+
+    return (own: own, timelineVisible: timelineVisible);
   }
 
   Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {

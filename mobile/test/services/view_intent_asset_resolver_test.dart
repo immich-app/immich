@@ -49,12 +49,8 @@ void main() {
     when(() => drift.localAssetRepository).thenReturn(mockLocalAssetRepository);
     when(() => drift.remoteAssetRepository).thenReturn(remoteAssetRepository);
     when(
-      () => remoteAssetRepository.getCounterpartByChecksum(
-        any(),
-        any(),
-        ownInAnyVisibility: any(named: 'ownInAnyVisibility'),
-      ),
-    ).thenAnswer((_) async => null);
+      () => remoteAssetRepository.getCandidatesByChecksum(any(), any()),
+    ).thenAnswer((_) async => (own: null, timelineVisible: null));
 
     container = ProviderContainer(
       overrides: [
@@ -82,26 +78,22 @@ void main() {
     expect(result.asset, equals(localAsset));
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
     expect(result.viewIntentFilePath, isNull, reason: 'DB-backed assets carry their own source — no temp file needed');
-    verify(
-      () => remoteAssetRepository.getCounterpartByChecksum(['user-1'], 'checksum-1', ownInAnyVisibility: true),
-    ).called(1);
+    verify(() => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1')).called(1);
   });
 
-  test('returns the remote counterpart matching the local checksum', () async {
+  test('returns an own archived counterpart matching a DB-local checksum', () async {
     final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1');
-    final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
+    final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1', visibility: AssetVisibility.archive);
     when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
     when(
-      () => remoteAssetRepository.getCounterpartByChecksum(['user-1'], 'checksum-1', ownInAnyVisibility: true),
-    ).thenAnswer((_) async => remoteAsset);
+      () => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => (own: remoteAsset, timelineVisible: null));
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
     expect(result.asset, isA<RemoteAsset>());
     expect((result.asset as RemoteAsset).id, 'remote-1');
     expect((result.asset as RemoteAsset).localId, 'local-1');
-    expect(result.timelineService.origin, TimelineOrigin.deepLink);
-    expect(result.viewIntentFilePath, isNull);
     verifyNever(() => nativeSyncApi.hashAssets(any()));
   });
 
@@ -113,43 +105,57 @@ void main() {
       () => nativeSyncApi.hashAssets(['local-1']),
     ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
     when(
-      () => remoteAssetRepository.getCounterpartByChecksum(['user-1'], 'checksum-1', ownInAnyVisibility: true),
-    ).thenAnswer((_) async => remoteAsset);
+      () => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => (own: remoteAsset, timelineVisible: remoteAsset));
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
     expect(result.asset, isA<RemoteAsset>());
     expect((result.asset as RemoteAsset).localId, 'local-1');
-    expect(result.timelineService.origin, TimelineOrigin.deepLink);
-    expect(result.viewIntentFilePath, isNull);
     verify(() => nativeSyncApi.hashAssets(['local-1'])).called(1);
     verify(() => mockLocalAssetRepository.updateHashes({'local-1': 'checksum-1'})).called(1);
   });
 
-  test('returns transient asset with temp file path when localAssetId has no DB row', () async {
+  test('returns a transient asset when the checksum cannot be calculated', () async {
     final result = await _resolve(container, _payload(localAssetId: 'local-1', path: '/tmp/incoming.jpg'));
 
     expect(result.asset, isA<LocalAsset>());
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
     expect(result.viewIntentFilePath, '/tmp/incoming.jpg');
+    verifyNever(() => remoteAssetRepository.getCandidatesByChecksum(any(), any()));
   });
 
-  test('returns cached remote asset when local Drift row is absent but checksum matches', () async {
-    final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
+  test('uses a partner timeline candidate when the local Drift row is absent', () async {
+    final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1', ownerId: 'partner-1');
     when(
       () => nativeSyncApi.hashAssets(['local-1']),
     ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
     when(
-      () => remoteAssetRepository.getCounterpartByChecksum(['user-1'], 'checksum-1', ownInAnyVisibility: false),
-    ).thenAnswer((_) async => remoteAsset);
+      () => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => (own: null, timelineVisible: remoteAsset));
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
     expect(result.asset, isA<RemoteAsset>());
     expect((result.asset as RemoteAsset).id, 'remote-1');
     expect((result.asset as RemoteAsset).localId, 'local-1');
-    expect(result.timelineService.origin, TimelineOrigin.deepLink);
     verifyNever(() => mockLocalAssetRepository.updateHashes(any()));
+  });
+
+  test('returns an own archived asset when the local Drift row is absent', () async {
+    final ownArchived = _remoteAsset(id: 'own-archived', checksum: 'checksum-1', visibility: AssetVisibility.archive);
+    when(
+      () => nativeSyncApi.hashAssets(['local-1']),
+    ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
+    when(
+      () => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => (own: ownArchived, timelineVisible: null));
+
+    final result = await _resolve(container, _payload(localAssetId: 'local-1'));
+
+    expect(result.asset, isA<RemoteAsset>());
+    expect((result.asset as RemoteAsset).id, ownArchived.id);
+    expect((result.asset as RemoteAsset).localId, 'local-1');
   });
 
   test('returns transient asset for path-only attachment', () async {
@@ -159,13 +165,57 @@ void main() {
     );
 
     expect(result.asset, isA<LocalAsset>());
-    expect(result.timelineService.origin, TimelineOrigin.deepLink);
     expect(result.viewIntentFilePath, '/tmp/incoming.webp');
 
     final asset = result.asset as LocalAsset;
     expect(asset.localId, startsWith('-'));
     expect(asset.name, 'incoming.webp');
     expect(asset.playbackStyle, AssetPlaybackStyle.imageAnimated);
+  });
+
+  test('keeps a DB-backed local asset when its own remote candidate is trashed', () async {
+    final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1');
+    final ownTrashed = _remoteAsset(id: 'own-trashed', checksum: 'checksum-1', isTrashed: true);
+    final partnerTimeline = _remoteAsset(id: 'partner-timeline', checksum: 'checksum-1', ownerId: 'partner-1');
+    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
+    when(
+      () => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => (own: ownTrashed, timelineVisible: partnerTimeline));
+
+    final result = await _resolve(container, _payload(localAssetId: 'local-1'));
+
+    expect(result.asset, equals(localAsset));
+  });
+
+  test('uses a partner timeline candidate when own remote is trashed and the local DB row is absent', () async {
+    final ownTrashed = _remoteAsset(id: 'own-trashed', checksum: 'checksum-1', isTrashed: true);
+    final partnerTimeline = _remoteAsset(id: 'partner-timeline', checksum: 'checksum-1', ownerId: 'partner-1');
+    when(
+      () => nativeSyncApi.hashAssets(['local-1']),
+    ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
+    when(
+      () => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => (own: ownTrashed, timelineVisible: partnerTimeline));
+
+    final result = await _resolve(container, _payload(localAssetId: 'local-1'));
+
+    expect((result.asset as RemoteAsset).id, partnerTimeline.id);
+    expect((result.asset as RemoteAsset).localId, 'local-1');
+  });
+
+  test('ignores an own locked candidate when the local DB row is absent', () async {
+    final ownLocked = _remoteAsset(id: 'own-locked', checksum: 'checksum-1', visibility: AssetVisibility.locked);
+    final partnerTimeline = _remoteAsset(id: 'partner-timeline', checksum: 'checksum-1', ownerId: 'partner-1');
+    when(
+      () => nativeSyncApi.hashAssets(['local-1']),
+    ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
+    when(
+      () => remoteAssetRepository.getCandidatesByChecksum(['user-1'], 'checksum-1'),
+    ).thenAnswer((_) async => (own: ownLocked, timelineVisible: partnerTimeline));
+
+    final result = await _resolve(container, _payload(localAssetId: 'local-1'));
+
+    expect((result.asset as RemoteAsset).id, partnerTimeline.id);
   });
 
   test('throws when neither localAssetId nor path is provided', () async {
@@ -194,16 +244,24 @@ LocalAsset _localAsset({required String id, String? checksum}) {
   );
 }
 
-RemoteAsset _remoteAsset({required String id, required String checksum}) {
+RemoteAsset _remoteAsset({
+  required String id,
+  required String checksum,
+  String ownerId = 'user-1',
+  AssetVisibility visibility = AssetVisibility.timeline,
+  bool isTrashed = false,
+}) {
   return RemoteAsset(
     id: id,
-    ownerId: 'user-1',
+    ownerId: ownerId,
     name: '$id.jpg',
     checksum: checksum,
     type: AssetType.image,
     createdAt: DateTime(2026, 4, 20),
     updatedAt: DateTime(2026, 4, 20),
     isEdited: false,
+    visibility: visibility,
+    deletedAt: isTrashed ? DateTime(2026, 8, 21) : null,
   );
 }
 
