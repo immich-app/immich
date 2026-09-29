@@ -1245,18 +1245,20 @@ describe(PersonService.name, () => {
   });
 
   describe('addUsersToPeople', () => {
-    it('should skip sharedWith users that are not in the same cluster group', async () => {
+    it('should throw error for sharedWith users that are not in the same cluster group', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
       const { user: user1 } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
-        personIds: [person.personGroupId],
-        sharedWithIds: [user1.id],
-        role: PersonUserRole.Read,
-      });
+      await expect(
+        sut.addUsersToPeople(auth, {
+          personIds: [person.personGroupId],
+          sharedWithIds: [user1.id],
+          role: PersonUserRole.Read,
+        }),
+      ).rejects.toThrow('All users must be in the same cluster group');
 
       await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(0);
     });
