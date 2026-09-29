@@ -51,7 +51,11 @@ export class ClusterGroupService extends BaseService {
     );
 
     if (request.isInserted) {
-      await this.eventRepository.emit('ClusterGroupRequest', { clusterGroupId, userId, senderName: auth.user.name });
+      await this.eventRepository.emit('ClusterGroupRequest', {
+        clusterGroupId,
+        userId,
+        senderName: auth.user.name ?? '',
+      });
     }
 
     return { duplicate: !request.isInserted, value: mapClusterGroupRequest(request) };
