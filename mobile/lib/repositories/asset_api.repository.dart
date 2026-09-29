@@ -59,13 +59,6 @@ class AssetApiRepository extends ApiRepository {
     AssetVisibility.archive => api.AssetVisibility.archive,
   };
 
-  Future<String?> getAssetMIMEType(String assetId) async {
-    final response = await checkNull(_api.getAssetInfo(assetId));
-
-    // we need to get the MIME of the thumbnail once that gets added to the API
-    return response.originalMimeType.orElse(null);
-  }
-
   Future<String> getChecksum(String id) async {
     return (await checkNull(_api.getAssetInfo(id))).checksum;
   }

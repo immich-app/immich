@@ -9,6 +9,7 @@ import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_se
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/sync_status_and_actions.dart';
+import 'package:immich_mobile/widgets/settings/cast_settings.dart';
 import 'package:immich_mobile/widgets/settings/free_up_space_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
@@ -18,6 +19,7 @@ import 'package:immich_ui/immich_ui.dart';
 
 enum SettingSection {
   advanced(Icons.build_outlined),
+  cast(Icons.cast_rounded),
   assetViewer(Icons.image_outlined),
   backup(Icons.cloud_upload_outlined),
   freeUpSpace(Icons.cleaning_services_outlined),
@@ -32,6 +34,7 @@ enum SettingSection {
 
   String title(Translations t) => switch (this) {
     SettingSection.advanced => t.advanced,
+    SettingSection.cast => t.cast,
     SettingSection.assetViewer => t.asset_viewer_settings_title,
     SettingSection.backup => t.backup,
     SettingSection.freeUpSpace => t.free_up_space,
@@ -45,6 +48,7 @@ enum SettingSection {
 
   String subtitle(Translations t) => switch (this) {
     SettingSection.advanced => t.advanced_settings_tile_subtitle,
+    SettingSection.cast => t.cast_description,
     SettingSection.assetViewer => t.asset_viewer_settings_subtitle,
     SettingSection.backup => t.backup_settings_subtitle,
     SettingSection.freeUpSpace => t.free_up_space_settings_subtitle,
@@ -58,6 +62,7 @@ enum SettingSection {
 
   Widget get widget => switch (this) {
     SettingSection.advanced => const AdvancedSettings(),
+    SettingSection.cast => const CastSettings(),
     SettingSection.assetViewer => const AssetViewerSettings(),
     SettingSection.backup => const BackupSettings(),
     SettingSection.freeUpSpace => const FreeUpSpaceSettings(),

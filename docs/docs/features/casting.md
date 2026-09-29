@@ -1,12 +1,16 @@
 # Chromecast support
 
-Immich supports the Google's Cast protocol so that photos and videos can be cast to devices such as a Chromecast and a Nest Hub. This feature is considered experimental and has several important limitations listed below. Currently, this feature is only supported by the web client, support on Android and iOS is planned for the future.
+Immich supports Google's Cast protocol so that photos and videos can be cast to devices such as a Chromecast and a Nest Hub from the web and mobile apps.
 
 ## Enable Google Cast Support
 
 Google Cast support is disabled by default. The web UI uses Google-provided scripts and must retrieve them from Google servers when the page loads. This is a privacy concern for some and is thus opt-in.
 
-You can enable Google Cast support through `Account Settings > Features > Cast > Google Cast`
+Casting requires a custom receiver application ID. See [receiver setup](../developer/casting.md#local-development).
+
+Enable casting on the web through `Account Settings > Features > Cast > Google Cast`, or on mobile through `Settings > Cast > Enable Google Cast on this device`. You need to enable this setting on every client you want to cast from; it does not carry across devices.
+
+The web and mobile settings screens provide local receiver application ID overrides for development and troubleshooting. Set an ID in each client where you want to cast; these overrides are not sent to the server.
 
 <img src={require('./img/gcast-enable.webp').default} width="70%" title='Enable Google Cast Support' />
 
@@ -14,6 +18,9 @@ You can enable Google Cast support through `Account Settings > Features > Cast >
 
 To use casting with Immich, there are a few prerequisites:
 
-1. Your instance must be accessed via an HTTPS connection in order for the casting menu to show.
-2. Your instance must be publicly accessible via HTTPS and a DNS record for the server must be accessible via Google's DNS servers (`8.8.8.8` and `8.8.4.4`)
-3. Videos must be in a format that is compatible with Google Cast. For more info, check out [Google's documentation](https://developers.google.com/cast/docs/media)
+1. Your Immich instance must be accessed via HTTPS using a real TLS certificate. Self-signed certificates are not supported by the Google Cast SDK.
+2. Your Cast device must be able to reach your instance over HTTPS and resolve its hostname.
+3. Videos first use direct playback. If playback fails, Immich retries using HLS when real-time transcoding is enabled and streaming metadata is ready. HLS can adapt video quality to the connection, but uses server resources for transcoding.
+4. Cast authentication lasts for the video's known duration plus a 15-minute margin. Long pauses or repeated loops beyond this window require reloading the video.
+
+If you have a proxy or authentication in front of your instance, casting will not work. If you are able, try exempting the cast device from the authentication proxy.

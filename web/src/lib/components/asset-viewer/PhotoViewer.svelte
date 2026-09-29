@@ -11,13 +11,13 @@
   import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { handlePromiseError } from '$lib/utils';
+  import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { getNaturalSize, scaleToFit, type Size } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
-  import { type SharedLinkResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
@@ -124,31 +124,45 @@
     handlePromiseError(onCopy());
   };
 
-  let currentPreviewUrl = $state<string>();
-
-  const onUrlChange = (url: string) => {
-    currentPreviewUrl = url;
+  const castSource = (item: AssetResponseDto) => {
+    const source = (size: AssetMediaSize) => {
+      const url = new URL(getAssetMediaUrl({ id: item.id, size, cacheKey: item.thumbhash }), location.href).href;
+      return { key: `${item.id}:${size}:${item.thumbhash}:${url}`, url };
+    };
+    return { ...source(AssetMediaSize.Preview), kind: 'photo' as const, fallback: source(AssetMediaSize.Thumbnail) };
   };
 
   $effect(() => {
-    if (currentPreviewUrl) {
-      void cast(currentPreviewUrl);
+    if (!castManager.isCasting) {
+      return;
     }
+
+    const source = {
+      ...castSource(asset),
+      neighbors: {
+        previous: cursor.previousAsset?.type === AssetTypeEnum.Image ? castSource(cursor.previousAsset) : undefined,
+        next: cursor.nextAsset?.type === AssetTypeEnum.Image ? castSource(cursor.nextAsset) : undefined,
+      },
+    };
+    castManager.prepareSession();
+    void castManager.loadMedia(source).catch((error: unknown) => handleError(error, 'Unable to cast'));
   });
 
-  const cast = async (url: string) => {
-    if (!url || !castManager.isCasting) {
+  $effect(() => {
+    if (!castManager.isCasting) {
       return;
     }
-    const fullUrl = new URL(url, location.href);
-
-    try {
-      await castManager.loadMedia(fullUrl.href);
-    } catch (error) {
-      handleError(error, 'Unable to cast');
-      return;
-    }
-  };
+    const neighbors = [cursor.previousAsset, cursor.nextAsset].filter(
+      (neighbor): neighbor is AssetResponseDto => neighbor?.type === AssetTypeEnum.Image,
+    );
+    const prepare = () => {
+      for (const neighbor of neighbors) {
+        castManager.prepareMedia(castSource(neighbor));
+      }
+    };
+    const timeoutId = setTimeout(prepare, 50);
+    return () => clearTimeout(timeoutId);
+  });
 
   const blurredSlideshow = $derived(
     $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground && !!asset.thumbhash,
@@ -226,7 +240,6 @@
     {sharedLink}
     {container}
     objectFit={$slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.Cover ? 'cover' : 'contain'}
-    {onUrlChange}
     onImageReady={() => {
       visibleImageReady = true;
       onReady?.();

@@ -7,6 +7,16 @@ export type MemoriesPreferences = {
 };
 
 class UserPreferencesManager {
+  #castReceiverAppId = new PersistedLocalStorage<string>('cast-receiver-app-id', '');
+
+  get castReceiverAppId() {
+    return this.#castReceiverAppId.current;
+  }
+
+  set castReceiverAppId(value: string) {
+    this.#castReceiverAppId.current = value.trim();
+  }
+
   #showDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
   #showAssetPath = new PersistedLocalStorage<boolean>('asset-viewer-show-path', false);
   #showAssetOwners = new PersistedLocalStorage<boolean>('album-show-asset-owners', false);

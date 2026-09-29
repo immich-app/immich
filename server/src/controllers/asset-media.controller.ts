@@ -37,6 +37,7 @@ import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard.js'
 import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { AssetMediaService } from 'src/services/asset-media.service.js';
+import { allowCrossOriginCastMedia } from 'src/utils/cast.js';
 import { ImmichFileResponse, sendFile } from 'src/utils/file.js';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation.js';
 
@@ -101,9 +102,11 @@ export class AssetMediaController {
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query() dto: AssetDownloadOriginalDto,
+    @Req() req: Request,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    allowCrossOriginCastMedia(req, res);
     await sendFile(res, next, () => this.service.downloadOriginal(auth, id, dto), this.logger);
   }
 
@@ -124,6 +127,7 @@ export class AssetMediaController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    allowCrossOriginCastMedia(req, res);
     if (dto.size === AssetMediaSize.Original) {
       this.logger.deprecate(
         'Calling the thumbnail endpoint with size=original is deprecated. Use the :id/original endpoint instead',
@@ -171,9 +175,11 @@ export class AssetMediaController {
   async playAssetVideo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
+    @Req() req: Request,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    allowCrossOriginCastMedia(req, res);
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
   }
 

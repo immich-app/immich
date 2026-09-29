@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
@@ -25,12 +26,15 @@ class AdvancedSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final config = ref.watch(appConfigProvider);
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
-    final levelId = useState<int>(ref.watch(appConfigProvider).logLevel.index);
-    final preferRemote = useState(ref.watch(appConfigProvider).image.preferRemote);
+    final levelId = useState<int>(config.logLevel.index);
+    final preferRemote = useState(config.image.preferRemote);
+    final castReceiverAppIdController = useTextEditingController(text: config.castReceiverAppId);
+    final isCasting = ref.watch(castProvider.select((s) => s.isCasting));
     useValueChanged(
       preferRemote.value,
       (_, _) => unawaited(ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value)),
@@ -108,6 +112,39 @@ class AdvancedSettings extends HookConsumerWidget {
         minValue: 1,
         noDivisons: 7,
         label: logLevel,
+      ),
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: castReceiverAppIdController,
+              enabled: !isCasting,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: InputDecoration(
+                labelText: context.t.cast_receiver_app_id_override,
+                helperText: context.t.cast_receiver_app_id_override_description,
+                helperMaxLines: 4,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: isCasting
+                  ? null
+                  : () async {
+                      await ref
+                          .read(settingsProvider)
+                          .write(.castReceiverAppId, castReceiverAppIdController.text.trim());
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.t.saved_settings)));
+                      }
+                    },
+              child: Text(context.t.save),
+            ),
+          ],
+        ),
       ),
       SettingsSwitchListTile(
         valueNotifier: preferRemote,

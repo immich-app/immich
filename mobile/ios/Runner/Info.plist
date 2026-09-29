@@ -126,7 +126,6 @@
     <key>NSBonjourServices</key>
     <array>
       <string>_googlecast._tcp</string>
-      <string>_CC1AD845._googlecast._tcp</string>
     </array>
     <key>NSCameraUsageDescription</key>
     <string>We need to access the camera to let you take beautiful video using this app</string>

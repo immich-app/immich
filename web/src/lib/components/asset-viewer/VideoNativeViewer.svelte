@@ -88,6 +88,12 @@
 
     return getAssetPlaybackUrl({ id: assetId, cacheKey });
   });
+  // The receiver cannot authenticate the child playlists of a local HLS session yet.
+  const castFileUrl = $derived(
+    playOriginalVideo
+      ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
+      : getAssetPlaybackUrl({ id: assetId, cacheKey }),
+  );
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   let showVideo = $state(false);
   let hasFocused = $state(false);
@@ -358,12 +364,13 @@
     bind:clientHeight={containerHeight}
   >
     {#if castManager.isCasting}
-      <div class="h-full place-content-center place-items-center">
+      <div class="size-full">
         <VideoRemoteViewer
           poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
           {onVideoEnded}
-          {assetFileUrl}
+          assetFileUrl={castFileUrl}
+          duration={asset.duration! / 1000}
         />
       </div>
     {:else}

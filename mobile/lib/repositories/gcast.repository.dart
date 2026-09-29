@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cast/device.dart';
 import 'package:cast/discovery_service.dart';
 import 'package:cast/session.dart';
@@ -10,16 +12,23 @@ final gCastRepositoryProvider = Provider((_) {
 
 class GCastRepository {
   CastSession? _castSession;
+  String? _activeTransportId;
+  String? _activeAppSessionId;
 
   void Function(CastSessionState)? onCastStatus;
   void Function(Map<String, dynamic>)? onCastMessage;
 
-  Map<String, dynamic>? _receiverStatus;
-
   GCastRepository();
 
-  Future<void> connect(CastDevice device) async {
+  Future<void> connect(CastDevice device, String customReceiverAppId) async {
+    final appId = customReceiverAppId.trim();
+    if (appId.isEmpty) {
+      throw StateError('An Immich Cast receiver application ID is required');
+    }
     _castSession = await CastSessionManager().startSession(device);
+    _activeTransportId = null;
+    _activeAppSessionId = null;
+    final launched = Completer<void>();
 
     _castSession?.stateStream.listen((state) {
       onCastStatus?.call(state);
@@ -27,13 +36,47 @@ class GCastRepository {
 
     _castSession?.messageStream.listen((message) {
       onCastMessage?.call(message);
+      if (message['type'] == 'LAUNCH_ERROR' && !launched.isCompleted) {
+        launched.completeError(StateError('Cast receiver failed to launch: ${message['reason']}'));
+      }
       if (message['type'] == 'RECEIVER_STATUS') {
-        _receiverStatus = message;
+        final applications = message['status']?['applications'];
+        if (applications is List) {
+          for (final app in applications) {
+            if (app is Map && app['appId'] == appId && app['transportId'] is String) {
+              final transportId = app['transportId'] as String;
+              _activeAppSessionId = app['sessionId'] as String?;
+              if (_activeTransportId != transportId) {
+                _activeTransportId = transportId;
+                // The cast package keeps the first app transport it sees. A
+                // receiver switch needs a new virtual connection to this app.
+                _castSession?.socket.sendMessage(
+                  CastSession.kNamespaceConnection,
+                  _castSession!.sessionId,
+                  transportId,
+                  {'type': 'CONNECT'},
+                );
+              }
+              if (!launched.isCompleted) {
+                launched.complete();
+              }
+              break;
+            }
+          }
+        }
       }
     });
 
-    // open the default receiver
-    sendMessage(CastSession.kNamespaceReceiver, {'type': 'LAUNCH', 'appId': 'CC1AD845'});
+    sendMessage(CastSession.kNamespaceReceiver, {'type': 'LAUNCH', 'appId': appId});
+    try {
+      await launched.future.timeout(const Duration(seconds: 10));
+    } catch (_) {
+      await _castSession?.close();
+      _castSession = null;
+      _activeTransportId = null;
+      _activeAppSessionId = null;
+      rethrow;
+    }
   }
 
   Future<void> disconnect() async {
@@ -45,21 +88,24 @@ class GCastRepository {
     await Future.delayed(const Duration(milliseconds: 500));
 
     await _castSession?.close();
+    _castSession = null;
+    _activeTransportId = null;
+    _activeAppSessionId = null;
   }
 
-  String? getSessionId() {
-    if (_receiverStatus == null) {
-      return null;
-    }
-    return _receiverStatus!['status']['applications'][0]['sessionId'];
-  }
+  String? getSessionId() => _activeAppSessionId;
 
   void sendMessage(String namespace, Map<String, dynamic> message) {
-    if (_castSession == null) {
+    final session = _castSession;
+    if (session == null) {
       throw Exception("Cast session is not established");
     }
 
-    _castSession!.sendMessage(namespace, message);
+    final destinationId = namespace == CastSession.kNamespaceReceiver ? 'receiver-0' : _activeTransportId;
+    if (destinationId == null) {
+      throw StateError('Cast receiver is not ready');
+    }
+    session.socket.sendMessage(namespace, session.sessionId, destinationId, message);
   }
 
   Future<List<CastDevice>> listDestinations() async {
