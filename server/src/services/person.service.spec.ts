@@ -1521,6 +1521,80 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('addUsersToPeople', () => {
+    it('should reject sharing a person with yourself', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(
+        sut.addUsersToPeople(auth, {
+          personIds: [newUuid()],
+          sharedWithIds: [auth.user.id],
+          role: PersonUserRole.Read,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.personUser.createAll).not.toHaveBeenCalled();
+    });
+
+    it('should share the given people', async () => {
+      const auth = AuthFactory.create();
+      const user = UserFactory.create({ id: auth.user.id });
+      const sharedWith = UserFactory.create({ clusterGroupId: user.clusterGroupId });
+      const personId = newUuid();
+
+      mocks.access.person.checkAccess.mockResolvedValue(new Set([{ personGroupId: personId, ownerId: auth.user.id }]));
+      mocks.user.get.mockResolvedValue(user);
+      mocks.clusterGroup.getUsers.mockResolvedValue([user, sharedWith]);
+
+      await sut.addUsersToPeople(auth, {
+        personIds: [personId],
+        sharedWithIds: [sharedWith.id],
+        role: PersonUserRole.Read,
+      });
+
+      expect(mocks.personUser.createAllForOwner).not.toHaveBeenCalled();
+      expect(mocks.personUser.createAll).toHaveBeenCalledWith([
+        { personGroupId: personId, sharedById: auth.user.id, sharedWithId: sharedWith.id, role: PersonUserRole.Read },
+      ]);
+    });
+
+    it('should share every person owned by the user when personIds is omitted', async () => {
+      const auth = AuthFactory.create();
+      const user = UserFactory.create({ id: auth.user.id });
+      const sharedWith = UserFactory.create({ clusterGroupId: user.clusterGroupId });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.clusterGroup.getUsers.mockResolvedValue([user, sharedWith]);
+
+      await sut.addUsersToPeople(auth, { sharedWithIds: [sharedWith.id], role: PersonUserRole.Write });
+
+      expect(mocks.access.person.checkAccess).not.toHaveBeenCalled();
+      expect(mocks.personUser.createAll).not.toHaveBeenCalled();
+      expect(mocks.personUser.createAllForOwner).toHaveBeenCalledWith({
+        ownerId: auth.user.id,
+        sharedWithIds: [sharedWith.id],
+        role: PersonUserRole.Write,
+      });
+    });
+
+    it('should reject users outside the cluster group', async () => {
+      const auth = AuthFactory.create();
+      const user = UserFactory.create({ id: auth.user.id });
+      const outsider = UserFactory.create();
+      const personId = newUuid();
+
+      mocks.access.person.checkAccess.mockResolvedValue(new Set([{ personGroupId: personId, ownerId: auth.user.id }]));
+      mocks.user.get.mockResolvedValue(user);
+      mocks.clusterGroup.getUsers.mockResolvedValue([user]);
+
+      await expect(
+        sut.addUsersToPeople(auth, { personIds: [personId], sharedWithIds: [outsider.id], role: PersonUserRole.Read }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.personUser.createAll).not.toHaveBeenCalled();
+    });
+  });
+
   describe('mapFace', () => {
     it('should map a face', () => {
       const user = UserFactory.create();
