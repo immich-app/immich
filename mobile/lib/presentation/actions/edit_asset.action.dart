@@ -50,7 +50,7 @@ class EditAssetAction extends AssetActionBuilder {
     try {
       // TODO(shenlong): Move all EXIF and Apply Edits logic onto the Route
       final repository = ref.read(driftProvider).remoteAssetRepository;
-      final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.getExif(asset.id)).wait;
+      final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.watchExif(asset.id).first).wait;
       if (exif == null || !context.mounted) {
         return;
       }

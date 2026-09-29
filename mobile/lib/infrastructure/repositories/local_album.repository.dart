@@ -287,7 +287,7 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
         final companion = LocalAssetEntityCompanion.custom(
           checksum: const Constant(null),
           adjustmentTime: Variable(asset.adjustmentTime),
-          previousChecksum: _db.localAssetEntity.checksum,
+          previousChecksum: coalesce([_db.localAssetEntity.previousChecksum, _db.localAssetEntity.checksum]),
         );
         batch.update(
           _db.localAssetEntity,
@@ -350,8 +350,10 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
           companion,
           onConflict: DoUpdate(
             // SET reads the existing row, so this keeps the checksum being cleared
-            (_) =>
-                RawValuesInsertable({...companion.toColumns(true), 'previous_checksum': _db.localAssetEntity.checksum}),
+            (_) => RawValuesInsertable({
+              ...companion.toColumns(true),
+              'previous_checksum': coalesce([_db.localAssetEntity.previousChecksum, _db.localAssetEntity.checksum]),
+            }),
             where: (old) => old.updatedAt.isNotValue(asset.updatedAt),
           ),
         );

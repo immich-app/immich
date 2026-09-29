@@ -229,9 +229,9 @@
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
-  data-selected={selected ? true : undefined}
-  data-readonly={readonly ? true : undefined}
-  data-disabled={disabled ? true : undefined}
+  data-selected={selected || undefined}
+  data-readonly={readonly || undefined}
+  data-disabled={disabled || undefined}
   tabindex={0}
   role="link"
 >

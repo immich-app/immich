@@ -68,9 +68,9 @@ describe(MediaRepository.name, () => {
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
-  describe('applyEdits (single actions)', () => {
+  describe('edit (single actions)', () => {
     it('should apply crop edit correctly', async () => {
-      const result = sut['applyEdits'](
+      const result = sut['edit'](
         sharp({
           create: {
             width: 1000,
@@ -97,7 +97,7 @@ describe(MediaRepository.name, () => {
       expect(metadata.height).toBe(300);
     });
     it('should apply rotate edit correctly', async () => {
-      const result = sut['applyEdits'](
+      const result = sut['edit'](
         sharp({
           create: {
             width: 500,
@@ -122,7 +122,7 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply mirror edit correctly', async () => {
-      const resultHorizontal = sut['applyEdits'](sharp(await buildTestQuadImage()), [
+      const resultHorizontal = sut['edit'](sharp(await buildTestQuadImage()), [
         {
           action: AssetEditAction.Mirror,
           parameters: {
@@ -141,7 +141,7 @@ describe(MediaRepository.name, () => {
       expect(await getPixelColor(bufferHorizontal, 10, 990)).toEqual({ r: 255, g: 255, b: 0 });
       expect(await getPixelColor(bufferHorizontal, 990, 990)).toEqual({ r: 0, g: 0, b: 255 });
 
-      const resultVertical = sut['applyEdits'](sharp(await buildTestQuadImage()), [
+      const resultVertical = sut['edit'](sharp(await buildTestQuadImage()), [
         {
           action: AssetEditAction.Mirror,
           parameters: {
@@ -166,10 +166,10 @@ describe(MediaRepository.name, () => {
     });
   });
 
-  describe('applyEdits (multiple sequential edits)', () => {
+  describe('edit (multiple sequential edits)', () => {
     it('should apply horizontal mirror then vertical mirror (equivalent to 180° rotation)', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
+      const result = sut['edit'](sharp(imageBuffer), [
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
       ]);
@@ -187,7 +187,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply rotate 90° then horizontal mirror', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
+      const result = sut['edit'](sharp(imageBuffer), [
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
       ]);
@@ -205,9 +205,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply 180° rotation', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
-        { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
-      ]);
+      const result = sut['edit'](sharp(imageBuffer), [{ action: AssetEditAction.Rotate, parameters: { angle: 180 } }]);
 
       const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
@@ -222,9 +220,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply 270° rotations', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
-        { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
-      ]);
+      const result = sut['edit'](sharp(imageBuffer), [{ action: AssetEditAction.Rotate, parameters: { angle: 270 } }]);
 
       const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
@@ -239,7 +235,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply crop then rotate 90°', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
+      const result = sut['edit'](sharp(imageBuffer), [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 1000, height: 500 } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
       ]);
@@ -255,7 +251,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply rotate 90° then crop', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
+      const result = sut['edit'](sharp(imageBuffer), [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 1000 } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
       ]);
@@ -271,7 +267,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply vertical mirror then horizontal mirror then rotate 90°', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
+      const result = sut['edit'](sharp(imageBuffer), [
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
@@ -290,7 +286,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply crop to single quadrant then mirror', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
+      const result = sut['edit'](sharp(imageBuffer), [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 500 } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
       ]);
@@ -308,7 +304,7 @@ describe(MediaRepository.name, () => {
 
     it('should apply all operations: crop, rotate, mirror', async () => {
       const imageBuffer = await buildTestQuadImage();
-      const result = sut['applyEdits'](sharp(imageBuffer), [
+      const result = sut['edit'](sharp(imageBuffer), [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 1000 } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
@@ -332,8 +328,9 @@ describe(MediaRepository.name, () => {
       const buffer = Buffer.from(await response.arrayBuffer());
       const dir = mkdtempDisposableSync(join(tmpdir(), 'media-repository-'));
       const file = join(dir.path, 'test.webp');
+      const decoded = await sut.decodeImage(buffer, { colorspace: Colorspace.P3, processInvalidImages: false });
       await sut.generateThumbnail(
-        buffer,
+        decoded,
         { colorspace: Colorspace.P3, quality: 80, format: ImageFormat.Webp, processInvalidImages: false },
         file,
       );

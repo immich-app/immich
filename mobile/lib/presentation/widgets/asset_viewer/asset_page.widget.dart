@@ -51,9 +51,13 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   bool _showingDetails = false;
   bool _isZoomed = false;
+  // Frozen during dismiss drag + settle to prevent widget tree swap mid-animation.
+  bool _wasMotionPlayingAtDismiss = false;
+  bool _isDismissAnimating = false;
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
+  static const double _maxScaleMultiplier = 20.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
@@ -162,6 +166,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         > 0 => _DragIntent.dismiss,
         _ => _DragIntent.none,
       };
+      if (_dragIntent == _DragIntent.dismiss) {
+        _wasMotionPlayingAtDismiss = ref.read(isPlayingMotionVideoProvider);
+      }
     }
 
     switch (_dragIntent) {
@@ -203,12 +210,22 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           unawaited(context.maybePop());
           return;
         }
-        _viewController?.animateMultiple(
-          position: _initialPhotoViewState.position,
-          scale: _viewController?.initialScale ?? _initialPhotoViewState.scale,
-          rotation: _initialPhotoViewState.rotation,
-        );
         _viewer.setOpacity(1.0);
+        _isDismissAnimating = true;
+        unawaited(
+          _viewController
+              ?.animateMultiple(
+                position: _initialPhotoViewState.position,
+                scale: _viewController?.initialScale ?? _initialPhotoViewState.scale,
+                rotation: _initialPhotoViewState.rotation,
+              )
+              .whenComplete(() {
+                if (!mounted) {
+                  return;
+                }
+                setState(() => _isDismissAnimating = false);
+              }),
+        );
     }
   }
 
@@ -357,6 +374,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           filterQuality: FilterQuality.high,
           tightMode: true,
           enablePanAlways: true,
+          maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
           disableScaleGestures: _showingDetails,
           scaleStateChangedCallback: _onScaleStateChanged,
           onPageBuild: _onPageBuild,
@@ -391,6 +409,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       basePosition: Alignment.center,
       disableScaleGestures: _showingDetails,
       minScale: PhotoViewComputedScale.contained,
+      maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
       initialScale: PhotoViewComputedScale.contained,
       tightMode: true,
       onPageBuild: _onPageBuild,
@@ -412,7 +431,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     );
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
-    final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
+    final liveMotionPlaying = ref.watch(isPlayingMotionVideoProvider);
+    // Preserve the playback status while dismissing to prevent switching views mid-animation.
+    final isPlayingMotionVideo = (_dragIntent == _DragIntent.dismiss || _isDismissAnimating)
+        ? _wasMotionPlayingAtDismiss
+        : liveMotionPlaying;
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
@@ -491,7 +514,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         child: AnimatedOpacity(
                           opacity: _showingDetails ? 1.0 : 0.0,
                           duration: Durations.short2,
-                          child: AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget),
+                          child: _showingDetails
+                              ? AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget)
+                              : SizedBox(height: viewportHeight - snapTarget),
                         ),
                       ),
                     ],

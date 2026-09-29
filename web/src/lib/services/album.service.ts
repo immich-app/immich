@@ -16,22 +16,41 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiImageOutline, mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
+import {
+  mdiDownload,
+  mdiImageOutline,
+  mdiLink,
+  mdiPlus,
+  mdiPlusBoxOutline,
+  mdiRenameOutline,
+  mdiShareVariantOutline,
+  mdiTrashCanOutline,
+  mdiExitToApp,
+  mdiUpload,
+  mdiCogOutline,
+} from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
+import AddUsersModal from '$lib/modals/AddUsersModal.svelte';
+import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
 import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
 import { expandStackAssetIds } from '$lib/services/asset.service';
+import { userInteraction } from '$lib/stores/user.svelte';
 import { createAlbumAndRedirect } from '$lib/utils/album-utils';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+
+export const isAlbumOwner = (album: AlbumResponseDto) => album.albumUsers[0].user.id === authManager.user.id;
+export const isAlbumEditor = (album: AlbumResponseDto) =>
+  isAlbumOwner(album) ||
+  album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor;
 
 export const getAlbumsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -44,20 +63,19 @@ export const getAlbumsActions = ($t: MessageFormatter) => {
 };
 
 export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
-  const isOwned = album.albumUsers[0].user.id === authManager.user.id;
-
-  const Share: ActionItem = {
-    title: $t('share'),
-    icon: mdiShareVariantOutline,
-    $if: () => isOwned,
-    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
-  };
+  const isOwned = isAlbumOwner(album);
+  const isEditor = isAlbumEditor(album);
 
   const AddUsers: ActionItem = {
-    title: $t('invite_people'),
+    title: $t('add_user'),
     icon: mdiPlus,
     color: 'primary',
-    onAction: () => modalManager.show(AlbumAddUsersModal, { album }),
+    onAction: () =>
+      modalManager.show(AddUsersModal, {
+        excludedUserIds: album.albumUsers.map(({ user: { id } }) => id),
+        // TODO that explicit UserResponseDto[] shouldn't be necessary, but svelte's types seem to be messed up right now and AlbumAddUsersModal has a bad type
+        onAddUsers: (users: UserResponseDto[]) => handleAddUsersToAlbum(album, users),
+      }),
   };
 
   const CreateSharedLink: ActionItem = {
@@ -67,7 +85,49 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
   };
 
-  return { Share, AddUsers, CreateSharedLink };
+  const Delete: ActionItem = {
+    title: $t('delete_album'),
+    icon: mdiTrashCanOutline,
+    $if: () => isOwned,
+    onAction: () => handleDeleteAlbum(album),
+  };
+
+  const Download: ActionItem = {
+    title: $t('download'),
+    icon: mdiDownload,
+    $if: () => album.assetCount > 0,
+    onAction: () => handleDownloadAlbum(album),
+  };
+
+  const Edit: ActionItem = {
+    title: $t('edit_album'),
+    icon: mdiRenameOutline,
+    $if: () => isEditor,
+    onAction: () => modalManager.show(AlbumEditModal, { album }),
+  };
+
+  const Leave: ActionItem = {
+    title: $t('leave_album'),
+    icon: mdiExitToApp,
+    $if: () => !isOwned,
+    onAction: () => handleLeaveAlbum(album),
+  };
+
+  const Options: ActionItem = {
+    title: $t('options'),
+    icon: mdiCogOutline,
+    $if: () => album.assetCount > 0,
+    onAction: () => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned }),
+  };
+
+  const Share: ActionItem = {
+    title: $t('share'),
+    icon: mdiShareVariantOutline,
+    $if: () => isOwned,
+    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
+  };
+
+  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Options, Share };
 };
 
 export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: AssetResponseDto) => {
@@ -220,6 +280,29 @@ export const handleRemoveUserFromAlbum = async (album: AlbumResponseDto, albumUs
   try {
     await removeUserFromAlbum({ id: album.id, userId: albumUser.id });
     eventManager.emit('AlbumUserDelete', { albumId: album.id, userId: albumUser.id });
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_remove_album_users'));
+  }
+};
+
+export const handleLeaveAlbum = async (album: AlbumResponseDto) => {
+  const $t = await getFormatter();
+
+  const confirmed = await modalManager.showDialog({
+    title: $t('leave_album'),
+    prompt: $t('are_you_sure_to_do_this'),
+    confirmText: $t('leave'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await removeUserFromAlbum({ id: album.id, userId: 'me' });
+    userInteraction.recentAlbums = undefined;
+    eventManager.emit('AlbumDelete', album);
+    return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_album_users'));
   }

@@ -64,12 +64,10 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<ExifInfo?> getExif(String id) {
-    return _db.managers.remoteExifEntity
-        .filter((row) => row.assetId.id.equals(id))
-        .map((row) => row.toDto())
-        .getSingleOrNull();
-  }
+  Stream<ExifInfo?> watchExif(String id) => _db.managers.remoteExifEntity
+      .filter((row) => row.assetId.id.equals(id))
+      .map((row) => row.toDto())
+      .watchSingleOrNull();
 
   Future<List<(String, String)>> getPlaces(String userId) {
     final asset = Subquery(

@@ -385,7 +385,7 @@ class ForegroundUploadService {
       if (result.isSuccess && result.remoteAssetId != null) {
         callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
         try {
-          await _assetService.stackEditedUpload(asset.localId!, result.remoteAssetId!);
+          await _assetService.stackEditedUpload(asset.localId!, result.remoteAssetId!, asset.checksum);
         } catch (error) {
           _logger.warning("Failed to stack the upload of ${asset.localId}: $error");
         }

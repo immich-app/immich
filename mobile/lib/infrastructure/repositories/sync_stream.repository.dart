@@ -218,6 +218,8 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          // cannot use FK here, so manually cascade
+          batch.deleteWhere(_db.assetFaceEntity, (row) => row.assetId.equals(asset.assetId));
           batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(asset.assetId));
         }
       });
@@ -840,7 +842,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
-  Future<void> updateAssetFacesV2(Iterable<SyncAssetFaceV2> data) async {
+  Future<void> updateAssetFacesV3(Iterable<SyncAssetFaceV3> data) async {
     try {
       await _db.batch((batch) {
         for (final assetFace in data) {
@@ -866,7 +868,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateAssetFacesV2', error, stack);
+      _logger.severe('Error: updateAssetFacesV3', error, stack);
       rethrow;
     }
   }
@@ -950,6 +952,7 @@ extension on AssetOrder {
 extension on MemoryType {
   MemoryTypeEnum toMemoryType() => switch (this) {
     MemoryType.onThisDay => MemoryTypeEnum.onThisDay,
+    MemoryType.birthday => MemoryTypeEnum.birthday,
   };
 }
 

@@ -11,6 +11,7 @@ extension ViewIntentPayloadX on ViewIntentPayload {
     return localAssetId ?? 'view_intent_asset';
   }
 
+  // ignore: unused-code
   bool get isImage => mimeType.toLowerCase().startsWith('image/');
 
   bool get isVideo => mimeType.toLowerCase().startsWith('video/');

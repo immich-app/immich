@@ -68,6 +68,7 @@ class SlideshowController extends ChangeNotifier {
   int get currentIndex => _currentIndex;
 
   /// The slide to be displayed next. Null if the slideshow will end after this slide
+  // ignore: unused-code
   int? get nextIndex => _nextIndex;
 
   /// True when the user paused or the slideshow has completed

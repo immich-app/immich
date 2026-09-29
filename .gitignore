@@ -5,6 +5,7 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea
+.scratch
 
 docker/upload
 docker/library

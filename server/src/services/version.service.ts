@@ -62,16 +62,18 @@ export class VersionService extends BaseService {
         return;
       }
 
-      if (previous.version !== current) {
-        const previousVersion = new SemVer(previous.version);
+      if (previous.version === current) {
+        return;
+      }
 
-        this.logger.log(`Adding ${current} to upgrade history`);
-        await this.versionRepository.create({ version: current });
+      const previousVersion = new SemVer(previous.version);
 
-        const isNeedsNewMemories = lt(previousVersion, '1.129.0');
-        if (isNeedsNewMemories) {
-          await this.jobRepository.queue({ name: JobName.MemoryGenerate });
-        }
+      this.logger.log(`Adding ${current} to upgrade history`);
+      await this.versionRepository.create({ version: current });
+
+      const isNeedsNewMemories = lt(previousVersion, '1.129.0');
+      if (isNeedsNewMemories) {
+        await this.jobRepository.queue({ name: JobName.MemoryGenerate });
       }
     });
   }

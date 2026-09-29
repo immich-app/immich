@@ -16,6 +16,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
+import picomatch from 'picomatch';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -27,6 +28,8 @@ export interface WatchEvents {
   onUnlink(path: string): void;
   onError(error: Error): void;
 }
+
+export type WatchOptions = Omit<ChokidarOptions, 'ignored'> & { ignored?: string[] };
 
 export interface ImmichReadStream {
   stream: Readable;
@@ -186,15 +189,17 @@ export class StorageRepository {
     const files = await fs.readdir(directory);
     await Promise.all(files.map((file) => this.removeEmptyDirs(path.join(directory, file), true)));
 
-    if (self) {
-      const updated = await fs.readdir(directory);
-      if (updated.length === 0) {
-        try {
-          await fs.rmdir(directory);
-        } catch (error: Error | any) {
-          if (error.code !== 'ENOTEMPTY') {
-            this.logger.warn(`Attempted to remove directory, but failed: ${error}`);
-          }
+    if (!self) {
+      return;
+    }
+
+    const updated = await fs.readdir(directory);
+    if (updated.length === 0) {
+      try {
+        await fs.rmdir(directory);
+      } catch (error: Error | any) {
+        if (error.code !== 'ENOTEMPTY') {
+          this.logger.warn(`Attempted to remove directory, but failed: ${error}`);
         }
       }
     }
@@ -258,10 +263,12 @@ export class StorageRepository {
     let batch: string[] = [];
     for await (const value of stream) {
       batch.push(value.toString());
-      if (batch.length === walkOptions.take) {
-        yield batch;
-        batch = [];
+      if (batch.length !== walkOptions.take) {
+        continue;
       }
+
+      yield batch;
+      batch = [];
     }
 
     if (batch.length > 0) {
@@ -269,8 +276,15 @@ export class StorageRepository {
     }
   }
 
-  watch(paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) {
-    const watcher = chokidarWatch(paths, options);
+  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
+    const matchesIgnoredPath = picomatch(options.ignored ?? [], {
+      dot: true, // Match the behavior of fast-glob's micromatch by using these settings
+      nocase: true,
+      posix: true,
+      strictSlashes: false,
+    });
+
+    const watcher = chokidarWatch(paths, { ...options, ignored: (path) => matchesIgnoredPath(path) });
 
     watcher.on('ready', () => events.onReady?.());
     watcher.on('add', (path) => events.onAdd?.(path));
