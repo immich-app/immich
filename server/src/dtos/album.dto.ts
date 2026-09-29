@@ -11,6 +11,8 @@ import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from
 import { asDateTimeString } from 'src/utils/date.js';
 import { stringToBool } from 'src/validation.js';
 
+const uuidv4Schema = z.uuidv4();
+
 const AlbumUserAddSchema = z
   .object({
     userId: z.uuidv4().describe('User ID'),
@@ -195,7 +197,7 @@ const AlbumUserParamSchema = z.object({
   // TODO: disallow 'me' as a shortcut in v4 and type userId as uuidv4
   userId: z
     .string()
-    .refine((value) => value === 'me' || z.uuidv4().safeParse(value).success, {
+    .refine((value) => value === 'me' || uuidv4Schema.validate(value), {
       error: 'Must be a UUID v4 or "me"',
     })
     .describe('Album user ID, or "me" to reference the current user.')
