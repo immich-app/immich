@@ -260,5 +260,4 @@ export class StorageRepository {
   }
 
   watchDir = watch; // Native fs.watch without chokidar overhead
-
 }
