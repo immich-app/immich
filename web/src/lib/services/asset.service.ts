@@ -60,7 +60,7 @@ import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
-const expandStackAssetIds = async (assets: TimelineAsset[]): Promise<string[]> => {
+export const expandStackAssetIds = async (assets: TimelineAsset[]): Promise<string[]> => {
   const results: string[] = [];
   for (const asset of assets) {
     if (asset.stack) {
@@ -223,7 +223,10 @@ export const getAssetActions = (
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
     $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
+    onAction: async () => {
+      const assetIds = asset.stack ? (await getStack({ id: asset.stack.id })).assets.map((a) => a.id) : [asset.id];
+      return modalManager.show(AssetAddToAlbumModal, { assetIds });
+    },
   };
 
   const RemoveFromAlbum: ActionItem = {

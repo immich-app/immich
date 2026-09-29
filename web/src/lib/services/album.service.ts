@@ -26,6 +26,7 @@ import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
 import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
+import { expandStackAssetIds } from '$lib/services/asset.service';
 import { createAlbumAndRedirect } from '$lib/utils/album-utils';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -85,12 +86,10 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
     color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
-    onAction: () =>
-      addAssetsToAlbums(
-        [album.id],
-        assets.map(({ id }) => id),
-        { notify: true },
-      ).then(() => undefined),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assets);
+      await addAssetsToAlbums([album.id], assetIds, { notify: true });
+    },
   };
 
   const Upload: ActionItem = {
