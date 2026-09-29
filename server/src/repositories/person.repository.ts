@@ -933,6 +933,26 @@ export class PersonRepository {
       .executeTakeFirstOrThrow();
   }
 
+  @GenerateSql({ params: [{ userId: DummyValue.UUID, personGroupId: DummyValue.UUID }, { name: DummyValue.STRING }] })
+  async updateForWritableOwners(
+    { userId, personGroupId }: { userId: string; personGroupId: string },
+    person: Pick<Updateable<PersonTable>, 'name' | 'birthDate'>,
+  ): Promise<void> {
+    await this.db
+      .updateTable('person')
+      .set(person)
+      .where('person.personGroupId', '=', personGroupId)
+      .where('person.ownerId', 'in', (eb) =>
+        eb
+          .selectFrom('person_user')
+          .select('person_user.sharedById')
+          .where('person_user.personGroupId', '=', personGroupId)
+          .where('person_user.sharedWithId', '=', userId)
+          .where('person_user.role', 'in', [PersonUserRole.Write, PersonUserRole.Admin]),
+      )
+      .execute();
+  }
+
   async updateAll(people: Insertable<PersonTable>[]): Promise<void> {
     if (people.length === 0) {
       return;

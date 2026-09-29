@@ -31,7 +31,7 @@
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { getPersonActions } from '$lib/services/person.service';
+  import { getPersonActions, handleUpdatePersonName } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl } from '$lib/utils';
@@ -217,12 +217,7 @@
       return;
     }
 
-    try {
-      person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
-      toastManager.primary($t('change_name_successfully'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
-    }
+    person = (await handleUpdatePersonName({ id: person.id, name: personName }, { notify: true })) ?? person;
   };
 
   const handleCancelEditName = () => {

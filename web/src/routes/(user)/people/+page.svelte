@@ -18,8 +18,9 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
-  import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
+  import { handleUpdatePersonName } from '$lib/services/person.service';
+  import { getAllPeople, getPerson, searchPerson, type PersonResponseDto } from '@immich/sdk';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -150,19 +151,7 @@
        * the person he's editing
        *
        */
-      try {
-        await updatePerson({ id: personToBeMergedInto.id, personUpdateDto: { name: newName } });
-
-        for (const person of people) {
-          if (person.id === personToBeMergedInto.id) {
-            person.name = newName;
-            break;
-          }
-        }
-        toastManager.primary($t('change_name_successfully'));
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_save_name'));
-      }
+      await handleUpdatePersonName({ id: personToBeMergedInto.id, name: newName }, { notify: true });
     }
   };
 
@@ -255,11 +244,7 @@
   };
 
   const updateName = async (id: string, name: string) => {
-    await updatePerson({
-      id,
-      personUpdateDto: { name },
-    });
-
+    await handleUpdatePersonName({ id, name });
     newName = '';
   };
 

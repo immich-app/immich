@@ -24,6 +24,7 @@ import {
   IntegrityReport,
   JobName,
   MemoryType,
+  PersonUpdateStrategy,
   QueueName,
   StorageFolder,
   SyncEntityType,
@@ -580,6 +581,7 @@ export type UserPreferences = {
     enabled: boolean;
     sidebarWeb: boolean;
     minimumFaces: number;
+    updateStrategy: PersonUpdateStrategy;
   };
   ratings: {
     enabled: boolean;
