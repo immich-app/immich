@@ -1,16 +1,16 @@
-from typing import Any
-
 from immich_ml.config import log, settings
 from immich_ml.models.base import InferenceModel
-from immich_ml.schemas import ModelFormat, ModelType
+from immich_ml.schemas import ModelFormat, ModelSource, ModelType, Options
 
 
 # TODO: Remove once everything uses the new model graphs
-class TextModel(InferenceModel):
-    def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        if settings.legacy_models:
-            model_kwargs["model_format"] = ModelFormat.ONNX  # the older exports come in no other format
-        super().__init__(model_name, **model_kwargs)
+class TextModel[O: Options](InferenceModel[O]):
+    sources = (ModelSource.PADDLE,)
+
+    @property
+    def _model_format_default(self) -> ModelFormat:
+        # the older exports come in no other format
+        return ModelFormat.ONNX if settings.legacy_models else super()._model_format_default
 
     def download(self) -> None:
         if not settings.legacy_models or self.cached:

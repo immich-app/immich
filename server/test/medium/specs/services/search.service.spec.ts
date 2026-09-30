@@ -65,6 +65,22 @@ describe(SearchService.name, () => {
     ]);
   });
 
+  it('should not return hidden assets', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+
+    const { asset: visibleAsset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newExif({ assetId: visibleAsset.id, fileSizeInByte: 1000 });
+    const { asset: hiddenAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Hidden });
+    await ctx.newExif({ assetId: hiddenAsset.id, fileSizeInByte: 2000 });
+
+    const auth = factory.auth({ user: { id: user.id } });
+
+    await expect(sut.searchLargeAssets(auth, { size: 250 })).resolves.toEqual([
+      expect.objectContaining({ id: visibleAsset.id }),
+    ]);
+  });
+
   describe('searchStatistics', () => {
     it('should return statistics when filtering by personIds', async () => {
       const { sut, ctx } = setup();

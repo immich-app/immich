@@ -184,6 +184,11 @@ describe(AssetService.name, () => {
       await sut.update(authStub.admin, asset.id, { isFavorite: true });
 
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, isFavorite: true });
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith(
+        'on_asset_update',
+        authStub.admin.user.id,
+        expect.objectContaining({ id: asset.id }),
+      );
     });
 
     it('should update the exif description', async () => {
@@ -220,6 +225,8 @@ describe(AssetService.name, () => {
           lockedPropertiesBehavior: 'append',
         }),
       );
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SidecarWrite, data: { id: asset.id } });
     });
 
     it('should fail linking a live video if the motion part could not be found', async () => {
@@ -382,6 +389,22 @@ describe(AssetService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], {
         visibility: AssetVisibility.Archive,
       });
+    });
+
+    it('should emit a websocket event if a sidecar write is not necessary', async () => {
+      const auth = AuthFactory.create();
+      const asset1 = AssetFactory.from().owner(auth.user).build();
+      const asset2 = AssetFactory.from().owner(auth.user).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
+
+      await sut.updateAll(auth, { ids: [asset1.id, asset2.id], visibility: AssetVisibility.Archive });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset1.id, asset2.id], {
+        visibility: AssetVisibility.Archive,
+      });
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.websocket.clientSend).toHaveBeenCalledTimes(2);
     });
 
     it('should not update Assets table if no relevant fields are provided', async () => {
@@ -736,7 +759,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
 
-      await expect(sut.upsertMetadata(authStub.admin, asset.id, { items })).rejects.toThrowError(
+      await expect(sut.upsertMetadata(authStub.admin, asset.id, { items })).rejects.toThrow(
         'Duplicate items are not allowed:',
       );
 
@@ -754,7 +777,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
 
-      await expect(sut.upsertBulkMetadata(authStub.admin, { items })).rejects.toThrowError(
+      await expect(sut.upsertBulkMetadata(authStub.admin, { items })).rejects.toThrow(
         'Duplicate items are not allowed:',
       );
 

@@ -7,15 +7,24 @@ from PIL import Image
 from immich_ml.config import settings
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_pil, normalize, serialize_np_array
-from immich_ml.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelTask, ModelType, Shape
+from immich_ml.schemas import (
+    FaceDetectionOutput,
+    FaceRecognitionOptions,
+    FacialRecognitionOutput,
+    ModelSource,
+    ModelTask,
+    ModelType,
+    Shape,
+)
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 
 from ._ops import ALIGNED_SIZE, align_face
 
 
-class FaceRecognizer(InferenceModel):
+class FaceRecognizer(InferenceModel[FaceRecognitionOptions]):
     depends = [(ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)]
     identity = (ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+    sources = (ModelSource.INSIGHTFACE,)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
         super().__init__(model_name, **model_kwargs)
@@ -23,7 +32,10 @@ class FaceRecognizer(InferenceModel):
         self.shape_policy = ShapePolicy(dims=tuple(Shape(batch) for batch in sizes))
 
     def _predict(
-        self, inputs: NDArray[np.uint8] | bytes | Image.Image, faces: FaceDetectionOutput
+        self,
+        inputs: NDArray[np.uint8] | bytes | Image.Image,
+        faces: FaceDetectionOutput,
+        options: FaceRecognitionOptions,
     ) -> FacialRecognitionOutput:
         if faces["boxes"].shape[0] == 0:
             return []

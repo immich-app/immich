@@ -27,13 +27,6 @@ def pil_image() -> Image.Image:
     return Image.new("RGB", (600, 800))
 
 
-@pytest.fixture
-def mock_get_model() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.models.cache.get_model_class") as mocked:
-        mocked.return_value.graph_options = ()
-        yield mocked
-
-
 @pytest.fixture(scope="session")
 def deployed_app() -> Iterator[TestClient]:
     with TestClient(app) as client:
@@ -119,6 +112,7 @@ def gpus() -> Iterator[None]:
     with (
         mock.patch("immich_ml.sessions.ort._intel_gpu", return_value=Device("12.71.4-128eu", "26.22.38646.4")),
         mock.patch("immich_ml.sessions.ort._amd_gpu", return_value=Device("gfx1100", "7.2.0")),
+        mock.patch("immich_ml.sessions.ort._nvidia_gpu", return_value=Device("sm89", "617.14 10601")),
     ):
         yield
 

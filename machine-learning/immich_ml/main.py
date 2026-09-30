@@ -14,27 +14,29 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 from starlette.formparsers import MultiPartParser
 
 from immich_ml import allocator
-from immich_ml.models import get_model_deps
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_pil
 from immich_ml.sessions.ort import flush_denormals
 
 from .config import PreloadModelData, log, settings
+from .models.base import InferenceEntry
 from .models.cache import ModelCache
+from .pipeline import Clip, FacialRecognition, Ocr, PipelineRequest, Slot
 from .schemas import (
-    InferenceEntries,
-    InferenceEntry,
+    FaceDetectionOptions,
+    FaceRecognitionOptions,
     InferenceResponse,
     ModelFormat,
     ModelIdentity,
-    ModelTask,
-    ModelType,
-    PipelineRequest,
-    T,
+    Options,
+    TextDetectionOptions,
+    TextRecognitionOptions,
+    TextualOptions,
+    VisualOptions,
 )
 
 
@@ -43,6 +45,7 @@ class ORJSONResponse(JSONResponse):
         return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
+PIPELINE_REQUEST = TypeAdapter(PipelineRequest)
 MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
 model_cache = ModelCache()
@@ -84,49 +87,40 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 
 async def preload_models(preload: PreloadModelData) -> None:
-    log.info(f"Preloading models: clip:{preload.clip} facial_recognition:{preload.facial_recognition}")
+    requests = [
+        *(PipelineRequest(clip=Clip(textual=Slot(name, TextualOptions()))) for name in _names(preload.clip.textual)),
+        *(PipelineRequest(clip=Clip(visual=Slot(name, VisualOptions()))) for name in _names(preload.clip.visual)),
+        *(
+            PipelineRequest(facial_recognition=FacialRecognition(detection=Slot(name, FaceDetectionOptions())))
+            for name in _names(preload.facial_recognition.detection)
+        ),
+        *(
+            PipelineRequest(facial_recognition=FacialRecognition(recognition=Slot(name, FaceRecognitionOptions())))
+            for name in _names(preload.facial_recognition.recognition)
+        ),
+        *(
+            PipelineRequest(
+                ocr=Ocr(detection=Slot(name, TextDetectionOptions(max_resolution=preload.ocr.max_resolution)))
+            )
+            for name in _names(preload.ocr.detection)
+        ),
+        *(
+            PipelineRequest(ocr=Ocr(recognition=Slot(name, TextRecognitionOptions())))
+            for name in _names(preload.ocr.recognition)
+        ),
+    ]
+    for entry in (entry for request in requests for entry in request.entries()):
+        await _preload(entry)
 
-    async def load_models(model_string: str, model_type: ModelType, model_task: ModelTask, **options: Any) -> None:
-        for model_name in model_string.split(","):
-            model_name = model_name.strip()
-            model = model_cache.get(model_name, model_type, model_task, **options)
-            await load(model)
-            await attempt(model, model.build, MODEL_FILE_ERRORS)
 
-    if preload.clip.textual is not None:
-        await load_models(preload.clip.textual, ModelType.TEXTUAL, ModelTask.SEARCH)
+async def _preload[O: Options](entry: InferenceEntry[O]) -> None:
+    log.info(f"Preloading: {entry}")
+    model = await load(model_cache.get(entry))
+    await attempt(model, model.build, MODEL_FILE_ERRORS)
 
-    if preload.clip.visual is not None:
-        await load_models(preload.clip.visual, ModelType.VISUAL, ModelTask.SEARCH)
 
-    if preload.facial_recognition.detection is not None:
-        await load_models(
-            preload.facial_recognition.detection,
-            ModelType.DETECTION,
-            ModelTask.FACIAL_RECOGNITION,
-        )
-
-    if preload.facial_recognition.recognition is not None:
-        await load_models(
-            preload.facial_recognition.recognition,
-            ModelType.RECOGNITION,
-            ModelTask.FACIAL_RECOGNITION,
-        )
-
-    if preload.ocr.detection is not None:
-        await load_models(
-            preload.ocr.detection,
-            ModelType.DETECTION,
-            ModelTask.OCR,
-            maxResolution=preload.ocr.max_resolution,
-        )
-
-    if preload.ocr.recognition is not None:
-        await load_models(
-            preload.ocr.recognition,
-            ModelType.RECOGNITION,
-            ModelTask.OCR,
-        )
+def _names(setting: str | None) -> list[str]:
+    return [] if setting is None else [name.strip() for name in setting.split(",")]
 
 
 async def update_state() -> AsyncGenerator[None, None]:
@@ -144,25 +138,15 @@ async def update_state() -> AsyncGenerator[None, None]:
             release = asyncio.get_running_loop().call_later(5, allocator.release)
 
 
-def get_entries(entries: str = Form()) -> InferenceEntries:
+def get_entries(entries: str = Form()) -> list[InferenceEntry[Any]]:
     try:
-        request: PipelineRequest = orjson.loads(entries)
-        without_deps: list[InferenceEntry] = []
-        with_deps: list[InferenceEntry] = []
-        for task, types in request.items():
-            for type, entry in types.items():
-                parsed: InferenceEntry = {
-                    "name": entry["modelName"],
-                    "task": task,
-                    "type": type,
-                    "options": entry.get("options", {}),
-                }
-                dep = get_model_deps(parsed["name"], type, task)
-                (with_deps if dep else without_deps).append(parsed)
-        return without_deps, with_deps
-    except (orjson.JSONDecodeError, ValidationError, KeyError, AttributeError) as e:
+        found = list(PIPELINE_REQUEST.validate_json(entries).entries())
+    except (ValidationError, ValueError) as e:
         log.error(f"Invalid request format: {e}")
         raise HTTPException(422, "Invalid request format.")
+    if not found:
+        raise HTTPException(422, "No model task requested.")
+    return found
 
 
 app = FastAPI(lifespan=lifespan)
@@ -180,7 +164,7 @@ def ping() -> PlainTextResponse:
 
 @app.post("/predict", dependencies=[Depends(update_state)])
 async def predict(
-    entries: InferenceEntries = Depends(get_entries),
+    entries: list[InferenceEntry[Any]] = Depends(get_entries),
     image: bytes | None = File(default=None),
     text: str | None = Form(default=None),
 ) -> Any:
@@ -197,50 +181,50 @@ async def predict(
     return ORJSONResponse(response)
 
 
-async def run_inference(payload: Image | str, entries: InferenceEntries) -> InferenceResponse:
-    outputs: dict[ModelIdentity, Any] = {}
-    response: InferenceResponse = {}
+async def run_inference(payload: Image | str, entries: list[InferenceEntry[Any]]) -> InferenceResponse:
+    read: set[ModelIdentity] = set()
 
-    async def _run_inference(entry: InferenceEntry) -> None:
-        model = model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **entry["options"])
-        inputs = [payload]
-        for dep in model.depends:
-            try:
-                inputs.append(outputs[dep])
-            except KeyError:
-                message = f"Task {entry['task']} of type {entry['type']} depends on output of {dep}"
-                raise HTTPException(400, message)
+    async def _run_inference[O: Options](entry: InferenceEntry[O]) -> Any:
+        model = model_cache.get(entry, ttl=settings.model_ttl)
+        read.update(model.depends)
+        if missing := [dep for dep in model.depends if dep not in runs]:
+            raise HTTPException(400, f"{entry.model.__name__} depends on output of {missing[0]}")
+        inputs = [payload, *[await runs[dep] for dep in model.depends]]
         model = await load(model)
-        output = await attempt(model, partial(model.predict, *inputs, **entry["options"]), MODEL_FILE_ERRORS)
-        outputs[model.identity] = output
-        response[entry["task"]] = output
+        return await attempt(model, partial(model.predict, *inputs, options=entry.options), MODEL_FILE_ERRORS)
 
-    for stage in entries:  # those that depend on another's output run after it
-        results = await asyncio.gather(*[_run_inference(entry) for entry in stage], return_exceptions=True)
-        for result in results:
-            if isinstance(result, BaseException):
-                raise result
+    runs = {entry.model.identity: asyncio.create_task(_run_inference(entry)) for entry in entries}
+    outputs = await asyncio.gather(*runs.values(), return_exceptions=True)
+    for output in outputs:
+        if isinstance(output, BaseException):
+            raise output
+    response: InferenceResponse = {  # a task answers with the output no other model of it reads
+        entry.model.identity[1].value: output
+        for entry, output in zip(entries, outputs)
+        if entry.model.identity not in read
+    }
     if isinstance(payload, Image):
         response["imageHeight"], response["imageWidth"] = payload.height, payload.width
 
     return response
 
 
-async def run(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+async def run[R](func: Callable[[], R]) -> R:
     if thread_pool is None:
-        return func(*args, **kwargs)
-    partial_func = partial(func, *args, **kwargs)
-    return await asyncio.get_running_loop().run_in_executor(thread_pool, partial_func)
+        return func()
+    return await asyncio.get_running_loop().run_in_executor(thread_pool, func)
 
 
-async def load(model: InferenceModel) -> InferenceModel:
+async def load[O: Options](model: InferenceModel[O]) -> InferenceModel[O]:
     if not model.loaded:
         await attempt(model, model.load, (OSError, BadZipFile, *MODEL_FILE_ERRORS))
     return model
 
 
-async def attempt(model: InferenceModel, func: Callable[[], T], corrupt: tuple[type[Exception], ...]) -> T:
-    def _attempt() -> T:
+async def attempt[O: Options, R](
+    model: InferenceModel[O], func: Callable[[], R], corrupt: tuple[type[Exception], ...]
+) -> R:
+    def _attempt() -> R:
         if not model.loaded and model.load_attempts > 1:
             raise HTTPException(500, f"Failed to load model '{model.model_name}'")
         try:

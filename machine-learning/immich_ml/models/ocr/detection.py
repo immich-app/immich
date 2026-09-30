@@ -1,5 +1,5 @@
-from collections.abc import Sequence
-from typing import Any
+from collections.abc import Hashable, Sequence
+from typing import Any, Self
 
 import numpy as np
 from immich_model.constants import ocr_canvases
@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 from PIL import Image
 
 from immich_ml.models.transforms import widen
-from immich_ml.schemas import ModelGraph, ModelTask, ModelType, Shape
+from immich_ml.schemas import ModelGraph, ModelTask, ModelType, Shape, TextDetectionOptions
 from immich_ml.sessions.policy import ShapePolicy
 
 from .legacy import TextModel
@@ -15,17 +15,17 @@ from .postprocess import DBPostProcess
 from .schemas import TextDetectionOutput
 
 
-class TextDetector(TextModel):
+class TextDetector(TextModel[TextDetectionOptions]):
     depends = []
     identity = (ModelType.DETECTION, ModelTask.OCR)
-    graph_options = ("maxResolution",)
 
-    def __init__(self, model_name: str, **model_kwargs: Any) -> None:
+    def __init__(
+        self, model_name: str, max_resolution: int = TextDetectionOptions.max_resolution, **model_kwargs: Any
+    ) -> None:
         super().__init__(model_name, **model_kwargs)
-        short_side = model_kwargs.get("maxResolution", 736)
         # RKNPU ships a binary per short side, which the label picks
-        canvases = tuple(Shape(batch=1, **canvas) for canvas in ocr_canvases(short_side))
-        self.shape_policy = ShapePolicy(dims=canvases, label=f"res{short_side}")
+        canvases = tuple(Shape(batch=1, **canvas) for canvas in ocr_canvases(max_resolution))
+        self.shape_policy = ShapePolicy(dims=canvases, label=f"res{max_resolution}")
         self.scale = np.float32(1.0 / 127.5)  # (x/255 - 0.5) / 0.5
         self._empty: TextDetectionOutput = {
             "boxes": np.empty(0, dtype=np.float32),
@@ -33,18 +33,24 @@ class TextDetector(TextModel):
         }
         self.postprocess = DBPostProcess(thresh=0.3, max_candidates=1000, unclip_ratio=1.6, use_dilation=True)
 
-    def _predict(
-        self, inputs: Image.Image, maxResolution: int = 736, minScore: float = 0.5, scoreMode: str = "fast"
-    ) -> TextDetectionOutput:
+    @classmethod
+    def graph(cls, options: TextDetectionOptions) -> Hashable:
+        return options.max_resolution
+
+    @classmethod
+    def create(cls, model_name: str, options: TextDetectionOptions) -> Self:
+        return cls(model_name, max_resolution=options.max_resolution)
+
+    def _predict(self, inputs: Image.Image, options: TextDetectionOptions) -> TextDetectionOutput:
         width, height = inputs.size
         if width < 32 or height < 32:
             return self._empty
 
-        session, image, content = self._transform(inputs, maxResolution)
+        session, image, content = self._transform(inputs, options.max_resolution)
         probs = widen(session.run(None, {session.get_inputs()[0].name: image})[0][0])
         if probs.ndim == 3:
             probs = probs[0]
-        boxes, scores = self.postprocess(probs[: content[0], : content[1]], (height, width), minScore, scoreMode)
+        boxes, scores = self.postprocess(probs[: content[0], : content[1]], (height, width), options.min_score)
         if len(boxes) == 0:
             return self._empty
         order = self.reading_order(boxes)
