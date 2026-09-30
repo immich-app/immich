@@ -2336,11 +2336,6 @@
   "view_album": "View Album",
   "view_all": "View All",
   "view_all_users": "View all users",
-<<<<<<< HEAD
-  "view_and_edit_person_fields": "View and edit person fields for this user.",
-  "view_as": "View as {name}",
-=======
->>>>>>> 1741650 (feat: bulk person management (#31949))
   "view_asset_owners": "View asset owners",
   "view_details": "View Details",
   "view_group": "View group",
