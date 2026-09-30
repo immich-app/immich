@@ -1,0 +1,19 @@
+pnpm-lock.yaml
+  s_e122adcd0c3c6d::t_e2302eec8fb55c 15-16,21381,21388
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "56f1e37ea919a793483291fa30cc0af765c1ba60",
+  "prompts": {},
+  "sessions": {
+    "s_e122adcd0c3c6d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f42f-2e61-77b0-86ac-634dc8eb7179",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
