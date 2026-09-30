@@ -714,7 +714,11 @@ class _GridAlbumCard extends ConsumerWidget {
                           color: context.colorScheme.surface,
                           shape: BoxShape.circle,
                           boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 1)),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
                           ],
                         ),
                         child: Icon(Icons.push_pin, size: 14, color: context.primaryColor),
