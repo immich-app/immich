@@ -9,6 +9,7 @@
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import PeopleFilterModal from '$lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
@@ -18,9 +19,17 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
+  import { getPeopleUserActions } from '$lib/services/person-user.service';
   import { handleUpdatePersonName } from '$lib/services/person.service';
-  import { getAllPeople, getPerson, searchPerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import {
+    getAllPeople,
+    getClusterGroupUsers,
+    getPerson,
+    searchPerson,
+    type PersonResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
+  import { ActionButton, Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -43,6 +52,17 @@
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
   let innerHeight = $state(0);
   let searchPeopleElement = $state<ReturnType<typeof SearchPeople>>();
+
+  let clusterGroupUsers: UserResponseDto[] = $state([]);
+
+  onMount(async () => {
+    try {
+      const users = await getClusterGroupUsers({ id: authManager.user.clusterGroupId });
+      clusterGroupUsers = users.filter(({ id }) => id !== authManager.user.id);
+    } catch (error) {
+      handleError(error, $t('errors.something_went_wrong'));
+    }
+  });
 
   onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -191,6 +211,7 @@
   };
 
   let people = $derived(data.people.people);
+  const { ManageAccess } = $derived(getPeopleUserActions($t, clusterGroupUsers, nextPage ? undefined : people));
 
   // hidden people are only shown when explicitly filtering for them
   let visiblePeople = $derived(data.filter.isHidden ? people : people.filter((people) => !people.isHidden));
@@ -315,6 +336,7 @@
           color="secondary">{$t('show_and_hide_people')}</Button
         >
       {/if}
+      <ActionButton action={ManageAccess} />
       <IconButton
         shape="round"
         color="secondary"
