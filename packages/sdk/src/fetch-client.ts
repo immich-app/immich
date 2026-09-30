@@ -2067,8 +2067,8 @@ export type PersonUsersResponseDto = {
     sharedWithId: string;
 }[];
 export type PersonUsersCreateDto = {
-    /** Person IDs */
-    personIds: string[];
+    /** Person IDs, defaults to every person owned by the user */
+    personIds?: string[];
     /** Role that should be applied */
     role: PersonUserRole;
     /** User IDs that should be given access to the person */

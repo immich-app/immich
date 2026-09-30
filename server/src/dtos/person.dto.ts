@@ -222,7 +222,7 @@ const PersonUsersSearchSchema = z
 
 const PersonUsersCreateSchema = z
   .object({
-    personIds: uniqueIds.describe('Person IDs'),
+    personIds: uniqueIds.optional().describe('Person IDs, defaults to every person owned by the user'),
     sharedWithIds: uniqueIds.describe('User IDs that should be given access to the person'),
     role: PersonUserRoleSchema.describe('Role that should be applied'),
   })

@@ -833,11 +833,13 @@ export class PersonService extends BaseService {
       throw new BadRequestException('Cannot share a person with yourself');
     }
 
-    await this.requirePersonAccess({
-      auth,
-      permission: Permission.PersonUpdate,
-      ids: dto.personIds.map((item) => ({ personGroupId: item, ownerId: auth.user.id })),
-    });
+    if (dto.personIds) {
+      await this.requirePersonAccess({
+        auth,
+        permission: Permission.PersonUpdate,
+        ids: dto.personIds.map((item) => ({ personGroupId: item, ownerId: auth.user.id })),
+      });
+    }
 
     const user = await findOrFail(() => this.userRepository.get(auth.user.id, {}), 'User');
     const clusterGroupUsers = await this.clusterGroupRepository.getUsers({
@@ -846,20 +848,30 @@ export class PersonService extends BaseService {
     });
     const clusterGroupUserIds = new Set(clusterGroupUsers.map(({ id }) => id));
 
-    const items: Insertable<PersonUserTable>[] = [];
-    const sharedById = auth.user.id;
-
     for (const sharedWithId of dto.sharedWithIds) {
       if (!clusterGroupUserIds.has(sharedWithId)) {
         throw new BadRequestException('All users must be in the same cluster group');
       }
-
-      for (const personGroupId of dto.personIds) {
-        items.push({ personGroupId, sharedById, sharedWithId, role: dto.role });
-      }
     }
 
-    await this.personUserRepository.createAll(items);
+    const sharedById = auth.user.id;
+
+    if (dto.personIds) {
+      const items: Insertable<PersonUserTable>[] = [];
+      for (const sharedWithId of dto.sharedWithIds) {
+        for (const personGroupId of dto.personIds) {
+          items.push({ personGroupId, sharedById, sharedWithId, role: dto.role });
+        }
+      }
+
+      await this.personUserRepository.createAll(items);
+    } else {
+      await this.personUserRepository.createAllForOwner({
+        ownerId: sharedById,
+        sharedWithIds: dto.sharedWithIds,
+        role: dto.role,
+      });
+    }
   }
 
   async removeUsersFromPeople(auth: AuthDto, dto: PersonUsersDeleteDto) {
