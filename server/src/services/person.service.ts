@@ -15,13 +15,13 @@ import {
   PeopleDeleteDto,
   PeopleResponseDto,
   PeopleUpdateDto,
+  PeopleUsersUpsertDto,
   PersonCreateDto,
   PersonDeleteDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-  PersonUsersCreateDto,
   PersonUsersDeleteDto,
   PersonUsersResponseDto,
   PersonUsersSearchDto,
@@ -841,7 +841,7 @@ export class PersonService extends BaseService {
     return mapPersonUsers(sharedUsers);
   }
 
-  async addUsersToPeople(auth: AuthDto, dto: PersonUsersCreateDto) {
+  async upsertPeopleUsers(auth: AuthDto, dto: PeopleUsersUpsertDto) {
     if (dto.sharedWithIds.includes(auth.user.id)) {
       throw new BadRequestException('Cannot share a person with yourself');
     }

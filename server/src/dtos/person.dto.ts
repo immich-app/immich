@@ -10,6 +10,7 @@ import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { SharingDirectionSchema, SourceTypeSchema } from 'src/enum.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
+import { hasSomeDefined } from 'src/utils/misc.js';
 import { transformFaceBoundingBox } from 'src/utils/transform.js';
 import { hexColor, stringToBool, uniqueIds } from 'src/validation.js';
 
@@ -81,6 +82,15 @@ const PersonUserRoleSchema = z
   .enum(PersonUserRole)
   .describe('Levels of access for managing people resources on behalf of another user.')
   .meta({ id: 'PersonUserRole' });
+
+export enum PeopleUsersUpsertType {
+  Everyone = 'everyone',
+}
+
+const PeopleUsersUpsertTypeSchema = z
+  .enum(PeopleUsersUpsertType)
+  .describe('Which people to update when personIds is omitted')
+  .meta({ id: 'PeopleUsersUpsertType' });
 
 const PersonOtherResponseSchema = z
   .object({
@@ -227,13 +237,18 @@ const PersonUsersSearchSchema = z
   })
   .meta({ id: 'PersonUsersSearchDto' });
 
-const PersonUsersCreateSchema = z
+const PeopleUsersUpsertSchema = z
   .object({
-    personIds: uniqueIds.optional().describe('Person IDs, defaults to every person owned by the user'),
+    personIds: uniqueIds.optional().describe('Person IDs, required when type is omitted'),
+    type: PeopleUsersUpsertTypeSchema.optional(),
     sharedWithIds: uniqueIds.describe('User IDs that should be given access to the person'),
     role: PersonUserRoleSchema.describe('Role that should be applied'),
   })
-  .meta({ id: 'PersonUsersCreateDto' });
+  .refine((data) => hasSomeDefined([data.personIds, data.type]), {
+    error: 'Either personIds or type must be provided',
+    path: ['personIds'],
+  })
+  .meta({ id: 'PeopleUsersUpsertDto' });
 
 const PersonUsersDeleteSchema = z
   .array(
@@ -252,7 +267,7 @@ export class AssetFaceDeleteDto extends createZodDto(AssetFaceDeleteSchema) {}
 export class PersonStatisticsResponseDto extends createZodDto(PersonStatisticsResponseSchema) {}
 export class PersonUsersResponseDto extends createZodDto(PersonUsersResponseSchema) {}
 export class PersonUsersSearchDto extends createZodDto(PersonUsersSearchSchema) {}
-export class PersonUsersCreateDto extends createZodDto(PersonUsersCreateSchema) {}
+export class PeopleUsersUpsertDto extends createZodDto(PeopleUsersUpsertSchema) {}
 export class PersonUsersDeleteDto extends createZodDto(PersonUsersDeleteSchema) {}
 
 const PeopleResponseSchema = z
