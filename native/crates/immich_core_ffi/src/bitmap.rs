@@ -8,26 +8,27 @@ use jni::objects::{JIntArray, JObject};
 use jni::sys::{JNIEnv, jlong, jobject};
 
 pub const FORMAT_RGBA_8888: i32 = 1;
+pub const FORMAT_RGBA_1010102: i32 = 10;
 
-pub const RESULT_SUCCESS: i32 = 0;
+const RESULT_SUCCESS: i32 = 0;
 
 #[repr(C)]
-pub struct Info {
-    pub width: u32,
-    pub height: u32,
-    pub stride: u32,
-    pub format: i32,
-    pub flags: u32,
+struct Info {
+    width: u32,
+    height: u32,
+    stride: u32,
+    format: i32,
+    flags: u32,
 }
 
 #[link(name = "jnigraphics")]
 unsafe extern "C" {
     #[link_name = "AndroidBitmap_getInfo"]
-    pub fn get_info(env: *mut JNIEnv, bitmap: jobject, info: *mut Info) -> i32;
+    fn get_info(env: *mut JNIEnv, bitmap: jobject, info: *mut Info) -> i32;
     #[link_name = "AndroidBitmap_lockPixels"]
-    pub fn lock_pixels(env: *mut JNIEnv, bitmap: jobject, pixels: *mut *mut c_void) -> i32;
+    fn lock_pixels(env: *mut JNIEnv, bitmap: jobject, pixels: *mut *mut c_void) -> i32;
     #[link_name = "AndroidBitmap_unlockPixels"]
-    pub fn unlock_pixels(env: *mut JNIEnv, bitmap: jobject) -> i32;
+    fn unlock_pixels(env: *mut JNIEnv, bitmap: jobject) -> i32;
 }
 
 /// Runs `f(src, stride, width, height, dst)` over the pixels of a `format` bitmap, writing into a

@@ -66,6 +66,7 @@ Future<void> _rustup(List<String> args) async {
 }
 
 // Link against minSdk instead of the API 35 that native_toolchain_rust picks.
+// Neon on 32 bit arm is the NDK's default for C, the rust target leaves it off.
 String _androidRustFlags(CodeConfig code) {
   final triple = switch (code.targetArchitecture) {
     Architecture.arm => 'armv7a-linux-androideabi',
@@ -73,5 +74,6 @@ String _androidRustFlags(CodeConfig code) {
     Architecture.x64 => 'x86_64-linux-android',
     _ => throw UnsupportedError('Unsupported Android architecture: ${code.targetArchitecture}'),
   };
-  return '-C link-arg=--target=$triple${code.android.targetNdkApi}';
+  final neon = code.targetArchitecture == Architecture.arm ? ' -C target-feature=+neon' : '';
+  return '-C link-arg=--target=$triple${code.android.targetNdkApi}$neon';
 }
