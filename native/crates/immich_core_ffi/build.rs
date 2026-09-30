@@ -3,6 +3,7 @@ use std::path::Path;
 fn main() {
     // Files that define exported items. A directory here would make Flutter rerun the hook every build.
     println!("cargo:rerun-if-changed=src/lib.rs");
+    println!("cargo:rerun-if-changed=src/thumbhash.rs");
     println!("cargo:rerun-if-changed=cbindgen.toml");
     let crate_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     cbindgen::generate(&crate_dir)

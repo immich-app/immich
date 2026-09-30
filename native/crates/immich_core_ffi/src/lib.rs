@@ -11,6 +11,7 @@ mod bitmap;
 mod convert;
 #[cfg(target_os = "android")]
 mod rotate;
+mod thumbhash;
 
 /// Returns the core version as a C string. Free it with `immich_core_free_string`.
 #[unsafe(no_mangle)]
