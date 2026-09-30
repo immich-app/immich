@@ -1,0 +1,3 @@
+/target
+/crates/immich_core_ffi/include/immich_core.h
+/immich_native_core/lib/src/bindings.g.dart
