@@ -11,6 +11,10 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 immich_core = { path = "../immich_core" }
+libc = { workspace = true }
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { workspace = true }
 
 [build-dependencies]
 cbindgen = { workspace = true }
