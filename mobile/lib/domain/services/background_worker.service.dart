@@ -169,15 +169,17 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       // Run sync local, sync remote, hash and backup concurrently so the bg
       // refresh task (20s budget) can make progress on all four instead of
-      // racing them sequentially. Phases are independent at the data layer:
-      // hash and handle_backup read drift state and tolerate stale reads
-      // (server-side dedup catches the rare race). The single budget caps the
+      // racing them sequentially. Hash tolerates stale reads, but a new backup
+      // batch waits for the remote sync. The single budget caps the
       // whole batch; no phase needs its own timeout.
+      final remoteSync = _remoteSyncService.sync();
       final all = Future.wait<dynamic>([
         _localSyncService.sync(),
-        _remoteSyncService.sync(),
+        remoteSync,
         _hashService.hashAssets(),
-        _handleBackup(),
+        _handleBackup(
+          remoteSync: remoteSync.then((ok) => ok && !_cancellationToken.isCompleted).catchError((_) => false),
+        ),
       ]);
       if (budget != null) {
         await all.timeout(
@@ -217,7 +219,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         return true;
       }
 
-      final backupFuture = _handleBackup();
+      final backupFuture = _handleBackup(remoteSync: Future.value(true));
       Timer? cancelTimer;
       if (backupTimeout != null) {
         cancelTimer = Timer(backupTimeout, () {
@@ -294,7 +296,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<bool> _handleBackup() async {
+  Future<bool> _handleBackup({required Future<bool> remoteSync}) async {
     final needsRetry = await runZonedGuarded(() async {
       if (_isCleanedUp) {
         return false;
@@ -312,7 +314,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       }
 
       if (Platform.isIOS) {
-        await _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id);
+        await _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id, remoteSync);
         return false;
       }
 
