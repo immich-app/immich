@@ -16,7 +16,8 @@ const ALPHA: &[u8] = &[
 ];
 
 fn check(name: &str, hash: &[u8], size: (u32, u32), samples: &[(u32, u32, [u8; 4])]) {
-    let (width, height, rgba) = decode(hash).unwrap();
+    let mut rgba = [0; 32 * 32 * 4];
+    let (width, height) = decode(hash, &mut rgba).unwrap();
     assert_eq!((width, height), size, "{name}");
     for &(x, y, expected) in samples {
         let i = ((y * width + x) * 4) as usize;
@@ -89,7 +90,8 @@ fn matches_swift_placeholders() {
 
 #[test]
 fn rejects_truncated_hash() {
+    let mut rgba = [0; 32 * 32 * 4];
     for len in 0..ALPHA.len() {
-        assert!(decode(&ALPHA[..len]).is_none(), "length {len}");
+        assert!(decode(&ALPHA[..len], &mut rgba).is_none(), "length {len}");
     }
 }

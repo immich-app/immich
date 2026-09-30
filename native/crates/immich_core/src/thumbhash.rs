@@ -5,7 +5,7 @@
 
 use std::f32::consts::PI;
 
-pub fn decode(hash: &[u8]) -> Option<(u32, u32, [u8; 32 * 32 * 4])> {
+pub fn decode(hash: &[u8], rgba: &mut [u8; 32 * 32 * 4]) -> Option<(u32, u32)> {
     // Read the constants
     let &[h0, h1, h2, h3, h4] = hash.first_chunk()?;
     let header24 = u32::from(h0) | u32::from(h1) << 8 | u32::from(h2) << 16;
@@ -56,7 +56,6 @@ pub fn decode(hash: &[u8]) -> Option<(u32, u32, [u8; 32 * 32 * 4])> {
     };
     let w = (if ratio > 1.0 { 32.0 } else { 32.0 * ratio }).round() as u32;
     let h = (if ratio > 1.0 { 32.0 / ratio } else { 32.0 }).round() as u32;
-    let mut rgba = [0; 32 * 32 * 4];
     let channels = [(&l_ac, lx, ly), (&p_ac, 3, 3), (&q_ac, 3, 3), (&a_ac, 5, 5)];
     let count = if has_alpha { 4 } else { 3 };
     for y in 0..h {
@@ -88,5 +87,5 @@ pub fn decode(hash: &[u8]) -> Option<(u32, u32, [u8; 32 * 32 * 4])> {
             }
         }
     }
-    Some((w, h, rgba))
+    Some((w, h))
 }

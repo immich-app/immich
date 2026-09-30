@@ -3,6 +3,13 @@ use std::{ptr, slice};
 use libc::size_t;
 
 use immich_core::thumbhash;
+#[cfg(target_os = "android")]
+use jni::{
+    EnvUnowned,
+    errors::ThrowRuntimeExAndDefault,
+    objects::{JByteArray, JClass, JIntArray},
+    sys::jlong,
+};
 
 use super::guard;
 
@@ -25,21 +32,48 @@ pub unsafe extern "C" fn immich_core_thumbhash(
         }
         // SAFETY: the caller provides a buffer readable for len bytes.
         let hash = unsafe { slice::from_raw_parts(hash, len) };
-        let Some((w, h, pixels)) = thumbhash::decode(hash) else {
+        // SAFETY: calloc accepts any size.
+        let rgba = unsafe { libc::calloc(1, 32 * 32 * 4).cast::<[u8; 32 * 32 * 4]>() };
+        if rgba.is_null() {
+            return ptr::null_mut();
+        }
+        // SAFETY: calloc returned that many zeroed bytes that nothing else references.
+        let Some((w, h)) = thumbhash::decode(hash, unsafe { &mut *rgba }) else {
+            // SAFETY: the buffer has not been returned to the caller.
+            unsafe { libc::free(rgba.cast()) };
             return ptr::null_mut();
         };
-        let size = (w * h * 4) as usize;
-        // SAFETY: malloc accepts any size.
-        let rgba = unsafe { libc::malloc(size).cast::<u8>() };
-        if rgba.is_null() {
-            return rgba;
-        }
-        // SAFETY: malloc returned size writable bytes, disjoint from pixels; outputs are writable.
+        // SAFETY: the outputs are writable.
         unsafe {
-            ptr::copy_nonoverlapping(pixels.as_ptr(), rgba, size);
             *width = w as i32;
             *height = h as i32;
         }
-        rgba
+        rgba.cast()
     })
+}
+
+#[cfg(target_os = "android")]
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_app_alextran_immich_images_ThumbHash_decode<'caller>(
+    mut env: EnvUnowned<'caller>,
+    _class: JClass<'caller>,
+    hash: JByteArray<'caller>,
+    info: JIntArray<'caller>,
+) -> jlong {
+    env.with_env(|env| -> jni::errors::Result<jlong> {
+        let hash = env.convert_byte_array(&hash)?;
+        let (mut width, mut height) = (0, 0);
+        // SAFETY: the hash bytes and both output pointers are valid for this call.
+        let rgba =
+            unsafe { immich_core_thumbhash(hash.as_ptr(), hash.len(), &mut width, &mut height) };
+        if !rgba.is_null()
+            && let Err(err) = info.set_region(env, 0, &[width, height, width * 4])
+        {
+            // SAFETY: this malloc buffer has not been transferred to Dart.
+            unsafe { libc::free(rgba.cast()) };
+            return Err(err);
+        }
+        Ok(rgba as jlong)
+    })
+    .resolve::<ThrowRuntimeExAndDefault>()
 }
