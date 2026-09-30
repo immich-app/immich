@@ -1039,6 +1039,7 @@ export enum ExitCode {
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
   AlbumsV2 = 'AlbumsV2',
+  AlbumsV3 = 'AlbumsV3',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
   /** @deprecated */
@@ -1115,6 +1116,7 @@ export enum SyncEntityType {
 
   AlbumV1 = 'AlbumV1',
   AlbumV2 = 'AlbumV2',
+  AlbumV3 = 'AlbumV3',
   AlbumDeleteV1 = 'AlbumDeleteV1',
 
   AlbumUserV1 = 'AlbumUserV1',

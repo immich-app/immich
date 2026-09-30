@@ -29,10 +29,7 @@
   {/if}
 
   {#if album.isPinned}
-    <span
-      class="absolute top-1.5 right-1.5 z-10 rounded-full bg-white/90 p-0.5 shadow-sm"
-      title={$t('pinned_album')}
-    >
+    <span class="absolute top-1.5 right-1.5 z-10 rounded-full bg-white/90 p-0.5 shadow-sm" title={$t('pinned_album')}>
       <Icon icon={mdiPin} size="1em" />
     </span>
   {/if}

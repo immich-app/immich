@@ -12,6 +12,7 @@ import {
   SyncItem,
   SyncStreamDto,
   syncAlbumV2ToV1,
+  syncAlbumV3ToV2,
 } from 'src/dtos/sync.dto.js';
 import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { SyncQueryOptions } from 'src/repositories/sync.repository.js';
@@ -76,6 +77,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.AlbumAssetsV2,
   SyncRequestType.AlbumsV1,
   SyncRequestType.AlbumsV2,
+  SyncRequestType.AlbumsV3,
   SyncRequestType.AlbumUsersV1,
   SyncRequestType.AlbumToAssetsV1,
   SyncRequestType.AssetExifsV1,
@@ -204,6 +206,7 @@ export class SyncService extends BaseService {
         this.syncPartnerAssetExifsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumsV1]: () => this.syncAlbumsV1(options, response, checkpointMap),
       [SyncRequestType.AlbumsV2]: () => this.syncAlbumsV2(options, response, checkpointMap),
+      [SyncRequestType.AlbumsV3]: () => this.syncAlbumsV3(options, response, checkpointMap),
       [SyncRequestType.AlbumUsersV1]: () => this.syncAlbumUsersV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumAssetsV2]: () => this.syncAlbumAssetsV2(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumToAssetsV1]: () => this.syncAlbumToAssetsV1(options, response, checkpointMap, session.id),
@@ -494,7 +497,7 @@ export class SyncService extends BaseService {
         type: upsertType,
         ids: [updateId],
         // TODO: return null instead of '' in v4
-        data: syncAlbumV2ToV1({ ...data, description: data.description ?? '' }, albumUsers),
+        data: syncAlbumV2ToV1(syncAlbumV3ToV2({ ...data, description: data.description ?? '' }), albumUsers),
       });
     }
   }
@@ -507,6 +510,25 @@ export class SyncService extends BaseService {
     }
 
     const upsertType = SyncEntityType.AlbumV2;
+    const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
+      // TODO: return null instead of '' in v4
+      await send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: syncAlbumV3ToV2({ ...data, description: data.description ?? '' }),
+      });
+    }
+  }
+
+  private async syncAlbumsV3(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.AlbumDeleteV1;
+    const deletes = this.syncRepository.album.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      await send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AlbumV3;
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       // TODO: return null instead of '' in v4
