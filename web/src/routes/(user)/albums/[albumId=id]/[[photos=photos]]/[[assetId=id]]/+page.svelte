@@ -40,7 +40,6 @@
     getAlbumActions,
     getAlbumAssetsActions,
     handleDeleteAlbum,
-    handleToggleAlbumPin,
     isAlbumEditor,
     isAlbumOwner,
   } from '$lib/services/album.service';
@@ -310,13 +309,6 @@
     await navigating.complete;
 
     await invalidate('album:data');
-  };
-
-  const togglePinned = async () => {
-    const updated = await handleToggleAlbumPin(album);
-    if (updated) {
-      album = updated;
-    }
   };
 
   const { Cast } = $derived(getGlobalActions($t));
