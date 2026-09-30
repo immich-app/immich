@@ -421,6 +421,7 @@ export function getAlbum(
     shared: false,
     hasSharedLink: false,
     isActivityEnabled: true,
+    isPinned: false,
     assetCount: albumAssets.length,
     startDate: albumAssets.length > 0 ? albumAssets.at(-1)?.fileCreatedAt : undefined,
     endDate: albumAssets.length > 0 ? albumAssets[0].fileCreatedAt : undefined,
