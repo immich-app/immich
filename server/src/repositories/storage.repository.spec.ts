@@ -1,6 +1,6 @@
 import mockfs from 'mock-fs';
 import { R_OK } from 'node:constants';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtempDisposable, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { vitest } from 'vitest';
@@ -264,28 +264,19 @@ describe(StorageRepository.name, () => {
   });
 
   describe('checkFileExists', () => {
-    let tempDir: string;
-
-    beforeEach(async () => {
-      tempDir = await mkdtemp(join(tmpdir(), 'immich-storage-sidecar-'));
-    });
-
-    afterEach(async () => {
-      await rm(tempDir, { recursive: true, force: true });
-    });
-
     it.for(['PHOTO.xmp', 'photo.XMP'])(
       'should not match %s with different case on a case-sensitive filesystem',
       async (filename, { skip }) => {
-        await writeFile(join(tempDir, 'case-probe'), 'test');
-        if (await sut.checkFileExists(join(tempDir, 'CASE-PROBE'), R_OK)) {
+        await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-sidecar-'));
+        await writeFile(join(tempDir.path, 'case-probe'), 'test');
+        if (await sut.checkFileExists(join(tempDir.path, 'CASE-PROBE'), R_OK)) {
           skip();
         }
-        const candidate = join(tempDir, filename);
+        const candidate = join(tempDir.path, filename);
         await writeFile(candidate, 'test');
 
         await expect(sut.checkFileExists(candidate, R_OK)).resolves.toBe(true);
-        await expect(sut.checkFileExists(join(tempDir, 'photo.xmp'), R_OK)).resolves.toBe(false);
+        await expect(sut.checkFileExists(join(tempDir.path, 'photo.xmp'), R_OK)).resolves.toBe(false);
       },
     );
   });

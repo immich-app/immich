@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { Stats } from 'node:fs';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtempDisposable, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
@@ -81,19 +81,10 @@ describe(MetadataService.name, () => {
   });
 
   describe('sidecar metadata extraction', () => {
-    let tempDir: string;
-
-    beforeEach(async () => {
-      tempDir = await mkdtemp(join(tmpdir(), 'immich-sidecar-'));
-    });
-
-    afterEach(async () => {
-      await rm(tempDir, { recursive: true, force: true });
-    });
-
     it('should persist metadata read from a discovered XMP sidecar', async () => {
+      await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-sidecar-'));
       const { sut, ctx } = setup(undefined, { realStorage: true });
-      const originalPath = join(tempDir, 'photo.png');
+      const originalPath = join(tempDir.path, 'photo.png');
       await writeFile(originalPath, newRandomImage());
       const metadata = ctx.get(MetadataRepository);
       await metadata.writeTags(originalPath, { Rating: 1 });
