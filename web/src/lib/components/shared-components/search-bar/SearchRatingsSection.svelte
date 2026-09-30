@@ -13,6 +13,8 @@
     { value: 2, label: '★★' },
     { value: 1, label: '★' },
   ];
+
+  const rejectedOption = { value: -1, label: $t('rating_rejected') };
 </script>
 
 <div class="flex flex-col">
@@ -26,5 +28,11 @@
         {option.label}
       </SearchButton>
     {/each}
+    <SearchButton
+      active={rating === rejectedOption.value}
+      onclick={() => (searchManager.filter.rating = rating === rejectedOption.value ? undefined : rejectedOption.value)}
+    >
+      {rejectedOption.label}
+    </SearchButton>
   </div>
 </div>

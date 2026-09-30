@@ -1631,6 +1631,22 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should handle rejected (-1) rating value', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ Rating: -1 });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({
+            rating: -1,
+          }),
+          lockedPropertiesBehavior: 'skip',
+        }),
+      );
+    });
+
     it('should handle 0 as unrated -> null', async () => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));

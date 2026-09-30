@@ -1,6 +1,7 @@
 <script lang="ts">
   import StarRating, { type Rating } from '$lib/elements/StarRating.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
@@ -17,7 +18,8 @@
 
   const handleChangeRating = async (rating: Rating) => {
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { rating } });
+      const updated = await updateAsset({ id: asset.id, updateAssetDto: { rating } });
+      eventManager.emit('AssetUpdate', updated);
     } catch (error) {
       handleError(error, $t('errors.cant_apply_changes'));
     }

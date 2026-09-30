@@ -208,6 +208,13 @@ export const getAssetActions = (
     shortcuts: [0, 1, 2, 3, 4, 5].map((key) => ({ key: String(key) })),
   };
 
+  const Reject: ActionItem = {
+    title: $t('reject_asset'),
+    $if: () => isOwner && authManager.preferences.ratings.enabled,
+    onAction: () => handleRate(asset, -1),
+    shortcuts: [{ key: '-' }],
+  };
+
   const AddToAlbum: ActionItem = {
     title: $t('add_to_album'),
     icon: mdiPlus,
@@ -349,6 +356,7 @@ export const getAssetActions = (
     Favorite,
     Unfavorite,
     Rate,
+    Reject,
     PlayMotionPhoto,
     StopMotionPhoto,
     PlaySlideshow,

@@ -3,7 +3,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
   import { Icon } from '@immich/ui';
-  import { mdiStar, mdiStarOutline } from '@mdi/js';
+  import { mdiFlag, mdiFlagOutline, mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   export type Rating = -1 | 1 | 2 | 3 | 4 | 5 | null;
@@ -29,12 +29,12 @@
       return;
     }
 
-    if (newRating === rating) {
-      return;
-    }
-
     ratingSelection = newRating;
     onRating(newRating);
+  };
+
+  const handleReject = () => {
+    handleSelect(ratingSelection === -1 ? null : -1);
   };
 
   const setHoverRating = (value: Rating) => {
@@ -57,53 +57,73 @@
   };
 </script>
 
-<!-- svelte-ignore a11y_mouse_events_have_key_events -->
-<fieldset
-  class="w-fit cursor-default text-primary"
-  onmouseleave={() => setHoverRating(null)}
-  use:focusOutside={{ onFocusOut: reset }}
-  use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
-    { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
-  ]}
->
-  <legend class="sr-only">{$t('rating')}</legend>
-  <div class="flex flex-row" data-testid="star-container">
-    {#each { length: count } as _, index (index)}
-      {@const value = index + 1}
-      {@const filled = hoverRating === null ? (ratingSelection ?? 0) >= value : hoverRating >= value}
-      {@const starId = `${id}-${value}`}
-      <!-- svelte-ignore a11y_mouse_events_have_key_events -->
-      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <label
-        for={starId}
-        class:cursor-pointer={!readOnly}
-        class:ring-2={focusRating === value}
-        onmouseover={() => setHoverRating(value as Rating)}
-        tabindex={-1}
-        data-testid="star"
-      >
-        <span class="sr-only">{$t('rating_count', { values: { count: value } })}</span>
-        <Icon icon={filled ? mdiStar : mdiStarOutline} size="1.5em" aria-hidden />
-      </label>
-      <input
-        type="radio"
-        name="stars"
-        {value}
-        id={starId}
-        bind:group={ratingSelection}
-        disabled={readOnly}
-        onfocus={() => {
-          focusRating = value as Rating;
-        }}
-        onchange={() => handleSelectDebounced(value as Rating)}
-        class="sr-only"
-      />
-    {/each}
-  </div>
-</fieldset>
-{#if ratingSelection !== null && !readOnly}
-  <button type="button" onclick={() => handleSelect(null)} class="cursor-pointer text-xs text-primary">
-    {$t('rating_clear')}
+<div class="flex w-fit flex-row items-center gap-2">
+  <button
+    type="button"
+    class:cursor-pointer={!readOnly}
+    disabled={readOnly}
+    aria-pressed={ratingSelection === -1}
+    onclick={handleReject}
+    data-testid="reject-rating"
+  >
+    <span class="sr-only">{$t('rating_rejected')}</span>
+    <Icon
+      icon={ratingSelection === -1 ? mdiFlag : mdiFlagOutline}
+      size="1.5em"
+      class={ratingSelection === -1 ? 'text-danger' : 'text-primary'}
+      aria-hidden
+    />
   </button>
-{/if}
+
+  <!-- svelte-ignore a11y_mouse_events_have_key_events -->
+  <fieldset
+    class="w-fit cursor-default text-primary"
+    onmouseleave={() => setHoverRating(null)}
+    use:focusOutside={{ onFocusOut: reset }}
+    use:shortcuts={[
+      { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
+      { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
+    ]}
+  >
+    <legend class="sr-only">{$t('rating')}</legend>
+    <div class="flex flex-row" data-testid="star-container">
+      {#each { length: count } as _, index (index)}
+        {@const value = index + 1}
+        {@const filled = hoverRating === null ? (ratingSelection ?? 0) >= value : hoverRating >= value}
+        {@const starId = `${id}-${value}`}
+        <!-- svelte-ignore a11y_mouse_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <label
+          for={starId}
+          class:cursor-pointer={!readOnly}
+          class:ring-2={focusRating === value}
+          onmouseover={() => setHoverRating(value as Rating)}
+          tabindex={-1}
+          data-testid="star"
+        >
+          <span class="sr-only">{$t('rating_count', { values: { count: value } })}</span>
+          <Icon icon={filled ? mdiStar : mdiStarOutline} size="1.5em" aria-hidden />
+        </label>
+        <input
+          type="radio"
+          name="stars"
+          {value}
+          id={starId}
+          bind:group={ratingSelection}
+          disabled={readOnly}
+          onfocus={() => {
+            focusRating = value as Rating;
+          }}
+          onchange={() => handleSelectDebounced(value as Rating)}
+          class="sr-only"
+        />
+      {/each}
+    </div>
+  </fieldset>
+
+  {#if ratingSelection !== null && !readOnly}
+    <button type="button" onclick={() => handleSelect(null)} class="cursor-pointer text-xs text-primary">
+      {$t('rating_clear')}
+    </button>
+  {/if}
+</div>
