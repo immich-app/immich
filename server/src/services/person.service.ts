@@ -52,7 +52,7 @@ import { getDimensions, getMyPartnerIds } from 'src/utils/asset.util.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { isHttpException } from 'src/utils/logger.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc.js';
+import { batched, findOrFail, hasSomeDefined, isFacialRecognitionEnabled } from 'src/utils/misc.js';
 import { Point, transformPoints } from 'src/utils/transform.js';
 
 const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${personGroupId}`;
@@ -247,17 +247,27 @@ export class PersonService extends BaseService {
   }
 
   async update(auth: AuthDto, personGroupId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    const ownerId = dto.userId ?? auth.user.id;
+    const { userId: userIdOverride, name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
+    const targetOwnerId = userIdOverride ?? auth.user.id;
+    const hasSharedProperties = hasSomeDefined([name, birthDate]);
+    const hasPersonalProperties = hasSomeDefined([isHidden, isFavorite, color, assetId]);
+
+    if (targetOwnerId !== auth.user.id && hasPersonalProperties) {
+      throw new BadRequestException('Only name and birthDate can be updated for other users');
+    }
 
     await this.requirePersonAccess({
       auth,
       permission: Permission.PersonUpdate,
-      ids: [{ personGroupId, ownerId }],
+      ids: [{ personGroupId, ownerId: targetOwnerId }],
     });
 
-    const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
-    // TODO: set by faceId directly
+    if (!userIdOverride && hasSharedProperties) {
+      await this.personRepository.updateForWritableOwners({ userId: auth.user.id, personGroupId }, { name, birthDate });
+    }
+
     let faceId: string | undefined;
+
     if (assetId) {
       await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
       const face = await this.personRepository.getForFeatureFaceUpdate({ personGroupId, assetId });
@@ -269,7 +279,7 @@ export class PersonService extends BaseService {
     }
 
     const person = await this.personRepository.update({
-      ownerId,
+      ownerId: targetOwnerId,
       personGroupId,
       faceAssetId: faceId,
       name,
@@ -280,7 +290,10 @@ export class PersonService extends BaseService {
     });
 
     if (assetId) {
-      await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
+      await this.jobRepository.queue({
+        name: JobName.PersonGenerateThumbnail,
+        data: { ownerId: targetOwnerId, personGroupId },
+      });
     }
 
     return mapPerson(person);
@@ -833,11 +846,13 @@ export class PersonService extends BaseService {
       throw new BadRequestException('Cannot share a person with yourself');
     }
 
-    await this.requirePersonAccess({
-      auth,
-      permission: Permission.PersonUpdate,
-      ids: dto.personIds.map((item) => ({ personGroupId: item, ownerId: auth.user.id })),
-    });
+    if (dto.personIds) {
+      await this.requirePersonAccess({
+        auth,
+        permission: Permission.PersonUpdate,
+        ids: dto.personIds.map((item) => ({ personGroupId: item, ownerId: auth.user.id })),
+      });
+    }
 
     const user = await findOrFail(() => this.userRepository.get(auth.user.id, {}), 'User');
     const clusterGroupUsers = await this.clusterGroupRepository.getUsers({
@@ -846,20 +861,30 @@ export class PersonService extends BaseService {
     });
     const clusterGroupUserIds = new Set(clusterGroupUsers.map(({ id }) => id));
 
-    const items: Insertable<PersonUserTable>[] = [];
-    const sharedById = auth.user.id;
-
     for (const sharedWithId of dto.sharedWithIds) {
       if (!clusterGroupUserIds.has(sharedWithId)) {
         throw new BadRequestException('All users must be in the same cluster group');
       }
-
-      for (const personGroupId of dto.personIds) {
-        items.push({ personGroupId, sharedById, sharedWithId, role: dto.role });
-      }
     }
 
-    await this.personUserRepository.createAll(items);
+    const sharedById = auth.user.id;
+
+    if (dto.personIds) {
+      const items: Insertable<PersonUserTable>[] = [];
+      for (const sharedWithId of dto.sharedWithIds) {
+        for (const personGroupId of dto.personIds) {
+          items.push({ personGroupId, sharedById, sharedWithId, role: dto.role });
+        }
+      }
+
+      await this.personUserRepository.createAll(items);
+    } else {
+      await this.personUserRepository.createAllForOwner({
+        ownerId: sharedById,
+        sharedWithIds: dto.sharedWithIds,
+        role: dto.role,
+      });
+    }
   }
 
   async removeUsersFromPeople(auth: AuthDto, dto: PersonUsersDeleteDto) {
