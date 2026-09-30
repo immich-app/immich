@@ -3,8 +3,8 @@
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import PeopleSelectionModal from '$lib/modals/PeopleSelectionModal.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleBulkUpsert } from '$lib/services/person-user.service';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, PersonUserRole, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import {
@@ -18,8 +18,8 @@
     Text,
     type ActionItem,
   } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiClose, mdiPlus } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { mdiAccountMultipleOutline, mdiPencilOutline } from '@mdi/js';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
@@ -31,16 +31,13 @@
 
   let { users, people, onClose }: Props = $props();
 
-  const multiple = users.length > 1;
-  let selectedUserId = $state(users[0].id);
   const user = $derived(users.find(({ id }) => id === selectedUserId) ?? users[0]);
   const userOptions = users.map(({ id, name }) => ({ label: name, value: id }));
 
-  let loading = $state(true);
-  let saving = $state(false);
+  let selectedUserId = $state(users[0].id);
   let shareEveryone = $state(false);
   let role = $state<PersonUserRole>(PersonUserRole.Read);
-  let serverPeople: PersonResponseDto[] = $state([]);
+  let serverPeople = $state<PersonResponseDto[]>([]);
   const existingRoles = new SvelteMap<string, PersonUserRole>();
   const added = new SvelteMap<string, PersonResponseDto>();
   const removed = new SvelteSet<string>();
@@ -53,23 +50,13 @@
 
   const selectedPeople = $derived([...serverPeople.filter(({ id }) => !removed.has(id)), ...added.values()]);
   const selectedIds = $derived(new Set(selectedPeople.map(({ id }) => id)));
-  const changedIds = $derived(
-    [...existingRoles].filter(([id, existingRole]) => !removed.has(id) && existingRole !== role).map(([id]) => id),
-  );
-  const upsertIds = $derived([...changedIds, ...added.keys()]);
 
-  const canSubmit = $derived(!loading && !saving && (shareEveryone || upsertIds.length > 0 || removed.size > 0));
+  const canSubmit = $derived(shareEveryone || selectedIds.size > 0 || existingRoles.size > 0);
 
-  const AddPeople: ActionItem = $derived({
-    title: $t('add_people'),
-    icon: mdiPlus,
-    onAction: () => handleAddPeople(),
-  });
-
-  const getRemoveAction = (person: PersonResponseDto): ActionItem => ({
-    title: $t('remove'),
-    icon: mdiClose,
-    onAction: () => handleRemovePerson(person),
+  const ManagePeople: ActionItem = $derived({
+    title: $t('edit_people'),
+    icon: mdiPencilOutline,
+    onAction: () => handleEditPeople(),
   });
 
   const loadSharedPeople = async (sharedWithId: string) => {
@@ -96,35 +83,29 @@
   };
 
   const loadShares = async (sharedWithId: string) => {
-    loading = true;
+    existingRoles.clear();
+    added.clear();
+    removed.clear();
 
     try {
-      existingRoles.clear();
-      added.clear();
-      removed.clear();
       serverPeople = await loadSharedPeople(sharedWithId);
-
-      for (const person of serverPeople) {
-        const share = person.sharedWith.find(({ id }) => id === sharedWithId);
-        if (share) {
-          existingRoles.set(person.id, share.role);
-        }
-      }
-
-      role = existingRoles.values().next().value ?? PersonUserRole.Read;
     } catch (error) {
       handleError(error, $t('errors.something_went_wrong'));
-    } finally {
-      loading = false;
     }
+
+    for (const person of serverPeople) {
+      const share = person.sharedWith.find(({ id }) => id === sharedWithId);
+      if (share) {
+        existingRoles.set(person.id, share.role);
+      }
+    }
+    role = existingRoles.values().next().value ?? PersonUserRole.Read;
   };
 
   const handleSelectUser = async (id: string) => {
     selectedUserId = id;
     await loadShares(id);
   };
-
-  onMount(() => loadShares(selectedUserId));
 
   const loadAllPeople = async () => {
     if (people) {
@@ -135,8 +116,8 @@
     return result.people;
   };
 
-  const handleAddPeople = async () => {
-    let allPeople: PersonResponseDto[] = [];
+  const handleEditPeople = async () => {
+    let allPeople: PersonResponseDto[];
 
     try {
       allPeople = await loadAllPeople();
@@ -145,39 +126,46 @@
       return;
     }
 
-    const picked = await modalManager.show(PeopleSelectionModal, {
-      people: allPeople.filter(({ id, isHidden }) => !isHidden && !selectedIds.has(id)),
+    const updatedPeople = await modalManager.show(PeopleSelectionModal, {
+      people: allPeople.filter(({ isHidden }) => !isHidden),
+      selectedPeople,
     });
 
-    for (const person of picked ?? []) {
-      if (removed.has(person.id)) {
-        removed.delete(person.id);
+    if (!updatedPeople) {
+      return;
+    }
+
+    const updatedIds = new Set(updatedPeople.map(({ id }) => id));
+
+    for (const id of selectedIds) {
+      if (updatedIds.has(id)) {
+        continue;
+      }
+      if (added.has(id)) {
+        added.delete(id);
       } else {
+        removed.add(id);
+      }
+    }
+
+    for (const person of updatedPeople ?? []) {
+      if (!selectedIds.has(person.id)) {
         added.set(person.id, person);
       }
     }
   };
 
-  const handleRemovePerson = ({ id }: PersonResponseDto) => {
-    if (added.has(id)) {
-      added.delete(id);
-    } else {
-      removed.add(id);
-    }
-  };
-
   const onSubmit = async () => {
-    saving = true;
-
+    const changedIds = [...existingRoles]
+      .filter(([id, existingRole]) => !removed.has(id) && existingRole !== role)
+      .map(([id]) => id);
     const success = await handleBulkUpsert({
       sharedWithIds: [selectedUserId],
       role,
       everyone: shareEveryone,
-      personIds: upsertIds,
+      personIds: [...changedIds, ...added.keys()],
       removedIds: [...removed],
     });
-
-    saving = false;
 
     if (success) {
       onClose(true);
@@ -197,7 +185,7 @@
   <div class="flex flex-col gap-4">
     <Text size="small" color="muted">{$t('manage_people_access_description')}</Text>
 
-    {#if multiple}
+    {#if users.length > 1}
       <Field label={$t('share_with')}>
         <Select value={selectedUserId} options={userOptions} onChange={handleSelectUser} />
       </Field>
@@ -211,11 +199,11 @@
       </div>
     {/if}
 
-    {#if loading}
+    {#await untrack(() => loadShares(selectedUserId))}
       <div class="flex w-full place-content-center place-items-center">
         <LoadingSpinner />
       </div>
-    {:else}
+    {:then}
       <Field label={$t('role')}>
         <Select bind:value={role} options={roleOptions} />
       </Field>
@@ -231,9 +219,9 @@
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
             <Text size="small" fontWeight="medium">
-              {$t('selected_with_count', { values: { count: selectedPeople.length } })}
+              {$t('shared_with_count', { values: { count: selectedPeople.length } })}
             </Text>
-            <ActionButton type="button" variant="outline" action={AddPeople} />
+            <ActionButton type="button" variant="outline" action={ManagePeople} />
           </div>
 
           <div class="immich-scrollbar overflow-y-auto sm:max-h-64">
@@ -241,7 +229,6 @@
               <div class="flex items-center gap-3 rounded-lg px-2 py-1 hover:bg-subtle">
                 <ImageThumbnail circle url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="2.5rem" />
                 <Text size="small" class="grow truncate">{person.name}</Text>
-                <ActionButton size="small" action={getRemoveAction(person)} />
               </div>
             {:else}
               <Text size="small" color="muted" class="p-2">{$t('no_people_found')}</Text>
@@ -249,6 +236,6 @@
           </div>
         </div>
       {/if}
-    {/if}
+    {/await}
   </div>
 </FormModal>

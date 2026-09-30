@@ -20,13 +20,13 @@
 
   type Props = {
     people: PersonResponseDto[];
+    selectedPeople?: PersonResponseDto[];
     onClose: (people?: PersonResponseDto[]) => void;
   };
 
-  let { people, onClose }: Props = $props();
+  let { people, onClose, selectedPeople = $bindable<PersonResponseDto[]>([]) }: Props = $props();
 
   let searchName = $state('');
-  let selectedPeople: PersonResponseDto[] = $state([]);
 
   const selectedIds = $derived(new Set(selectedPeople.map(({ id }) => id)));
   const filteredPeople = $derived(
@@ -59,7 +59,7 @@
   });
 </script>
 
-<Modal title={$t('add_people')} {onClose} size="medium">
+<Modal title={$t('manage_people')} {onClose} size="medium">
   <ModalBody class="flex min-h-0 flex-col">
     {#if people.length > 0}
       <div class="flex min-h-0 grow flex-col gap-4">
@@ -105,13 +105,8 @@
       <ModalFooter>
         <HStack fullWidth>
           <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
-          <Button
-            shape="round"
-            fullWidth
-            onclick={() => onClose(selectedPeople)}
-            disabled={selectedPeople.length === 0}
-          >
-            {$t('add')}
+          <Button shape="round" fullWidth onclick={() => onClose(selectedPeople)}>
+            {$t('save')}
           </Button>
         </HStack>
       </ModalFooter>

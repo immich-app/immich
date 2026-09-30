@@ -49,12 +49,6 @@
   let partners: Array<PartnerSharing> = $state([]);
 
   const canLeave = $derived(users.length > 1);
-  const { ManageAccess } = $derived(
-    getPeopleUserActions(
-      $t,
-      users.filter(({ id }) => id !== authManager.user.id),
-    ),
-  );
 
   onMount(async () => {
     await Promise.all([refresh(), refreshPartners()]);
@@ -257,6 +251,10 @@
   <Card class="mt-4">
     <CardBody>
       {#each users as user, index (user.id)}
+        {@const { ManageAccess } = getPeopleUserActions($t, [
+          user,
+          ...users.filter(({ id }) => id !== authManager.user.id && id !== user.id),
+        ])}
         <div class="flex items-center justify-between gap-4" class:mt-4={index > 0}>
           <div class="flex items-center gap-4">
             <UserAvatar {user} size="md" />
@@ -275,6 +273,8 @@
             <Button shape="round" size="small" color="secondary" onclick={() => handleLeave()}>
               {$t('leave')}
             </Button>
+          {:else if user.id !== authManager.user.id}
+            <ActionButton type="icon" variant="filled" action={ManageAccess} />
           {/if}
         </div>
       {/each}
@@ -326,7 +326,6 @@
       >{$t('cluster_group_facial_recognition')}</Button
     >
     <Button shape="round" size="small" onclick={() => handleAddUsers()}>{$t('add_user')}</Button>
-    <ActionButton type="button" shape="round" variant="filled" color="primary" action={ManageAccess} />
   </HStack>
 </section>
 
