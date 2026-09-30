@@ -29,10 +29,17 @@ const PersonCreateSchema = z
   })
   .meta({ id: 'PersonCreateDto' });
 
-const PersonUpdateSchema = PersonCreateSchema.extend({
+const PersonUpdateBaseSchema = PersonCreateSchema.extend({
   featureFaceAssetId: z.uuidv4().optional().describe('Asset ID used for feature face thumbnail'),
-  userId: z.uuid().optional().describe('User ID'),
-}).meta({ id: 'PersonUpdateDto' });
+});
+
+const PersonUpdateSchema = PersonUpdateBaseSchema.extend({
+  userId: z.uuid().optional().describe('Restrict the update to the person record of this User ID'),
+})
+  .refine((dto) => Object.entries(dto).some(([key, value]) => key !== 'userId' && value !== undefined), {
+    message: `At least one of the following fields is required: ${Object.keys(PersonUpdateBaseSchema.shape).join(', ')}`,
+  })
+  .meta({ id: 'PersonUpdateDto' });
 
 const PeopleUpdateItemSchema = PersonUpdateSchema.extend({
   id: z.uuidv4().describe('Person ID'),

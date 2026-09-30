@@ -1,9 +1,9 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import PeopleFilterUserPicker from '$lib/modals/PeopleFilterUserPicker.svelte';
-  import { handleUpdatePeople } from '$lib/services/person.service';
+  import { handleUpdatePerson } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { PersonUserRole, type PersonResponseDto } from '@immich/sdk';
+  import { PersonUpdateStrategy, PersonUserRole, type PersonResponseDto } from '@immich/sdk';
   import {
     Alert,
     Button,
@@ -48,7 +48,7 @@
 
   let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
   let targetPerson = $state(candidates[0]);
-  let applyToEveryone = $state(false);
+  let applyToEveryone = $state(authManager.preferences.people?.updateStrategy === PersonUpdateStrategy.Everyone);
 
   const isWritable = $derived.by(() => {
     if (!targetUserId) {
@@ -68,20 +68,14 @@
   });
 
   const onSubmit = async () => {
-    const userIdsToUpdate = applyToEveryone
-      ? candidates.map(({ sharedById }) => sharedById)
-      : [targetPerson.sharedById];
-
-    const success = await handleUpdatePeople({
-      people: userIdsToUpdate.map((userId) => ({
-        id: person.id,
-        name: targetPerson.name,
-        birthDate: targetPerson.birthDate,
-        userId,
-      })),
+    const response = await handleUpdatePerson({
+      id: person.id,
+      name: targetPerson.name,
+      birthDate: targetPerson.birthDate,
+      userId: applyToEveryone ? undefined : targetPerson.sharedById,
     });
 
-    if (success) {
+    if (response) {
       onClose();
     }
   };

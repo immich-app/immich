@@ -24944,11 +24944,15 @@
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
+          },
+          "updateStrategy": {
+            "$ref": "#/components/schemas/PersonUpdateStrategy"
           }
         },
         "required": [
           "enabled",
-          "sidebarWeb"
+          "sidebarWeb",
+          "updateStrategy"
         ],
         "type": "object"
       },
@@ -25011,6 +25015,9 @@
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
+          },
+          "updateStrategy": {
+            "$ref": "#/components/schemas/PersonUpdateStrategy"
           }
         },
         "type": "object"
@@ -25069,7 +25076,7 @@
             "type": "string"
           },
           "userId": {
-            "description": "User ID",
+            "description": "Restrict the update to the person record of this User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
@@ -25527,13 +25534,21 @@
             "type": "string"
           },
           "userId": {
-            "description": "User ID",
+            "description": "Restrict the update to the person record of this User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
           }
         },
         "type": "object"
+      },
+      "PersonUpdateStrategy": {
+        "description": "Which person records to update when editing a person",
+        "enum": [
+          "self",
+          "everyone"
+        ],
+        "type": "string"
       },
       "PersonUserRole": {
         "description": "Levels of access for managing people resources on behalf of another user.",
