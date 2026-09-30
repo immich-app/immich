@@ -1,6 +1,8 @@
+import { defaultMessages, loadMessages } from '@futo-org/backups-orchestrator-ui';
+import { locale as backupsLocale } from 'svelte-i18n-lingui';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
-import { langs } from '$lib/utils/i18n';
+import { convertBCP47, langs } from '$lib/utils/i18n';
 
 class LanguageManager {
   constructor() {
@@ -17,10 +19,11 @@ class LanguageManager {
       return;
     }
     this.initialized = true;
-    lang.subscribe((lang) => this.setLanguage(lang));
+    backupsLocale.set('en', defaultMessages);
+    lang.subscribe((lang) => void this.setLanguage(lang));
   }
 
-  setLanguage(code: string) {
+  async setLanguage(code: string) {
     const item = langs.find((item) => item.code === code);
     if (!item) {
       return;
@@ -31,6 +34,10 @@ class LanguageManager {
     document.body.setAttribute('dir', item.rtl ? 'rtl' : 'ltr');
 
     eventManager.emit('LanguageChange', item);
+
+    const locale = convertBCP47(code);
+    const messages = await loadMessages(locale);
+    backupsLocale.set(locale, messages);
   }
 }
 
