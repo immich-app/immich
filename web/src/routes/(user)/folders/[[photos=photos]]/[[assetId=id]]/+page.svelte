@@ -49,11 +49,11 @@
 
   const getLinkForPath = (path: string) => Route.folders({ path });
 
-    beforeNavigate(({ to }) => {
-      if (isAssetViewerRoute(to)) {
-        savedScrollTop = folderScrollContainer?.scrollTop ?? 0;
-      }
-    });
+  beforeNavigate(({ to }) => {
+    if (isAssetViewerRoute(to)) {
+      savedScrollTop = folderScrollContainer?.scrollTop ?? 0;
+    }
+  });
 
   afterNavigate(({ from }) => {
     assetMultiSelectManager.clear();
@@ -110,10 +110,7 @@
 
   <TreeBreadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
-  <section
-    class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto"
-    bind:this={folderScrollContainer}
-  >
+  <section class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto" bind:this={folderScrollContainer}>
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
 
     <!-- Assets -->
