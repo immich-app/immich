@@ -1794,6 +1794,15 @@ class TestOcr:
         assert indices.tolist() == [[2, 1, 1, 0]]
         assert np.allclose(confidence, [[1 / (1 + 2 * np.exp(-10)), 1 / (1 + np.exp(-1) + np.exp(-2)), 0, 0]])
 
+    def test_rec_decodes_half_precision_logits_that_are_all_blank(self) -> None:
+        raw = np.full((2, 3, 1, 3), -5.0, dtype=np.float16)
+        raw[..., 0] = 5.0  # every step reads as the blank, so no character is kept
+
+        indices, confidence = logits(raw)
+
+        assert indices.tolist() == [[0, 0, 0], [0, 0, 0]]
+        assert confidence.dtype == np.float32 and not confidence.any()
+
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
