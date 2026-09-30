@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto, invalidateAll } from '$app/navigation';
+  import { isAssetViewerRoute } from '$lib/utils/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
@@ -41,13 +42,25 @@
   let { data }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
+  let folderScrollContainer: HTMLElement | undefined = $state();
+  let savedScrollTop = 0;
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
   const getLinkForPath = (path: string) => Route.folders({ path });
 
-  afterNavigate(() => {
+  beforeNavigate(({ to }) => {
+    if (isAssetViewerRoute(to)) {
+      savedScrollTop = folderScrollContainer?.scrollTop ?? 0;
+    }
+  });
+
+  afterNavigate(({ from }) => {
     assetMultiSelectManager.clear();
+
+    if (isAssetViewerRoute(from) && folderScrollContainer) {
+      folderScrollContainer.scrollTop = savedScrollTop;
+    }
   });
 
   const navigateToView = (path: string) => {
@@ -97,7 +110,7 @@
 
   <TreeBreadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
-  <section class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto">
+  <section class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto" bind:this={folderScrollContainer}>
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
 
     <!-- Assets -->
