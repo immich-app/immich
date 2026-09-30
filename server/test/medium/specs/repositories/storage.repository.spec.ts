@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path, { join } from 'node:path';
-import type { WalkError, WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
+import type { WalkError, WalkItem } from 'src/repositories/storage.repository.js';
 import { WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
@@ -155,15 +155,15 @@ const tests: Test[] = [
       pathsToWalk: ['/photos/'],
     },
     files: {
-      '/photos/image.jpg': true,
-      '/photos/image.Jpg': true,
-      '/photos/image.jpG': true,
-      '/photos/image.JPG': true,
-      '/photos/image.jpEg': true,
-      '/photos/image.TIFF': true,
-      '/photos/image.tif': true,
-      '/photos/image.dng': true,
-      '/photos/image.NEF': true,
+      '/photos/image1.jpg': true,
+      '/photos/image2.Jpg': true,
+      '/photos/image3.jpG': true,
+      '/photos/image4.JPG': true,
+      '/photos/image5.jpEg': true,
+      '/photos/image6.TIFF': true,
+      '/photos/image7.tif': true,
+      '/photos/image8.dng': true,
+      '/photos/image9.NEF': true,
     },
   },
   {
@@ -205,6 +205,29 @@ describe(StorageRepository.name, () => {
 
   beforeEach(() => {
     ({ sut } = setup());
+  });
+
+  describe('walkWithMetadata', () => {
+    it('streams timestamps and preferred same-directory sidecars without importing orphans', async () => {
+      const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-sidecar-scan-'));
+      try {
+        const media = path.join(directory, 'file.jpg');
+        const preferred = `${media}.xmp`;
+        await createTestFiles(directory, ['file.jpg', 'file.xmp', 'file.jpg.xmp', 'other.jpg', 'orphan.xmp']);
+        const mediaStat = await fs.stat(media);
+        const modified = Math.trunc(mediaStat.mtimeMs);
+        const batches = await Array.fromAsync(sut.walkWithMetadata({ pathsToWalk: [directory], take: 1 }));
+        expect(batches).toHaveLength(2);
+        expect(batches.flat()).toEqual(
+          expect.arrayContaining([
+            { path: media, modified, sidecar: preferred },
+            { path: path.join(directory, 'other.jpg'), modified: expect.any(Number), sidecar: null },
+          ]),
+        );
+      } finally {
+        await fs.rm(directory, { recursive: true, force: true });
+      }
+    });
   });
 
   describe('walk', () => {

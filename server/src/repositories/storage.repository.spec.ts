@@ -1,7 +1,7 @@
 import { vitest } from 'vitest';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
-import { automock } from 'test/utils.js';
+import { automock, makeStream } from 'test/utils.js';
 
 const mocks = vitest.hoisted(() => {
   const watcher = {
@@ -10,10 +10,11 @@ const mocks = vitest.hoisted(() => {
   };
   watcher.on.mockReturnValue(watcher);
 
-  return { watch: vitest.fn(() => watcher), watcher };
+  return { watch: vitest.fn(() => watcher), watcher, walkFiles: vitest.fn() };
 });
 
 vitest.mock('chokidar', () => ({ watch: mocks.watch }));
+vitest.mock('@immich/walkrs', () => ({ walk: mocks.walkFiles }));
 
 const getHandler = (event: string) => {
   const handler = mocks.watcher.on.mock.calls.find(([name]) => name === event)?.[1];
@@ -32,6 +33,49 @@ describe(StorageRepository.name, () => {
     mocks.watch.mockReset().mockReturnValue(mocks.watcher);
     mocks.watcher.on.mockReset().mockReturnValue(mocks.watcher);
     mocks.watcher.close.mockReset().mockResolvedValue(undefined);
+    mocks.walkFiles.mockReset();
+  });
+
+  describe('walkWithMetadata', () => {
+    it('preserves sidecar and metadata alignment while rebatching', async () => {
+      mocks.walkFiles.mockReturnValue(
+        makeStream([
+          {
+            files: ['/photos/a.jpg', '/photos/b.jpg'],
+            size: [0, 0],
+            modified: [1, 2],
+            sidecars: ['/photos/a.xmp', null],
+            errors: [],
+          },
+          { files: ['/photos/c.jpg'], size: [0], modified: [3], sidecars: [{ status: 'unknown' }], errors: [] },
+        ]),
+      );
+      const batches = await Array.fromAsync(sut.walkWithMetadata({ pathsToWalk: ['/photos'], take: 2 }));
+      expect(batches).toEqual([
+        [
+          { path: '/photos/a.jpg', modified: 1, sidecar: '/photos/a.xmp' },
+          { path: '/photos/b.jpg', modified: 2, sidecar: null },
+        ],
+        [{ path: '/photos/c.jpg', modified: 3, sidecar: { status: 'unknown' } }],
+      ]);
+      expect(mocks.walkFiles).toHaveBeenCalledWith(
+        expect.objectContaining({ includeMetadata: true, includeSidecars: true, followLinks: true }),
+      );
+    });
+
+    it('rejects unaligned discovery columns', async () => {
+      mocks.walkFiles.mockReturnValue(
+        makeStream([{ files: ['/photos/a.jpg'], modified: [], sidecars: [null], errors: [] }]),
+      );
+      await expect(sut.walkWithMetadata({ pathsToWalk: ['/photos'], take: 2 }).next()).rejects.toThrow('unaligned');
+    });
+
+    it('rejects an invalid batch limit before starting a walk', async () => {
+      await expect(sut.walkWithMetadata({ pathsToWalk: ['/photos'], take: 0 }).next()).rejects.toThrow(
+        'positive safe integer',
+      );
+      expect(mocks.walkFiles).not.toHaveBeenCalled();
+    });
   });
 
   describe('watch', () => {

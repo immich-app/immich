@@ -93,6 +93,11 @@ export class JobService extends BaseService {
       }
     } catch (error: Error | any) {
       await this.eventRepository.emit('JobError', { job, error });
+      if (job.name === JobName.LibrarySyncFiles && job.data.scan !== undefined) {
+        // Scan imports commit assets and sidecars before enqueueing extraction.
+        // Preserve failed payloads so BullMQ can retry those follow-up jobs.
+        throw error;
+      }
     } finally {
       await this.eventRepository.emit('JobComplete', queueName, job);
     }

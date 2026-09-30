@@ -5,7 +5,7 @@ import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { JobOf } from 'src/types.js';
+import type { ILibraryScanFile, JobOf } from 'src/types.js';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -263,6 +263,58 @@ export class LibraryService extends BaseService {
       return JobStatus.Failed;
     }
 
+    if (job.scan !== undefined) {
+      const scanByPath = new Map(job.scan.map((file) => [path.normalize(file.path), file]));
+      const ids = new Set(job.scan.map(({ id }) => id));
+      const paths = [...new Set(job.paths.map((filename) => path.normalize(filename)))];
+      if (
+        scanByPath.size !== job.scan.length ||
+        ids.size !== job.scan.length ||
+        paths.length !== job.paths.length ||
+        job.scan.length !== paths.length ||
+        paths.some((filename) => !scanByPath.has(filename))
+      ) {
+        throw new Error('Library scan job paths and records are not aligned');
+      }
+      const assets: Array<Insertable<AssetTable> & { id: string }> = [];
+      const sidecars: Array<{ assetId: string; path: string }> = [];
+      for (const filename of paths) {
+        const file = scanByPath.get(filename)!;
+        if (!Number.isSafeInteger(file.modified) || Number.isNaN(new Date(file.modified).getTime())) {
+          throw new TypeError(`Invalid scan modification time for ${filename}`);
+        }
+        if (file.sidecar !== null && typeof file.sidecar !== 'string' && file.sidecar?.status !== 'unknown') {
+          throw new Error(`Invalid scan sidecar for ${filename}`);
+        }
+        assets.push({
+          ...this.buildEntity(filename, library.ownerId, job.libraryId, new Date(file.modified)),
+          id: file.id,
+        });
+        if (typeof file.sidecar === 'string') {
+          sidecars.push({ assetId: file.id, path: file.sidecar });
+        }
+      }
+      const imported = await this.assetRepository.importExternalAssets(assets, sidecars);
+      // Persist associations before events and metadata jobs. Retries and
+      // overlapping imports must not emit another creation event for an asset.
+      await Promise.all(
+        imported
+          .filter(({ isNew }) => isNew)
+          .map(({ id }) => this.eventRepository.emit('AssetCreate', { asset: { id, ownerId: library.ownerId } })),
+      );
+      await this.jobRepository.queueAll(
+        imported.map(({ id, originalPath }) => ({
+          name:
+            typeof scanByPath.get(originalPath)!.sidecar === 'object' && scanByPath.get(originalPath)!.sidecar !== null
+              ? JobName.SidecarCheck
+              : JobName.AssetExtractMetadata,
+          data: { id, source: 'upload' },
+        })),
+      );
+      this.logger.log(`Imported ${imported.length} file(s) into library ${job.libraryId}`);
+      return JobStatus.Success;
+    }
+
     const assetImports: Insertable<AssetTable>[] = [];
     await Promise.all(
       job.paths.map(async (path) => {
@@ -403,6 +455,10 @@ export class LibraryService extends BaseService {
     const assetPath = path.normalize(filePath);
     const stat = await this.storageRepository.stat(assetPath);
 
+    return this.buildEntity(assetPath, ownerId, libraryId, stat.mtime);
+  }
+
+  private buildEntity(assetPath: string, ownerId: string, libraryId: string, modified: Date) {
     return {
       ownerId,
       libraryId,
@@ -410,9 +466,9 @@ export class LibraryService extends BaseService {
       checksumAlgorithm: ChecksumAlgorithm.sha1Path,
       originalPath: assetPath,
 
-      fileCreatedAt: stat.mtime,
-      fileModifiedAt: stat.mtime,
-      localDateTime: stat.mtime,
+      fileCreatedAt: modified,
+      fileModifiedAt: modified,
+      localDateTime: modified,
       type: mimeTypes.isVideo(assetPath) ? AssetType.Video : AssetType.Image,
       originalFileName: parse(assetPath).base,
       isExternal: true,
@@ -640,10 +696,11 @@ export class LibraryService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const pathsOnDisk = this.storageRepository.walk({
+    const pathsOnDisk = this.storageRepository.walkWithMetadata({
       pathsToWalk: validImportPaths,
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
+      take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
     let importCount = 0;
@@ -651,18 +708,11 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    for await (const walkItems of pathsOnDisk) {
-      const pathBatch: string[] = [];
-      for (const item of walkItems) {
-        if (item.type === 'error') {
-          this.logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message} for library ${library.id}`);
-        } else {
-          pathBatch.push(item.path);
-        }
-      }
-
+    for await (const fileBatch of pathsOnDisk) {
+      const scanByPath = new Map<string, ILibraryScanFile>(fileBatch.map((file) => [path.normalize(file.path), file]));
+      const pathBatch = scanByPath.keys().toArray();
       crawlCount += pathBatch.length;
-      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
+      const paths = [...new Set(await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch))];
 
       if (paths.length > 0) {
         importCount += paths.length;
@@ -672,6 +722,7 @@ export class LibraryService extends BaseService {
           data: {
             libraryId: library.id,
             paths,
+            scan: paths.map((filename) => ({ ...scanByPath.get(filename)!, id: this.cryptoRepository.randomUUID() })),
             progressCounter: crawlCount,
           },
         });

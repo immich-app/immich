@@ -244,8 +244,17 @@ export interface IAssetDeleteJob extends IEntityJob {
 export interface ILibraryFileJob {
   libraryId: string;
   paths: string[];
+  // IDs are assigned before enqueue so a retry can finish post-import jobs
+  // after asset creation has committed without inserting duplicate assets.
+  scan?: Array<ILibraryScanFile & { id: string }>;
   progressCounter?: number;
   totalAssets?: number;
+}
+
+export interface ILibraryScanFile {
+  path: string;
+  modified: number;
+  sidecar: string | null | { status: 'unknown' };
 }
 
 export interface ILibraryBulkIdsJob {

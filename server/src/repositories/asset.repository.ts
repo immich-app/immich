@@ -12,7 +12,7 @@ import {
   sql,
 } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import { isEmpty, isUndefined, omitBy } from 'lodash-es';
+import { chunk, isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { LockableProperty, Stack } from 'src/database.js';
@@ -455,6 +455,69 @@ export class AssetRepository {
     }
     const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
     return ids.map(({ id }) => id);
+  }
+
+  async importExternalAssets(
+    assets: Array<Insertable<AssetTable> & { id: string }>,
+    sidecars: Array<{ assetId: string; path: string }>,
+  ): Promise<Array<{ id: string; originalPath: string; isNew: boolean }>> {
+    if (assets.length === 0) {
+      return [];
+    }
+    return this.db.transaction().execute(async (tx) => {
+      const newIds = new Set<string>();
+      for (const batch of chunk(assets, 4000)) {
+        const inserted = await tx
+          .insertInto('asset')
+          .values(batch)
+          .onConflict((oc) => oc.doNothing())
+          .returning('id')
+          .execute();
+        for (const { id } of inserted) {
+          newIds.add(id);
+        }
+      }
+      const created = await tx
+        .selectFrom('asset')
+        .select(['id', 'originalPath'])
+        .where(
+          'originalPath',
+          'in',
+          assets.map(({ originalPath }) => originalPath),
+        )
+        .where('ownerId', '=', assets[0].ownerId)
+        .where('libraryId', '=', assets[0].libraryId!)
+        .execute();
+      const expected = new Map(assets.map((asset) => [asset.id, asset]));
+      const createdByPath = new Map(created.map((asset) => [asset.originalPath, asset.id]));
+      if (
+        created.length !== assets.length ||
+        createdByPath.size !== assets.length ||
+        assets.some(({ originalPath }) => !createdByPath.has(originalPath))
+      ) {
+        throw new Error('External asset imports do not match their original paths');
+      }
+      for (const batch of chunk(sidecars, 4000)) {
+        if (batch.some(({ assetId }) => !expected.has(assetId))) {
+          throw new Error('Sidecar does not belong to the imported asset batch');
+        }
+        await tx
+          .insertInto('asset_file')
+          .values(
+            batch.map((file) => ({
+              ...file,
+              assetId: createdByPath.get(expected.get(file.assetId)!.originalPath)!,
+              type: AssetFileType.Sidecar,
+              isEdited: false,
+            })),
+          )
+          .onConflict((oc) =>
+            oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({ path: eb.ref('excluded.path') })),
+          )
+          .execute();
+      }
+      return created.map((asset) => ({ ...asset, isNew: newIds.has(asset.id) }));
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })

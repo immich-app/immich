@@ -6,6 +6,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
   return {
     create: vitest.fn(),
     createAll: vitest.fn(),
+    importExternalAssets: vitest.fn(),
     upsertExif: vitest.fn(),
     updateAllExif: vitest.fn(),
     updateDateTimeOriginal: vitest.fn().mockResolvedValue([]),

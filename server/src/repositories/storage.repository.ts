@@ -1,3 +1,4 @@
+import { walk as walkFiles } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
@@ -16,7 +17,7 @@ import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
 import picomatch from 'picomatch';
-import type { WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
+import type { ILibraryScanFile } from 'src/types.js';
 import { WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -48,6 +49,9 @@ export interface DiskUsage {
   free: number;
   total: number;
 }
+
+export type WalkError = { type: 'error'; path?: string | null; message: string };
+export type WalkItem = WalkError | { type: 'entry'; path: string };
 
 @Injectable()
 export class StorageRepository {
@@ -226,18 +230,58 @@ export class StorageRepository {
 
   async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<WalkItem[], void, unknown> {
     const { pathsToWalk, exclusionPatterns, includeHidden } = walkOptions;
-    if (pathsToWalk.length === 0) {
-      return;
-    }
-
-    const { walk } = await import('@immich/walkrs');
-
-    yield* walk({
+    for await (const batch of walkFiles({
       paths: pathsToWalk.map((entryPath) => path.resolve(entryPath)),
       includeHidden: includeHidden ?? false,
       exclusionPatterns,
       extensions: mimeTypes.getSupportedFileExtensions(),
-    });
+      followLinks: true,
+    })) {
+      yield [
+        ...batch.files.map((path): WalkItem => ({ type: 'entry', path })),
+        ...batch.errors.map((error): WalkItem => ({ ...error, type: 'error' })),
+      ];
+    }
+  }
+
+  async *walkWithMetadata(walkOptions: WalkOptionsDto & { take: number }): AsyncGenerator<ILibraryScanFile[]> {
+    if (!Number.isSafeInteger(walkOptions.take) || walkOptions.take <= 0) {
+      throw new Error('Walk batch size must be a positive safe integer');
+    }
+
+    let files: ILibraryScanFile[] = [];
+    for await (const batch of walkFiles({
+      paths: walkOptions.pathsToWalk.map((filename) => path.resolve(filename)),
+      extensions: mimeTypes.getSupportedFileExtensions(),
+      exclusionPatterns: walkOptions.exclusionPatterns,
+      includeHidden: walkOptions.includeHidden,
+      includeMetadata: true,
+      includeSidecars: true,
+      followLinks: true,
+    })) {
+      for (const error of batch.errors) {
+        this.logger.warn(`Library scan error${error.path ? ` at ${error.path}` : ''}: ${error.message}`);
+      }
+      if (
+        !batch.modified ||
+        !batch.sidecars ||
+        batch.modified.length !== batch.files.length ||
+        batch.sidecars.length !== batch.files.length
+      ) {
+        throw new Error('Library scan returned unaligned metadata or sidecars');
+      }
+
+      for (const [index, filename] of batch.files.entries()) {
+        files.push({ path: path.normalize(filename), modified: batch.modified[index], sidecar: batch.sidecars[index] });
+        if (files.length === walkOptions.take) {
+          yield files;
+          files = [];
+        }
+      }
+    }
+    if (files.length > 0) {
+      yield files;
+    }
   }
 
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {

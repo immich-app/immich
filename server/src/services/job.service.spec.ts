@@ -32,6 +32,23 @@ describe(JobService.name, () => {
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
+    it('propagates scan import failures to the queue and still emits completion', async () => {
+      const error = new Error('Redis unavailable after import');
+      const job: JobItem = {
+        name: JobName.LibrarySyncFiles,
+        data: {
+          libraryId: newUuid(),
+          paths: ['/photos/a.jpg'],
+          scan: [{ id: newUuid(), path: '/photos/a.jpg', modified: 1, sidecar: null }],
+        },
+      };
+      mocks.job.run.mockRejectedValue(error);
+      await expect(sut.onJobRun(QueueName.Library, job)).rejects.toThrow(error);
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobError', { job, error });
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobComplete', QueueName.Library, job);
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('JobSuccess', expect.anything());
+    });
+
     const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
       {
         item: { name: JobName.SidecarCheck, data: { id: 'asset-1' } },

@@ -256,6 +256,9 @@ export class JobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
+      case JobName.LibrarySyncFiles: {
+        return item.data.scan === undefined ? null : { attempts: 3, backoff: { type: 'exponential', delay: 1000 } };
+      }
       case JobName.NotifyAlbumUpdate: {
         return {
           jobId: `${item.data.id}/${item.data.recipientId}`,

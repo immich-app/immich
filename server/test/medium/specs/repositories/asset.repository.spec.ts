@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
-import { AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum.js';
+import { AssetFileType, AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { DB } from 'src/schema/index.js';
 import { BaseService } from 'src/services/base.service.js';
 import { newMediumService } from 'test/medium.factory.js';
-import { factory } from 'test/small.factory.js';
+import { factory, newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
@@ -499,6 +499,65 @@ describe(AssetRepository.name, () => {
           .where('assetId', '=', asset.id)
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ lockedProperties: null });
+    });
+  });
+
+  describe('importExternalAssets', () => {
+    it('persists sidecars atomically and reuses assets on retries and overlapping imports', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const library = await defaultDatabase
+        .insertInto('library')
+        .values({ ownerId: user.id, name: 'sidecars', importPaths: [], exclusionPatterns: [] })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      const { asset: template } = await ctx.newAsset({ ownerId: user.id, libraryId: library.id, isExternal: true });
+      const asset = {
+        ...template,
+        id: newUuid(),
+        originalPath: '/photos/paired.jpg',
+        checksum: Buffer.from(newUuid()),
+      };
+      const sidecars = [{ assetId: asset.id, path: '/photos/paired.jpg.xmp' }];
+      await expect(sut.importExternalAssets([asset], sidecars)).resolves.toEqual([
+        { id: asset.id, originalPath: asset.originalPath, isNew: true },
+      ]);
+      await expect(sut.importExternalAssets([asset], sidecars)).resolves.toEqual([
+        { id: asset.id, originalPath: asset.originalPath, isNew: false },
+      ]);
+      const overlapping = { ...asset, id: newUuid() };
+      await expect(
+        sut.importExternalAssets([overlapping], [{ ...sidecars[0], assetId: overlapping.id }]),
+      ).resolves.toEqual([{ id: asset.id, originalPath: asset.originalPath, isNew: false }]);
+      const files = await defaultDatabase
+        .selectFrom('asset_file')
+        .select(['assetId', 'path', 'type'])
+        .where('assetId', '=', asset.id)
+        .execute();
+      expect(files).toEqual([{ assetId: asset.id, path: sidecars[0].path, type: AssetFileType.Sidecar }]);
+    });
+
+    it('rolls asset creation back when sidecar association fails', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const library = await defaultDatabase
+        .insertInto('library')
+        .values({ ownerId: user.id, name: 'sidecars rollback', importPaths: [], exclusionPatterns: [] })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      const { asset: template } = await ctx.newAsset({ ownerId: user.id, libraryId: library.id, isExternal: true });
+      const asset = {
+        ...template,
+        id: newUuid(),
+        originalPath: '/photos/rollback.jpg',
+        checksum: Buffer.from(newUuid()),
+      };
+      await expect(
+        sut.importExternalAssets([asset], [{ assetId: newUuid(), path: '/photos/rollback.xmp' }]),
+      ).rejects.toThrow('does not belong');
+      await expect(
+        defaultDatabase.selectFrom('asset').select('id').where('id', '=', asset.id).execute(),
+      ).resolves.toEqual([]);
     });
   });
 
