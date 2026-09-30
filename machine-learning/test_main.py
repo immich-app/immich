@@ -295,6 +295,7 @@ class TestOrtSessions:
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
     ROCM_EP = ["MIGraphXExecutionProvider", "CPUExecutionProvider"]
     COREML_EP = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+    TRT_RTX_EP = ["nv_tensorrt_rtx", "CUDAExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
     def test_sets_cpu_provider(self, ort_session: mock.Mock, providers: list[str]) -> None:
@@ -340,6 +341,12 @@ class TestOrtSessions:
         ort_sessions("ViT-B-32__openai")
 
         assert given_providers(ort_session) == self.COREML_EP
+
+    @pytest.mark.providers(TRT_RTX_EP)
+    def test_leaves_cuda_out_beside_tensorrt_rtx(self, ort_session: mock.Mock, providers: list[str]) -> None:
+        ort_sessions("ViT-B-32__openai")
+
+        assert given_providers(ort_session) == ["nv_tensorrt_rtx", "CPUExecutionProvider"]
 
     def test_leaves_a_dimension_free_when_the_model_feeds_several_sizes(
         self, ort_session: mock.Mock, mocker: MockerFixture
@@ -408,7 +415,7 @@ class TestOrtSessions:
             events.append("open")
             return mock.DEFAULT
 
-        def run(output_names: Any, feed: dict[str, np.ndarray]) -> list[np.ndarray]:
+        def run(output_names: Any, feed: dict[str, np.ndarray], run_options: Any = None) -> list[np.ndarray]:
             events.append(f"run at {feed['image'].shape[2]}")  # a dim the graph leaves free takes the shape's size
             return [np.zeros(1)]
 
