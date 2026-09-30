@@ -87,7 +87,7 @@
     "js-yaml": "^5.0.0",
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.29.5",
-    "kysely-postgres-js": "^3.0.0",
+    "kysely-postgres-js": "^5.0.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.2",
     "mnemonist": "^0.40.3",

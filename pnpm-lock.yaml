@@ -12,8 +12,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -546,8 +544,8 @@ importers:
         specifier: ^0.29.5
         version: 0.29.6
       kysely-postgres-js:
-        specifier: ^3.0.0
-        version: 3.0.0(kysely@0.29.6)(postgres@3.4.9)
+        specifier: ^5.0.0
+        version: 5.0.1(kysely@0.29.6)(postgres@3.4.9)
       lodash-es:
         specifier: ^4.17.21
         version: 4.18.1
@@ -9264,18 +9262,18 @@ packages:
     resolution: {integrity: sha512-e7IpWJrnanNUroVK2taAgMxoEZvHLXdQiNjeExSu/DEIWm83jaKGBgb7tLmu2rMYpA027qFB3iLR/k3AVpFRnA==}
     engines: {node: '>= 18'}
 
-  kysely-postgres-js@3.0.0:
-    resolution: {integrity: sha512-o2t/xNSYJQDW6rVGGFPXKmZ0BEz2dGn66c2B+cO/k9ZNcU2qPWPycQPQ+B+P2MBXbKYq0xV9BZmFIvkUrmFWAQ==}
-    engines: {bun: '>=1.2', node: '>=20'}
+  kysely-postgres-js@4.0.0:
+    resolution: {integrity: sha512-zIGYZ1TMduPZJAyeRMo9OodZYPxK4RI8OIKO8XShHiv5gzaY+KxmZnKcnYRvbfdmUH0kv+ZTlYrBZ5Uk+lI1QA==}
+    engines: {bun: '>=1.2', node: '>=22'}
     peerDependencies:
-      kysely: '>= 0.24.0 < 1'
+      kysely: '>= 0.29.0 < 1'
       postgres: ^3.4.0
     peerDependenciesMeta:
       postgres:
         optional: true
 
-  kysely-postgres-js@4.0.0:
-    resolution: {integrity: sha512-zIGYZ1TMduPZJAyeRMo9OodZYPxK4RI8OIKO8XShHiv5gzaY+KxmZnKcnYRvbfdmUH0kv+ZTlYrBZ5Uk+lI1QA==}
+  kysely-postgres-js@5.0.1:
+    resolution: {integrity: sha512-3qY2qzXJszS35CMuknpon79CE5G7MfcTMoIQHuFmGsaQQ2rau3rwx7eNaRJkO9nhli8yQedQroBZ/VehzNJy4w==}
     engines: {bun: '>=1.2', node: '>=22'}
     peerDependencies:
       kysely: '>= 0.29.0 < 1'
@@ -21399,18 +21397,19 @@ snapshots:
   exiftool-vendored.exe@13.59.0:
     optional: true
 
-  exiftool-vendored.pl@13.59.0: {}
+  exiftool-vendored.pl@13.59.0:
+    optional: true
 
   exiftool-vendored@35.21.0:
     dependencies:
       '@photostructure/tz-lookup': 11.5.0
       '@types/luxon': 3.7.5
       batch-cluster: 17.3.1
-      exiftool-vendored.pl: 13.59.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.59.0
+      exiftool-vendored.pl: 13.59.0
 
   expand-template@2.0.3:
     optional: true
@@ -22998,13 +22997,13 @@ snapshots:
       type-is: 2.1.0
       vary: 1.1.2
 
-  kysely-postgres-js@3.0.0(kysely@0.29.6)(postgres@3.4.9):
+  kysely-postgres-js@4.0.0(kysely@0.29.6)(postgres@3.4.9):
     dependencies:
       kysely: 0.29.6
     optionalDependencies:
       postgres: 3.4.9
 
-  kysely-postgres-js@4.0.0(kysely@0.29.6)(postgres@3.4.9):
+  kysely-postgres-js@5.0.1(kysely@0.29.6)(postgres@3.4.9):
     dependencies:
       kysely: 0.29.6
     optionalDependencies:
