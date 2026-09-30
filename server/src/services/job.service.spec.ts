@@ -20,6 +20,18 @@ describe(JobService.name, () => {
   });
 
   describe('onJobRun', () => {
+    it('should queue metadata extraction when sidecar discovery is skipped', async () => {
+      const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
+      mocks.job.run.mockResolvedValue(JobStatus.Skipped);
+
+      await sut.onJobRun(QueueName.Sidecar, job);
+
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.AssetExtractMetadata,
+        data: job.data,
+      });
+    });
+
     it('should process a successful job', async () => {
       mocks.job.run.mockResolvedValue(JobStatus.Success);
 
