@@ -28,6 +28,7 @@ abstract class RemoteAlbum with _$RemoteAlbum {
     required DateTime updatedAt,
     String? thumbnailAssetId,
     required bool isActivityEnabled,
+    required bool isPinned,
     required AlbumAssetOrder order,
     required int assetCount,
     required String ownerName,

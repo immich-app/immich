@@ -160,7 +160,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 34;
+  int get schemaVersion => 35;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -373,6 +373,9 @@ class Drift extends $Drift {
               },
               from33To34: (m, v34) async {
                 await _healV33DateTimes(this);
+              },
+              from34To35: (m, v35) async {
+                await m.addColumn(v35.remoteAlbumEntity, v35.remoteAlbumEntity.isPinned);
               },
             ),
           );

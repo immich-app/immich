@@ -20,6 +20,8 @@ import {
   mdiDownload,
   mdiImageOutline,
   mdiLink,
+  mdiPin,
+  mdiPinOutline,
   mdiPlus,
   mdiPlusBoxOutline,
   mdiRenameOutline,
@@ -126,7 +128,13 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => modalManager.show(AlbumOptionsModal, { album }),
   };
 
-  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Options, Share };
+  const Pin: ActionItem = {
+    title: album.isPinned ? $t('unpin_album') : $t('pin_album'),
+    icon: album.isPinned ? mdiPin : mdiPinOutline,
+    onAction: () => handleToggleAlbumPin(album),
+  };
+
+  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Options, Share, Pin };
 };
 
 export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: AssetResponseDto) => {
@@ -338,6 +346,21 @@ export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbum
     });
 
     return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_album_info'));
+  }
+};
+
+const handleToggleAlbumPin = async (album: AlbumResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAlbumInfo({
+      id: album.id,
+      updateAlbumDto: { isPinned: !album.isPinned },
+    });
+    eventManager.emit('AlbumUpdate', response);
+    return response;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_album_info'));
   }

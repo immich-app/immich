@@ -2,6 +2,7 @@
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { navigating } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
@@ -68,7 +69,6 @@
   import type { PageData } from './$types';
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
 
   interface Props {
     data: PageData;
@@ -305,7 +305,7 @@
   const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
     album = newAlbum;
 
-    // invalidating during navigation causes an infinite page load
+    // invalidating during `navigation` causes an infinite page load
     await navigating.complete;
 
     await invalidate('album:data');
@@ -559,6 +559,7 @@
                   />
                 {/if}
 
+                <ActionMenuItem action={Actions.Pin} />
                 <ActionMenuItem action={Actions.Delete} />
                 <ActionMenuItem action={Actions.Leave} />
               </ButtonContextMenu>

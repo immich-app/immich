@@ -52,7 +52,11 @@ class SyncApiRepository {
           SyncRequestType.partnersV1,
           serverVersion.supports(.syncV2) ? SyncRequestType.partnerAssetsV2 : SyncRequestType.partnerAssetsV1,
           SyncRequestType.partnerAssetExifsV1,
-          serverVersion.supports(.syncV2) ? SyncRequestType.albumsV2 : SyncRequestType.albumsV1,
+          serverVersion.supports(.syncAlbumsV3)
+              ? SyncRequestType.albumsV3
+              : serverVersion.supports(.syncV2)
+              ? SyncRequestType.albumsV2
+              : SyncRequestType.albumsV1,
           SyncRequestType.albumUsersV1,
           serverVersion.supports(.syncV2) ? SyncRequestType.albumAssetsV2 : SyncRequestType.albumAssetsV1,
           SyncRequestType.albumAssetExifsV1,
@@ -165,7 +169,8 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
   SyncEntityType.partnerAssetExifBackfillV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumV1: SyncAlbumV1.fromJson,
-  SyncEntityType.albumV2: SyncAlbumV2.fromJson,
+  SyncEntityType.albumV2: SyncAlbumV3.fromJson,
+  SyncEntityType.albumV3: SyncAlbumV3.fromJson,
   SyncEntityType.albumDeleteV1: SyncAlbumDeleteV1.fromJson,
   SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
   SyncEntityType.albumUserBackfillV1: SyncAlbumUserV1.fromJson,
