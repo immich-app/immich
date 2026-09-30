@@ -688,6 +688,7 @@ export type PeopleResponse = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb: boolean;
+    updateStrategy: PersonUpdateStrategy;
 };
 export type PurchaseResponse = {
     /** Date until which to hide buy button */
@@ -774,6 +775,7 @@ export type PeopleUpdate = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb?: boolean;
+    updateStrategy?: PersonUpdateStrategy;
 };
 export type PurchaseUpdate = {
     /** Date until which to hide buy button */
@@ -2033,7 +2035,7 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-    /** User ID */
+    /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
 export type PeopleUpdateDto = {
@@ -2067,8 +2069,8 @@ export type PersonUsersResponseDto = {
     sharedWithId: string;
 }[];
 export type PersonUsersCreateDto = {
-    /** Person IDs */
-    personIds: string[];
+    /** Person IDs, defaults to every person owned by the user */
+    personIds?: string[];
     /** Role that should be applied */
     role: PersonUserRole;
     /** User IDs that should be given access to the person */
@@ -2090,7 +2092,7 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-    /** User ID */
+    /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
 export type AssetFaceUpdateItem = {
@@ -8060,6 +8062,10 @@ export enum CalendarHeatmapType {
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
+}
+export enum PersonUpdateStrategy {
+    Self = "self",
+    Everyone = "everyone"
 }
 export enum AssetVisibility {
     Archive = "archive",

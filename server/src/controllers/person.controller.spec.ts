@@ -91,6 +91,23 @@ describe(PersonController.name, () => {
       expect(body).toEqual(errorDto.validationError([{ path: ['featureFaceAssetId'], message: 'Invalid UUID' }]));
     });
 
+    it('should require at least one property to update', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/people/${factory.uuid()}`)
+        .send({ userId: factory.uuid() })
+        .set('Authorization', `Bearer token`);
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          {
+            path: [],
+            message:
+              'At least one of the following fields is required: name, birthDate, isHidden, isFavorite, color, featureFaceAssetId',
+          },
+        ]),
+      );
+    });
+
     it(`should require isFavorite to be a boolean`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/people/${factory.uuid()}`)
