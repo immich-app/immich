@@ -8,7 +8,6 @@ import type {
   LibraryResponseDto,
   LoginResponseDto,
   PersonResponseDto,
-  PersonUserRole,
   QueueResponseDto,
   ReleaseEventV1,
   SharedLinkResponseDto,
@@ -55,7 +54,6 @@ export type Events = {
 
   PersonUpdate: [PersonResponseDto];
   PersonShare: [{ personId: string }];
-  PersonUserUpdate: [{ personId: string; userId: string; role: PersonUserRole }];
   PersonUserDelete: [{ personId: string; userId: string }];
   PersonThumbnailReady: [{ id: string }];
   PersonAssetDelete: [{ id: string; assetId: string }];

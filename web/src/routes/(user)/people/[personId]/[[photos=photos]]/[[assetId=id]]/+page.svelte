@@ -37,7 +37,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { AssetVisibility, PersonUserRole, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
@@ -403,27 +403,9 @@
                     />
                   </div>
                   {#if altItems.length > 0}
-                    {@const parts = new Intl.ListFormat($locale).formatToParts(
-                      altItems.map(({ sharedById }) => sharedById),
-                    )}
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {#each parts as { type, value } (value)}
-                        {#if type === 'element'}
-                          {@const altItem = altItems.find(({ sharedById }) => sharedById === value)!}
-                          {#if [PersonUserRole.Write, PersonUserRole.Admin].includes(altItem.role)}
-                            <button
-                              type="button"
-                              onclick={() =>
-                                modalManager.show(PersonEditModal, { person, targetUserId: altItem.sharedById })}
-                              class="underline">{altItem.name}</button
-                            >
-                          {:else}
-                            {altItem.name}
-                          {/if}
-                        {:else}
-                          {value}
-                        {/if}
-                      {/each}
+                      {$t('also_known_as')}
+                      {new Intl.ListFormat($locale).format(altItems.map(({ name }) => name))}
                     </p>
                   {/if}
                   <p class="text-sm text-gray-500 dark:text-gray-400">

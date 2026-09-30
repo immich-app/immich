@@ -6,7 +6,7 @@
   import { handleBulkUpsert } from '$lib/services/person-user.service';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { getAllPeople, PersonUserRole, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { getAllPeople, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     Field,
@@ -36,22 +36,14 @@
 
   let selectedUserId = $state(users[0].id);
   let shareEveryone = $state(false);
-  let role = $state<PersonUserRole>(PersonUserRole.Read);
   let serverPeople = $state<PersonResponseDto[]>([]);
-  const existingRoles = new SvelteMap<string, PersonUserRole>();
   const added = new SvelteMap<string, PersonResponseDto>();
   const removed = new SvelteSet<string>();
-
-  const roleOptions = $derived([
-    { label: $t('person_role_read'), value: PersonUserRole.Read },
-    { label: $t('person_role_write'), value: PersonUserRole.Write },
-    { label: $t('person_role_admin'), value: PersonUserRole.Admin },
-  ]);
 
   const selectedPeople = $derived([...serverPeople.filter(({ id }) => !removed.has(id)), ...added.values()]);
   const selectedIds = $derived(new Set(selectedPeople.map(({ id }) => id)));
 
-  const canSubmit = $derived(shareEveryone || selectedIds.size > 0 || existingRoles.size > 0);
+  const canSubmit = $derived(shareEveryone || selectedIds.size > 0 || serverPeople.length > 0);
 
   const ManagePeople: ActionItem = $derived({
     title: $t('edit_people'),
@@ -83,7 +75,6 @@
   };
 
   const loadShares = async (sharedWithId: string) => {
-    existingRoles.clear();
     added.clear();
     removed.clear();
 
@@ -93,13 +84,14 @@
       handleError(error, $t('errors.something_went_wrong'));
     }
 
-    for (const person of serverPeople) {
-      const share = person.sharedWith.find(({ id }) => id === sharedWithId);
-      if (share) {
-        existingRoles.set(person.id, share.role);
-      }
+    try {
+      const sharedIds = new Set(serverPeople.map(({ id }) => id));
+      const allPeople = await loadAllPeople();
+      const visiblePeople = allPeople.filter(({ isHidden }) => !isHidden);
+      shareEveryone = sharedIds.size > 0 && visiblePeople.every(({ id }) => sharedIds.has(id));
+    } catch (error) {
+      handleError(error, $t('errors.something_went_wrong'));
     }
-    role = existingRoles.values().next().value ?? PersonUserRole.Read;
   };
 
   const handleSelectUser = async (id: string) => {
@@ -112,8 +104,15 @@
       return people;
     }
 
-    const result = await getAllPeople({ withHidden: false });
-    return result.people;
+    const allPeople: PersonResponseDto[] = [];
+
+    for (let page = 1, hasNextPage = true; hasNextPage; page++) {
+      const result = await getAllPeople({ withHidden: false, page, size: 1000 });
+      allPeople.push(...result.people);
+      hasNextPage = result.hasNextPage ?? false;
+    }
+
+    return allPeople;
   };
 
   const handleEditPeople = async () => {
@@ -145,6 +144,7 @@
         added.delete(id);
       } else {
         removed.add(id);
+        shareEveryone = false;
       }
     }
 
@@ -156,14 +156,10 @@
   };
 
   const onSubmit = async () => {
-    const changedIds = [...existingRoles]
-      .filter(([id, existingRole]) => !removed.has(id) && existingRole !== role)
-      .map(([id]) => id);
     const success = await handleBulkUpsert({
       sharedWithIds: [selectedUserId],
-      role,
       everyone: shareEveryone,
-      personIds: [...changedIds, ...added.keys()],
+      personIds: [...added.keys()],
       removedIds: [...removed],
     });
 
@@ -204,10 +200,6 @@
         <LoadingSpinner />
       </div>
     {:then}
-      <Field label={$t('role')}>
-        <Select bind:value={role} options={roleOptions} />
-      </Field>
-
       <Field
         label={$t('share_everyone')}
         description={$t('share_everyone_description', { values: { user: user.name } })}
@@ -221,7 +213,7 @@
             <Text size="small" fontWeight="medium">
               {$t('shared_with_count', { values: { count: selectedPeople.length } })}
             </Text>
-            <ActionButton type="button" variant="outline" action={ManagePeople} />
+            <ActionButton type="button" color="primary" variant="ghost" action={ManagePeople} />
           </div>
 
           <div class="immich-scrollbar overflow-y-auto sm:max-h-64">

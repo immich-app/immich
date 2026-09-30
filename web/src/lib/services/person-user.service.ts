@@ -1,15 +1,13 @@
 import {
-  getClusterGroupUsers,
   PeopleUsersUpsertType,
   PersonUserRole,
   removeUsersFromPeople,
   upsertPeopleUsers,
   type PersonResponseDto,
-  type PersonUsersResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiAccountMultipleOutline, mdiCheck, mdiPlus, mdiTrashCanOutline } from '@mdi/js';
+import { mdiAccountMultipleOutline, mdiCheck, mdiClose, mdiPlus, mdiShareOutline } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -32,17 +30,21 @@ export const getPeopleUserActions = ($t: MessageFormatter, users: UserResponseDt
 export const getPersonUsersActions = (
   $t: MessageFormatter,
   person: PersonResponseDto,
-  personUsers: PersonUsersResponseDto,
+  sharedUsers: UserResponseDto[],
+  clusterGroupUsers: UserResponseDto[],
 ) => {
+  const excludedUserIds = [authManager.user.id, ...sharedUsers.map(({ id }) => id)];
+
   const AddUsers: ActionItem = {
     title: $t('add_user'),
     icon: mdiPlus,
     color: 'primary',
+    $if: () => clusterGroupUsers.some(({ id }) => !excludedUserIds.includes(id)),
     onAction: () =>
       modalManager.show(AddUsersModal, {
         emptyMessage: $t('person_share_no_users'),
-        excludedUserIds: [authManager.user.id, ...personUsers.map(({ sharedWithId }) => sharedWithId)],
-        loadUsers: () => getClusterGroupUsers({ id: authManager.user.clusterGroupId }),
+        excludedUserIds,
+        loadUsers: () => Promise.resolve(clusterGroupUsers),
         onAddUsers: (users: UserResponseDto[]) => handleSharePersonWithUsers(person, users),
       }),
   };
@@ -52,17 +54,23 @@ export const getPersonUsersActions = (
 
 export const getPersonUserActions = ($t: MessageFormatter, person: PersonResponseDto, user: UserResponseDto) => {
   const Delete: ActionItem = {
-    title: $t('delete_user'),
-    icon: mdiTrashCanOutline,
+    title: $t('stop_sharing_person_with_user'),
+    icon: mdiClose,
     onAction: () => handleDeletePersonUser(person, user),
   };
 
-  return { Delete };
+  const ShareBack: ActionItem = {
+    title: $t('share_back'),
+    icon: mdiShareOutline,
+    color: 'primary',
+    onAction: () => handleSharePersonWithUsers(person, [user]),
+  };
+
+  return { Delete, ShareBack };
 };
 
 export type BulkUpsertOptions = {
   sharedWithIds: string[];
-  role: PersonUserRole;
   everyone?: boolean;
   personIds?: string[];
   removedIds?: string[];
@@ -70,7 +78,6 @@ export type BulkUpsertOptions = {
 
 export const handleBulkUpsert = async ({
   sharedWithIds,
-  role,
   everyone = false,
   personIds = [],
   removedIds = [],
@@ -80,11 +87,11 @@ export const handleBulkUpsert = async ({
   try {
     if (everyone) {
       await upsertPeopleUsers({
-        peopleUsersUpsertDto: { type: PeopleUsersUpsertType.Everyone, sharedWithIds, role },
+        peopleUsersUpsertDto: { type: PeopleUsersUpsertType.Everyone, sharedWithIds, role: PersonUserRole.Admin },
       });
     } else {
       if (personIds.length > 0) {
-        await upsertPeopleUsers({ peopleUsersUpsertDto: { personIds, sharedWithIds, role } });
+        await upsertPeopleUsers({ peopleUsersUpsertDto: { personIds, sharedWithIds, role: PersonUserRole.Admin } });
       }
 
       if (removedIds.length > 0) {
@@ -112,33 +119,11 @@ export const handleSharePersonWithUsers = async (person: PersonResponseDto, user
       peopleUsersUpsertDto: {
         personIds: [person.id],
         sharedWithIds: users.map(({ id }) => id),
-        role: PersonUserRole.Read,
+        role: PersonUserRole.Admin,
       },
     });
     eventManager.emit('PersonShare', { personId: person.id });
     return true;
-  } catch (error) {
-    handleError(error, $t('errors.something_went_wrong'));
-  }
-};
-
-export const handleUpdatePersonUserRole = async ({
-  personId,
-  userId,
-  role,
-}: {
-  personId: string;
-  userId: string;
-  role: PersonUserRole;
-}) => {
-  const $t = await getFormatter();
-
-  try {
-    await upsertPeopleUsers({
-      peopleUsersUpsertDto: { personIds: [personId], sharedWithIds: [userId], role },
-    });
-    eventManager.emit('PersonUserUpdate', { personId, userId, role });
-    toastManager.primary({ icon: mdiCheck, title: $t('saved') });
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }
