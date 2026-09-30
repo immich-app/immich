@@ -1,0 +1,21 @@
+server/src/repositories/storage.repository.spec.ts
+  s_dad02eb5704433::t_b169fc36a66772 3,270-272,275,279
+server/test/medium/specs/services/metadata.service.spec.ts
+  s_dad02eb5704433::t_e1e25ce6e2271f 3,85,87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9bcd943066cd361107e646d760e3ece6320e1c1d",
+  "prompts": {},
+  "sessions": {
+    "s_dad02eb5704433": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f180-d331-7dd1-9524-4e73b56c7dd1",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
