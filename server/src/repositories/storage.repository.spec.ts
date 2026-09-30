@@ -230,7 +230,7 @@ describe(StorageRepository.name, () => {
           .filter((entry) => entry[1])
           .map(([file]) => file);
 
-        expect(actual.toSorted()).toEqual(expected.toSorted());
+        expect(actual.toSorted((a, b) => a.localeCompare(b))).toEqual(expected.toSorted((a, b) => a.localeCompare(b)));
       });
     }
   });
@@ -253,12 +253,12 @@ describe(StorageRepository.name, () => {
       const batches = await Array.fromAsync(sut.walk({ pathsToCrawl: ['/photos'], exclusionPatterns, take: 1 }));
 
       expect(batches.every((batch) => batch.length === 1)).toBe(true);
-      expect(batches.flat().toSorted()).toEqual(
+      expect(batches.flat().toSorted((a, b) => a.localeCompare(b))).toEqual(
         [
           '/photos/photo.jpg',
           '/photos/photo.nef',
           ...(exclusionPatterns.includes('**/excluded/**') ? [] : ['/photos/excluded/photo.jpg']),
-        ].toSorted(),
+        ].toSorted((a, b) => a.localeCompare(b)),
       );
     });
   });
