@@ -5,7 +5,7 @@
   import ClusterGroupUserSelectionModal from '$lib/modals/ClusterGroupUserSelectionModal.svelte';
   import ClusterGroupUsersModal from '$lib/modals/ClusterGroupUsersModal.svelte';
   import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
-  import PersonBulkShareModal from '$lib/modals/PersonBulkShareModal.svelte';
+  import { getPeopleUserActions } from '$lib/services/person-user.service';
   import { handleError } from '$lib/utils/handle-error';
   import {
     acceptClusterGroupRequest,
@@ -27,7 +27,7 @@
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Card, CardBody, HStack, Icon, IconButton, modalManager, Text } from '@immich/ui';
+  import { ActionButton, Button, Card, CardBody, HStack, Icon, IconButton, modalManager, Text } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -49,6 +49,12 @@
   let partners: Array<PartnerSharing> = $state([]);
 
   const canLeave = $derived(users.length > 1);
+  const { ManageAccess } = $derived(
+    getPeopleUserActions(
+      $t,
+      users.filter(({ id }) => id !== authManager.user.id),
+    ),
+  );
 
   onMount(async () => {
     await Promise.all([refresh(), refreshPartners()]);
@@ -269,15 +275,6 @@
             <Button shape="round" size="small" color="secondary" onclick={() => handleLeave()}>
               {$t('leave')}
             </Button>
-          {:else if user.id !== authManager.user.id}
-            <Button
-              shape="round"
-              size="small"
-              color="secondary"
-              onclick={() => modalManager.show(PersonBulkShareModal, { user })}
-            >
-              {$t('configure')}
-            </Button>
           {/if}
         </div>
       {/each}
@@ -329,6 +326,7 @@
       >{$t('cluster_group_facial_recognition')}</Button
     >
     <Button shape="round" size="small" onclick={() => handleAddUsers()}>{$t('add_user')}</Button>
+    <ActionButton type="button" shape="round" variant="filled" color="primary" action={ManageAccess} />
   </HStack>
 </section>
 

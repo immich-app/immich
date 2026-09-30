@@ -1361,7 +1361,7 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('addUsersToPeople', () => {
+  describe('upsertPeopleUsers', () => {
     it('should throw error for sharedWith users that are not in the same cluster group', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
@@ -1370,7 +1370,7 @@ describe(PersonService.name, () => {
       const auth = factory.auth({ user: owner });
 
       await expect(
-        sut.addUsersToPeople(auth, {
+        sut.upsertPeopleUsers(auth, {
           personIds: [person.personGroupId],
           sharedWithIds: [user1.id],
           role: PersonUserRole.Read,
@@ -1387,7 +1387,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1408,7 +1408,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id, name: 'Owner name', birthDate: '1990-01-01' });
       await ctx.newPerson({ ownerId: user1.id, personGroupId: person.personGroupId, name: '', birthDate: null });
 
-      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+      await sut.upsertPeopleUsers(factory.auth({ user: owner }), {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1431,7 +1431,7 @@ describe(PersonService.name, () => {
         birthDate: '2000-02-02',
       });
 
-      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+      await sut.upsertPeopleUsers(factory.auth({ user: owner }), {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1451,7 +1451,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person.personGroupId],
         sharedWithIds: [sharedWith.id],
         role: PersonUserRole.Read,
@@ -1483,7 +1483,7 @@ describe(PersonService.name, () => {
       const { person: person2 } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person1.personGroupId, person2.personGroupId],
         sharedWithIds: [user1.id, user2.id],
         role: PersonUserRole.Read,
@@ -1518,8 +1518,8 @@ describe(PersonService.name, () => {
       const otherAuth = factory.auth({ user: otherOwner });
       const dto = { personIds: [person.personGroupId], sharedWithIds: [sharedWith.id], role: PersonUserRole.Read };
 
-      await sut.addUsersToPeople(auth, dto);
-      await sut.addUsersToPeople(otherAuth, dto);
+      await sut.upsertPeopleUsers(auth, dto);
+      await sut.upsertPeopleUsers(otherAuth, dto);
 
       await sut.removeUsersFromPeople(auth, [{ personId: person.personGroupId, sharedWithId: sharedWith.id }]);
 

@@ -4,7 +4,18 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { type PersonResponseDto } from '@immich/sdk';
-  import { Button, HStack, ListButton, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
+  import {
+    ActionButton,
+    Button,
+    HStack,
+    ListButton,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    Text,
+    type ActionItem,
+  } from '@immich/ui';
+  import { mdiCheckAll, mdiCloseBoxMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -17,30 +28,53 @@
   let searchName = $state('');
   let selectedPeople: PersonResponseDto[] = $state([]);
 
+  const selectedIds = $derived(new Set(selectedPeople.map(({ id }) => id)));
   const filteredPeople = $derived(
     people.filter(({ name }) => !searchName || normalizeSearchString(name).includes(normalizeSearchString(searchName))),
   );
   const namedPeople = $derived(filteredPeople.filter(({ name }) => name));
   const unnamedPeople = $derived(filteredPeople.filter(({ name }) => !name));
 
-  const isSelected = (person: PersonResponseDto) => selectedPeople.some(({ id }) => id === person.id);
-
   const selectPerson = (person: PersonResponseDto) => {
-    selectedPeople = selectedPeople.some(({ id }) => id === person.id)
+    selectedPeople = selectedIds.has(person.id)
       ? selectedPeople.filter(({ id }) => id !== person.id)
       : [...selectedPeople, person];
   };
+
+  const SelectAll: ActionItem = $derived({
+    title: $t('select_all'),
+    icon: mdiCheckAll,
+    $if: () => filteredPeople.some(({ id }) => !selectedIds.has(id)),
+    onAction: () => (selectedPeople = [...selectedPeople, ...filteredPeople.filter(({ id }) => !selectedIds.has(id))]),
+  });
+
+  const UnselectAll: ActionItem = $derived({
+    title: $t('unselect_all'),
+    icon: mdiCloseBoxMultipleOutline,
+    $if: () => filteredPeople.some(({ id }) => selectedIds.has(id)),
+    onAction: () => {
+      const ids = new Set(filteredPeople.map(({ id }) => id));
+      selectedPeople = selectedPeople.filter(({ id }) => !ids.has(id));
+    },
+  });
 </script>
 
-<Modal title={$t('add_people')} {onClose} size="small">
-  <ModalBody>
+<Modal title={$t('add_people')} {onClose} size="medium">
+  <ModalBody class="flex min-h-0 flex-col">
     {#if people.length > 0}
-      <div class="flex flex-col gap-4">
-        <SearchBar bind:name={searchName} placeholder={$t('search_people')} showLoadingSpinner={false} />
+      <div class="flex min-h-0 grow flex-col gap-4">
+        <div class="flex justify-end gap-2">
+          <ActionButton type="button" shape="round" size="small" action={UnselectAll} />
+          <ActionButton type="button" shape="round" size="small" action={SelectAll} />
+        </div>
 
-        <div class="flex max-h-75 immich-scrollbar flex-col gap-2 overflow-y-auto">
+        <div>
+          <SearchBar bind:name={searchName} placeholder={$t('search_people')} showLoadingSpinner={false} />
+        </div>
+
+        <div class="flex min-h-0 grow immich-scrollbar flex-col gap-2 overflow-y-auto sm:max-h-120">
           {#each namedPeople as person (person.id)}
-            <ListButton onclick={() => selectPerson(person)} selected={isSelected(person)}>
+            <ListButton onclick={() => selectPerson(person)} selected={selectedIds.has(person.id)}>
               <ImageThumbnail circle url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="4rem" />
               <Text fontWeight="medium" class="grow truncate text-start">{person.name}</Text>
             </ListButton>
@@ -52,7 +86,7 @@
                 <button
                   type="button"
                   onclick={() => selectPerson(person)}
-                  class="rounded-full p-1 transition-all hover:bg-subtle {isSelected(person)
+                  class="rounded-full p-1 transition-all hover:bg-subtle {selectedIds.has(person.id)
                     ? 'ring-2 ring-primary'
                     : ''}"
                 >
@@ -70,15 +104,7 @@
 
       <ModalFooter>
         <HStack fullWidth>
-          <Button
-            shape="round"
-            color="secondary"
-            fullWidth
-            onclick={() => (selectedPeople = people)}
-            disabled={selectedPeople.length === people.length}
-          >
-            {$t('select_all')}
-          </Button>
+          <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
           <Button
             shape="round"
             fullWidth
