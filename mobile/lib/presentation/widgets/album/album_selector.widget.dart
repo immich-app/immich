@@ -681,6 +681,7 @@ class _GridAlbumCard extends ConsumerWidget {
             Expanded(
               flex: 2,
               child: Stack(
+                fit: StackFit.expand,
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
