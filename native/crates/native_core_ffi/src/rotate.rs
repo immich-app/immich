@@ -1,7 +1,7 @@
-use immich_core::rotate::{Orientation, rotate};
 use jni::EnvUnowned;
 use jni::objects::{JClass, JIntArray, JObject};
 use jni::sys::{jint, jlong};
+use native_core::rotate::{Orientation, rotate};
 
 use super::bitmap::{self, FORMAT_RGBA_8888};
 

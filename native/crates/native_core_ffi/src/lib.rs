@@ -13,11 +13,11 @@ mod convert;
 mod rotate;
 mod thumbhash;
 
-/// Returns the core version as a C string. Free it with `immich_core_free_string`.
+/// Returns the core version as a C string. Free it with `native_core_free_string`.
 #[unsafe(no_mangle)]
-pub extern "C" fn immich_core_version() -> *mut c_char {
+pub extern "C" fn native_core_version() -> *mut c_char {
     guard(ptr::null_mut(), || {
-        match CString::new(immich_core::core_version()) {
+        match CString::new(native_core::version()) {
             Ok(s) => s.into_raw(),
             Err(_) => ptr::null_mut(),
         }
@@ -29,7 +29,7 @@ pub extern "C" fn immich_core_version() -> *mut c_char {
 /// # Safety
 /// `ptr` must come from this library and must not be freed twice.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn immich_core_free_string(ptr: *mut c_char) {
+pub unsafe extern "C" fn native_core_free_string(ptr: *mut c_char) {
     if ptr.is_null() {
         return;
     }
@@ -50,18 +50,18 @@ mod tests {
 
     #[test]
     fn version_roundtrips() {
-        let p = immich_core_version();
+        let p = native_core_version();
         assert!(!p.is_null());
         // SAFETY: `p` is a C string from this library.
         let s = unsafe { CStr::from_ptr(p) }.to_str().unwrap();
-        assert_eq!(s, immich_core::core_version());
+        assert_eq!(s, native_core::version());
         // SAFETY: `p` is freed exactly once.
-        unsafe { immich_core_free_string(p) };
+        unsafe { native_core_free_string(p) };
     }
 
     #[test]
     fn free_null_is_noop() {
         // SAFETY: null is allowed by the contract.
-        unsafe { immich_core_free_string(ptr::null_mut()) };
+        unsafe { native_core_free_string(ptr::null_mut()) };
     }
 }

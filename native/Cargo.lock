@@ -94,20 +94,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
-name = "immich_core"
-version = "0.1.0"
-
-[[package]]
-name = "immich_core_ffi"
-version = "0.1.0"
-dependencies = [
- "cbindgen",
- "immich_core",
- "jni",
- "libc",
-]
-
-[[package]]
 name = "indexmap"
 version = "2.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -195,6 +181,20 @@ name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
+
+[[package]]
+name = "native_core"
+version = "0.1.0"
+
+[[package]]
+name = "native_core_ffi"
+version = "0.1.0"
+dependencies = [
+ "cbindgen",
+ "jni",
+ "libc",
+ "native_core",
+]
 
 [[package]]
 name = "once_cell"
