@@ -166,7 +166,7 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply brightness and contrast edits using the CSS contrast midpoint', async () => {
-      const result = sut['applyEdits'](
+      const result = sut['edit'](
         sharp({
           create: {
             width: 1,
@@ -187,7 +187,7 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply brightness before contrast', async () => {
-      const result = sut['applyEdits'](
+      const result = sut['edit'](
         sharp({
           create: {
             width: 1,
@@ -205,6 +205,26 @@ describe(MediaRepository.name, () => {
       );
 
       expect(await getPixelColor(await result.png().toBuffer(), 0, 0)).toEqual({ r: 123, g: 123, b: 123 });
+    });
+
+    it('should apply color edits after linear-light resampling', async () => {
+      const image = await sharp({
+        create: {
+          width: 1,
+          height: 1,
+          channels: 4,
+          background: { r: 100, g: 150, b: 200, alpha: 1 },
+        },
+      })
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+
+      const result = await sut['transform'](image, {
+        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: 50 } }],
+      });
+
+      const output = await sharp(result.data, { raw: result.info }).png().toBuffer();
+      expect(await getPixelColor(output, 0, 0)).toEqual({ r: 86, g: 161, b: 236 });
     });
   });
 

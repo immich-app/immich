@@ -229,10 +229,20 @@ export class MediaRepository {
       return Promise.resolve(image);
     }
 
-    return this.edit(this.raw(image).pipelineColorspace('scrgb'), edits)
+    const colorEdits = edits.filter((edit) => edit.action === 'color');
+    const geometryEdits = edits.filter((edit) => edit.action !== 'color');
+
+    return this.edit(this.raw(image).pipelineColorspace('scrgb'), geometryEdits)
       .resize(size, size, { fit, withoutEnlargement: true })
       .raw()
-      .toBuffer({ resolveWithObject: true });
+      .toBuffer({ resolveWithObject: true })
+      .then((transformed) =>
+        colorEdits.length === 0
+          ? transformed
+          : this.edit(this.raw(transformed).pipelineColorspace('srgb'), colorEdits).raw().toBuffer({
+              resolveWithObject: true,
+            }),
+      );
   }
 
   private raw({ data, info: raw }: Bitmap) {
