@@ -20,7 +20,8 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets, stackAssets, toggleFavoriteAssets } from '$lib/services/asset.service';
+  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { toggleFavoriteAssets } from '$lib/services/asset.service';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
 
