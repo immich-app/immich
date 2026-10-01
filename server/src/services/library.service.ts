@@ -135,6 +135,7 @@ export class LibraryService extends BaseService {
       {
         usePolling: false,
         ignoreInitial: true,
+        ignored: library.exclusionPatterns,
         awaitWriteFinish: {
           stabilityThreshold: 5000,
           pollInterval: 1000,
@@ -520,7 +521,9 @@ export class LibraryService extends BaseService {
             break;
           }
 
-          const isExcluded = job.exclusionPatterns.some((pattern) => picomatch.isMatch(asset.originalPath, pattern));
+          const isExcluded = job.exclusionPatterns.some((pattern) =>
+            picomatch.isMatch(asset.originalPath, pattern, { nocase: true }),
+          );
 
           if (!isExcluded) {
             this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);

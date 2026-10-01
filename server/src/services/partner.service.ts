@@ -3,8 +3,8 @@ import { Partner } from 'src/database.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto.js';
 import { mapUser } from 'src/dtos/user.dto.js';
-import { Permission } from 'src/enum.js';
-import { PartnerDirection, PartnerIds } from 'src/repositories/partner.repository.js';
+import { Permission, SharingDirection } from 'src/enum.js';
+import { PartnerIds } from 'src/repositories/partner.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class PartnerService extends BaseService {
     }
 
     const partner = await this.partnerRepository.create(partnerId);
-    return this.mapPartner(partner, PartnerDirection.SharedBy);
+    return this.mapPartner(partner, SharingDirection.SharedBy);
   }
 
   async remove(auth: AuthDto, sharedWithId: string): Promise<void> {
@@ -38,7 +38,7 @@ export class PartnerService extends BaseService {
 
   async search(auth: AuthDto, { direction }: PartnerSearchDto): Promise<PartnerResponseDto[]> {
     const partners = await this.partnerRepository.getAll(auth.user.id);
-    const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
+    const key = direction === SharingDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners
       .filter((partner): partner is Partner => !!(partner.sharedBy && partner.sharedWith)) // Filter out soft deleted users
       .filter((partner) => partner[key] === auth.user.id)
@@ -50,12 +50,12 @@ export class PartnerService extends BaseService {
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.partnerRepository.update(partnerId, { inTimeline: dto.inTimeline });
-    return this.mapPartner(entity, PartnerDirection.SharedWith);
+    return this.mapPartner(entity, SharingDirection.SharedWith);
   }
 
-  private mapPartner(partner: Partner, direction: PartnerDirection): PartnerResponseDto {
+  private mapPartner(partner: Partner, direction: SharingDirection): PartnerResponseDto {
     // this is opposite to return the non-me user of the "partner"
-    const sharedUser = direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy;
+    const sharedUser = direction === SharingDirection.SharedBy ? partner.sharedWith : partner.sharedBy;
     const user = mapUser(sharedUser);
 
     return { ...user, inTimeline: partner.inTimeline };

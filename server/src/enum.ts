@@ -96,6 +96,22 @@ export enum MemoryType {
 
 export const MemoryTypeSchema = z.enum(MemoryType).describe('Memory type').meta({ id: 'MemoryType' });
 
+export enum SharingDirection {
+  SharedBy = 'shared-by',
+  SharedWith = 'shared-with',
+}
+
+export const SharingDirectionSchema = z
+  .enum(SharingDirection)
+  .describe('Sharing direction')
+  .meta({ id: 'SharingDirection' });
+
+// TODO(v4) replace with SharingDirection
+export const PartnerDirectionSchema = z
+  .enum(SharingDirection)
+  .describe('Partner direction')
+  .meta({ id: 'PartnerDirection' });
+
 export enum AssetOrderWithRandom {
   // Include existing values
   Asc = AssetOrder.Asc,
@@ -400,6 +416,16 @@ export const UserAvatarColorSchema = z
   .enum(UserAvatarColor)
   .describe('User avatar color')
   .meta({ id: 'UserAvatarColor' });
+
+export enum PersonUpdateStrategy {
+  Self = 'self',
+  Everyone = 'everyone',
+}
+
+export const PersonUpdateStrategySchema = z
+  .enum(PersonUpdateStrategy)
+  .describe('Which person records to update when editing a person')
+  .meta({ id: 'PersonUpdateStrategy' });
 
 export enum UserStatus {
   Active = 'active',
