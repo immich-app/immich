@@ -41,7 +41,7 @@ export interface Events {
   AppRestartV1: (event: AppRestartEvent) => void;
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
-  AssetEditReadyV2: (data: { asset: SyncAssetV2; edit: SyncAssetEditV2[] }) => void;
+  AssetEditReadyV3: (data: { asset: SyncAssetV2; edit: SyncAssetEditV2[] }) => void;
 }
 
 const websocket: Socket<Events> = io({
