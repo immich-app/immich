@@ -1,0 +1,21 @@
+name: Setup walkrs
+description: Build the temporary walkrs branch used by the server's local link dependency
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout walkrs
+      shell: bash
+      run: git clone --depth 1 --branch feat/metadata https://github.com/immich-app/walkrs.git "$GITHUB_WORKSPACE/../walkrs"
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@efa25f7f19611383d5b0ccf2d1c8914531636bf9
+      with:
+        toolchain: 1.93.1
+
+    - name: Build walkrs
+      shell: bash
+      working-directory: ${{ github.workspace }}/../walkrs
+      run: |
+        npm exec --yes --package=pnpm@10.28.1 -- pnpm install --frozen-lockfile
+        npm exec --yes --package=pnpm@10.28.1 -- pnpm build
