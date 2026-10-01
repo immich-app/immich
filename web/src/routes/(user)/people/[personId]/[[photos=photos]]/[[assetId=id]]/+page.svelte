@@ -69,7 +69,9 @@
 
   let numberOfAssets = $derived(data.statistics.assets);
   let person = $derived(data.person);
-  const altItems = $derived(person.otherPeople.filter(({ name }) => !!name && name !== person.name));
+  const altNames = $derived([
+    ...new Set(person.otherPeople.map(({ name }) => name).filter((name) => !!name && name !== person.name)),
+  ]);
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -400,10 +402,10 @@
                       aria-label={$t('edit')}
                     />
                   </div>
-                  {#if altItems.length > 0}
+                  {#if altNames.length > 0}
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                       {$t('also_known_as')}
-                      {new Intl.ListFormat($locale).format(altItems.map(({ name }) => name))}
+                      {new Intl.ListFormat($locale).format(altNames)}
                     </p>
                   {/if}
                   <p class="text-sm text-gray-500 dark:text-gray-400">
