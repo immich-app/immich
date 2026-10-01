@@ -23,9 +23,10 @@
     minified?: boolean;
     duration?: number;
     saveOnClose?: boolean;
+    preselectDate?: boolean;
   };
 
-  const { minified = false, duration = 500, saveOnClose = false }: Props = $props();
+  const { minified = false, duration = 500, saveOnClose = false, preselectDate = false }: Props = $props();
 
   const DATE_TEMPLATE = '{{y}}/{{MM}}/{{dd}}/{{filename}}';
 
@@ -40,6 +41,11 @@
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
+
+  if (preselectDate && !featureFlagsManager.value.configFile && !configToEdit.storageTemplate.enabled) {
+    configToEdit.storageTemplate.enabled = true;
+    configToEdit.storageTemplate.template = DATE_TEMPLATE;
+  }
 
   let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
   let selectedPreset = $state('');
