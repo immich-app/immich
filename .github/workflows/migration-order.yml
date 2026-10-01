@@ -51,7 +51,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Setup walkrs
-        uses: ./.github/actions/setup-walkrs
+        uses: $/.github/actions/setup-walkrs
 
       - name: Install dependencies
         run: mise //server:install

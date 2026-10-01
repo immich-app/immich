@@ -68,7 +68,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Setup walkrs
-        uses: ./.github/actions/setup-walkrs
+        uses: $/.github/actions/setup-walkrs
 
       - name: Install dependencies
         run: mise //server:install
@@ -87,7 +87,7 @@ jobs:
           git push origin "${TAG}"
 
   build_mobile:
-    uses: ./.github/workflows/build-mobile.yml
+    uses: $/.github/workflows/build-mobile.yml
     needs: tag
     permissions:
       contents: read

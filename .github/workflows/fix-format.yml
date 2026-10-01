@@ -35,7 +35,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Setup walkrs
-        uses: ./.github/actions/setup-walkrs
+        uses: $/.github/actions/setup-walkrs
 
       - name: Fix formatting
         run: pnpm --recursive install && pnpm run --recursive --if-present --parallel format:fix

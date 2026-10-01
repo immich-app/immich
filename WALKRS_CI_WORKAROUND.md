@@ -23,6 +23,10 @@ directory, installs Rust, and builds the native module before server checks run.
 the server build and runtime images. Its server deployment uses `--legacy`
 because normal pnpm deployment fails with the temporary `link:` dependency.
 
+The workflows also use GitHub's `$/...` self-repository references and disable
+dependency caching in the end-to-end jobs. These security fixes are independent
+of walkrs; keep them when removing the workaround.
+
 ## Confirm that a suitable release exists
 
 1. Verify that the metadata changes from `feat/metadata` have been merged and
@@ -53,7 +57,7 @@ because normal pnpm deployment fails with the temporary `link:` dependency.
    through pnpm; do not fabricate lockfile entries manually.
 
 2. Remove every `Setup walkrs` step using
-   `./.github/actions/setup-walkrs`. The original callers are:
+   `$/.github/actions/setup-walkrs`. The original callers are:
 
    - `.github/workflows/test.yml`: `server-unit-tests`, `server-medium-tests`,
      `generated-api-up-to-date`, and `sql-schema-up-to-date`.
