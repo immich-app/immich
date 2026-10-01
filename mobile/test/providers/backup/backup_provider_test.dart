@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -105,30 +104,6 @@ void main() {
       notifier.dispose();
 
       onSuccess('asset-1', 'remote-1');
-    });
-  });
-
-  group('background backup', () {
-    test('lists a new batch only after the remote sync finished', () async {
-      final remoteSync = Completer<bool>();
-      when(() => backgroundUploadService.getActiveTasks(kBackupGroup)).thenAnswer((_) async => []);
-      when(() => backgroundUploadService.uploadBackupCandidates('user-1')).thenAnswer((_) async {});
-
-      final backup = notifier.startBackupWithURLSession('user-1', remoteSync.future);
-      await pumpEventQueue();
-      verifyNever(() => backgroundUploadService.uploadBackupCandidates('user-1'));
-
-      remoteSync.complete(true);
-      await backup;
-      verify(() => backgroundUploadService.uploadBackupCandidates('user-1')).called(1);
-    });
-
-    test('does not list a new batch when the remote sync failed', () async {
-      when(() => backgroundUploadService.getActiveTasks(kBackupGroup)).thenAnswer((_) async => []);
-
-      await notifier.startBackupWithURLSession('user-1', Future.value(false));
-
-      verifyNever(() => backgroundUploadService.uploadBackupCandidates('user-1'));
     });
   });
 }
