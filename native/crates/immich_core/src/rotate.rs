@@ -44,6 +44,7 @@ pub fn rotate(
     orientation: Orientation,
     dst: &mut [u32],
 ) {
+    assert!(w <= stride && h.saturating_mul(stride) <= src.len() && w * h <= dst.len());
     let (dw, _) = orientation.dimensions(w, h);
     let (w, h, dw) = (w as isize, h as isize, dw as isize);
     // A source pixel (x, y) lands at base + x * step_x + y * step_y in the dense dw-wide output,
@@ -58,14 +59,17 @@ pub fn rotate(
         Orientation::Rotate270 => ((w - 1) * dw, -dw, 1),
         Orientation::Normal => (0, 1, dw),
     };
+    let (src, dst) = (src.as_ptr(), dst.as_mut_ptr());
     // 32x32 u32 tiles are 4KB, so the scattered writes of a 90/270 transpose stay in L1.
     for ty in (0..h).step_by(32) {
         for tx in (0..w).step_by(32) {
             for y in ty..(ty + 32).min(h) {
-                let row = &src[y as usize * stride..][tx as usize..(tx + 32).min(w) as usize];
+                // SAFETY: src holds h rows of stride pixels (asserted above).
+                let row = unsafe { src.add(y as usize * stride) };
                 let mut idx = base + y * step_y + tx * step_x;
-                for &px in row {
-                    dst[idx as usize] = px;
+                for x in tx..(tx + 32).min(w) {
+                    // SAFETY: the affine mapping stays within the w*h output and x stays within its row.
+                    unsafe { dst.add(idx as usize).write(row.add(x as usize).read()) };
                     idx += step_x;
                 }
             }
