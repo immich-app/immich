@@ -245,16 +245,16 @@ void main() {
 
     test('does not upload a photo the server already has', () async {
       final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
-      final uploaded = <String>[];
+      final succeeded = <String>[];
       when(() => mockAssetService.getLocalAsset(asset.id)).thenAnswer((_) async => asset.copyWith(remoteId: 'remote'));
 
       await sut.uploadSingleAsset(
         asset,
         null,
-        callbacks: UploadCallbacks(onSuccess: (_, remoteId) => uploaded.add(remoteId)),
+        callbacks: UploadCallbacks(onSuccess: (_, remoteId) => succeeded.add(remoteId)),
       );
 
-      expect(uploaded, equals(['remote']));
+      expect(succeeded, equals(['remote']));
       verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote', 'sha')).called(1);
       verifyZeroInteractions(mockStorageRepository);
       verifyZeroInteractions(mockUploadRepository);
