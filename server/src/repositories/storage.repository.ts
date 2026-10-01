@@ -218,9 +218,9 @@ export class StorageRepository {
   async checkDiskUsage(folder: string): Promise<DiskUsage> {
     const stats = await fs.statfs(folder);
     return {
-      available: stats.bavail * stats.bsize,
-      free: stats.bfree * stats.bsize,
-      total: stats.blocks * stats.bsize,
+      available: stats.bavail * stats.frsize,
+      free: stats.bfree * stats.frsize,
+      total: stats.blocks * stats.frsize,
     };
   }
 

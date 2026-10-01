@@ -303,6 +303,123 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('update', () => {
+    it('should throw an error when there is no access', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user2.id });
+
+      await expect(sut.update(factory.auth({ user }), person.personGroupId, { name: 'New name' })).rejects.toThrow(
+        'Not found or no person.update access',
+      );
+    });
+
+    it('should update the name and birth date for every user with write access', async () => {
+      const { ctx, sut } = setup();
+      const personRepo = ctx.get(PersonRepository);
+      const { user } = await ctx.newUser();
+      const { user: writer } = await ctx.newUser();
+      const { user: reader } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: writer.id, name: 'Old name' });
+      const { personGroupId } = person;
+      await ctx.newPerson({ ownerId: reader.id, personGroupId, name: 'Old name' });
+      await ctx.newPersonUser({
+        personGroupId,
+        sharedById: writer.id,
+        sharedWithId: user.id,
+        role: PersonUserRole.Write,
+      });
+      await ctx.newPersonUser({
+        personGroupId,
+        sharedById: reader.id,
+        sharedWithId: user.id,
+        role: PersonUserRole.Read,
+      });
+
+      await expect(
+        sut.update(factory.auth({ user }), personGroupId, { name: 'New name', birthDate: '2000-01-01' }),
+      ).resolves.toEqual(expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }));
+
+      await expect(personRepo.getForUser({ userId: user.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }),
+      );
+      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }),
+      );
+      await expect(personRepo.getForUser({ userId: reader.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'Old name', birthDate: null }),
+      );
+    });
+
+    it('should only update the specified user when userId is provided', async () => {
+      const { ctx, sut } = setup();
+      const personRepo = ctx.get(PersonRepository);
+      const { user } = await ctx.newUser();
+      const { user: writer } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: writer.id, name: 'Old name' });
+      const { personGroupId } = person;
+      await ctx.newPersonUser({
+        personGroupId,
+        sharedById: writer.id,
+        sharedWithId: user.id,
+        role: PersonUserRole.Write,
+      });
+
+      await expect(
+        sut.update(factory.auth({ user }), personGroupId, { name: 'New name', userId: writer.id }),
+      ).resolves.toEqual(expect.objectContaining({ name: 'New name' }));
+
+      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name' }),
+      );
+      await expect(personRepo.getForUser({ userId: user.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'Old name' }),
+      );
+    });
+
+    it('should only update personal properties for the current user', async () => {
+      const { ctx, sut } = setup();
+      const personRepo = ctx.get(PersonRepository);
+      const { user } = await ctx.newUser();
+      const { user: writer } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: writer.id, name: 'Old name' });
+      const { personGroupId } = person;
+      await ctx.newPersonUser({
+        personGroupId,
+        sharedById: writer.id,
+        sharedWithId: user.id,
+        role: PersonUserRole.Write,
+      });
+
+      await expect(
+        sut.update(factory.auth({ user }), personGroupId, { name: 'New name', isFavorite: true, isHidden: true }),
+      ).resolves.toEqual(expect.objectContaining({ name: 'New name', isFavorite: true, isHidden: true }));
+
+      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name', isFavorite: false, isHidden: false }),
+      );
+    });
+
+    it('should not allow personal properties to be updated for another user', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: writer } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: writer.id });
+      const { personGroupId } = person;
+      await ctx.newPersonUser({
+        personGroupId,
+        sharedById: writer.id,
+        sharedWithId: user.id,
+        role: PersonUserRole.Write,
+      });
+
+      await expect(
+        sut.update(factory.auth({ user }), personGroupId, { isFavorite: true, userId: writer.id }),
+      ).rejects.toThrow('Only name and birthDate can be updated for other users');
+    });
+  });
+
   describe('delete', () => {
     it('should throw an error when there is no access', async () => {
       const { sut } = setup();
@@ -1244,19 +1361,21 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('addUsersToPeople', () => {
-    it('should skip sharedWith users that are not in the same cluster group', async () => {
+  describe('upsertPeopleUsers', () => {
+    it('should throw error for sharedWith users that are not in the same cluster group', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
       const { user: user1 } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
-        personIds: [person.personGroupId],
-        sharedWithIds: [user1.id],
-        role: PersonUserRole.Read,
-      });
+      await expect(
+        sut.upsertPeopleUsers(auth, {
+          personIds: [person.personGroupId],
+          sharedWithIds: [user1.id],
+          role: PersonUserRole.Read,
+        }),
+      ).rejects.toThrow('All users must be in the same cluster group');
 
       await expect(sut.getUsersForPeople(auth, {})).resolves.toHaveLength(0);
     });
@@ -1268,7 +1387,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1289,7 +1408,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id, name: 'Owner name', birthDate: '1990-01-01' });
       await ctx.newPerson({ ownerId: user1.id, personGroupId: person.personGroupId, name: '', birthDate: null });
 
-      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+      await sut.upsertPeopleUsers(factory.auth({ user: owner }), {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1312,7 +1431,7 @@ describe(PersonService.name, () => {
         birthDate: '2000-02-02',
       });
 
-      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+      await sut.upsertPeopleUsers(factory.auth({ user: owner }), {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1332,7 +1451,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person.personGroupId],
         sharedWithIds: [sharedWith.id],
         role: PersonUserRole.Read,
@@ -1364,7 +1483,7 @@ describe(PersonService.name, () => {
       const { person: person2 } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person1.personGroupId, person2.personGroupId],
         sharedWithIds: [user1.id, user2.id],
         role: PersonUserRole.Read,
@@ -1399,8 +1518,8 @@ describe(PersonService.name, () => {
       const otherAuth = factory.auth({ user: otherOwner });
       const dto = { personIds: [person.personGroupId], sharedWithIds: [sharedWith.id], role: PersonUserRole.Read };
 
-      await sut.addUsersToPeople(auth, dto);
-      await sut.addUsersToPeople(otherAuth, dto);
+      await sut.upsertPeopleUsers(auth, dto);
+      await sut.upsertPeopleUsers(otherAuth, dto);
 
       await sut.removeUsersFromPeople(auth, [{ personId: person.personGroupId, sharedWithId: sharedWith.id }]);
 
