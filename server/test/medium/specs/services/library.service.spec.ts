@@ -1,5 +1,6 @@
 import { Kysely } from 'kysely';
 import { existsSync } from 'node:fs';
+import type { Stats } from 'node:fs';
 import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -686,22 +687,30 @@ describe(LibraryService.name, () => {
       expect(updated?.deletedAt).toBeNull();
     });
 
-    it('should queue metadata extraction when file size changes but mtime stays unchanged', async () => {
+    it('should only queue metadata extraction once for a size-only file change', async () => {
       const { sut, ctx } = setup();
       const library = await ctx.createLibrary({ importPaths: [importPath] });
-      const originalPath = await createFile(join(importPath, 'size-change.png'));
+      const originalPath = join(importPath, 'size-change.png');
       const storage = ctx.get(StorageRepository);
-      const originalStats = await storage.stat(originalPath);
+      const originalSize = 4;
+      const changedSize = 24;
       const { asset } = await ctx.newAsset({
         ownerId: library.ownerId,
         libraryId: library.id,
         originalPath,
-        fileModifiedAt: originalStats.mtime,
+        fileModifiedAt,
         isExternal: true,
         isOffline: false,
         status: AssetStatus.Active,
       });
-      await ctx.newExif({ assetId: asset.id, fileSizeInByte: originalStats.size });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: originalSize });
+
+      vi.spyOn(storage, 'stat').mockResolvedValue({
+        size: changedSize,
+        mtime: fileModifiedAt,
+        mtimeMs: fileModifiedAt.getTime(),
+        birthtimeMs: 0,
+      } as Stats);
 
       const job = {
         libraryId: library.id,
@@ -714,15 +723,104 @@ describe(LibraryService.name, () => {
       const jobs = ctx.getMock(JobRepository);
 
       await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
-      expect(jobs.queueAll).not.toHaveBeenCalled();
+      expect(jobs.queueAll).toHaveBeenCalledExactlyOnceWith([
+        {
+          name: JobName.SidecarCheck,
+          data: {
+            id: asset.id,
+            source: 'upload',
+            fileMetadata: {
+              size: changedSize,
+              modified: fileModifiedAt.getTime(),
+              created: null,
+            },
+          },
+        },
+      ]);
 
-      await writeFile(originalPath, 'test with additional bytes');
-      await utimes(originalPath, originalStats.atime, originalStats.mtime);
-      const changedStats = await storage.stat(originalPath);
-      expect(changedStats.mtime).toEqual(originalStats.mtime);
-      expect(changedStats.size).toBeGreaterThan(originalStats.size);
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: changedSize });
+      jobs.queueAll.mockClear();
 
       await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+      expect(jobs.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should not queue metadata extraction when file size and mtime are unchanged', async () => {
+      const { sut, ctx } = setup();
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const originalPath = join(importPath, 'unchanged.png');
+      const fileSize = 24;
+      const storage = ctx.get(StorageRepository);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        originalPath,
+        fileModifiedAt,
+        isExternal: true,
+        isOffline: false,
+        status: AssetStatus.Active,
+      });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: fileSize });
+
+      vi.spyOn(storage, 'stat').mockResolvedValue({
+        size: fileSize,
+        mtime: fileModifiedAt,
+        mtimeMs: fileModifiedAt.getTime(),
+        birthtimeMs: 0,
+      } as Stats);
+
+      const job = {
+        libraryId: library.id,
+        importPaths: library.importPaths,
+        exclusionPatterns: library.exclusionPatterns,
+        assetIds: [asset.id],
+        progressCounter: 1,
+        totalAssets: 1,
+      };
+      const jobs = ctx.getMock(JobRepository);
+
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+
+      expect(jobs.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should queue metadata extraction when mtime changes but file size stays unchanged', async () => {
+      const { sut, ctx } = setup();
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const originalPath = join(importPath, 'mtime-change.png');
+      const fileSize = 24;
+      const changedMtime = new Date(fileModifiedAt.getTime() + 1);
+      const storage = ctx.get(StorageRepository);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        originalPath,
+        fileModifiedAt,
+        isExternal: true,
+        isOffline: false,
+        status: AssetStatus.Active,
+      });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: fileSize });
+
+      vi.spyOn(storage, 'stat').mockResolvedValue({
+        size: fileSize,
+        mtime: changedMtime,
+        mtimeMs: changedMtime.getTime(),
+        birthtimeMs: 0,
+      } as Stats);
+
+      const jobs = ctx.getMock(JobRepository);
+      await expect(
+        sut.handleSyncAssets({
+          libraryId: library.id,
+          importPaths: library.importPaths,
+          exclusionPatterns: library.exclusionPatterns,
+          assetIds: [asset.id],
+          progressCounter: 1,
+          totalAssets: 1,
+        }),
+      ).resolves.toBe(JobStatus.Success);
 
       expect(jobs.queueAll).toHaveBeenCalledExactlyOnceWith([
         {
@@ -731,9 +829,9 @@ describe(LibraryService.name, () => {
             id: asset.id,
             source: 'upload',
             fileMetadata: {
-              size: changedStats.size,
-              modified: Math.trunc(changedStats.mtimeMs),
-              created: changedStats.birthtimeMs === 0 ? null : Math.trunc(changedStats.birthtimeMs),
+              size: fileSize,
+              modified: changedMtime.getTime(),
+              created: null,
             },
           },
         },
@@ -914,17 +1012,14 @@ describe(LibraryService.name, () => {
       const storage = ctx.get(StorageRepository);
       const walk = storage.walk.bind(storage);
       const walker = vi.spyOn(storage, 'walk').mockImplementation(async function* (options) {
-        const batches = await Array.fromAsync(walk(options));
+        const batches = await Array.fromAsync(walk({ ...options, includeMetadata: false }));
         const files = batches.flatMap((batch) => batch.files);
-        const size = options.includeMetadata ? batches.flatMap((batch) => batch.size ?? []) : null;
-        const modified = options.includeMetadata ? batches.flatMap((batch) => batch.modified ?? []) : null;
-        const created = options.includeMetadata ? batches.flatMap((batch) => batch.created ?? []) : null;
         for (let index = 0; index < files.length; index += 2) {
           yield {
             files: files.slice(index, index + 2),
-            size: size?.slice(index, index + 2) ?? null,
-            modified: modified?.slice(index, index + 2) ?? null,
-            created: created?.slice(index, index + 2) ?? null,
+            size: null,
+            modified: null,
+            created: null,
             errors: index === 0 ? batches.flatMap((batch) => batch.errors) : [],
           };
         }
