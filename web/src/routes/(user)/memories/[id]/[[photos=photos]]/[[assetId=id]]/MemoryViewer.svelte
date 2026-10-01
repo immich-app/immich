@@ -26,7 +26,7 @@
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo, MemoryType } from '@immich/sdk';
-  import { ActionButton, Icon, IconButton, Text } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text } from '@immich/ui';
   import {
     mdiCakeVariant,
     mdiCardsOutline,
@@ -278,6 +278,8 @@
   <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t)}
+      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+
       <ActionButton action={Actions.CreateSharedLink} />
       <IconButton
         shape="round"

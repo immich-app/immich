@@ -43,6 +43,8 @@
   <AssetSelectControlBar>
     {@const Actions = getAssetBulkActions($t)}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+
+    <ActionButton action={Actions.CreateSharedLink} />
     <ActionButton action={Actions.AddToAlbum} />
     <DownloadAction />
   </AssetSelectControlBar>
