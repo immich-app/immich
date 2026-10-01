@@ -1239,6 +1239,18 @@ export enum ConfigVisibility {
   Admin = 'Admin',
 }
 
+export enum ConfigSource {
+  Default = 'default',
+  Database = 'database',
+  File = 'file',
+  Env = 'env',
+}
+
+export const ConfigSourceSchema = z
+  .enum(ConfigSource)
+  .describe('Where a configuration value comes from')
+  .meta({ id: 'ConfigSource' });
+
 export enum ApiTag {
   Activities = 'Activities',
   Albums = 'Albums',

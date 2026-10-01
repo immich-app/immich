@@ -21,6 +21,7 @@
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.nightly_tasks_start_time_setting')}
           description={$t('admin.nightly_tasks_start_time_setting_description')}
+          key="nightlyTasks.startTime"
           bind:value={configToEdit.nightlyTasks.startTime}
           required={true}
           {disabled}
@@ -29,30 +30,35 @@
         <SettingSwitch
           title={$t('admin.nightly_tasks_database_cleanup_setting')}
           subtitle={$t('admin.nightly_tasks_database_cleanup_setting_description')}
+          key="nightlyTasks.databaseCleanup"
           bind:checked={configToEdit.nightlyTasks.databaseCleanup}
           {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_missing_thumbnails_setting')}
           subtitle={$t('admin.nightly_tasks_missing_thumbnails_setting_description')}
+          key="nightlyTasks.missingThumbnails"
           bind:checked={configToEdit.nightlyTasks.missingThumbnails}
           {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_cluster_new_faces_setting')}
           subtitle={$t('admin.nightly_tasks_cluster_faces_setting_description')}
+          key="nightlyTasks.clusterNewFaces"
           bind:checked={configToEdit.nightlyTasks.clusterNewFaces}
           {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_generate_memories_setting')}
           subtitle={$t('admin.nightly_tasks_generate_memories_setting_description')}
+          key="nightlyTasks.generateMemories"
           bind:checked={configToEdit.nightlyTasks.generateMemories}
           {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_sync_quota_usage_setting')}
           subtitle={$t('admin.nightly_tasks_sync_quota_usage_setting_description')}
+          key="nightlyTasks.syncQuotaUsage"
           bind:checked={configToEdit.nightlyTasks.syncQuotaUsage}
           {disabled}
         />

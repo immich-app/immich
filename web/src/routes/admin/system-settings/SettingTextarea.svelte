@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import type { ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -11,6 +13,7 @@
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: ConfigKey;
     descriptionSnippet?: Snippet;
   }
 
@@ -21,6 +24,7 @@
     required = false,
     disabled = false,
     isEdited = false,
+    key,
     descriptionSnippet,
   }: Props = $props();
 
@@ -53,6 +57,7 @@
   {:else}
     {@render descriptionSnippet?.()}
   {/if}
+  <SettingSourceHint {key} />
 
   <textarea
     class="immich-form-input w-full pb-2"

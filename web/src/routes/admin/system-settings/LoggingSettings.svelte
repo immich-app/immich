@@ -20,11 +20,13 @@
         <SettingSwitch
           title={$t('admin.logging_enable_description')}
           {disabled}
+          key="logging.enabled"
           bind:checked={configToEdit.logging.enabled}
         />
         <SettingSelect
           label={$t('level')}
           desc={$t('admin.logging_level_description')}
+          key="logging.level"
           bind:value={configToEdit.logging.level}
           options={[
             { value: LogLevel.Fatal, text: 'Fatal' },

@@ -71,7 +71,7 @@ import {
   requireAccess,
   requirePersonAccess,
 } from 'src/utils/access.js';
-import { getConfig, updateConfig } from 'src/utils/config.js';
+import { getConfig, getResolvedConfig, updateConfig } from 'src/utils/config.js';
 
 export const BASE_SERVICE_DEPENDENCIES = [
   LoggingRepository,
@@ -286,6 +286,10 @@ export class BaseService {
 
   getConfig(options: { withCache: boolean }) {
     return getConfig(this.configRepos, options);
+  }
+
+  getResolvedConfig(options: { withCache: boolean }) {
+    return getResolvedConfig(this.configRepos, options);
   }
 
   updateConfig(newConfig: SystemConfig) {

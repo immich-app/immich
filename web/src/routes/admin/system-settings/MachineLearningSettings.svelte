@@ -27,6 +27,7 @@
           title={$t('admin.machine_learning_enabled')}
           subtitle={$t('admin.machine_learning_enabled_description')}
           {disabled}
+          key="machineLearning.enabled"
           bind:checked={configToEdit.machineLearning.enabled}
         />
 
@@ -38,6 +39,7 @@
               inputType={SettingInputFieldType.TEXT}
               label={i === 0 ? $t('url') : undefined}
               description={i === 0 ? $t('admin.machine_learning_url_description') : undefined}
+              key={i === 0 ? 'machineLearning.urls' : undefined}
               bind:value={configToEdit.machineLearning.urls[i]}
               required={i === 0}
               disabled={disabled || !configToEdit.machineLearning.enabled}
@@ -77,6 +79,7 @@
         <div class="ms-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_availability_checks_enabled')}
+            key="machineLearning.availabilityChecks.enabled"
             bind:checked={configToEdit.machineLearning.availabilityChecks.enabled}
             disabled={disabled || !configToEdit.machineLearning.enabled}
           />
@@ -86,6 +89,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_availability_checks_interval')}
+            key="machineLearning.availabilityChecks.interval"
             bind:value={configToEdit.machineLearning.availabilityChecks.interval}
             description={$t('admin.machine_learning_availability_checks_interval_description')}
             disabled={disabled ||
@@ -98,6 +102,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_availability_checks_timeout')}
+            key="machineLearning.availabilityChecks.timeout"
             bind:value={configToEdit.machineLearning.availabilityChecks.timeout}
             description={$t('admin.machine_learning_availability_checks_timeout_description')}
             disabled={disabled ||
@@ -118,6 +123,7 @@
           <SettingSwitch
             title={$t('admin.machine_learning_smart_search_enabled')}
             subtitle={$t('admin.machine_learning_smart_search_enabled_description')}
+            key="machineLearning.clip.enabled"
             bind:checked={configToEdit.machineLearning.clip.enabled}
             disabled={disabled || !configToEdit.machineLearning.enabled}
           />
@@ -127,6 +133,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
             label={$t('admin.machine_learning_clip_model')}
+            key="machineLearning.clip.modelName"
             bind:value={configToEdit.machineLearning.clip.modelName}
             required={true}
             disabled={disabled || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.clip.enabled}
@@ -154,6 +161,7 @@
           <SettingSwitch
             title={$t('admin.machine_learning_duplicate_detection_enabled')}
             subtitle={$t('admin.machine_learning_duplicate_detection_enabled_description')}
+            key="machineLearning.duplicateDetection.enabled"
             bind:checked={configToEdit.machineLearning.duplicateDetection.enabled}
             disabled={disabled || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.clip.enabled}
           />
@@ -163,6 +171,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_max_detection_distance')}
+            key="machineLearning.duplicateDetection.maxDistance"
             bind:value={configToEdit.machineLearning.duplicateDetection.maxDistance}
             step="0.0005"
             min={0.001}
@@ -184,6 +193,7 @@
           <SettingSwitch
             title={$t('admin.machine_learning_facial_recognition_setting')}
             subtitle={$t('admin.machine_learning_facial_recognition_setting_description')}
+            key="machineLearning.facialRecognition.enabled"
             bind:checked={configToEdit.machineLearning.facialRecognition.enabled}
             disabled={disabled || !configToEdit.machineLearning.enabled}
           />
@@ -194,6 +204,7 @@
             label={$t('admin.machine_learning_facial_recognition_model')}
             desc={$t('admin.machine_learning_facial_recognition_model_description')}
             name="facial-recognition-model"
+            key="machineLearning.facialRecognition.modelName"
             bind:value={configToEdit.machineLearning.facialRecognition.modelName}
             options={[
               { value: 'antelopev2', text: 'antelopev2' },
@@ -212,6 +223,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_min_detection_score')}
             description={$t('admin.machine_learning_min_detection_score_description')}
+            key="machineLearning.facialRecognition.minScore"
             bind:value={configToEdit.machineLearning.facialRecognition.minScore}
             step="0.01"
             min={0.1}
@@ -227,6 +239,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_max_recognition_distance')}
             description={$t('admin.machine_learning_max_recognition_distance_description')}
+            key="machineLearning.facialRecognition.maxDistance"
             bind:value={configToEdit.machineLearning.facialRecognition.maxDistance}
             step="0.01"
             min={0.1}
@@ -242,6 +255,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_min_recognized_faces')}
             description={$t('admin.machine_learning_min_recognized_faces_description')}
+            key="machineLearning.facialRecognition.minFaces"
             bind:value={configToEdit.machineLearning.facialRecognition.minFaces}
             step="1"
             min={1}
@@ -263,6 +277,7 @@
           <SettingSwitch
             title={$t('admin.machine_learning_ocr_enabled')}
             subtitle={$t('admin.machine_learning_ocr_enabled_description')}
+            key="machineLearning.ocr.enabled"
             bind:checked={configToEdit.machineLearning.ocr.enabled}
             disabled={disabled || !configToEdit.machineLearning.enabled}
           />
@@ -273,6 +288,7 @@
             label={$t('admin.machine_learning_ocr_model')}
             desc={$t('admin.machine_learning_ocr_model_description')}
             name="ocr-model"
+            key="machineLearning.ocr.modelName"
             bind:value={configToEdit.machineLearning.ocr.modelName}
             options={[
               { text: 'PP-OCRv5_server (Chinese, Japanese and English)', value: 'PP-OCRv5_server' },
@@ -292,6 +308,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_ocr_min_detection_score')}
             description={$t('admin.machine_learning_ocr_min_detection_score_description')}
+            key="machineLearning.ocr.minDetectionScore"
             bind:value={configToEdit.machineLearning.ocr.minDetectionScore}
             step="0.1"
             min={0.1}
@@ -305,6 +322,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_ocr_min_recognition_score')}
             description={$t('admin.machine_learning_ocr_min_score_recognition_description')}
+            key="machineLearning.ocr.minRecognitionScore"
             bind:value={configToEdit.machineLearning.ocr.minRecognitionScore}
             step="0.1"
             min={0.1}
@@ -318,6 +336,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_ocr_max_resolution')}
             description={$t('admin.machine_learning_ocr_max_resolution_description')}
+            key="machineLearning.ocr.maxResolution"
             bind:value={configToEdit.machineLearning.ocr.maxResolution}
             min={1}
             disabled={disabled || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.ocr.enabled}

@@ -1,4 +1,6 @@
 <script lang="ts" generics="T extends string | number">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import type { ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import { Checkbox, Label } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -11,6 +13,7 @@
     desc?: string;
     name?: string;
     isEdited?: boolean;
+    key?: ConfigKey;
     disabled?: boolean;
     lockedOptions?: T[];
   }
@@ -22,6 +25,7 @@
     desc = '',
     name = '',
     isEdited = false,
+    key,
     disabled = false,
     lockedOptions = [],
   }: Props = $props();
@@ -52,6 +56,7 @@
       {desc}
     </p>
   {/if}
+  <SettingSourceHint {key} />
   <div class="flex flex-col gap-2">
     {#each options as option (option.value)}
       <div class="flex items-center gap-2">

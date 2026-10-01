@@ -37,6 +37,7 @@
             <SettingSwitch
               title={$t('admin.library_watching_enable_description')}
               {disabled}
+              key="library.watch.enabled"
               bind:checked={configToEdit.library.watch.enabled}
             />
           </div>
@@ -51,6 +52,7 @@
             <SettingSwitch
               title={$t('admin.library_scanning_enable_description')}
               {disabled}
+              key="library.scan.enabled"
               bind:checked={configToEdit.library.scan.enabled}
             />
 
@@ -59,6 +61,7 @@
               disabled={disabled || !configToEdit.library.scan.enabled}
               name="expression"
               label={$t('admin.cron_expression_presets')}
+              key="library.scan.cronExpression"
               bind:value={configToEdit.library.scan.cronExpression}
             />
 
@@ -67,6 +70,7 @@
               required={true}
               disabled={disabled || !configToEdit.library.scan.enabled}
               label={$t('admin.cron_expression')}
+              key="library.scan.cronExpression"
               bind:value={configToEdit.library.scan.cronExpression}
               isEdited={configToEdit.library.scan.cronExpression !== config.library.scan.cronExpression}
             >

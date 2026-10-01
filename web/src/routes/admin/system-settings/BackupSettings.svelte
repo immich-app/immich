@@ -30,6 +30,7 @@
         <SettingSwitch
           title={$t('admin.backup_database_enable_description')}
           {disabled}
+          key="backup.database.enabled"
           bind:checked={configToEdit.backup.database.enabled}
         />
 
@@ -38,6 +39,7 @@
           disabled={disabled || !configToEdit.backup.database.enabled}
           name="expression"
           label={$t('admin.cron_expression_presets')}
+          key="backup.database.cronExpression"
           bind:value={configToEdit.backup.database.cronExpression}
         />
 
@@ -46,6 +48,7 @@
           required={true}
           disabled={disabled || !configToEdit.backup.database.enabled}
           label={$t('admin.cron_expression')}
+          key="backup.database.cronExpression"
           bind:value={configToEdit.backup.database.cronExpression}
           isEdited={configToEdit.backup.database.cronExpression !== config.backup.database.cronExpression}
         >
@@ -68,6 +71,7 @@
           required={true}
           label={$t('admin.backup_keep_last_amount')}
           disabled={disabled || !configToEdit.backup.database.enabled}
+          key="backup.database.keepLastAmount"
           bind:value={configToEdit.backup.database.keepLastAmount}
           isEdited={configToEdit.backup.database.keepLastAmount !== config.backup.database.keepLastAmount}
         />

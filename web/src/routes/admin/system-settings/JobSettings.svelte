@@ -64,6 +64,7 @@
               {disabled}
               label={$t('admin.job_concurrency', { values: { job: queueTitles[queueName] } })}
               description=""
+              key={`job.${queueName}.concurrency`}
               bind:value={configToEdit.job[queueName].concurrency}
               required={true}
               isEdited={configToEdit.job[queueName].concurrency !== config.job[queueName].concurrency}

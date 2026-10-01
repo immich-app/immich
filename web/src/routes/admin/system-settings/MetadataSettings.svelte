@@ -17,6 +17,7 @@
         <SettingSwitch
           title={$t('admin.metadata_faces_import_setting')}
           subtitle={$t('admin.metadata_faces_import_setting_description')}
+          key="metadata.faces.import"
           bind:checked={configToEdit.metadata.faces.import}
           {disabled}
         />

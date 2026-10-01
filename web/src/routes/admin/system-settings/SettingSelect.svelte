@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import type { ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiChevronDown } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -12,6 +14,7 @@
     desc?: string;
     name?: string;
     isEdited?: boolean;
+    key?: ConfigKey;
     number?: boolean;
     disabled?: boolean;
     onSelect?: (setting: string | number) => void;
@@ -24,6 +27,7 @@
     desc = '',
     name = '',
     isEdited = false,
+    key,
     number = false,
     disabled = false,
     onSelect = () => {},
@@ -57,6 +61,7 @@
       {desc}
     </p>
   {/if}
+  <SettingSourceHint {key} />
 
   <div class="grid">
     <Icon

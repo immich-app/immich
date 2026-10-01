@@ -20,6 +20,7 @@
         <SettingSwitch
           title={$t('admin.trash_enabled_description')}
           {disabled}
+          key="trash.enabled"
           bind:checked={configToEdit.trash.enabled}
         />
 
@@ -29,6 +30,7 @@
           inputType={SettingInputFieldType.NUMBER}
           label={$t('admin.trash_number_of_days')}
           description={$t('admin.trash_number_of_days_description')}
+          key="trash.days"
           bind:value={configToEdit.trash.days}
           required={true}
           disabled={disabled || !configToEdit.trash.enabled}

@@ -10,6 +10,7 @@ import {
   CQModeSchema,
   Colorspace,
   ColorspaceSchema,
+  ConfigSourceSchema,
   ConfigVisibility,
   HlsVideoResolution,
   HlsVideoResolutionSchema,
@@ -44,6 +45,11 @@ const configBool = z
   .nonoptional()
   .meta({ type: 'boolean' });
 
+const configNumber = (schema: z.ZodNumber) =>
+  z
+    .preprocess((value) => (typeof value === 'string' && value.trim() !== '' ? Number(value) : value), schema)
+    .nonoptional();
+
 const cronExpressionSchema = z
   .string()
   .superRefine((value, ctx) => {
@@ -63,18 +69,18 @@ const emptyOrUrl = (error: string) =>
 
 const AdminConfigIntegrityJobSchema = z
   .object({
-    enabled: z.boolean().describe('Enabled'),
+    enabled: configBool.describe('Enabled'),
     cronExpression: cronExpressionSchema.describe('Cron expression for when the integrity check should run'),
   })
   .describe('Integrity job config')
   .meta({ id: 'AdminConfigIntegrityJobDto' });
 
 const AdminConfigJobSettingsSchema = z
-  .object({ concurrency: z.int().min(1).describe('Concurrency') })
+  .object({ concurrency: configNumber(z.int().min(1)).describe('Concurrency') })
   .meta({ id: 'AdminConfigJobSettingsDto' });
 
 const AdminConfigMachineLearningTaskSchema = z.object({
-  enabled: z.boolean().describe('Whether the task is enabled').meta({ visibility: User }),
+  enabled: configBool.describe('Whether the task is enabled').meta({ visibility: User }),
 });
 
 const AdminConfigMachineLearningModelSchema = AdminConfigMachineLearningTaskSchema.extend({
@@ -84,16 +90,16 @@ const AdminConfigMachineLearningModelSchema = AdminConfigMachineLearningTaskSche
 const AdminConfigGeneratedImageSchema = z
   .object({
     format: ImageFormatSchema,
-    quality: z.int().min(1).max(100).describe('Quality'),
-    size: z.int().min(1).describe('Size').meta({ visibility: User }),
+    quality: configNumber(z.int().min(1).max(100)).describe('Quality'),
+    size: configNumber(z.int().min(1)).describe('Size').meta({ visibility: User }),
     progressive: configBool.default(false).optional().describe('Progressive'),
   })
   .meta({ id: 'AdminConfigGeneratedImageDto' });
 
 const AdminConfigFFmpegSchema = z
   .object({
-    crf: z.coerce.number().int().min(0).max(51).describe('CRF'),
-    threads: z.coerce.number().int().min(0).describe('Threads'),
+    crf: configNumber(z.int().min(0).max(51)).describe('CRF'),
+    threads: configNumber(z.int().min(0)).describe('Threads'),
     preset: z.string().describe('Preset'),
     targetVideoCodec: VideoCodecSchema,
     acceptedVideoCodecs: z.array(VideoCodecSchema).describe('Accepted video codecs'),
@@ -102,9 +108,9 @@ const AdminConfigFFmpegSchema = z
     acceptedContainers: z.array(VideoContainerSchema).describe('Accepted containers'),
     targetResolution: z.string().describe('Target resolution'),
     maxBitrate: z.string().describe('Max bitrate'),
-    bframes: z.coerce.number().int().min(-1).max(16).describe('B-frames'),
-    refs: z.coerce.number().int().min(0).max(6).describe('References'),
-    gopSize: z.coerce.number().int().min(0).describe('GOP size'),
+    bframes: configNumber(z.int().min(-1).max(16)).describe('B-frames'),
+    refs: configNumber(z.int().min(0).max(6)).describe('References'),
+    gopSize: configNumber(z.int().min(0)).describe('GOP size'),
     temporalAQ: configBool.describe('Temporal AQ'),
     cqMode: CQModeSchema,
     twoPass: configBool.describe('Two pass'),
@@ -138,7 +144,7 @@ const AdminConfigSmtpSchema = z
       .object({
         ignoreCert: configBool.describe('Whether to ignore SSL certificate errors'),
         host: z.string().describe('SMTP server hostname'),
-        port: z.int().min(0).max(65_535).describe('SMTP server port'),
+        port: configNumber(z.int().min(0).max(65_535)).describe('SMTP server port'),
         secure: configBool.describe('Whether to use secure connection (TLS/SSL)'),
         username: z.string().describe('SMTP username'),
         password: z.string().describe('SMTP password'),
@@ -155,7 +161,7 @@ const AdminConfigSchemaWithVisibility = z
           .object({
             enabled: configBool.describe('Enabled'),
             cronExpression: cronExpressionSchema,
-            keepLastAmount: z.int().min(1).describe('Keep last amount'),
+            keepLastAmount: configNumber(z.int().min(1)).describe('Keep last amount'),
           })
           .meta({ id: 'AdminConfigDatabaseBackupDto' }),
       })
@@ -166,11 +172,8 @@ const AdminConfigSchemaWithVisibility = z
         missingFiles: AdminConfigIntegrityJobSchema,
         untrackedFiles: AdminConfigIntegrityJobSchema,
         checksumFiles: AdminConfigIntegrityJobSchema.extend({
-          timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
-          percentageLimit: z
-            .float32()
-            .nonnegative()
-            .max(1)
+          timeLimit: configNumber(z.int().nonnegative()).describe('How long the integrity checksum job may run for'),
+          percentageLimit: configNumber(z.float32().nonnegative().max(1))
             .describe('Percentage limit of the integrity checksum job')
             .meta({ format: 'double' }),
         })
@@ -211,50 +214,33 @@ const AdminConfigSchemaWithVisibility = z
         availabilityChecks: z
           .object({
             enabled: configBool.describe('Enabled'),
-            timeout: z.int(),
-            interval: z.int(),
+            timeout: configNumber(z.int()),
+            interval: configNumber(z.int()),
           })
           .meta({ id: 'AdminConfigMachineLearningAvailabilityChecksDto' }),
         clip: AdminConfigMachineLearningModelSchema.meta({ id: 'AdminConfigClipDto' }),
         duplicateDetection: AdminConfigMachineLearningTaskSchema.extend({
-          maxDistance: z
-            .number()
-            .min(0.001)
-            .max(0.1)
+          maxDistance: configNumber(z.number().min(0.001).max(0.1))
             .describe('Maximum distance threshold for duplicate detection')
             .meta({ format: 'double' }),
         }).meta({ id: 'AdminConfigDuplicateDetectionDto' }),
         facialRecognition: AdminConfigMachineLearningModelSchema.extend({
-          minScore: z
-            .number()
-            .min(0.1)
-            .max(1)
+          minScore: configNumber(z.number().min(0.1).max(1))
             .describe('Minimum confidence score for face detection')
             .meta({ format: 'double' }),
-          maxDistance: z
-            .number()
-            .min(0.1)
-            .max(2)
+          maxDistance: configNumber(z.number().min(0.1).max(2))
             .describe('Maximum distance threshold for face recognition')
             .meta({ format: 'double' }),
-          minFaces: z
-            .int()
-            .min(1)
+          minFaces: configNumber(z.int().min(1))
             .describe('Minimum number of faces required for recognition')
             .meta({ visibility: User }),
         }).meta({ id: 'AdminConfigFacialRecognitionDto' }),
         ocr: AdminConfigMachineLearningModelSchema.extend({
-          maxResolution: z.int().min(1).describe('Maximum resolution for OCR processing'),
-          minDetectionScore: z
-            .number()
-            .min(0.1)
-            .max(1)
+          maxResolution: configNumber(z.int().min(1)).describe('Maximum resolution for OCR processing'),
+          minDetectionScore: configNumber(z.number().min(0.1).max(1))
             .describe('Minimum confidence score for text detection')
             .meta({ format: 'double' }),
-          minRecognitionScore: z
-            .number()
-            .min(0.1)
-            .max(1)
+          minRecognitionScore: configNumber(z.number().min(0.1).max(1))
             .describe('Minimum confidence score for text recognition')
             .meta({ format: 'double' }),
         }).meta({ id: 'AdminConfigOcrDto' }),
@@ -283,9 +269,9 @@ const AdminConfigSchemaWithVisibility = z
         clientId: z.string().describe('Client ID'),
         clientSecret: z.string().describe('Client secret'),
         tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethodSchema,
-        timeout: z.int().min(1).describe('Timeout'),
+        timeout: configNumber(z.int().min(1)).describe('Timeout'),
         allowInsecureRequests: configBool.describe('Allow insecure requests'),
-        defaultStorageQuota: z.int().min(0).nullable().describe('Default storage quota'),
+        defaultStorageQuota: configNumber(z.int().min(0)).nullable().describe('Default storage quota'),
         enabled: configBool.describe('Enabled').meta({ visibility: Public }),
         issuerUrl: emptyOrUrl('Issuer URL must be an empty string or a valid URL').describe('Issuer URL'),
         accountManagementUrl: emptyOrUrl('Account management URL must be an empty string or a valid URL')
@@ -340,7 +326,7 @@ const AdminConfigSchemaWithVisibility = z
           .object({
             enabled: configBool.describe('Enabled').meta({ visibility: User }),
             format: ImageFormatSchema,
-            quality: z.int().min(1).max(100).describe('Quality'),
+            quality: configNumber(z.int().min(1).max(100)).describe('Quality'),
             progressive: configBool.default(false).optional().describe('Progressive'),
           })
           .meta({ id: 'AdminConfigGeneratedFullsizeImageDto' }),
@@ -369,7 +355,7 @@ const AdminConfigSchemaWithVisibility = z
     trash: z
       .object({
         enabled: configBool.describe('Enabled').meta({ visibility: User }),
-        days: z.int().min(0).describe('Days').meta({ visibility: User }),
+        days: configNumber(z.int().min(0)).describe('Days').meta({ visibility: User }),
       })
       .meta({ id: 'AdminConfigTrashDto' }),
     theme: z
@@ -408,7 +394,7 @@ const AdminConfigSchemaWithVisibility = z
       })
       .meta({ id: 'AdminConfigServerDto' }),
     user: z
-      .object({ deleteDelay: z.int().min(1).describe('Delete delay').meta({ visibility: User }) })
+      .object({ deleteDelay: configNumber(z.int().min(1)).describe('Delete delay').meta({ visibility: User }) })
       .meta({ id: 'AdminConfigUserDto' }),
   })
   .describe('Configuration properties that are visible to the admin')
@@ -521,7 +507,31 @@ const ConfigTemplateStorageOptionSchema = z
   })
   .meta({ id: 'SystemConfigTemplateStorageOptionDto' });
 
+const AdminConfigFieldSourceSchema = z
+  .object({
+    source: ConfigSourceSchema.describe('The layer that defines this value'),
+    value: z.unknown().describe('The raw value defined by this layer'),
+  })
+  .describe('A value contributed by one configuration layer')
+  .meta({ id: 'AdminConfigFieldSourceDto' });
+
+const AdminConfigFieldSchema = z
+  .object({
+    name: z.string().describe('The dotted path of the property, for example "ffmpeg.crf"'),
+    value: z.unknown().describe('The effective value, after validation and normalization'),
+    sources: z
+      .array(AdminConfigFieldSourceSchema)
+      .describe('Every layer that defines this property, lowest priority first; the last entry wins'),
+    isLocked: z.boolean().describe('Whether the value is set by the config file or an environment variable'),
+    envVariable: z.string().describe('The environment variable that overrides this property'),
+  })
+  .describe('Resolution details for a single configuration property')
+  .meta({ id: 'AdminConfigFieldDto' });
+
+export type AdminConfigField = z.infer<typeof AdminConfigFieldSchema>;
+
 export class AdminConfigDto extends createZodDto(AdminConfigSchema) {}
+export class AdminConfigFieldDto extends createZodDto(AdminConfigFieldSchema) {}
 export class UserConfigDto extends createZodDto(UserConfigSchema) {}
 export class PublicConfigDto extends createZodDto(PublicConfigSchema) {}
 export class ConfigFFmpegDto extends createZodDto(AdminConfigFFmpegSchema) {}

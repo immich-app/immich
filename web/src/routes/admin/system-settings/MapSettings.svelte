@@ -26,6 +26,7 @@
               title={$t('admin.map_enable_description')}
               subtitle={$t('admin.map_implications')}
               {disabled}
+              key="map.enabled"
               bind:checked={configToEdit.map.enabled}
             />
 
@@ -35,6 +36,7 @@
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_light_style')}
               description={$t('admin.map_style_description')}
+              key="map.lightStyle"
               bind:value={configToEdit.map.lightStyle}
               disabled={disabled || !configToEdit.map.enabled}
               isEdited={configToEdit.map.lightStyle !== config.map.lightStyle}
@@ -43,6 +45,7 @@
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_dark_style')}
               description={$t('admin.map_style_description')}
+              key="map.darkStyle"
               bind:value={configToEdit.map.darkStyle}
               disabled={disabled || !configToEdit.map.enabled}
               isEdited={configToEdit.map.darkStyle !== config.map.darkStyle}
@@ -64,6 +67,7 @@
             <SettingSwitch
               title={$t('admin.map_reverse_geocoding_enable_description')}
               {disabled}
+              key="reverseGeocoding.enabled"
               bind:checked={configToEdit.reverseGeocoding.enabled}
             />
           </div></SettingAccordion

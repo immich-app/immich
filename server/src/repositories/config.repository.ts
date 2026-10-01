@@ -30,6 +30,7 @@ export interface EnvData {
   port: number;
   environment: ImmichEnvironment;
   configFile?: string;
+  configOverrides: Record<string, string>;
   logLevel?: LogLevel;
   logFormat?: LogFormat;
 
@@ -188,6 +189,13 @@ const getEnv = (): EnvData => {
     }
   }
 
+  const configOverrides: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (key.startsWith('IMMICH_CONFIG_') && key !== 'IMMICH_CONFIG_FILE' && value !== undefined) {
+      configOverrides[key] = value;
+    }
+  }
+
   const environment = dto.IMMICH_ENV || ImmichEnvironment.Production;
   const isProd = environment === ImmichEnvironment.Production;
   const buildFolder = dto.IMMICH_BUILD_DATA || '/build';
@@ -258,6 +266,7 @@ const getEnv = (): EnvData => {
     port: dto.IMMICH_PORT || 2283,
     environment,
     configFile: dto.IMMICH_CONFIG_FILE,
+    configOverrides,
     logLevel: dto.IMMICH_LOG_LEVEL,
     logFormat: dto.IMMICH_LOG_FORMAT || LogFormat.Console,
 

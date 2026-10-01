@@ -22,6 +22,7 @@
           min={1}
           label={$t('admin.user_delete_delay_settings')}
           description={$t('admin.user_delete_delay_settings_description')}
+          key="user.deleteDelay"
           bind:value={configToEdit.user.deleteDelay}
           isEdited={configToEdit.user.deleteDelay !== config.user.deleteDelay}
         />

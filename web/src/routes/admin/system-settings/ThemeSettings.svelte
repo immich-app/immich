@@ -19,6 +19,7 @@
           {disabled}
           label={$t('admin.theme_custom_css_settings')}
           description={$t('admin.theme_custom_css_settings_description')}
+          key="theme.customCss"
           bind:value={configToEdit.theme.customCss}
           isEdited={configToEdit.theme.customCss !== config.theme.customCss}
         />

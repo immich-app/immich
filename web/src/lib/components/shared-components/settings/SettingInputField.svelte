@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import type { ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { PasswordInput } from '@immich/ui';
   import { onMount, tick, type Snippet } from 'svelte';
@@ -17,6 +19,7 @@
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: ConfigKey;
     autofocus?: boolean;
     passwordAutocomplete?: AutoFill;
     descriptionSnippet?: Snippet;
@@ -42,6 +45,7 @@
     required = false,
     disabled = false,
     isEdited = false,
+    key,
     autofocus = false,
     passwordAutocomplete = 'current-password',
     descriptionSnippet,
@@ -105,6 +109,8 @@
       {@render descriptionSnippet?.()}
     </div>
   {/if}
+
+  <SettingSourceHint {key} />
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
     <div class="flex place-content-center place-items-center gap-2">

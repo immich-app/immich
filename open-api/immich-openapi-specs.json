@@ -482,6 +482,56 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/config/fields": {
+      "get": {
+        "description": "Retrieve, for every configuration property, the effective value, the default value, where the value came from (default, database, config file, or environment variable), and whether it can be changed via the API.",
+        "operationId": "getAdminConfigFields",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AdminConfigFieldDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get the fields information for admin config",
+        "tags": [
+          "Config (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "adminConfig.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/database-backups": {
       "delete": {
         "description": "Delete a backup by its filename",
@@ -18890,6 +18940,58 @@
         ],
         "type": "object"
       },
+      "AdminConfigFieldDto": {
+        "description": "Resolution details for a single configuration property",
+        "properties": {
+          "envVariable": {
+            "description": "The environment variable that overrides this property",
+            "type": "string"
+          },
+          "isLocked": {
+            "description": "Whether the value is set by the config file or an environment variable",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The dotted path of the property, for example \"ffmpeg.crf\"",
+            "type": "string"
+          },
+          "sources": {
+            "description": "Every layer that defines this property, lowest priority first; the last entry wins",
+            "items": {
+              "$ref": "#/components/schemas/AdminConfigFieldSourceDto"
+            },
+            "type": "array"
+          },
+          "value": {
+            "description": "The effective value, after validation and normalization"
+          }
+        },
+        "required": [
+          "envVariable",
+          "isLocked",
+          "name",
+          "sources",
+          "value"
+        ],
+        "type": "object"
+      },
+      "AdminConfigFieldSourceDto": {
+        "description": "A value contributed by one configuration layer",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/ConfigSource",
+            "description": "The layer that defines this value"
+          },
+          "value": {
+            "description": "The raw value defined by this layer"
+          }
+        },
+        "required": [
+          "source",
+          "value"
+        ],
+        "type": "object"
+      },
       "AdminConfigGeneratedFullsizeImageDto": {
         "properties": {
           "enabled": {
@@ -21766,6 +21868,16 @@
         "enum": [
           "srgb",
           "p3"
+        ],
+        "type": "string"
+      },
+      "ConfigSource": {
+        "description": "Where a configuration value comes from",
+        "enum": [
+          "default",
+          "database",
+          "file",
+          "env"
         ],
         "type": "string"
       },

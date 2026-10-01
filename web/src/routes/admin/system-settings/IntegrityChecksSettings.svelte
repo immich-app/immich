@@ -29,12 +29,14 @@
             <SettingSwitch
               title={$t('admin.integrity_checks_missing_files_enable_description')}
               {disabled}
+              key="integrityChecks.missingFiles.enabled"
               bind:checked={configToEdit.integrityChecks.missingFiles.enabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
+              key="integrityChecks.missingFiles.cronExpression"
               bind:value={configToEdit.integrityChecks.missingFiles.cronExpression}
               required={true}
               {disabled}
@@ -68,12 +70,14 @@
             <SettingSwitch
               title={$t('admin.integrity_checks_untracked_files_enable_description')}
               {disabled}
+              key="integrityChecks.untrackedFiles.enabled"
               bind:checked={configToEdit.integrityChecks.untrackedFiles.enabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
+              key="integrityChecks.untrackedFiles.cronExpression"
               bind:value={configToEdit.integrityChecks.untrackedFiles.cronExpression}
               required={true}
               {disabled}
@@ -107,12 +111,14 @@
             <SettingSwitch
               title={$t('admin.integrity_checks_checksum_files_enable_description')}
               {disabled}
+              key="integrityChecks.checksumFiles.enabled"
               bind:checked={configToEdit.integrityChecks.checksumFiles.enabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
+              key="integrityChecks.checksumFiles.cronExpression"
               bind:value={configToEdit.integrityChecks.checksumFiles.cronExpression}
               required={true}
               {disabled}
@@ -139,6 +145,7 @@
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.integrity_checks_checksum_files_time_limit')}
               description={$t('admin.integrity_checks_checksum_files_time_limit_description')}
+              key="integrityChecks.checksumFiles.timeLimit"
               bind:value={configToEdit.integrityChecks.checksumFiles.timeLimit}
               {disabled}
               isEdited={configToEdit.integrityChecks.checksumFiles.timeLimit !==
@@ -149,6 +156,7 @@
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.integrity_checks_checksum_files_percentage_limit')}
               description={$t('admin.integrity_checks_checksum_files_percentage_limit_description')}
+              key="integrityChecks.checksumFiles.percentageLimit"
               bind:value={configToEdit.integrityChecks.checksumFiles.percentageLimit}
               step="0.01"
               min={0.01}

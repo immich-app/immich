@@ -83,6 +83,7 @@
             <SettingSwitch
               {disabled}
               title={$t('admin.oauth_enable_description')}
+              key="oauth.enabled"
               bind:checked={configToEdit.oauth.enabled}
             />
 
@@ -99,6 +100,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label="issuer_url"
+                key="oauth.issuerUrl"
                 bind:value={configToEdit.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -108,6 +110,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label="client_id"
+                key="oauth.clientId"
                 bind:value={configToEdit.oauth.clientId}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -118,6 +121,7 @@
                 inputType={SettingInputFieldType.TEXT}
                 label="client_secret"
                 description={$t('admin.oauth_client_secret_description')}
+                key="oauth.clientSecret"
                 bind:value={configToEdit.oauth.clientSecret}
                 disabled={disabled || !configToEdit.oauth.enabled}
                 isEdited={configToEdit.oauth.clientSecret !== config.oauth.clientSecret}
@@ -126,6 +130,7 @@
               {#if configToEdit.oauth.clientSecret}
                 <SettingSelect
                   label="token_endpoint_auth_method"
+                  key="oauth.tokenEndpointAuthMethod"
                   bind:value={configToEdit.oauth.tokenEndpointAuthMethod}
                   disabled={disabled || !configToEdit.oauth.enabled || !configToEdit.oauth.clientSecret}
                   isEdited={configToEdit.oauth.tokenEndpointAuthMethod !== config.oauth.tokenEndpointAuthMethod}
@@ -140,6 +145,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label="scope"
+                key="oauth.scope"
                 bind:value={configToEdit.oauth.scope}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -149,6 +155,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label="id_token_signed_response_alg"
+                key="oauth.signingAlgorithm"
                 bind:value={configToEdit.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -158,6 +165,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label="userinfo_signed_response_alg"
+                key="oauth.profileSigningAlgorithm"
                 bind:value={configToEdit.oauth.profileSigningAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -168,6 +176,7 @@
                 inputType={SettingInputFieldType.TEXT}
                 label="prompt"
                 description={$t('admin.oauth_prompt_description')}
+                key="oauth.prompt"
                 bind:value={configToEdit.oauth.prompt}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -178,6 +187,7 @@
                 inputType={SettingInputFieldType.TEXT}
                 label="end_session_endpoint"
                 description={$t('admin.oauth_end_session_url_description')}
+                key="oauth.endSessionEndpoint"
                 bind:value={configToEdit.oauth.endSessionEndpoint}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -189,6 +199,7 @@
                 label={$t('admin.oauth_timeout')}
                 description={$t('admin.oauth_timeout_description')}
                 required={true}
+                key="oauth.timeout"
                 bind:value={configToEdit.oauth.timeout}
                 disabled={disabled || !configToEdit.oauth.enabled}
                 isEdited={configToEdit.oauth.timeout !== config.oauth.timeout}
@@ -197,6 +208,7 @@
               <SettingSwitch
                 title={$t('admin.oauth_allow_insecure_requests')}
                 subtitle={$t('admin.oauth_allow_insecure_requests_description')}
+                key="oauth.allowInsecureRequests"
                 bind:checked={configToEdit.oauth.allowInsecureRequests}
                 disabled={disabled || !configToEdit.oauth.enabled}
                 isEdited={configToEdit.oauth.allowInsecureRequests !== config.oauth.allowInsecureRequests}
@@ -206,6 +218,7 @@
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_storage_label_claim')}
                 description={$t('admin.oauth_storage_label_claim_description')}
+                key="oauth.storageLabelClaim"
                 bind:value={configToEdit.oauth.storageLabelClaim}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -216,6 +229,7 @@
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_role_claim')}
                 description={$t('admin.oauth_role_claim_description')}
+                key="oauth.roleClaim"
                 bind:value={configToEdit.oauth.roleClaim}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -226,6 +240,7 @@
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_storage_quota_claim')}
                 description={$t('admin.oauth_storage_quota_claim_description')}
+                key="oauth.storageQuotaClaim"
                 bind:value={configToEdit.oauth.storageQuotaClaim}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -236,6 +251,7 @@
                 inputType={SettingInputFieldType.NUMBER}
                 label={$t('admin.oauth_storage_quota_default')}
                 description={$t('admin.oauth_storage_quota_default_description')}
+                key="oauth.defaultStorageQuota"
                 bind:value={configToEdit.oauth.defaultStorageQuota}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -245,6 +261,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_button_text')}
+                key="oauth.buttonText"
                 bind:value={configToEdit.oauth.buttonText}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -255,6 +272,7 @@
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_account_management_url')}
                 description={$t('admin.oauth_account_management_url_description')}
+                key="oauth.accountManagementUrl"
                 bind:value={configToEdit.oauth.accountManagementUrl}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -264,6 +282,7 @@
               <SettingSwitch
                 title={$t('admin.oauth_auto_register')}
                 subtitle={$t('admin.oauth_auto_register_description')}
+                key="oauth.autoRegister"
                 bind:checked={configToEdit.oauth.autoRegister}
                 disabled={disabled || !configToEdit.oauth.enabled}
               />
@@ -272,6 +291,7 @@
                 title={$t('admin.oauth_auto_launch')}
                 subtitle={$t('admin.oauth_auto_launch_description')}
                 disabled={disabled || !configToEdit.oauth.enabled}
+                key="oauth.autoLaunch"
                 bind:checked={configToEdit.oauth.autoLaunch}
               />
 
@@ -282,6 +302,7 @@
                 })}
                 disabled={disabled || !configToEdit.oauth.enabled}
                 onToggle={() => handleToggleOverride()}
+                key="oauth.mobileOverrideEnabled"
                 bind:checked={configToEdit.oauth.mobileOverrideEnabled}
               />
 
@@ -289,6 +310,7 @@
                 <SettingInputField
                   inputType={SettingInputFieldType.TEXT}
                   label={$t('admin.oauth_mobile_redirect_uri')}
+                  key="oauth.mobileRedirectUri"
                   bind:value={configToEdit.oauth.mobileRedirectUri}
                   required={true}
                   disabled={disabled || !configToEdit.oauth.enabled}
@@ -309,6 +331,7 @@
               <SettingSwitch
                 title={$t('admin.password_enable_description')}
                 {disabled}
+                key="passwordLogin.enabled"
                 bind:checked={configToEdit.passwordLogin.enabled}
               />
             </div>

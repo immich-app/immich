@@ -197,6 +197,7 @@
           {disabled}
           required
           inputType={SettingInputFieldType.TEXT}
+          key="storageTemplate.template"
           bind:value={configToEdit.storageTemplate.template}
           isEdited={configToEdit.storageTemplate.template !== config.storageTemplate.template}
         >
@@ -300,6 +301,7 @@
           title={$t('admin.storage_template_hash_verification_enabled')}
           {disabled}
           subtitle={$t('admin.storage_template_hash_verification_enabled_description')}
+          key="storageTemplate.hashVerificationEnabled"
           bind:checked={configToEdit.storageTemplate.hashVerificationEnabled}
           isEdited={configToEdit.storageTemplate.hashVerificationEnabled !==
             config.storageTemplate.hashVerificationEnabled}

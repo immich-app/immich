@@ -69,6 +69,7 @@
             <SettingSwitch
               title={$t('admin.notification_enable_email_notifications')}
               {disabled}
+              key="notifications.smtp.enabled"
               bind:checked={configToEdit.notifications.smtp.enabled}
             />
 
@@ -80,6 +81,7 @@
               label={$t('host')}
               description={$t('admin.notification_email_host_description')}
               disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              key="notifications.smtp.transport.host"
               bind:value={configToEdit.notifications.smtp.transport.host}
               isEdited={configToEdit.notifications.smtp.transport.host !== config.notifications.smtp.transport.host}
             />
@@ -90,6 +92,7 @@
               label={$t('port')}
               description={$t('admin.notification_email_port_description')}
               disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              key="notifications.smtp.transport.port"
               bind:value={configToEdit.notifications.smtp.transport.port}
               isEdited={configToEdit.notifications.smtp.transport.port !== config.notifications.smtp.transport.port}
             />
@@ -99,6 +102,7 @@
               label={$t('username')}
               description={$t('admin.notification_email_username_description')}
               disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              key="notifications.smtp.transport.username"
               bind:value={configToEdit.notifications.smtp.transport.username}
               isEdited={configToEdit.notifications.smtp.transport.username !==
                 config.notifications.smtp.transport.username}
@@ -109,6 +113,7 @@
               label={$t('password')}
               description={$t('admin.notification_email_password_description')}
               disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              key="notifications.smtp.transport.password"
               bind:value={configToEdit.notifications.smtp.transport.password}
               isEdited={configToEdit.notifications.smtp.transport.password !==
                 config.notifications.smtp.transport.password}
@@ -118,6 +123,7 @@
               title={$t('admin.notification_email_secure')}
               subtitle={$t('admin.notification_email_secure_description')}
               disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              key="notifications.smtp.transport.secure"
               bind:checked={configToEdit.notifications.smtp.transport.secure}
             />
 
@@ -125,6 +131,7 @@
               title={$t('admin.notification_email_ignore_certificate_errors')}
               subtitle={$t('admin.notification_email_ignore_certificate_errors_description')}
               disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              key="notifications.smtp.transport.ignoreCert"
               bind:checked={configToEdit.notifications.smtp.transport.ignoreCert}
             />
 
@@ -136,6 +143,7 @@
               label={$t('admin.notification_email_from_address')}
               description={$t('admin.notification_email_from_address_description')}
               disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              key="notifications.smtp.from"
               bind:value={configToEdit.notifications.smtp.from}
               isEdited={configToEdit.notifications.smtp.from !== config.notifications.smtp.from}
             />

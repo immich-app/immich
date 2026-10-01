@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import type { ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import { generateId } from '$lib/utils/generate-id';
   import { Switch } from '@immich/ui';
   import type { Snippet } from 'svelte';
@@ -12,6 +14,7 @@
     checked?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: ConfigKey;
     onToggle?: (isChecked: boolean) => void;
     children?: Snippet;
   }
@@ -22,6 +25,7 @@
     checked = $bindable(false),
     disabled = false,
     isEdited = false,
+    key,
     onToggle = () => {},
     children,
   }: Props = $props();
@@ -51,6 +55,7 @@
     {#if subtitle}
       <p id={subtitleId} class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
     {/if}
+    <SettingSourceHint {key} />
     {@render children?.()}
   </div>
 

@@ -20,12 +20,14 @@
         <SettingSwitch
           title={$t('admin.version_check_enabled_description')}
           subtitle={$t('admin.version_check_implications', { values: { server: 'version.immich.cloud' } })}
+          key="newVersionCheck.enabled"
           bind:checked={configToEdit.newVersionCheck.enabled}
           {disabled}
         />
         <SettingSelect
           label={$t('admin.version_check_channel')}
           desc={$t('admin.version_check_channel_description')}
+          key="newVersionCheck.channel"
           bind:value={configToEdit.newVersionCheck.channel}
           options={[
             {

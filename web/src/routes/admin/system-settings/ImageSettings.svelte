@@ -29,6 +29,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.thumbnail.format"
             bind:value={configToEdit.image.thumbnail.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -48,6 +49,7 @@
             label={$t('admin.image_resolution')}
             desc={$t('admin.image_resolution_description')}
             number
+            key="image.thumbnail.size"
             bind:value={configToEdit.image.thumbnail.size}
             options={[
               { value: 1080, text: '1080p' },
@@ -65,6 +67,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_thumbnail_quality_description')}
+            key="image.thumbnail.quality"
             bind:value={configToEdit.image.thumbnail.quality}
             isEdited={configToEdit.image.thumbnail.quality !== config.image.thumbnail.quality}
             {disabled}
@@ -88,6 +91,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.preview.format"
             bind:value={configToEdit.image.preview.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -107,6 +111,7 @@
             label={$t('admin.image_resolution')}
             desc={$t('admin.image_resolution_description')}
             number
+            key="image.preview.size"
             bind:value={configToEdit.image.preview.size}
             options={[
               { value: 2160, text: '4K' },
@@ -123,6 +128,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_preview_quality_description')}
+            key="image.preview.quality"
             bind:value={configToEdit.image.preview.quality}
             isEdited={configToEdit.image.preview.quality !== config.image.preview.quality}
             {disabled}
@@ -157,6 +163,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.fullsize.format"
             bind:value={configToEdit.image.fullsize.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -176,6 +183,7 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_fullsize_quality_description')}
+            key="image.fullsize.quality"
             bind:value={configToEdit.image.fullsize.quality}
             isEdited={configToEdit.image.fullsize.quality !== config.image.fullsize.quality}
             disabled={disabled || !configToEdit.image.fullsize.enabled}
