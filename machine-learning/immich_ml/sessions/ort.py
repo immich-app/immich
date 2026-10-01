@@ -6,6 +6,7 @@ import platform
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
+from contextlib import nullcontext
 from dataclasses import dataclass
 from functools import cache, cached_property
 from pathlib import Path
@@ -16,7 +17,7 @@ import numpy as np
 import onnxruntime as ort
 from immich_model.runtime import RewriteContext, RewritePlan, plan_rewrites
 from numpy.typing import NDArray
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
+from onnxruntime.capi.onnxruntime_pybind11_state import Fail, InvalidProtobuf
 from pydantic import BaseModel
 
 from immich_ml.schemas import ModelInput, SessionNode, Shape
@@ -27,6 +28,17 @@ from .policy import ShapePolicy
 # the one provider that handles a free dim well; the rest miscompile it, recompile inside the run,
 # or partition around it, so they are handed one graph per shape instead
 DYNAMIC_PROVIDERS = frozenset({"CPUExecutionProvider"})
+PLANNED_AS = {"nv_tensorrt_rtx": "NvTensorRTRTXExecutionProvider"}
+
+try:
+    import onnxruntime_ep_nv_tensorrt_rtx as nv_tensorrt_rtx
+except ImportError:
+    pass
+else:
+    try:
+        ort.register_execution_provider_library(nv_tensorrt_rtx.get_ep_name(), nv_tensorrt_rtx.get_library_path())
+    except Fail as e:
+        log.info(f"TensorRT-RTX is unavailable: {e}")
 
 
 def _label(pins: Mapping[str, int]) -> str:
@@ -42,26 +54,34 @@ DTYPES = {
     "tensor(int64)": np.int64,
 }
 
+# TensorRT-RTX records CUDA graphs in global capture mode, which fails any other thread's synchronizing call, and as its
+# context memory can move between runs, any run may record: so its graphs build and run one at a time
+# TODO: Make this more granular
+global_lock = Lock()
+
 
 class OrtGraph:
     def __init__(self, spec: GraphSpec) -> None:
-        self.session = spec.session(prepared(spec))
-        image = self.session.get_inputs()[0]
+        graph = prepared(spec)
+        self.lock = global_lock if spec.provider == "nv_tensorrt_rtx" else nullcontext()
+        with self.lock:
+            self._session = spec.session(graph)
+        image = self._session.get_inputs()[0]
         # whether the graph scales and shifts the image itself, so the host hands over raw pixels
         self.normalizes_input = image.type == "tensor(uint8)"
         # CoreML's rewrite moves the layout change out of the graph, so whoever applied it performs it
         self.channels_first = self.normalizes_input and len(image.shape) == 4 and image.shape[1] == 3
 
     def get_inputs(self) -> Sequence[SessionNode]:
-        inputs: Sequence[SessionNode] = self.session.get_inputs()
+        inputs: Sequence[SessionNode] = self._session.get_inputs()
         return inputs
 
     def get_outputs(self) -> Sequence[SessionNode]:
-        outputs: Sequence[SessionNode] = self.session.get_outputs()
+        outputs: Sequence[SessionNode] = self._session.get_outputs()
         return outputs
 
     def get_metadata(self) -> dict[str, str]:
-        metadata: dict[str, str] = self.session.get_modelmeta().custom_metadata_map
+        metadata: dict[str, str] = self._session.get_modelmeta().custom_metadata_map
         return metadata
 
     def run(
@@ -72,7 +92,13 @@ class OrtGraph:
     ) -> list[NDArray[np.float32]]:
         if self.channels_first:
             input_feed = {name: frames.transpose(0, 3, 1, 2) for name, frames in input_feed.items()}
-        outputs: list[NDArray[Any]] = self.session.run(output_names, input_feed, run_options)
+        return self.infer(output_names, input_feed, run_options)
+
+    def infer(
+        self, output_names: list[str] | None, input_feed: ModelInput, run_options: Any = None
+    ) -> list[NDArray[Any]]:
+        with self.lock:
+            outputs: list[NDArray[Any]] = self._session.run(output_names, input_feed, run_options)
         return outputs
 
 
@@ -109,6 +135,8 @@ class GraphSpec:
                 return _intel_gpu(self.openvino_device)
             case "MIGraphXExecutionProvider":
                 return _amd_gpu(int(settings.device_id))
+            case "nv_tensorrt_rtx":
+                return _nvidia_gpu(int(settings.device_id))
         return None
 
     @cached_property
@@ -159,6 +187,8 @@ class GraphSpec:
                     options = {"arena_extend_strategy": "kSameAsRequested"}
                 case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
+                case "nv_tensorrt_rtx":
+                    options = {"device_id": settings.device_id, "nv_runtime_cache_path": self.directory.as_posix()}
                 case "MIGraphXExecutionProvider":
                     options = {"device_id": settings.device_id, "migraphx_model_cache_dir": self.directory.as_posix()}
                 case "OpenVINOExecutionProvider":
@@ -249,7 +279,7 @@ def prepared(spec: GraphSpec) -> Path:
 @cache
 def _plan(provider: str) -> RewritePlan:
     version = tuple(int(piece) for piece in ort.__version__.split(".")[:3])
-    return plan_rewrites(RewriteContext(target=provider, ort_version=version))
+    return plan_rewrites(RewriteContext(target=PLANNED_AS.get(provider, provider), ort_version=version))
 
 
 @cache
@@ -306,15 +336,15 @@ class OrtSession:
         """Opens a graph for every shape and runs it once before opening the next: OpenVINO defers work to the first
         run of a graph it imports from its cache, which importing another graph first can corrupt."""
         for shape in self.policy.dims[:1] if self.dynamic else self.policy.dims:
-            session = self.for_shape(shape).session
+            graph = self.for_shape(shape)
             sizes = dict(_overrides(self.policy, shape.pins))  # for a dim the graph leaves free
             feed = {
                 node.name: np.zeros(
                     [dim if isinstance(dim, int) else sizes.get(dim, 1) for dim in node.shape], DTYPES[node.type]
                 )
-                for node in session.get_inputs()
+                for node in graph._session.get_inputs()
             }
-            session.run(None, feed)
+            graph.infer(None, feed)
 
 
 def _overrides(policy: ShapePolicy, pins: Mapping[str, int]) -> list[tuple[str, int]]:
@@ -353,6 +383,20 @@ def _intel_gpu(device: str) -> Device:
                 version = f"{ip.value >> 22}.{ip.value >> 14 & 0xFF}.{ip.value & 0x3FFF}"
                 return Device(f"{version}-{units.value}eu", driver.value.decode())
     raise LookupError(f"OpenCL has no GPU with the UUID of OpenVINO's {device}")
+
+
+@cache
+def _nvidia_gpu(index: int) -> Device:
+    cuda, device, major, minor = ctypes.CDLL("libcuda.so.1"), ctypes.c_int(), ctypes.c_int(), ctypes.c_int()
+    if cuda.cuInit(0) or cuda.cuDeviceGet(ctypes.byref(device), index):  # honors CUDA_VISIBLE_DEVICES
+        raise LookupError(f"CUDA has no device {index}")
+    cuda.cuDeviceGetAttribute(ctypes.byref(major), 75, device)  # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR
+    cuda.cuDeviceGetAttribute(ctypes.byref(minor), 76, device)  # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR
+    nvml, driver = ctypes.CDLL("libnvidia-ml.so.1"), ctypes.create_string_buffer(80)
+    nvml.nvmlInit_v2()
+    nvml.nvmlSystemGetDriverVersion(driver, 80)
+    tensorrt_rtx = ctypes.CDLL("libtensorrt_rtx.so.1").getInferLibVersion()
+    return Device(f"sm{major.value}{minor.value}", f"{driver.value.decode()} {tensorrt_rtx}")
 
 
 @cache
@@ -396,7 +440,10 @@ def _providers_default() -> list[str]:
 
     available_providers = set(ort.get_available_providers())
     log.debug(f"Available ORT providers: {available_providers}")
-    return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
+    providers = [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
+    if "nv_tensorrt_rtx" in providers:
+        providers.remove("CUDAExecutionProvider")  # CUDA EP syncs the legacy stream each run, which a recording fails
+    return providers
 
 
 def _disabled_optimizers_default(providers: list[str]) -> list[str]:

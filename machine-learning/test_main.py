@@ -295,6 +295,7 @@ class TestOrtSessions:
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
     ROCM_EP = ["MIGraphXExecutionProvider", "CPUExecutionProvider"]
     COREML_EP = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+    TRT_RTX_EP = ["nv_tensorrt_rtx", "CUDAExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
     def test_sets_cpu_provider(self, ort_session: mock.Mock, providers: list[str]) -> None:
@@ -340,6 +341,12 @@ class TestOrtSessions:
         ort_sessions("ViT-B-32__openai")
 
         assert given_providers(ort_session) == self.COREML_EP
+
+    @pytest.mark.providers(TRT_RTX_EP)
+    def test_leaves_cuda_out_beside_tensorrt_rtx(self, ort_session: mock.Mock, providers: list[str]) -> None:
+        ort_sessions("ViT-B-32__openai")
+
+        assert given_providers(ort_session) == ["nv_tensorrt_rtx", "CPUExecutionProvider"]
 
     def test_leaves_a_dimension_free_when_the_model_feeds_several_sizes(
         self, ort_session: mock.Mock, mocker: MockerFixture
@@ -408,7 +415,7 @@ class TestOrtSessions:
             events.append("open")
             return mock.DEFAULT
 
-        def run(output_names: Any, feed: dict[str, np.ndarray]) -> list[np.ndarray]:
+        def run(output_names: Any, feed: dict[str, np.ndarray], run_options: Any = None) -> list[np.ndarray]:
             events.append(f"run at {feed['image'].shape[2]}")  # a dim the graph leaves free takes the shape's size
             return [np.zeros(1)]
 
@@ -753,7 +760,11 @@ class TestPreparedGraphs:
     @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
     @pytest.mark.parametrize(
         ("provider", "reader"),
-        [("OpenVINOExecutionProvider", "_intel_gpu"), ("MIGraphXExecutionProvider", "_amd_gpu")],
+        [
+            ("OpenVINOExecutionProvider", "_intel_gpu"),
+            ("MIGraphXExecutionProvider", "_amd_gpu"),
+            ("nv_tensorrt_rtx", "_nvidia_gpu"),
+        ],
     )
     def test_prepares_once_per_kind_of_device_and_again_for_another_version(
         self, provider: str, reader: str, ov_device_ids: mock.Mock, mocker: MockerFixture
@@ -1789,6 +1800,15 @@ class TestOcr:
 
         assert indices.tolist() == [[2, 1, 1, 0]]
         assert np.allclose(confidence, [[1 / (1 + 2 * np.exp(-10)), 1 / (1 + np.exp(-1) + np.exp(-2)), 0, 0]])
+
+    def test_rec_decodes_half_precision_logits_that_are_all_blank(self) -> None:
+        raw = np.full((2, 3, 1, 3), -5.0, dtype=np.float16)
+        raw[..., 0] = 5.0  # every step reads as the blank, so no character is kept
+
+        indices, confidence = logits(raw)
+
+        assert indices.tolist() == [[0, 0, 0], [0, 0, 0]]
+        assert confidence.dtype == np.float32 and not confidence.any()
 
     def test_set_rec_set_default_max_batch_size(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture

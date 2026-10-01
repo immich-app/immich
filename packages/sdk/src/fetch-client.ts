@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.2.0
+ * 3.3.0-rc.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -688,6 +688,7 @@ export type PeopleResponse = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb: boolean;
+    updateStrategy: PersonUpdateStrategy;
 };
 export type PurchaseResponse = {
     /** Date until which to hide buy button */
@@ -774,6 +775,7 @@ export type PeopleUpdate = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb?: boolean;
+    updateStrategy?: PersonUpdateStrategy;
 };
 export type PurchaseUpdate = {
     /** Date until which to hide buy button */
@@ -2039,7 +2041,7 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-    /** User ID */
+    /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
 export type PeopleUpdateDto = {
@@ -2072,13 +2074,14 @@ export type PersonUsersResponseDto = {
     /** User ID of the user that was given access to this person */
     sharedWithId: string;
 }[];
-export type PersonUsersCreateDto = {
-    /** Person IDs */
-    personIds: string[];
+export type PeopleUsersUpsertDto = {
+    /** Person IDs, required when type is omitted */
+    personIds?: string[];
     /** Role that should be applied */
     role: PersonUserRole;
     /** User IDs that should be given access to the person */
     sharedWithIds: string[];
+    "type"?: PeopleUsersUpsertType;
 };
 export type PersonDeleteDto = {
     userId?: string;
@@ -2096,7 +2099,7 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-    /** User ID */
+    /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
 export type AssetFaceUpdateItem = {
@@ -6222,15 +6225,15 @@ export function getUsersForPeople({ direction, personId, role, sharedById, share
     }));
 }
 /**
- * Give users access to people
+ * Upsert user access
  */
-export function addUsersToPeople({ personUsersCreateDto }: {
-    personUsersCreateDto: PersonUsersCreateDto;
+export function upsertPeopleUsers({ peopleUsersUpsertDto }: {
+    peopleUsersUpsertDto: PeopleUsersUpsertDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/people/users", oazapfts.json({
         ...opts,
         method: "PUT",
-        body: personUsersCreateDto
+        body: peopleUsersUpsertDto
     })));
 }
 /**
@@ -8080,6 +8083,10 @@ export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
 }
+export enum PersonUpdateStrategy {
+    Self = "self",
+    Everyone = "everyone"
+}
 export enum AssetVisibility {
     Archive = "archive",
     Timeline = "timeline",
@@ -8386,6 +8393,9 @@ export enum PartnerDirection {
 export enum SharingDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
+}
+export enum PeopleUsersUpsertType {
+    Everyone = "everyone"
 }
 export enum WorkflowType {
     AssetV1 = "AssetV1"
