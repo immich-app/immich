@@ -3,6 +3,7 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
+  bulkTagAssets,
   getAssetInfo,
   removeAssetFromAlbum,
   runAssetJobs,
@@ -36,6 +37,7 @@ import {
   mdiPlus,
   mdiPresentationPlay,
   mdiShareVariantOutline,
+  mdiTagMultipleOutline,
   mdiTagPlusOutline,
   mdiTune,
 } from '@mdi/js';
@@ -59,6 +61,7 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
+  const assetIds = assetMultiSelectManager.assets.map((asset) => asset.id);
   const ownedAssets = assetMultiSelectManager.ownedAssets;
   const isAlbumOwner = album?.albumUsers[0].user.id === authManager.user.id;
 
@@ -71,19 +74,32 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () =>
-      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
+    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
+  };
+
+  const CreateSharedLink: ActionItem = {
+    title: $t('share'),
+    icon: mdiShareVariantOutline,
+    onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds }),
   };
 
   const RemoveFromAlbum: ActionItem = {
     title: $t('remove_from_album'),
     icon: mdiImageRemoveOutline,
     $if: () => !!album && (isAlbumOwner || assetMultiSelectManager.isAllUserOwned),
-    onAction: () =>
-      handleBulkRemoveAssetsFromAlbum(
-        assetMultiSelectManager.assets.map((asset) => asset.id),
-        album!,
-      ),
+    onAction: () => handleBulkRemoveAssetsFromAlbum(assetIds, album!),
+  };
+
+  const Tag: ActionItem = {
+    title: $t('tag'),
+    icon: mdiTagMultipleOutline,
+    $if: () => authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned,
+    onAction: async () => {
+      if (await modalManager.show(AssetTagModal, { assetIds })) {
+        assetMultiSelectManager.clear();
+      }
+    },
+    shortcuts: { key: 't' },
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -113,7 +129,9 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
 
   return {
     AddToAlbum,
+    CreateSharedLink,
     RemoveFromAlbum,
+    Tag,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -462,6 +480,20 @@ const handleRate = async (asset: AssetResponseDto, rating: number) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_set_rating'));
+  }
+};
+
+export const handleTagAssets = async (assetIds: string[], tagIds: string[]) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await bulkTagAssets({ tagBulkAssetsDto: { assetIds, tagIds } });
+    toastManager.primary($t('tagged_assets', { values: { count: response.count } }));
+    eventManager.emit('AssetsTag', assetIds);
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_tag_assets'));
+    return false;
   }
 };
 
