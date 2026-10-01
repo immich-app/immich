@@ -29,6 +29,7 @@ const UpdateLibrarySchema = z
 export interface WalkOptionsDto {
   pathsToWalk: string[];
   includeHidden?: boolean;
+  includeMetadata?: boolean;
   exclusionPatterns?: string[];
 }
 

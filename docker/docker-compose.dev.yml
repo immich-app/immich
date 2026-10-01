@@ -20,6 +20,7 @@ services:
       - /tmp
     volumes:
       - ..:/usr/src/app
+      - ../../walkrs:/usr/src/walkrs
       # - ../../ui:/usr/src/ui
       - build_cache:/buildcache
       - server_node_modules:/usr/src/app/server/node_modules
@@ -74,6 +75,26 @@ services:
       - ${UPLOAD_LOCATION}/photos:/data
       - /etc/localtime:/etc/localtime:ro
       - ../packages/plugin-core:/build/plugins/immich-plugin-core
+      - /mnt/bilder:/import/big/01
+      - /mnt/bilder:/import/big/02
+      - /mnt/bilder:/import/big/03
+      - /mnt/bilder:/import/big/04
+      - /mnt/bilder:/import/big/05
+      - /mnt/bilder:/import/big/06
+      - /mnt/bilder:/import/big/07
+      - /mnt/bilder:/import/big/08
+      - /mnt/bilder:/import/big/09
+      - /mnt/bilder:/import/big/10
+      - /mnt/bilder:/import/big/11
+      - /mnt/bilder:/import/big/12
+      - /mnt/bilder:/import/big/13
+      - /mnt/bilder:/import/big/14
+      - /mnt/bilder:/import/big/15
+      - /mnt/bilder:/import/big/16
+      - /mnt/bilder:/import/big/17
+      - /mnt/bilder:/import/big/18
+      - /mnt/bilder:/import/big/19
+      - /mnt/bilder:/import/big/20
     env_file:
       - .env
     environment:

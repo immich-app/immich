@@ -686,6 +686,60 @@ describe(LibraryService.name, () => {
       expect(updated?.deletedAt).toBeNull();
     });
 
+    it('should queue metadata extraction when file size changes but mtime stays unchanged', async () => {
+      const { sut, ctx } = setup();
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const originalPath = await createFile(join(importPath, 'size-change.png'));
+      const storage = ctx.get(StorageRepository);
+      const originalStats = await storage.stat(originalPath);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        originalPath,
+        fileModifiedAt: originalStats.mtime,
+        isExternal: true,
+        isOffline: false,
+        status: AssetStatus.Active,
+      });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: originalStats.size });
+
+      const job = {
+        libraryId: library.id,
+        importPaths: library.importPaths,
+        exclusionPatterns: library.exclusionPatterns,
+        assetIds: [asset.id],
+        progressCounter: 1,
+        totalAssets: 1,
+      };
+      const jobs = ctx.getMock(JobRepository);
+
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+      expect(jobs.queueAll).not.toHaveBeenCalled();
+
+      await writeFile(originalPath, 'test with additional bytes');
+      await utimes(originalPath, originalStats.atime, originalStats.mtime);
+      const changedStats = await storage.stat(originalPath);
+      expect(changedStats.mtime).toEqual(originalStats.mtime);
+      expect(changedStats.size).toBeGreaterThan(originalStats.size);
+
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+
+      expect(jobs.queueAll).toHaveBeenCalledExactlyOnceWith([
+        {
+          name: JobName.SidecarCheck,
+          data: {
+            id: asset.id,
+            source: 'upload',
+            fileMetadata: {
+              size: changedStats.size,
+              modified: Math.trunc(changedStats.mtimeMs),
+              created: changedStats.birthtimeMs === 0 ? null : Math.trunc(changedStats.birthtimeMs),
+            },
+          },
+        },
+      ]);
+    });
+
     it('should set an offline asset to online if its file exists in an import path and is not excluded', async () => {
       const { sut, ctx } = setup();
       const assetRepo = ctx.get(AssetRepository);
@@ -859,7 +913,22 @@ describe(LibraryService.name, () => {
       }
       const storage = ctx.get(StorageRepository);
       const walk = storage.walk.bind(storage);
-      const walker = vi.spyOn(storage, 'walk').mockImplementation((options) => walk({ ...options, take: 2 }));
+      const walker = vi.spyOn(storage, 'walk').mockImplementation(async function* (options) {
+        const batches = await Array.fromAsync(walk(options));
+        const files = batches.flatMap((batch) => batch.files);
+        const size = options.includeMetadata ? batches.flatMap((batch) => batch.size ?? []) : null;
+        const modified = options.includeMetadata ? batches.flatMap((batch) => batch.modified ?? []) : null;
+        const created = options.includeMetadata ? batches.flatMap((batch) => batch.created ?? []) : null;
+        for (let index = 0; index < files.length; index += 2) {
+          yield {
+            files: files.slice(index, index + 2),
+            size: size?.slice(index, index + 2) ?? null,
+            modified: modified?.slice(index, index + 2) ?? null,
+            created: created?.slice(index, index + 2) ?? null,
+            errors: index === 0 ? batches.flatMap((batch) => batch.errors) : [],
+          };
+        }
+      });
       const syncFiles = vi.spyOn(ctx.sut, 'handleSyncFiles');
 
       try {

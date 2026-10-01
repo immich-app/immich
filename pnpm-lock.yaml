@@ -411,8 +411,8 @@ importers:
         specifier: ^0.6.3
         version: 0.6.4
       '@immich/walkrs':
-        specifier: ^0.0.13
-        version: 0.0.13
+        specifier: link:../../walkrs
+        version: link:../../walkrs
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(bullmq@5.81.5(supports-color@8.1.1))
@@ -3140,10 +3140,6 @@ packages:
   '@immich/sql-tools@0.6.4':
     resolution: {integrity: sha512-l+PUu/Uku7OjMZsWNI50b8cZyOhdxfdezJZvkDLHu9iAv1qlnI7KAQcg8ZdPGQmDfvNWuTm7vS7+Ms5pCTz/aQ==}
     hasBin: true
-
-  '@immich/walkrs@0.0.13':
-    resolution: {integrity: sha512-qKDoXFgy3d2Z7SIJBn25BcNyQnPLAp2zZEBcewpWxG5+qAXDPi3M3sweJ9qJ11Eha+YlmpUO3c8yd5CCBeq96A==}
-    engines: {pnpm: '>=10.0.0'}
 
   '@immich/ui@0.90.0':
     resolution: {integrity: sha512-bQY5K1af/m8p66jTZyzGSfUvfzAQZd3+8z+9nMGPb5wojTZODU81s+TSg/zNE93DcXY2++DdRpdf2nrPH1Nbpw==}
@@ -16296,8 +16292,6 @@ snapshots:
       kysely-postgres-js: 4.0.0(kysely@0.29.6)(postgres@3.4.9)
       pg-connection-string: 2.14.0
       postgres: 3.4.9
-
-  '@immich/walkrs@0.0.13': {}
 
   '@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.1(@typescript-eslint/types@8.70.1))':
     dependencies:

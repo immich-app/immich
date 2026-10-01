@@ -1,10 +1,9 @@
-import mockfs from 'mock-fs';
 import { R_OK } from 'node:constants';
-import { mkdtempDisposable, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtempDisposable, stat, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { vitest } from 'vitest';
-import { CrawlOptionsDto } from 'src/dtos/library.dto.js';
+import { WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { automock } from 'test/utils.js';
@@ -31,24 +30,22 @@ const getHandler = (event: string) => {
 
 interface Test {
   test: string;
-  options: CrawlOptionsDto;
+  options: WalkOptionsDto;
   files: Record<string, boolean>;
 }
-
-const cwd = process.cwd();
 
 const tests: Test[] = [
   {
     test: 'should return empty when crawling an empty path list',
     options: {
-      pathsToCrawl: [],
+      pathsToWalk: [],
     },
     files: {},
   },
   {
     test: 'should crawl a single path',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -57,7 +54,7 @@ const tests: Test[] = [
   {
     test: 'should exclude by file extension',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
       exclusionPatterns: ['**/*.tif'],
     },
     files: {
@@ -68,7 +65,7 @@ const tests: Test[] = [
   {
     test: 'should exclude by file extension without case sensitivity',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
       exclusionPatterns: ['**/*.TIF'],
     },
     files: {
@@ -79,7 +76,7 @@ const tests: Test[] = [
   {
     test: 'should exclude by folder',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
       exclusionPatterns: ['**/raw/**'],
     },
     files: {
@@ -93,7 +90,7 @@ const tests: Test[] = [
   {
     test: 'should crawl multiple paths',
     options: {
-      pathsToCrawl: ['/photos/', '/images/', '/albums/'],
+      pathsToWalk: ['/photos/', '/images/', '/albums/'],
     },
     files: {
       '/photos/image1.jpg': true,
@@ -104,7 +101,7 @@ const tests: Test[] = [
   {
     test: 'should crawl a single path without trailing slash',
     options: {
-      pathsToCrawl: ['/photos'],
+      pathsToWalk: ['/photos'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -113,7 +110,7 @@ const tests: Test[] = [
   {
     test: 'should crawl a single path',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -125,7 +122,7 @@ const tests: Test[] = [
   {
     test: 'should filter file extensions',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -136,7 +133,7 @@ const tests: Test[] = [
   {
     test: 'should include photo and video extensions',
     options: {
-      pathsToCrawl: ['/photos/', '/videos/'],
+      pathsToWalk: ['/photos/', '/videos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -158,7 +155,7 @@ const tests: Test[] = [
   {
     test: 'should check file extensions without case sensitivity',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -175,7 +172,7 @@ const tests: Test[] = [
   {
     test: 'should normalize the path',
     options: {
-      pathsToCrawl: ['/photos/1/../2'],
+      pathsToWalk: ['/photos/1/../2'],
     },
     files: {
       '/photos/1/image.jpg': false,
@@ -185,18 +182,18 @@ const tests: Test[] = [
   {
     test: 'should return absolute paths',
     options: {
-      pathsToCrawl: ['photos'],
+      pathsToWalk: ['photos'],
     },
     files: {
-      [`${cwd}/photos/1.jpg`]: true,
-      [`${cwd}/photos/2.jpg`]: true,
-      [`/photos/3.jpg`]: false,
+      ['/photos/1.jpg']: true,
+      ['/photos/2.jpg']: true,
+      ['/other/3.jpg']: false,
     },
   },
   {
     test: 'should support special characters in paths',
     options: {
-      pathsToCrawl: ['/photos (new)'],
+      pathsToWalk: ['/photos (new)'],
     },
     files: {
       ['/photos (new)/1.jpg']: true,
@@ -215,20 +212,26 @@ describe(StorageRepository.name, () => {
     mocks.watcher.close.mockReset().mockResolvedValue(undefined);
   });
 
-  afterEach(() => {
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    mockfs.restore();
-  });
-
-  describe('crawl', () => {
+  describe('walk filtering', () => {
     for (const { test, options, files } of tests) {
       it(test, async () => {
-        mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, ''])));
+        await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-walk-'));
+        const resolve = (file: string) => join(tempDir.path, file.replace(/^\//, ''));
+        await Promise.all(
+          Object.keys(files).map(async (file) => {
+            const filename = resolve(file);
+            await mkdir(dirname(filename), { recursive: true });
+            await writeFile(filename, '');
+          }),
+        );
 
-        const actual = await sut.crawl(options);
+        const batches = await Array.fromAsync(
+          sut.walk({ ...options, pathsToWalk: options.pathsToWalk.map((file) => resolve(file)) }),
+        );
+        const actual = batches.flatMap((batch) => batch.files);
         const expected = Object.entries(files)
           .filter((entry) => entry[1])
-          .map(([file]) => file);
+          .map(([file]) => resolve(file));
 
         expect(actual.toSorted((a, b) => a.localeCompare(b))).toEqual(expected.toSorted((a, b) => a.localeCompare(b)));
       });
@@ -236,28 +239,75 @@ describe(StorageRepository.name, () => {
   });
 
   describe('walk', () => {
+    it('should return absolute paths when walking a relative path', async () => {
+      await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-walk-'));
+      const filename = join(tempDir.path, 'photo.jpg');
+      await writeFile(filename, 'photo');
+
+      const batches = await Array.fromAsync(sut.walk({ pathsToWalk: [relative(process.cwd(), tempDir.path)] }));
+
+      expect(batches.flatMap((batch) => batch.files)).toEqual([filename]);
+      expect(batches[0]).toMatchObject({ size: null, modified: null, created: null, errors: [] });
+    });
+
+    it('should return size, modification time, and birth time aligned with paths', async () => {
+      await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-metadata-'));
+      const expected = new Map();
+      for (const [name, content] of [
+        ['empty.jpg', ''],
+        ['photo.jpg', 'photo content'],
+      ]) {
+        const filename = join(tempDir.path, name);
+        await writeFile(filename, content);
+        await utimes(filename, new Date(1_700_000_000_123), new Date(1_700_000_000_123));
+        const stats = await stat(filename, { bigint: true });
+        expected.set(filename, {
+          size: Number(stats.size),
+          modified: Number(stats.mtimeNs / 1_000_000n),
+          created: stats.birthtimeNs === 0n ? null : Number(stats.birthtimeNs / 1_000_000n),
+        });
+      }
+
+      const actual = new Map();
+      for await (const batch of sut.walk({ pathsToWalk: [tempDir.path], includeMetadata: true })) {
+        expect(batch.errors).toEqual([]);
+        expect(batch.size).toHaveLength(batch.files.length);
+        expect(batch.modified).toHaveLength(batch.files.length);
+        expect(batch.created).toHaveLength(batch.files.length);
+        for (const [index, filename] of batch.files.entries()) {
+          actual.set(filename, {
+            size: batch.size![index],
+            modified: batch.modified![index],
+            created: batch.created![index],
+          });
+        }
+      }
+
+      expect(actual).toEqual(expected);
+    });
+
     it.each([
       { exclusionPatterns: [] },
       { exclusionPatterns: ['**/*.xmp'] },
       { exclusionPatterns: ['**/excluded/**'] },
     ])('should only return assets and respect exclusions: $exclusionPatterns', async ({ exclusionPatterns }) => {
-      mockfs({
-        '/photos/photo.jpg': '',
-        '/photos/photo.nef': '',
-        '/photos/photo.jpg.xmp': '',
-        '/photos/photo.xmp': '',
-        '/photos/excluded/photo.jpg': '',
-        '/photos/excluded/photo.xmp': '',
-      });
+      await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-walk-'));
+      const photos = join(tempDir.path, 'photos');
+      await mkdir(join(photos, 'excluded'), { recursive: true });
+      await Promise.all(
+        ['photo.jpg', 'photo.nef', 'photo.jpg.xmp', 'photo.xmp', 'excluded/photo.jpg', 'excluded/photo.xmp'].map(
+          (file) => writeFile(join(photos, file), ''),
+        ),
+      );
 
-      const batches = await Array.fromAsync(sut.walk({ pathsToCrawl: ['/photos'], exclusionPatterns, take: 1 }));
+      const batches = await Array.fromAsync(sut.walk({ pathsToWalk: [photos], exclusionPatterns }));
 
-      expect(batches.every((batch) => batch.length === 1)).toBe(true);
-      expect(batches.flat().toSorted((a, b) => a.localeCompare(b))).toEqual(
+      expect(batches.flatMap((batch) => batch.errors)).toEqual([]);
+      expect(batches.flatMap((batch) => batch.files).toSorted((a, b) => a.localeCompare(b))).toEqual(
         [
-          '/photos/photo.jpg',
-          '/photos/photo.nef',
-          ...(exclusionPatterns.includes('**/excluded/**') ? [] : ['/photos/excluded/photo.jpg']),
+          join(photos, 'photo.jpg'),
+          join(photos, 'photo.nef'),
+          ...(exclusionPatterns.includes('**/excluded/**') ? [] : [join(photos, 'excluded/photo.jpg')]),
         ].toSorted((a, b) => a.localeCompare(b)),
       );
     });

@@ -20,7 +20,7 @@ import { getKyselyDB, makeStream } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
-const walkEntries = (paths: string[]) => paths.map((path) => ({ type: 'entry' as const, path }));
+const walkEntries = (files: string[]) => ({ files, size: null, modified: null, created: null, errors: [] });
 
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(IntegrityService, {

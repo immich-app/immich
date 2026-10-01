@@ -16,7 +16,7 @@ import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
 import picomatch from 'picomatch';
-import type { WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
+import type { WalkBatch } from '@immich/walkrs' with { 'resolution-mode': 'import' };
 import { WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -224,8 +224,8 @@ export class StorageRepository {
     };
   }
 
-  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<WalkItem[], void, unknown> {
-    const { pathsToWalk, exclusionPatterns, includeHidden } = walkOptions;
+  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<WalkBatch, void, unknown> {
+    const { pathsToWalk, exclusionPatterns, includeHidden, includeMetadata } = walkOptions;
     if (pathsToWalk.length === 0) {
       return;
     }
@@ -235,6 +235,7 @@ export class StorageRepository {
     yield* walk({
       paths: pathsToWalk.map((entryPath) => path.resolve(entryPath)),
       includeHidden: includeHidden ?? false,
+      includeMetadata,
       exclusionPatterns,
       extensions: mimeTypes.getSupportedFileExtensions(),
     });

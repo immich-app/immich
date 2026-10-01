@@ -242,9 +242,20 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
+export interface FileMetadata {
+  size: number;
+  modified: number;
+  created: number | null;
+}
+
+export interface IAssetFileJob extends IEntityJob {
+  fileMetadata?: FileMetadata;
+}
+
 export interface ILibraryFileJob {
   libraryId: string;
   paths: string[];
+  fileMetadata?: FileMetadata[];
   progressCounter?: number;
   totalAssets?: number;
 }
@@ -377,14 +388,14 @@ export type JobItem =
 
   // Metadata Extraction
   | { name: JobName.AssetExtractMetadataQueueAll; data: IBaseJob }
-  | { name: JobName.AssetExtractMetadata; data: IEntityJob }
+  | { name: JobName.AssetExtractMetadata; data: IAssetFileJob }
 
   // Notifications
   | { name: JobName.NotificationsCleanup; data?: IBaseJob }
 
   // Sidecar Scanning
   | { name: JobName.SidecarQueueAll; data: IBaseJob }
-  | { name: JobName.SidecarCheck; data: IEntityJob }
+  | { name: JobName.SidecarCheck; data: IAssetFileJob }
   | { name: JobName.SidecarWrite; data: IEntityJob }
 
   // Facial Recognition

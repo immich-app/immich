@@ -243,32 +243,22 @@ export class IntegrityService extends BaseService {
     const logger = this.logger;
     async function* paths() {
       for await (const batch of assetPaths) {
-        const entries: string[] = [];
-        for (const item of batch) {
-          if (item.type === 'error') {
-            logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message}`);
-          } else {
-            entries.push(item.path);
-          }
+        for (const error of batch.errors) {
+          logger.warn(`Error walking ${error.path ?? 'unknown path'}: ${error.message}`);
         }
 
-        if (entries.length > 0) {
-          yield ['asset', entries] as const;
+        if (batch.files.length > 0) {
+          yield ['asset', batch.files] as const;
         }
       }
 
       for await (const batch of assetFilePaths) {
-        const entries: string[] = [];
-        for (const item of batch) {
-          if (item.type === 'error') {
-            logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message}`);
-          } else {
-            entries.push(item.path);
-          }
+        for (const error of batch.errors) {
+          logger.warn(`Error walking ${error.path ?? 'unknown path'}: ${error.message}`);
         }
 
-        if (entries.length > 0) {
-          yield ['asset_file', entries] as const;
+        if (batch.files.length > 0) {
+          yield ['asset_file', batch.files] as const;
         }
       }
     }

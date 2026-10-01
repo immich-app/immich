@@ -40,6 +40,8 @@ import { Tasks } from 'src/utils/tasks.js';
 const POSTGRES_INT_MAX = 2_147_483_647;
 const POSTGRES_INT_MIN = -2_147_483_648;
 
+type FileStats = Pick<Stats, 'size' | 'mtime' | 'mtimeMs' | 'birthtimeMs'>;
+
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecDateTimeOriginal',
@@ -238,7 +240,14 @@ export class MetadataService extends BaseService {
 
     const [exifResult, stats] = await Promise.all([
       this.getExifTags(asset),
-      this.storageRepository.stat(asset.originalPath),
+      data.fileMetadata
+        ? {
+            size: data.fileMetadata.size,
+            mtime: new Date(data.fileMetadata.modified),
+            mtimeMs: data.fileMetadata.modified,
+            birthtimeMs: data.fileMetadata.created ?? 0,
+          }
+        : this.storageRepository.stat(asset.originalPath),
     ]);
     const { tags: exifTags, audio, video, packets, format } = exifResult;
     this.logger.verbose('Exif Tags', exifTags);
@@ -670,7 +679,7 @@ export class MetadataService extends BaseService {
     return asset.type === AssetType.Image && !!(tags.MotionPhoto || tags.MicroVideo);
   }
 
-  private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: Stats) {
+  private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: FileStats) {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
@@ -1004,7 +1013,7 @@ export class MetadataService extends BaseService {
   private getDates(
     asset: { id: string; originalPath: string; fileCreatedAt: Date },
     exifTags: ImmichTags,
-    stats: Stats,
+    stats: FileStats,
   ) {
     const result = firstDateTime(exifTags);
     const tag = result?.tag;

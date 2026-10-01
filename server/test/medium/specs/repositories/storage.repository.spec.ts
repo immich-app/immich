@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path, { join } from 'node:path';
-import type { WalkError, WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
+import type { WalkError } from '@immich/walkrs' with { 'resolution-mode': 'import' };
 import { WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
@@ -230,11 +230,7 @@ describe(StorageRepository.name, () => {
 
           const actual: string[] = [];
           for await (const batch of sut.walk(adjustedOptions)) {
-            for (const item of batch) {
-              if (item.type === 'entry') {
-                actual.push(item.path);
-              }
-            }
+            actual.push(...batch.files);
           }
           const expected = Object.entries(files)
             .filter((entry) => entry[1])
@@ -261,15 +257,10 @@ describe(StorageRepository.name, () => {
         await fs.chmod(restrictedDir, 0o000);
 
         const actual: string[] = [];
-        const errors: WalkItem[] = [];
+        const errors: WalkError[] = [];
         for await (const batch of sut.walk({ pathsToWalk: [testDir] })) {
-          for (const item of batch) {
-            if (item.type === 'entry') {
-              actual.push(item.path);
-            } else {
-              errors.push(item);
-            }
-          }
+          actual.push(...batch.files);
+          errors.push(...batch.errors);
         }
 
         // Should successfully walk accessible file but skip restricted directory
@@ -277,7 +268,7 @@ describe(StorageRepository.name, () => {
         expect(actual).not.toContain(restrictedFile);
         // Should have encountered an error for the restricted directory
         expect(errors.length).toBe(1);
-        expect(errors.some((e) => e.type === 'error' && e.message?.includes('restricted'))).toBe(true);
+        expect(errors.some((e) => e.message.includes('restricted'))).toBe(true);
       } finally {
         // Cleanup: restore permissions before deletion
         try {
@@ -306,18 +297,13 @@ describe(StorageRepository.name, () => {
 
         const errors: WalkError[] = [];
         for await (const batch of sut.walk({ pathsToWalk: [testDir] })) {
-          for (const item of batch) {
-            if (item.type === 'error') {
-              errors.push(item);
-            }
-          }
+          errors.push(...batch.errors);
         }
 
         // Should have error details including path and message
         expect(errors.length).toBe(1);
-        const restrictedError = errors.find((e) => e.type === 'error' && e.message?.includes('restricted'));
+        const restrictedError = errors.find((e) => e.message.includes('restricted'));
         expect(restrictedError).toBeDefined();
-        expect(restrictedError?.type).toBe('error');
         expect(restrictedError?.message).toBeDefined();
       } finally {
         // Cleanup: restore permissions before deletion

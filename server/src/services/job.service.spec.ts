@@ -48,13 +48,16 @@ describe(JobService.name, () => {
       'should queue metadata extraction after a %s sidecar check and preserve its source',
       async (status) => {
         mocks.job.run.mockResolvedValue(status);
-        const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
+        const job: JobItem = {
+          name: JobName.SidecarCheck,
+          data: { id: 'asset-1', source: 'upload', fileMetadata: { size: 100, modified: 1000, created: 500 } },
+        };
 
         await sut.onJobRun(QueueName.Sidecar, job);
 
         expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
           name: JobName.AssetExtractMetadata,
-          data: { id: 'asset-1', source: 'upload' },
+          data: job.data,
         });
         expect(mocks.job.queueAll).not.toHaveBeenCalled();
       },

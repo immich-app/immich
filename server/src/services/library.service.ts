@@ -5,7 +5,7 @@ import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { JobOf } from 'src/types.js';
+import type { FileMetadata, JobOf } from 'src/types.js';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -264,14 +264,29 @@ export class LibraryService extends BaseService {
     }
 
     const assetImports: Insertable<AssetTable>[] = [];
+    const fileMetadata: FileMetadata[] = [];
     await Promise.all(
-      job.paths.map(async (path) => {
-        try {
-          const asset = await this.processEntity(path, library.ownerId, job.libraryId);
-          assetImports.push(asset);
-        } catch (error) {
-          this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`);
+      job.paths.map(async (filePath, index) => {
+        let metadata = job.fileMetadata?.[index];
+        if (!metadata) {
+          // Chokidar events do not produce metadata, so we need an extra stat
+          let stat: Stats;
+          try {
+            stat = await this.storageRepository.stat(path.normalize(filePath));
+          } catch (error) {
+            this.logger.error(`Error processing ${filePath} for library ${job.libraryId}: ${error}`);
+            return;
+          }
+          metadata = {
+            size: stat.size,
+            modified: Math.trunc(stat.mtimeMs),
+            created: stat.birthtimeMs === 0 ? null : Math.trunc(stat.birthtimeMs),
+          };
         }
+
+        const asset = this.processEntity(filePath, library.ownerId, job.libraryId, metadata);
+        assetImports.push(asset);
+        fileMetadata.push(metadata);
       }),
     );
 
@@ -290,7 +305,7 @@ export class LibraryService extends BaseService {
       ),
     );
 
-    await this.queuePostSyncJobs(assetIds);
+    await this.queuePostSyncJobs(assetIds, fileMetadata);
 
     return JobStatus.Success;
   }
@@ -399,9 +414,9 @@ export class LibraryService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async processEntity(filePath: string, ownerId: string, libraryId: string) {
+  private processEntity(filePath: string, ownerId: string, libraryId: string, fileMetadata: FileMetadata) {
     const assetPath = path.normalize(filePath);
-    const stat = await this.storageRepository.stat(assetPath);
+    const modified = new Date(fileMetadata.modified);
 
     return {
       ownerId,
@@ -409,10 +424,9 @@ export class LibraryService extends BaseService {
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       checksumAlgorithm: ChecksumAlgorithm.sha1Path,
       originalPath: assetPath,
-
-      fileCreatedAt: stat.mtime,
-      fileModifiedAt: stat.mtime,
-      localDateTime: stat.mtime,
+      fileCreatedAt: modified,
+      fileModifiedAt: modified,
+      localDateTime: modified,
       type: mimeTypes.isVideo(assetPath) ? AssetType.Video : AssetType.Image,
       originalFileName: parse(assetPath).base,
       isExternal: true,
@@ -420,14 +434,18 @@ export class LibraryService extends BaseService {
     };
   }
 
-  async queuePostSyncJobs(assetIds: string[]) {
+  async queuePostSyncJobs(assetIds: string[], fileMetadata: FileMetadata[]) {
     this.logger.debug(`Queuing sidecar discovery for ${assetIds.length} asset(s)`);
 
     // We queue a sidecar discovery which, in turn, queues metadata extraction
     await this.jobRepository.queueAll(
-      assetIds.map((assetId) => ({
+      assetIds.map((assetId, index) => ({
         name: JobName.SidecarCheck,
-        data: { id: assetId, source: 'upload' },
+        data: {
+          id: assetId,
+          source: 'upload',
+          fileMetadata: fileMetadata[index],
+        },
       })),
     );
   }
@@ -484,6 +502,7 @@ export class LibraryService extends BaseService {
     const assetIdsToOnline: string[] = [];
     const trashedAssetIdsToOnline: string[] = [];
     const assetIdsToUpdate: string[] = [];
+    const fileMetadataToUpdate: FileMetadata[] = [];
 
     this.logger.debug(`Checking batch of ${assets.length} existing asset(s) in library ${job.libraryId}`);
 
@@ -508,7 +527,13 @@ export class LibraryService extends BaseService {
           break;
         }
         case AssetSyncResult.UPDATE: {
+          const { size, mtimeMs, birthtimeMs } = stat!;
           assetIdsToUpdate.push(asset.id);
+          fileMetadataToUpdate.push({
+            size,
+            modified: Math.trunc(mtimeMs),
+            created: birthtimeMs === 0 ? null : Math.trunc(birthtimeMs),
+          });
           break;
         }
         case AssetSyncResult.CHECK_OFFLINE: {
@@ -560,7 +585,7 @@ export class LibraryService extends BaseService {
     }
 
     if (assetIdsToUpdate.length > 0) {
-      promises.push(this.queuePostSyncJobs(assetIdsToUpdate));
+      promises.push(this.queuePostSyncJobs(assetIdsToUpdate, fileMetadataToUpdate));
     }
 
     await Promise.all(promises);
@@ -581,6 +606,7 @@ export class LibraryService extends BaseService {
       originalPath: string;
       status: AssetStatus;
       fileModifiedAt: Date;
+      fileSizeInByte: number | null;
     },
     stat: Stats | null,
   ): AssetSyncResult {
@@ -604,7 +630,9 @@ export class LibraryService extends BaseService {
       return AssetSyncResult.CHECK_OFFLINE;
     }
 
-    if (stat.mtime.valueOf() !== asset.fileModifiedAt.valueOf()) {
+    const mtimeChanged = stat.mtime.valueOf() !== asset.fileModifiedAt.valueOf();
+    const sizeChanged = asset.fileSizeInByte !== null && stat.size !== asset.fileSizeInByte;
+    if (mtimeChanged || sizeChanged) {
       this.logger.verbose(`Asset ${asset.originalPath} needs metadata extraction in library ${asset.libraryId}`);
 
       return AssetSyncResult.UPDATE;
@@ -643,6 +671,7 @@ export class LibraryService extends BaseService {
     const pathsOnDisk = this.storageRepository.walk({
       pathsToWalk: validImportPaths,
       includeHidden: false,
+      includeMetadata: true,
       exclusionPatterns: library.exclusionPatterns,
     });
 
@@ -651,14 +680,13 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    for await (const walkItems of pathsOnDisk) {
-      const pathBatch: string[] = [];
-      for (const item of walkItems) {
-        if (item.type === 'error') {
-          this.logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message} for library ${library.id}`);
-        } else {
-          pathBatch.push(item.path);
-        }
+    for await (const { files: pathBatch, size, modified, created, errors } of pathsOnDisk) {
+      for (const error of errors) {
+        this.logger.warn(`Error walking ${error.path ?? 'unknown path'}: ${error.message} for library ${library.id}`);
+      }
+
+      if (pathBatch.length === 0) {
+        continue;
       }
 
       crawlCount += pathBatch.length;
@@ -667,11 +695,22 @@ export class LibraryService extends BaseService {
       if (paths.length > 0) {
         importCount += paths.length;
 
+        // Reconcile path and metadata arrays here before syncing files
+        const indexes = new Map(pathBatch.map((filePath, index) => [filePath, index]));
+        const fileMetadata =
+          size && modified && created
+            ? paths.map((filePath) => {
+                const index = indexes.get(filePath)!;
+                return { size: size[index], modified: modified[index], created: created[index] };
+              })
+            : undefined;
+
         await this.jobRepository.queue({
           name: JobName.LibrarySyncFiles,
           data: {
             libraryId: library.id,
             paths,
+            ...(fileMetadata && { fileMetadata }),
             progressCounter: crawlCount,
           },
         });
