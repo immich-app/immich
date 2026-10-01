@@ -1,4 +1,6 @@
 <script lang="ts" generics="T extends string | number">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import { systemConfigManager, type ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import { Checkbox, Label } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -11,6 +13,7 @@
     desc?: string;
     name?: string;
     isEdited?: boolean;
+    key?: ConfigKey;
     disabled?: boolean;
     lockedOptions?: T[];
   }
@@ -22,6 +25,7 @@
     desc = '',
     name = '',
     isEdited = false,
+    key,
     disabled = false,
     lockedOptions = [],
   }: Props = $props();
@@ -29,6 +33,9 @@
   function handleCheckboxChange(option: T) {
     value = value.includes(option) ? value.filter((item) => item !== option) : [...value, option];
   }
+
+  const field = $derived(key ? systemConfigManager.getField(key) : undefined);
+  const isDisabled = $derived(disabled || field?.isEditable === false);
 </script>
 
 <div class="mb-4 w-full">
@@ -59,11 +66,12 @@
           size="tiny"
           id="{option.value}-checkbox"
           checked={value.includes(option.value)}
-          disabled={disabled || lockedOptions.includes(option.value)}
+          disabled={isDisabled || lockedOptions.includes(option.value)}
           onCheckedChange={() => handleCheckboxChange(option.value)}
         />
         <Label label={option.text} for="{option.value}-checkbox" size="small" />
       </div>
     {/each}
   </div>
+  <SettingSourceHint {key} />
 </div>

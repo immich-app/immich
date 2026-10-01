@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import { systemConfigManager, type ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -11,6 +13,7 @@
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: ConfigKey;
     descriptionSnippet?: Snippet;
   }
 
@@ -21,12 +24,16 @@
     required = false,
     disabled = false,
     isEdited = false,
+    key,
     descriptionSnippet,
   }: Props = $props();
 
   const handleInput = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
   };
+
+  const field = $derived(key ? systemConfigManager.getField(key) : undefined);
+  const isDisabled = $derived(disabled || field?.isEditable === false);
 </script>
 
 <div class="mb-4 w-full">
@@ -63,5 +70,7 @@
     {required}
     {value}
     oninput={handleInput}
-    {disabled}></textarea>
+    disabled={isDisabled}></textarea>
+
+  <SettingSourceHint {key} />
 </div>

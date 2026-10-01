@@ -5,13 +5,11 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
@@ -25,7 +23,7 @@
             <SettingSwitch
               title={$t('admin.map_enable_description')}
               subtitle={$t('admin.map_implications')}
-              {disabled}
+              key="map.enabled"
               bind:checked={configToEdit.map.enabled}
             />
 
@@ -35,16 +33,18 @@
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_light_style')}
               description={$t('admin.map_style_description')}
+              key="map.lightStyle"
               bind:value={configToEdit.map.lightStyle}
-              disabled={disabled || !configToEdit.map.enabled}
+              disabled={!configToEdit.map.enabled}
               isEdited={configToEdit.map.lightStyle !== config.map.lightStyle}
             />
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_dark_style')}
               description={$t('admin.map_style_description')}
+              key="map.darkStyle"
               bind:value={configToEdit.map.darkStyle}
-              disabled={disabled || !configToEdit.map.enabled}
+              disabled={!configToEdit.map.enabled}
               isEdited={configToEdit.map.darkStyle !== config.map.darkStyle}
             />
           </div></SettingAccordion
@@ -63,13 +63,13 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.map_reverse_geocoding_enable_description')}
-              {disabled}
+              key="reverseGeocoding.enabled"
               bind:checked={configToEdit.reverseGeocoding.enabled}
             />
           </div></SettingAccordion
         >
 
-        <SettingButtonsRow bind:configToEdit keys={['map', 'reverseGeocoding']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['map', 'reverseGeocoding']} />
       </div>
     </form>
   </div>
