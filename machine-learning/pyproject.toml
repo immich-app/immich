@@ -62,7 +62,7 @@ compile-bytecode = true
 override-dependencies = ["opencv-python ; sys_platform == 'never'"] # only install the headless version
 
 [tool.uv.sources]
-immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "88d2b64ff95ce7117760660681d95e0e1308819b" }
+immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "20a8ec79a1e6414d311f0e28b6e6082968a31ad7" }
 onnxruntime-gpu = { index = "onnxruntime-cuda-12" }
 
 [[tool.uv.index]]

@@ -10228,13 +10228,13 @@
       },
       "put": {
         "description": "Give users access to people",
-        "operationId": "addUsersToPeople",
+        "operationId": "upsertPeopleUsers",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PersonUsersCreateDto"
+                "$ref": "#/components/schemas/PeopleUsersUpsertDto"
               }
             }
           },
@@ -10256,7 +10256,7 @@
             "api_key": []
           }
         ],
-        "summary": "Give users access to people",
+        "summary": "Upsert user access",
         "tags": [
           "People"
         ],
@@ -25133,6 +25133,47 @@
         ],
         "type": "object"
       },
+      "PeopleUsersUpsertDto": {
+        "properties": {
+          "personIds": {
+            "description": "Person IDs, required when type is omitted",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PersonUserRole",
+            "description": "Role that should be applied"
+          },
+          "sharedWithIds": {
+            "description": "User IDs that should be given access to the person",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PeopleUsersUpsertType"
+          }
+        },
+        "required": [
+          "role",
+          "sharedWithIds"
+        ],
+        "type": "object"
+      },
+      "PeopleUsersUpsertType": {
+        "description": "Which people to update when personIds is omitted",
+        "enum": [
+          "everyone"
+        ],
+        "type": "string"
+      },
       "Permission": {
         "description": "List of permissions",
         "enum": [
@@ -25558,37 +25599,6 @@
           "admin"
         ],
         "type": "string"
-      },
-      "PersonUsersCreateDto": {
-        "properties": {
-          "personIds": {
-            "description": "Person IDs, defaults to every person owned by the user",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "role": {
-            "$ref": "#/components/schemas/PersonUserRole",
-            "description": "Role that should be applied"
-          },
-          "sharedWithIds": {
-            "description": "User IDs that should be given access to the person",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "role",
-          "sharedWithIds"
-        ],
-        "type": "object"
       },
       "PersonUsersDeleteDto": {
         "items": {
