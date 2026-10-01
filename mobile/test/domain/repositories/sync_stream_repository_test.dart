@@ -4,9 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.dart';
 import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:openapi/api.dart';
 
@@ -85,6 +87,7 @@ SyncAssetExifV1 _createExif({
   required int width,
   required int height,
   required String orientation,
+  String? projectionType,
 }) {
   return SyncAssetExifV1(
     assetId: assetId,
@@ -108,7 +111,7 @@ SyncAssetExifV1 _createExif({
     model: null,
     modifyDate: null,
     profileDescription: null,
-    projectionType: null,
+    projectionType: projectionType,
     rating: null,
     state: null,
     timeZone: null,
@@ -265,6 +268,25 @@ void main() {
       expect(after.linkedRemoteAlbumId, isNull);
       expect(after.name, equals('Camera'));
       expect(after.backupSelection, equals(BackupSelection.none));
+    });
+  });
+
+  group('SyncStreamRepository - projection type', () {
+    test('passes the synced projection type on to the domain model', () async {
+      await sut.updateUsersV1([_createUser()]);
+      for (final (synced, expected) in [('EQUIRECTANGULAR', ProjectionType.equirectangular), (null, null)]) {
+        final assetId = 'asset-$synced';
+        await sut.updateAssetsV1([_createAsset(id: assetId, checksum: assetId, fileName: '$assetId.jpg')]);
+        await sut.updateAssetsExifV1([
+          _createExif(assetId: assetId, width: 8192, height: 4096, orientation: '1', projectionType: synced),
+        ]);
+
+        final query = db.remoteExifEntity.select()..where((tbl) => tbl.assetId.equals(assetId));
+        final result = await query.getSingle();
+
+        expect(result.projectionType, synced);
+        expect(result.toDto().projectionType, expected);
+      }
     });
   });
 

@@ -85,5 +85,6 @@ extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
     lens: lens,
     isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
     exposureSeconds: ExifDtoConverter.exposureTimeToSeconds(exposureTime),
+    projectionType: domain.ProjectionType.fromValue(projectionType),
   );
 }
