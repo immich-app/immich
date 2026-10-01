@@ -177,22 +177,21 @@ const SyncAssetMetadataDeleteV1Schema = z
   })
   .meta({ id: 'SyncAssetMetadataDeleteV1' });
 
-const SyncAssetEditSchema = z.object({
-  id: z.uuidv4().describe('Edit ID'),
-  assetId: z.uuidv4().describe('Asset ID'),
-  parameters: z.record(z.string(), z.unknown()).describe('Edit parameters'),
-  sequence: z.int().describe('Edit sequence'),
-});
-
 const SyncAssetEditActionV1Schema = AssetEditActionSchema.extract(['Crop', 'Rotate', 'Mirror']).meta({
   id: 'SyncAssetEditActionV1',
 });
 
-const SyncAssetEditV1Schema = SyncAssetEditSchema.extend({
-  action: SyncAssetEditActionV1Schema,
-}).meta({ id: 'SyncAssetEditV1' });
+const SyncAssetEditV1Schema = z
+  .object({
+    id: z.uuidv4().describe('Edit ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
+    action: SyncAssetEditActionV1Schema,
+    parameters: z.record(z.string(), z.unknown()).describe('Edit parameters'),
+    sequence: z.int().describe('Edit sequence'),
+  })
+  .meta({ id: 'SyncAssetEditV1' });
 
-const SyncAssetEditV2Schema = SyncAssetEditSchema.extend({
+const SyncAssetEditV2Schema = SyncAssetEditV1Schema.extend({
   action: AssetEditActionSchema,
 }).meta({ id: 'SyncAssetEditV2' });
 
