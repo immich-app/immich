@@ -1,4 +1,4 @@
-use immich_core::convert::convert_1010102;
+use native_core::convert::convert_1010102;
 
 #[test]
 fn channels_and_alpha() {

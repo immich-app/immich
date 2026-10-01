@@ -2,7 +2,6 @@ use std::{ptr, slice};
 
 use libc::size_t;
 
-use immich_core::thumbhash;
 #[cfg(target_os = "android")]
 use jni::{
     EnvUnowned,
@@ -10,6 +9,7 @@ use jni::{
     objects::{JByteArray, JClass, JIntArray},
     sys::jlong,
 };
+use native_core::thumbhash;
 
 use super::guard;
 
@@ -20,7 +20,7 @@ use super::guard;
 /// `hash` must be null or readable for `len` bytes, at most `isize::MAX`.
 /// `width` and `height` must be null or valid writable pointers, outside `hash`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn immich_core_thumbhash(
+pub unsafe extern "C" fn native_core_thumbhash(
     hash: *const u8,
     len: size_t,
     width: *mut i32,
@@ -65,7 +65,7 @@ pub extern "system" fn Java_app_alextran_immich_images_ThumbHash_decode<'caller>
         let (mut width, mut height) = (0, 0);
         // SAFETY: the hash bytes and both output pointers are valid for this call.
         let rgba =
-            unsafe { immich_core_thumbhash(hash.as_ptr(), hash.len(), &mut width, &mut height) };
+            unsafe { native_core_thumbhash(hash.as_ptr(), hash.len(), &mut width, &mut height) };
         if !rgba.is_null()
             && let Err(err) = info.set_region(env, 0, &[width, height, width * 4])
         {
