@@ -27,6 +27,16 @@ The workflows also use GitHub's `$/...` self-repository references and disable
 dependency caching in the end-to-end jobs. These security fixes are independent
 of walkrs; keep them when removing the workaround.
 
+Jellyfin FFmpeg is a separate mise tool. Preserve its platform entries in
+`mise.lock` when cleaning up walkrs. `mise.toml` declares Linux x64, Linux arm64,
+macOS x64, and macOS arm64. If one is missing, update only Jellyfin's lock data
+for all declared platforms:
+
+```bash
+mise lock github:jellyfin/jellyfin-ffmpeg \
+  --platform linux-x64,linux-arm64,macos-x64,macos-arm64,windows-x64
+```
+
 ## Confirm that a suitable release exists
 
 1. Verify that the metadata changes from `feat/metadata` have been merged and
