@@ -1,8 +1,8 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202608111116@sha256:f53e6bc2aa6e4c7b043e6ec1740448af4ba69e2090411daa7fa1df288bc0131a AS dev
+FROM ghcr.io/immich-app/base-server-dev:202609281550@sha256:ec2b9196bb2da497a495ded539528778c45487817eb8605cdbb3b765d727aeaa AS dev
 
 
-COPY --from=ghcr.io/jdx/mise:2026.8.12@sha256:0b65495ca65878cd93e6cdd47d9cbad6806a43416b768eeffbfc734ba034c7d2 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.9.12@sha256:868b004119abb2e7c146618da63371ec65da40bfb0f38a0ec4128ca9e96c057a /usr/local/bin/mise /usr/local/bin/mise
 
 RUN echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
   echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \

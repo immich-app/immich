@@ -2,7 +2,7 @@ import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/utils/option.dart';
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' hide SearchFilter;
 
 class SearchApiRepository extends ApiRepository {
   final SearchApi _api;

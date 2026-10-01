@@ -1,13 +1,13 @@
+import z from 'zod';
 import {
   AdminConfigDto,
+  PublicConfigDto,
+  UserConfigDto,
   defaults,
   mapPublicConfig,
   mapUserConfig,
-  PublicConfigDto,
-  UserConfigDto,
-} from 'src/dtos/config.dto';
-import { getKeysDeep } from 'src/utils/misc';
-import z from 'zod';
+} from 'src/dtos/config.dto.js';
+import { getKeysDeep } from 'src/utils/misc.js';
 
 const PUBLIC_PROPERTIES = [
   'oauth.autoLaunch',

@@ -20,7 +20,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
 final _stateProvider = Provider.family.autoDispose<RemoteAsset?, ActionSource>((ref, source) {
-  final isSupported = ref.watch(serverInfoProvider.select((state) => state.serverVersion.supports(.assetEdits)));
+  final isSupported = ref.watch(serverInfoProvider.select((state) => state.serverVersion.supports(.syncAssetEditsV1)));
   if (!isSupported) {
     return null;
   }
@@ -50,7 +50,7 @@ class EditAssetAction extends AssetActionBuilder {
     try {
       // TODO(shenlong): Move all EXIF and Apply Edits logic onto the Route
       final repository = ref.read(driftProvider).remoteAssetRepository;
-      final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.getExif(asset.id)).wait;
+      final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.watchExif(asset.id).first).wait;
       if (exif == null || !context.mounted) {
         return;
       }

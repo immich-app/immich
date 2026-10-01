@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { ExtraModel } from 'src/decorators';
-import { AssetEditActionSchema } from 'src/dtos/editing.dto';
+import z from 'zod';
+import { ExtraModel } from 'src/decorators.js';
+import { AssetEditActionSchema } from 'src/dtos/editing.dto.js';
 import {
   AlbumUserRole,
   AlbumUserRoleSchema,
@@ -13,9 +14,8 @@ import {
   SyncRequestTypeSchema,
   UserAvatarColorSchema,
   UserMetadataKeySchema,
-} from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
-import z from 'zod';
+} from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const SyncUserV1Schema = z
   .object({
@@ -39,6 +39,10 @@ const SyncAuthUserV1Schema = SyncUserV1Schema.merge(
     quotaUsageInBytes: z.int().describe('Quota usage in bytes'),
   }),
 ).meta({ id: 'SyncAuthUserV1' });
+
+const SyncAuthUserV2Schema = SyncAuthUserV1Schema.extend({
+  oauthId: z.string().nullable().describe('User OAuth ID'),
+}).meta({ id: 'SyncAuthUserV2' });
 
 const SyncUserDeleteV1Schema = z.object({ userId: z.uuidv4().describe('User ID') }).meta({ id: 'SyncUserDeleteV1' });
 
@@ -112,6 +116,8 @@ class SyncUserV1 extends createZodDto(SyncUserV1Schema) {}
 @ExtraModel()
 class SyncAuthUserV1 extends createZodDto(SyncAuthUserV1Schema) {}
 @ExtraModel()
+class SyncAuthUserV2 extends createZodDto(SyncAuthUserV2Schema) {}
+@ExtraModel()
 class SyncUserDeleteV1 extends createZodDto(SyncUserDeleteV1Schema) {}
 @ExtraModel()
 class SyncPartnerV1 extends createZodDto(SyncPartnerV1Schema) {}
@@ -171,15 +177,24 @@ const SyncAssetMetadataDeleteV1Schema = z
   })
   .meta({ id: 'SyncAssetMetadataDeleteV1' });
 
-const SyncAssetEditV1Schema = z
-  .object({
-    id: z.uuidv4().describe('Edit ID'),
-    assetId: z.uuidv4().describe('Asset ID'),
-    action: AssetEditActionSchema,
-    parameters: z.record(z.string(), z.unknown()).describe('Edit parameters'),
-    sequence: z.int().describe('Edit sequence'),
-  })
-  .meta({ id: 'SyncAssetEditV1' });
+const SyncAssetEditSchema = z.object({
+  id: z.uuidv4().describe('Edit ID'),
+  assetId: z.uuidv4().describe('Asset ID'),
+  parameters: z.record(z.string(), z.unknown()).describe('Edit parameters'),
+  sequence: z.int().describe('Edit sequence'),
+});
+
+const SyncAssetEditActionV1Schema = AssetEditActionSchema.extract(['Crop', 'Rotate', 'Mirror']).meta({
+  id: 'SyncAssetEditActionV1',
+});
+
+const SyncAssetEditV1Schema = SyncAssetEditSchema.extend({
+  action: SyncAssetEditActionV1Schema,
+}).meta({ id: 'SyncAssetEditV1' });
+
+const SyncAssetEditV2Schema = SyncAssetEditSchema.extend({
+  action: AssetEditActionSchema,
+}).meta({ id: 'SyncAssetEditV2' });
 
 const SyncAssetEditDeleteV1Schema = z
   .object({ editId: z.uuidv4().describe('Edit ID') })
@@ -195,6 +210,8 @@ class SyncAssetMetadataV1 extends createZodDto(SyncAssetMetadataV1Schema) {}
 class SyncAssetMetadataDeleteV1 extends createZodDto(SyncAssetMetadataDeleteV1Schema) {}
 @ExtraModel()
 export class SyncAssetEditV1 extends createZodDto(SyncAssetEditV1Schema) {}
+@ExtraModel()
+export class SyncAssetEditV2 extends createZodDto(SyncAssetEditV2Schema) {}
 @ExtraModel()
 class SyncAssetEditDeleteV1 extends createZodDto(SyncAssetEditDeleteV1Schema) {}
 
@@ -365,10 +382,11 @@ const SyncAssetFaceV1Schema = z
   })
   .meta({ id: 'SyncAssetFaceV1' });
 
-const SyncAssetFaceV2Schema = SyncAssetFaceV1Schema.extend({
+// same shape as V2, but scoped to the whole cluster group instead of the user's own assets
+const SyncAssetFaceV3Schema = SyncAssetFaceV1Schema.extend({
   deletedAt: isoDatetimeToDate.nullable().describe('Face deleted at'),
   isVisible: z.boolean().describe('Is the face visible in the asset'),
-}).meta({ id: 'SyncAssetFaceV2' });
+}).meta({ id: 'SyncAssetFaceV3' });
 
 const SyncAssetFaceDeleteV1Schema = z
   .object({ assetFaceId: z.uuidv4().describe('Asset face ID') })
@@ -447,7 +465,7 @@ class SyncPersonDeleteV1 extends createZodDto(SyncPersonDeleteV1Schema) {}
 @ExtraModel()
 class SyncAssetFaceV1 extends createZodDto(SyncAssetFaceV1Schema) {}
 @ExtraModel()
-class SyncAssetFaceV2 extends createZodDto(SyncAssetFaceV2Schema) {}
+class SyncAssetFaceV3 extends createZodDto(SyncAssetFaceV3Schema) {}
 @ExtraModel()
 class SyncAssetFaceDeleteV1 extends createZodDto(SyncAssetFaceDeleteV1Schema) {}
 @ExtraModel()
@@ -463,6 +481,7 @@ class SyncCompleteV1 extends createZodDto(SyncCompleteV1Schema) {}
 
 export type SyncItem = {
   [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
+  [SyncEntityType.AuthUserV2]: SyncAuthUserV2;
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;
@@ -475,6 +494,7 @@ export type SyncItem = {
   [SyncEntityType.AssetOcrV1]: SyncAssetOcrV1;
   [SyncEntityType.AssetOcrDeleteV1]: SyncAssetOcrDeleteV1;
   [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
+  [SyncEntityType.AssetEditV2]: SyncAssetEditV2;
   [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.PartnerAssetV2]: SyncAssetV2;
   [SyncEntityType.PartnerAssetBackfillV2]: SyncAssetV2;
@@ -508,7 +528,8 @@ export type SyncItem = {
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
   [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
-  [SyncEntityType.AssetFaceV2]: SyncAssetFaceV2;
+  [SyncEntityType.AssetFaceV2]: SyncAssetFaceV3;
+  [SyncEntityType.AssetFaceV3]: SyncAssetFaceV3;
   [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;

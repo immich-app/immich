@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202608251107@sha256:648929186198b6679e944292807625bd21c2c811d246898da6da4d54470ab35b AS builder
+FROM ghcr.io/immich-app/base-server-dev:202609281550@sha256:ec2b9196bb2da497a495ded539528778c45487817eb8605cdbb3b765d727aeaa AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -68,7 +68,7 @@ FROM plugin-sdk AS plugins
 
 ARG TARGETPLATFORM
 
-COPY --from=ghcr.io/jdx/mise:2026.8.12@sha256:0b65495ca65878cd93e6cdd47d9cbad6806a43416b768eeffbfc734ba034c7d2 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.9.12@sha256:868b004119abb2e7c146618da63371ec65da40bfb0f38a0ec4128ca9e96c057a /usr/local/bin/mise /usr/local/bin/mise
 
 COPY ./mise.toml ./mise.toml
 COPY ./mise.lock ./mise.lock
@@ -86,7 +86,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
-FROM ghcr.io/immich-app/base-server-prod:202608251107@sha256:7b7b04e96a20a1e542f289890d972ae8e587e8b7196097208f69ad91dba5d144
+FROM ghcr.io/immich-app/base-server-prod:202609281550@sha256:a97e8c52bb10c25b0bf2d7eb4c26da7e70088471886820f160e3f5f6f3c6c556
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

@@ -1,9 +1,9 @@
-import { AssetController } from 'src/controllers/asset.controller';
-import { AssetMetadataKey } from 'src/enum';
-import { AssetService } from 'src/services/asset.service';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { AssetController } from 'src/controllers/asset.controller.js';
+import { AssetMetadataKey } from 'src/enum.js';
+import { AssetService } from 'src/services/asset.service.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(AssetController.name, () => {
   let ctx: ControllerContext;
@@ -325,6 +325,38 @@ describe(AssetController.name, () => {
 
       expect(service.editAsset).toHaveBeenCalledWith(undefined, assetId, { edits });
       expect(status).toBe(200);
+    });
+
+    it('should accept brightness and contrast at their supported limits', async () => {
+      const assetId = factory.uuid();
+      const edits = [{ action: 'color', parameters: { brightness: -100, contrast: 100 } }];
+
+      const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}/edits`).send({ edits });
+
+      expect(service.editAsset).toHaveBeenCalledWith(undefined, assetId, { edits });
+      expect(status).toBe(200);
+    });
+
+    it('should reject brightness and contrast values outside their supported limits', async () => {
+      for (const [parameters, errors] of [
+        [
+          { brightness: -101, contrast: 0 },
+          [{ path: ['edits', 0, 'parameters', 'brightness'], message: 'Too small: expected number to be >=-100' }],
+        ],
+        [
+          { brightness: 0, contrast: 101 },
+          [{ path: ['edits', 0, 'parameters', 'contrast'], message: 'Too big: expected number to be <=100' }],
+        ],
+      ] as const) {
+        const { status, body } = await request(ctx.getHttpServer())
+          .put(`/assets/${factory.uuid()}/edits`)
+          .send({ edits: [{ action: 'color', parameters }] });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(factory.responses.validationError(errors));
+      }
+
+      expect(service.editAsset).not.toHaveBeenCalled();
     });
 
     it('should require a valid id', async () => {

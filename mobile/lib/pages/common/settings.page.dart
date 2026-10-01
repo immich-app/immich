@@ -14,7 +14,7 @@ import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
-import 'package:immich_mobile/widgets/settings/settings_card.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 enum SettingSection {
   advanced(Icons.build_outlined),
@@ -97,7 +97,7 @@ class _MobileLayout extends StatelessWidget {
                     icon: Icons.sync_outlined,
                     title: context.t.sync_status,
                     subtitle: context.t.sync_status_subtitle,
-                    settingRoute: const SyncStatusRoute(),
+                    onTap: () => context.pushRoute(const SyncStatusRoute()),
                   ),
                 ]
               : [
@@ -105,7 +105,7 @@ class _MobileLayout extends StatelessWidget {
                     title: setting.title(context.t),
                     subtitle: setting.subtitle(context.t),
                     icon: setting.icon,
-                    settingRoute: SettingsSubRoute(section: setting),
+                    onTap: () => context.pushRoute(SettingsSubRoute(section: setting)),
                   ),
                 ],
         )
@@ -115,7 +115,7 @@ class _MobileLayout extends StatelessWidget {
         icon: Icons.auto_awesome_outlined,
         title: context.t.whats_new,
         subtitle: context.t.whats_new_settings_subtitle,
-        settingRoute: const WhatsNewRoute(),
+        onTap: () => context.pushRoute(const WhatsNewRoute()),
       ),
     );
     return ListView(padding: const EdgeInsets.only(top: 10.0, bottom: 60), children: [...settings]);

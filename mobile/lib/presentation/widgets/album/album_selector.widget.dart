@@ -83,10 +83,6 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     unawaited(filterAlbums());
   }
 
-  Future<void> onRefresh() async {
-    await ref.read(remoteAlbumProvider.notifier).refresh();
-  }
-
   void toggleViewMode() {
     setState(() {
       isGrid = !isGrid;

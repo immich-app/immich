@@ -1,10 +1,10 @@
-import { PersonController } from 'src/controllers/person.controller';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PersonService } from 'src/services/person.service';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { PersonController } from 'src/controllers/person.controller.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PersonService } from 'src/services/person.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, automock, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(PersonController.name, () => {
   let ctx: ControllerContext;
@@ -149,13 +149,13 @@ describe(PersonController.name, () => {
 
   describe('DELETE /people/:id', () => {
     it('should require a valid uuid', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).delete(`/people/invalid`);
+      const { status, body } = await request(ctx.getHttpServer()).delete(`/people/invalid`).send({});
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should respond with 204', async () => {
-      const { status } = await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`);
+      const { status } = await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`).send({});
       expect(status).toBe(204);
       expect(service.delete).toHaveBeenCalled();
     });

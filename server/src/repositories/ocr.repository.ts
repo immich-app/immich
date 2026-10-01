@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { type Insertable, type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { DB } from 'src/schema';
-import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
+import { DB } from 'src/schema/index.js';
+import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table.js';
 
 @Injectable()
 export class OcrRepository {
@@ -58,7 +58,6 @@ export class OcrRepository {
   })
   upsert(assetId: string, ocrDataList: Insertable<AssetOcrTable>[], searchText: string) {
     let query = this.db.with('deleted_ocr', (db) => db.deleteFrom('asset_ocr').where('assetId', '=', assetId));
-    // eslint-disable-next-line unicorn/prefer-ternary
     if (ocrDataList.length > 0) {
       (query as any) = query
         .with('inserted_ocr', (db) => db.insertInto('asset_ocr').values(ocrDataList))

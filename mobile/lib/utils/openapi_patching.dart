@@ -40,10 +40,13 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
   'SyncAssetV1': {'isEdited': false},
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
+  'SearchAssetResponseDto': {'nextCursor': null},
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
+  'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'WorkflowResponseDto': {'logging': false},
 };
 
+// ignore: unused-code
 void upgradeDto(dynamic value, String targetType) {
   if (value is! Map) {
     return;

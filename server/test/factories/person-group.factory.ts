@@ -1,7 +1,7 @@
 import { Selectable } from 'kysely';
-import { PersonGroupTable } from 'src/schema/tables/person-group.table';
-import { PersonGroupLike } from 'test/factories/types';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
+import { PersonGroupLike } from 'test/factories/types.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class PersonGroupFactory {
   private constructor(private readonly value: Selectable<PersonGroupTable>) {}

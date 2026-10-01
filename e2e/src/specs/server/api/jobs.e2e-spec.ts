@@ -2,7 +2,7 @@ import { LoginResponseDto, QueueCommand, QueueName, updateConfig } from '@immich
 import { cpSync, rmSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
-import { asBearerAuth, testAssetDir, utils } from 'src/utils';
+import { asBearerAuth, testAssetDir, utils } from 'src/utils.js';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 describe('/jobs', () => {

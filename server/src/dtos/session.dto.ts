@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
-import { Session } from 'src/database';
 import z from 'zod';
+import { Session } from 'src/database.js';
 
 const SessionCreateSchema = z
   .object({

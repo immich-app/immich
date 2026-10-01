@@ -8,6 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import {
     acceptClusterGroupRequest,
+    clusterGroupRegeneratePeople,
     createClusterGroupRequest,
     createPartner,
     deleteClusterGroupRequest,
@@ -25,7 +26,7 @@
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Card, CardBody, Icon, IconButton, modalManager, Text } from '@immich/ui';
+  import { Button, Card, CardBody, HStack, Icon, IconButton, modalManager, Text } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -222,6 +223,24 @@
       handleError(error, $t('errors.unable_to_update_timeline_display_status'));
     }
   };
+
+  const handleRerunFacialRecognition = async () => {
+    const confirmed = await modalManager.showDialog({
+      title: $t('cluster_group_facial_recognition'),
+      prompt: $t('cluster_group_facial_recognition_prompt'),
+      size: 'medium',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await clusterGroupRegeneratePeople({ id: clusterGroupId });
+    } catch (error) {
+      handleError(error, $t('errors.something_went_wrong'));
+    }
+  };
 </script>
 
 <section class="my-4">
@@ -295,9 +314,12 @@
     </Card>
   {/if}
 
-  <div class="mt-5 flex justify-end">
+  <HStack fullWidth class="mt-5 justify-end">
+    <Button shape="round" size="small" onclick={() => handleRerunFacialRecognition()}
+      >{$t('cluster_group_facial_recognition')}</Button
+    >
     <Button shape="round" size="small" onclick={() => handleAddUsers()}>{$t('add_user')}</Button>
-  </div>
+  </HStack>
 </section>
 
 <section class="my-4">

@@ -15,8 +15,6 @@ import 'package:share_plus/share_plus.dart';
 /// Logs can be shared by calling the `shareLogs` method, which will open a share dialog
 /// and generate a csv file.
 abstract final class ImmichLogger {
-  const ImmichLogger();
-
   static Future<void> shareLogs(BuildContext context) async {
     final tempDir = await getTemporaryDirectory();
     final dateTime = DateTime.now().toIso8601String();
