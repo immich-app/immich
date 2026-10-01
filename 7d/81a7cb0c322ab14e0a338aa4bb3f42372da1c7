@@ -1,0 +1,35 @@
+docs/docs/features/libraries.md
+  s_6ee1728068078f::t_d3c1cc3bb76fe4 46,54,56-58,65
+server/src/queries/asset.repository.sql
+  s_6ee1728068078f::t_dd8262f28f3c0f 535
+server/src/repositories/asset.repository.ts
+  s_6ee1728068078f::t_35088356a537c1 1105
+server/src/services/library.service.ts
+  s_6ee1728068078f::t_813397b6f8eec1 524-526
+server/test/medium/specs/services/library.service.spec.ts
+  s_2a97b72a929a1b::t_c0361f5d40a1e4 506-549
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7d81a7cb0c322ab14e0a338aa4bb3f42372da1c7",
+  "prompts": {},
+  "sessions": {
+    "s_2a97b72a929a1b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f69a-e61d-7e02-a016-33e86a327c2c",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    },
+    "s_6ee1728068078f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f66e-d5be-72f3-996a-ba2f14e7bbf9",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
