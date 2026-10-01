@@ -32,7 +32,7 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
+import 'package:openapi/api.dart' as api show AlbumUserRole, AssetVisibility, SyncAssetEditActionV1, UserMetadataKey;
 import 'package:openapi/api.dart' hide AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
 
 @DriftAccessor()
@@ -985,10 +985,10 @@ extension on UserAvatarColor {
   AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == toString());
 }
 
-extension on api.AssetEditAction {
+extension on api.SyncAssetEditActionV1 {
   AssetEditAction toAssetEditAction() => switch (this) {
-    api.AssetEditAction.crop => AssetEditAction.crop,
-    api.AssetEditAction.rotate => AssetEditAction.rotate,
-    api.AssetEditAction.mirror => AssetEditAction.mirror,
+    api.SyncAssetEditActionV1.crop => AssetEditAction.crop,
+    api.SyncAssetEditActionV1.rotate => AssetEditAction.rotate,
+    api.SyncAssetEditActionV1.mirror => AssetEditAction.mirror,
   };
 }
