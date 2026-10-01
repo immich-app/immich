@@ -23013,7 +23013,18 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "profileImagePath": {
             "description": "Profile image path",
@@ -24869,7 +24880,18 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",
@@ -25106,7 +25128,18 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",
@@ -28529,7 +28562,19 @@
           "name": {
             "description": "User name",
             "example": "Admin",
-            "type": "string"
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
+              }
+            ]
           },
           "password": {
             "description": "User password",
@@ -32689,7 +32734,19 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
+              }
+            ]
           },
           "notify": {
             "description": "Send notification email",
@@ -32797,7 +32854,18 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "oauthId": {
             "description": "OAuth ID",
@@ -32890,7 +32958,19 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
+              }
+            ]
           },
           "password": {
             "description": "User password",
@@ -33447,7 +33527,18 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",
@@ -33496,7 +33587,19 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
+              }
+            ]
           },
           "password": {
             "deprecated": true,
