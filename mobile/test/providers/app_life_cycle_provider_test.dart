@@ -258,6 +258,17 @@ void main() {
     verify(() => backgroundSync.syncLocal(full: false)).called(1);
   });
 
+  test('first resume runs when the splash requested a full resume', () async {
+    websocket.throwOnConnect = false;
+    serverVersion.complete();
+    lifeCycle.requestFullResume();
+    await lifeCycle.handleAppResume();
+
+    expect(serverVersionCount, 1);
+    expect(websocket.connectCount, 1);
+    verify(() => backgroundSync.syncLocal(full: true)).called(1);
+  });
+
   test('a background launch does not resume twice without a pause', () async {
     when(() => fgService.wasLaunchedInBackground()).thenAnswer((_) async => true);
     websocket.throwOnConnect = false;
