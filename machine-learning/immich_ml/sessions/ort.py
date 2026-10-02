@@ -359,7 +359,7 @@ def _overrides(policy: ShapePolicy, pins: Mapping[str, int]) -> list[tuple[str, 
 
 @cache
 def _intel_gpu(device: str) -> Device:
-    """The IP version and execution units OpenVINO keys its blobs by, and the driver it checks them against."""
+    """The IP version, release and execution units OpenVINO keys its blobs by, and the driver it checks them against."""
     ov = ctypes.CDLL(str(Path(ort.__file__).parent / "capi" / "libopenvino_c.so"))
     core, wanted = ctypes.c_void_p(), ctypes.c_char_p()
     ov.ov_core_create(ctypes.byref(core))
@@ -367,6 +367,10 @@ def _intel_gpu(device: str) -> Device:
     uuid = wanted.value
     ov.ov_free(wanted)
     ov.ov_core_free(core)
+    release = (ctypes.c_char_p * 2)()  # ov_version_t: build number, description
+    ov.ov_get_openvino_version(release)
+    openvino = (release[0] or b"").decode()
+    ov.ov_version_free(release)
     cl, gpu = ctypes.CDLL("libOpenCL.so.1"), ctypes.c_uint64(1 << 2)  # CL_DEVICE_TYPE_GPU
     platforms, devices, count = (ctypes.c_void_p * 8)(), (ctypes.c_void_p * 8)(), ctypes.c_uint32()
     cl.clGetPlatformIDs(8, platforms, ctypes.byref(count))
@@ -381,7 +385,7 @@ def _intel_gpu(device: str) -> Device:
                 cl.clGetDeviceInfo(ctypes.c_void_p(handle), key, ctypes.sizeof(value), ctypes.byref(value), None)
             if bytes(own).hex().encode() == uuid:
                 version = f"{ip.value >> 22}.{ip.value >> 14 & 0xFF}.{ip.value & 0x3FFF}"
-                return Device(f"{version}-{units.value}eu", driver.value.decode())
+                return Device(f"{version}-{units.value}eu", f"{driver.value.decode()} {openvino}")
     raise LookupError(f"OpenCL has no GPU with the UUID of OpenVINO's {device}")
 
 
