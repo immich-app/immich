@@ -93,7 +93,7 @@
     "mnemonist": "^0.40.3",
     "multer": "^2.0.2",
     "nest-commander": "^3.16.0",
-    "nestjs-cls": "^6.0.0",
+    "nestjs-cls": "^7.0.0",
     "nestjs-kysely": "3.1.4",
     "nestjs-otel": "^8.0.0",
     "nestjs-zod": "^5.5.0",
