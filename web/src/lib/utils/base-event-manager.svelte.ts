@@ -29,7 +29,7 @@ export class BaseEventManager<Events extends EventsBase> {
     };
   }
 
-  #onEvent<T extends keyof Events>(event: T, callback: EventCallback<Events, T>) {
+  #onEvent<T extends keyof Events>(event: T, callback?: EventCallback<Events, T>) {
     if (!callback) {
       return noop;
     }

@@ -89,11 +89,16 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('to_favorite'),
     icon: mdiHeartOutline,
     $if: () => !assetMultiSelectManager.isAllFavorite,
-    onAction: () =>
-      handleBulkFavorite(
-        ownedAssets.filter((asset) => !asset.isFavorite).map(({ id }) => id),
-        true,
-      ),
+    onAction: async () => {
+      if (
+        await handleFavorite(
+          ownedAssets.filter((asset) => !asset.isFavorite).map(({ id }) => id),
+          true,
+        )
+      ) {
+        assetMultiSelectManager.clear();
+      }
+    },
   };
 
   const RemoveFromAlbum: ActionItem = {
@@ -120,11 +125,16 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('remove_from_favorites'),
     icon: mdiHeartMinusOutline,
     $if: () => assetMultiSelectManager.isAllFavorite,
-    onAction: () =>
-      handleBulkFavorite(
-        ownedAssets.map((asset) => asset.id),
-        false,
-      ),
+    onAction: async () => {
+      if (
+        await handleFavorite(
+          ownedAssets.map((asset) => asset.id),
+          false,
+        )
+      ) {
+        assetMultiSelectManager.clear();
+      }
+    },
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -463,12 +473,6 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
     }
-  }
-};
-
-const handleBulkFavorite = async (assetIds: string[], isFavorite: boolean) => {
-  if (await handleFavorite(assetIds, isFavorite)) {
-    assetMultiSelectManager.clear();
   }
 };
 
