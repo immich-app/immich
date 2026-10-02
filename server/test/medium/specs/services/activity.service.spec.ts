@@ -1,5 +1,6 @@
 import { Kysely } from 'kysely';
-import { ReactionType } from 'src/dtos/activity.dto.js';
+import { ReactionLevel, ReactionType, buildAssetAdditionId } from 'src/dtos/activity.dto.js';
+import { AssetType, AssetVisibility } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { ActivityRepository } from 'src/repositories/activity.repository.js';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
@@ -93,6 +94,115 @@ describe(ActivityService.name, () => {
       await sut.create(auth, { albumId: album.id, type: ReactionType.LIKE });
 
       await expect(sut.getAll(auth, { albumId: album.id, assetId: asset.id })).resolves.toEqual([value]);
+    });
+  });
+
+  describe('getAll asset additions', () => {
+    it('should not include asset additions by default', async () => {
+      const { sut, ctx } = setup();
+      const { album, owner } = await ctx.newSharedAlbum();
+      const auth = factory.auth({ user: owner });
+
+      await expect(sut.getAll(auth, { albumId: album.id })).resolves.toEqual([]);
+      await expect(sut.getAll(auth, { albumId: album.id, withAdditions: false })).resolves.toEqual([]);
+    });
+
+    it('should merge asset additions with reactions in chronological order', async () => {
+      const { sut, ctx } = setup();
+      const { album, asset, owner } = await ctx.newSharedAlbum();
+      const auth = factory.auth({ user: owner });
+      const { value: comment } = await sut.create(auth, {
+        albumId: album.id,
+        type: ReactionType.COMMENT,
+        comment: 'comment',
+      });
+      const { value: like } = await sut.create(auth, { albumId: album.id, type: ReactionType.LIKE });
+
+      await expect(sut.getAll(auth, { albumId: album.id, withAdditions: true })).resolves.toEqual([
+        {
+          id: buildAssetAdditionId(album.id, asset.id),
+          assetId: asset.id,
+          assetType: AssetType.Image,
+          createdAt: expect.any(Date),
+          comment: null,
+          type: ReactionType.ASSET_ADDED,
+          groupId: expect.any(String),
+          user: expect.objectContaining({ id: owner.id }),
+        },
+        comment,
+        like,
+      ]);
+    });
+
+    it('should only return asset additions for type=asset_added', async () => {
+      const { sut, ctx } = setup();
+      const { album, asset, owner } = await ctx.newSharedAlbum();
+      const auth = factory.auth({ user: owner });
+      await sut.create(auth, { albumId: album.id, type: ReactionType.LIKE });
+
+      await expect(sut.getAll(auth, { albumId: album.id, type: ReactionType.ASSET_ADDED })).resolves.toEqual([
+        expect.objectContaining({ assetId: asset.id, type: ReactionType.ASSET_ADDED }),
+      ]);
+    });
+
+    it('should scope asset additions appropriately', async () => {
+      const { sut, ctx } = setup();
+      const { album, asset, owner, sharedWith } = await ctx.newSharedAlbum();
+      const auth = factory.auth({ user: owner });
+      const addition = expect.objectContaining({ assetId: asset.id, type: ReactionType.ASSET_ADDED });
+
+      await expect(sut.getAll(auth, { albumId: album.id, assetId: asset.id, withAdditions: true })).resolves.toEqual(
+        [],
+      );
+      await expect(
+        sut.getAll(auth, { albumId: album.id, level: ReactionLevel.ALBUM, withAdditions: true }),
+      ).resolves.toEqual([addition]);
+      await expect(
+        sut.getAll(auth, { albumId: album.id, type: ReactionType.ASSET_ADDED, userId: owner.id }),
+      ).resolves.toEqual([addition]);
+      await expect(
+        sut.getAll(auth, { albumId: album.id, type: ReactionType.ASSET_ADDED, userId: sharedWith.id }),
+      ).resolves.toEqual([]);
+    });
+
+    it('should exclude assets that were deleted, locked, or from deleted owners', async () => {
+      const { sut, ctx } = setup();
+      const { album, asset, owner } = await ctx.newSharedAlbum();
+      const auth = factory.auth({ user: owner });
+      const { user: deletedOwner } = await ctx.newUser();
+      const { asset: deletedAsset } = await ctx.newAsset({ ownerId: owner.id });
+      const { asset: lockedAsset } = await ctx.newAsset({ ownerId: owner.id, visibility: AssetVisibility.Locked });
+      const { asset: orphanedAsset } = await ctx.newAsset({ ownerId: deletedOwner.id });
+      for (const { id } of [deletedAsset, lockedAsset, orphanedAsset]) {
+        await ctx.newAlbumAsset({ albumId: album.id, assetId: id });
+      }
+      await ctx.softDeleteAsset(deletedAsset.id);
+      await defaultDatabase
+        .updateTable('user')
+        .set({ deletedAt: new Date() })
+        .where('id', '=', deletedOwner.id)
+        .execute();
+
+      await expect(sut.getAll(auth, { albumId: album.id, type: ReactionType.ASSET_ADDED })).resolves.toEqual([
+        expect.objectContaining({ assetId: asset.id }),
+      ]);
+    });
+
+    it('should share a groupId between assets added together', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id, fileCreatedAt: new Date('2020-01-01') });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id, fileCreatedAt: new Date('2020-01-02') });
+      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id }, [asset2.id, asset1.id]);
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset3.id });
+
+      const additions = await sut.getAll(auth, { albumId: album.id, type: ReactionType.ASSET_ADDED });
+
+      expect(additions.map(({ assetId }) => assetId)).toEqual([asset1.id, asset2.id, asset3.id]);
+      expect(additions[0].groupId).toEqual(additions[1].groupId);
+      expect(additions[2].groupId).not.toEqual(additions[0].groupId);
     });
   });
 
