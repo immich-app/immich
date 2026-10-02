@@ -679,7 +679,7 @@ export class AuthService extends BaseService {
       return null;
     }
 
-    return sanitize(label.replaceAll('.', ''));
+    return sanitize(label);
   }
 
   private async syncOAuthClaims(user: UserAdmin, profile: OAuthProfile, oauth: OAuthClaimsConfig): Promise<UserAdmin> {
