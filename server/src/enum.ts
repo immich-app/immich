@@ -429,6 +429,7 @@ export const PersonUpdateStrategySchema = z
 
 export enum UserStatus {
   Active = 'active',
+  Pending = 'pending',
   Removing = 'removing',
   Deleted = 'deleted',
 }

@@ -180,4 +180,59 @@ describe(UserAdminService.name, () => {
       expect(mocks.user.restore).toHaveBeenCalledWith(userStub.user1.id);
     });
   });
+
+  describe('approve', () => {
+    it('should throw error if user could not be found', async () => {
+      mocks.user.get.mockResolvedValue(void 0);
+      await expect(sut.approve(authStub.admin, 'not-found')).rejects.toThrowError(BadRequestException);
+      expect(mocks.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw error if user is not pending', async () => {
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      await expect(sut.approve(authStub.admin, userStub.user1.id)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should approve a pending user', async () => {
+      const pendingUser = UserFactory.create({ status: UserStatus.Pending });
+      const activeUser = UserFactory.create({ ...pendingUser, status: UserStatus.Active });
+      mocks.user.get.mockResolvedValue(pendingUser);
+      mocks.user.update.mockResolvedValue(activeUser);
+
+      await expect(sut.approve(authStub.admin, pendingUser.id)).resolves.toEqual(mapUserAdmin(activeUser));
+      expect(mocks.user.update).toHaveBeenCalledWith(pendingUser.id, {
+        status: UserStatus.Active,
+        updatedAt: expect.any(Date),
+      });
+    });
+  });
+
+  describe('reject', () => {
+    it('should throw error if user could not be found', async () => {
+      mocks.user.get.mockResolvedValue(void 0);
+      await expect(sut.reject(authStub.admin, 'not-found')).rejects.toThrowError(BadRequestException);
+      expect(mocks.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw error if user is not pending', async () => {
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      await expect(sut.reject(authStub.admin, userStub.user1.id)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should reject a pending user', async () => {
+      const pendingUser = UserFactory.create({ status: UserStatus.Pending });
+      const deletedUser = UserFactory.create({ ...pendingUser, status: UserStatus.Deleted });
+      mocks.user.get.mockResolvedValue(pendingUser);
+      mocks.user.update.mockResolvedValue(deletedUser);
+
+      await expect(sut.reject(authStub.admin, pendingUser.id)).resolves.toEqual(mapUserAdmin(deletedUser));
+      expect(mocks.user.update).toHaveBeenCalledWith(pendingUser.id, {
+        status: UserStatus.Deleted,
+        deletedAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      });
+    });
+  });
 });

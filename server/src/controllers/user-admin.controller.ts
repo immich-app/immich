@@ -194,4 +194,28 @@ export class UserAdminController {
   restoreUserAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserAdminResponseDto> {
     return this.service.restore(auth, id);
   }
+
+  @Post(':id/approve')
+  @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Approve a pending user',
+    description: 'Approve a user that is waiting for admin approval.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  approveUserAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserAdminResponseDto> {
+    return this.service.approve(auth, id);
+  }
+
+  @Post(':id/reject')
+  @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Reject a pending user',
+    description: 'Reject a user that is waiting for admin approval.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  rejectUserAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserAdminResponseDto> {
+    return this.service.reject(auth, id);
+  }
 }

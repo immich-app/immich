@@ -125,6 +125,30 @@ export class UserAdminService extends BaseService {
     return mapUserAdmin(user);
   }
 
+  async approve(auth: AuthDto, id: string): Promise<UserAdminResponseDto> {
+    const user = await this.findOrFail(id, {});
+    if (user.status !== UserStatus.Pending) {
+      throw new BadRequestException('Only pending users can be approved');
+    }
+
+    const updatedUser = await this.userRepository.update(id, { status: UserStatus.Active, updatedAt: new Date() });
+    return mapUserAdmin(updatedUser);
+  }
+
+  async reject(auth: AuthDto, id: string): Promise<UserAdminResponseDto> {
+    const user = await this.findOrFail(id, {});
+    if (user.status !== UserStatus.Pending) {
+      throw new BadRequestException('Only pending users can be rejected');
+    }
+
+    const updatedUser = await this.userRepository.update(id, {
+      status: UserStatus.Deleted,
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return mapUserAdmin(updatedUser);
+  }
+
   async getCalendarHeatmap(auth: AuthDto, id: string, dto: CalendarHeatmapDto): Promise<CalendarHeatmapResponseDto> {
     await this.findOrFail(id, { withDeleted: false });
     return getCalendarHeatmap(id, dto, { asset: this.assetRepository });

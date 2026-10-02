@@ -1712,6 +1712,59 @@
         "x-immich-state": "Deprecated"
       }
     },
+    "/admin/users/{id}/approve": {
+      "post": {
+        "description": "Approve a user that is waiting for admin approval.",
+        "operationId": "approveUserAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Approve a pending user",
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "adminUser.update"
+      }
+    },
     "/admin/users/{id}/calendar-heatmap": {
       "get": {
         "description": "Retrieve activity counts for a specified period, in a calendar heatmap format.",
@@ -1940,6 +1993,59 @@
         ],
         "x-immich-permission": "adminUser.update",
         "x-immich-state": "Deprecated"
+      }
+    },
+    "/admin/users/{id}/reject": {
+      "post": {
+        "description": "Reject a user that is waiting for admin approval.",
+        "operationId": "rejectUserAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Reject a pending user",
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "adminUser.update"
       }
     },
     "/admin/users/{id}/restore": {
@@ -19417,6 +19523,10 @@
             "description": "OAuth prompt parameter (e.g. select_account, login, consent)",
             "type": "string"
           },
+          "requireApproval": {
+            "description": "Require approval",
+            "type": "boolean"
+          },
           "roleClaim": {
             "description": "Role claim",
             "type": "string"
@@ -19462,6 +19572,7 @@
           "mobileRedirectUri",
           "profileSigningAlgorithm",
           "prompt",
+          "requireApproval",
           "roleClaim",
           "scope",
           "signingAlgorithm",
@@ -33483,6 +33594,7 @@
         "description": "User status",
         "enum": [
           "active",
+          "pending",
           "removing",
           "deleted"
         ],

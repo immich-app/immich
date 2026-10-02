@@ -269,6 +269,13 @@
               />
 
               <SettingSwitch
+                title={$t('admin.oauth_require_approval')}
+                subtitle={$t('admin.oauth_require_approval_description')}
+                bind:checked={configToEdit.oauth.requireApproval}
+                disabled={disabled || !configToEdit.oauth.enabled || !configToEdit.oauth.autoRegister}
+              />
+
+              <SettingSwitch
                 title={$t('admin.oauth_auto_launch')}
                 subtitle={$t('admin.oauth_auto_launch_description')}
                 disabled={disabled || !configToEdit.oauth.enabled}

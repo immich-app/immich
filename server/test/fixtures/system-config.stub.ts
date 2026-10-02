@@ -31,6 +31,15 @@ export const systemConfigStub = {
       buttonText: 'OAuth',
     },
   },
+  oauthWithRequireApproval: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      requireApproval: true,
+      autoLaunch: false,
+      buttonText: 'OAuth',
+    },
+  },
   oauthWithMobileOverride: {
     oauth: {
       enabled: true,

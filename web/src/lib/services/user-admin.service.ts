@@ -1,6 +1,8 @@
 import {
+  approveUserAdmin,
   createUserAdmin,
   deleteUserAdmin,
+  rejectUserAdmin,
   restoreUserAdmin,
   updateUserAdmin,
   UserStatus,
@@ -11,6 +13,8 @@ import {
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
+  mdiAccountCheck,
+  mdiAccountRemove,
   mdiDeleteRestore,
   mdiInformationOutline,
   mdiLockReset,
@@ -94,7 +98,23 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     onAction: () => handleResetPinCodeUserAdmin(user),
   };
 
-  return { Detail, Update, Delete, Restore, ResetPassword, ResetPinCode };
+  const Approve: ActionItem = {
+    icon: mdiAccountCheck,
+    title: $t('approve'),
+    color: 'primary',
+    $if: () => user.status === UserStatus.Pending,
+    onAction: () => handleApproveUserAdmin(user),
+  };
+
+  const Reject: ActionItem = {
+    icon: mdiAccountRemove,
+    title: $t('reject'),
+    color: 'danger',
+    $if: () => user.status === UserStatus.Pending,
+    onAction: () => handleRejectUserAdmin(user),
+  };
+
+  return { Detail, Update, Delete, Restore, Approve, Reject, ResetPassword, ResetPinCode };
 };
 
 export const handleCreateUserAdmin = async (dto: UserAdminCreateDto) => {
@@ -147,6 +167,34 @@ export const handleRestoreUserAdmin = async (user: UserAdminResponseDto) => {
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_restore_user'));
+    return false;
+  }
+};
+
+export const handleApproveUserAdmin = async (user: UserAdminResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await approveUserAdmin({ id: user.id });
+    eventManager.emit('UserAdminUpdate', response);
+    toastManager.primary();
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_approve_user'));
+    return false;
+  }
+};
+
+export const handleRejectUserAdmin = async (user: UserAdminResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await rejectUserAdmin({ id: user.id });
+    eventManager.emit('UserAdminDelete', response);
+    toastManager.primary();
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_reject_user'));
     return false;
   }
 };

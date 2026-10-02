@@ -191,6 +191,7 @@ The default configuration looks like this:
   "oauth": {
     "autoLaunch": false,
     "autoRegister": true,
+    "requireApproval": false,
     "buttonText": "Login with OAuth",
     "clientId": "",
     "clientSecret": "",

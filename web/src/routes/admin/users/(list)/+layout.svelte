@@ -5,8 +5,9 @@
   import { getUserAdminActions, getUserAdminsActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { searchUsersAdmin, UserStatus, type UserAdminResponseDto } from '@immich/sdk';
   import {
+    Badge,
     CommandPaletteDefaultProvider,
     Container,
     ContextMenuButton,
@@ -50,8 +51,8 @@
   const { Create } = $derived(getUserAdminsActions($t));
 
   const getActionsForUser = (user: UserAdminResponseDto) => {
-    const { Detail, Update, Delete, ResetPassword, ResetPinCode } = getUserAdminActions($t, user);
-    return [Detail, Update, ResetPassword, ResetPinCode, MenuItemType.Divider, Delete];
+    const { Detail, Update, Delete, Approve, Reject, ResetPassword, ResetPinCode } = getUserAdminActions($t, user);
+    return [Detail, Approve, Reject, Update, ResetPassword, ResetPinCode, MenuItemType.Divider, Delete];
   };
 
   const classes = {
@@ -86,6 +87,9 @@
           <TableRow color={user.deletedAt ? 'danger' : undefined}>
             <TableCell class={classes.column1}>
               <Link href={Route.viewUser(user)}>{user.name}</Link>
+              {#if user.status === UserStatus.Pending}
+                <Badge color="warning" size="small">{$t('pending')}</Badge>
+              {/if}
             </TableCell>
             <TableCell class={classes.column2}>{user.email}</TableCell>
             <TableCell class={classes.column3}>

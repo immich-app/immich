@@ -4,7 +4,7 @@ import type { UserMetadataItem } from 'src/types.js';
 import { SALT_ROUNDS } from 'src/constants.js';
 import { UserAdmin } from 'src/database.js';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto.js';
-import { AuthType, Permission } from 'src/enum.js';
+import { AuthType, Permission, UserStatus } from 'src/enum.js';
 import { AuthService } from 'src/services/auth.service.js';
 import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
@@ -829,6 +829,52 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
       expect(mocks.user.create).toHaveBeenCalledTimes(1);
+    });
+
+    it('should create a pending user when approval is required', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithRequireApproval);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
+      mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id', status: UserStatus.Pending }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
+
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          {},
+          loginDetails,
+        ),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ status: UserStatus.Pending }));
+      expect(mocks.session.create).not.toHaveBeenCalled();
+    });
+
+    it('should create an active user when approval is not required', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
+      mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id', status: UserStatus.Active }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ status: UserStatus.Active }));
+      expect(mocks.session.create).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not log in a pending user', async () => {
+      const user = UserFactory.create({ password: 'immich_password', status: UserStatus.Pending });
+      mocks.user.getByEmail.mockResolvedValue(user);
+
+      await expect(sut.login(dto, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
+
+      expect(mocks.session.create).not.toHaveBeenCalled();
     });
 
     it('should throw an error if user should be auto registered but the email claim does not exist', async () => {

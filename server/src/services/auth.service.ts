@@ -23,7 +23,7 @@ import {
 } from 'src/dtos/auth.dto.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission, UserStatus } from 'src/enum.js';
 import { OAuthProfile } from 'src/repositories/oauth.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
@@ -318,7 +318,7 @@ export class AuthService extends BaseService {
       idToken: oauthBearerToken,
     } = await this.oauthRepository.getProfileAndOAuthSid(oauth, url, expectedState, codeVerifier);
     const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
-    const { autoRegister, roleClaim } = oauth;
+    const { autoRegister, requireApproval, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -371,6 +371,7 @@ export class AuthService extends BaseService {
         quotaSizeInBytes: claims.quotaSizeInBytes ?? null,
         storageLabel: claims.storageLabel ?? null,
         isAdmin,
+        status: requireApproval ? UserStatus.Pending : UserStatus.Active,
       });
     }
 
@@ -618,6 +619,10 @@ export class AuthService extends BaseService {
     oauthSid?: string,
     oauthBearerToken?: string,
   ) {
+    if (user.status === UserStatus.Pending) {
+      throw new UnauthorizedException('Your account is pending admin approval');
+    }
+
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
 

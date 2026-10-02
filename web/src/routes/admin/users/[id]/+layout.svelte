@@ -12,7 +12,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { CalendarHeatmapType, getUserCalendarHeatmapAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { CalendarHeatmapType, getUserCalendarHeatmapAdmin, UserStatus, type UserAdminResponseDto } from '@immich/sdk';
   import {
     Alert,
     Badge,
@@ -29,6 +29,7 @@
     Text,
   } from '@immich/ui';
   import {
+    mdiAccountClockOutline,
     mdiAccountOutline,
     mdiCameraIris,
     mdiChartPie,
@@ -71,7 +72,9 @@
     { from: 0.95, className: 'bg-danger' },
   ];
 
-  const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
+  const { ResetPassword, ResetPinCode, Update, Delete, Restore, Approve, Reject } = $derived(
+    getUserAdminActions($t, user),
+  );
 
   const onUpdate = async (update: UserAdminResponseDto) => {
     if (update.id !== user.id) {
@@ -96,16 +99,22 @@
   {onUserAdminDeleted}
 />
 
-<CommandPaletteDefaultProvider name={$t('user')} actions={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
+<CommandPaletteDefaultProvider
+  name={$t('user')}
+  actions={[ResetPassword, ResetPinCode, Update, Delete, Restore, Approve, Reject]}
+/>
 
 <AdminPageLayout
   breadcrumbs={[{ title: $t('admin.user_management'), href: Route.users() }, { title: user.name }]}
-  actions={[ResetPassword, ResetPinCode, Update, Restore, MenuItemType.Divider, Delete]}
+  actions={[Approve, Reject, ResetPassword, ResetPinCode, Update, Restore, MenuItemType.Divider, Delete]}
 >
   <div>
     <Container size="large" center>
       {#if user.deletedAt}
         <Alert color="danger" class="my-4" title={$t('user_has_been_deleted')} icon={mdiTrashCanOutline} />
+      {/if}
+      {#if user.status === UserStatus.Pending}
+        <Alert color="warning" class="my-4" title={$t('admin.user_pending_approval')} icon={mdiAccountClockOutline} />
       {/if}
 
       <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">

@@ -343,6 +343,8 @@ export type AdminConfigOAuthDto = {
     profileSigningAlgorithm: string;
     /** OAuth prompt parameter (e.g. select_account, login, consent) */
     prompt: string;
+    /** Require approval */
+    requireApproval: boolean;
     /** Role claim */
     roleClaim: string;
     /** Scope */
@@ -4243,6 +4245,20 @@ export function updateUserAdmin({ id, userAdminUpdateDto }: {
     })));
 }
 /**
+ * Approve a pending user
+ */
+export function approveUserAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/approve`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Retrieve calendar heatmap activity
  */
 export function getUserCalendarHeatmapAdmin({ $from, id, to, $type }: {
@@ -4290,6 +4306,20 @@ export function updateUserPreferencesAdmin({ id, userPreferencesUpdateDto }: {
         method: "PUT",
         body: userPreferencesUpdateDto
     })));
+}
+/**
+ * Reject a pending user
+ */
+export function rejectUserAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/reject`, {
+        ...opts,
+        method: "POST"
+    }));
 }
 /**
  * Restore a deleted user
@@ -8053,6 +8083,7 @@ export enum NotificationType {
 }
 export enum UserStatus {
     Active = "active",
+    Pending = "pending",
     Removing = "removing",
     Deleted = "deleted"
 }
