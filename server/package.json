@@ -68,7 +68,7 @@
     "async-lock": "^1.4.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
-    "bullmq": "^5.51.0",
+    "bullmq": "^6.0.0",
     "chokidar": "^4.0.3",
     "compression": "^1.8.0",
     "cookie": "^1.0.2",
