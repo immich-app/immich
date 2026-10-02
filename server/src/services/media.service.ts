@@ -37,6 +37,7 @@ import {
 } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
+import { EmbeddedImage } from 'src/repositories/media.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getAssetFile, getDimensions } from 'src/utils/asset.util.js';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor.js';
@@ -55,6 +56,16 @@ interface UpsertFileOptions {
 }
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
+
+const EMBEDDED_IMAGE_FORMATS: Record<string, RawExtractedFormat> = {
+  JpgFromRaw2: RawExtractedFormat.Jpeg,
+  JpgFromRaw: RawExtractedFormat.Jpeg,
+  PreviewJXL: RawExtractedFormat.Jxl,
+  PreviewImage: RawExtractedFormat.Jpeg,
+};
+
+//Raw sensor data
+const RAW_PHOTOMETRIC_INTERPRETATIONS: ReadonlySet<number | undefined> = new Set([32_803, 34_892]);
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -231,12 +242,26 @@ export class MediaService extends BaseService {
   }
 
   private async extractImage(originalPath: string, minSize: number) {
-    let extracted = await this.mediaRepository.extract(originalPath);
-    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
-      extracted = null;
+    let images: EmbeddedImage[];
+    try {
+      images = await this.mediaRepository.getEmbeddedImages(originalPath, Object.keys(EMBEDDED_IMAGE_FORMATS));
+    } catch (error) {
+      this.logger.debug(`Could not read embedded images from ${originalPath}: ${error}`);
+      return null;
     }
 
-    return extracted;
+    const candidates = await Promise.all(
+      images
+        .filter(({ photometricInterpretation }) => !RAW_PHOTOMETRIC_INTERPRETATIONS.has(photometricInterpretation))
+        .map(async ({ tag, buffer }) => ({
+          buffer,
+          format: EMBEDDED_IMAGE_FORMATS[tag],
+          size: await this.getImageSize(buffer),
+        })),
+    );
+
+    const best = candidates.filter(({ size }) => size >= minSize).sort((a, b) => b.size - a.size)[0];
+    return best ? { buffer: best.buffer, format: best.format } : null;
   }
 
   private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
@@ -767,10 +792,14 @@ export class MediaService extends BaseService {
     return bitrateValue;
   }
 
-  private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageMetadata(extractedPathOrBuffer);
-    const extractedSize = Math.min(width, height);
-    return extractedSize >= targetSize;
+  private async getImageSize(image: Buffer) {
+    try {
+      const { width, height } = await this.mediaRepository.getImageMetadata(image);
+      return Math.min(width, height);
+    } catch (error) {
+      this.logger.debug(`Could not read embedded image dimensions: ${error}`);
+      return 0;
+    }
   }
 
   private async syncFiles(
