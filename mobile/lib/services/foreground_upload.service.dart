@@ -255,6 +255,12 @@ class ForegroundUploadService {
     File? livePhotoFile;
 
     try {
+      final remoteId = (await _assetService.getLocalAsset(asset.id))?.remoteId;
+      if (remoteId != null) {
+        await _handleUploadSuccess(asset, remoteId, callbacks);
+        return;
+      }
+
       final entity = await _storageRepository.getAssetEntityForAsset(asset);
       if (entity == null) {
         callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
@@ -383,12 +389,7 @@ class ForegroundUploadService {
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {
-        callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
-        try {
-          await _assetService.stackEditedUpload(asset.localId!, result.remoteAssetId!, asset.checksum);
-        } catch (error) {
-          _logger.warning("Failed to stack the upload of ${asset.localId}: $error");
-        }
+        await _handleUploadSuccess(asset, result.remoteAssetId!, callbacks);
       } else if (result.isCancelled) {
         shouldAbortUpload = true;
       } else if (result.errorMessage != null) {
@@ -415,6 +416,15 @@ class ForegroundUploadService {
           _logger.severe(() => "ERROR deleting file: $error", stackTrace);
         }
       }
+    }
+  }
+
+  Future<void> _handleUploadSuccess(LocalAsset asset, String remoteId, UploadCallbacks callbacks) async {
+    callbacks.onSuccess?.call(asset.localId!, remoteId);
+    try {
+      await _assetService.stackEditedUpload(asset.localId!, remoteId, asset.checksum);
+    } catch (error) {
+      _logger.warning("Failed to stack the upload of ${asset.localId}: $error");
     }
   }
 
