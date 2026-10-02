@@ -113,11 +113,7 @@ export class PersonController {
   @Endpoint({
     summary: 'Update person',
     description: 'Update an individual person.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updatePerson' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updatePerson(
     @Auth() auth: AuthDto,
