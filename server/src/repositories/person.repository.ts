@@ -29,7 +29,7 @@ import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.j
 
 type PersonGroupRow = {
   ownedPerson: ShallowDehydrateObject<Selectable<PersonTable>>;
-  otherPeople: { sharedById: string; role: PersonUserRole; name: string; birthDate: string | null }[];
+  otherPeople: { sharedById: string; role: PersonUserRole; name: string | null; birthDate: string | null }[];
   sharedBy: PersonUser[];
   sharedWith: PersonUser[];
 };
@@ -52,7 +52,7 @@ export interface PersonNameSearchOptions {
 
 export interface PersonNameResponse {
   personGroupId: string;
-  name: string;
+  name: string | null;
 }
 
 export interface AssetFaceId {
@@ -134,7 +134,7 @@ const withOtherPeopleFor = (userId: string, personGroupId: Expression<string>) =
       )
       .select(['person_user.sharedById', 'person_user.role', 'other.name', 'other.birthDate'])
       .where('other.personGroupId', '=', personGroupId)
-      .where((eb) => eb.or([eb('other.birthDate', 'is not', null), eb('other.name', '!=', '')])),
+      .where((eb) => eb.or([eb('other.birthDate', 'is not', null), eb('other.name', 'is not', null)])),
   ).as('otherPeople');
 
 const withPersonUsersFor = (userId: string, personGroupId: Expression<string>, direction: SharingDirection) => {
@@ -395,7 +395,7 @@ export class PersonRepository {
       .select(sql<number>`date_part('day', person."birthDate")::int`.as('birthDay'))
       .where('person.ownerId', '=', ownerId)
       .where('person.isHidden', '=', false)
-      .where('person.name', '!=', '')
+      .where('person.name', 'is not', null)
       .where('person.birthDate', 'is not', null)
       .where((eb) => {
         const bornOn = (month: number, day: number) =>
@@ -459,7 +459,7 @@ export class PersonRepository {
               .whereRef('person_user.personGroupId', '=', 'person_group.id')
               .where('person_user.sharedWithId', '=', userId),
           ),
-          eb.and([eb(faceCount, '>', 0), eb('owned.name', '!=', '')]),
+          eb.and([eb(faceCount, '>', 0), eb('owned.name', 'is not', null)]),
           eb(
             faceCount,
             '>=',
@@ -693,7 +693,7 @@ export class PersonRepository {
       .selectFrom('person')
       .select(['person.personGroupId', 'person.name'])
       .distinctOn((eb) => eb.fn('lower', ['person.name']))
-      .where((eb) => eb.and([eb('person.ownerId', '=', userId), eb('person.name', '!=', '')]))
+      .where((eb) => eb.and([eb('person.ownerId', '=', userId), eb('person.name', 'is not', null)]))
       .$if(!withHidden, (qb) => qb.where('person.isHidden', '=', false))
       .execute();
   }

@@ -248,13 +248,13 @@ export type Person = {
   updatedAt: Date;
   updateId: string;
   isFavorite: boolean;
-  name: string;
+  name: string | null;
   birthDate: Date | null;
   color: string | null;
   faceAssetId: string | null;
   isHidden: boolean;
   thumbnailPath: string;
-  otherPeople: { sharedById: string; name: string; birthDate: string | null; role: PersonUserRole }[];
+  otherPeople: { sharedById: string; name: string | null; birthDate: string | null; role: PersonUserRole }[];
   sharedBy: PersonUser[];
   sharedWith: PersonUser[];
 };

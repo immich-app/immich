@@ -916,7 +916,7 @@ export class MetadataService extends BaseService {
     const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(
-      existingNames.map(({ personGroupId, name }) => [name.toLowerCase(), personGroupId]),
+      existingNames.map(({ personGroupId, name }) => [name?.toLowerCase(), personGroupId]),
     );
     const missing: { name: string; ownerId: string; personGroupId: string; clusterGroupId: string }[] = [];
     const missingWithFaceAsset: { personGroupId: string; ownerId: string; faceAssetId: string }[] = [];

@@ -59,8 +59,8 @@ export class PersonTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @Column({ default: '' })
-  name!: Generated<string>;
+  @Column({ type:'character varying', nullable:true })
+  name!: string | null;
 
   @Column({ default: '' })
   thumbnailPath!: Generated<string>;

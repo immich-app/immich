@@ -2018,7 +2018,7 @@ export type PersonCreateDto = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
 };
 export type PeopleUpdateItem = {
     /** Person date of birth */
@@ -2034,7 +2034,7 @@ export type PeopleUpdateItem = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
     /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
@@ -2091,7 +2091,7 @@ export type PersonUpdateDto = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
     /** Restrict the update to the person record of this User ID */
     userId?: string;
 };

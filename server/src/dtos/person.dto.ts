@@ -15,7 +15,22 @@ import { hexColor, stringToBool, uniqueIds } from 'src/validation.js';
 
 const PersonCreateSchema = z
   .object({
-    name: z.string().optional().describe('Person name'),
+    // TODO(v4): drop the empty-string-to-null transform (clients should send null)
+    name: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('Person name')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     birthDate: z
       .string()
       .meta({ format: 'date' })
@@ -85,6 +100,7 @@ const PersonUserRoleSchema = z
 const PersonOtherResponseSchema = z
   .object({
     sharedById: z.uuid(),
+    // TODO(v4): return null for unnamed people
     name: z.string(),
     birthDate: z.string().nullable(),
     role: PersonUserRoleSchema,
@@ -98,6 +114,7 @@ const PeopleUserResponseSchema = UserResponseSchema.extend({
 export const PersonResponseSchema = z
   .object({
     id: z.uuidv4().describe('Person ID'),
+    // TODO(v4): return null for unnamed people
     name: z.string().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
@@ -277,7 +294,8 @@ export function mapPerson(
 ): PersonResponseDto {
   return {
     id: person.personGroupId,
-    name: person.name,
+    // TODO(v4): return null for unnamed people
+    name: person.name ?? '',
     birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
@@ -285,7 +303,7 @@ export function mapPerson(
     color: person.color ?? undefined,
     updatedAt: asDateTimeString(person.updatedAt),
     // TODO: use different response dtos for asset faces, which do not load the sharing properties
-    otherPeople: person.otherPeople ?? [],
+    otherPeople: (person.otherPeople ?? []).map((other) => ({ ...other, name: other.name ?? '' })),
     sharedBy: (person.sharedBy ?? []).map((user) => mapPeopleUser(user)),
     sharedWith: (person.sharedWith ?? []).map((user) => mapPeopleUser(user)),
   };

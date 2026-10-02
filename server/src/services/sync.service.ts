@@ -888,7 +888,8 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.PersonV1;
     const upserts = this.syncRepository.person.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      await send(response, { type: upsertType, ids: [updateId], data });
+      // TODO: return null instead of '' in v4
+      await send(response, { type: upsertType, ids: [updateId], data: { ...data, name: data.name ?? '' } });
     }
   }
 
