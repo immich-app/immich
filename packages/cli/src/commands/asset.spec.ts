@@ -181,6 +181,62 @@ describe('checkForDuplicates', () => {
         },
       ],
       newFiles: [],
+      rejects: [],
+    });
+  });
+
+  it('does not treat an unsupported format rejection as a duplicate', async () => {
+    vi.mocked(checkBulkUpload).mockResolvedValue({
+      results: [
+        {
+          action: AssetUploadAction.Reject,
+          id: testFilePath,
+          reason: AssetRejectReason.UnsupportedFormat,
+        },
+      ],
+    });
+
+    await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      duplicates: [],
+      newFiles: [],
+      rejects: [{ filepath: testFilePath, reason: AssetRejectReason.UnsupportedFormat }],
+    });
+  });
+
+  it('does not treat a duplicate rejection without an asset id as a duplicate', async () => {
+    vi.mocked(checkBulkUpload).mockResolvedValue({
+      results: [
+        {
+          action: AssetUploadAction.Reject,
+          id: testFilePath,
+          reason: AssetRejectReason.Duplicate,
+        },
+      ],
+    });
+
+    await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      duplicates: [],
+      newFiles: [],
+      rejects: [{ filepath: testFilePath, reason: AssetRejectReason.Duplicate }],
+    });
+  });
+
+  it('does not treat an unrecognised rejection reason as a duplicate', async () => {
+    vi.mocked(checkBulkUpload).mockResolvedValue({
+      results: [
+        {
+          action: AssetUploadAction.Reject,
+          id: testFilePath,
+          assetId: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+          reason: 'some-future-reason' as AssetRejectReason,
+        },
+      ],
+    });
+
+    await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      duplicates: [],
+      newFiles: [],
+      rejects: [{ filepath: testFilePath, reason: 'some-future-reason' }],
     });
   });
 
@@ -197,6 +253,7 @@ describe('checkForDuplicates', () => {
     await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
       duplicates: [],
       newFiles: [testFilePath],
+      rejects: [],
     });
   });
 
@@ -217,6 +274,7 @@ describe('checkForDuplicates', () => {
     await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
       duplicates: [],
       newFiles: [testFilePath],
+      rejects: [],
     });
   });
 
@@ -226,6 +284,7 @@ describe('checkForDuplicates', () => {
     await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
       duplicates: [],
       newFiles: [],
+      rejects: [],
     });
   });
 });
@@ -417,6 +476,33 @@ describe('deleteFiles', () => {
 
     expect(fs.existsSync(testFilePath)).toBe(false);
     expect(fs.existsSync(sidecarPath)).toBe(false);
+  });
+
+  it('should delete a confirmed duplicate but keep a file rejected as an unsupported format', async () => {
+    const duplicatePath = path.join(testDir, 'duplicate.jpg');
+    fs.writeFileSync(duplicatePath, 'duplicate');
+
+    vi.mocked(checkBulkUpload).mockResolvedValue({
+      results: [
+        {
+          action: AssetUploadAction.Reject,
+          id: duplicatePath,
+          assetId: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+          reason: AssetRejectReason.Duplicate,
+        },
+        {
+          action: AssetUploadAction.Reject,
+          id: testFilePath,
+          reason: AssetRejectReason.UnsupportedFormat,
+        },
+      ],
+    });
+
+    const { duplicates } = await checkForDuplicates([duplicatePath, testFilePath], { concurrency: 1 });
+    await deleteFiles([], duplicates, { deleteDuplicates: true, concurrency: 1 });
+
+    expect(fs.existsSync(duplicatePath)).toBe(false);
+    expect(fs.existsSync(testFilePath)).toBe(true);
   });
 
   it('should not delete sidecar file when delete option is false', async () => {
