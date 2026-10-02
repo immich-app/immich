@@ -739,7 +739,6 @@
   "client_cert_subtitle": "仅支持 PKCS12 格式 (.p12, .pfx)。登录后将无法导入或移除证书",
   "client_cert_title": "SSL客户端证书 [实验性功能]",
   "close": "关闭",
-  "cluster_group": "集群组",
   "cluster_group_description": "系统会在群组内所有人的照片中进行人脸匹配与识别",
   "cluster_group_facial_recognition": "重置人脸识别",
   "cluster_group_facial_recognition_prompt": "重置人脸识别将删除该群组中所有用户的所有人物数据。已设置的姓名和出生日期将会丢失。确定要继续吗？",
