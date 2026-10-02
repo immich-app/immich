@@ -150,6 +150,15 @@ void main() {
       verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'sha')).called(1);
     });
 
+    test('does not stack an upload onto itself', () async {
+      when(() => mocks.localAsset.repo.getPreviousRemoteId('local')).thenAnswer((_) async => 'remote');
+
+      await sut.stackEditedUpload('local', 'remote', 'sha');
+
+      verifyNever(() => apiRepository.stack(any()));
+      verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'sha')).called(1);
+    });
+
     test('records the uploaded checksum even when the stack call fails', () async {
       when(() => mocks.localAsset.repo.getPreviousRemoteId('local')).thenAnswer((_) async => 'previous');
       when(() => apiRepository.stack(any())).thenThrow(Exception('offline'));

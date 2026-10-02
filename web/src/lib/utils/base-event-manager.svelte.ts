@@ -59,8 +59,7 @@ export class BaseEventManager<Events extends EventsBase> {
   }
 
   private getListeners<T extends keyof Events>(event: T) {
-    return this.#callbacks
-      .filter((item) => item.event === event);
-      // .map((item) => item.callback as EventCallback<Events, T>);
+    return this.#callbacks.filter((item) => item.event === event);
+    // .map((item) => item.callback as EventCallback<Events, T>);
   }
 }

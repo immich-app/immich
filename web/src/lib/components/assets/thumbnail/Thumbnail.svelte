@@ -229,9 +229,9 @@
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
-  data-selected={selected ? true : undefined}
-  data-readonly={readonly ? true : undefined}
-  data-disabled={disabled ? true : undefined}
+  data-selected={selected || undefined}
+  data-readonly={readonly || undefined}
+  data-disabled={disabled || undefined}
   tabindex={0}
   role="link"
 >
@@ -395,7 +395,7 @@
       <button
         type="button"
         onclick={onIconClickedHandler}
-        class={['absolute z-2 p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
+        class={['group/select absolute z-2 p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
         role="checkbox"
         tabindex={-1}
         aria-checked={selected}
@@ -408,7 +408,7 @@
             <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 group-hover/select:text-white" />
         {/if}
       </button>
     {/if}

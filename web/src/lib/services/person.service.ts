@@ -1,24 +1,34 @@
-import { updatePerson, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+import {
+  getPerson,
+  PersonUpdateStrategy,
+  updatePerson,
+  type AssetResponseDto,
+  type PersonResponseDto,
+  type PersonUpdateDto,
+} from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
-  mdiCalendarEditOutline,
+  mdiAccountMultipleOutline,
   mdiEyeOffOutline,
   mdiEyeOutline,
   mdiFaceManProfile,
   mdiHeartMinusOutline,
   mdiHeartOutline,
+  mdiPencilOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
+import PersonEditAccessModal from '$lib/modals/PersonEditAccessModal.svelte';
+import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
 export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
-  const SetDateOfBirth: ActionItem = {
-    title: $t('set_date_of_birth'),
-    icon: mdiCalendarEditOutline,
-    onAction: () => modalManager.show(PersonEditBirthDateModal, { person }),
+  const Edit: ActionItem = {
+    title: $t('edit_person'),
+    icon: mdiPencilOutline,
+    onAction: () => modalManager.show(PersonEditModal, { person }),
   };
 
   const Favorite: ActionItem = {
@@ -49,7 +59,13 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     onAction: () => handleShowPerson(person),
   };
 
-  return { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson };
+  const Access: ActionItem = {
+    title: 'Manage access',
+    icon: mdiAccountMultipleOutline,
+    onAction: () => modalManager.show(PersonEditAccessModal, { person }),
+  };
+
+  return { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access };
 };
 
 export const getPersonAssetActions = ($t: MessageFormatter, person: PersonResponseDto, asset: AssetResponseDto) => {
@@ -98,6 +114,19 @@ const handleHidePerson = async (person: { id: string }) => {
   }
 };
 
+export const handleUpdatePerson = async ({ id, ...personUpdateDto }: { id: string } & PersonUpdateDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updatePerson({ id, personUpdateDto });
+    const isOtherUser = !!personUpdateDto.userId && personUpdateDto.userId !== authManager.user.id;
+    eventManager.emit('PersonUpdate', isOtherUser ? await getPerson({ id }) : response);
+    return response;
+  } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
+  }
+};
+
 const handleShowPerson = async (person: { id: string }) => {
   const $t = await getFormatter();
 
@@ -110,17 +139,22 @@ const handleShowPerson = async (person: { id: string }) => {
   }
 };
 
-export const handleUpdatePersonBirthDate = async (person: PersonResponseDto, birthDate: string | null) => {
-  const $t = await getFormatter();
+export const withUpdateStrategy = (dto: PersonUpdateDto): PersonUpdateDto =>
+  authManager.preferences.people?.updateStrategy === PersonUpdateStrategy.Self
+    ? { ...dto, userId: authManager.user.id }
+    : dto;
 
-  try {
-    const response = await updatePerson({ id: person.id, personUpdateDto: { birthDate } });
-    toastManager.primary($t('date_of_birth_saved'));
-    eventManager.emit('PersonUpdate', response);
-    return true;
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_save_date_of_birth'));
+export const handleUpdatePersonName = async (
+  { id, name }: { id: string; name: string },
+  options?: { notify: boolean },
+) => {
+  const response = await handleUpdatePerson({ id, ...withUpdateStrategy({ name }) });
+  if (response && options?.notify) {
+    const $t = await getFormatter();
+    toastManager.primary($t('change_name_successfully'));
   }
+
+  return response;
 };
 
 const handleSetFeaturedPhoto = async (person: PersonResponseDto, featureFaceAssetId: string) => {

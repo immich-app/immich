@@ -114,45 +114,48 @@ export class TimelineManager extends VirtualScrollManager {
     console.log('timeline manager constructor');
 
     this.#unsubscribes.push(
-      eventManager.on({
-        AssetUpdate: (asset: AssetResponseDto) => {
-          const timelineAsset = toTimelineAsset(asset);
-          console.log('[timeline] AssetUpdate');
-          if (this.#options.albumId || this.#options.personId) {
-            this.#updateAssets([timelineAsset]);
-          } else {
-            this.upsertAssets([timelineAsset]);
-          }
-        },
-        AssetsUnarchive: (assets) => this.upsertAssets(assets),
-        StackCreate: (stack) => {
-          if (this.#options.withStacked) {
+      eventManager.on(
+        {
+          AssetUpdate: (asset: AssetResponseDto) => {
+            const timelineAsset = toTimelineAsset(asset);
+            console.log('[timeline] AssetUpdate');
+            if (this.#options.albumId || this.#options.personId) {
+              this.#updateAssets([timelineAsset]);
+            } else {
+              this.upsertAssets([timelineAsset]);
+            }
+          },
+          AssetsUnarchive: (assets) => this.upsertAssets(assets),
+          StackCreate: (stack) => {
+            if (this.#options.withStacked) {
+              updateStackedAssetInTimeline(this, stack);
+            }
+          },
+          StackDelete: ({ assets }) => {
+            if (!this.#options.withStacked) {
+              return;
+            }
+            this.update(
+              assets.map((asset) => asset.id),
+              (asset) => (asset.stack = null),
+            );
+            this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
+          },
+          StackUpdate: (stack) => {
+            if (!this.#options.withStacked) {
+              return;
+            }
+            // unstack and re-stack
+            this.update(
+              stack.assets.map((asset) => asset.id),
+              (asset) => (asset.stack = null),
+            );
+            this.upsertAssets(stack.assets.map((asset) => toTimelineAsset(asset)));
             updateStackedAssetInTimeline(this, stack);
-          }
+          },
         },
-        StackDelete: ({ assets }) => {
-          if (!this.#options.withStacked) {
-            return;
-          }
-          this.update(
-            assets.map((asset) => asset.id),
-            (asset) => (asset.stack = null),
-          );
-          this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
-        },
-        StackUpdate: (stack) => {
-          if (!this.#options.withStacked) {
-            return;
-          }
-          // unstack and re-stack
-          this.update(
-            stack.assets.map((asset) => asset.id),
-            (asset) => (asset.stack = null),
-          );
-          this.upsertAssets(stack.assets.map((asset) => toTimelineAsset(asset)));
-          updateStackedAssetInTimeline(this, stack);
-        },
-      }, 'timelineManager'),
+        'timelineManager',
+      ),
     );
   }
 

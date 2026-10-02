@@ -15,11 +15,11 @@
 
   let { person, onMergePeople }: Props = $props();
 
-  const { SetDateOfBirth, HidePerson, Favorite, Unfavorite } = $derived(getPersonActions($t, person));
+  const { Edit, HidePerson, Favorite, Unfavorite, Access } = $derived(getPersonActions($t, person));
 
   const items = $derived([
+    Edit,
     HidePerson,
-    SetDateOfBirth,
     {
       icon: mdiAccountMultipleCheckOutline,
       title: $t('merge_people'),
@@ -27,6 +27,7 @@
     },
     Favorite,
     Unfavorite,
+    Access,
   ]);
 </script>
 

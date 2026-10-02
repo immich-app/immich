@@ -172,12 +172,10 @@ export class MediaService extends BaseService {
       const extractedImage = await this.extractOriginalImage(asset, config.image);
       const { info, data, colorspace } = extractedImage;
 
-      thumbhash = await this.mediaRepository.generateThumbhash(data, {
-        colorspace,
-        processInvalidImages: false,
-        raw: info,
-        edits: [],
-      });
+      thumbhash = await this.mediaRepository.generateThumbhash(
+        { data, info },
+        { colorspace, processInvalidImages: false, edits: [] },
+      );
     }
 
     if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
@@ -318,13 +316,14 @@ export class MediaService extends BaseService {
     this.storageCore.ensureFolders(previewFile.path);
 
     // generate final images
-    const baseOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const decoded = { data, info };
+    const baseOptions = { colorspace, processInvalidImages: false, edits: useEdits ? asset.edits : [] };
     const thumbnailOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat };
     const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat };
     const promises = [
-      this.mediaRepository.generateThumbhash(data, baseOptions),
-      this.mediaRepository.generateThumbnail(data, thumbnailOptions, thumbnailFile.path),
-      this.mediaRepository.generateThumbnail(data, previewOptions, previewFile.path),
+      this.mediaRepository.generateThumbhash(decoded, baseOptions),
+      this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(decoded, previewOptions, previewFile.path),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
@@ -345,7 +344,7 @@ export class MediaService extends BaseService {
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
       };
-      promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizeFile.path));
+      promises.push(this.mediaRepository.generateThumbnail(decoded, fullsizeOptions, fullsizeFile.path));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
@@ -416,7 +415,7 @@ export class MediaService extends BaseService {
       inputImage = originalPath;
     }
 
-    const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
+    const decoded = await this.mediaRepository.decodeImage(inputImage, {
       colorspace: image.colorspace,
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
       // if this is an extracted image, it may not have orientation metadata
@@ -429,7 +428,6 @@ export class MediaService extends BaseService {
     const thumbnailOptions: GenerateThumbnailOptions = {
       colorspace: image.colorspace,
       format: ImageFormat.Jpeg,
-      raw: info,
       quality: image.thumbnail.quality,
       progressive: false,
       processInvalidImages: false,
@@ -438,14 +436,17 @@ export class MediaService extends BaseService {
         {
           action: AssetEditAction.Crop,
           parameters: this.getCrop(
-            { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
+            {
+              old: { width: oldWidth, height: oldHeight },
+              new: { width: decoded.info.width, height: decoded.info.height },
+            },
             { x1, y1, x2, y2 },
           ),
         },
       ],
     };
 
-    await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
+    await this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailPath);
     await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
 
     return JobStatus.Success;
@@ -519,9 +520,14 @@ export class MediaService extends BaseService {
     await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
 
-    const thumbhash = await this.mediaRepository.generateThumbhash(previewFile.path, {
+    const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
+    const preview = await this.mediaRepository.decodeImage(previewFile.path, {
       colorspace: image.colorspace,
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      processInvalidImages,
+    });
+    const thumbhash = await this.mediaRepository.generateThumbhash(preview, {
+      colorspace: image.colorspace,
+      processInvalidImages,
     });
 
     return {
