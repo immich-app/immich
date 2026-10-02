@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -11,8 +12,6 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/tag.action.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -49,7 +48,7 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
         ),
       );
 
-    unawaited(context.navigateTo(const DriftSearchRoute()));
+    unawaited(context.navigateTo(const SearchRoute()));
   }
 
   bool _onTagsMetrics(ScrollMetricsNotification notification) {
@@ -63,13 +62,13 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
   @override
   Widget build(BuildContext context) {
     final asset = widget.asset;
-    final isTagsEnabled = ref.watch(userMetadataPreferencesProvider).valueOrNull?.tagsEnabled ?? false;
+    final isTagsEnabled = ref.watch(Store.userMetadata.preferences()).valueOrNull?.tagsEnabled ?? false;
     final user = ref.watch(currentUserProvider);
     if (asset is! RemoteAsset || !isTagsEnabled || asset.ownerId != user?.id) {
       return const SizedBox.shrink();
     }
 
-    final tags = ref.watch(assetTagsProvider(asset.id)).valueOrNull ?? const <Tag>[];
+    final tags = ref.watch(Store.tags.forAsset(asset.id)).valueOrNull ?? const <Tag>[];
     final tagAction = const TagAction(source: .viewer).create(context, ref);
     final tagBackground = context.primaryColor.withAlpha(25);
     final tagBorder = context.colorScheme.outlineVariant;

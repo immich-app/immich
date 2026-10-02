@@ -1,5 +1,5 @@
 import { Kysely, sql } from 'kysely';
-import { UserMetadataKey } from 'src/enum';
+import { UserMetadataKey } from 'src/enum.js';
 
 export async function up(db: Kysely<any>): Promise<void> {
   await sql`INSERT INTO user_metadata SELECT id, ${UserMetadataKey.Onboarding}, '{"isOnboarded": true}' FROM users

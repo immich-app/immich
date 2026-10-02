@@ -87,11 +87,6 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     _persistExcludedAlbumIds(newKeepAlbumIds);
   }
 
-  void setExcludedAlbumIds(Set<String> albumIds) {
-    state = state.copyWith(keepAlbumIds: albumIds, assetsToDelete: []);
-    _persistExcludedAlbumIds(albumIds);
-  }
-
   void _persistExcludedAlbumIds(Set<String> albumIds) {
     unawaited(_settingsRepository.write(.cleanupKeepAlbumIds, albumIds.toList()));
   }

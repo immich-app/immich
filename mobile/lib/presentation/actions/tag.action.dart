@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/services/tag.service.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/tag_picker.dart';
 
 final _stateProvider = Provider.family.autoDispose<List<String>?, ActionSource>((ref, source) {
   final tagsEnabled = ref.watch(
-    userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
+    Store.userMetadata.preferences().select((value) => value.valueOrNull?.tagsEnabled ?? false),
   );
   if (!tagsEnabled) {
     return null;
@@ -65,21 +63,20 @@ Future<void> tagAssets(
   required Set<String> selected,
   required Set<String> created,
 }) async {
-  final tagService = ref.read(tagServiceProvider);
   final toastService = ref.read(toastServiceProvider);
   final tagIds = {...selected};
 
   if (created.isNotEmpty) {
-    final tags = await tagService.upsertTags(created.toList());
+    final tags = await ref.read(Store.tags).upsert(created.toList());
     tagIds.addAll(tags.map((tag) => tag.id));
   }
-  if (tagIds.isEmpty) {
+
+  if (tagIds.isEmpty || !context.mounted) {
     return;
   }
 
-  final count = await tagService.bulkTagAssets(assetIds, tagIds.toList());
-  ref.invalidate(tagProvider);
-  ref.invalidate(assetTagsProvider);
+  final count = await ref.read(Store.tags).applyToAssets(assetIds, tagIds.toList());
+  ref.invalidate(Store.tags.forAsset);
   if (context.mounted) {
     toastService.success(context.t.tagged_assets(count: count));
   }
@@ -102,8 +99,8 @@ class UnTagAction extends AssetActionBuilder {
 
   Future<void> _untag(BuildContext context, WidgetRef ref, List<String> assetIds, String tagId) async {
     try {
-      final count = await ref.read(tagServiceProvider).untagAssets(tagId, assetIds);
-      ref.invalidate(assetTagsProvider);
+      final count = await ref.read(Store.tags).removeFromAssets(tagId, assetIds);
+      ref.invalidate(Store.tags.forAsset);
       if (context.mounted) {
         ref.read(toastServiceProvider).success(context.t.removed_tagged_assets(count: count));
       }

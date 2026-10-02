@@ -1,6 +1,6 @@
-import { mapAlbum } from 'src/dtos/album.dto';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { getForAlbum } from 'test/mappers';
+import { mapAlbum } from 'src/dtos/album.dto.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { getForAlbum } from 'test/mappers.js';
 
 describe('mapAlbum', () => {
   it('should set start and end dates', () => {

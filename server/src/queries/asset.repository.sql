@@ -445,7 +445,8 @@ with
       )
     order by
       (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
-      "asset"."fileCreatedAt" desc
+      "asset"."fileCreatedAt" desc,
+      "asset"."originalFileName" desc
   ),
   "agg" as (
     select
@@ -531,7 +532,7 @@ where
   and "libraryId" = $5::uuid
   and (
     not "originalPath" like $6
-    or "originalPath" ~ $7
+    or "originalPath" ~* $7
   )
 
 -- AssetRepository.filterNewExternalAssetPaths

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type StackResponseDto } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
-import { randomPreview, randomThumbnail } from 'src/ui/generators/timeline';
+import { randomPreview, randomThumbnail } from 'src/ui/generators/timeline.js';
 
 export type MockStack = {
   id: string;

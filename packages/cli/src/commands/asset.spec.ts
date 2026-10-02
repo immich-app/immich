@@ -385,8 +385,7 @@ describe('findSidecar', () => {
     fs.writeFileSync(sidecarPath2, 'xmp data 2');
 
     const result = findSidecar(testFilePath);
-    // Should return the first one found (photo.xmp) based on the order in the code
-    expect(result).toBe(sidecarPath1);
+    expect(result).toBe(sidecarPath2);
   });
 
   it('should return undefined when no sidecar file exists', () => {

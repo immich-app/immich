@@ -1,49 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
+import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
-import _ from 'lodash';
+import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
-import sharp from 'sharp';
-import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
-import { Exif } from 'src/database';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import {
-  AacProfile,
-  Av1Profile,
-  ColorMatrix,
-  ColorPrimaries,
-  Colorspace,
-  ColorTransfer,
-  DvProfile,
-  DvSignalCompatibility,
-  H264Profile,
-  HevcProfile,
-  LogLevel,
-  RawExtractedFormat,
-} from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import {
+import sharp, { Sharp } from 'sharp';
+import type {
+  Bitmap,
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
   ProbeOptions,
   TranscodeCommand,
+  TransformOptions,
   VideoInfo,
   VideoPacketInfo,
-} from 'src/types';
-import { handlePromiseError } from 'src/utils/misc';
-import { createAffineMatrix } from 'src/utils/transform';
+} from 'src/types.js';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
+import { Exif } from 'src/database.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import {
+  AacProfile,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  Colorspace,
+  DvProfile,
+  DvSignalCompatibility,
+  H264Profile,
+  HevcProfile,
+  LogLevel,
+  RawExtractedFormat,
+} from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { handlePromiseError } from 'src/utils/misc.js';
+import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
+    // eslint-disable-next-line import-x/no-named-as-default-member
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
-const pascalCase = (str: string) => _.upperFirst(_.camelCase(str.toLowerCase()));
+const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
 
 type ProgressEvent = {
   frames: number;
@@ -63,7 +66,9 @@ export type ExtractResult = {
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
+    // eslint-disable-next-line import-x/no-named-as-default-member
     sharp.concurrency(0);
+    // eslint-disable-next-line import-x/no-named-as-default-member
     sharp.cache({ files: 0 });
   }
 
@@ -145,11 +150,12 @@ export class MediaRepository {
     }
   }
 
-  decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
-    return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions): Promise<Bitmap> {
+    const decoded = await this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+    return await this.transform(decoded, options);
   }
 
-  private applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): sharp.Sharp {
+  private edit(pipeline: Sharp, edits: AssetEditActionItem[]): Sharp {
     const crop = edits.find((edit) => edit.action === 'crop');
     if (crop) {
       pipeline = pipeline.extract({
@@ -172,8 +178,9 @@ export class MediaRepository {
     return pipeline;
   }
 
-  async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    await this.getImageDecodingPipeline(input, options)
+  async generateThumbnail(image: Bitmap, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    const transformed = await this.transform(image, options);
+    await this.tag(transformed, options.colorspace)
       .toFormat(options.format, {
         quality: options.quality,
         // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
@@ -184,51 +191,62 @@ export class MediaRepository {
   }
 
   private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
-    let pipeline = sharp(input, {
-      // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
-      failOn: options.processInvalidImages ? 'none' : 'error',
-      limitInputChannels: false,
-      limitInputPixels: false,
-      raw: options.raw,
-      unlimited: true,
-    })
-      .pipelineColorspace(options.colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16')
+    // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
+    let pipeline = this.encoded(input, options.processInvalidImages ? 'none' : 'error')
+      .pipelineColorspace(this.getPipelineColorspace(options.colorspace))
       .withIccProfile(options.colorspace);
 
-    if (!options.raw) {
-      const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
-      pipeline = pipeline.rotate(angle);
-      if (flip) {
-        pipeline = pipeline.flip();
-      }
-
-      if (flop) {
-        pipeline = pipeline.flop();
-      }
+    const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
+    pipeline = pipeline.rotate(angle);
+    if (flip) {
+      pipeline = pipeline.flip();
     }
 
-    if (options.edits && options.edits.length > 0) {
-      pipeline = this.applyEdits(pipeline, options.edits);
+    if (flop) {
+      pipeline = pipeline.flop();
     }
 
-    if (options.size !== undefined) {
-      pipeline = pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
-    }
     return pipeline;
   }
 
-  async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
+  private getPipelineColorspace(colorspace: string) {
+    return colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16';
+  }
+
+  /* Resamples in linear light; averaging gamma-encoded values darkens the result and loses detail. `colorspace`
+   * always has a sRGB transfer function and scRGB applies no primaries matrix, so linearising as sRGB is exact. */
+  private transform(image: Bitmap, { size, fit = 'outside', edits = [] }: TransformOptions): Promise<Bitmap> {
+    if (!size && edits.length === 0) {
+      return Promise.resolve(image);
+    }
+
+    return this.edit(this.raw(image).pipelineColorspace('scrgb'), edits)
+      .resize(size, size, { fit, withoutEnlargement: true })
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+  }
+
+  private raw({ data, info: raw }: Bitmap) {
+    return sharp(data, { raw, limitInputChannels: false, limitInputPixels: false, unlimited: true });
+  }
+
+  private encoded(image: string | Buffer, failOn: 'none' | 'error') {
+    return sharp(image, { failOn, limitInputChannels: false, limitInputPixels: false, unlimited: true });
+  }
+
+  /** Re-attaches the profile, converting nothing: the pixels are already in that colourspace. */
+  private tag(image: Bitmap, colorspace: string): Sharp {
+    return this.raw(image).pipelineColorspace(this.getPipelineColorspace(colorspace)).withIccProfile(colorspace);
+  }
+
+  async generateThumbhash(image: Bitmap, options: GenerateThumbhashOptions): Promise<Buffer> {
     const { rgbaToThumbHash } = await import('thumbhash');
 
-    const { data, info } = await this.getImageDecodingPipeline(input, {
-      colorspace: options.colorspace,
-      processInvalidImages: options.processInvalidImages,
-      raw: options.raw,
-      edits: options.edits,
-    })
-      .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
-      .raw()
+    const transformed = await this.transform(image, { edits: options.edits, fit: 'inside', size: 100 });
+
+    const { data, info } = await sharp(transformed.data, { raw: transformed.info })
       .ensureAlpha()
+      .raw()
       .toBuffer({ resolveWithObject: true });
 
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
@@ -326,14 +344,17 @@ export class MediaRepository {
       if (flags[1] !== 'D') {
         postDiscard.push({ pts, duration });
       }
-      if (flags[0] === 'K') {
-        keyframePts.push(pts);
-        keyframeAccDuration.push(totalDuration);
-        // VFR content can have variable duration keyframes,
-        // so we need to track their duration separately for accurate segment boundaries.
-        // Non-keyframes are accounted for in totalDuration.
-        keyframeOwnDuration.push(duration);
+
+      if (flags[0] !== 'K') {
+        return;
       }
+
+      keyframePts.push(pts);
+      keyframeAccDuration.push(totalDuration);
+      // VFR content can have variable duration keyframes,
+      // so we need to track their duration separately for accurate segment boundaries.
+      // Non-keyframes are accounted for in totalDuration.
+      keyframeOwnDuration.push(duration);
     };
 
     let stderr = '';
@@ -462,7 +483,9 @@ export class MediaRepository {
   }
 
   private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
-    return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
+    return value && typeof value === 'string'
+      ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null)
+      : null;
   }
 
   /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */

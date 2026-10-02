@@ -14,11 +14,11 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
-import 'package:immich_mobile/pages/backup/drift_backup.page.dart';
-import 'package:immich_mobile/pages/backup/drift_backup_album_selection.page.dart';
-import 'package:immich_mobile/pages/backup/drift_backup_asset_detail.page.dart';
-import 'package:immich_mobile/pages/backup/drift_backup_options.page.dart';
-import 'package:immich_mobile/pages/backup/drift_upload_detail.page.dart';
+import 'package:immich_mobile/pages/backup/backup.page.dart';
+import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
+import 'package:immich_mobile/pages/backup/backup_asset_detail.page.dart';
+import 'package:immich_mobile/pages/backup/backup_options.page.dart';
+import 'package:immich_mobile/pages/backup/upload_detail.page.dart';
 import 'package:immich_mobile/pages/common/app_log.page.dart';
 import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
 import 'package:immich_mobile/pages/common/headers_settings.page.dart';
@@ -35,41 +35,41 @@ import 'package:immich_mobile/pages/login/login.page.dart';
 import 'package:immich_mobile/pages/search/map/map_location_picker.page.dart';
 import 'package:immich_mobile/pages/settings/sync_status.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
+import 'package:immich_mobile/presentation/pages/activities.page.dart';
+import 'package:immich_mobile/presentation/pages/album.page.dart';
+import 'package:immich_mobile/presentation/pages/album_options.page.dart';
+import 'package:immich_mobile/presentation/pages/archive.page.dart';
+import 'package:immich_mobile/presentation/pages/asset_selection_timeline.page.dart';
+import 'package:immich_mobile/presentation/pages/asset_troubleshoot.page.dart';
 import 'package:immich_mobile/presentation/pages/cleanup_preview.page.dart';
+import 'package:immich_mobile/presentation/pages/create_album.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
 import 'package:immich_mobile/presentation/pages/download_info.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_activities.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_album_options.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_archive.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_asset_selection_timeline.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_asset_troubleshoot.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_create_album.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_favorite.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_library.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_local_album.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_locked_folder.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_map.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_memory_list.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_partner_detail.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_people_collection.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_person.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_place.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_place_detail.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_recently_added.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
-import 'package:immich_mobile/presentation/pages/edit/drift_edit.page.dart';
+import 'package:immich_mobile/presentation/pages/edit/edit.page.dart';
+import 'package:immich_mobile/presentation/pages/favorite.page.dart';
 import 'package:immich_mobile/presentation/pages/feature_message/whats_new.page.dart';
+import 'package:immich_mobile/presentation/pages/library.page.dart';
+import 'package:immich_mobile/presentation/pages/local_album.page.dart';
 import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
+import 'package:immich_mobile/presentation/pages/locked_folder.page.dart';
+import 'package:immich_mobile/presentation/pages/map.page.dart';
+import 'package:immich_mobile/presentation/pages/memory.page.dart';
+import 'package:immich_mobile/presentation/pages/memory_list.page.dart';
+import 'package:immich_mobile/presentation/pages/partner_detail.page.dart';
+import 'package:immich_mobile/presentation/pages/people_collection.page.dart';
+import 'package:immich_mobile/presentation/pages/person.page.dart';
+import 'package:immich_mobile/presentation/pages/place.page.dart';
+import 'package:immich_mobile/presentation/pages/place_detail.page.dart';
 import 'package:immich_mobile/presentation/pages/profile/profile_picture_crop.page.dart';
-import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
+import 'package:immich_mobile/presentation/pages/recently_added.page.dart';
+import 'package:immich_mobile/presentation/pages/recently_taken.page.dart';
+import 'package:immich_mobile/presentation/pages/remote_album.page.dart';
+import 'package:immich_mobile/presentation/pages/search/search.page.dart';
+import 'package:immich_mobile/presentation/pages/slideshow.page.dart';
+import 'package:immich_mobile/presentation/pages/trash.page.dart';
+import 'package:immich_mobile/presentation/pages/user_selection.page.dart';
+import 'package:immich_mobile/presentation/pages/video.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -123,9 +123,9 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
       children: [
         AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
-        AutoRoute(page: DriftSearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
-        AutoRoute(page: DriftLibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
-        AutoRoute(page: DriftAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
+        AutoRoute(page: SearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
+        AutoRoute(page: LibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
+        AutoRoute(page: AlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
       ],
     ),
     AutoRoute(page: ProfilePictureCropRoute.page),
@@ -143,8 +143,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: PinAuthRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: LocalMediaSummaryRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: RemoteMediaSummaryRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftBackupRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftBackupAlbumSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: BackupRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: BackupAlbumSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: LocalTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard]),
@@ -161,38 +161,38 @@ class AppRouter extends RootStackRouter {
         ),
       ),
     ),
-    AutoRoute(page: DriftMemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftFavoriteRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftTrashRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftArchiveRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftLockedFolderRoute.page, guards: [_authGuard, _lockedGuard, _duplicateGuard]),
-    AutoRoute(page: DriftVideoRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftLibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftAssetSelectionTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftPartnerDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftRecentlyTakenRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftRecentlyAddedRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftLocalAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftCreateAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftPlaceRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftPlaceDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftUserSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: MemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: FavoriteRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: TrashRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: ArchiveRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: LockedFolderRoute.page, guards: [_authGuard, _lockedGuard, _duplicateGuard]),
+    AutoRoute(page: VideoRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: LibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: AssetSelectionTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PartnerDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: RecentlyTakenRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: RecentlyAddedRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: LocalAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: CreateAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PlaceRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PlaceDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: UserSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: PartnerRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftUploadDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: UploadDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: SyncStatusRoute.page, guards: [_duplicateGuard]),
-    AutoRoute(page: DriftPeopleCollectionRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftPersonRoute.page, guards: [_authGuard]),
-    AutoRoute(page: DriftBackupOptionsRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftAlbumOptionsRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftMapRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftEditImageRoute.page),
-    AutoRoute(page: DriftActivitiesRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftBackupAssetDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PeopleCollectionRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PersonRoute.page, guards: [_authGuard]),
+    AutoRoute(page: BackupOptionsRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: AlbumOptionsRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: MapRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: EditImageRoute.page),
+    AutoRoute(page: ActivitiesRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: BackupAssetDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AssetTroubleshootRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DownloadInfoRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: CleanupPreviewRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftSlideshowRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftMemoryListRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: SlideshowRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: MemoryListRoute.page, guards: [_authGuard, _duplicateGuard]),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),

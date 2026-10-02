@@ -1,8 +1,8 @@
 import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
-import { controllers } from 'src/controllers';
-import { AuthenticatedOptions, getAuthenticatedOptions } from 'src/middleware/auth.guard';
+import { controllers } from 'src/controllers/index.js';
+import { AuthenticatedOptions, getAuthenticatedOptions } from 'src/middleware/auth.guard.js';
 
 const UNAUTHENTICATED_ADMIN_ROUTES = new Set([
   'GET admin/maintenance/status',

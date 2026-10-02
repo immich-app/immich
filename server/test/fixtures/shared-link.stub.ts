@@ -1,9 +1,9 @@
 import { DateTime } from 'luxon';
-import { MapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkType } from 'src/enum';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { userStub } from 'test/fixtures/user.stub';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { SharedLinkType } from 'src/enum.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { userStub } from 'test/fixtures/user.stub.js';
 
 const today = new Date();
 const tomorrow = DateTime.now().plus({ days: 1 }).toJSDate();
