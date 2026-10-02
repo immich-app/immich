@@ -63,7 +63,7 @@ export class AssetController {
       .added('v1')
       .beta('v1')
       .stable('v2')
-      .deprecated('v3', { replacementId: 'updateAssets' }),
+      .deprecated('v3', { replacementId: 'updateAssetsV3' }),
   })
   updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(auth, dto);
