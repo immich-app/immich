@@ -292,16 +292,15 @@
     if (!stack || !withStacked || assetViewerManager.isShowEditor) {
       return;
     }
-    const assets = stackedAssets;
-    const currentIndex = assets.findIndex(({ id }) => id === asset.id);
+    const currentIndex = stackedAssets.findIndex(({ id }) => id === asset.id);
     if (currentIndex === -1) {
       return;
     }
     const nextIndex = direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
-    if (nextIndex < 0 || nextIndex >= assets.length) {
+    if (nextIndex < 0 || nextIndex >= stackedAssets.length) {
       return;
     }
-    cursor.current = assets[nextIndex];
+    cursor.current = stackedAssets[nextIndex];
   };
 
   /**
