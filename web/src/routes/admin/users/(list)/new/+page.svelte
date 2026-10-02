@@ -1,12 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { serverManager } from '$lib/managers/server-manager.svelte';
   import { Route } from '$lib/route';
   import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
-  import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, HelperText, Input, PasswordInput, Stack, Switch } from '@immich/ui';
   import { t } from 'svelte-i18n';
+
+  $effect.pre(() => void serverManager.load());
 
   let success = $state(false);
 
@@ -23,7 +25,7 @@
 
   let quotaSizeInBytes = $derived(quotaSize === null ? null : convertToBytes(Number(quotaSize), ByteUnit.GiB));
   let quotaSizeWarning = $derived(
-    quotaSizeInBytes && userInteraction.serverInfo && quotaSizeInBytes > userInteraction.serverInfo.diskSizeRaw,
+    quotaSizeInBytes && serverManager.storage && quotaSizeInBytes > serverManager.storage.diskSizeRaw,
   );
 
   const passwordMismatch = $derived(password !== passwordConfirm && passwordConfirm.length > 0);

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ImmichProduct } from '$lib/constants';
-  import { getLicenseLink as getProductLink } from '$lib/utils/license-utils';
+  import { licenseManager } from '$lib/managers/license-manager.svelte';
   import { Button, Icon } from '@immich/ui';
   import { mdiAccount, mdiCheckCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -38,6 +38,8 @@
       </div>
     </div>
 
-    <Button shape="round" href={getProductLink(ImmichProduct.Client)} fullWidth>{$t('purchase_button_select')}</Button>
+    <Button shape="round" href={licenseManager.asHref(ImmichProduct.Client)} fullWidth
+      >{$t('purchase_button_select')}</Button
+    >
   </div>
 </div>
