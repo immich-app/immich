@@ -17,6 +17,8 @@ export class AssetMultiSelectManager {
 
   candidates = $state<TimelineAsset[]>([]);
 
+  hasMoreAssets = $state(false);
+
   selectionActive = $derived(this.#selectedMap.size > 0);
 
   assets = $derived(Array.from(this.#selectedMap.values()));
@@ -88,6 +90,10 @@ export class AssetMultiSelectManager {
     this.candidates = assets;
   }
 
+  setHasMoreAssets(hasMore: boolean) {
+    this.hasMoreAssets = hasMore;
+  }
+
   clearCandidates() {
     this.candidates = [];
   }
@@ -102,6 +108,7 @@ export class AssetMultiSelectManager {
     // Range selection
     this.candidates = [];
     this.startAsset = null;
+    this.hasMoreAssets = false;
   }
 }
 
