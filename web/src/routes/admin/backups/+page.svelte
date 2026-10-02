@@ -7,7 +7,7 @@
 
   const questions = [
     {
-      title: 'Is FUTO Backups the same as an Immich product key?',
+      title: 'Where can I store my backups?',
       answer: 'TODO',
     },
     {
@@ -19,15 +19,11 @@
       answer: 'TODO',
     },
     {
-      title: 'How is FUTO Backups priced?',
+      title: 'How is FUTO Cloud priced?',
       answer: 'TODO',
     },
     {
       title: 'What does FUTO Backups protect?',
-      answer: 'TODO',
-    },
-    {
-      title: 'Can I use local storage instead?',
       answer: 'TODO',
     },
   ];
@@ -40,8 +36,6 @@
 <YuccaContext>
   <AdminPageLayout>
     <ImmichBackupsPage
-      price="$1"
-      includedStorage="0gb"
       questions={[{ title: 'Already back up your library elsewhere?', answer: hideReminder }, ...questions]}
       onConfigure={() => goto(Route.backupSettings())}
       onViewAttempts={() => goto(Route.backupAttempts())}
