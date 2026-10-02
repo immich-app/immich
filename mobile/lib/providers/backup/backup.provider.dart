@@ -16,11 +16,6 @@ import 'package:logging/logging.dart';
 part 'backup.provider.freezed.dart';
 
 @freezed
-abstract class EnqueueStatus with _$EnqueueStatus {
-  const factory EnqueueStatus({required int enqueueCount, required int totalCount}) = _EnqueueStatus;
-}
-
-@freezed
 abstract class UploadStatus with _$UploadStatus {
   const factory UploadStatus({
     required String taskId,
@@ -256,7 +251,7 @@ class BackupNotifier extends StateNotifier<BackupState> {
     _uploadSpeedManager.removeTask(localAssetId);
   }
 
-  Future<void> startBackupWithURLSession(String userId) async {
+  Future<void> startBackupWithURLSession(String userId, Future<bool> remoteSync) async {
     if (!mounted) {
       _logger.warning("Skip handleBackupResume (pre-call): notifier disposed");
       return;
@@ -271,6 +266,10 @@ class BackupNotifier extends StateNotifier<BackupState> {
     _logger.info("Found ${tasks.length} pending tasks");
 
     if (tasks.isEmpty) {
+      if (!await remoteSync) {
+        _logger.warning("Remote sync did not complete successfully, skipping new upload");
+        return;
+      }
       _logger.info("No pending tasks, starting new upload");
       return _backgroundUploadService.uploadBackupCandidates(userId);
     }

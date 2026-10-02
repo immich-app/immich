@@ -21,8 +21,8 @@ import micromatch from 'micromatch';
 import { Stats, createReadStream, existsSync } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
-import { Queue } from 'src/queue';
-import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 } from 'src/utils';
+import { Queue } from 'src/queue.js';
+import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 } from 'src/utils.js';
 
 const UPLOAD_WATCH_BATCH_SIZE = 100;
 const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
@@ -199,10 +199,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
         formatValue: (v: number, options, type) => {
           // Don't format percentage
-          if (type === 'percentage') {
-            return v.toString();
-          }
-          return byteSize(v).toString();
+          return type === 'percentage' ? v.toString() : byteSize(v).toString();
         },
         etaBuffer: 100, // Increase samples for ETA calculation
       },
@@ -563,12 +560,15 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
       continue;
     }
     const albumId = existingAlbums.get(albumName);
-    if (albumId) {
-      if (!albumToAssets.has(albumId)) {
-        albumToAssets.set(albumId, []);
-      }
-      albumToAssets.get(albumId)?.push(asset.id);
+
+    if (!albumId) {
+      continue;
     }
+
+    if (!albumToAssets.has(albumId)) {
+      albumToAssets.set(albumId, []);
+    }
+    albumToAssets.get(albumId)?.push(asset.id);
   }
 
   const albumUpdateProgress = new SingleBar(

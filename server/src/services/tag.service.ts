@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
-import { OnJob } from 'src/decorators';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { OnJob } from 'src/decorators.js';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
@@ -11,14 +11,14 @@ import {
   TagUpdateDto,
   TagUpsertDto,
   mapTag,
-} from 'src/dtos/tag.dto';
-import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
-import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
-import { BaseService } from 'src/services/base.service';
-import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { updateLockedColumns } from 'src/utils/database';
-import { findOrFail } from 'src/utils/misc';
-import { upsertTags } from 'src/utils/tag';
+} from 'src/dtos/tag.dto.js';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import { addAssets, removeAssets } from 'src/utils/asset.util.js';
+import { updateLockedColumns } from 'src/utils/database.js';
+import { findOrFail } from 'src/utils/misc.js';
+import { upsertTags } from 'src/utils/tag.js';
 
 @Injectable()
 export class TagService extends BaseService {
@@ -71,7 +71,9 @@ export class TagService extends BaseService {
       value = existing.value;
     }
 
+    const assetIds = value === existing.value ? [] : await this.tagRepository.getAssetIdsByTagId(id);
     const tag = await this.tagRepository.update(id, { value, color });
+    await this.syncAssetTags(assetIds);
     return mapTag(tag);
   }
 
@@ -83,9 +85,9 @@ export class TagService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.TagDelete, ids: [id] });
 
-    // TODO sync tag changes for affected assets
-
+    const assetIds = await this.tagRepository.getAssetIdsByTagId(id);
     await this.tagRepository.delete(id);
+    await this.syncAssetTags(assetIds);
   }
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
@@ -168,5 +170,17 @@ export class TagService extends BaseService {
       exif: updateLockedColumns({ assetId, tags: tags.map(({ value }) => value) }),
       lockedPropertiesBehavior: 'append',
     });
+  }
+
+  private async syncAssetTags(assetIds: string[]) {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    for (const assetId of assetIds) {
+      await this.updateTags(assetId);
+    }
+
+    await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
   }
 }

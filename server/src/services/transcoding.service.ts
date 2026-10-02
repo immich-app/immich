@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ChildProcess } from 'node:child_process';
 import { join } from 'node:path';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { VideoInterfaces } from 'src/types.js';
 import {
   HLS_BACKPRESSURE_PAUSE_SEGMENTS,
   HLS_BACKPRESSURE_RESUME_SEGMENTS,
@@ -11,15 +13,13 @@ import {
   HLS_SEGMENT_DURATION,
   HLS_SEGMENT_FILENAME_REGEX,
   HLS_VARIANTS,
-} from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import { VideoInterfaces } from 'src/types';
-import { isVideoStreamSessionPkConstraint } from 'src/utils/database';
-import { BaseConfig } from 'src/utils/media';
+} from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { isVideoStreamSessionPkConstraint } from 'src/utils/database.js';
+import { BaseConfig } from 'src/utils/media.js';
 
 type Session = {
   assetId: string;
@@ -123,6 +123,7 @@ export class TranscodingService extends BaseService {
     }
 
     const remaining = session.expiresAt.getTime() - Date.now();
+    // eslint-disable-next-line unicorn/prefer-early-return
     if (remaining < HLS_LEASE_DURATION_MS / 2) {
       session.expiresAt = new Date(Date.now() + HLS_LEASE_DURATION_MS);
       await this.videoStreamRepository.extendSession(sessionId, session.expiresAt);
@@ -317,14 +318,17 @@ export class TranscodingService extends BaseService {
       session.paused = false;
       session.process = null;
       session.lastCompletedSegment = null;
-      if (code) {
-        this.logger.error(
-          `FFmpeg exited with code ${code} for variant ${variantIndex} asset ${session.assetId}\n${stderr}`,
-        );
-        void this.failSession(session, `Transcoding process exited unexpectedly with code ${code}`).catch((error) =>
-          this.logger.error(`Failed to end session ${session.id} after ffmpeg exit: ${error}`),
-        );
+
+      if (!code) {
+        return;
       }
+
+      this.logger.error(
+        `FFmpeg exited with code ${code} for variant ${variantIndex} asset ${session.assetId}\n${stderr}`,
+      );
+      void this.failSession(session, `Transcoding process exited unexpectedly with code ${code}`).catch((error) =>
+        this.logger.error(`Failed to end session ${session.id} after ffmpeg exit: ${error}`),
+      );
     });
   }
 

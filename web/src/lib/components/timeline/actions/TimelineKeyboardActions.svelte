@@ -15,13 +15,14 @@
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
+  import { toggleFavoriteAssets } from '$lib/services/asset.service';
+  import { handleStack } from '$lib/services/stack.service';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
-  import { toggleFavoriteAssets } from '$lib/services/asset.service';
+  import { deleteAssets } from '$lib/utils/actions';
+  import { archiveAssets, selectAllAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
 
@@ -60,22 +61,17 @@
   };
 
   const onStackAssets = async () => {
-    const result = await stackAssets(assetInteraction.assets);
-
-    updateStackedAssetInTimeline(timelineManager, result);
-
+    await handleStack(assetInteraction.assets.map((asset) => asset.id));
     onEscape?.();
   };
 
   const toggleFavoriteSelected = async () => {
     const allAssets = assetInteraction.ownedAssets;
     const isFavorite = allAssets.some((a) => !a.isFavorite);
-    const assetsToUpdate = allAssets.filter(
-      (asset) => asset.isFavorite !== isFavorite
-    );
+    const assetsToUpdate = allAssets.filter((asset) => asset.isFavorite !== isFavorite);
     await toggleFavoriteAssets(assetsToUpdate, isFavorite);
     assetInteraction.clear();
-  }
+  };
 
   const toggleArchive = async () => {
     const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;

@@ -11,6 +11,7 @@ import type {
   QueueResponseDto,
   ReleaseEventV1,
   SharedLinkResponseDto,
+  StackResponseDto,
   AdminConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
@@ -43,6 +44,7 @@ export type Events = {
   AssetsTag: [string[]];
 
   AlbumAddAssets: [{ assetIds: string[]; albumIds: string[] }];
+  AlbumRemoveAssets: [{ assetIds: string[]; albumIds: string[] }];
   AlbumCreate: [AlbumResponseDto];
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
@@ -51,6 +53,8 @@ export type Events = {
   AlbumUserDelete: [{ albumId: string; userId: string }];
 
   PersonUpdate: [PersonResponseDto];
+  PersonShare: [{ personId: string }];
+  PersonUserDelete: [{ personId: string; userId: string }];
   PersonThumbnailReady: [{ id: string }];
   PersonAssetDelete: [{ id: string; assetId: string }];
 
@@ -63,6 +67,12 @@ export type Events = {
   SharedLinkCreate: [SharedLinkResponseDto];
   SharedLinkUpdate: [SharedLinkResponseDto];
   SharedLinkDelete: [SharedLinkResponseDto];
+
+  StackCreate: [StackResponseDto];
+  /** Unstacked, with assets to handle */
+  StackDelete: [{ id: string; assets: AssetResponseDto[] }];
+  /** Contains the new stack. If any assets are removed, AssetUpdate events are emitted for each. */
+  StackUpdate: [StackResponseDto];
 
   TagCreate: [TagResponseDto];
   TagUpdate: [TagResponseDto];

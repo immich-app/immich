@@ -23,6 +23,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:uuid/uuid.dart';
 
@@ -125,6 +126,7 @@ class MediumRepositoryContext {
   }) async {
     id ??= TestUtils.uuid();
     createdAt ??= TestUtils.date();
+    final date = localDateTime ?? createdAt.toLocal();
     return db
         .into(db.remoteAssetEntity)
         .insertReturning(
@@ -145,7 +147,8 @@ class MediumRepositoryContext {
             isEdited: .new(isEdited ?? false),
             livePhotoVideoId: .new(livePhotoVideoId),
             stackId: .new(stackId),
-            localDateTime: .new(localDateTime ?? createdAt.toLocal()),
+            localDateTime: .new(date),
+            groupDate: .new(timelineGroupDate(date)),
             thumbHash: .new(TestUtils.uuid(thumbHash)),
             libraryId: .new(TestUtils.uuid(libraryId)),
           ),
@@ -268,10 +271,12 @@ class MediumRepositoryContext {
     String? name,
     String? checksum,
     Option<String>? checksumOption,
+    String? previousChecksum,
     DateTime? createdAt,
     AssetType? type,
     bool? isFavorite,
     String? iCloudId,
+    Option<String>? iCloudIdOption,
     DateTime? adjustmentTime,
     Option<DateTime>? adjustmentTimeOption,
     double? latitude,
@@ -283,6 +288,7 @@ class MediumRepositoryContext {
     DateTime? updatedAt,
   }) async {
     id ??= TestUtils.uuid();
+    createdAt ??= TestUtils.date();
     return db
         .into(db.localAssetEntity)
         .insertReturning(
@@ -295,10 +301,12 @@ class MediumRepositoryContext {
             orientation: .new(orientation ?? 0),
             updatedAt: .new(TestUtils.date(updatedAt)),
             checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
-            createdAt: .new(TestUtils.date(createdAt)),
+            previousChecksum: .new(previousChecksum),
+            createdAt: .new(createdAt),
+            groupDate: .new(timelineGroupDate(createdAt.toLocal())),
             type: .new(type ?? .image),
             isFavorite: .new(isFavorite ?? false),
-            iCloudId: .new(TestUtils.uuid(iCloudId)),
+            iCloudId: _resolveUndefined(iCloudId, iCloudIdOption, TestUtils.uuid()),
             adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
             latitude: .new(latitude ?? TestUtils.randDouble(-90, 90)),
             longitude: .new(longitude ?? TestUtils.randDouble(-180, 180)),
@@ -314,6 +322,7 @@ class MediumRepositoryContext {
     TrashOrigin? source,
     AssetType? type,
     DateTime? createdAt,
+    DateTime? updatedAt,
     bool? isFavorite,
   }) async {
     id ??= TestUtils.uuid();
@@ -329,6 +338,7 @@ class MediumRepositoryContext {
             source: .new(source ?? TrashOrigin.remoteSync),
             isFavorite: .new(isFavorite ?? false),
             createdAt: .new(TestUtils.date(createdAt)),
+            updatedAt: .new(TestUtils.date(updatedAt)),
           ),
         );
   }
