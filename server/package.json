@@ -150,7 +150,7 @@
     "@types/ua-parser-js": "^0.7.36",
     "@types/validator": "^13.15.2",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
@@ -168,7 +168,7 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.28.0",
     "unplugin-swc": "^1.4.5",
-    "vitest": "^4.0.0"
+    "vitest": "^5.0.0"
   },
   "overrides": {
     "sharp": "^0.35.3"
