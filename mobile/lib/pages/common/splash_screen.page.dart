@@ -384,6 +384,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
+        // TODO(rewrite): Remove this check and requestFullResume once the splash no longer runs in background launches
         // iOS also runs the splash in background launches, where the app is never resumed.
         // there the foreground backup waits for the first resume instead of uploading off screen
         if (CurrentPlatform.isIOS && WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
