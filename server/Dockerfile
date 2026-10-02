@@ -1,3 +1,5 @@
+FROM rust:1.93.1-bookworm@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31 AS rust
+
 FROM ghcr.io/immich-app/base-server-dev:202609291109@sha256:2985290fa839a44c577972103744a888c03338b330dcdb110c5a310120c715e7 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
@@ -12,6 +14,20 @@ RUN npm install --global corepack@latest && \
 WORKDIR /usr/src/app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
+
+# Temporary source build until the metadata branch is published to npm.
+FROM builder AS walkrs
+
+COPY --from=rust /usr/local/cargo /usr/local/cargo
+COPY --from=rust /usr/local/rustup /usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo \
+  RUSTUP_HOME=/usr/local/rustup \
+  PATH="/usr/local/cargo/bin:$PATH"
+
+WORKDIR /usr/src/walkrs
+RUN git clone --depth 1 --branch feat/metadata https://github.com/immich-app/walkrs.git . && \
+  pnpm install --frozen-lockfile && \
+  pnpm build
 
 FROM builder AS sdk
 
@@ -31,13 +47,17 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immi
 
 FROM plugin-sdk AS server
 
+COPY --from=walkrs /usr/src/walkrs/package.json /usr/src/walkrs/package.json
+COPY --from=walkrs /usr/src/walkrs/lib /usr/src/walkrs/lib
+COPY --from=walkrs /usr/src/walkrs/dist /usr/src/walkrs/dist
+
 COPY ./server/package.json ./server/package.json
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich install --frozen-lockfile
 
 COPY ./server ./server/
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   pnpm --filter immich build && \
-  pnpm --filter immich --prod --no-optional deploy /output/server-pruned
+  pnpm --filter immich --prod --no-optional deploy --legacy /output/server-pruned
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
 
@@ -94,11 +114,13 @@ ENV NODE_ENV=production \
   NVIDIA_VISIBLE_DEVICES=all
 
 COPY --from=server /output/server-pruned ./server
+COPY --from=server /usr/src/walkrs /usr/src/walkrs
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
 COPY --from=plugins /usr/src/app/packages/plugin-core/dist /build/plugins/immich-plugin-core/dist
 COPY --from=plugins /usr/src/app/packages/plugin-core/manifest.json /build/plugins/immich-plugin-core/manifest.json
-RUN ln -s ../../cli/bin/immich server/bin/immich
+RUN ln -s ../../cli/bin/immich server/bin/immich && \
+  ln -sfn /usr/src/walkrs server/node_modules/@immich/walkrs
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 

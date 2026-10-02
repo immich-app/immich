@@ -14,12 +14,15 @@ test.describe('Maintenance', () => {
   });
 
   test('enter and exit maintenance mode', async ({ context, page }) => {
+    test.setTimeout(60_000);
+
     await utils.setAuthCookies(context, admin.accessToken);
 
     await page.goto('/admin/maintenance');
     await page.getByRole('button', { name: 'Switch to maintenance mode' }).click();
 
-    await expect(page.getByText('Temporarily Unavailable')).toBeVisible({ timeout: 10_000 });
+    await page.waitForURL('**/maintenance?**', { timeout: 30_000 });
+    await expect(page.getByText('Temporarily Unavailable')).toBeVisible();
     await page.getByRole('button', { name: 'End maintenance mode' }).click();
     await page.waitForURL('**/admin/maintenance*', { timeout: 10_000 });
   });

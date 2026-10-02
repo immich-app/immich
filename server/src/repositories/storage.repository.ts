@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
-import fastGlob from 'fast-glob';
 import {
   Dirent,
   ReadOptionsWithBuffer,
@@ -17,7 +16,8 @@ import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
 import picomatch from 'picomatch';
-import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
+import type { WalkBatch } from '@immich/walkrs' with { 'resolution-mode': 'import' };
+import { WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 
@@ -224,56 +224,21 @@ export class StorageRepository {
     };
   }
 
-  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
-    if (pathsToCrawl.length === 0) {
-      return Promise.resolve([]);
+  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<WalkBatch, void, unknown> {
+    const { pathsToWalk, exclusionPatterns, includeHidden, includeMetadata } = walkOptions;
+    if (pathsToWalk.length === 0) {
+      return;
     }
 
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
+    const { walk } = await import('@immich/walkrs');
 
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    return fastGlob.glob(globbedPaths, {
-      absolute: true,
-      caseSensitiveMatch: false,
-      onlyFiles: true,
-      dot: includeHidden,
-      ignore: exclusionPatterns,
+    yield* walk({
+      paths: pathsToWalk.map((entryPath) => path.resolve(entryPath)),
+      includeHidden: includeHidden ?? false,
+      includeMetadata,
+      exclusionPatterns,
+      extensions: mimeTypes.getSupportedFileExtensions(),
     });
-  }
-
-  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = walkOptions;
-    if (pathsToCrawl.length === 0) {
-      async function* emptyGenerator() {}
-      return emptyGenerator();
-    }
-
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
-
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    const stream = fastGlob.globStream(globbedPaths, {
-      absolute: true,
-      caseSensitiveMatch: false,
-      onlyFiles: true,
-      dot: includeHidden,
-      ignore: exclusionPatterns,
-    });
-
-    let batch: string[] = [];
-    for await (const value of stream) {
-      batch.push(value.toString());
-      if (batch.length !== walkOptions.take) {
-        continue;
-      }
-
-      yield batch;
-      batch = [];
-    }
-
-    if (batch.length > 0) {
-      yield batch;
-    }
   }
 
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
@@ -296,15 +261,4 @@ export class StorageRepository {
   }
 
   watchDir = watch; // Native fs.watch without chokidar overhead
-
-  private asGlob(pathToCrawl: string): string {
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    const escapedPath = fastGlob
-      .escapePath(pathToCrawl)
-      .replaceAll('"', '["]')
-      .replaceAll("'", "[']")
-      .replaceAll('`', '[`]');
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-    return `${escapedPath}/**/${extensions}`;
-  }
 }

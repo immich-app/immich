@@ -229,26 +229,37 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Scanning for untracked files...`);
 
     const assetPaths = this.storageRepository.walk({
-      pathsToCrawl: [StorageFolder.EncodedVideo, StorageFolder.Library, StorageFolder.Upload].map((folder) =>
+      pathsToWalk: [StorageFolder.EncodedVideo, StorageFolder.Library, StorageFolder.Upload].map((folder) =>
         StorageCore.getBaseFolder(folder),
       ),
       includeHidden: false,
-      take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
     const assetFilePaths = this.storageRepository.walk({
-      pathsToCrawl: [StorageCore.getBaseFolder(StorageFolder.Thumbnails)],
+      pathsToWalk: [StorageCore.getBaseFolder(StorageFolder.Thumbnails)],
       includeHidden: false,
-      take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
+    const logger = this.logger;
     async function* paths() {
       for await (const batch of assetPaths) {
-        yield ['asset', batch] as const;
+        for (const error of batch.errors) {
+          logger.warn(`Error walking ${error.path ?? 'unknown path'}: ${error.message}`);
+        }
+
+        if (batch.files.length > 0) {
+          yield ['asset', batch.files] as const;
+        }
       }
 
       for await (const batch of assetFilePaths) {
-        yield ['asset_file', batch] as const;
+        for (const error of batch.errors) {
+          logger.warn(`Error walking ${error.path ?? 'unknown path'}: ${error.message}`);
+        }
+
+        if (batch.files.length > 0) {
+          yield ['asset_file', batch.files] as const;
+        }
       }
     }
 

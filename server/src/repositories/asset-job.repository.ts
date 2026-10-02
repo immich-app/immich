@@ -264,6 +264,7 @@ export class AssetJobRepository {
   getForSyncAssets(ids: string[]) {
     return this.db
       .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .select([
         'asset.id',
         'asset.isOffline',
@@ -271,6 +272,7 @@ export class AssetJobRepository {
         'asset.originalPath',
         'asset.status',
         'asset.fileModifiedAt',
+        'asset_exif.fileSizeInByte',
       ])
       .where('asset.id', '=', anyUuid(ids))
       .execute();

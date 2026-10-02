@@ -20,6 +20,8 @@ import { getKyselyDB, makeStream } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
+const walkEntries = (files: string[]) => ({ files, size: null, modified: null, created: null, errors: [] });
+
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(IntegrityService, {
     database: db || defaultDatabase,
@@ -202,7 +204,9 @@ describe(IntegrityService.name, () => {
       const job = ctx.getMock(JobRepository);
 
       job.queue.mockResolvedValue(void 0);
-      storage.walk.mockImplementation(() => makeStream([['/path/to/file', '/path/to/file2'], ['/path/to/batch2']]));
+      storage.walk.mockImplementation(() =>
+        makeStream([walkEntries(['/path/to/file', '/path/to/file2']), walkEntries(['/path/to/batch2'])]),
+      );
 
       await expect(sut.handleUntrackedFilesQueueAll({ refreshOnly: false })).resolves.toBe(JobStatus.Success);
     });
@@ -214,8 +218,12 @@ describe(IntegrityService.name, () => {
 
       job.queue.mockResolvedValue(void 0);
 
-      storage.walk.mockReturnValueOnce(makeStream([['/path/to/file', '/path/to/file2'], ['/path/to/batch2']]));
-      storage.walk.mockReturnValueOnce(makeStream([['/path/to/file3', '/path/to/file4'], ['/path/to/batch4']]));
+      storage.walk.mockReturnValueOnce(
+        makeStream([walkEntries(['/path/to/file', '/path/to/file2']), walkEntries(['/path/to/batch2'])]),
+      );
+      storage.walk.mockReturnValueOnce(
+        makeStream([walkEntries(['/path/to/file3', '/path/to/file4']), walkEntries(['/path/to/batch4'])]),
+      );
 
       await sut.handleUntrackedFilesQueueAll({ refreshOnly: false });
 
@@ -243,7 +251,9 @@ describe(IntegrityService.name, () => {
       const job = ctx.getMock(JobRepository);
 
       job.queue.mockResolvedValue(void 0);
-      storage.walk.mockImplementation(() => makeStream([['/path/to/file', '/path/to/file2'], ['/path/to/batch2']]));
+      storage.walk.mockImplementation(() =>
+        makeStream([walkEntries(['/path/to/file', '/path/to/file2']), walkEntries(['/path/to/batch2'])]),
+      );
 
       const { id } = await ctx.get(IntegrityRepository).create({
         type: IntegrityReport.UntrackedFile,

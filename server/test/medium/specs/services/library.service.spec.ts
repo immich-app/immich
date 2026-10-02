@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import type { Stats } from 'node:fs';
 import type { SystemConfig } from 'src/dtos/config.dto.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AssetFileType, AssetStatus, JobName, JobStatus } from 'src/enum.js';
@@ -730,6 +731,157 @@ describe(LibraryService.name, () => {
       expect(updated?.deletedAt).toBeNull();
     });
 
+    it('should only queue metadata extraction once for a size-only file change', async () => {
+      const { sut, ctx } = setup();
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const originalPath = join(importPath, 'size-change.png');
+      const storage = ctx.get(StorageRepository);
+      const originalSize = 4;
+      const changedSize = 24;
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        originalPath,
+        fileModifiedAt,
+        isExternal: true,
+        isOffline: false,
+        status: AssetStatus.Active,
+      });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: originalSize });
+
+      vi.spyOn(storage, 'stat').mockResolvedValue({
+        size: changedSize,
+        mtime: fileModifiedAt,
+        mtimeMs: fileModifiedAt.getTime(),
+        birthtimeMs: 0,
+      } as Stats);
+
+      const job = {
+        libraryId: library.id,
+        importPaths: library.importPaths,
+        exclusionPatterns: library.exclusionPatterns,
+        assetIds: [asset.id],
+        progressCounter: 1,
+        totalAssets: 1,
+      };
+      const jobs = ctx.getMock(JobRepository);
+
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+      expect(jobs.queueAll).toHaveBeenCalledExactlyOnceWith([
+        {
+          name: JobName.SidecarCheck,
+          data: {
+            id: asset.id,
+            source: 'upload',
+            fileMetadata: {
+              size: changedSize,
+              modified: fileModifiedAt.getTime(),
+              created: null,
+            },
+          },
+        },
+      ]);
+
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: changedSize });
+      jobs.queueAll.mockClear();
+
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+      expect(jobs.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should not queue metadata extraction when file size and mtime are unchanged', async () => {
+      const { sut, ctx } = setup();
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const originalPath = join(importPath, 'unchanged.png');
+      const fileSize = 24;
+      const storage = ctx.get(StorageRepository);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        originalPath,
+        fileModifiedAt,
+        isExternal: true,
+        isOffline: false,
+        status: AssetStatus.Active,
+      });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: fileSize });
+
+      vi.spyOn(storage, 'stat').mockResolvedValue({
+        size: fileSize,
+        mtime: fileModifiedAt,
+        mtimeMs: fileModifiedAt.getTime(),
+        birthtimeMs: 0,
+      } as Stats);
+
+      const job = {
+        libraryId: library.id,
+        importPaths: library.importPaths,
+        exclusionPatterns: library.exclusionPatterns,
+        assetIds: [asset.id],
+        progressCounter: 1,
+        totalAssets: 1,
+      };
+      const jobs = ctx.getMock(JobRepository);
+
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+      await expect(sut.handleSyncAssets(job)).resolves.toBe(JobStatus.Success);
+
+      expect(jobs.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should queue metadata extraction when mtime changes but file size stays unchanged', async () => {
+      const { sut, ctx } = setup();
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const originalPath = join(importPath, 'mtime-change.png');
+      const fileSize = 24;
+      const changedMtime = new Date(fileModifiedAt.getTime() + 1);
+      const storage = ctx.get(StorageRepository);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        originalPath,
+        fileModifiedAt,
+        isExternal: true,
+        isOffline: false,
+        status: AssetStatus.Active,
+      });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: fileSize });
+
+      vi.spyOn(storage, 'stat').mockResolvedValue({
+        size: fileSize,
+        mtime: changedMtime,
+        mtimeMs: changedMtime.getTime(),
+        birthtimeMs: 0,
+      } as Stats);
+
+      const jobs = ctx.getMock(JobRepository);
+      await expect(
+        sut.handleSyncAssets({
+          libraryId: library.id,
+          importPaths: library.importPaths,
+          exclusionPatterns: library.exclusionPatterns,
+          assetIds: [asset.id],
+          progressCounter: 1,
+          totalAssets: 1,
+        }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(jobs.queueAll).toHaveBeenCalledExactlyOnceWith([
+        {
+          name: JobName.SidecarCheck,
+          data: {
+            id: asset.id,
+            source: 'upload',
+            fileMetadata: {
+              size: fileSize,
+              modified: changedMtime.getTime(),
+              created: null,
+            },
+          },
+        },
+      ]);
+    });
+
     it('should set an offline asset to online if its file exists in an import path and is not excluded', async () => {
       const { sut, ctx } = setup();
       const assetRepo = ctx.get(AssetRepository);
@@ -903,7 +1055,19 @@ describe(LibraryService.name, () => {
       }
       const storage = ctx.get(StorageRepository);
       const walk = storage.walk.bind(storage);
-      const walker = vi.spyOn(storage, 'walk').mockImplementation((options) => walk({ ...options, take: 2 }));
+      const walker = vi.spyOn(storage, 'walk').mockImplementation(async function* (options) {
+        const batches = await Array.fromAsync(walk({ ...options, includeMetadata: false }));
+        const files = batches.flatMap((batch) => batch.files);
+        for (let index = 0; index < files.length; index += 2) {
+          yield {
+            files: files.slice(index, index + 2),
+            size: null,
+            modified: null,
+            created: null,
+            errors: index === 0 ? batches.flatMap((batch) => batch.errors) : [],
+          };
+        }
+      });
       const syncFiles = vi.spyOn(ctx.sut, 'handleSyncFiles');
 
       try {

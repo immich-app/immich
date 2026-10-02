@@ -44,6 +44,7 @@ jobs:
               - 'mise.toml'
             server:
               - 'server/**'
+              - '.github/actions/setup-walkrs/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
               - 'packages/plugin-core/**'
@@ -124,6 +125,9 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
           github_token: ${{ steps.token.outputs.token }}
+
+      - name: Setup walkrs
+        uses: $/.github/actions/setup-walkrs
 
       - name: Run ci-unit
         run: mise run //server:ci-unit
@@ -387,6 +391,9 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
+      - name: Setup walkrs
+        uses: $/.github/actions/setup-walkrs
+
       - name: Run ci-medium
         run: mise run ci-medium
         if: ${{ !cancelled() }}
@@ -426,8 +433,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          package-manager-cache: false
 
       - name: Setup packages
         run: pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && pnpm --filter @immich/sdk --filter @immich/cli build
@@ -505,8 +511,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          package-manager-cache: false
 
       - name: Run setup @immich/sdk
         run: pnpm --filter @immich/sdk install --frozen-lockfile && pnpm --filter @immich/sdk build
@@ -734,6 +739,9 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
+      - name: Setup walkrs
+        uses: $/.github/actions/setup-walkrs
+
       - name: Install server dependencies
         run: pnpm --filter immich install --frozen-lockfile
       - name: Run API generation
@@ -791,6 +799,9 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
           github_token: ${{ steps.token.outputs.token }}
+
+      - name: Setup walkrs
+        uses: $/.github/actions/setup-walkrs
 
       - name: Install server dependencies
         run: pnpm install --frozen-lockfile

@@ -26,14 +26,11 @@ const UpdateLibrarySchema = z
   })
   .meta({ id: 'UpdateLibraryDto' });
 
-export interface CrawlOptionsDto {
-  pathsToCrawl: string[];
+export interface WalkOptionsDto {
+  pathsToWalk: string[];
   includeHidden?: boolean;
+  includeMetadata?: boolean;
   exclusionPatterns?: string[];
-}
-
-export interface WalkOptionsDto extends CrawlOptionsDto {
-  take: number;
 }
 
 const ValidateLibrarySchema = z

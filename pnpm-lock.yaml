@@ -410,6 +410,9 @@ importers:
       '@immich/sql-tools':
         specifier: ^0.6.3
         version: 0.6.4
+      '@immich/walkrs':
+        specifier: link:../../walkrs
+        version: link:../../walkrs
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(bullmq@5.81.5(supports-color@8.1.1))
@@ -512,9 +515,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.2.1(supports-color@8.1.1)
-      fast-glob:
-        specifier: ^3.3.2
-        version: 3.3.3
       fluent-ffmpeg:
         specifier: ^2.1.2
         version: 2.1.3

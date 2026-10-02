@@ -515,9 +515,11 @@ select
   "asset"."libraryId",
   "asset"."originalPath",
   "asset"."status",
-  "asset"."fileModifiedAt"
+  "asset"."fileModifiedAt",
+  "asset_exif"."fileSizeInByte"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = any ($1::uuid[])
 

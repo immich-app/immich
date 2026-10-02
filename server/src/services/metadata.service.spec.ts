@@ -178,6 +178,57 @@ describe(MetadataService.name, () => {
       } as Stats);
     });
 
+    it.each([
+      { created: new Date('2021-01-01').getTime(), expected: new Date('2021-01-01') },
+      { created: null, expected: new Date('2022-01-01') },
+      { created: 0, expected: new Date('2022-01-01') },
+      { created: new Date('2024-01-01').getTime(), expected: new Date('2022-01-01') },
+    ])('should reuse crawl birth time $created when EXIF has no date', async ({ created, expected }) => {
+      const asset = AssetFactory.create({ fileCreatedAt: new Date('2023-01-01') });
+      const fileMetadata = { size: 789, modified: new Date('2022-01-01').getTime(), created };
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({});
+
+      await sut.handleMetadataExtraction({ id: asset.id, fileMetadata });
+
+      expect(mocks.storage.stat).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({
+            fileSizeInByte: fileMetadata.size,
+            modifyDate: new Date(fileMetadata.modified),
+            dateTimeOriginal: expected,
+          }),
+        }),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fileCreatedAt: expected,
+          localDateTime: expected,
+          fileModifiedAt: new Date(fileMetadata.modified),
+        }),
+      );
+    });
+
+    it('should prefer EXIF dates while reusing crawl filesystem metadata', async () => {
+      const asset = AssetFactory.create();
+      const fileMetadata = {
+        size: 123,
+        modified: new Date('2023-01-01').getTime(),
+        created: new Date('2022-01-01').getTime(),
+      };
+      const originalDate = new Date('2020-01-01');
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ DateTimeOriginal: originalDate.toISOString() });
+
+      await sut.handleMetadataExtraction({ id: asset.id, fileMetadata });
+
+      expect(mocks.storage.stat).not.toHaveBeenCalled();
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({ fileCreatedAt: originalDate, fileModifiedAt: new Date(fileMetadata.modified) }),
+      );
+    });
+
     it('should handle an asset that could not be found', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(void 0);
 

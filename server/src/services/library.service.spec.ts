@@ -2,7 +2,6 @@ import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { vitest } from 'vitest';
 import type { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types.js';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { mapLibrary } from 'src/dtos/library.dto.js';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
@@ -16,7 +15,13 @@ import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
 async function* mockWalk() {
   // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
-  yield await Promise.resolve(['/data/user1/photo.jpg']);
+  yield await Promise.resolve({
+    files: ['/data/user1/photo.jpg'],
+    size: [100],
+    modified: [new Date('2023-01-01').getTime()],
+    created: [new Date('2022-01-01').getTime()],
+    errors: [],
+  });
 }
 
 describe(LibraryService.name, () => {
@@ -162,6 +167,47 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueSyncFiles', () => {
+    it('should retain metadata alignment when existing paths are filtered and new paths are reordered', async () => {
+      const library = factory.library({ importPaths: ['/photos'] });
+      mocks.library.get.mockResolvedValue(library);
+      mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+      mocks.storage.walk.mockReturnValue(
+        makeStream([
+          {
+            files: ['/photos/old.jpg', '/photos/first.jpg', '/photos/second.jpg'],
+            size: [10, 20, 30],
+            modified: [100, 200, 300],
+            created: [50, null, 250],
+            errors: [{ path: '/photos/inaccessible.jpg', message: 'Permission denied' }],
+          },
+          { files: [], size: [], modified: [], created: [], errors: [{ message: 'Unreadable directory' }] },
+        ]),
+      );
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/photos/second.jpg', '/photos/first.jpg']);
+
+      await sut.handleQueueSyncFiles({ id: library.id });
+
+      expect(mocks.asset.filterNewExternalAssetPaths).toHaveBeenCalledExactlyOnceWith(library.id, [
+        '/photos/old.jpg',
+        '/photos/first.jpg',
+        '/photos/second.jpg',
+      ]);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.LibrarySyncFiles,
+        data: {
+          libraryId: library.id,
+          paths: ['/photos/second.jpg', '/photos/first.jpg'],
+          fileMetadata: [
+            { size: 30, modified: 300, created: 250 },
+            { size: 20, modified: 200, created: null },
+          ],
+          progressCounter: 3,
+        },
+      });
+      expect(mocks.logger.warn).toHaveBeenCalledTimes(2);
+    });
+
     it('should queue refresh of a new asset', async () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
@@ -178,6 +224,9 @@ describe(LibraryService.name, () => {
         data: {
           libraryId: library.id,
           paths: ['/data/user1/photo.jpg'],
+          fileMetadata: [
+            { size: 100, modified: new Date('2023-01-01').getTime(), created: new Date('2022-01-01').getTime() },
+          ],
           progressCounter: 1,
         },
       });
@@ -204,14 +253,16 @@ describe(LibraryService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValue(true);
 
       mocks.library.get.mockResolvedValue(library);
+      mocks.storage.walk.mockImplementation(mockWalk);
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue([]);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
       expect(mocks.storage.walk).toHaveBeenCalledWith({
-        pathsToCrawl: [library.importPaths[1]],
+        pathsToWalk: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
-        take: JOBS_LIBRARY_PAGINATION_SIZE,
+        includeMetadata: true,
       });
     });
   });
@@ -233,6 +284,9 @@ describe(LibraryService.name, () => {
         data: {
           libraryId: library.id,
           paths: ['/data/user1/photo.jpg'],
+          fileMetadata: [
+            { size: 100, modified: new Date('2023-01-01').getTime(), created: new Date('2022-01-01').getTime() },
+          ],
           progressCounter: 1,
         },
       });
@@ -260,14 +314,16 @@ describe(LibraryService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValue(true);
 
       mocks.library.get.mockResolvedValue(library);
+      mocks.storage.walk.mockImplementation(mockWalk);
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue([]);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
       expect(mocks.storage.walk).toHaveBeenCalledWith({
-        pathsToCrawl: [library.importPaths[1]],
+        pathsToWalk: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
-        take: JOBS_LIBRARY_PAGINATION_SIZE,
+        includeMetadata: true,
       });
     });
   });
@@ -354,7 +410,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockRejectedValue(new Error('ENOENT, no such file or directory'));
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -376,7 +432,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockRejectedValue(new Error('Could not read file'));
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -398,7 +454,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockRejectedValue(new Error('Could not read file'));
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -417,7 +473,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockResolvedValue({ mtime: newDate() } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -439,7 +495,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockResolvedValue({ mtime: newDate() } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -460,7 +516,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockResolvedValue({ mtime: newDate() } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -481,7 +537,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockResolvedValue({ mtime: asset.fileModifiedAt } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -501,7 +557,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
       mocks.storage.stat.mockResolvedValue({ mtime: newDate() } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
@@ -527,17 +583,68 @@ describe(LibraryService.name, () => {
 
       const mtime = new Date(asset.fileModifiedAt.getDate() + 1);
 
-      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
-      mocks.storage.stat.mockResolvedValue({ mtime } as Stats);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([{ ...asset, fileSizeInByte: null }]);
+      mocks.storage.stat.mockResolvedValue({ size: 100, mtime, mtimeMs: mtime.getTime(), birthtimeMs: 0 } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
+      expect(mocks.storage.stat).toHaveBeenCalledExactlyOnceWith(asset.originalPath);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.SidecarCheck,
           data: {
             id: asset.id,
             source: 'upload',
+            fileMetadata: { size: 100, modified: mtime.getTime(), created: null },
+          },
+        },
+      ]);
+    });
+
+    it('should forward metadata only for changed assets in a batch with unchanged and missing files', async () => {
+      const library = factory.library();
+      const assets = ['unchanged', 'first', 'missing', 'second'].map((name) =>
+        AssetFactory.create({
+          libraryId: library.id,
+          isExternal: true,
+          originalPath: `/photos/${name}.jpg`,
+          fileModifiedAt: new Date(1000),
+        }),
+      );
+      mocks.assetJob.getForSyncAssets.mockResolvedValue(assets.map((asset) => ({ ...asset, fileSizeInByte: null })));
+      mocks.storage.stat
+        .mockResolvedValueOnce({ mtime: new Date(1000) } as Stats)
+        .mockResolvedValueOnce({ size: 100, mtime: new Date(2000), mtimeMs: 2000.75, birthtimeMs: 1500.25 } as Stats)
+        .mockRejectedValueOnce(new Error('ENOENT, no such file or directory'))
+        .mockResolvedValueOnce({ size: 200, mtime: new Date(3000), mtimeMs: 3000.5, birthtimeMs: 0 } as Stats);
+
+      await expect(
+        sut.handleSyncAssets({
+          assetIds: assets.map((asset) => asset.id),
+          libraryId: library.id,
+          importPaths: ['/photos'],
+          exclusionPatterns: [],
+          totalAssets: assets.length,
+          progressCounter: assets.length,
+        }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.storage.stat).toHaveBeenCalledTimes(assets.length);
+      expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith([
+        {
+          name: JobName.SidecarCheck,
+          data: {
+            id: assets[1].id,
+            source: 'upload',
+            fileMetadata: { size: 100, modified: 2000, created: 1500 },
+          },
+        },
+        {
+          name: JobName.SidecarCheck,
+          data: {
+            id: assets[3].id,
+            source: 'upload',
+            fileMetadata: { size: 200, modified: 3000, created: null },
           },
         },
       ]);
@@ -548,8 +655,8 @@ describe(LibraryService.name, () => {
     beforeEach(() => {
       mocks.storage.stat.mockResolvedValue({
         size: 100,
-        mtime: new Date('2023-01-01'),
-        ctime: new Date('2023-01-01'),
+        mtimeMs: new Date('2023-01-01').getTime() + 0.75,
+        birthtimeMs: new Date('2022-01-01').getTime() + 0.5,
       } as Stats);
     });
 
@@ -567,6 +674,7 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
 
+      expect(mocks.storage.stat).toHaveBeenCalledExactlyOnceWith('/data/user1/photo.jpg');
       expect(mocks.asset.createAll).toHaveBeenCalledWith([
         expect.objectContaining({
           ownerId: library.ownerId,
@@ -588,9 +696,94 @@ describe(LibraryService.name, () => {
           data: {
             id: asset.id,
             source: 'upload',
+            fileMetadata: {
+              size: 100,
+              modified: new Date('2023-01-01').getTime(),
+              created: new Date('2022-01-01').getTime(),
+            },
           },
         },
       ]);
+    });
+
+    it('should reuse crawl metadata and forward it to metadata extraction without probing the file', async () => {
+      const library = factory.library();
+      const asset = AssetFactory.create();
+      const fileMetadata = { size: 100, modified: new Date('2023-01-01').getTime(), created: null };
+      mocks.asset.createAll.mockResolvedValue([asset.id]);
+      mocks.library.get.mockResolvedValue(library);
+
+      await sut.handleSyncFiles({
+        libraryId: library.id,
+        paths: ['/data/user1/photo.jpg'],
+        fileMetadata: [fileMetadata],
+      });
+
+      expect(mocks.storage.stat).not.toHaveBeenCalled();
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([
+        expect.objectContaining({
+          originalPath: '/data/user1/photo.jpg',
+          fileCreatedAt: new Date(fileMetadata.modified),
+          fileModifiedAt: new Date(fileMetadata.modified),
+          localDateTime: new Date(fileMetadata.modified),
+        }),
+      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarCheck, data: { id: asset.id, source: 'upload', fileMetadata } },
+      ]);
+    });
+
+    it('should keep metadata paired with successful imports when another file cannot be statted', async () => {
+      const library = factory.library();
+      const first = AssetFactory.create();
+      const second = AssetFactory.create();
+      const fileMetadata = { size: 100, modified: 1000, created: 500 };
+      const secondMetadata = { size: 200, modified: 2000, created: null };
+      mocks.library.get.mockResolvedValue(library);
+      mocks.storage.stat
+        .mockRejectedValueOnce(new Error('ENOENT, no such file or directory'))
+        .mockResolvedValueOnce({ size: 100, mtimeMs: 1000, birthtimeMs: 500 } as Stats)
+        .mockResolvedValueOnce({ size: 200, mtimeMs: 2000, birthtimeMs: 0 } as Stats);
+      mocks.asset.createAll.mockResolvedValue([first.id, second.id]);
+
+      await expect(
+        sut.handleSyncFiles({
+          libraryId: library.id,
+          paths: ['/photos/failed.jpg', '/photos/first.jpg', '/photos/second.jpg'],
+        }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.logger.error).toHaveBeenCalledExactlyOnceWith(
+        `Error processing /photos/failed.jpg for library ${library.id}: Error: ENOENT, no such file or directory`,
+      );
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([
+        expect.objectContaining({ originalPath: '/photos/first.jpg' }),
+        expect.objectContaining({ originalPath: '/photos/second.jpg' }),
+      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarCheck, data: { id: first.id, source: 'upload', fileMetadata } },
+        { name: JobName.SidecarCheck, data: { id: second.id, source: 'upload', fileMetadata: secondMetadata } },
+      ]);
+    });
+
+    it('should propagate processing errors instead of silently skipping the file', async () => {
+      const library = factory.library();
+      mocks.library.get.mockResolvedValue(library);
+      mocks.crypto.hashSha1.mockImplementation(() => {
+        throw new Error('Unable to process file');
+      });
+
+      await expect(
+        sut.handleSyncFiles({
+          libraryId: library.id,
+          paths: ['/photos/failed.jpg'],
+          fileMetadata: [{ size: 100, modified: 1000, created: null }],
+        }),
+      ).rejects.toThrow('Unable to process file');
+
+      expect(mocks.storage.stat).not.toHaveBeenCalled();
+      expect(mocks.asset.createAll).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
     it('should not import an asset to a soft deleted library', async () => {
