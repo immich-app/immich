@@ -16,6 +16,7 @@ abstract class AssetViewerState with _$AssetViewerState {
     @Default(1.0) double backgroundOpacity,
     @Default(false) bool showingDetails,
     @Default(true) bool showingControls,
+    @Default(true) bool showingControlsAtZoomEnd,
     @Default(false) bool isZoomed,
     @Default(false) bool showingOcr,
     BaseAsset? currentAsset,
@@ -92,15 +93,24 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
   }
 
   void toggleControls() {
-    state = state.copyWith(showingControls: !state.showingControls);
+    final showingControls = !state.showingControls;
+    state = state.copyWith(
+      showingControls: showingControls,
+      showingControlsAtZoomEnd: state.isZoomed ? showingControls : state.showingControlsAtZoomEnd,
+    );
   }
 
   void setZoomed(bool isZoomed) {
     if (isZoomed == state.isZoomed) {
       return;
     }
-    state = state.copyWith(isZoomed: isZoomed);
+    state = state.copyWith(
+      isZoomed: isZoomed,
+      showingControlsAtZoomEnd: isZoomed ? state.showingControls : state.showingControlsAtZoomEnd,
+    );
   }
+
+  void restoreControlsAfterZoom() => setControls(state.showingControlsAtZoomEnd);
 
   void setStackIndex(int index) {
     if (index == state.stackIndex) {

@@ -305,7 +305,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     if (!_showingDetails) {
-      _viewer.setControls(true);
+      _viewer.restoreControlsAfterZoom();
     }
   }
 
