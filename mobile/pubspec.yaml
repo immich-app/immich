@@ -105,7 +105,7 @@ dev_dependencies:
   flutter_native_splash: ^2.4.7
   flutter_test:
     sdk: flutter
-  freezed: ^3.2.5
+  freezed: ^4.0.0
   integration_test:
     sdk: flutter
   mocktail: ^1.0.5
