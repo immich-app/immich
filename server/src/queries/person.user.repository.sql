@@ -66,6 +66,33 @@ set
 returning
   *
 
+-- PersonUserRepository.createAllForOwner
+insert into
+  "person_user" (
+    "personGroupId",
+    "sharedById",
+    "sharedWithId",
+    "role"
+  )
+select
+  "person"."personGroupId" as "personGroupId",
+  "person"."ownerId" as "sharedById",
+  "shared"."sharedWithId" as "sharedWithId",
+  $1::person_user_role_enum as "role"
+from
+  "person"
+  cross join (
+    select
+      unnest($2::uuid[]) as "sharedWithId"
+  ) as "shared"
+where
+  "person"."ownerId" = $3
+on conflict ("personGroupId", "sharedById", "sharedWithId") do update
+set
+  "role" = "excluded"."role"
+returning
+  *
+
 -- PersonUserRepository.deleteAll
 delete from "person_user"
 where

@@ -171,7 +171,7 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
+      encode: (date) => DateTime.fromJSDate(date, { zone: 'utc' }).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });
@@ -248,3 +248,5 @@ export const hexColor = z
   .transform((val) => (val.startsWith('#') ? val : `#${val}`));
 
 export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));
+
+export const uniqueIds = z.array(z.uuid()).refine((ids) => ids.length === new Set(ids).size, 'Items must be unique');

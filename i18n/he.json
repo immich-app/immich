@@ -748,7 +748,6 @@
   "client_cert_subtitle": "תומך בפורמט PKCS12 (.p12, .pfx) בלבד. ייבוא/הסרה של תעודה זמינה רק לפני התחברות",
   "client_cert_title": "תעודת לקוח SSL [ניסיוני]",
   "close": "סגור",
-  "cluster_group": "קבוצת זיהוי משותף",
   "cluster_group_description": "אנשים מזוהים בתמונות של כל חברי הקבוצה",
   "cluster_group_facial_recognition": "איפוס זיהוי פנים",
   "cluster_group_facial_recognition_prompt": "איפוס זיהוי הפנים ימחק את כל האנשים של כל המשתמשים בקבוצה זו. שמות ותאריכי לידה שכבר הוגדרו יאבדו. האם ברצונך להמשיך?",
