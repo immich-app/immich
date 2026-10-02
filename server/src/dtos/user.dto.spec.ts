@@ -1,4 +1,4 @@
-import { UserAdminCreateSchema, UserUpdateMeSchema, mapUser } from 'src/dtos/user.dto.js';
+import { UserAdminCreateSchema, UserAdminUpdateDto, UserUpdateMeSchema, mapUser } from 'src/dtos/user.dto.js';
 
 describe('update user DTO', () => {
   it('should allow emails without a tld', () => {
@@ -103,5 +103,25 @@ describe('create user DTO', () => {
     });
     expect(result.success).toBe(true);
     expect(result.data?.email).toEqual(someEmail);
+  });
+});
+
+describe('admin update user DTO', () => {
+  it('should transform an empty name to null', () => {
+    const result = UserAdminUpdateDto.schema.safeParse({ name: '' });
+    expect(result.success).toBe(true);
+    expect(result.data?.name).toBeNull();
+  });
+
+  it('should leave a non-empty name untouched', () => {
+    const result = UserAdminUpdateDto.schema.safeParse({ name: 'Alan Turing' });
+    expect(result.success).toBe(true);
+    expect(result.data?.name).toEqual('Alan Turing');
+  });
+
+  it('should allow name to be omitted', () => {
+    const result = UserAdminUpdateDto.schema.safeParse({ email: 'test@test.com' });
+    expect(result.success).toBe(true);
+    expect(result.data?.name).toBeUndefined();
   });
 });
