@@ -113,26 +113,23 @@ describe(MemoryService.name, () => {
   });
 
   describe('statistics', () => {
-    it('should count only enabled types', async () => {
+    it('should count every type regardless of preferences', async () => {
       const auth = factory.auth();
-      mocks.user.getMetadata.mockResolvedValue([
-        { key: UserMetadataKey.Preferences, value: { memories: { onThisDayEnabled: false } } },
-      ]);
-      mocks.memory.statistics.mockResolvedValue({ total: 1 });
+      mocks.memory.statistics.mockResolvedValue({ total: 2 });
 
-      await expect(sut.statistics(auth, {})).resolves.toEqual({ total: 1 });
+      await expect(sut.statistics(auth, {})).resolves.toEqual({ total: 2 });
 
-      expect(mocks.memory.statistics).toHaveBeenCalledWith(auth.user.id, { types: [MemoryType.Birthday] });
+      expect(mocks.memory.statistics).toHaveBeenCalledWith(auth.user.id, { types: undefined });
+      expect(mocks.user.getMetadata).not.toHaveBeenCalled();
     });
 
-    it('should not query when every type is disabled', async () => {
-      mocks.user.getMetadata.mockResolvedValue([
-        { key: UserMetadataKey.Preferences, value: { memories: { onThisDayEnabled: false, birthdayEnabled: false } } },
-      ]);
+    it('should count only the requested type', async () => {
+      const auth = factory.auth();
+      mocks.memory.statistics.mockResolvedValue({ total: 1 });
 
-      await expect(sut.statistics(factory.auth(), {})).resolves.toEqual({ total: 0 });
+      await expect(sut.statistics(auth, { type: MemoryType.Birthday })).resolves.toEqual({ total: 1 });
 
-      expect(mocks.memory.statistics).not.toHaveBeenCalled();
+      expect(mocks.memory.statistics).toHaveBeenCalledWith(auth.user.id, { types: [MemoryType.Birthday] });
     });
   });
 

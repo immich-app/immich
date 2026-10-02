@@ -164,13 +164,8 @@ export class MemoryService extends BaseService {
       .map((memory: Memory) => mapMemory(memory, auth));
   }
 
-  async statistics(auth: AuthDto, { type, ...dto }: MemorySearchDto) {
-    const types = await this.getEnabledTypes(auth, type);
-    if (types.length === 0) {
-      return { total: 0 };
-    }
-
-    return this.memoryRepository.statistics(auth.user.id, { ...dto, types });
+  statistics(auth: AuthDto, { type, ...dto }: MemorySearchDto) {
+    return this.memoryRepository.statistics(auth.user.id, { ...dto, types: type ? [type] : undefined });
   }
 
   private async getEnabledTypes(auth: AuthDto, requested?: MemoryType) {
