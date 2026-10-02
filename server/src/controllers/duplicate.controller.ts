@@ -60,4 +60,17 @@ export class DuplicateController {
   resolveDuplicates(@Auth() auth: AuthDto, @Body() dto: DuplicateResolveDto): Promise<BulkIdResponseDto[]> {
     return this.service.resolve(auth, dto);
   }
+
+  @Post('resolve-all')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated({ permission: Permission.DuplicateDelete })
+  @Endpoint({
+    summary: 'Resolve all duplicate groups',
+    description:
+      'Resolve all duplicate groups by keeping the suggested asset in each group and deleting/trashing duplicates.',
+    history: new HistoryBuilder().added('v3.0.0').alpha('v3.0.0'),
+  })
+  resolveAllDuplicates(@Auth() auth: AuthDto): Promise<BulkIdResponseDto[]> {
+    return this.service.resolveAll(auth);
+  }
 }
