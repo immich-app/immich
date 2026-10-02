@@ -34,7 +34,12 @@ class AssetPage extends ConsumerStatefulWidget {
   final int heroOffset;
   final void Function(int direction)? onTapNavigate;
 
-  const AssetPage({super.key, required this.index, required this.heroOffset, this.onTapNavigate});
+  const AssetPage({
+    super.key,
+    required this.index,
+    required this.heroOffset,
+    this.onTapNavigate,
+  });
 
   @override
   ConsumerState createState() => _AssetPageState();
@@ -45,7 +50,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   StreamSubscription? _scaleBoundarySub;
   StreamSubscription? _eventSubscription;
 
-  AssetViewerStateNotifier get _viewer => ref.read(assetViewerProvider.notifier);
+  AssetViewerStateNotifier get _viewer =>
+      ref.read(assetViewerProvider.notifier);
 
   late PhotoViewControllerValue _initialPhotoViewState;
 
@@ -102,7 +108,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       case ViewerShowDetailsEvent():
         _showDetails();
       case TimelineReloadEvent():
-        final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+        final asset = ref
+            .read(timelineServiceProvider)
+            .getAssetSafe(widget.index);
         if (asset != _asset) {
           _isZoomed = false;
           _viewer.setZoomed(false);
@@ -117,14 +125,24 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       return;
     }
     _viewer.setShowingDetails(true);
-    unawaited(_scrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic));
+    unawaited(
+      _scrollController.animateTo(
+        _snapOffset,
+        duration: Durations.medium2,
+        curve: Curves.easeOutCubic,
+      ),
+    );
   }
 
   bool _willClose(double scrollVelocity) =>
       _scrollController.hasClients &&
       _snapOffset > 0 &&
       _scrollController.position.pixels < _snapOffset &&
-      SnapScrollPhysics.target(_scrollController.position, scrollVelocity, _snapOffset) <
+      SnapScrollPhysics.target(
+            _scrollController.position,
+            scrollVelocity,
+            _snapOffset,
+          ) <
           SnapScrollPhysics.minSnapDistance;
 
   void _syncShowingDetails() {
@@ -161,11 +179,12 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     if (_dragIntent == _DragIntent.none) {
-      _dragIntent = switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
-        < 0 => _DragIntent.scroll,
-        > 0 => _DragIntent.dismiss,
-        _ => _DragIntent.none,
-      };
+      _dragIntent =
+          switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
+            < 0 => _DragIntent.scroll,
+            > 0 => _DragIntent.dismiss,
+            _ => _DragIntent.none,
+          };
       if (_dragIntent == _DragIntent.dismiss) {
         _wasMotionPlayingAtDismiss = ref.read(isPlayingMotionVideoProvider);
       }
@@ -181,7 +200,10 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
         _syncShowingDetails();
       case _DragIntent.dismiss:
-        _handleDragDown(context, details.localPosition - _dragStart!.localPosition);
+        _handleDragDown(
+          context,
+          details.localPosition - _dragStart!.localPosition,
+        );
     }
   }
 
@@ -216,7 +238,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           _viewController
               ?.animateMultiple(
                 position: _initialPhotoViewState.position,
-                scale: _viewController?.initialScale ?? _initialPhotoViewState.scale,
+                scale:
+                    _viewController?.initialScale ??
+                    _initialPhotoViewState.scale,
                 rotation: _initialPhotoViewState.rotation,
               )
               .whenComplete(() {
@@ -241,10 +265,17 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _beginDrag(details);
   }
 
-  void _onDragUpdate(BuildContext context, DragUpdateDetails details, PhotoViewControllerValue _) =>
-      _updateDrag(details);
+  void _onDragUpdate(
+    BuildContext context,
+    DragUpdateDetails details,
+    PhotoViewControllerValue _,
+  ) => _updateDrag(details);
 
-  void _onDragEnd(BuildContext context, DragEndDetails details, PhotoViewControllerValue _) => _endDrag(details);
+  void _onDragEnd(
+    BuildContext context,
+    DragEndDetails details,
+    PhotoViewControllerValue _,
+  ) => _endDrag(details);
 
   void _onDragCancel() => _endDrag(DragEndDetails(primaryVelocity: 0.0));
 
@@ -254,16 +285,26 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final distance = delta.dy.abs();
     final maxScaleDistance = context.height * 0.5;
     final scaleReduction = (distance / maxScaleDistance).clamp(0.0, dragRatio);
-    final initialScale = _viewController?.initialScale ?? _initialPhotoViewState.scale;
-    final updatedScale = initialScale != null ? initialScale * (1.0 - scaleReduction) : null;
+    final initialScale =
+        _viewController?.initialScale ?? _initialPhotoViewState.scale;
+    final updatedScale = initialScale != null
+        ? initialScale * (1.0 - scaleReduction)
+        : null;
 
     final opacity = 1.0 - (scaleReduction / dragRatio);
 
-    _viewController?.updateMultiple(position: _initialPhotoViewState.position + delta, scale: updatedScale);
+    _viewController?.updateMultiple(
+      position: _initialPhotoViewState.position + delta,
+      scale: updatedScale,
+    );
     _viewer.setOpacity(opacity);
   }
 
-  void _onTapUp(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue) {
+  void _onTapUp(
+    BuildContext context,
+    TapUpDetails details,
+    PhotoViewControllerValue controllerValue,
+  ) {
     if (_showingDetails || _dragStart != null) {
       return;
     }
@@ -290,11 +331,16 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
   }
 
-  void _onLongPress(BuildContext context, LongPressStartDetails details, PhotoViewControllerValue controllerValue) =>
-      ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
+  void _onLongPress(
+    BuildContext context,
+    LongPressStartDetails details,
+    PhotoViewControllerValue controllerValue,
+  ) => ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
-    _isZoomed = scaleState == PhotoViewScaleState.zoomedIn || scaleState == PhotoViewScaleState.covering;
+    _isZoomed =
+        scaleState == PhotoViewScaleState.zoomedIn ||
+        scaleState == PhotoViewScaleState.covering;
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
@@ -369,7 +415,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           index: widget.index,
           imageProvider: provider,
           heroAttributes: heroAttributes,
-          loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
+          loadingBuilder: (context, progress, index) =>
+              const Center(child: ImmichLoadingIndicator()),
           gaplessPlayback: true,
           filterQuality: FilterQuality.high,
           tightMode: true,
@@ -419,7 +466,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         asset: asset,
         localFilePath: localFilePath,
         isCurrent: isCurrent,
-        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+        image: Image(
+          image: imageProvider,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
+        ),
       ),
     );
   }
@@ -429,15 +480,22 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final (currentAsset, thumbnailSize) = ref.watch(
       assetViewerProvider.select((s) => (s.currentAsset, s.thumbnailSize)),
     );
-    _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
-    final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
+    _showingDetails = ref.watch(
+      assetViewerProvider.select((s) => s.showingDetails),
+    );
+    final stackIndex = ref.watch(
+      assetViewerProvider.select((s) => s.stackIndex),
+    );
     final liveMotionPlaying = ref.watch(isPlayingMotionVideoProvider);
     // Preserve the playback status while dismissing to prevent switching views mid-animation.
-    final isPlayingMotionVideo = (_dragIntent == _DragIntent.dismiss || _isDismissAnimating)
+    final isPlayingMotionVideo =
+        (_dragIntent == _DragIntent.dismiss || _isDismissAnimating)
         ? _wasMotionPlayingAtDismiss
         : liveMotionPlaying;
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
-    final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
+    final showingOcr = ref.watch(
+      assetViewerProvider.select((s) => s.showingOcr),
+    );
 
     final asset = _asset;
     if (asset == null) {
@@ -445,23 +503,37 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     BaseAsset displayAsset = asset;
-    final showAssetStack = ref.watch(timelineServiceProvider.select((s) => s.origin != TimelineOrigin.trash));
-    final stackChildren = showAssetStack ? ref.watch(stackChildrenNotifier(asset)).valueOrNull : null;
+    final showAssetStack = ref.watch(
+      timelineServiceProvider.select((s) => s.origin != TimelineOrigin.trash),
+    );
+    final stackChildren = showAssetStack
+        ? ref.watch(stackChildrenNotifier(asset)).valueOrNull
+        : null;
     if (stackChildren != null && stackChildren.isNotEmpty) {
       final currentAssetIndex = stackChildren.indexWhere(
         (asset) => currentAsset?.refersToSameAsset(asset) ?? false,
       );
-      final displayAssetIndex = currentAssetIndex < 0 ? stackIndex : currentAssetIndex;
-      displayAsset = stackChildren.elementAt(displayAssetIndex.clamp(0, stackChildren.length - 1));
+      final displayAssetIndex = currentAssetIndex < 0
+          ? stackIndex
+          : currentAssetIndex;
+      displayAsset = stackChildren.elementAt(
+        displayAssetIndex.clamp(0, stackChildren.length - 1),
+      );
     }
 
-    final isCurrent = currentAsset != null && currentAsset.refersToSameAsset(displayAsset);
+    final isCurrent =
+        currentAsset != null && currentAsset.refersToSameAsset(displayAsset);
 
     final viewportWidth = MediaQuery.widthOf(context);
     final viewportHeight = MediaQuery.heightOf(context);
-    final imageHeight = _getImageHeight(viewportWidth, viewportHeight, displayAsset);
+    final imageHeight = _getImageHeight(
+      viewportWidth,
+      viewportHeight,
+      displayAsset,
+    );
 
-    final detailsOffset = (viewportHeight + imageHeight - kMinInteractiveDimension) / 2;
+    final detailsOffset =
+        (viewportHeight + imageHeight - kMinInteractiveDimension) / 2;
     final snapTarget = viewportHeight / 3;
 
     _snapOffset = detailsOffset - snapTarget;
@@ -470,7 +542,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       _scrollController.snapPosition.snapOffset = _snapOffset;
     }
 
-    final viewIntentFilePath = timelineOrigin == TimelineOrigin.deepLink ? ref.watch(viewIntentFilePathProvider) : null;
+    final viewIntentFilePath = timelineOrigin == TimelineOrigin.deepLink
+        ? ref.watch(viewIntentFilePathProvider)
+        : null;
 
     return Stack(
       children: [
@@ -487,7 +561,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                   child: _buildPhotoView(
                     asset: displayAsset,
                     heroAttributes: isCurrent
-                        ? PhotoViewHeroAttributes(tag: '${asset.heroTag}_${widget.heroOffset}')
+                        ? PhotoViewHeroAttributes(
+                            tag: '${asset.heroTag}_${widget.heroOffset}',
+                          )
                         : null,
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
@@ -495,11 +571,16 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     remoteThumbnailSize: thumbnailSize,
                   ),
                 ),
-                if (showingOcr && displayAsset.width != null && displayAsset.height != null)
+                if (showingOcr &&
+                    displayAsset.width != null &&
+                    displayAsset.height != null)
                   Positioned.fill(
                     child: OcrOverlay(
                       asset: displayAsset,
-                      imageSize: Size(displayAsset.width!.toDouble(), displayAsset.height!.toDouble()),
+                      imageSize: Size(
+                        displayAsset.width!.toDouble(),
+                        displayAsset.height!.toDouble(),
+                      ),
                       viewportSize: Size(viewportWidth, viewportHeight),
                       controller: _viewController,
                     ),
@@ -518,7 +599,10 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                           opacity: _showingDetails ? 1.0 : 0.0,
                           duration: Durations.short2,
                           child: _showingDetails
-                              ? AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget)
+                              ? AssetDetails(
+                                  asset: displayAsset,
+                                  minHeight: viewportHeight - snapTarget,
+                                )
                               : SizedBox(height: viewportHeight - snapTarget),
                         ),
                       ),
@@ -557,7 +641,8 @@ class _NativeVideoViewerKey extends GlobalKey {
   const _NativeVideoViewerKey(this.value) : super.constructor();
 
   @override
-  bool operator ==(Object other) => other is _NativeVideoViewerKey && other.value == value;
+  bool operator ==(Object other) =>
+      other is _NativeVideoViewerKey && other.value == value;
 
   @override
   int get hashCode => value.hashCode;
