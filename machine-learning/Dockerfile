@@ -2,7 +2,48 @@ ARG DEVICE=cpu
 
 FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS builder-cpu
 
-FROM builder-cpu AS builder-openvino
+FROM python:3.13-slim-trixie@sha256:7c61056e61ac89e852de05f3dc6fa51a6dd2181797bceed46aa725dd7cb2cd3b AS builder-openvino
+
+# renovate: datasource=github-releases depName=microsoft/onnxruntime
+ARG ONNXRUNTIME_VERSION="v1.30.0"
+ENV VIRTUAL_ENV=/opt/venv \
+    OpenVINO_DIR=/opt/venv/lib/python3.13/site-packages/openvino/cmake \
+    CCACHE_DIR=/ccache
+
+RUN apt-get update && apt-get install -y --no-install-recommends g++ make patch git cmake ccache patchelf
+RUN git clone --depth 1 --branch "${ONNXRUNTIME_VERSION}" https://github.com/microsoft/onnxruntime /code/onnxruntime
+
+COPY --from=ghcr.io/astral-sh/uv:0.8.15@sha256:a5727064a0de127bdb7c9d3c1383f3a9ac307d9f2d8a391edc7896c54289ced0 /uv /uvx /bin/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --extra openvino --group onnxruntime-openvino-build --no-dev --no-editable --no-install-project --no-progress --active --link-mode copy
+
+WORKDIR /code/onnxruntime
+# Note: the `parallel` setting uses a substantial amount of RAM
+RUN --mount=type=cache,target=/ccache \
+    /opt/venv/bin/python tools/ci_build/build.py \
+    --allow_running_as_root \
+    --build_dir build \
+    --config Release \
+    --build_wheel \
+    --update \
+    --build \
+    --parallel 16 \
+    --cmake_extra_defines onnxruntime_BUILD_UNIT_TESTS=OFF \
+    --skip_tests \
+    --use_openvino CPU \
+    --use_cache \
+    --compile_no_warning_as_error
+
+# bundle openvino into the wheel as the published one does, so it is what the EP loads beside it
+WORKDIR /code/onnxruntime/build/Release/dist
+RUN /opt/venv/bin/wheel unpack onnxruntime_openvino-*.whl && \
+    capi=$(echo onnxruntime_openvino-*/onnxruntime/capi) && \
+    cp /opt/venv/lib/python3.13/site-packages/openvino/libs/* "$capi" && \
+    mv "$capi"/libopenvino_c.so.* "$capi/libopenvino_c.so" && \
+    patchelf --set-rpath '$ORIGIN' --force-rpath "$capi/libonnxruntime_providers_openvino.so" && \
+    /opt/venv/bin/wheel pack onnxruntime_openvino-*/ -d /opt
 
 FROM python:3.13-slim-bookworm@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26 AS builder-cuda
 
@@ -37,7 +78,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.15@sha256:a5727064a0de127bdb7c9d3c1383f3a9a
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
+    uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy && \
+    if [ "$DEVICE" = "openvino" ]; then uv pip install --no-deps /opt/onnxruntime_openvino-*.whl; fi
 
 FROM python:3.13-slim-trixie@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285 AS prod-cpu
 

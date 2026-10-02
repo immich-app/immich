@@ -45,6 +45,8 @@ lint = [
     { include-group = "types" },
 ]
 dev = ["locust>=2.15.1", { include-group = "test" }, { include-group = "lint" }]
+# the image replaces onnxruntime-openvino with one built against and bundling this openvino
+onnxruntime-openvino-build = ["openvino>=2026.4.1,<2027", "setuptools", "wheel"]
 
 [project.optional-dependencies]
 cpu = ["onnxruntime>=1.23.2,<2"]
