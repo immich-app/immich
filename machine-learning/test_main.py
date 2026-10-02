@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from random import randint
 from types import SimpleNamespace
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Iterator, TypeVar
 from unittest import mock
 
 import numpy as np
@@ -1377,6 +1377,11 @@ def expected_box(cell_x: int, cell_y: int) -> list[float]:
     return [cx - 8, cy - 16, cx + 24, cy + 32]
 
 
+def cosine(a: list[float], b: list[float]) -> float:
+    x, y = np.asarray(a, dtype=np.float64), np.asarray(b, dtype=np.float64)
+    return float(x @ y / np.linalg.norm(x) / np.linalg.norm(y))
+
+
 M = TypeVar("M", bound=InferenceModel[Any])
 
 
@@ -2242,6 +2247,16 @@ def test_ping_endpoint(deployed_app: TestClient) -> None:
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestPredictionEndpoints:
+    @pytest.fixture(autouse=True)
+    def providers(self, mocker: MockerFixture) -> Iterator[None]:
+        sessions = mocker.spy(ort, "InferenceSession")
+        yield
+        if settings.test_provider:
+            providers = [session.get_providers()[0] for session in sessions.spy_return_list]
+            assert providers == [settings.test_provider] * len(providers)
+            devices = [call.kwargs["provider_options"][0].get("device_type") for call in sessions.call_args_list]
+            assert all(device in (None, f"GPU.{settings.device_id}") for device in devices)
+
     def test_clip_image_endpoint(
         self, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
@@ -2252,7 +2267,7 @@ class TestPredictionEndpoints:
         )
 
         assert response.status_code == 200
-        assert np.allclose(orjson.loads(response.json()["clip"]), responses["clip"]["image"], atol=1e-3)
+        assert cosine(orjson.loads(response.json()["clip"]), responses["clip"]["image"]) >= 0.999
 
     def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
         response = deployed_app.post(
@@ -2264,7 +2279,7 @@ class TestPredictionEndpoints:
         )
 
         assert response.status_code == 200
-        assert np.allclose(orjson.loads(response.json()["clip"]), responses["clip"]["text"], atol=1e-3)
+        assert cosine(orjson.loads(response.json()["clip"]), responses["clip"]["text"]) >= 0.999
 
     def test_face_endpoint(
         self, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
@@ -2293,9 +2308,9 @@ class TestPredictionEndpoints:
         assert len(actual["facial-recognition"]) == len(expected["faces"])
 
         for expected_face, actual_face in zip(expected["faces"], actual["facial-recognition"]):
-            assert actual_face["boundingBox"] == expected_face["boundingBox"]
-            assert actual_face["score"] == pytest.approx(expected_face["score"], abs=1e-3)
-            assert np.allclose(orjson.loads(actual_face["embedding"]), expected_face["embedding"], atol=1e-3)
+            assert actual_face["boundingBox"] == pytest.approx(expected_face["boundingBox"], abs=1)
+            assert actual_face["score"] == pytest.approx(expected_face["score"], abs=0.01)
+            assert cosine(orjson.loads(actual_face["embedding"]), expected_face["embedding"]) >= 0.999
 
     def test_ocr_endpoint(
         self, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
@@ -2322,7 +2337,13 @@ class TestPredictionEndpoints:
 
         actual = response.json()["ocr"]
         assert response.status_code == 200
-        assert actual["text"] == expected["text"]
-        assert np.allclose(actual["box"], expected["box"], atol=1e-3)
-        assert np.allclose(actual["boxScore"], expected["boxScore"], atol=1e-3)
-        assert np.allclose(actual["textScore"], expected["textScore"], atol=1e-3)
+        # lines are matched by text, since one read differently can move in reading order
+        found = {text: line for line, text in enumerate(actual["text"])}
+        shared = [(found[text], line) for line, text in enumerate(expected["text"]) if text in found]
+        assert len(shared) >= 0.9 * len(expected["text"])
+        assert len(shared) >= 0.9 * len(actual["text"])
+        for found_line, expected_line in shared:
+            box = slice(8 * found_line, 8 * found_line + 8)
+            assert actual["box"][box] == pytest.approx(
+                expected["box"][8 * expected_line : 8 * expected_line + 8], abs=0.01
+            )

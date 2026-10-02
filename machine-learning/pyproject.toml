@@ -47,6 +47,15 @@ lint = [
 dev = ["locust>=2.15.1", { include-group = "test" }, { include-group = "lint" }]
 # the image replaces onnxruntime-openvino with one built against and bundling this openvino
 onnxruntime-openvino-build = ["openvino>=2026.4.1,<2027", "setuptools", "wheel"]
+# the CUDA libraries the cuda image has in its nvidia/cuda base, for running outside it
+cuda-libs = [
+    "nvidia-cuda-runtime-cu12==12.2.140 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-cuda-nvrtc-cu12==12.2.140 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-cublas-cu12==12.2.5.6 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-cufft-cu12==11.0.8.103 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-curand-cu12==10.3.3.141 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-cudnn-cu12==9.10.2.21 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
 
 [project.optional-dependencies]
 cpu = ["onnxruntime>=1.23.2,<2"]
