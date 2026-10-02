@@ -17,6 +17,7 @@ import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { findOrFail } from 'src/utils/misc.js';
+import { getPreferences } from 'src/utils/preferences.js';
 
 const DAYS = 3;
 const DAYS_UNTIL_BIRTHDAY = 3;
@@ -151,15 +152,35 @@ export class MemoryService extends BaseService {
     await this.memoryRepository.cleanup();
   }
 
-  async search(auth: AuthDto, dto: MemorySearchDto) {
-    const memories = await this.memoryRepository.search(auth.user.id, dto);
+  async search(auth: AuthDto, { type, ...dto }: MemorySearchDto) {
+    const types = await this.getEnabledTypes(auth, type);
+    if (types.length === 0) {
+      return [];
+    }
+
+    const memories = await this.memoryRepository.search(auth.user.id, { ...dto, types });
     return memories
       .filter((memory: Memory) => memory.assets && memory.assets.length > 0)
       .map((memory: Memory) => mapMemory(memory, auth));
   }
 
-  statistics(auth: AuthDto, dto: MemorySearchDto) {
-    return this.memoryRepository.statistics(auth.user.id, dto);
+  async statistics(auth: AuthDto, { type, ...dto }: MemorySearchDto) {
+    const types = await this.getEnabledTypes(auth, type);
+    if (types.length === 0) {
+      return { total: 0 };
+    }
+
+    return this.memoryRepository.statistics(auth.user.id, { ...dto, types });
+  }
+
+  private async getEnabledTypes(auth: AuthDto, requested?: MemoryType) {
+    const metadata = await this.userRepository.getMetadata(auth.user.id);
+    const { memories } = getPreferences(metadata);
+    const enabled: Record<MemoryType, boolean> = {
+      [MemoryType.OnThisDay]: memories.onThisDayEnabled,
+      [MemoryType.Birthday]: memories.birthdayEnabled,
+    };
+    return Object.values(MemoryType).filter((type) => enabled[type] && (requested === undefined || type === requested));
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {

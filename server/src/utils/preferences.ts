@@ -18,6 +18,8 @@ const getDefaultPreferences = (): UserPreferences => {
       enabled: true,
       duration: 5,
       sidebarWeb: false,
+      onThisDayEnabled: true,
+      birthdayEnabled: true,
     },
     people: {
       enabled: true,
