@@ -1,5 +1,7 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
-import { MapAsset } from 'src/dtos/asset-response.dto';
+import type { UserMetadataItem } from 'src/types.js';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { PersonUserRole } from 'src/dtos/person.dto.js';
 import {
   AlbumUserRole,
   AssetFileType,
@@ -12,12 +14,11 @@ import {
   SourceType,
   UserAvatarColor,
   UserStatus,
-} from 'src/enum';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { PluginTable } from 'src/schema/tables/plugin.table';
-import { UserMetadataItem } from 'src/types';
+} from 'src/enum.js';
+import { AlbumTable } from 'src/schema/tables/album.table.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { PluginTable } from 'src/schema/tables/plugin.table.js';
 
 export type AuthUser = {
   id: string;
@@ -133,13 +134,14 @@ export type User = {
 };
 
 export type UserAdmin = User & {
+  clusterGroupId: string;
   storageLabel: string | null;
   shouldChangePassword: boolean;
   isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  oauthId: string;
+  oauthId: string | null;
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;
   status: UserStatus;
@@ -241,7 +243,7 @@ export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId' | '
 
 export type Person = {
   createdAt: Date;
-  id: string;
+  personGroupId: string;
   ownerId: string;
   updatedAt: Date;
   updateId: string;
@@ -252,7 +254,12 @@ export type Person = {
   faceAssetId: string | null;
   isHidden: boolean;
   thumbnailPath: string;
+  otherPeople: { sharedById: string; name: string; birthDate: string | null; role: PersonUserRole }[];
+  sharedBy: PersonUser[];
+  sharedWith: PersonUser[];
 };
+
+export type PersonUser = User & { role: PersonUserRole };
 
 export type AssetFace = {
   id: string;
@@ -264,7 +271,7 @@ export type AssetFace = {
   boundingBoxY2: number;
   imageHeight: number;
   imageWidth: number;
-  personId: string | null;
+  personGroupId: string | null;
   sourceType: SourceType;
   person?: ShallowDehydrateObject<Person> | null;
   updatedAt: Date;
@@ -275,7 +282,7 @@ export type AssetFace = {
 export type Plugin = Selectable<PluginTable>;
 
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
-const userWithPrefixColumns = [
+const user2Columns = [
   'user2.id',
   'user2.name',
   'user2.email',
@@ -373,9 +380,18 @@ export const columns = {
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
   user: userColumns,
-  userWithPrefix: userWithPrefixColumns,
+  user2: user2Columns,
+  userPrefix: [
+    'user.id',
+    'user.name',
+    'user.email',
+    'user.avatarColor',
+    'user.profileImagePath',
+    'user.profileChangedAt',
+  ],
   userAdmin: [
     ...userColumns,
+    'clusterGroupId',
     'createdAt',
     'updatedAt',
     'deletedAt',
@@ -469,6 +485,20 @@ export const columns = {
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
   syncUser: ['id', 'name', 'email', 'avatarColor', 'deletedAt', 'updateId', 'profileImagePath', 'profileChangedAt'],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
+  syncAssetFace: [
+    'asset_face.id',
+    'asset_face.assetId',
+    'asset_face.personGroupId as personId',
+    'asset_face.imageWidth',
+    'asset_face.imageHeight',
+    'asset_face.boundingBoxX1',
+    'asset_face.boundingBoxY1',
+    'asset_face.boundingBoxX2',
+    'asset_face.boundingBoxY2',
+    'asset_face.sourceType',
+    'asset_face.isVisible',
+    'asset_face.deletedAt',
+  ],
   syncAssetExif: [
     'asset_exif.assetId',
     'asset_exif.description',

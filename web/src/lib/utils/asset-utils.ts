@@ -1,12 +1,7 @@
 import {
   AssetVisibility,
-  bulkTagAssets,
-  createStack,
-  deleteAssets,
-  deleteStacks,
   getBaseUrl,
   getDownloadInfo,
-  getStack,
   untagAssets,
   updateAsset,
   updateAssets,
@@ -14,7 +9,6 @@ import {
   type AssetTypeEnum,
   type DownloadInfoDto,
   type ExifResponseDto,
-  type StackResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
@@ -27,32 +21,14 @@ import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { downloadBlob, downloadRequest, withError } from '$lib/utils';
+import { locale } from '$lib/stores/preferences.store';
+import { downloadUrlPost, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
-
-export const tagAssets = async ({
-  assetIds,
-  tagIds,
-  showNotification = true,
-}: {
-  assetIds: string[];
-  tagIds: string[];
-  showNotification?: boolean;
-}) => {
-  await bulkTagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
-
-  if (showNotification) {
-    const $t = await getFormatter();
-    toastManager.primary($t('tagged_assets', { values: { count: assetIds.length } }));
-  }
-
-  return assetIds;
-};
 
 export const removeTag = async ({
   assetIds,
@@ -92,7 +68,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
-    const archiveName = fileName.replace('.zip', () => `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
+    const archiveName = `${fileName}${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}`;
     const queryParams = asQueryString(authManager.params);
 
     const downloadKey =
@@ -100,27 +76,26 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
         ? `${archiveName} (${index + 1}/${downloadInfo.archives.length})`
         : `${archiveName} `;
 
-    const abort = new AbortController();
-    downloadManager.add(downloadKey, archive.size, abort);
+    const url = getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : '');
 
     try {
-      // TODO use sdk once it supports progress events
-      const { data } = await downloadRequest({
-        method: 'POST',
-        url: getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : ''),
-        data: { assetIds: archive.assetIds, edited: true },
-        signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-      });
-
-      downloadBlob(data, archiveName);
+      if (downloadInfo.archives.length > 1) {
+        downloadManager.add(downloadKey, url, archive.assetIds, archiveName, archive.size);
+      } else {
+        downloadUrlPost(url, archive.assetIds, archiveName);
+        const $t = await getFormatter();
+        const $locale = get(locale);
+        toastManager.primary(
+          $t('downloading_archive_filename_size', {
+            values: { size: getByteUnitString(archive.size, $locale), filename: archiveName },
+          }),
+          { timeout: 10_000 },
+        );
+      }
     } catch (error) {
       const $t = get(t);
       handleError(error, $t('errors.unable_to_download_files'));
-      downloadManager.clear(downloadKey);
       return;
-    } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };
@@ -284,84 +259,6 @@ export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserRes
   return ids;
 };
 
-export type StackResponse = {
-  stack?: StackResponseDto;
-  toDeleteIds: string[];
-};
-
-export const stackAssets = async (assets: { id: string }[], showNotification = true): Promise<StackResponse> => {
-  if (assets.length < 2) {
-    return { stack: undefined, toDeleteIds: [] };
-  }
-
-  const $t = get(t);
-
-  try {
-    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
-    if (showNotification) {
-      toastManager.primary({
-        description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
-        button: {
-          label: $t('view_stack'),
-          onclick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
-        },
-      });
-    }
-
-    return {
-      stack,
-      toDeleteIds: assets.slice(1).map((asset) => asset.id),
-    };
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_stack_assets'));
-    return { stack: undefined, toDeleteIds: [] };
-  }
-};
-
-export const deleteStack = async (stackIds: string[]) => {
-  const ids = [...new Set(stackIds)];
-  if (ids.length === 0) {
-    return;
-  }
-
-  const $t = get(t);
-
-  try {
-    const stacks = await Promise.all(ids.map((id) => getStack({ id })));
-    const count = stacks.reduce((sum, stack) => sum + stack.assets.length, 0);
-
-    await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
-
-    toastManager.primary($t('unstacked_assets_count', { values: { count } }));
-
-    const assets = stacks.flatMap((stack) => stack.assets);
-    for (const asset of assets) {
-      asset.stack = null;
-    }
-
-    return assets;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_unstack_assets'));
-  }
-};
-
-export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: StackResponseDto) => {
-  const $t = get(t);
-
-  try {
-    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
-    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
-    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
-
-    toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
-
-    keepAsset.stack = null;
-    return keepAsset;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
-  }
-};
-
 export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetMultiSelectManager) => {
   if (assetInteraction.selectAll) {
     // Selection is already ongoing
@@ -403,6 +300,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     });
 
     asset.isArchived = data.isArchived;
+    asset.visibility = data.visibility;
     if (asset.isArchived) {
       const timelineAsset = toTimelineAsset(asset);
       showUndoArchiveToast($t('added_to_archive'), [timelineAsset]);

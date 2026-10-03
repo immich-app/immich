@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import _ from 'lodash';
+import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
-import { AssetFile } from 'src/database';
-import { OnJob } from 'src/decorators';
-import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import type { AssetFile } from 'src/database.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import type { JobItem, JobOf } from 'src/types.js';
+import { OnJob } from 'src/decorators.js';
+import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -18,10 +20,14 @@ import {
   AssetStatsDto,
   UpdateAssetDto,
   mapStats,
-} from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionItem, AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
+} from 'src/dtos/asset.dto.js';
+import {
+  AssetEditAction,
+  type AssetEditActionItem,
+  AssetEditsCreateDto,
+  AssetEditsResponseDto,
+} from 'src/dtos/editing.dto.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 import {
   AssetFileType,
   AssetStatus,
@@ -31,10 +37,9 @@ import {
   JobStatus,
   Permission,
   QueueName,
-} from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
-import { requireElevatedPermission } from 'src/utils/access';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { requireElevatedPermission } from 'src/utils/access.js';
 import {
   getAssetFiles,
   getDimensions,
@@ -42,11 +47,11 @@ import {
   onAfterUnlink,
   onBeforeLink,
   onBeforeUnlink,
-} from 'src/utils/asset.util';
-import { updateLockedColumns } from 'src/utils/database';
-import { extractTimeZone } from 'src/utils/date';
-import { batched, findOrFail } from 'src/utils/misc';
-import { transformOcrBoundingBox } from 'src/utils/transform';
+} from 'src/utils/asset.util.js';
+import { updateLockedColumns } from 'src/utils/database.js';
+import { extractTimeZone } from 'src/utils/date.js';
+import { batched, findOrFail } from 'src/utils/misc.js';
+import { transformOcrBoundingBox } from 'src/utils/transform.js';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -65,7 +70,7 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      faces: { person: true },
+      faces: { person: true, viewingUserId: auth.user.id },
       stack: { assets: true },
       edits: true,
       tags: true,
@@ -85,7 +90,7 @@ export class AssetService extends BaseService {
       delete data.owner;
     }
 
-    if (data.ownerId !== auth.user.id || auth.sharedLink) {
+    if (auth.sharedLink) {
       data.people = [];
     }
 
@@ -108,7 +113,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    const wroteMetadata = await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
@@ -124,7 +129,11 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
-    return mapAsset(asset, { auth });
+    if (!wroteMetadata) {
+      this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
+    }
+
+    return this.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
@@ -143,8 +152,8 @@ export class AssetService extends BaseService {
     } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    const assetDto = _.omitBy({ isFavorite, visibility, duplicateId }, _.isUndefined);
-    const exifDto = _.omitBy(
+    const assetDto = omitBy({ isFavorite, visibility, duplicateId }, isUndefined);
+    const exifDto = omitBy(
       {
         latitude,
         longitude,
@@ -152,11 +161,13 @@ export class AssetService extends BaseService {
         description,
         dateTimeOriginal,
       },
-      _.isUndefined,
+      isUndefined,
     );
 
+    let shouldWriteSidecar = false;
     if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
+      shouldWriteSidecar = true;
     }
 
     const extractedTimeZone = extractTimeZone(dateTimeOriginal);
@@ -167,6 +178,7 @@ export class AssetService extends BaseService {
       extractedTimeZone?.type === 'fixed'
     ) {
       await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone ?? extractedTimeZone?.name);
+      shouldWriteSidecar = true;
     }
 
     if (Object.keys(assetDto).length > 0) {
@@ -177,7 +189,14 @@ export class AssetService extends BaseService {
       await this.albumRepository.removeAssetsFromAll(ids);
     }
 
-    await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    if (shouldWriteSidecar) {
+      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    } else {
+      const assets = await this.assetRepository.getByIds(ids);
+      for (const asset of assets) {
+        this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
+      }
+    }
   }
 
   async copy(
@@ -278,10 +297,15 @@ export class AssetService extends BaseService {
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
 
+    let count = 0;
     for await (const assets of batched(this.assetJobRepository.streamForDeletedJob(trashedBefore))) {
       await this.jobRepository.queueAll(
         assets.map(({ id, isOffline }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: !isOffline } })),
       );
+      count += assets.length;
+    }
+    if (count > 0) {
+      this.logger.log(`Automatically queued ${count} expired trash asset(s) for deletion`);
     }
 
     return JobStatus.Success;
@@ -490,7 +514,7 @@ export class AssetService extends BaseService {
     rating?: number | null;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const writes = _.omitBy(
+    const writes = omitBy(
       {
         description,
         dateTimeOriginal,
@@ -499,19 +523,22 @@ export class AssetService extends BaseService {
         longitude,
         rating,
       },
-      _.isUndefined,
+      isUndefined,
     );
 
-    if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif({
-        exif: updateLockedColumns({
-          assetId: id,
-          ...writes,
-        }),
-        lockedPropertiesBehavior: 'append',
-      });
-      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    if (Object.keys(writes).length === 0) {
+      return false;
     }
+
+    await this.assetRepository.upsertExif({
+      exif: updateLockedColumns({
+        assetId: id,
+        ...writes,
+      }),
+      lockedPropertiesBehavior: 'append',
+    });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    return true;
   }
 
   async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {

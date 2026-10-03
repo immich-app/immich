@@ -1,30 +1,28 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/data_controller.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+// ignore: library_prefixes
+import 'package:immich_mobile/entities/store.entity.dart' as dbStore;
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -54,13 +52,15 @@ class BackgroundWorkerFgService {
     );
   }
 
+  // ignore: unused-code
   Future<void> disable() => _foregroundHostApi.disable();
+
+  Future<bool> wasLaunchedInBackground() => _foregroundHostApi.wasLaunchedInBackground();
 }
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   ProviderContainer? _ref;
-  final Drift _drift;
-  final DriftLogger _driftLogger;
+  final DataController _dataController;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
   final _cancellationToken = Completer<void>();
   final Logger _logger = Logger('BackgroundWorkerBgService');
@@ -70,38 +70,22 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool _isCleanedUp = false;
 
-  BackgroundWorkerBgService({required this._drift, required this._driftLogger})
-    : _backgroundHostApi = BackgroundWorkerBgHostApi() {
-    final ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(_drift))]);
+  BackgroundWorkerBgService({
+    required this._dataController,
+    required ApiService apiService,
+    List<Override> overrides = const [],
+  }) : _backgroundHostApi = BackgroundWorkerBgHostApi() {
+    final ref = ProviderContainer(
+      overrides: [
+        cancellationProvider.overrideWithValue(_cancellationToken),
+        ...Store.overrideWith(dataController: _dataController, apiService: apiService),
+        ...overrides,
+      ],
+    );
     _ref = ref;
-    final db = ref.read(driftProvider);
-    _localSyncService = LocalSyncService(
-      localAlbumRepository: db.localAlbumRepository,
-      localAssetRepository: db.localAssetRepository,
-      nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
-      permissionRepository: ref.read(permissionRepositoryProvider),
-      cancellation: _cancellationToken,
-    );
-    _remoteSyncService = SyncStreamService(
-      syncApiRepository: ref.read(syncApiRepositoryProvider),
-      syncStreamRepository: db.syncStreamRepository,
-      localAssetRepository: db.localAssetRepository,
-      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
-      permissionRepository: ref.read(permissionRepositoryProvider),
-      syncMigrationRepository: db.syncMigrationRepository,
-      api: ref.read(apiServiceProvider),
-      cancellation: _cancellationToken,
-    );
-    _hashService = HashService(
-      localAlbumRepository: db.localAlbumRepository,
-      localAssetRepository: db.localAssetRepository,
-      nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-      cancellation: _cancellationToken,
-    );
+    _localSyncService = ref.read(localSyncServiceProvider);
+    _remoteSyncService = ref.read(syncStreamServiceProvider);
+    _hashService = ref.read(hashServiceProvider);
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
@@ -139,7 +123,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   @override
-  Future<void> onAndroidUpload(int? maxMinutes) async {
+  Future<bool> onAndroidUpload(int? maxMinutes) async {
     final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
     await _optimizeDB();
@@ -164,15 +148,17 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       // Run sync local, sync remote, hash and backup concurrently so the bg
       // refresh task (20s budget) can make progress on all four instead of
-      // racing them sequentially. Phases are independent at the data layer:
-      // hash and handle_backup read drift state and tolerate stale reads
-      // (server-side dedup catches the rare race). The single budget caps the
+      // racing them sequentially. Hash tolerates stale reads, but a new backup
+      // batch waits for the remote sync. The single budget caps the
       // whole batch; no phase needs its own timeout.
+      final remoteSync = _remoteSyncService.sync();
       final all = Future.wait<dynamic>([
         _localSyncService.sync(),
-        _remoteSyncService.sync(),
+        remoteSync,
         _hashService.hashAssets(),
-        _handleBackup(),
+        _handleBackup(
+          remoteSync: remoteSync.then((ok) => ok && !_cancellationToken.isCompleted).catchError((_) => false),
+        ),
       ]);
       if (budget != null) {
         await all.timeout(
@@ -197,7 +183,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _backgroundLoop({
+  Future<bool> _backgroundLoop({
     required Duration hashTimeout,
     required Duration? backupTimeout,
     required String debugLabel,
@@ -209,10 +195,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     try {
       if (!await _syncAssets(hashTimeout: hashTimeout)) {
         _logger.warning("Remote sync did not complete successfully, skipping backup");
-        return;
+        return true;
       }
 
-      final backupFuture = _handleBackup();
+      final backupFuture = _handleBackup(remoteSync: Future.value(true));
       Timer? cancelTimer;
       if (backupTimeout != null) {
         cancelTimer = Timer(backupTimeout, () {
@@ -223,12 +209,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         });
       }
       try {
-        await backupFuture;
+        return await backupFuture;
       } finally {
         cancelTimer?.cancel();
       }
     } catch (error, stack) {
       _logger.severe("Failed to complete $debugLabel", error, stack);
+      return true;
     } finally {
       sw.stop();
       _logger.info("$debugLabel completed in ${sw.elapsed.inSeconds}s");
@@ -248,7 +235,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> _optimizeDB() async {
     try {
-      await (_drift.optimize(allTables: true), _driftLogger.optimize()).wait;
+      await (_dataController.db.optimize(allTables: true), _dataController.logDb.optimize()).wait;
     } catch (error, stack) {
       dPrint(() => "Error during background worker optimize: $error, $stack");
     }
@@ -278,9 +265,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       // Workers share one sqlite connection, so DB teardown must wait until every worker has stopped using it.
       await Future.wait([if (nativeSyncApi != null) nativeSyncApi.cancelHashing()]);
       await workerManagerPatch.dispose().catchError((_) async {});
-      await Future.wait([LogService.I.dispose(), Store.dispose()]);
-      await _drift.close();
-      await _driftLogger.close();
+      await Future.wait([LogService.I.dispose(), dbStore.Store.dispose()]);
+      await _dataController.close();
 
       _ref?.dispose();
       _ref = null;
@@ -289,36 +275,41 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _handleBackup() async {
-    await runZonedGuarded(
-      () async {
-        if (_isCleanedUp) {
-          return;
-        }
+  Future<bool> _handleBackup({required Future<bool> remoteSync}) async {
+    final needsRetry = await runZonedGuarded(() async {
+      if (_isCleanedUp) {
+        return false;
+      }
 
-        if (!_isBackupEnabled) {
-          _logger.info("Backup is disabled. Skipping backup routine");
-          return;
-        }
+      if (!_isBackupEnabled) {
+        _logger.info("Backup is disabled. Skipping backup routine");
+        return false;
+      }
 
-        final currentUser = _ref?.read(currentUserProvider);
-        if (currentUser == null) {
-          _logger.warning("No current user found. Skipping backup from background");
-          return;
-        }
+      final currentUser = _ref?.read(currentUserProvider);
+      if (currentUser == null) {
+        _logger.warning("No current user found. Skipping backup from background");
+        return false;
+      }
 
-        if (Platform.isIOS) {
-          return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
-        }
+      if (CurrentPlatform.isIOS) {
+        await _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id, remoteSync);
+        return false;
+      }
 
-        return _ref
-            ?.read(foregroundUploadServiceProvider)
-            .uploadCandidates(currentUser.id, _cancellationToken, useSequentialUpload: true);
-      },
-      (error, stack) {
-        dPrint(() => "Error in backup zone $error, $stack");
-      },
-    );
+      final uploadService = _ref?.read(foregroundUploadServiceProvider);
+      var failed = 0;
+      await uploadService?.uploadCandidates(
+        currentUser.id,
+        _cancellationToken,
+        callbacks: UploadCallbacks(onError: (_, _) => failed++),
+        useSequentialUpload: true,
+      );
+      _logger.info("Background backup finished, $failed uploads failed");
+      // Retry when at least one upload failed
+      return failed > 0;
+    }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
+    return needsRetry ?? true;
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {
@@ -371,6 +362,6 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  final (drift, logDB) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
-  await BackgroundWorkerBgService(drift: drift, driftLogger: logDB).init();
+  final (dataController, apiService) = await Bootstrap.initDomain(shouldBufferLogs: false, disableStoreWatching: true);
+  await BackgroundWorkerBgService(dataController: dataController, apiService: apiService).init();
 }

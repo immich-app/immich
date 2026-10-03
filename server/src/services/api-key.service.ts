@@ -1,11 +1,11 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { ApiKey } from 'src/database';
-import { ApiKeyCreateDto, ApiKeyCreateResponseDto, ApiKeyResponseDto, ApiKeyUpdateDto } from 'src/dtos/api-key.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { Permission } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { isGranted } from 'src/utils/access';
-import { findOrFail } from 'src/utils/misc';
+import { ApiKey } from 'src/database.js';
+import { ApiKeyCreateDto, ApiKeyCreateResponseDto, ApiKeyResponseDto, ApiKeyUpdateDto } from 'src/dtos/api-key.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { Permission } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { isGranted } from 'src/utils/access.js';
+import { findOrFail } from 'src/utils/misc.js';
 
 @Injectable()
 export class ApiKeyService extends BaseService {
@@ -23,8 +23,9 @@ export class ApiKeyService extends BaseService {
       userId: auth.user.id,
       permissions: dto.permissions,
     });
+    const apiKey = this.map(entity);
 
-    return { secret: token, apiKey: this.map(entity) };
+    return { ...apiKey, secret: token, apiKey };
   }
 
   async update(auth: AuthDto, id: string, dto: ApiKeyUpdateDto): Promise<ApiKeyResponseDto> {
@@ -58,10 +59,10 @@ export class ApiKeyService extends BaseService {
 
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
-
     const newKey = await this.apiKeyRepository.update(auth.user.id, id, { key: hashed });
+    const apiKey = this.map(newKey);
 
-    return { secret: token, apiKey: this.map(newKey) };
+    return { ...apiKey, secret: token, apiKey };
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {

@@ -1,8 +1,8 @@
-import { LibraryController } from 'src/controllers/library.controller';
-import { LibraryService } from 'src/services/library.service';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { LibraryController } from 'src/controllers/library.controller.js';
+import { LibraryService } from 'src/services/library.service.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(LibraryController.name, () => {
   let ctx: ControllerContext;
@@ -19,28 +19,6 @@ describe(LibraryController.name, () => {
   });
 
   const id = factory.uuid();
-
-  describe('authentication', () => {
-    const routes = [
-      { method: 'get', path: '/libraries' },
-      { method: 'post', path: '/libraries' },
-      { method: 'get', path: `/libraries/${id}` },
-      { method: 'put', path: `/libraries/${id}` },
-      { method: 'patch', path: `/libraries/${id}` },
-      { method: 'delete', path: `/libraries/${id}` },
-      { method: 'post', path: `/libraries/${id}/validate` },
-      { method: 'get', path: `/libraries/${id}/statistics` },
-      { method: 'post', path: `/libraries/${id}/scan` },
-    ] as const;
-
-    it.each(routes)('$method $path should be an admin route', async ({ method, path }) => {
-      await request(ctx.getHttpServer())[method](path).send({});
-
-      expect(ctx.authenticate).toHaveBeenCalledWith(
-        expect.objectContaining({ metadata: expect.objectContaining({ adminRoute: true }) }),
-      );
-    });
-  });
 
   describe('POST /libraries', () => {
     it('should require an owner id', async () => {

@@ -64,7 +64,7 @@ export const handleCreateApiKey = async (dto: ApiKeyCreateDto) => {
     }
 
     const response = await createApiKey({ apiKeyCreateDto: dto });
-    eventManager.emit('ApiKeyCreate', response.apiKey);
+    eventManager.emit('ApiKeyCreate', response);
 
     return response;
   } catch (error) {
@@ -105,7 +105,7 @@ export const handleRotateApiKey = async (apiKey: ApiKeyResponseDto) => {
 
   try {
     const response = await rotateApiKey({ id: apiKey.id });
-    eventManager.emit('ApiKeyUpdate', response.apiKey);
+    eventManager.emit('ApiKeyUpdate', response);
     await modalManager.show(ApiKeySecretModal, { secret: response.secret });
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));

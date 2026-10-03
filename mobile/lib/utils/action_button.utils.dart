@@ -33,7 +33,6 @@ class ActionButtonContext {
   final BaseAsset asset;
   final bool isOwner;
   final bool isArchived;
-  final bool isTrashEnabled;
   final bool isInLockedView;
   final bool isStacked;
   final RemoteAlbum? currentAlbum;
@@ -47,7 +46,6 @@ class ActionButtonContext {
     required this.asset,
     required this.isOwner,
     required this.isArchived,
-    required this.isTrashEnabled,
     required this.isStacked,
     required this.isInLockedView,
     required this.currentAlbum,
@@ -259,10 +257,6 @@ class ActionButtonBuilder {
     ActionButtonType.unarchive,
     ActionButtonType.restoreTrash,
   };
-
-  static List<Widget> build(ActionButtonContext context) {
-    return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
-  }
 
   static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
     final visibleButtons = defaultViewerKebabMenuOrder

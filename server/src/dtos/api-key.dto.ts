@@ -1,7 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { Permission } from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import { HistoryBuilder } from 'src/decorators.js';
+import { Permission } from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const PermissionSchema = z.enum(Permission).describe('List of permissions').meta({ id: 'Permission' });
 
@@ -31,8 +32,9 @@ const ApiKeyResponseSchema = z
 
 const ApiKeyCreateResponseSchema = z
   .object({
+    ...ApiKeyResponseSchema.shape,
     secret: z.string().describe('API key secret (only shown once)'),
-    apiKey: ApiKeyResponseSchema,
+    apiKey: ApiKeyResponseSchema.meta({ ...new HistoryBuilder().added('v1').deprecated('v3.2.0').getExtensions() }),
   })
   .meta({ id: 'ApiKeyCreateResponseDto' });
 

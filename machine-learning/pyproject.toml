@@ -1,15 +1,15 @@
 [project]
 name = "immich-ml"
-version = "3.1.0"
+version = "3.3.0rc0"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.12,<4.0"
 readme = "README.md"
 dependencies = [
-    "aiocache>=0.12.1,<1.0",
     "fastapi>=0.95.2,<1.0",
     "gunicorn>=21.1.0",
     "huggingface-hub>=1.0,<2.0",
+    "immich-model",
     "numpy>=2.4.0,<3.0",
     "onnx>=1.22.0",
     "opencv-python-headless>=4.7.0.72,<5.0",
@@ -45,10 +45,15 @@ lint = [
     { include-group = "types" },
 ]
 dev = ["locust>=2.15.1", { include-group = "test" }, { include-group = "lint" }]
+# the image replaces onnxruntime-openvino with one built against and bundling this openvino
+onnxruntime-openvino-build = ["openvino>=2026.4.1,<2027", "setuptools", "wheel"]
 
 [project.optional-dependencies]
 cpu = ["onnxruntime>=1.23.2,<2"]
-cuda = ["onnxruntime-gpu>=1.23.2,<2"]
+cuda = [
+  "onnxruntime-gpu>=1.27.1,<1.28", # TODO: last ORT release supporting CUDA 12.2, also need to handle CUDA 13
+  "onnxruntime-ep-nv-tensorrt-rtx-cu12>=0.4.0,<0.5 ; platform_machine == 'x86_64'",
+]
 openvino = ["onnxruntime-openvino>=1.24.1,<2"]
 armnn = ["onnxruntime>=1.23.2,<2"]
 rknn = ["onnxruntime>=1.23.2,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
@@ -56,6 +61,17 @@ rocm = ["onnxruntime-migraphx>=1.23.2,<2"]
 
 [tool.uv]
 compile-bytecode = true
+override-dependencies = ["opencv-python ; sys_platform == 'never'"] # only install the headless version
+
+[tool.uv.sources]
+immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "20a8ec79a1e6414d311f0e28b6e6082968a31ad7" }
+onnxruntime-gpu = { index = "onnxruntime-cuda-12" }
+
+[[tool.uv.index]]
+name = "onnxruntime-cuda-12"
+url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
+explicit = true
+
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_ml"]
@@ -68,7 +84,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 plugins = "pydantic.mypy"
 follow_imports = "silent"
 warn_redundant_casts = true
@@ -85,7 +101,7 @@ warn_untyped_fields = true
 
 [tool.ruff]
 line-length = 120
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]

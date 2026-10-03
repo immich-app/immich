@@ -1,11 +1,11 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
-import _ from 'lodash';
-import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
-import { EmitEvent } from 'src/repositories/event.repository';
-import { immich_uuid_v7, updated_at } from 'src/schema/functions';
-import { setUnion } from 'src/utils/set';
+import { chunk, flatten } from 'lodash-es';
+import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
+import { EmitEvent } from 'src/repositories/event.repository.js';
+import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
+import { setUnion } from 'src/utils/set.js';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
@@ -45,17 +45,18 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
     let chunk = new Set<T>();
     for (const element of collection) {
       chunk.add(element);
-      if (chunk.size === size) {
-        result.push(chunk);
-        chunk = new Set<T>();
+      if (chunk.size !== size) {
+        continue;
       }
+      result.push(chunk);
+      chunk = new Set<T>();
     }
     if (chunk.size > 0) {
       result.push(chunk);
     }
     return result;
   }
-  return _.chunk(collection, size);
+  return chunk(collection, size);
 }
 
 /**
@@ -100,7 +101,7 @@ export function Chunked(
 }
 
 export function ChunkedArray(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: _.flatten });
+  return Chunked({ ...options, mergeFn: flatten });
 }
 
 export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
@@ -235,6 +236,15 @@ export class HistoryBuilder {
     const { replacementId } = options || {};
     this.hasDeprecated = true;
     return this.push({ version, state: ApiState.Deprecated, replacementId });
+  }
+
+  v3PatchMigration() {
+    return this.push({
+      version: 'v3.0.0',
+      state: 'Updated',
+      description:
+        'This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly.',
+    });
   }
 
   isDeprecated(): boolean {

@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { AssetOrderSchema, UserAvatarColorSchema } from 'src/enum';
-import { UserPreferences } from 'src/types';
 import z from 'zod';
+import type { UserPreferences } from 'src/types.js';
+import { AssetOrderSchema, PersonUpdateStrategySchema, UserAvatarColorSchema } from 'src/enum.js';
 
 const AlbumsUpdateSchema = z
   .object({
@@ -22,6 +22,7 @@ const MemoriesUpdateSchema = z
   .object({
     enabled: z.boolean().optional().describe('Whether memories are enabled'),
     duration: z.int().min(1).optional().describe('Memory duration in seconds'),
+    sidebarWeb: z.boolean().optional().describe('Whether memories appear in web sidebar'),
   })
   .optional()
   .meta({ id: 'MemoriesUpdate' });
@@ -46,6 +47,7 @@ const PeopleUpdateSchema = z
     enabled: z.boolean().optional().describe('Whether people are enabled'),
     sidebarWeb: z.boolean().optional().describe('Whether people appear in web sidebar'),
     minimumFaces: z.int().min(1).optional().describe('People face threshold'),
+    updateStrategy: PersonUpdateStrategySchema.optional(),
   })
   .optional()
   .meta({ id: 'PeopleUpdate' });
@@ -140,6 +142,7 @@ const MemoriesResponseSchema = z
   .object({
     enabled: z.boolean().describe('Whether memories are enabled'),
     duration: z.int().describe('Memory duration in seconds'),
+    sidebarWeb: z.boolean().describe('Whether memories appear in web sidebar'),
   })
   .meta({ id: 'MemoriesResponse' });
 
@@ -148,6 +151,7 @@ const PeopleResponseSchema = z
     enabled: z.boolean().describe('Whether people are enabled'),
     sidebarWeb: z.boolean().describe('Whether people appear in web sidebar'),
     minimumFaces: z.int().min(1).optional().describe('People face threshold'),
+    updateStrategy: PersonUpdateStrategySchema,
   })
   .meta({ id: 'PeopleResponse' });
 

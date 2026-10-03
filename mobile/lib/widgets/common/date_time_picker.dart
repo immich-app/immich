@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -8,6 +9,8 @@ import 'package:immich_mobile/widgets/common/dropdown_search_menu.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/timezone.dart';
+
+part 'date_time_picker.freezed.dart';
 
 Future<String?> showDateTimePicker({
   required BuildContext context,
@@ -165,39 +168,19 @@ class _DateTimePicker extends HookWidget {
   }
 }
 
-class _TimeZoneOffset implements Comparable<_TimeZoneOffset> {
-  final String display;
-  final Location location;
+@freezed
+abstract class _TimeZoneOffset with _$TimeZoneOffset implements Comparable<_TimeZoneOffset> {
+  const _TimeZoneOffset._();
 
-  const _TimeZoneOffset({required this.display, required this.location});
+  const factory _TimeZoneOffset({required String display, required Location location}) = __TimeZoneOffset;
 
-  _TimeZoneOffset copyWith({String? display, Location? location}) {
-    return _TimeZoneOffset(display: display ?? this.display, location: location ?? this.location);
-  }
+  factory _TimeZoneOffset.fromLocation(tz.Location l) =>
+      _TimeZoneOffset(display: _getFormattedOffset(l.currentTimeZone.offset, l), location: l);
 
   int get offsetInMilliseconds => location.currentTimeZone.offset;
-
-  _TimeZoneOffset.fromLocation(tz.Location l)
-    : display = _getFormattedOffset(l.currentTimeZone.offset, l),
-      location = l;
 
   @override
   int compareTo(_TimeZoneOffset other) {
     return offsetInMilliseconds.compareTo(other.offsetInMilliseconds);
   }
-
-  @override
-  String toString() => '_TimeZoneOffset(display: $display, location: $location)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is _TimeZoneOffset && other.display == display && other.offsetInMilliseconds == offsetInMilliseconds;
-  }
-
-  @override
-  int get hashCode => display.hashCode ^ offsetInMilliseconds.hashCode ^ location.hashCode;
 }

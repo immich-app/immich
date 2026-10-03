@@ -8,7 +8,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
@@ -17,7 +17,7 @@ final syncLinkedAlbumServiceProvider = Provider((ref) {
   return SyncLinkedAlbumService(
     db.localAlbumRepository,
     db.remoteAlbumRepository,
-    ref.watch(driftAlbumApiRepositoryProvider),
+    ref.watch(albumApiRepositoryProvider),
     ref.watch(storeServiceProvider),
   );
 });
@@ -25,7 +25,7 @@ final syncLinkedAlbumServiceProvider = Provider((ref) {
 class SyncLinkedAlbumService {
   final LocalAlbumRepository _localAlbumRepository;
   final RemoteAlbumRepository _remoteAlbumRepository;
-  final DriftAlbumApiRepository _albumApiRepository;
+  final AlbumApiRepository _albumApiRepository;
   final StoreService _storeService;
 
   SyncLinkedAlbumService(

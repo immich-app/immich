@@ -2,11 +2,11 @@ import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 import { cubicOut } from 'svelte/easing';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
 import type { ImageLoaderStatus } from '$lib/utils/adaptive-image-loader.svelte';
 import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
-import { PersistedLocalStorage } from '$lib/utils/persisted';
 
 export interface Faces {
   id: string;
@@ -17,9 +17,6 @@ export interface Faces {
   boundingBoxY1: number;
   boundingBoxY2: number;
 }
-
-const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
-const isShowAssetPath = new PersistedLocalStorage<boolean>('asset-viewer-show-path', false);
 
 const createDefaultZoomState = (): ZoomImageWheelState => ({
   currentRotation: 0,
@@ -75,11 +72,11 @@ class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   get isShowDetailPanel() {
-    return isShowDetailPanel.current;
+    return userPreferencesManager.showDetailPanel;
   }
 
   get isShowAssetPath() {
-    return isShowAssetPath.current;
+    return userPreferencesManager.showAssetPath;
   }
 
   get isFaceEditMode() {
@@ -121,11 +118,11 @@ class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   private set isShowDetailPanel(value: boolean) {
-    isShowDetailPanel.current = value;
+    userPreferencesManager.showDetailPanel = value;
   }
 
   private set isShowAssetPath(value: boolean) {
-    isShowAssetPath.current = value;
+    userPreferencesManager.showAssetPath = value;
   }
 
   onZoomChange(state: ZoomImageWheelState) {

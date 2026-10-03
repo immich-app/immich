@@ -1,8 +1,9 @@
 import 'package:drift/drift.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/app/store.drift.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 
@@ -40,6 +41,7 @@ class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin
     return true;
   }
 
+  @visibleForTesting
   Future<T?> tryGet<T>(StoreKey<T> key) async {
     final entity = await _db.managers.storeEntity.filter((entity) => entity.id.equals(key.id)).getSingleOrNull();
     if (entity == null) {

@@ -1,5 +1,5 @@
-import { Column, CreateDateColumn, Generated, Table, Timestamp } from '@immich/sql-tools';
-import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
+import { Column, CreateDateColumn, type Generated, Table, Timestamp } from '@immich/sql-tools';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
 
 @Table('person_audit')
 export class PersonAuditTable {
@@ -7,7 +7,7 @@ export class PersonAuditTable {
   id!: Generated<string>;
 
   @Column({ type: 'uuid', index: true })
-  personId!: string;
+  personGroupId!: string;
 
   @Column({ type: 'uuid', index: true })
   ownerId!: string;

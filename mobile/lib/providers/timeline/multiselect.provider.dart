@@ -29,10 +29,11 @@ abstract class MultiSelectState with _$MultiSelectState {
   bool get hasRemote =>
       selectedAssets.any((asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged);
 
+  // ignore: unused-code
   bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);
-
+  // ignore: unused-code
   bool get onlyLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
-
+  // ignore: unused-code
   bool get onlyRemote => selectedAssets.any((asset) => asset.storage == AssetState.remote);
 }
 
@@ -75,25 +76,6 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
   }
 
-  /// Bucket bulk operations
-  Future<void> selectBucket(int offset, int bucketCount) async {
-    final assets = await _timelineService.loadAssets(offset, bucketCount);
-    final selectedAssets = state.selectedAssets.toSet();
-
-    selectedAssets.addAll(assets);
-
-    state = state.copyWith(selectedAssets: selectedAssets);
-  }
-
-  Future<void> deselectBucket(int offset, int bucketCount) async {
-    final assets = await _timelineService.loadAssets(offset, bucketCount);
-    final selectedAssets = state.selectedAssets.toSet();
-
-    selectedAssets.removeAll(assets);
-
-    state = state.copyWith(selectedAssets: selectedAssets);
-  }
-
   Future<void> toggleBucketSelection(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     toggleBucketSelectionByAssets(assets);
@@ -118,10 +100,6 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
 
     state = state.copyWith(selectedAssets: selectedAssets);
-  }
-
-  void setLockedSelectionAssets(Set<BaseAsset> assets) {
-    state = state.copyWith(lockedSelectionAssets: assets);
   }
 }
 

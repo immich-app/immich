@@ -78,7 +78,7 @@ class _ImmichColumnButtonState extends State<ImmichColumnButton> {
               maxLines: 2,
               textAlign: .center,
               overflow: .ellipsis,
-              style: const .new(fontSize: ImmichTextSize.label, fontWeight: .w500),
+              style: const .new(fontSize: ImmichTextSize.body, fontWeight: .w500),
             ),
           ],
         ),

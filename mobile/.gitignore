@@ -32,6 +32,7 @@
 .pub/
 /build/
 lib/**/*.drift.dart
+lib/**/*.steps.dart
 lib/**/*.freezed.dart
 lib/routing/router.gr.dart
 test/drift/main/generated/
@@ -58,6 +59,7 @@ android/app/.cxx
 
 # Fastlane
 ios/fastlane/report.xml
+android/immich-play-store-key.json
 
 # Isar
 default.isar
@@ -66,3 +68,6 @@ libisar.so
 
 # Translation file
 lib/generated/
+
+# Flutter widget previews cache
+.widget_preview/

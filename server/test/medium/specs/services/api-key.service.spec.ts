@@ -1,13 +1,13 @@
 import { Kysely } from 'kysely';
-import { Permission } from 'src/enum';
-import { ApiKeyRepository } from 'src/repositories/api-key.repository';
-import { CryptoRepository } from 'src/repositories/crypto.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { DB } from 'src/schema';
-import { ApiKeyService } from 'src/services/api-key.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { Permission } from 'src/enum.js';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { DB } from 'src/schema/index.js';
+import { ApiKeyService } from 'src/services/api-key.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -24,6 +24,44 @@ beforeAll(async () => {
 });
 
 describe(ApiKeyService.name, () => {
+  describe('getById', () => {
+    it('should not return an api key of another user', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { apiKey } = await sut.create(factory.auth({ user }), { permissions: [Permission.All] });
+
+      await expect(sut.getById(factory.auth({ user: otherUser }), apiKey.id)).rejects.toThrow('API Key not found');
+    });
+  });
+
+  describe('update', () => {
+    it('should not update an api key of another user', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { apiKey } = await sut.create(factory.auth({ user }), { permissions: [Permission.All] });
+
+      await expect(sut.update(factory.auth({ user: otherUser }), apiKey.id, { name: 'new name' })).rejects.toThrow(
+        'API Key not found',
+      );
+    });
+  });
+
+  describe('delete', () => {
+    it('should not delete an api key of another user', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { apiKey } = await sut.create(factory.auth({ user }), { permissions: [Permission.All] });
+
+      await expect(sut.delete(factory.auth({ user: otherUser }), apiKey.id)).rejects.toThrow('API Key not found');
+      await expect(sut.getById(factory.auth({ user }), apiKey.id)).resolves.toEqual(
+        expect.objectContaining({ id: apiKey.id }),
+      );
+    });
+  });
+
   describe('rotate', () => {
     it('should not rotate an api key of another user', async () => {
       const { sut, ctx } = setup();

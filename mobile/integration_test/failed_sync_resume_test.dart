@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/main.dart' as app;
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -38,7 +38,8 @@ void main() {
 
   setUpAll(() async {
     await app.initApp();
-    (drift, _) = await Bootstrap.initDomain();
+    final (dataController, _) = await Bootstrap.initDomain();
+    drift = dataController.db;
     // A background-worker schedule persisted by real app use on this device can
     // launch a second engine mid-file (own isolate pool + full sync) and starve
     // these tests on a small device. Unregister it for the whole run.

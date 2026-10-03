@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:http/http.dart';
+import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/api.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:openapi/api.dart';
 
@@ -22,10 +22,5 @@ class UserApiRepository extends ApiRepository {
   Future<String> createProfileImage({required String name, required Uint8List data}) async {
     final res = await checkNull(_api.createProfileImage(MultipartFile.fromBytes('file', data, filename: name)));
     return res.profileImagePath;
-  }
-
-  Future<List<UserDto>> getAll() async {
-    final dto = await checkNull(_api.searchUsers());
-    return dto.map(UserConverter.fromSimpleUserDto).toList();
   }
 }

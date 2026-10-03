@@ -24,14 +24,6 @@ class UploadSpeedCalculator {
   /// The total file size being uploaded.
   int _totalBytes = 0;
 
-  /// Resets the calculator for a new upload.
-  void reset() {
-    _speedSamples.clear();
-    _lastUpdateTime = null;
-    _lastBytes = 0;
-    _totalBytes = 0;
-  }
-
   /// Updates the calculator with the current progress.
   ///
   /// [currentBytes] is the number of bytes transferred so far.
@@ -87,6 +79,7 @@ class UploadSpeedCalculator {
   }
 
   /// Returns the current speed in MB/s, or -1 if not available.
+  // ignore: unused-code
   double get speed => _currentSpeed;
 
   /// Returns a human-readable string representation of the current speed.
@@ -120,6 +113,7 @@ class UploadSpeedCalculator {
   /// Returns a human-readable string representation of time remaining.
   ///
   /// Returns '--:--' if N/A, otherwise HH:MM:SS or MM:SS format.
+  // ignore: unused-code
   String get timeRemainingAsString {
     final remaining = timeRemaining;
     return switch (remaining.inSeconds) {
@@ -158,16 +152,6 @@ class UploadSpeedManager {
     final calculator = getCalculator(taskId);
     calculator.update(currentBytes, totalBytes);
     return calculator.speedAsString;
-  }
-
-  /// Gets the current speed string for a specific task.
-  String getSpeedAsString(String taskId) {
-    return _calculators[taskId]?.speedAsString ?? '-- MB/s';
-  }
-
-  /// Gets the time remaining string for a specific task.
-  String getTimeRemainingAsString(String taskId) {
-    return _calculators[taskId]?.timeRemainingAsString ?? '--:--';
   }
 
   /// Removes a task from tracking.

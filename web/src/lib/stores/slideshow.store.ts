@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 
 export enum SlideshowState {
   PlaySlideshow = 'play-slideshow',
+  PauseSlideshow = 'pause-slideshow',
   StopSlideshow = 'stop-slideshow',
   None = 'none',
 }

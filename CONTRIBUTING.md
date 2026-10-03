@@ -17,6 +17,10 @@ If you are looking for something to work on, there are discussions and issues wi
 
 We usually do not assign issues to new contributors, since it happens often that a PR is never even opened. Again, reach out on Discord if you fear putting a lot of time into fixing an issue, but ending up with a duplicate PR.
 
+### Opening new issues
+
+If you find bugs or other problems while working on something, we appreciate that you open an issue, if there is no open issue covering the problem yet. To make it easier to debug and fix the issue, please read and fill out the whole issue template.
+
 ## Use of generative AI
 
 We ask you not to open PRs generated with an LLM. We find that code generated like this tends to need a large amount of back-and-forth, which is a very inefficient use of our time. Even a one line change can have significant impact. We cannot have any confidence in an LLM, so if it's non-trivial for us to verify it works and you don't show that you fully understand all implications of the change, reviewing the PR is not worth our time. If we want LLM-generated code, it's much faster for us to use an LLM ourselves than to go through an intermediary via a pull request.

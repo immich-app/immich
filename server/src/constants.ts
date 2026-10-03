@@ -9,7 +9,7 @@ import {
   TranscodeHardwareAcceleration,
   VectorIndex,
   VideoCodec,
-} from 'src/enum';
+} from 'src/enum.js';
 
 export const IMMICH_SERVER_START = 'Immich Server is listening';
 
@@ -49,8 +49,7 @@ export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQR
 
 export const IWorker = 'IWorker';
 
-// eslint-disable-next-line unicorn/prefer-module
-const basePath = dirname(__filename);
+const basePath = dirname(import.meta.filename);
 const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
@@ -148,8 +147,14 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Albums]: 'An album is a collection of assets that can be shared with other users or via shared links.',
   [ApiTag.ApiKeys]: 'An api key can be used to programmatically access the Immich API.',
   [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to Immich.',
+  [ApiTag.AssetFiles]: 'An asset file is a file associated with an asset, including edited versions, thumbnails, etc.',
   [ApiTag.Authentication]: 'Endpoints related to user authentication, including OAuth.',
   [ApiTag.AuthenticationAdmin]: 'Administrative endpoints related to authentication.',
+  [ApiTag.ClusterGroups]:
+    'A cluster group is a set of users whose faces are clustered together, so that a person can be shared between them.',
+  [ApiTag.ConfigUser]: 'The system configuration properties that are visible to logged in users.',
+  [ApiTag.ConfigAdmin]: 'Endpoints to view and modify the full system configuration.',
+  [ApiTag.ConfigPublic]: 'The system configuration properties that are visible to everyone.',
   [ApiTag.DatabaseBackups]: 'Manage backups of the Immich database.',
   [ApiTag.Deprecated]: 'Deprecated endpoints that are planned for removal in the next major release.',
   [ApiTag.Download]: 'Endpoints for downloading assets or collections of assets.',

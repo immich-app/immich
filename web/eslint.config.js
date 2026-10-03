@@ -1,10 +1,11 @@
 import js from '@eslint/js';
 import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
-import prettier from 'eslint-config-prettier';
 import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import eslintPluginCompat from 'eslint-plugin-compat';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
@@ -12,14 +13,25 @@ import fs from 'node:fs';
 import path from 'node:path';
 import './lint-env.js';
 
-export default typescriptEslint.config(
+const ROUTE_CONTINUE = "CallExpression[callee.object.name='Route'][callee.property.name='continue']";
+const NAVIGATION_PARAM_READ = [
+  "CallExpression[callee.property.name='get']",
+  ":matches([arguments.0.value='continue'], [arguments.0.value='previousRoute'],",
+  " [arguments.0.property.name='PREVIOUS_ROUTE'])",
+].join('');
+
+export default defineConfig(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
-  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
+      compat: eslintPluginCompat,
+    },
+    settings: {
+      polyfills: [],
+      lintAllEsApis: true,
     },
     rules: {
       'tscompat/tscompat': [
@@ -32,6 +44,7 @@ export default typescriptEslint.config(
             .filter((line) => line && !line.startsWith('#')),
         },
       ],
+      'compat/compat': 'error',
     },
     languageOptions: {
       parser,
@@ -41,18 +54,6 @@ export default typescriptEslint.config(
       },
     },
     // ignores: ['**/service-worker/**'],
-  },
-  {
-    plugins: {
-      compat: eslintPluginCompat,
-    },
-    settings: {
-      polyfills: [],
-      lintAllEsApis: true,
-    },
-    rules: {
-      'compat/compat': 'error',
-    },
   },
   {
     ignores: [
@@ -99,8 +100,6 @@ export default typescriptEslint.config(
       },
     },
 
-    ignores: ['**/service-worker/**'],
-
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -111,6 +110,14 @@ export default typescriptEslint.config(
       ],
 
       curly: 2,
+      // navigation-target query params must be origin-checked at the read site, not at the goto/redirect sink
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: `${NAVIGATION_PARAM_READ}:not(${ROUTE_CONTINUE} > ${NAVIGATION_PARAM_READ})`,
+          message: 'Pass this navigation-target query param through Route.continue() to reject cross-origin values.',
+        },
+      ],
       'unicorn/no-array-reverse': 'off', // toReversed() is not supported in Chrome 109 or Safari 15.4
       'unicorn/no-useless-undefined': 'off',
       'unicorn/prefer-spread': 'off',
@@ -158,6 +165,10 @@ export default typescriptEslint.config(
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      'unicorn/prefer-early-return': 'off',
+      'unicorn/prefer-ternary': 'off',
+      'unicorn/prefer-combined-guards': 'off',
+      'unicorn/no-immediate-mutation': 'off',
       eqeqeq: 'error',
     },
   },
@@ -186,4 +197,5 @@ export default typescriptEslint.config(
       },
     },
   },
+  eslintPluginPrettierRecommended,
 );

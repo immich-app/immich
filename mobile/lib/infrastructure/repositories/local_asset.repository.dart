@@ -4,12 +4,12 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.drift.dart';
 
 class RemovalCandidatesResult {
@@ -219,11 +219,6 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
     return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
   }
 
-  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
-    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
-  }
-
   Future<void> reconcileHashesFromCloudId() async {
     await _db.customUpdate(
       '''
@@ -242,5 +237,26 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
       updates: {_db.localAssetEntity},
       updateKind: UpdateKind.update,
     );
+  }
+
+  Future<String?> getPreviousRemoteId(String id) {
+    final query = _db.selectOnly(_db.localAssetEntity)
+      ..join([
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.previousChecksum),
+        ),
+        innerJoin(_db.authUserEntity, _db.authUserEntity.id.equalsExp(_db.remoteAssetEntity.ownerId)),
+      ])
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..where(_db.localAssetEntity.id.equals(id))
+      ..limit(1);
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.id)).getSingleOrNull();
+  }
+
+  Future<void> updatePreviousChecksum(String id, String checksum) async {
+    final query = _db.localAssetEntity.update()..where((row) => row.id.equals(id));
+    await query.write(LocalAssetEntityCompanion(previousChecksum: Value(checksum)));
   }
 }

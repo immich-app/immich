@@ -1,4 +1,4 @@
-import { NotificationLevel, NotificationType } from 'src/enum';
+import { NotificationLevel, NotificationType } from 'src/enum.js';
 
 export const notificationStub = {
   albumEvent: {

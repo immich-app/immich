@@ -7,6 +7,8 @@ import { Route } from '$lib/route';
 import type { SearchFilter } from '$lib/types';
 import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
 
+const QUERY_TYPE_STORAGE_KEY = 'searchQueryType';
+
 class SearchManager {
   #filter = $state<SearchFilter>(this.#fromQuery({}));
 
@@ -22,25 +24,43 @@ class SearchManager {
     this.#filter = this.#fromQuery(query);
   }
 
+  setQueryType(queryType: SearchFilter['queryType']) {
+    this.#filter.queryType = queryType;
+    localStorage.setItem(QUERY_TYPE_STORAGE_KEY, queryType);
+  }
+
   async submit() {
     await goto(Route.search(this.#toQuery()));
   }
 
   #fromQuery(searchQuery: MetadataSearchDto | SmartSearchDto): SearchFilter {
     let query = 'query' in searchQuery && searchQuery.query ? searchQuery.query : '';
+    let queryType = query ? QueryType.SMART : this.#defaultQueryType();
 
     if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
       query = searchQuery.originalFileName;
+      queryType = QueryType.METADATA;
     }
 
     if ('originalPath' in searchQuery && searchQuery.originalPath) {
       query = searchQuery.originalPath;
+      queryType = QueryType.FULL_PATH;
+    }
+
+    if ('description' in searchQuery && searchQuery.description) {
+      query = searchQuery.description;
+      queryType = QueryType.DESCRIPTION;
+    }
+
+    if (searchQuery.ocr) {
+      query = searchQuery.ocr;
+      queryType = QueryType.OCR;
     }
 
     return {
       query,
       ocr: searchQuery.ocr,
-      queryType: this.#defaultQueryType(),
+      queryType,
       queryAssetId: 'queryAssetId' in searchQuery ? searchQuery.queryAssetId : undefined,
       personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
       tagIds:
@@ -66,7 +86,7 @@ class SearchManager {
       display: {
         isArchive: searchQuery.visibility === AssetVisibility.Archive,
         isFavorite: searchQuery.isFavorite ?? false,
-        isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
+        isNotInAlbum: 'isNotInAlbum' in searchQuery && (searchQuery.isNotInAlbum ?? false),
       },
       mediaType:
         searchQuery.type === AssetTypeEnum.Image
@@ -130,7 +150,7 @@ class SearchManager {
   }
 
   #defaultQueryType(): QueryType {
-    const storedQueryType = localStorage.getItem('searchQueryType') as QueryType;
+    const storedQueryType = localStorage.getItem(QUERY_TYPE_STORAGE_KEY) as QueryType;
     return validQueryTypes.has(storedQueryType) ? storedQueryType : QueryType.SMART;
   }
 }

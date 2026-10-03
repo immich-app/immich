@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { BaseService } from 'src/services/base.service';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
 export class ViewService extends BaseService {

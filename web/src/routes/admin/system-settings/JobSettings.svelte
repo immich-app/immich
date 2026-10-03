@@ -4,7 +4,7 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { QueueName, type SystemConfigJobDto } from '@immich/sdk';
+  import { QueueName, type AdminConfigJobDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -26,7 +26,7 @@
     QueueName.Ocr,
   ];
 
-  function isSystemConfigJobDto(jobName: string): jobName is keyof SystemConfigJobDto {
+  function isSystemConfigJobDto(jobName: string): jobName is keyof AdminConfigJobDto {
     return Object.hasOwn(configToEdit.job, jobName);
   }
 

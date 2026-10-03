@@ -1,7 +1,7 @@
 import { LoginResponseDto, getAllAlbums, getAssetStatistics } from '@immich/sdk';
 import { cpSync, readFileSync } from 'node:fs';
 import { mkdir, readdir, rm, symlink } from 'node:fs/promises';
-import { asKeyAuth, immichCli, specialCharStrings, testAssetDir, utils } from 'src/utils';
+import { asKeyAuth, immichCli, specialCharStrings, testAssetDir, utils } from 'src/utils.js';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 interface Test {
