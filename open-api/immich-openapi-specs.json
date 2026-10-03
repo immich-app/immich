@@ -23227,6 +23227,10 @@
       },
       "MemoriesResponse": {
         "properties": {
+          "birthdayEnabled": {
+            "description": "Whether birthday memories are enabled",
+            "type": "boolean"
+          },
           "duration": {
             "description": "Memory duration in seconds",
             "maximum": 9007199254740991,
@@ -23237,20 +23241,30 @@
             "description": "Whether memories are enabled",
             "type": "boolean"
           },
+          "onThisDayEnabled": {
+            "description": "Whether on this day memories are enabled",
+            "type": "boolean"
+          },
           "sidebarWeb": {
             "description": "Whether memories appear in web sidebar",
             "type": "boolean"
           }
         },
         "required": [
+          "birthdayEnabled",
           "duration",
           "enabled",
+          "onThisDayEnabled",
           "sidebarWeb"
         ],
         "type": "object"
       },
       "MemoriesUpdate": {
         "properties": {
+          "birthdayEnabled": {
+            "description": "Whether birthday memories are enabled",
+            "type": "boolean"
+          },
           "duration": {
             "description": "Memory duration in seconds",
             "maximum": 9007199254740991,
@@ -23259,6 +23273,10 @@
           },
           "enabled": {
             "description": "Whether memories are enabled",
+            "type": "boolean"
+          },
+          "onThisDayEnabled": {
+            "description": "Whether on this day memories are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {

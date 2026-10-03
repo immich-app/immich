@@ -576,6 +576,8 @@ export type UserPreferences = {
     enabled: boolean;
     duration: number;
     sidebarWeb: boolean;
+    onThisDayEnabled: boolean;
+    birthdayEnabled: boolean;
   };
   people: {
     enabled: boolean;

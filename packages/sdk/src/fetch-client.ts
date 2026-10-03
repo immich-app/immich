@@ -674,10 +674,14 @@ export type FoldersResponse = {
     sidebarWeb: boolean;
 };
 export type MemoriesResponse = {
+    /** Whether birthday memories are enabled */
+    birthdayEnabled: boolean;
     /** Memory duration in seconds */
     duration: number;
     /** Whether memories are enabled */
     enabled: boolean;
+    /** Whether on this day memories are enabled */
+    onThisDayEnabled: boolean;
     /** Whether memories appear in web sidebar */
     sidebarWeb: boolean;
 };
@@ -761,10 +765,14 @@ export type FoldersUpdate = {
     sidebarWeb?: boolean;
 };
 export type MemoriesUpdate = {
+    /** Whether birthday memories are enabled */
+    birthdayEnabled?: boolean;
     /** Memory duration in seconds */
     duration?: number;
     /** Whether memories are enabled */
     enabled?: boolean;
+    /** Whether on this day memories are enabled */
+    onThisDayEnabled?: boolean;
     /** Whether memories appear in web sidebar */
     sidebarWeb?: boolean;
 };

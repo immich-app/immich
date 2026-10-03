@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType, AssetVisibility } from 'src/enum.js';
+import { AssetFileType, AssetVisibility, MemoryType } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MemoryRepository } from 'src/repositories/memory.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -230,6 +230,39 @@ describe(MemoryRepository.name, () => {
       );
 
       expect(assets.map(({ id }) => id)).toEqual([newest2024.id]);
+    });
+  });
+
+  describe('search', () => {
+    it('should only return memories of the given types', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      await ctx.newMemory({ ownerId: user.id, type: MemoryType.OnThisDay });
+      const { memory: birthday } = await ctx.newMemory({
+        ownerId: user.id,
+        type: MemoryType.Birthday,
+        data: { year: 1990, personId: user.id, personName: 'Alice' },
+      });
+
+      const memories = await sut.search(user.id, { types: [MemoryType.Birthday] });
+
+      expect(memories.map(({ id }) => id)).toEqual([birthday.id]);
+    });
+  });
+
+  describe('statistics', () => {
+    it('should only count memories of the given types', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      await ctx.newMemory({ ownerId: user.id, type: MemoryType.OnThisDay });
+      await ctx.newMemory({ ownerId: user.id, type: MemoryType.OnThisDay });
+      await ctx.newMemory({
+        ownerId: user.id,
+        type: MemoryType.Birthday,
+        data: { year: 1990, personId: user.id, personName: 'Alice' },
+      });
+
+      await expect(sut.statistics(user.id, { types: [MemoryType.OnThisDay] })).resolves.toEqual({ total: 2 });
     });
   });
 });

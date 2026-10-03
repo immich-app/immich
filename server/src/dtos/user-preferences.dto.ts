@@ -23,6 +23,8 @@ const MemoriesUpdateSchema = z
     enabled: z.boolean().optional().describe('Whether memories are enabled'),
     duration: z.int().min(1).optional().describe('Memory duration in seconds'),
     sidebarWeb: z.boolean().optional().describe('Whether memories appear in web sidebar'),
+    onThisDayEnabled: z.boolean().optional().describe('Whether on this day memories are enabled'),
+    birthdayEnabled: z.boolean().optional().describe('Whether birthday memories are enabled'),
   })
   .optional()
   .meta({ id: 'MemoriesUpdate' });
@@ -143,6 +145,8 @@ const MemoriesResponseSchema = z
     enabled: z.boolean().describe('Whether memories are enabled'),
     duration: z.int().describe('Memory duration in seconds'),
     sidebarWeb: z.boolean().describe('Whether memories appear in web sidebar'),
+    onThisDayEnabled: z.boolean().describe('Whether on this day memories are enabled'),
+    birthdayEnabled: z.boolean().describe('Whether birthday memories are enabled'),
   })
   .meta({ id: 'MemoriesResponse' });
 
