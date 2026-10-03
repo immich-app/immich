@@ -30,7 +30,7 @@
     "@types/node": "^24.13.6",
     "@types/semver": "^7.7.1",
     "vite": "^8.0.16",
-    "vitest": "^4.1.8"
+    "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@11.27.1"
 }

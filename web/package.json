@@ -92,7 +92,7 @@
     "@types/luxon": "^3.4.2",
     "@types/qrcode": "^1.5.5",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "dotenv": "^18.0.0",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
@@ -115,6 +115,6 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.45.0",
     "vite": "^8.0.0",
-    "vitest": "^4.0.0"
+    "vitest": "^5.0.0"
   }
 }
