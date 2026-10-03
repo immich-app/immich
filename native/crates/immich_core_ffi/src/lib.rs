@@ -8,6 +8,8 @@ mod android;
 #[cfg(target_os = "android")]
 mod bitmap;
 #[cfg(target_os = "android")]
+mod convert;
+#[cfg(target_os = "android")]
 mod rotate;
 
 /// Returns the core version as a C string. Free it with `immich_core_free_string`.

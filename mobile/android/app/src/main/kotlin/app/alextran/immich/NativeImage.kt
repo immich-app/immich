@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 
 object NativeImage {
   init {
-    System.loadLibrary("native_buffer")
     System.loadLibrary("immich_core_ffi")
   }
 
