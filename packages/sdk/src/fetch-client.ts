@@ -595,7 +595,7 @@ export type UserAdminCreateDto = {
     /** Grant admin privileges */
     isAdmin?: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Send notification email */
     notify?: boolean;
     /** User password */
@@ -620,7 +620,7 @@ export type UserAdminUpdateDto = {
     /** Grant admin privileges */
     isAdmin?: boolean;
     /** User name */
-    name?: string;
+    name?: string | null;
     /** User password */
     password?: string;
     /** PIN code */
@@ -1445,7 +1445,7 @@ export type SignUpDto = {
     /** User email */
     email: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** User password */
     password: string;
 };
@@ -3188,7 +3188,7 @@ export type UserUpdateMeDto = {
     /** User email */
     email?: string;
     /** User name */
-    name?: string;
+    name?: string | null;
     /** User password (deprecated, use change password endpoint) */
     password?: string;
 };

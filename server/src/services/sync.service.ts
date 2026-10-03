@@ -274,7 +274,8 @@ export class SyncService extends BaseService {
       await send(response, {
         type: upsertType,
         ids: [updateId],
-        data: { ...data, oauthId: data.oauthId ?? '', hasProfileImage: !!profileImagePath },
+        // TODO: return null instead of '' in v4
+        data: { ...data, name: data.name ?? '', oauthId: data.oauthId ?? '', hasProfileImage: !!profileImagePath },
       });
     }
   }
@@ -286,7 +287,8 @@ export class SyncService extends BaseService {
       await send(response, {
         type: upsertType,
         ids: [updateId],
-        data: { ...data, hasProfileImage: !!profileImagePath },
+        // TODO: return null instead of '' in v4
+        data: { ...data, name: data.name ?? '', hasProfileImage: !!profileImagePath },
       });
     }
   }
@@ -304,7 +306,8 @@ export class SyncService extends BaseService {
       await send(response, {
         type: upsertType,
         ids: [updateId],
-        data: { ...data, hasProfileImage: !!profileImagePath },
+        // TODO: return null instead of '' in v4
+        data: { ...data, name: data.name ?? '', hasProfileImage: !!profileImagePath },
       });
     }
   }
