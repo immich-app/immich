@@ -8,6 +8,7 @@ import {
   removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
+  updateAssets,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -42,6 +43,8 @@ import {
   mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { t } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { ProjectionType } from '$lib/constants';
 import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
@@ -55,8 +58,8 @@ import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelt
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
-import { downloadUrl } from '$lib/utils';
+import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
+import type { OnFavorite } from '$lib/utils/actions';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
@@ -461,6 +464,35 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  }
+};
+
+export const toggleFavoriteAssets = async (
+  assets: AssetResponseDto[],
+  isFavorite: boolean,
+  onFavorite?: OnFavorite,
+) => {
+  const ids = assets.map((a) => a.id);
+  const $t = get(t);
+
+  try {
+    if (ids.length > 0) {
+      await updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
+    }
+
+    for (const asset of assets) {
+      asset.isFavorite = isFavorite;
+    }
+
+    onFavorite?.(ids, isFavorite);
+
+    toastManager.primary(
+      isFavorite
+        ? $t('added_to_favorites_count', { values: { count: ids.length } })
+        : $t('removed_from_favorites_count', { values: { count: ids.length } }),
+    );
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
   }
 };
 
