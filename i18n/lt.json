@@ -747,7 +747,6 @@
   "client_cert_subtitle": "Palaikomi tik PKCS12 (.p12, .pfx) formatai. Sertifikato importavimas/ pašalinimas galimas tik prieš prisijungimą",
   "client_cert_title": "SSL kliento sertifikatas [Experimentinis]",
   "close": "Uždaryti",
-  "cluster_group": "Klasterio grupė",
   "cluster_group_description": "Žmonės atpažįstami iš visų grupės narių nuotraukų",
   "cluster_group_facial_recognition": "Iš naujo nustatykite veido atpažinimą",
   "cluster_group_facial_recognition_prompt": "Iš naujo nustatant veido atpažinimą bus ištrinti visi žmonės iš visų šios grupės naudotojų. Jau nustatyti vardai ir gimimo datos bus prarasti. Ar tikrai norite tęsti?",
