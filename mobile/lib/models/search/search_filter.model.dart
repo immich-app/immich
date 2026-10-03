@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/utils/option.dart';
 
 part 'search_filter.model.freezed.dart';
@@ -52,7 +53,7 @@ abstract class SearchFilter with _$SearchFilter {
     String? ocr,
     String? language,
     String? assetId,
-    List<String>? tagIds,
+    Set<Tag>? tags,
     required Set<Person> people,
     required SearchLocationFilter location,
     required SearchCameraFilter camera,
@@ -68,7 +69,7 @@ abstract class SearchFilter with _$SearchFilter {
         (description == null || (description!.isEmpty)) &&
         (assetId == null || (assetId!.isEmpty)) &&
         (ocr == null || (ocr!.isEmpty)) &&
-        (tagIds ?? []).isEmpty &&
+        (tags?.isEmpty ?? true) &&
         people.isEmpty &&
         location.country == null &&
         location.state == null &&
