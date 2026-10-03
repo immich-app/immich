@@ -1,7 +1,7 @@
-use immich_core::convert::convert_1010102;
 use jni::EnvUnowned;
 use jni::objects::{JClass, JIntArray, JObject};
 use jni::sys::jlong;
+use native_core::convert::convert_1010102;
 
 use super::bitmap::{self, FORMAT_RGBA_1010102};
 

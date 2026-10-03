@@ -1,4 +1,4 @@
-use immich_core::rotate::{Orientation, rotate};
+use native_core::rotate::{Orientation, rotate};
 
 #[test]
 fn exif_orientations() {
