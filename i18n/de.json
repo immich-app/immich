@@ -2154,6 +2154,7 @@
   "storage_label": "Speicherpfad",
   "storage_quota": "Speicherplatz-Kontingent",
   "storage_usage": "{used} von {available} verwendet",
+  "storage_usage_unlimited": "{used} verwendet",
   "submit": "Bestätigen",
   "success": "Erfolgreich",
   "suggestions": "Vorschläge",
