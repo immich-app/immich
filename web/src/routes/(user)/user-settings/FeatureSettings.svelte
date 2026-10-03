@@ -116,7 +116,7 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
+        <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
           <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={memoriesEnabled} />
