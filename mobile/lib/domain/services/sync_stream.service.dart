@@ -228,6 +228,9 @@ class SyncStreamService {
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
       case SyncEntityType.assetEditV1:
         return _syncStreamRepository.updateAssetEditsV1(data.cast());
+      // This client only requests assetEditsV1; never acknowledge an unsupported payload.
+      case SyncEntityType.assetEditV2:
+        throw UnsupportedError('AssetEditV2 is not requested by this client');
       case SyncEntityType.assetEditDeleteV1:
         return _syncStreamRepository.deleteAssetEditsV1(data.cast());
       case SyncEntityType.assetMetadataV1:

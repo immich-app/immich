@@ -175,6 +175,15 @@ export class MediaRepository {
       ]);
     }
 
+    const color = edits.find((edit) => edit.action === 'color');
+    if (color) {
+      const brightness = 1 + color.parameters.brightness / 100;
+      const contrast = 1 + color.parameters.contrast / 100;
+
+      // Keep the contrast midpoint at middle gray, matching CSS brightness() and contrast().
+      pipeline = pipeline.linear(brightness * contrast, 128 * (1 - contrast));
+    }
+
     return pipeline;
   }
 
@@ -220,10 +229,20 @@ export class MediaRepository {
       return Promise.resolve(image);
     }
 
-    return this.edit(this.raw(image).pipelineColorspace('scrgb'), edits)
+    const colorEdits = edits.filter((edit) => edit.action === 'color');
+    const geometryEdits = edits.filter((edit) => edit.action !== 'color');
+
+    return this.edit(this.raw(image).pipelineColorspace('scrgb'), geometryEdits)
       .resize(size, size, { fit, withoutEnlargement: true })
       .raw()
-      .toBuffer({ resolveWithObject: true });
+      .toBuffer({ resolveWithObject: true })
+      .then((transformed) =>
+        colorEdits.length === 0
+          ? transformed
+          : this.edit(this.raw(transformed).pipelineColorspace('srgb'), colorEdits).raw().toBuffer({
+              resolveWithObject: true,
+            }),
+      );
   }
 
   private raw({ data, info: raw }: Bitmap) {

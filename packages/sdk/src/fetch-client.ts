@@ -1379,12 +1379,18 @@ export type RotateParameters = {
 export type MirrorParameters = {
     axis: MirrorAxis;
 };
+export type ColorParameters = {
+    /** Brightness adjustment from -100 to 100 */
+    brightness: number;
+    /** Contrast adjustment from -100 to 100 */
+    contrast: number;
+};
 export type AssetEditActionItemResponseDto = {
     action: AssetEditAction;
     /** Asset edit ID */
     id: string;
-    /** List of edit actions to apply (crop, rotate, or mirror) */
-    parameters: CropParameters | RotateParameters | MirrorParameters;
+    /** Edit parameters for crop, rotate, mirror, or color actions */
+    parameters: CropParameters | RotateParameters | MirrorParameters | ColorParameters;
 };
 export type AssetEditsResponseDto = {
     /** Asset ID these edits belong to */
@@ -1394,11 +1400,11 @@ export type AssetEditsResponseDto = {
 };
 export type AssetEditActionItemDto = {
     action: AssetEditAction;
-    /** List of edit actions to apply (crop, rotate, or mirror) */
-    parameters: CropParameters | RotateParameters | MirrorParameters;
+    /** Edit parameters for crop, rotate, mirror, or color actions */
+    parameters: CropParameters | RotateParameters | MirrorParameters | ColorParameters;
 };
 export type AssetEditsCreateDto = {
-    /** List of edit actions to apply (crop, rotate, or mirror) */
+    /** List of edit actions to apply (crop, rotate, mirror, or color) */
     edits: AssetEditActionItemDto[];
 };
 export type AssetMetadataResponseDto = {
@@ -3396,6 +3402,19 @@ export type SyncAssetEditDeleteV1 = {
     editId: string;
 };
 export type SyncAssetEditV1 = {
+    action: SyncAssetEditActionV1;
+    /** Asset ID */
+    assetId: string;
+    /** Edit ID */
+    id: string;
+    /** Edit parameters */
+    parameters: {
+        [key: string]: any;
+    };
+    /** Edit sequence */
+    sequence: number;
+};
+export type SyncAssetEditV2 = {
     action: AssetEditAction;
     /** Asset ID */
     assetId: string;
@@ -8295,7 +8314,8 @@ export enum AssetTypeEnum {
 export enum AssetEditAction {
     Crop = "crop",
     Rotate = "rotate",
-    Mirror = "mirror"
+    Mirror = "mirror",
+    Color = "color"
 }
 export enum MirrorAxis {
     Horizontal = "horizontal",
@@ -8494,6 +8514,7 @@ export enum SyncEntityType {
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
     AssetEditV1 = "AssetEditV1",
+    AssetEditV2 = "AssetEditV2",
     AssetEditDeleteV1 = "AssetEditDeleteV1",
     AssetMetadataV1 = "AssetMetadataV1",
     AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
@@ -8559,6 +8580,7 @@ export enum SyncRequestType {
     AssetsV2 = "AssetsV2",
     AssetExifsV1 = "AssetExifsV1",
     AssetEditsV1 = "AssetEditsV1",
+    AssetEditsV2 = "AssetEditsV2",
     AssetMetadataV1 = "AssetMetadataV1",
     AssetOcrV1 = "AssetOcrV1",
     AuthUsersV1 = "AuthUsersV1",
@@ -8595,6 +8617,11 @@ export enum ReleaseType {
     Patch = "patch",
     Prepatch = "prepatch",
     Prerelease = "prerelease"
+}
+export enum SyncAssetEditActionV1 {
+    Crop = "crop",
+    Rotate = "rotate",
+    Mirror = "mirror"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",
