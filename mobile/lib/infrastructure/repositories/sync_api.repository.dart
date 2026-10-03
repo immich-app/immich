@@ -135,7 +135,19 @@ class SyncApiRepository {
         continue;
       }
 
-      data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
+      final Object? payload;
+      try {
+        payload = converter(dataJson);
+      } catch (error) {
+        _logger.warning("Skipping unparseable $type entry: $error");
+        continue;
+      }
+      if (payload == null) {
+        _logger.warning("Skipping unrecognised $type entry: $dataJson");
+        continue;
+      }
+
+      data.add(SyncEvent(type: type, data: payload, ack: ack));
     }
 
     return data;

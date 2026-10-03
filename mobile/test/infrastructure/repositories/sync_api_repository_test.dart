@@ -290,4 +290,48 @@ void main() {
 
     expect(onDataCallCount, 0);
   });
+
+  test('streamChanges skips a user metadata delete with an unknown key', () async {
+    final events = <SyncEvent>[];
+    final Completer<void> batchReceived = Completer<void>();
+
+    Future<void> onDataCallback(List<SyncEvent> received, Function() _, Function() _) async {
+      events.addAll(received);
+      if (!batchReceived.isCompleted) {
+        batchReceived.complete();
+      }
+    }
+
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
+
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    responseStreamController.add(
+      utf8.encode(
+        _createJsonLine(SyncEntityType.userMetadataDeleteV1.toString(), {
+          'userId': 'user1',
+          'key': 'not-a-user-metadata-key',
+        }, 'ack1'),
+      ),
+    );
+
+    for (int i = 0; i < testBatchSize; i++) {
+      responseStreamController.add(
+        utf8.encode(
+          _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user$i").toJson(), 'ack$i'),
+        ),
+      );
+    }
+
+    await batchReceived.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => fail('Batch was not processed within timeout'),
+    );
+
+    await responseStreamController.close();
+    await expectLater(streamChangesFuture, completes);
+
+    expect(events, hasLength(testBatchSize));
+    expect(events.every((event) => event.type == SyncEntityType.userDeleteV1), isTrue);
+  });
 }
