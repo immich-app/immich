@@ -86,6 +86,7 @@ _PADDLE_MODELS = {
     "KOREAN__PP-OCRv5_mobile",
     "LATIN__PP-OCRv5_mobile",
     "TH__PP-OCRv5_mobile",
+    "ARABIC__PP-OCRv5_mobile",
 }
 
 SUPPORTED_PROVIDERS = [

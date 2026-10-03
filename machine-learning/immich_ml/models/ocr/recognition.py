@@ -1,4 +1,5 @@
 import math
+import re
 from functools import cached_property
 from typing import Any
 
@@ -23,6 +24,7 @@ from .schemas import TextDetectionOutput, TextRecognitionOutput
 REC_HEIGHT = 48
 REC_BASE_RATIO = 320 / REC_HEIGHT  # PP-OCR's rec_image_shape floor
 SCALE = np.float32(1.0 / 127.5)
+RTL_RE = re.compile(r"[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+")
 
 
 class TextRecognizer(InferenceModel):
@@ -107,6 +109,7 @@ class TextRecognizer(InferenceModel):
 
             out_indices, out_probs = greedy(self.session.run(None, {input_name: images}))
             chunk_texts, chunk_scores = self.decoder.decode(out_indices, out_probs)
+            chunk_texts = [RTL_RE.sub(lambda m: m.group(0)[::-1], text).translate(str.maketrans({"ي":"ی","ى":"ی","ك":"ک"})) for text in chunk_texts]
             for index, text, score in zip(chunk, chunk_texts, chunk_scores):
                 text_list[index] = text
                 score_list[index] = score
@@ -115,12 +118,25 @@ class TextRecognizer(InferenceModel):
         boxes[:, :, 1] /= img.height
 
         valid = score_list > minScore
-        valid_list = valid.tolist()
+        valid_indices = np.flatnonzero(valid)
+        if len(valid_indices) > 1:
+            y_order = valid_indices[np.argsort(boxes[valid_indices, 0, 1], kind="stable")]
+            lines = np.zeros(len(y_order), dtype=np.int32)
+            np.cumsum(np.diff(boxes[y_order, 0, 1]) >= 10, out=lines[1:])
+            ordered = []
+            for line in np.unique(lines):
+                idx = y_order[lines == line]
+                idx = idx[np.argsort(boxes[idx, 0, 0], kind="stable")]
+                rtl_count = sum(1 for i in idx if RTL_RE.search(text_list[i]))
+                if rtl_count >= 2:
+                    idx = idx[::-1]
+                ordered.extend(idx.tolist())
+            valid_indices = np.asarray(ordered, dtype=np.intp)
         return {
-            "box": boxes.reshape(-1, 8)[valid].reshape(-1),
-            "text": [text for text, keep in zip(text_list, valid_list) if keep],
-            "boxScore": box_scores[valid],
-            "textScore": score_list[valid],
+            "box": boxes.reshape(-1, 8)[valid_indices].reshape(-1),
+            "text": [text_list[i] for i in valid_indices],
+            "boxScore": box_scores[valid_indices],
+            "textScore": score_list[valid_indices],
         }
 
     def _crop_geometry(
