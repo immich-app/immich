@@ -73,6 +73,7 @@ export class TimelineService extends BaseService {
       dto.withCoordinates = false;
     }
 
+    // eslint-disable-next-line unicorn/prefer-early-return
     if (dto.withPartners) {
       const isRequestedLocked = dto.visibility === AssetVisibility.Locked;
       const isRequestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;

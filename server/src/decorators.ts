@@ -45,10 +45,11 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
     let chunk = new Set<T>();
     for (const element of collection) {
       chunk.add(element);
-      if (chunk.size === size) {
-        result.push(chunk);
-        chunk = new Set<T>();
+      if (chunk.size !== size) {
+        continue;
       }
+      result.push(chunk);
+      chunk = new Set<T>();
     }
     if (chunk.size > 0) {
       result.push(chunk);
@@ -235,6 +236,15 @@ export class HistoryBuilder {
     const { replacementId } = options || {};
     this.hasDeprecated = true;
     return this.push({ version, state: ApiState.Deprecated, replacementId });
+  }
+
+  v3PatchMigration() {
+    return this.push({
+      version: 'v3.0.0',
+      state: 'Updated',
+      description:
+        'This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly.',
+    });
   }
 
   isDeprecated(): boolean {

@@ -22,6 +22,8 @@ enum AppLifeCycleEnum { active, inactive, paused, resumed, detached, hidden }
 class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   final Ref _ref;
   bool _wasPaused = false;
+  bool _firstLaunch = true;
+  bool _fullSyncPending = false;
 
   // Add operation coordination
   Completer<void>? _resumeOperation;
@@ -30,6 +32,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   final _log = Logger("AppLifeCycleNotifier");
 
   AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
+
+  void requestFullResume() => _fullSyncPending = true;
 
   Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
@@ -61,8 +65,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   }
 
   Future<void> _performResume() async {
+    if (_firstLaunch) {
+      // a delta sync can miss photos taken after a background launch
+      _fullSyncPending =
+          await _ref.read(backgroundWorkerFgServiceProvider).wasLaunchedInBackground() || _fullSyncPending;
+      _firstLaunch = false;
+    }
+
     // no need to resume because app was never really paused
-    if (!_wasPaused) {
+    if (!_wasPaused && !_fullSyncPending) {
       _log.info("Resume skipped, app was never paused");
       return;
     }
@@ -121,7 +132,11 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     try {
       bool syncSuccess = false;
       await Future.wait([
-        _safeRun(() => backgroundManager.syncLocal(full: CurrentPlatform.isAndroid), "syncLocal"),
+        _safeRun(() {
+          final full = CurrentPlatform.isAndroid || _fullSyncPending;
+          _fullSyncPending = false;
+          return backgroundManager.syncLocal(full: full);
+        }, "syncLocal"),
         _safeRun(() async {
           syncSuccess = await backgroundManager.syncRemote();
         }, "syncRemote"),

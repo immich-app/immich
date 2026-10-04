@@ -1,8 +1,10 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthSharedLink } from 'src/database.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
+import { PersonUserRole } from 'src/dtos/person.dto.js';
 import { AlbumUserRole, Permission } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
+import { PersonId } from 'src/repositories/person.repository.js';
 import { areSetsEqual, isSetSuperset, setDifference, setUnion } from 'src/utils/set.js';
 
 export type GrantedRequest = {
@@ -24,6 +26,12 @@ export type AccessRequest = {
   ids: Set<string> | string[];
 };
 
+export type AccessPersonRequest = {
+  auth: AuthDto;
+  permission: Permission;
+  ids: Set<PersonId> | PersonId[];
+};
+
 type SharedLinkAccessRequest = { sharedLink: AuthSharedLink; permission: Permission; ids: Set<string> };
 type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string> };
 
@@ -38,6 +46,49 @@ export const requireAccess = async (access: AccessRepository, request: AccessReq
   const allowedIds = await checkAccess(access, request);
   if (!areSetsEqual(new Set(request.ids), allowedIds)) {
     throw new BadRequestException(`Not found or no ${request.permission} access`);
+  }
+};
+
+const PERSON_READ_ROLES = [PersonUserRole.Read, PersonUserRole.Write, PersonUserRole.Admin];
+const PERSON_WRITE_ROLES = [PersonUserRole.Write, PersonUserRole.Admin];
+const PERSON_ADMIN_ROLES = [PersonUserRole.Admin];
+
+const asStringSet = (source: Set<PersonId>): Set<string> =>
+  new Set(source.values().map((item) => `${item.personGroupId}/$${item.ownerId}`));
+
+export const requirePersonAccess = async (access: AccessRepository, request: AccessPersonRequest) => {
+  const allowedIds = await checkPersonAccess(access, request);
+  if (!areSetsEqual(asStringSet(new Set(request.ids)), asStringSet(allowedIds))) {
+    throw new BadRequestException(`Not found or no ${request.permission} access`);
+  }
+};
+
+export const checkPersonAccess = async (
+  access: AccessRepository,
+  { ids, auth, permission }: AccessPersonRequest,
+): Promise<Set<PersonId>> => {
+  const idSet = Array.isArray(ids) ? new Set(ids) : ids;
+  if (idSet.size === 0) {
+    return new Set<PersonId>();
+  }
+
+  switch (permission) {
+    case Permission.PersonRead: {
+      return access.person.checkAccess(auth.user.id, idSet, PERSON_READ_ROLES);
+    }
+
+    case Permission.PersonUpdate: {
+      return access.person.checkAccess(auth.user.id, idSet, PERSON_WRITE_ROLES);
+    }
+
+    case Permission.PersonDelete:
+    case Permission.PersonMerge: {
+      return access.person.checkAccess(auth.user.id, idSet, PERSON_ADMIN_ROLES);
+    }
+
+    default: {
+      return new Set();
+    }
   }
 };
 
@@ -295,13 +346,6 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.PersonCreate: {
       return access.person.checkFaceOwnerAccess(auth.user.id, ids);
-    }
-
-    case Permission.PersonRead:
-    case Permission.PersonUpdate:
-    case Permission.PersonDelete:
-    case Permission.PersonMerge: {
-      return await access.person.checkOwnerAccess(auth.user.id, ids);
     }
 
     case Permission.PersonReassign: {

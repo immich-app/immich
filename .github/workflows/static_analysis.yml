@@ -81,7 +81,7 @@ jobs:
         run: mise //mobile:codegen
 
       - name: Run analyze
-        run: mise //mobile:analyze
+        run: mise //mobile:analyze --full
 
       - name: Run format
         run: mise //mobile:format

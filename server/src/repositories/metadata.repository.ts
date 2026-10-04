@@ -78,6 +78,10 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   AndroidModel?: string;
   DeviceManufacturer?: string;
   DeviceModelName?: string;
+
+  // Samsung specific tags
+  Author?: string;
+  SamsungModel?: string;
 }
 
 @Injectable()
@@ -104,6 +108,7 @@ export class MetadataRepository {
       '--MWG:Orientation',
       '--IFD1:ImageWidth',
       '--IFD1:ImageHeight',
+      '--Samsung:Rotation',
     ],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,

@@ -18,6 +18,7 @@ import {
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
+import { updateStackedAssetInTimeline } from '$lib/utils/actions';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
   getOrderingDate,
@@ -122,6 +123,33 @@ export class TimelineManager extends VirtualScrollManager {
           }
         },
         AssetsUnarchive: (assets) => this.upsertAssets(assets),
+        StackCreate: (stack) => {
+          if (this.#options.withStacked) {
+            updateStackedAssetInTimeline(this, stack);
+          }
+        },
+        StackDelete: ({ assets }) => {
+          if (!this.#options.withStacked) {
+            return;
+          }
+          this.update(
+            assets.map((asset) => asset.id),
+            (asset) => (asset.stack = null),
+          );
+          this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
+        },
+        StackUpdate: (stack) => {
+          if (!this.#options.withStacked) {
+            return;
+          }
+          // unstack and re-stack
+          this.update(
+            stack.assets.map((asset) => asset.id),
+            (asset) => (asset.stack = null),
+          );
+          this.upsertAssets(stack.assets.map((asset) => toTimelineAsset(asset)));
+          updateStackedAssetInTimeline(this, stack);
+        },
       }),
     );
   }

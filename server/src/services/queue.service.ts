@@ -49,16 +49,18 @@ export class QueueService extends BaseService {
     }
 
     this.nightlyJobsLock = await this.databaseRepository.tryLock(DatabaseLock.NightlyJobs);
-    if (this.nightlyJobsLock) {
-      const cronExpression = asNightlyTasksCron(config);
-      this.logger.debug(`Scheduling nightly jobs for ${cronExpression}`);
-      this.cronRepository.create({
-        name: CronJob.NightlyJobs,
-        expression: cronExpression,
-        start: true,
-        onTick: () => handlePromiseError(this.handleNightlyJobs(), this.logger),
-      });
+    if (!this.nightlyJobsLock) {
+      return;
     }
+
+    const cronExpression = asNightlyTasksCron(config);
+    this.logger.debug(`Scheduling nightly jobs for ${cronExpression}`);
+    this.cronRepository.create({
+      name: CronJob.NightlyJobs,
+      expression: cronExpression,
+      start: true,
+      onTick: () => handlePromiseError(this.handleNightlyJobs(), this.logger),
+    });
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
@@ -68,11 +70,13 @@ export class QueueService extends BaseService {
       return;
     }
 
-    if (this.nightlyJobsLock) {
-      const cronExpression = asNightlyTasksCron(config);
-      this.logger.debug(`Scheduling nightly jobs for ${cronExpression}`);
-      this.cronRepository.update({ name: CronJob.NightlyJobs, expression: cronExpression, start: true });
+    if (!this.nightlyJobsLock) {
+      return;
     }
+
+    const cronExpression = asNightlyTasksCron(config);
+    this.logger.debug(`Scheduling nightly jobs for ${cronExpression}`);
+    this.cronRepository.update({ name: CronJob.NightlyJobs, expression: cronExpression, start: true });
   }
 
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.JobService })

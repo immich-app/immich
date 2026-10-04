@@ -369,7 +369,6 @@
     "storage_template_migration_info": "Predložak za pohranu pretvorit će sve datotečne nastavke u mala slova. Promjene predloška primijenit će se samo na nove stavke. Da biste retroaktivno primijenili predložak na prethodno prenesene stavke, pokrenite <link>{job}</link>.",
     "storage_template_migration_job": "Posao Migracije Predloška Pohrane",
     "storage_template_more_details": "Za više pojedinosti o ovoj značajci pogledajte <template-link>Predložak pohrane</template-link> i njegove <implications-link>implikacije</implications-link>",
-    "storage_template_onboarding_description_v2": "Kada je omogućena, ova će značajka automatski organizira datoteke prema predlošku koji je definirao korisnik. Za više informacija pogledajte <link>dokumentaciju</link>.",
     "storage_template_path_length": "Približno ograničenje duljine putanje: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Predložak pohrane",
     "storage_template_settings_description": "Upravljajte strukturom mape i nazivom datoteke učitane stavke",
@@ -738,7 +737,6 @@
   "client_cert_subtitle": "Podržava samo PKCS12 (.p12, .pfx) format. Uvoz/uklanjanje certifikata dostupno je samo prije prijave",
   "client_cert_title": "SSL klijentski certifikat [EKSPERIMENTALNO]",
   "close": "Zatvori",
-  "cluster_group": "Klaster grupa",
   "cluster_group_description": "Osobe su prepoznate među fotografijama svih članova u grupi",
   "cluster_group_invite_description": "Pozvani ste da se pridružite ovoj grupi klastera.",
   "collapse": "Sažmi",
@@ -1912,7 +1910,6 @@
   "set_as_album_cover": "Postavi kao naslovnicu albuma",
   "set_as_featured_photo": "Postavi kao istaknutu fotografiju",
   "set_as_profile_picture": "Postavi kao profilnu sliku",
-  "set_date_of_birth": "Postavi datum rođenja",
   "set_profile_picture": "Postavi profilnu sliku",
   "set_slideshow_to_fullscreen": "Postavi prezentaciju na cijeli zaslon",
   "set_stack_primary_asset": "Postavi kao glavnu stavku",
@@ -2299,6 +2296,5 @@
   "yes": "Da",
   "you_dont_have_any_shared_links": "Nemate nijednu dijeljenu poveznicu",
   "your_wifi_name": "Naziv vaše Wi-Fi mreže",
-  "zero_to_clear_rating": "pritisni 0 za brisanje ocjene stavke",
   "zoom_image": "Povećaj sliku"
 }

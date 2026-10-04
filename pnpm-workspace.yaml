@@ -31,6 +31,8 @@ allowBuilds:
 overrides:
   canvas: 3.2.3
   sharp: ^0.35.3
+  # 1.9.3-1.9.5 are confirmed broken
+  tsc-alias: 1.9.2
 packageExtensions:
   nestjs-kysely:
     dependencies:
@@ -67,6 +69,6 @@ injectWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
-  - '@immich/ui@0.86.0'
+  - '@immich/ui'
   - '@immich/sql-tools@0.6.3'
   - '@nestjs/cli@12.0.1'

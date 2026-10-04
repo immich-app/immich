@@ -12,5 +12,5 @@
 </script>
 
 {#if icon && isEnabled(action)}
-  <MenuOption {icon} text={title} onClick={() => onAction(action)} />
+  <MenuOption {icon} text={title} onClick={(event: Event) => onAction({ event, action })} />
 {/if}

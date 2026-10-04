@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/store.dart';
 
+@visibleForTesting
 Drift Function(Ref ref) driftOverride(Drift drift) => (ref) {
   ref.onDispose(() => unawaited(drift.close()));
   ref.keepAlive();

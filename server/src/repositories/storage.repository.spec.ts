@@ -1,8 +1,33 @@
 import mockfs from 'mock-fs';
+import { R_OK } from 'node:constants';
+import { mkdtempDisposable, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { vitest } from 'vitest';
 import { CrawlOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { automock } from 'test/utils.js';
+
+const mocks = vitest.hoisted(() => {
+  const watcher = {
+    close: vitest.fn(),
+    on: vitest.fn(),
+  };
+  watcher.on.mockReturnValue(watcher);
+
+  return { watch: vitest.fn(() => watcher), watcher };
+});
+
+vitest.mock('chokidar', () => ({ watch: mocks.watch }));
+
+const getHandler = (event: string) => {
+  const handler = mocks.watcher.on.mock.calls.find(([name]) => name === event)?.[1];
+  if (!handler) {
+    throw new Error(`Missing ${event} handler`);
+  }
+  return handler;
+};
 
 interface Test {
   test: string;
@@ -185,6 +210,9 @@ describe(StorageRepository.name, () => {
   beforeEach(() => {
     // eslint-disable-next-line no-sparse-arrays
     sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+    mocks.watch.mockReset().mockReturnValue(mocks.watcher);
+    mocks.watcher.on.mockReset().mockReturnValue(mocks.watcher);
+    mocks.watcher.close.mockReset().mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -205,5 +233,102 @@ describe(StorageRepository.name, () => {
         expect(actual.toSorted()).toEqual(expected.toSorted());
       });
     }
+  });
+
+  describe('walk', () => {
+    it.each([
+      { exclusionPatterns: [] },
+      { exclusionPatterns: ['**/*.xmp'] },
+      { exclusionPatterns: ['**/excluded/**'] },
+    ])('should only return assets and respect exclusions: $exclusionPatterns', async ({ exclusionPatterns }) => {
+      mockfs({
+        '/photos/photo.jpg': '',
+        '/photos/photo.nef': '',
+        '/photos/photo.jpg.xmp': '',
+        '/photos/photo.xmp': '',
+        '/photos/excluded/photo.jpg': '',
+        '/photos/excluded/photo.xmp': '',
+      });
+
+      const batches = await Array.fromAsync(sut.walk({ pathsToCrawl: ['/photos'], exclusionPatterns, take: 1 }));
+
+      expect(batches.every((batch) => batch.length === 1)).toBe(true);
+      expect(batches.flat().toSorted()).toEqual(
+        [
+          '/photos/photo.jpg',
+          '/photos/photo.nef',
+          ...(exclusionPatterns.includes('**/excluded/**') ? [] : ['/photos/excluded/photo.jpg']),
+        ].toSorted(),
+      );
+    });
+  });
+
+  describe('checkFileExists', () => {
+    it.for(['PHOTO.xmp', 'photo.XMP'])(
+      'should not match %s with different case on a case-sensitive filesystem',
+      async (filename, { skip }) => {
+        await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-sidecar-'));
+        await writeFile(join(tempDir.path, 'case-probe'), 'test');
+        if (await sut.checkFileExists(join(tempDir.path, 'CASE-PROBE'), R_OK)) {
+          skip();
+        }
+        const candidate = join(tempDir.path, filename);
+        await writeFile(candidate, 'test');
+
+        await expect(sut.checkFileExists(candidate, R_OK)).resolves.toBe(true);
+        await expect(sut.checkFileExists(join(tempDir.path, 'photo.xmp'), R_OK)).resolves.toBe(false);
+      },
+    );
+  });
+
+  describe('watch', () => {
+    it('should register event handlers and close the watcher', async () => {
+      const onReady = vitest.fn();
+      const onAdd = vitest.fn();
+      const onChange = vitest.fn();
+      const onUnlink = vitest.fn();
+      const onError = vitest.fn();
+      const close = sut.watch(['/photos'], {}, { onAdd, onChange, onError, onReady, onUnlink });
+
+      expect(mocks.watch).toHaveBeenCalledWith(['/photos'], expect.objectContaining({ ignored: expect.any(Function) }));
+
+      const error = new Error('watch error');
+      getHandler('ready')();
+      getHandler('add')('/photos/add.jpg');
+      getHandler('change')('/photos/change.jpg');
+      getHandler('unlink')('/photos/unlink.jpg');
+      getHandler('error')(error);
+
+      expect(onReady).toHaveBeenCalledWith();
+      expect(onAdd).toHaveBeenCalledWith('/photos/add.jpg');
+      expect(onChange).toHaveBeenCalledWith('/photos/change.jpg');
+      expect(onUnlink).toHaveBeenCalledWith('/photos/unlink.jpg');
+      expect(onError).toHaveBeenCalledWith(error);
+
+      await close();
+      expect(mocks.watcher.close).toHaveBeenCalledWith();
+    });
+
+    it('should convert ignored glob arrays to a case-insensitive matcher', () => {
+      sut.watch(['/photos'], { ignored: ['**/excluded/**'] }, {});
+      const [, options] = mocks.watch.mock.lastCall as unknown as [string[], { ignored?: unknown }];
+      const ignored = options.ignored as (path: string) => boolean;
+
+      expect(typeof ignored).toBe('function');
+      expect(ignored('/photos/EXCLUDED/photo.jpg')).toBe(true);
+      expect(ignored('/photos/included/photo.jpg')).toBe(false);
+    });
+
+    it('should tolerate missing event callbacks', () => {
+      sut.watch(['/photos'], {}, {});
+
+      expect(() => {
+        getHandler('ready')();
+        getHandler('add')('/photos/add.jpg');
+        getHandler('change')('/photos/change.jpg');
+        getHandler('unlink')('/photos/unlink.jpg');
+        getHandler('error')(new Error('watch error'));
+      }).not.toThrow();
+    });
   });
 });

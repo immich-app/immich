@@ -108,6 +108,8 @@ export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingReposi
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
+export const hasSomeDefined = (values: unknown[]) => values.some((value) => value !== undefined);
+
 export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
   const value = await find();
   if (!value) {
@@ -123,10 +125,12 @@ export async function* batched<T>(items: AsyncIterable<T>, size = JOBS_ASSET_PAG
   for await (const item of items) {
     batch.push(item);
 
-    if (batch.length >= size) {
-      yield batch;
-      batch = [];
+    if (batch.length < size) {
+      continue;
     }
+
+    yield batch;
+    batch = [];
   }
 
   if (batch.length > 0) {
@@ -243,17 +247,19 @@ const patchOpenAPI = (document: OpenAPIObject) => {
           value = value.items;
         }
 
-        if (isSchema(value) && value.type === 'number') {
-          if (value.format === 'float') {
-            errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-          }
+        if (!(isSchema(value) && value.type === 'number')) {
+          continue;
+        }
 
-          // verify it was meant to be a number (and not an integer)
-          if (!value.format) {
-            errors.push(
-              `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
-            );
-          }
+        if (value.format === 'float') {
+          errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        }
+
+        // verify it was meant to be a number (and not an integer)
+        if (!value.format) {
+          errors.push(
+            `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
+          );
         }
       }
       schema.required?.sort();
@@ -359,11 +365,13 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   SwaggerModule.setup('doc', app, openApiDoc, customOptions);
 
-  if (write) {
-    // Generate API Documentation only in development mode
-    const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
+  // Generate API Documentation only in development mode
+  if (!write) {
+    return;
   }
+
+  const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
+  writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
 };
 
 // Compiles a glob to the equivalent Postgres regex (Postgres's Advanced Regular Expression

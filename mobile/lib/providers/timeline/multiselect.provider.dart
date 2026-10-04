@@ -29,10 +29,11 @@ abstract class MultiSelectState with _$MultiSelectState {
   bool get hasRemote =>
       selectedAssets.any((asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged);
 
+  // ignore: unused-code
   bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);
-
+  // ignore: unused-code
   bool get onlyLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
-
+  // ignore: unused-code
   bool get onlyRemote => selectedAssets.any((asset) => asset.storage == AssetState.remote);
 }
 
