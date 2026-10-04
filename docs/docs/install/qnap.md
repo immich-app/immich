@@ -59,8 +59,8 @@ Qnap Container Station's Application wizard cannot process env_file statements i
 Open the docker-compose and .env files in text editors on your computer.
 
 - In docker-compose.yml:
-- Replace the ${IMMICH_VERSION:-release} with the .env values (v3).
-- Replace the other ${ENV_VALUE} instances with values from the .env file
+- Replace the `${IMMICH_VERSION:-release}` with the .env values (v3).
+- Replace the other `${ENV_VALUE}` instances with values from the .env file
 - Remove the env_file: sections from each service yml
 - Recommended: Keep default value for postgres password or the immich_server container will error during startup.
 - Recommended: Uncomment the DB_STORAGE_TYPE: 'HDD' line in the database: section if your NAS uses hard-drives, not SSDs.
