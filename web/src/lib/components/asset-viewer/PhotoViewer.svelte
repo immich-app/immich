@@ -13,7 +13,7 @@
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
-  import { getNaturalSize, scaleToFit, type Size } from '$lib/utils/container-utils';
+  import type { Size } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
@@ -67,13 +67,9 @@
     height: containerHeight,
   });
 
-  const overlaySize = $derived.by((): Size => {
-    if (!assetViewerManager.imgRef || !visibleImageReady) {
-      return { width: 0, height: 0 };
-    }
+  let scaledDimensions = $state<Size>({ width: 0, height: 0 });
 
-    return scaleToFit(getNaturalSize(assetViewerManager.imgRef), { width: containerWidth, height: containerHeight });
-  });
+  const overlaySize = $derived(visibleImageReady ? scaledDimensions : { width: 0, height: 0 });
 
   const highlightedBoxes = $derived(getBoundingBox(assetViewerManager.highlightedFaces, overlaySize));
   const isHighlighting = $derived(highlightedBoxes.length > 0);
@@ -236,6 +232,7 @@
       onReady?.();
     }}
     bind:imgRef={assetViewerManager.imgRef}
+    bind:imgScaledSize={scaledDimensions}
     bind:ref={adaptiveImage}
   >
     {#snippet backdrop()}
