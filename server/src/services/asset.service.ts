@@ -313,13 +313,16 @@ export class AssetService extends BaseService {
 
   @OnJob({ name: JobName.AssetDelete, queue: QueueName.BackgroundTask })
   async handleAssetDeletion(job: JobOf<JobName.AssetDelete>): Promise<JobStatus> {
-    const { id, deleteOnDisk } = job;
+    const { id, deleteOnDisk: _deleteOnDisk } = job;
 
     const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.Failed;
     }
+
+    // an offline asset is missing, excluded or outside the import paths: never unlink its files or its live motion part
+    const deleteOnDisk = _deleteOnDisk && !asset.isOffline;
 
     if (asset.stack) {
       // asset.stack.assets only includes timeline visible assets and excludes the primary asset
@@ -372,7 +375,7 @@ export class AssetService extends BaseService {
       assetFiles.encodedVideoFile?.path,
     ];
 
-    if (deleteOnDisk && !asset.isOffline) {
+    if (deleteOnDisk) {
       files.push(assetFiles.sidecarFile?.path, asset.originalPath);
     }
 
