@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+[Unit]
+Description=Immich cross-account dedup (hardlink duplicate originals)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+Environment=IMMICH_UPLOAD_ROOT=/srv/immich/upload
+Environment=IMMICH_CONTAINER_PREFIX=/usr/src/app/upload
+Environment=IMMICH_DEDUP_LOOP=600
+ExecStart=/usr/bin/python3 /opt/immich-family-dedup.py
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
