@@ -12,6 +12,17 @@ import 'package:timezone/timezone.dart';
 
 part 'date_time_picker.freezed.dart';
 
+@visibleForTesting
+List<Location> getSortedTimeZones() {
+  return tz.timeZoneDatabase.locations.values.sorted((a, b) {
+    final offset = a.currentTimeZone.offset.compareTo(b.currentTimeZone.offset);
+    if (offset != 0) {
+      return offset;
+    }
+    return a.name.compareTo(b.name);
+  });
+}
+
 Future<String?> showDateTimePicker({
   required BuildContext context,
   DateTime? initialDateTime,
@@ -66,7 +77,7 @@ class _DateTimePicker extends HookWidget {
 
   // returns a list of location<name> along with it's offset in duration
   List<_TimeZoneOffset> getAllTimeZones() {
-    return tz.timeZoneDatabase.locations.values.map(_TimeZoneOffset.fromLocation).sorted().toList();
+    return getSortedTimeZones().map(_TimeZoneOffset.fromLocation).toList();
   }
 
   @override
@@ -169,7 +180,7 @@ class _DateTimePicker extends HookWidget {
 }
 
 @freezed
-abstract class _TimeZoneOffset with _$TimeZoneOffset implements Comparable<_TimeZoneOffset> {
+abstract class _TimeZoneOffset with _$TimeZoneOffset {
   const _TimeZoneOffset._();
 
   const factory _TimeZoneOffset({required String display, required Location location}) = __TimeZoneOffset;
@@ -178,9 +189,4 @@ abstract class _TimeZoneOffset with _$TimeZoneOffset implements Comparable<_Time
       _TimeZoneOffset(display: _getFormattedOffset(l.currentTimeZone.offset, l), location: l);
 
   int get offsetInMilliseconds => location.currentTimeZone.offset;
-
-  @override
-  int compareTo(_TimeZoneOffset other) {
-    return offsetInMilliseconds.compareTo(other.offsetInMilliseconds);
-  }
 }
