@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { R_OK } from 'node:constants';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
+import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core.js';
 import { defaults } from 'src/dtos/config.dto.js';
 import {
   AssetFileType,
@@ -14,6 +15,7 @@ import {
   JobName,
   JobStatus,
   SourceType,
+  StorageFolder,
 } from 'src/enum.js';
 import { ImmichTags } from 'src/repositories/metadata.repository.js';
 import { MetadataService, firstDateTime } from 'src/services/metadata.service.js';
@@ -22,7 +24,7 @@ import { PersonGroupFactory } from 'test/factories/person-group.factory.js';
 import { PersonFactory } from 'test/factories/person.factory.js';
 import { videoInfoStub } from 'test/fixtures/media.stub.js';
 import { tagStub } from 'test/fixtures/tag.stub.js';
-import { getForMetadataExtraction, getForSidecarWrite } from 'test/mappers.js';
+import { getForAsset, getForMetadataExtraction, getForSidecarWrite } from 'test/mappers.js';
 import { factory } from 'test/small.factory.js';
 import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
@@ -943,27 +945,47 @@ describe(MetadataService.name, () => {
       });
     });
 
-    it('should delete old motion photo video assets if they do not match what is extracted', async () => {
-      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
-      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
-      mockReadTags({
-        Directory: 'foo/bar/',
-        MotionPhoto: 1,
-        MicroVideo: 1,
-        MicroVideoOffset: 1,
-      });
-      mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-      mocks.asset.create.mockResolvedValue(AssetFactory.create({ type: AssetType.Video }));
-      const video = randomBytes(512);
-      mocks.storage.readFile.mockResolvedValue(video);
+    it.each([
+      {
+        motion: 'an extracted motion video',
+        getOriginalPath: (motion: ThumbnailPathEntity) => StorageCore.getAndroidMotionPath(motion, motion.id),
+        deleteOnDisk: true,
+      },
+      {
+        motion: 'an uploaded motion video',
+        getOriginalPath: (motion: ThumbnailPathEntity) =>
+          StorageCore.getNestedPath(StorageFolder.Upload, motion.ownerId, `${motion.id}.mov`),
+        deleteOnDisk: false,
+      },
+      { motion: 'an external motion video', getOriginalPath: () => '/mnt/photos/IMG_0001.mov', deleteOnDisk: false },
+      { motion: 'a missing motion video', getOriginalPath: undefined, deleteOnDisk: false },
+    ])(
+      'should delete $motion that does not match what is extracted (deleteOnDisk: $deleteOnDisk)',
+      async ({ getOriginalPath, deleteOnDisk }) => {
+        const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+        const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
+        const oldMotion =
+          getOriginalPath && getForAsset({ ...motionAsset, originalPath: getOriginalPath(motionAsset) });
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+        mocks.asset.getById.mockImplementation((id) => Promise.resolve(id === motionAsset.id ? oldMotion : undefined));
+        mockReadTags({
+          Directory: 'foo/bar/',
+          MotionPhoto: 1,
+          MicroVideo: 1,
+          MicroVideoOffset: 1,
+        });
+        mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
+        mocks.asset.create.mockResolvedValue(AssetFactory.create({ type: AssetType.Video }));
+        const video = randomBytes(512);
+        mocks.storage.readFile.mockResolvedValue(video);
 
-      await sut.handleMetadataExtraction({ id: asset.id });
-      expect(mocks.job.queue).toHaveBeenNthCalledWith(1, {
-        name: JobName.AssetDelete,
-        data: { id: asset.livePhotoVideoId, deleteOnDisk: true },
-      });
-    });
+        await sut.handleMetadataExtraction({ id: asset.id });
+        expect(mocks.job.queue).toHaveBeenNthCalledWith(1, {
+          name: JobName.AssetDelete,
+          data: { id: motionAsset.id, deleteOnDisk },
+        });
+      },
+    );
 
     it('should not create a new motion photo video asset if the hash of the extracted video matches an existing asset', async () => {
       const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
