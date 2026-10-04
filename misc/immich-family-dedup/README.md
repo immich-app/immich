@@ -153,10 +153,11 @@ python3 immich-family-dedup.py --loop 600
 ## Testing
 
 The linking core is covered by unit tests that use temporary
-directories only — no Immich instance and no database needed:
+directories only — no Immich instance and no database needed. The test
+file sits next to the script; run it from this directory:
 
 ```sh
-python3 -m unittest discover -s tests -v
+python3 -m unittest discover -v
 ```
 
 The tests cover: hardlinking within one filesystem, the atomic swap
