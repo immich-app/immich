@@ -71,7 +71,7 @@
     "bullmq": "^5.51.0",
     "chokidar": "^4.0.3",
     "compression": "^1.8.0",
-    "cookie": "^1.0.2",
+    "cookie": "^2.0.0",
     "cookie-parser": "^1.4.7",
     "cron": "4.4.0",
     "exiftool-vendored": "^35.20.0",
