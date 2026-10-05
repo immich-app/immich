@@ -6097,11 +6097,12 @@ export function deletePeople({ peopleDeleteDto }: {
 /**
  * Get all people
  */
-export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHidden, page, sharedById, sharedWithId, size, withHidden }: {
+export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHidden, name, page, sharedById, sharedWithId, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
     isFavorite?: boolean;
     isHidden?: boolean;
+    name?: string;
     page?: number;
     sharedById?: string;
     sharedWithId?: string;
@@ -6116,6 +6117,7 @@ export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHi
         closestPersonId,
         isFavorite,
         isHidden,
+        name,
         page,
         sharedById,
         sharedWithId,
