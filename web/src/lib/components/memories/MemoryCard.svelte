@@ -16,10 +16,13 @@
   const isBirthday = $derived(item.type === MemoryType.Birthday);
 
   let confettiCount = $state(0);
+
+  const [flamePath, ...cakePaths] = mdiCakeVariant.split(/(?=M)/);
+  const cakePath = cakePaths.join('');
 </script>
 
 <a
-  class="relative me-2 inline-block aspect-3/4 h-54 rounded-xl shadow-sm last:me-0 max-md:h-37.5 md:me-4 md:aspect-4/3 xl:aspect-video {className}"
+  class="group relative me-2 inline-block aspect-3/4 h-54 rounded-xl shadow-sm last:me-0 max-md:h-37.5 md:me-4 md:aspect-4/3 xl:aspect-video {className}"
   href={item.href}
   onmouseenter={() => isBirthday && confettiCount++}
 >
@@ -37,7 +40,14 @@
   >
     {#if isBirthday}
       <span class="relative">
-        <Icon data-icon-birthday icon={mdiCakeVariant} size="1.25em" />
+        <Icon data-icon-birthday icon={cakePath} size="1.25em" class="block" />
+        <span class="flame absolute inset-0">
+          <Icon
+            icon={flamePath}
+            size="1.25em"
+            class="block transition-[color,filter] group-hover:text-logo-yellow group-hover:drop-shadow-[0_0_4px_var(--color-logo-yellow)]"
+          />
+        </span>
         {#key confettiCount}
           {#if confettiCount > 0}
             <span class="absolute inset-s-1/2 top-1/2">
@@ -59,3 +69,21 @@
     {/if}
   </p>
 </a>
+
+<style>
+  .flame {
+    transform-origin: 50% 25%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    a:hover .flame {
+      animation: flicker 150ms ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes flicker {
+    to {
+      transform: scale(0.9, 1.1);
+    }
+  }
+</style>
