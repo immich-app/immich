@@ -17,8 +17,7 @@
 
   let confettiCount = $state(0);
 
-  const [flamePath, ...cakePaths] = mdiCakeVariant.split(/(?=M)/);
-  const cakePath = cakePaths.join('');
+  const [flamePath, bottomLayerPath, topLayerPath] = mdiCakeVariant.split(/(?=M)/, 3);
 </script>
 
 <a
@@ -40,7 +39,13 @@
   >
     {#if isBirthday}
       <span class="relative">
-        <Icon data-icon-birthday icon={cakePath} size="1.25em" class="block" />
+        <Icon
+          data-icon-birthday
+          icon={bottomLayerPath}
+          size="1.25em"
+          class="block transition-colors group-hover:text-logo-blue"
+        />
+        <Icon icon={topLayerPath} size="1.25em" class="absolute inset-0 transition-colors group-hover:text-logo-pink" />
         <span class="flame absolute inset-0">
           <Icon
             icon={flamePath}
