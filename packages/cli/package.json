@@ -26,7 +26,7 @@
     "@types/micromatch": "^4.0.9",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^24.13.6",
-    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "byte-size": "^9.0.0",
     "cli-progress": "^3.12.0",
     "commander": "^15.0.0",
@@ -42,7 +42,7 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.0",
-    "vitest": "^4.0.0",
+    "vitest": "^5.0.0",
     "vitest-fetch-mock": "^0.4.0",
     "yaml": "^2.3.1"
   },
