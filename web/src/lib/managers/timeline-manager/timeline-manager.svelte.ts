@@ -123,6 +123,11 @@ export class TimelineManager extends VirtualScrollManager {
           }
         },
         AssetsUnarchive: (assets) => this.upsertAssets(assets),
+        AlbumRemoveAssets: ({ assetIds, albumIds }) => {
+          if (this.#options.albumId && albumIds.includes(this.#options.albumId)) {
+            this.removeAssets(assetIds);
+          }
+        },
         StackCreate: (stack) => {
           if (this.#options.withStacked) {
             updateStackedAssetInTimeline(this, stack);
