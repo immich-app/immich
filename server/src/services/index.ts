@@ -21,6 +21,7 @@ import { MaintenanceService } from 'src/services/maintenance.service';
 import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
+import { MemoryDockService } from 'src/services/memorydock.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { NotificationAdminService } from 'src/services/notification-admin.service';
 import { NotificationService } from 'src/services/notification.service';
@@ -75,6 +76,7 @@ export const services = [
   MapService,
   MediaService,
   MemoryService,
+  MemoryDockService,
   MetadataService,
   NotificationService,
   NotificationAdminService,

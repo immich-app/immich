@@ -1,3 +1,4 @@
+import { AssetTypeEnum } from '@immich/sdk';
 import '@testing-library/jest-dom';
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
 import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -51,6 +52,19 @@ describe('AssetViewerNavBar component', () => {
     const asset = assetFactory.build({ isTrashed: false });
     const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
     expect(getByLabelText('go_back')).toBeInTheDocument();
+  });
+
+  it('shows the AI style transform action for owned image assets', () => {
+    const ownerId = 'id-of-the-user';
+    const user = userAdminFactory.build({ id: ownerId });
+    const asset = assetFactory.build({ ownerId, type: AssetTypeEnum.Image, isTrashed: false });
+    authManager.setUser(user);
+
+    const preferences = preferencesFactory.build({ cast: { gCastEnabled: false } });
+    authManager.setPreferences(preferences);
+
+    const { getByText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+    expect(getByText('AI风格转变')).toBeInTheDocument();
   });
 
   describe('if the current user owns the asset', () => {

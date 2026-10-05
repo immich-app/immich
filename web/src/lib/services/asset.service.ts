@@ -30,6 +30,7 @@ import {
   mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
+  mdiPaletteOutline,
   mdiPlus,
   mdiPresentationPlay,
   mdiShareVariantOutline,
@@ -46,6 +47,7 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+import MemoryDockStyleTransformModal from '$lib/modals/MemoryDockStyleTransformModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
@@ -250,6 +252,14 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     shortcuts: [{ key: 'e' }],
   };
 
+  const AiStyleTransform: ActionItem = {
+    title: 'AI风格转变',
+    icon: mdiPaletteOutline,
+    $if: () =>
+      isOwner && asset.type === AssetTypeEnum.Image && asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
+    onAction: () => modalManager.show(MemoryDockStyleTransformModal, { asset }),
+  };
+
   const SetProfilePicture: ActionItem = {
     title: $t('set_as_profile_picture'),
     icon: mdiAccountCircleOutline,
@@ -316,6 +326,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     Tag,
     TagPeople,
     Edit,
+    AiStyleTransform,
     SetProfilePicture,
     ViewInTimeline,
     ViewSimilar,

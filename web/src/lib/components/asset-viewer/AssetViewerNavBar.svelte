@@ -138,6 +138,8 @@
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
         <ActionMenuItem action={Actions.PlaySlideshow} />
 
+        <ActionMenuItem action={Actions.AiStyleTransform} />
+
         <ActionMenuItem action={Actions.Download} />
         <ActionMenuItem action={Actions.DownloadOriginal} />
 
