@@ -147,6 +147,11 @@ limit
   3
 
 -- PersonRepository.getAllForUser
+with
+  "similarity_threshold" as (
+    select
+      set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
+  )
 select
   (
     select
@@ -234,6 +239,7 @@ select
       ) as agg
   ) as "sharedWith"
 from
+  "similarity_threshold",
   "person_group"
   inner join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
   and "owned"."ownerId" = $6
@@ -894,6 +900,11 @@ where
   )
 
 -- PersonRepository.getNumberOfPeople
+with
+  "similarity_threshold" as (
+    select
+      set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
+  )
 select
   coalesce(count(*), 0) as "total",
   coalesce(
@@ -904,6 +915,7 @@ select
     0
   ) as "hidden"
 from
+  "similarity_threshold",
   "person_group"
   left join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
   and "owned"."ownerId" = $2
