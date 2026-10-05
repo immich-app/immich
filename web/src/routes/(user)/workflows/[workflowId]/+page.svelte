@@ -263,8 +263,6 @@
     });
   });
 
-  $effect(() => console.log(steps));
-
   const { Download, Duplicate, CopyJson, Delete, Logs } = $derived(
     getWorkflowActions($t, { ...savedWorkflow, ...workflowJsonContent }),
   );
