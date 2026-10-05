@@ -87,8 +87,7 @@
     try {
       const sharedIds = new Set(serverPeople.map(({ id }) => id));
       const allPeople = await loadAllPeople();
-      const visiblePeople = allPeople.filter(({ isHidden }) => !isHidden);
-      shareEveryone = sharedIds.size > 0 && visiblePeople.every(({ id }) => sharedIds.has(id));
+      shareEveryone = sharedIds.size > 0 && allPeople.every(({ id }) => sharedIds.has(id));
     } catch (error) {
       handleError(error, $t('errors.something_went_wrong'));
     }
@@ -107,7 +106,7 @@
     const allPeople: PersonResponseDto[] = [];
 
     for (let page = 1, hasNextPage = true; hasNextPage; page++) {
-      const result = await getAllPeople({ withHidden: false, page, size: 1000 });
+      const result = await getAllPeople({ withHidden: true, page, size: 1000 });
       allPeople.push(...result.people);
       hasNextPage = result.hasNextPage ?? false;
     }
@@ -126,7 +125,7 @@
     }
 
     const updatedPeople = await modalManager.show(PeopleSelectionModal, {
-      people: allPeople.filter(({ isHidden }) => !isHidden),
+      people: allPeople,
       selectedPeople,
     });
 
