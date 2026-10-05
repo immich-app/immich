@@ -32,7 +32,9 @@
   <div
     class="absolute inset-s-0 top-0 size-full rounded-xl bg-linear-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
   ></div>
-  <p class="absolute inset-s-4 bottom-2 flex items-center gap-2 text-lg text-white max-md:text-sm">
+  <p
+    class="absolute inset-s-4 inset-e-4 bottom-2 flex items-center gap-2 text-lg whitespace-normal text-white max-md:text-sm"
+  >
     {#if isBirthday}
       <span class="relative">
         <Icon data-icon-birthday icon={mdiCakeVariant} size="1.25em" />
@@ -51,7 +53,7 @@
           {/if}
         {/key}
       </span>
-      <span class="min-w-0 truncate rounded-sm bg-logo-yellow px-1.5 py-0.5 text-black">{item.title}</span>
+      <span class="min-w-0 wrap-break-word">{item.title}</span>
     {:else}
       {item.title}
     {/if}
