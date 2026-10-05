@@ -266,7 +266,7 @@
   $effect(() => console.log(steps));
 
   const { Download, Duplicate, CopyJson, Delete, Logs } = $derived(
-    getWorkflowActions($t, { ...savedWorkflow, name, description, enabled, trigger, steps }),
+    getWorkflowActions($t, { ...savedWorkflow, ...workflowJsonContent }),
   );
 </script>
 
