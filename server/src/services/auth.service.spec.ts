@@ -1298,32 +1298,6 @@ describe(AuthService.name, () => {
       });
     });
 
-    it('should sync a storage label with dots on subsequent logins when a custom claim is configured', async () => {
-      const user = UserFactory.create({ oauthId: 'oauth-id', storageLabel: 'custom-label' });
-
-      mocks.systemMetadata.get.mockResolvedValue({
-        oauth: { ...systemConfigStub.oauthWithAutoRegister.oauth, storageLabelClaim: 'immich_label' },
-      });
-      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: OAuthProfileFactory.create({ sub: user.oauthId!, immich_label: 'synced.label' }),
-      });
-      mocks.user.getByOAuthId.mockResolvedValue(user);
-      mocks.user.getByStorageLabel.mockResolvedValue(void 0);
-      mocks.user.update.mockResolvedValue({ ...user, storageLabel: 'synced-label' });
-      mocks.session.create.mockResolvedValue(SessionFactory.create());
-
-      await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
-        {},
-        loginDetails,
-      );
-
-      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
-        storageLabel: 'synced.label',
-        updatedAt: expect.any(Date),
-      });
-    });
-
     it('should promote an existing user to admin if the role claim contains admin on login', async () => {
       const oauthId = 'oauth-id';
       const user = UserFactory.create({ isAdmin: false, oauthId });

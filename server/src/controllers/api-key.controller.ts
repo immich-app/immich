@@ -1,8 +1,14 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
-import { ApiKeyCreateDto, ApiKeyCreateResponseDto, ApiKeyResponseDto, ApiKeyUpdateDto } from 'src/dtos/api-key.dto.js';
+import {
+  ApiKeyCreateDto,
+  ApiKeyCreateResponseDto,
+  ApiKeyResponseDto,
+  ApiKeySearchDto,
+  ApiKeyUpdateDto,
+} from 'src/dtos/api-key.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
 import { ApiKeyService } from 'src/services/api-key.service.js';
@@ -31,8 +37,8 @@ export class ApiKeyController {
     description: 'Retrieve all API keys of the current user.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getApiKeys(@Auth() auth: AuthDto): Promise<ApiKeyResponseDto[]> {
-    return this.service.getAll(auth);
+  getApiKeys(@Auth() auth: AuthDto, @Query() dto: ApiKeySearchDto): Promise<ApiKeyResponseDto[]> {
+    return this.service.getAll(auth, dto.userId);
   }
 
   @Get('me')
@@ -62,7 +68,11 @@ export class ApiKeyController {
   @Endpoint({
     summary: 'Update an API key',
     description: 'Updates the name and permissions of an API key by its ID. The current user must own this API key.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateApiKey' }),
   })
   updateApiKey(
     @Auth() auth: AuthDto,

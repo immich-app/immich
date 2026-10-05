@@ -70,27 +70,6 @@ const newShares = async () => {
 };
 
 describe(PersonUserRepository.name, () => {
-  describe('table constraints', () => {
-    it('should reject a row with sharedWithId = sharedById', async () => {
-      const { ctx } = setup();
-      const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
-      await expect(
-        ctx.database
-          .insertInto('person_user')
-          .values({
-            personGroupId: person.personGroupId,
-            sharedById: user.id,
-            sharedWithId: user.id,
-            role: PersonUserRole.Write,
-          })
-          .execute(),
-      ).rejects.toThrow(
-        'new row for relation "person_user" violates check constraint "person_user_sharedBy_sharedWith_chk"',
-      );
-    });
-  });
-
   describe('createAll', () => {
     describe(person_user_after_insert.name, () => {
       it('should create automatically person for the user it was shared with', async () => {

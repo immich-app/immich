@@ -147,11 +147,6 @@ limit
   3
 
 -- PersonRepository.getAllForUser
-with
-  "similarity_threshold" as (
-    select
-      set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
-  )
 select
   (
     select
@@ -239,33 +234,18 @@ select
       ) as agg
   ) as "sharedWith"
 from
-  "similarity_threshold",
   "person_group"
   inner join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
   and "owned"."ownerId" = $6
-  inner join "asset_face" on "asset_face"."personGroupId" = "person_group"."id"
+  left join "asset_face" on "asset_face"."personGroupId" = "person_group"."id"
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
-  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  left join "asset" on "asset"."id" = "asset_face"."assetId"
+  and "asset"."ownerId" = $7
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
-  and (
-    "asset"."ownerId" = any ($7::uuid[])
-    or exists (
-      select
-        1 as "exists"
-      from
-        "album_asset"
-        inner join "album" on "album"."id" = "album_asset"."albumId"
-        and "album"."deletedAt" is null
-        inner join "album_user" on "album_user"."albumId" = "album"."id"
-        and "album_user"."userId" = $8::uuid
-      where
-        "album_asset"."assetId" = "asset"."id"
-    )
-  )
 where
-  "owned"."isHidden" = $9
+  "owned"."isHidden" = $8
   and 1 = 1
 group by
   "person_group"."id",
@@ -273,7 +253,19 @@ group by
   "owned"."personGroupId"
 having
   (
-    "owned"."name" != $10
+    exists (
+      select
+        "person_user"."sharedWithId"
+      from
+        "person_user"
+      where
+        "person_user"."personGroupId" = "person_group"."id"
+        and "person_user"."sharedWithId" = $9
+    )
+    or (
+      count("asset"."id") > $10
+      and "owned"."name" != $11
+    )
     or count("asset"."id") >= COALESCE(
       (
         SELECT
@@ -281,7 +273,7 @@ having
         FROM
           user_metadata
         WHERE
-          "userId" = $11
+          "userId" = $12
           AND key = 'preferences'
       ),
       '3'
@@ -295,9 +287,9 @@ order by
   NULLIF("owned"."name", '') asc nulls last,
   "owned"."createdAt"
 limit
-  $12
-offset
   $13
+offset
+  $14
 
 -- PersonRepository.getAllWithoutFaces
 select
@@ -907,68 +899,49 @@ select
   coalesce(
     count(*) filter (
       where
-        "people"."isHidden" = $1
+        "owned"."isHidden" = $1
     ),
     0
   ) as "hidden"
 from
+  "person_group"
+  left join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
+  and "owned"."ownerId" = $2
+where
   (
-    with
-      "similarity_threshold" as (
+    (
+      "owned"."ownerId" is not null
+      and exists (
         select
-          set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
+        from
+          "asset_face"
+        where
+          "asset_face"."personGroupId" = "person_group"."id"
+          and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" = $3
+          and exists (
+            select
+            from
+              "asset"
+            where
+              "asset"."id" = "asset_face"."assetId"
+              and "asset"."ownerId" = $4
+              and "asset"."visibility" = 'timeline'
+              and "asset"."deletedAt" is null
+          )
       )
-    select
-      "owned"."isHidden"
-    from
-      "similarity_threshold",
-      "person_group"
-      inner join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
-      and "owned"."ownerId" = $2
-      inner join "asset_face" on "asset_face"."personGroupId" = "person_group"."id"
-      and "asset_face"."deletedAt" is null
-      and "asset_face"."isVisible" is true
-      inner join "asset" on "asset"."id" = "asset_face"."assetId"
-      and "asset"."visibility" = 'timeline'
-      and "asset"."deletedAt" is null
-      and (
-        "asset"."ownerId" = any ($3::uuid[])
-        or exists (
-          select
-            1 as "exists"
-          from
-            "album_asset"
-            inner join "album" on "album"."id" = "album_asset"."albumId"
-            and "album"."deletedAt" is null
-            inner join "album_user" on "album_user"."albumId" = "album"."id"
-            and "album_user"."userId" = $4::uuid
-          where
-            "album_asset"."assetId" = "asset"."id"
-        )
-      )
-    where
-      1 = 1
-    group by
-      "person_group"."id",
-      "owned"."ownerId",
-      "owned"."personGroupId"
-    having
-      (
-        "owned"."name" != $5
-        or count("asset"."id") >= COALESCE(
-          (
-            SELECT
-              value -> 'people' ->> 'minimumFaces'
-            FROM
-              user_metadata
-            WHERE
-              "userId" = $6
-              AND key = 'preferences'
-          ),
-          '3'
-        )::int
-      )
-  ) as "people"
+    )
+    or exists (
+      select
+        "person_user"."sharedById"
+      from
+        "person_user"
+      where
+        "person_user"."personGroupId" = "person_group"."id"
+        and "person_user"."sharedWithId" = $5
+    )
+  )
+  and 1 = 1
 
 -- PersonRepository.createGroup
 insert into
@@ -1142,23 +1115,6 @@ from
     select
       1
   ) as "dummy"
-
--- PersonRepository.updateForWritableOwners
-update "person"
-set
-  "name" = $1
-where
-  "person"."personGroupId" = $2
-  and "person"."ownerId" in (
-    select
-      "person_user"."sharedById"
-    from
-      "person_user"
-    where
-      "person_user"."personGroupId" = $3
-      and "person_user"."sharedWithId" = $4
-      and "person_user"."role" in ($5, $6)
-  )
 
 -- PersonRepository.getFacesByIds
 select

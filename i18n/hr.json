@@ -737,6 +737,7 @@
   "client_cert_subtitle": "Podržava samo PKCS12 (.p12, .pfx) format. Uvoz/uklanjanje certifikata dostupno je samo prije prijave",
   "client_cert_title": "SSL klijentski certifikat [EKSPERIMENTALNO]",
   "close": "Zatvori",
+  "cluster_group": "Klaster grupa",
   "cluster_group_description": "Osobe su prepoznate među fotografijama svih članova u grupi",
   "cluster_group_invite_description": "Pozvani ste da se pridružite ovoj grupi klastera.",
   "collapse": "Sažmi",

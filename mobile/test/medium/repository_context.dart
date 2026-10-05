@@ -23,7 +23,6 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:uuid/uuid.dart';
 
@@ -126,7 +125,6 @@ class MediumRepositoryContext {
   }) async {
     id ??= TestUtils.uuid();
     createdAt ??= TestUtils.date();
-    final date = localDateTime ?? createdAt.toLocal();
     return db
         .into(db.remoteAssetEntity)
         .insertReturning(
@@ -147,8 +145,7 @@ class MediumRepositoryContext {
             isEdited: .new(isEdited ?? false),
             livePhotoVideoId: .new(livePhotoVideoId),
             stackId: .new(stackId),
-            localDateTime: .new(date),
-            groupDate: .new(timelineGroupDate(date)),
+            localDateTime: .new(localDateTime ?? createdAt.toLocal()),
             thumbHash: .new(TestUtils.uuid(thumbHash)),
             libraryId: .new(TestUtils.uuid(libraryId)),
           ),
@@ -288,7 +285,6 @@ class MediumRepositoryContext {
     DateTime? updatedAt,
   }) async {
     id ??= TestUtils.uuid();
-    createdAt ??= TestUtils.date();
     return db
         .into(db.localAssetEntity)
         .insertReturning(
@@ -302,8 +298,7 @@ class MediumRepositoryContext {
             updatedAt: .new(TestUtils.date(updatedAt)),
             checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
             previousChecksum: .new(previousChecksum),
-            createdAt: .new(createdAt),
-            groupDate: .new(timelineGroupDate(createdAt.toLocal())),
+            createdAt: .new(TestUtils.date(createdAt)),
             type: .new(type ?? .image),
             isFavorite: .new(isFavorite ?? false),
             iCloudId: _resolveUndefined(iCloudId, iCloudIdOption, TestUtils.uuid()),

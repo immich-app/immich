@@ -1,8 +1,9 @@
 import {
   getPerson,
-  PersonUpdateStrategy,
+  updatePeople,
   updatePerson,
   type AssetResponseDto,
+  type PeopleUpdateDto,
   type PersonResponseDto,
   type PersonUpdateDto,
 } from '@immich/sdk';
@@ -17,7 +18,6 @@ import {
   mdiPencilOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import PersonEditAccessModal from '$lib/modals/PersonEditAccessModal.svelte';
 import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
@@ -114,15 +114,37 @@ const handleHidePerson = async (person: { id: string }) => {
   }
 };
 
-export const handleUpdatePerson = async ({ id, ...personUpdateDto }: { id: string } & PersonUpdateDto) => {
+export const handleUpdatePerson = async (id: string, personUpdateDto: PersonUpdateDto) => {
   const $t = await getFormatter();
 
   try {
-    const response = await updatePerson({ id, personUpdateDto });
-    const isOtherUser = !!personUpdateDto.userId && personUpdateDto.userId !== authManager.user.id;
-    eventManager.emit('PersonUpdate', isOtherUser ? await getPerson({ id }) : response);
-    return response;
+    await updatePerson({ id, personUpdateDto });
+    return true;
   } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
+  }
+};
+
+export const handleUpdatePeople = async (peopleUpdateDto: PeopleUpdateDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const bulkResponse = await updatePeople({ peopleUpdateDto });
+
+    const ids = new Set(peopleUpdateDto.people.map(({ id }) => id));
+    const responses = await Promise.all([...ids].map((id) => getPerson({ id })));
+    for (const response of responses) {
+      eventManager.emit('PersonUpdate', response);
+    }
+
+    if (bulkResponse.some((response) => !response.success)) {
+      toastManager.danger($t('errors.something_went_wrong'));
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log('uh oh');
     handleError(error, $t('errors.something_went_wrong'));
   }
 };
@@ -139,22 +161,17 @@ const handleShowPerson = async (person: { id: string }) => {
   }
 };
 
-export const withUpdateStrategy = (dto: PersonUpdateDto): PersonUpdateDto =>
-  authManager.preferences.people?.updateStrategy === PersonUpdateStrategy.Self
-    ? { ...dto, userId: authManager.user.id }
-    : dto;
+export const handleUpdatePersonBirthDate = async (person: PersonResponseDto, birthDate: string | null) => {
+  const $t = await getFormatter();
 
-export const handleUpdatePersonName = async (
-  { id, name }: { id: string; name: string },
-  options?: { notify: boolean },
-) => {
-  const response = await handleUpdatePerson({ id, ...withUpdateStrategy({ name }) });
-  if (response && options?.notify) {
-    const $t = await getFormatter();
-    toastManager.primary($t('change_name_successfully'));
+  try {
+    const response = await updatePerson({ id: person.id, personUpdateDto: { birthDate } });
+    toastManager.primary($t('date_of_birth_saved'));
+    eventManager.emit('PersonUpdate', response);
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_save_date_of_birth'));
   }
-
-  return response;
 };
 
 const handleSetFeaturedPhoto = async (person: PersonResponseDto, featureFaceAssetId: string) => {

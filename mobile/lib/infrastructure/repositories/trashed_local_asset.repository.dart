@@ -9,7 +9,6 @@ import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart'
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.drift.dart';
-import 'package:immich_mobile/utils/datetime_helpers.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
@@ -206,7 +205,6 @@ class TrashedLocalAssetRepository extends DatabaseAccessor<Drift> with $TrashedL
         isFavorite: Value(e.isFavorite),
         orientation: Value(e.orientation),
         playbackStyle: Value(e.playbackStyle),
-        groupDate: Value(timelineGroupDate(e.createdAt.toLocal())),
       );
     });
 

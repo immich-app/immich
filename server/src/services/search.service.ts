@@ -89,7 +89,7 @@ export class SearchService extends BaseService {
     let userIds: string[] | undefined;
 
     if (dto.albumIds && dto.albumIds.length > 0) {
-      await this.requireAccess({ auth, ids: dto.albumIds, permission: Permission.AlbumRead });
+      await this.requireAccess({ auth, ids: dto.albumIds.slice(0, 1), permission: Permission.AlbumRead });
     } else if (auth.sharedLink) {
       throw new BadRequestException('Shared link access is only allowed in combination with an albumIds filter');
     } else {

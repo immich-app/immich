@@ -748,6 +748,7 @@
   "client_cert_subtitle": "인증서 가져오기/제거는 로그인 전에만 가능하며, PKCS12 (.p12, .pfx) 형식만 지원합니다.",
   "client_cert_title": "SSL 클라이언트 인증서 (실험적)",
   "close": "닫기",
+  "cluster_group": "클러스터 그룹",
   "cluster_group_description": "그룹에 속한 모든 사람의 사진에서 인물들이 식별됩니다.",
   "cluster_group_facial_recognition": "얼굴 인식 초기화",
   "cluster_group_facial_recognition_prompt": "얼굴 인식을 초기화하면 그룹에 속한 모든 사용자의 모든 사람 정보가 삭제됩니다. 이미 설정된 이름과 생년월일 또한 삭제됩니다. 계속하시겠습니까?",

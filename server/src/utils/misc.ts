@@ -108,8 +108,6 @@ export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingReposi
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
-export const hasSomeDefined = (values: unknown[]) => values.some((value) => value !== undefined);
-
 export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
   const value = await find();
   if (!value) {

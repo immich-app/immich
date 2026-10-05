@@ -628,22 +628,20 @@ describe(AssetService.name, () => {
       expect(mocks.stack.update).not.toHaveBeenCalled();
     });
 
-    it.each([
-      { isOffline: false, deleteOnDisk: true },
-      { isOffline: true, deleteOnDisk: false },
-    ])('should delete a live photo (isOffline: $isOffline)', async ({ isOffline, deleteOnDisk }) => {
+    it('should delete a live photo', async () => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden }).build();
-      const asset = AssetFactory.from({ livePhotoVideoId: motionAsset.id, isOffline })
-        .file({ type: AssetFileType.Sidecar })
-        .build();
+      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
       mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
 
-      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+      await sut.handleAssetDeletion({
+        id: asset.id,
+        deleteOnDisk: true,
+      });
 
       expect(mocks.job.queue.mock.calls).toEqual([
-        [{ name: JobName.AssetDelete, data: { id: motionAsset.id, deleteOnDisk } }],
-        [{ name: JobName.FileDelete, data: { files: deleteOnDisk ? [asset.files[0].path, asset.originalPath] : [] } }],
+        [{ name: JobName.AssetDelete, data: { id: motionAsset.id, deleteOnDisk: true } }],
+        [{ name: JobName.FileDelete, data: { files: [asset.originalPath] } }],
       ]);
     });
 

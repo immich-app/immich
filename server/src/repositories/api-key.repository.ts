@@ -49,12 +49,12 @@ export class ApiKeyRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  getById(userId: string, id: string) {
+  getById(userId: string | undefined, id: string) {
     return this.db
       .selectFrom('api_key')
       .select(columns.apiKey)
       .where('id', '=', asUuid(id))
-      .where('userId', '=', userId)
+      .$if(!!userId, (qb) => qb.where('userId', '=', userId!))
       .executeTakeFirst();
   }
 

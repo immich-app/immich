@@ -739,6 +739,7 @@
   "client_cert_subtitle": "Hanya mendukung format PKCS12 (.p12, .pfx). Impor/hapus sertifikat hanya tersedia sebelum masuk",
   "client_cert_title": "Sertifikat SSL klien [EKSPERIMENTAL]",
   "close": "Tutup",
+  "cluster_group": "Grup klaster",
   "cluster_group_description": "Orang dikenali di seluruh foto semua orang dalam grup",
   "cluster_group_facial_recognition": "atur ulang pengenalan wajah",
   "cluster_group_facial_recognition_prompt": "Pengaturan ulang pengenalan wajah akan menghapus seluruh orang untuk seluruh pengguna dalam grup ini. Nama dan tanggal lahir akan terhapus. Apakah anda yakin untuk lanjut?",

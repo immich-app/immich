@@ -55,7 +55,7 @@ export class SharedLinkService extends BaseService {
     const { id, password } = sharedLink;
 
     if (password && !authTokens.includes(this.asToken({ id, password }))) {
-      throw new UnauthorizedException('Password required');
+      throw new UnauthorizedException({ message: 'Password required', id });
     }
 
     return mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
@@ -98,7 +98,7 @@ export class SharedLinkService extends BaseService {
         password: dto.password,
         expiresAt: dto.expiresAt || null,
         allowUpload: dto.allowUpload ?? true,
-        allowDownload: dto.showMetadata !== false && (dto.allowDownload ?? true),
+        allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
         showExif: dto.showMetadata ?? true,
         slug: dto.slug || null,
       });
@@ -233,6 +233,6 @@ export class SharedLinkService extends BaseService {
   }
 
   private asToken(sharedLink: { id: string; password: string }) {
-    return this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`).toString('base64');
+    return this.cryptoRepository.hashSha256(sharedLink.id).toString('base64');
   }
 }

@@ -4,7 +4,6 @@ enum ServerCapability {
   // Feature Support
   cloudIdMetadata(SemVer(major: 2, minor: 4, patch: 0)),
   bulkCloudIdMetadata(SemVer(major: 2, minor: 5, patch: 0)),
-  albumEditorUpdate(SemVer(major: 2, minor: 6, patch: 2)),
 
   // Sync
   syncV2(SemVer(major: 3, minor: 0, patch: 0)),

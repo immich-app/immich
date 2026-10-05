@@ -65,7 +65,11 @@ export class StackController {
   @Endpoint({
     summary: 'Update a stack',
     description: 'Update an existing stack by its ID.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateStack' }),
   })
   updateStack(
     @Auth() auth: AuthDto,

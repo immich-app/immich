@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 
@@ -108,7 +110,6 @@ export class MetadataRepository {
       '--MWG:Orientation',
       '--IFD1:ImageWidth',
       '--IFD1:ImageHeight',
-      '--Samsung:Rotation',
     ],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,
@@ -143,9 +144,18 @@ export class MetadataRepository {
     // If exiftool assigns a field with ^= instead of =, empty values will be written too.
     // Since exiftool-vendored doesn't support an option for this, we append the ^ to the name of the tag instead.
     // https://exiftool.org/exiftool_pod.html#:~:text=is%20used%20to%20write%20an%20empty%20string
-    const tagsToWrite = Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key}^`, value]));
+    const { Description, ImageDescription, ...rest } = tags;
+    const tagsToWrite = Object.fromEntries(Object.entries(rest).map(([key, value]) => [`${key}^`, value]));
     try {
       await this.exiftool.write(path, tagsToWrite);
+      if (typeof Description === 'string') {
+        // exiftool-vendored rewrites multiline descriptions, so write them through the CLI unchanged
+        const option = this.exiftool.options.exiftoolPath;
+        const executable = await (typeof option === 'function' ? option() : option);
+        await promisify(exec)(
+          `"${executable}" -overwrite_original -Description="${Description}" -ImageDescription="${String(ImageDescription ?? Description)}" "${path}"`,
+        );
+      }
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }

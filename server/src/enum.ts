@@ -417,16 +417,6 @@ export const UserAvatarColorSchema = z
   .describe('User avatar color')
   .meta({ id: 'UserAvatarColor' });
 
-export enum PersonUpdateStrategy {
-  Self = 'self',
-  Everyone = 'everyone',
-}
-
-export const PersonUpdateStrategySchema = z
-  .enum(PersonUpdateStrategy)
-  .describe('Which person records to update when editing a person')
-  .meta({ id: 'PersonUpdateStrategy' });
-
 export enum UserStatus {
   Active = 'active',
   Removing = 'removing',

@@ -187,7 +187,7 @@ const methods = wrapper<Manifest>({
     for (const tag of config.tags) {
       if (assetTags.includes(tag)) {
         if (config.matching === 'any') {
-          return { workflow: { continue: true } };
+          break;
         } else if (config.matching === 'none') {
           return { workflow: { continue: false } };
         }
@@ -196,7 +196,7 @@ const methods = wrapper<Manifest>({
       }
     }
 
-    return { workflow: { continue: config.matching !== 'any' } };
+    return { workflow: { continue: true } };
   },
 
   assetTypeFilter: ({ config, data }) => {

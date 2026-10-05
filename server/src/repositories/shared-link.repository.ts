@@ -18,7 +18,6 @@ import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table.js';
-import { dummy } from 'src/utils/database.js';
 
 export type SharedLinkSearchOptions = {
   userId: string;
@@ -44,18 +43,22 @@ export const withExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) => {
     .as('exifInfo');
 };
 
-const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) =>
-  jsonArrayFrom(
-    eb
-      .selectFrom('album_user')
-      .innerJoin('user', 'user.id', 'album_user.userId')
-      .where('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
-      .whereRef('album_user.albumId', '=', 'album.id')
-      .select('album_user.role')
-      .select((eb) => jsonObjectFrom(eb.selectFrom(dummy).select(columns.user)).$notNull().as('user')),
-  )
-    .$notNull()
-    .as('albumUsers');
+const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) => {
+  return eb
+    .selectFrom('user')
+    .select(columns.user)
+    .where((eb) =>
+      eb.exists(
+        eb
+          .selectFrom('album_user')
+          .where('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
+          .whereRef('album_user.albumId', '=', 'album.id')
+          .whereRef('album_user.userId', '=', 'user.id'),
+      ),
+    )
+    .where('user.deletedAt', 'is', null)
+    .as('owner');
+};
 
 const withSharedLinkAlbum = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
   return eb
@@ -98,7 +101,7 @@ export class SharedLinkRepository {
                   .as('assets'),
               (join) => join.onTrue(),
             )
-            .select(withAlbumOwner)
+            .innerJoinLateral(withAlbumOwner, (join) => join.onTrue())
             .select((eb) =>
               eb.fn
                 .coalesce(
@@ -111,7 +114,8 @@ export class SharedLinkRepository {
                 )
                 .as('assets'),
             )
-            .groupBy('album.id')
+            .select((eb) => eb.fn.toJson('owner').as('owner'))
+            .groupBy(['album.id', sql`"owner".*`])
             .as('album'),
         (join) => join.onTrue(),
       )
@@ -131,7 +135,11 @@ export class SharedLinkRepository {
       .select((eb) => jsonArrayFrom(withSharedAssets(eb).limit(1)).as('assets'))
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
-        (eb) => withSharedLinkAlbum(eb).select(withAlbumOwner).as('album'),
+        (eb) =>
+          withSharedLinkAlbum(eb)
+            .innerJoinLateral(withAlbumOwner, (join) => join.onTrue())
+            .select((eb) => eb.fn.toJson('owner').as('owner'))
+            .as('album'),
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('album').$castTo<ShallowDehydrateObject<Album> | null>().as('album'))

@@ -5,25 +5,23 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
-export const getTrashActions = ($t: MessageFormatter, assetCount: number) => {
+export const getTrashActions = ($t: MessageFormatter) => {
   const RestoreAll: ActionItem = {
     title: $t('restore_all'),
     icon: mdiHistory,
-    $if: () => assetCount > 0,
     onAction: () => handleRestoreTrash(),
   };
 
   const Empty: ActionItem = {
     title: $t('empty_trash'),
     icon: mdiDeleteForeverOutline,
-    $if: () => assetCount > 0,
     onAction: () => handleEmptyTrash(),
   };
 
   return { RestoreAll, Empty };
 };
 
-const handleEmptyTrash = async () => {
+export const handleEmptyTrash = async () => {
   const $t = await getFormatter();
 
   const confirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
@@ -39,7 +37,7 @@ const handleEmptyTrash = async () => {
   }
 };
 
-const handleRestoreTrash = async () => {
+export const handleRestoreTrash = async () => {
   const $t = await getFormatter();
 
   const confirmed = await modalManager.showDialog({ prompt: $t('assets_restore_confirmation') });

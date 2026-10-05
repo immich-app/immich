@@ -71,7 +71,11 @@ export class MemoryController {
   @Endpoint({
     summary: 'Update a memory',
     description: 'Update an existing memory by its ID.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateMemory' }),
   })
   updateMemory(
     @Auth() auth: AuthDto,

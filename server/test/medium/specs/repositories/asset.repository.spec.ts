@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType, AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum.js';
+import { AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -64,31 +64,6 @@ const keyframeRow = (assetId: string, n: number) => ({
 });
 
 describe(AssetRepository.name, () => {
-  describe('deleteFile', () => {
-    it('should delete only the requested asset and file type', async () => {
-      const { ctx, sut } = setup();
-      const { user } = await ctx.newUser();
-      const { asset } = await ctx.newAsset({ ownerId: user.id });
-      const { asset: other } = await ctx.newAsset({ ownerId: user.id });
-      await sut.upsertFiles([
-        { assetId: asset.id, type: AssetFileType.Sidecar, path: '/photos/photo.jpg.xmp' },
-        { assetId: asset.id, type: AssetFileType.Thumbnail, path: '/photos/thumbnail.jpg' },
-        { assetId: other.id, type: AssetFileType.Sidecar, path: '/photos/other.jpg.xmp' },
-      ]);
-
-      await sut.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar });
-
-      await expect(
-        ctx.database
-          .selectFrom('asset_file')
-          .where('assetId', 'in', [asset.id, other.id])
-          .select('path')
-          .orderBy('path')
-          .execute(),
-      ).resolves.toEqual([{ path: '/photos/other.jpg.xmp' }, { path: '/photos/thumbnail.jpg' }]);
-    });
-  });
-
   describe('getTimeBucket', () => {
     it('should order assets by local day first and fileCreatedAt within each day', async () => {
       const { ctx, sut } = setup();

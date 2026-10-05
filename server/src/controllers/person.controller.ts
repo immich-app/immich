@@ -24,13 +24,13 @@ import {
   PeopleDeleteDto,
   PeopleResponseDto,
   PeopleUpdateDto,
-  PeopleUsersUpsertDto,
   PersonCreateDto,
   PersonDeleteDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  PersonUsersCreateDto,
   PersonUsersDeleteDto,
   PersonUsersResponseDto,
   PersonUsersSearchDto,
@@ -113,7 +113,11 @@ export class PersonController {
   @Endpoint({
     summary: 'Update person',
     description: 'Update an individual person.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updatePerson' }),
   })
   updatePerson(
     @Auth() auth: AuthDto,
@@ -236,16 +240,16 @@ export class PersonController {
   @Put('users')
   @Authenticated({ permission: Permission.PersonUpdate })
   @Endpoint({
-    summary: 'Upsert user access',
+    summary: 'Give users access to people',
     description: 'Give users access to people',
     history: new HistoryBuilder().added('v3.3').stable('v3.3'),
   })
-  upsertPeopleUsers(@Auth() auth: AuthDto, @Body() dto: PeopleUsersUpsertDto): Promise<void> {
-    return this.service.upsertPeopleUsers(auth, dto);
+  addUsersToPeople(@Auth() auth: AuthDto, @Body() dto: PersonUsersCreateDto): Promise<void> {
+    return this.service.addUsersToPeople(auth, dto);
   }
 
   @Delete('users')
-  @Authenticated({ permission: Permission.PersonUpdate })
+  @Authenticated({ permission: Permission.PersonDelete })
   @Endpoint({
     summary: 'Remove users from people',
     description: 'Remove user access to people',

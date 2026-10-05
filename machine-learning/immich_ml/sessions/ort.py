@@ -6,7 +6,6 @@ import platform
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
-from contextlib import nullcontext
 from dataclasses import dataclass
 from functools import cache, cached_property
 from pathlib import Path
@@ -54,34 +53,26 @@ DTYPES = {
     "tensor(int64)": np.int64,
 }
 
-# TensorRT-RTX records CUDA graphs in global capture mode, which fails any other thread's synchronizing call, and as its
-# context memory can move between runs, any run may record: so its graphs build and run one at a time
-# TODO: Make this more granular
-global_lock = Lock()
-
 
 class OrtGraph:
     def __init__(self, spec: GraphSpec) -> None:
-        graph = prepared(spec)
-        self.lock = global_lock if spec.provider == "nv_tensorrt_rtx" else nullcontext()
-        with self.lock:
-            self._session = spec.session(graph)
-        image = self._session.get_inputs()[0]
+        self.session = spec.session(prepared(spec))
+        image = self.session.get_inputs()[0]
         # whether the graph scales and shifts the image itself, so the host hands over raw pixels
         self.normalizes_input = image.type == "tensor(uint8)"
         # CoreML's rewrite moves the layout change out of the graph, so whoever applied it performs it
         self.channels_first = self.normalizes_input and len(image.shape) == 4 and image.shape[1] == 3
 
     def get_inputs(self) -> Sequence[SessionNode]:
-        inputs: Sequence[SessionNode] = self._session.get_inputs()
+        inputs: Sequence[SessionNode] = self.session.get_inputs()
         return inputs
 
     def get_outputs(self) -> Sequence[SessionNode]:
-        outputs: Sequence[SessionNode] = self._session.get_outputs()
+        outputs: Sequence[SessionNode] = self.session.get_outputs()
         return outputs
 
     def get_metadata(self) -> dict[str, str]:
-        metadata: dict[str, str] = self._session.get_modelmeta().custom_metadata_map
+        metadata: dict[str, str] = self.session.get_modelmeta().custom_metadata_map
         return metadata
 
     def run(
@@ -92,13 +83,7 @@ class OrtGraph:
     ) -> list[NDArray[np.float32]]:
         if self.channels_first:
             input_feed = {name: frames.transpose(0, 3, 1, 2) for name, frames in input_feed.items()}
-        return self.infer(output_names, input_feed, run_options)
-
-    def infer(
-        self, output_names: list[str] | None, input_feed: ModelInput, run_options: Any = None
-    ) -> list[NDArray[Any]]:
-        with self.lock:
-            outputs: list[NDArray[Any]] = self._session.run(output_names, input_feed, run_options)
+        outputs: list[NDArray[Any]] = self.session.run(output_names, input_feed, run_options)
         return outputs
 
 
@@ -336,15 +321,15 @@ class OrtSession:
         """Opens a graph for every shape and runs it once before opening the next: OpenVINO defers work to the first
         run of a graph it imports from its cache, which importing another graph first can corrupt."""
         for shape in self.policy.dims[:1] if self.dynamic else self.policy.dims:
-            graph = self.for_shape(shape)
+            session = self.for_shape(shape).session
             sizes = dict(_overrides(self.policy, shape.pins))  # for a dim the graph leaves free
             feed = {
                 node.name: np.zeros(
                     [dim if isinstance(dim, int) else sizes.get(dim, 1) for dim in node.shape], DTYPES[node.type]
                 )
-                for node in graph._session.get_inputs()
+                for node in session.get_inputs()
             }
-            graph.infer(None, feed)
+            session.run(None, feed)
 
 
 def _overrides(policy: ShapePolicy, pins: Mapping[str, int]) -> list[tuple[str, int]]:
@@ -359,7 +344,7 @@ def _overrides(policy: ShapePolicy, pins: Mapping[str, int]) -> list[tuple[str, 
 
 @cache
 def _intel_gpu(device: str) -> Device:
-    """The IP version, release and execution units OpenVINO keys its blobs by, and the driver it checks them against."""
+    """The IP version and execution units OpenVINO keys its blobs by, and the driver it checks them against."""
     ov = ctypes.CDLL(str(Path(ort.__file__).parent / "capi" / "libopenvino_c.so"))
     core, wanted = ctypes.c_void_p(), ctypes.c_char_p()
     ov.ov_core_create(ctypes.byref(core))
@@ -367,10 +352,6 @@ def _intel_gpu(device: str) -> Device:
     uuid = wanted.value
     ov.ov_free(wanted)
     ov.ov_core_free(core)
-    release = (ctypes.c_char_p * 2)()  # ov_version_t: build number, description
-    ov.ov_get_openvino_version(release)
-    openvino = (release[0] or b"").decode()
-    ov.ov_version_free(release)
     cl, gpu = ctypes.CDLL("libOpenCL.so.1"), ctypes.c_uint64(1 << 2)  # CL_DEVICE_TYPE_GPU
     platforms, devices, count = (ctypes.c_void_p * 8)(), (ctypes.c_void_p * 8)(), ctypes.c_uint32()
     cl.clGetPlatformIDs(8, platforms, ctypes.byref(count))
@@ -385,7 +366,7 @@ def _intel_gpu(device: str) -> Device:
                 cl.clGetDeviceInfo(ctypes.c_void_p(handle), key, ctypes.sizeof(value), ctypes.byref(value), None)
             if bytes(own).hex().encode() == uuid:
                 version = f"{ip.value >> 22}.{ip.value >> 14 & 0xFF}.{ip.value & 0x3FFF}"
-                return Device(f"{version}-{units.value}eu", f"{driver.value.decode()} {openvino}")
+                return Device(f"{version}-{units.value}eu", driver.value.decode())
     raise LookupError(f"OpenCL has no GPU with the UUID of OpenVINO's {device}")
 
 
@@ -444,10 +425,7 @@ def _providers_default() -> list[str]:
 
     available_providers = set(ort.get_available_providers())
     log.debug(f"Available ORT providers: {available_providers}")
-    providers = [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
-    if "nv_tensorrt_rtx" in providers:
-        providers.remove("CUDAExecutionProvider")  # CUDA EP syncs the legacy stream each run, which a recording fails
-    return providers
+    return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
 
 def _disabled_optimizers_default(providers: list[str]) -> list[str]:

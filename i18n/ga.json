@@ -747,6 +747,7 @@
   "client_cert_subtitle": "Tacaíonn sé le formáid PKCS12 (.p12, .pfx) amháin. Ní féidir teastais a allmhairiú/a bhaint ach amháin roimh logáil isteach",
   "client_cert_title": "Teastas cliant SSL [TURGHAINNEACH]",
   "close": "Dún",
+  "cluster_group": "Grúpa braisle",
   "cluster_group_description": "Aithnítear daoine ar fud na ngrianghraf de gach duine sa ghrúpa",
   "cluster_group_facial_recognition": "Athshocraigh aitheantas aghaidhe",
   "cluster_group_facial_recognition_prompt": "Scriosfaidh athshocrú aitheantais aghaidhe gach duine do gach úsáideoir sa ghrúpa seo. Caillfear ainmneacha agus dátaí breithe atá socraithe cheana féin. An bhfuil tú cinnte gur mhaith leat leanúint ar aghaidh?",

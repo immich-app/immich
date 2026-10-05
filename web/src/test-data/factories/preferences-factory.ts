@@ -1,4 +1,4 @@
-import { AssetOrder, PersonUpdateStrategy, type UserPreferencesResponseDto } from '@immich/sdk';
+import { AssetOrder, type UserPreferencesResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
@@ -29,7 +29,6 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
   people: {
     enabled: false,
     sidebarWeb: false,
-    updateStrategy: PersonUpdateStrategy.Everyone,
   },
   purchase: {
     hideBuyButtonUntil: '',

@@ -122,7 +122,7 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: false,
-        total: 10,
+        total: 11,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'Freddy' }),
@@ -144,7 +144,7 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body.hasNextPage).toBe(false);
-      expect(body.total).toBe(10);
+      expect(body.total).toBe(11); // All persons
       expect(body.hidden).toBe(1); // 'hidden_person'
 
       const people = body.people as PersonResponseDto[];
@@ -170,7 +170,7 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: false,
-        total: 10,
+        total: 11,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'Freddy' }),
@@ -195,7 +195,7 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: true,
-        total: 10,
+        total: 11,
         hidden: 1,
         people: [expect.objectContaining({ name: 'Alice' })],
       });

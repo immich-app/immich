@@ -20,18 +20,6 @@ describe(JobService.name, () => {
   });
 
   describe('onJobRun', () => {
-    it('should queue metadata extraction when sidecar discovery is skipped', async () => {
-      const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
-      mocks.job.run.mockResolvedValue(JobStatus.Skipped);
-
-      await sut.onJobRun(QueueName.Sidecar, job);
-
-      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
-        name: JobName.AssetExtractMetadata,
-        data: job.data,
-      });
-    });
-
     it('should process a successful job', async () => {
       mocks.job.run.mockResolvedValue(JobStatus.Success);
 
@@ -44,32 +32,15 @@ describe(JobService.name, () => {
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
-    it.each([JobStatus.Success, JobStatus.Skipped])(
-      'should queue metadata extraction after a %s sidecar check and preserve its source',
-      async (status) => {
-        mocks.job.run.mockResolvedValue(status);
-        const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
-
-        await sut.onJobRun(QueueName.Sidecar, job);
-
-        expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
-          name: JobName.AssetExtractMetadata,
-          data: { id: 'asset-1', source: 'upload' },
-        });
-        expect(mocks.job.queueAll).not.toHaveBeenCalled();
-      },
-    );
-
-    it('should not queue metadata extraction after a failed sidecar check', async () => {
-      mocks.job.run.mockResolvedValue(JobStatus.Failed);
-
-      await sut.onJobRun(QueueName.Sidecar, { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } });
-
-      expect(mocks.job.queue).not.toHaveBeenCalled();
-      expect(mocks.job.queueAll).not.toHaveBeenCalled();
-    });
-
     const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
+      {
+        item: { name: JobName.SidecarCheck, data: { id: 'asset-1' } },
+        jobs: [JobName.AssetExtractMetadata],
+      },
+      {
+        item: { name: JobName.SidecarCheck, data: { id: 'asset-1' } },
+        jobs: [JobName.AssetExtractMetadata],
+      },
       {
         item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.AssetGenerateThumbnails],

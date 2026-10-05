@@ -9,8 +9,6 @@ import { SharingDirection } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
 
-type CreateAllForOwnerOptions = { ownerId: string; sharedWithIds: string[]; role: PersonUserRole };
-
 @Injectable()
 export class PersonUserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -74,41 +72,6 @@ export class PersonUserRepository {
     return this.db
       .insertInto('person_user')
       .values(dto)
-      .onConflict((oc) =>
-        oc
-          .columns(['personGroupId', 'sharedById', 'sharedWithId'])
-          .doUpdateSet((eb) => ({ role: eb.ref('excluded.role') })),
-      )
-      .returningAll()
-      .execute();
-  }
-
-  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, sharedWithIds: [DummyValue.UUID], role: PersonUserRole.Admin }] })
-  createAllForOwner({ ownerId, sharedWithIds, role }: CreateAllForOwnerOptions) {
-    if (sharedWithIds.length === 0) {
-      return [];
-    }
-
-    const shared = sql<{ sharedWithId: string }>`(
-      select
-        unnest(${sharedWithIds}::uuid[]) as "sharedWithId"
-    )`.as('shared');
-
-    return this.db
-      .insertInto('person_user')
-      .columns(['personGroupId', 'sharedById', 'sharedWithId', 'role'])
-      .expression((eb) =>
-        eb
-          .selectFrom('person')
-          .crossJoin(shared)
-          .select(({ ref }) => [
-            ref('person.personGroupId').as('personGroupId'),
-            ref('person.ownerId').as('sharedById'),
-            ref('shared.sharedWithId').as('sharedWithId'),
-            sql`${role}::person_user_role_enum`.as('role'),
-          ])
-          .where('person.ownerId', '=', ownerId),
-      )
       .onConflict((oc) =>
         oc
           .columns(['personGroupId', 'sharedById', 'sharedWithId'])

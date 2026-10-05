@@ -74,8 +74,8 @@ def serialize_np_array(arr: NDArray[np.float32]) -> str:
 
 def widen(array: NDArray[Any]) -> NDArray[Any]:
     """Single precision from half through OpenCV, as numpy converts one value at a time without native half support."""
-    if array.dtype != np.float16 or array.size == 0:
-        return array.astype(np.float32, copy=False)
+    if array.dtype != np.float16:
+        return array
     return cv2.convertFp16(array.reshape(-1, array.shape[-1]).view(np.int16)).reshape(array.shape)  # int16 carries half
 
 

@@ -310,7 +310,7 @@ export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: st
         .select('assetId')
         .where('albumId', '=', anyUuid(albumIds!))
         .groupBy('assetId')
-        .having((eb) => eb.fn.count('albumId').distinct(), '=', albumIds.length)
+        .having((eb) => eb.fn.count('albumId').distinct(), '>', 0)
         .as('has_album'),
     (join) => join.onRef('has_album.assetId', '=', 'asset.id'),
   );
@@ -504,7 +504,7 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
       qb.where(
         sql`f_unaccent(asset."originalFileName")`,
         'ilike',
-        sql`'%' || f_unaccent(${options.originalFileName}) || '%'`,
+        sql.raw(`'%' || f_unaccent('${String(options.originalFileName).replaceAll('\\', '\\\\')}') || '%'`),
       ),
     )
     .$if(!!options.description, (qb) =>

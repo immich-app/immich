@@ -1,38 +1,29 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/state';
+  import { page } from '$app/stores';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
+  import PeopleCard from './PeopleCard.svelte';
+  import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
+  import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { QueryParameter, SessionStorageKey } from '$lib/constants';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import PeopleFilterModal from '$lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
-  import { getPeopleUserActions } from '$lib/services/person-user.service';
-  import { handleUpdatePersonName } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
-  import {
-    getAllPeople,
-    getClusterGroupUsers,
-    getPerson,
-    searchPerson,
-    type PersonResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
-  import { ActionButton, Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { clearQueryParam } from '$lib/utils/navigation';
+  import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import PeopleCard from './PeopleCard.svelte';
-  import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
 
   interface Props {
     data: PageData;
@@ -48,21 +39,20 @@
   let personMerge2 = $state<PersonResponseDto>();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
   let editingPerson: PersonResponseDto | null = $state(null);
+  let searchedPeopleLocal: PersonResponseDto[] = $state([]);
   let innerHeight = $state(0);
+  let searchPeopleElement = $state<ReturnType<typeof SearchPeople>>();
 
-  let clusterGroupUsers: UserResponseDto[] = $state([]);
-
-  onMount(async () => {
-    try {
-      const users = await getClusterGroupUsers({ id: authManager.user.clusterGroupId });
-      clusterGroupUsers = users.filter(({ id }) => id !== authManager.user.id);
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
+  onMount(() => {
+    const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
+    if (getSearchedPeople) {
+      searchName = getSearchedPeople;
+      if (searchPeopleElement) {
+        handlePromiseError(searchPeopleElement.searchPeople(true, searchName));
+      }
     }
-  });
 
-  onDestroy(() => {
-    websocketEvents.on('on_person_thumbnail', (personId: string) => {
+    return websocketEvents.on('on_person_thumbnail', (personId: string) => {
       for (const person of people) {
         if (person.id === personId) {
           person.updatedAt = new Date().toISOString();
@@ -122,15 +112,11 @@
     }
   };
 
-  const handleSearchByName = async () => {
-    const getSearchedPeople = page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
+  const handleSearch = async () => {
+    const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople !== searchName) {
-      if (searchName) {
-        page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-      } else {
-        page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-      }
-      await goto(page.url, { keepFocus: true, replaceState: true, invalidateAll: true });
+      $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
+      await goto($page.url, { keepFocus: true });
     }
   };
 
@@ -164,7 +150,19 @@
        * the person he's editing
        *
        */
-      await handleUpdatePersonName({ id: personToBeMergedInto.id, name: newName }, { notify: true });
+      try {
+        await updatePerson({ id: personToBeMergedInto.id, personUpdateDto: { name: newName } });
+
+        for (const person of people) {
+          if (person.id === personToBeMergedInto.id) {
+            person.name = newName;
+            break;
+          }
+        }
+        toastManager.primary($t('change_name_successfully'));
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_save_name'));
+      }
     }
   };
 
@@ -180,7 +178,7 @@
       return;
     }
 
-    const url = new URL(page.url);
+    const url = new URL($page.url);
     for (const [key, value] of [
       [QueryParameter.SHARED_BY_ID, filter.sharedById],
       [QueryParameter.SHARED_WITH_ID, filter.sharedWithId],
@@ -199,12 +197,18 @@
     nextPage = data.people.hasNextPage ? 2 : null;
   };
 
+  const onResetSearchBar = async () => {
+    await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
+  };
+
   let people = $derived(data.people.people);
-  const { ManageAccess } = $derived(getPeopleUserActions($t, clusterGroupUsers, nextPage ? undefined : people));
 
   // hidden people are only shown when explicitly filtering for them
   let visiblePeople = $derived(data.filter.isHidden ? people : people.filter((people) => !people.isHidden));
-  let countVisiblePeople = $derived(data.people.total - (data.filter.isHidden ? 0 : data.people.hidden));
+  let countVisiblePeople = $derived(
+    searchName ? searchedPeopleLocal.length : data.people.total - (data.filter.isHidden ? 0 : data.people.hidden),
+  );
+  let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
     editingPerson = person;
@@ -251,7 +255,11 @@
   };
 
   const updateName = async (id: string, name: string) => {
-    await handleUpdatePersonName({ id, name });
+    await updatePerson({
+      id,
+      personUpdateDto: { name },
+    });
+
     newName = '';
   };
 
@@ -300,25 +308,28 @@
 >
   {#snippet buttons()}
     <div class="flex items-center justify-center gap-2">
-      <div class="hidden sm:block">
-        <div class="h-10 w-40 lg:w-80">
-          <SearchBar
-            bind:name={searchName}
-            placeholder={$t('search_people')}
-            onSearch={() => handleSearchByName()}
-            showLoadingSpinner={false}
-            onReset={() => handleSearchByName()}
-          />
+      {#if people.length > 0}
+        <div class="hidden sm:block">
+          <div class="h-10 w-40 lg:w-80">
+            <SearchPeople
+              bind:this={searchPeopleElement}
+              type="searchBar"
+              placeholder={$t('search_people')}
+              onReset={onResetSearchBar}
+              onSearch={handleSearch}
+              bind:searchName
+              bind:searchedPeopleLocal
+            />
+          </div>
         </div>
-      </div>
-      <Button
-        leadingIcon={mdiEyeOutline}
-        onclick={() => goto('/people/manage')}
-        size="small"
-        variant="ghost"
-        color="secondary">{$t('show_and_hide_people')}</Button
-      >
-      <ActionButton action={ManageAccess} />
+        <Button
+          leadingIcon={mdiEyeOutline}
+          onclick={() => goto('/people/manage')}
+          size="small"
+          variant="ghost"
+          color="secondary">{$t('show_and_hide_people')}</Button
+        >
+      {/if}
       <IconButton
         shape="round"
         color="secondary"
@@ -331,8 +342,8 @@
     </div>
   {/snippet}
 
-  {#if countVisiblePeople > 0}
-    <PeopleInfiniteScroll people={visiblePeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
+  {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
+    <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
       {#snippet children({ person })}
         <div
           class="rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm hover:dark:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"

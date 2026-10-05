@@ -98,7 +98,19 @@ export class WorkflowExecutionService extends BaseService {
         const regex = new RegExp(pattern.replaceAll('.', String.raw`\.`).replaceAll('*', '.*'));
         if (regex.test(hostname)) {
           // eslint-disable-next-line unicorn/no-invalid-argument-count
-          const res = await fetch(...args);
+          const { server } = await this.getConfig({ withCache: true });
+          let options = args[1];
+          if (server.externalDomain && new URL(args[0]).origin === new URL(server.externalDomain).origin) {
+            const sessionKey = this.cryptoRepository.randomBytesAsText(32);
+            await this.sessionRepository.create({
+              userId: authDto.user.id,
+              token: this.cryptoRepository.hashSha256(sessionKey),
+              expiresAt: new Date(Date.now() + 5 * 60_000),
+              deviceType: 'Workflow',
+            });
+            options = { ...options, headers: { ...options?.headers, 'x-immich-session-token': sessionKey } };
+          }
+          const res = await fetch(args[0], options);
 
           return {
             ok: res.ok,

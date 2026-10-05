@@ -107,6 +107,7 @@ const WorkflowGetLogsSchema = z.object({
 
 export class WorkflowTriggerResponseDto extends createZodDto(WorkflowTriggerResponseSchema) {}
 export class WorkflowSearchDto extends createZodDto(WorkflowSearchSchema) {}
+export class WorkflowRunDto extends createZodDto(z.object({ assetId: z.uuidv4() })) {}
 export class WorkflowCreateDto extends createZodDto(WorkflowCreateSchema) {}
 export class WorkflowUpdateDto extends createZodDto(WorkflowUpdateSchema) {}
 export class WorkflowResponseDto extends createZodDto(WorkflowResponseSchema) {}
@@ -160,7 +161,7 @@ export const mapWorkflowShare = (workflow: Workflow & { steps: WorkflowStep[] })
       method: `${step.pluginName}#${step.methodName}`,
       // TODO fix this
       config: step.config as any,
-      enabled: step.enabled && undefined,
+      enabled: step.enabled ? undefined : false,
     })),
   };
 };

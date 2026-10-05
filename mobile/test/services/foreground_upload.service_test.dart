@@ -55,7 +55,6 @@ void main() {
     mockConnectivityApi = MockConnectivityApi();
     mockAssetMediaRepository = MockAssetMediaRepository();
     mockAssetService = MockAssetService();
-    when(() => mockAssetService.getLocalAsset(any())).thenAnswer((_) async => null);
     when(() => mockAssetService.stackEditedUpload(any(), any(), any())).thenAnswer((_) async {});
 
     sut = ForegroundUploadService(
@@ -217,7 +216,6 @@ void main() {
 
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
 
-      verify(() => mockAssetService.getLocalAsset(asset.id)).called(1);
       verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote-1', 'sha')).called(1);
       verifyNoMoreInteractions(mockAssetService);
     });
@@ -238,26 +236,8 @@ void main() {
 
       await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
 
-      verify(() => mockAssetService.getLocalAsset(asset.id)).called(1);
       verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote-2', 'sha')).called(1);
       verifyNoMoreInteractions(mockAssetService);
-    });
-
-    test('does not upload a photo the server already has', () async {
-      final asset = LocalAssetStub.image1.copyWith(checksum: 'sha');
-      final succeeded = <String>[];
-      when(() => mockAssetService.getLocalAsset(asset.id)).thenAnswer((_) async => asset.copyWith(remoteId: 'remote'));
-
-      await sut.uploadSingleAsset(
-        asset,
-        null,
-        callbacks: UploadCallbacks(onSuccess: (_, remoteId) => succeeded.add(remoteId)),
-      );
-
-      expect(succeeded, equals(['remote']));
-      verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote', 'sha')).called(1);
-      verifyZeroInteractions(mockStorageRepository);
-      verifyZeroInteractions(mockUploadRepository);
     });
   });
 }

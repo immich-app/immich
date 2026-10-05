@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { handleTagAssets } from '$lib/services/asset.service';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
@@ -31,9 +32,9 @@
       return;
     }
 
-    if (await handleTagAssets(assetIds, [...selectedIds])) {
-      onClose(true);
-    }
+    const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
+    eventManager.emit('AssetsTag', updatedIds);
+    onClose(true);
   };
 
   const handleSelect = async (option?: ComboBoxOption) => {

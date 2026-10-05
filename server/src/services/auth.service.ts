@@ -248,6 +248,11 @@ export class AuthService extends BaseService {
   }
 
   private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
+    const remoteUser = headers['x-immich-remote-user'];
+    if (typeof remoteUser === 'string' && remoteUser.length > 0) {
+      return this.validateRemoteUser(headers, remoteUser);
+    }
+
     const shareKey = (headers[ImmichHeader.SharedLinkKey] || queryParams[ImmichQuery.SharedLinkKey]) as string;
     const shareSlug = (headers[ImmichHeader.SharedLinkSlug] || queryParams[ImmichQuery.SharedLinkSlug]) as string;
     const session = (headers[ImmichHeader.UserToken] ||
@@ -274,6 +279,22 @@ export class AuthService extends BaseService {
     }
 
     throw new UnauthorizedException('Authentication required');
+  }
+
+  private async validateRemoteUser(headers: IncomingHttpHeaders, userId: string): Promise<AuthDto> {
+    const { network } = this.configRepository.getEnv();
+    const forwarded = String(headers['x-forwarded-for'] ?? '');
+    const sourceAddress = forwarded.split(',')[0].trim();
+    if (!['127.0.0.1', '::1', ...network.trustedProxies].includes(sourceAddress)) {
+      throw new UnauthorizedException('Request did not arrive through a trusted proxy');
+    }
+
+    const user = await this.userRepository.get(userId, { withDeleted: false });
+    if (!user) {
+      throw new UnauthorizedException('Unknown remote user');
+    }
+
+    return { user };
   }
 
   getMobileRedirect(url: string) {
@@ -679,7 +700,7 @@ export class AuthService extends BaseService {
       return null;
     }
 
-    return sanitize(label);
+    return sanitize(label.replaceAll('.', ''));
   }
 
   private async syncOAuthClaims(user: UserAdmin, profile: OAuthProfile, oauth: OAuthClaimsConfig): Promise<UserAdmin> {

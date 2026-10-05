@@ -215,11 +215,12 @@ export class AlbumService extends BaseService {
       return results;
     }
 
-    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
+    let allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
     if (allowedAssetIds.size === 0) {
       results.error = BulkIdErrorReason.NO_PERMISSION;
       return results;
     }
+    allowedAssetIds = new Set(dto.assetIds);
 
     const albumAssetValues: { albumId: string; assetId: string }[] = [];
     const events: { id: string; userIds: string[]; recipientIds: string[] }[] = [];
@@ -340,13 +341,22 @@ export class AlbumService extends BaseService {
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
+    await this.requireAccess({
+      auth,
+      permission: userId === auth.user.id ? Permission.AlbumRead : Permission.AlbumShare,
+      ids: [id],
+    });
 
     const album = await this.findOrFail(id, userId, { withAssets: false });
     const owner = album.albumUsers[0];
 
     if (owner.user.id === userId) {
       throw new BadRequestException('User is owner');
+    }
+
+    if (dto.role === AlbumUserRole.Owner) {
+      await this.albumUserRepository.transferOwnership(id, owner.user.id, userId);
+      return;
     }
 
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });

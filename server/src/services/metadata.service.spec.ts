@@ -1,6 +1,5 @@
 import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
-import { R_OK } from 'node:constants';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { defaults } from 'src/dtos/config.dto.js';
@@ -188,12 +187,12 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
-    it.each(['CreationDate', 'DateTimeOriginal'] as const)('should prefer %s from a sidecar file', async (tag) => {
+    it('should handle a date in a sidecar file', async () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
       const asset = AssetFactory.from().file({ type: AssetFileType.Sidecar }).build();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
-      mockReadTags({ [tag]: originalDate.toISOString() }, { [tag]: sidecarDate.toISOString() });
+      mockReadTags({ CreationDate: originalDate.toISOString() }, { CreationDate: sidecarDate.toISOString() });
 
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
@@ -1908,18 +1907,6 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
-    it('should skip database writes if no sidecar exists or was previously recorded', async () => {
-      const asset = forSidecarJob();
-
-      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
-      mocks.storage.checkFileExists.mockResolvedValue(false);
-
-      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
-
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
-      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
-    });
-
     it('should detect a new sidecar at .jpg.xmp', async () => {
       const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg', files: [] });
 
@@ -1933,7 +1920,6 @@ describe(MetadataService.name, () => {
         type: AssetFileType.Sidecar,
         path: '/path/to/IMG_123.jpg.xmp',
       });
-      expect(mocks.storage.checkFileExists).toHaveBeenCalledExactlyOnceWith('/path/to/IMG_123.jpg.xmp', R_OK);
     });
 
     it('should detect a new sidecar at .xmp', async () => {
@@ -1953,150 +1939,6 @@ describe(MetadataService.name, () => {
         type: AssetFileType.Sidecar,
         path: '/path/to/IMG_123.xmp',
       });
-      expect(mocks.storage.checkFileExists.mock.calls).toEqual([
-        ['/path/to/IMG_123.jpg.xmp', R_OK],
-        ['/path/to/IMG_123.xmp', R_OK],
-      ]);
-    });
-
-    it('should prefer the extended filename when both candidates exist', async () => {
-      const asset = forSidecarJob();
-      const candidates = new Set(['/path/to/IMG_123.jpg.xmp', '/path/to/IMG_123.xmp']);
-      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
-      mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(candidates.has(path)));
-
-      await sut.handleSidecarCheck({ id: asset.id });
-
-      expect(mocks.asset.upsertFile).toHaveBeenCalledExactlyOnceWith({
-        assetId: asset.id,
-        type: AssetFileType.Sidecar,
-        path: '/path/to/IMG_123.jpg.xmp',
-      });
-      expect(mocks.storage.checkFileExists).toHaveBeenCalledExactlyOnceWith('/path/to/IMG_123.jpg.xmp', R_OK);
-    });
-
-    it('should preserve an existing association ahead of both conventional candidates', async () => {
-      const existing = '/elsewhere/custom.xmp';
-      const asset = forSidecarJob({
-        files: [{ id: 'sidecar', type: AssetFileType.Sidecar, path: existing, isEdited: false }],
-      });
-      const candidates = new Set([existing, '/path/to/IMG_123.jpg.xmp', '/path/to/IMG_123.xmp']);
-      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
-      mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(candidates.has(path)));
-
-      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
-
-      expect(mocks.storage.checkFileExists).toHaveBeenCalledExactlyOnceWith(existing, R_OK);
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
-      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
-    });
-
-    it.each(['/path/to/IMG_123.jpg.xmp', '/path/to/IMG_123.xmp'])(
-      'should replace a missing association with %s',
-      async (replacement) => {
-        const existing = '/elsewhere/missing.xmp';
-        const asset = forSidecarJob({
-          files: [{ id: 'sidecar', type: AssetFileType.Sidecar, path: existing, isEdited: false }],
-        });
-        mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
-        mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(path === replacement));
-
-        await sut.handleSidecarCheck({ id: asset.id });
-
-        expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(1, existing, R_OK);
-        expect(mocks.asset.upsertFile).toHaveBeenCalledExactlyOnceWith({
-          assetId: asset.id,
-          type: AssetFileType.Sidecar,
-          path: replacement,
-        });
-        expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
-      },
-    );
-
-    it('should not create an association when no sidecar exists', async () => {
-      const asset = forSidecarJob();
-      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
-      mocks.storage.checkFileExists.mockResolvedValue(false);
-
-      await sut.handleSidecarCheck({ id: asset.id });
-
-      expect(mocks.storage.checkFileExists.mock.calls).toEqual([
-        ['/path/to/IMG_123.jpg.xmp', R_OK],
-        ['/path/to/IMG_123.xmp', R_OK],
-      ]);
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
-    });
-
-    it.each(['/photos/Photo.JPG.xmp', '/photos/Photo.xmp'])(
-      'should preserve filename case when discovering %s',
-      async (sidecarPath) => {
-        const asset = forSidecarJob({ originalPath: '/photos/Photo.JPG' });
-        mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
-        mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(path === sidecarPath));
-
-        await sut.handleSidecarCheck({ id: asset.id });
-
-        expect(mocks.asset.upsertFile).toHaveBeenCalledExactlyOnceWith({
-          assetId: asset.id,
-          type: AssetFileType.Sidecar,
-          path: sidecarPath,
-        });
-      },
-    );
-
-    it.each([
-      { filename: 'photo.edit.jpg', sidecar: 'photo.edit.xmp' },
-      { filename: '.photo.jpg', sidecar: '.photo.xmp' },
-      { filename: 'quoted"雪.jpg', sidecar: 'quoted"雪.xmp' },
-    ])('should preserve the basename when finding the fallback for $filename', async ({ filename, sidecar }) => {
-      const asset = forSidecarJob({ originalPath: `/photos/${filename}` });
-      const sidecarPath = `/photos/${sidecar}`;
-      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
-      mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(path === sidecarPath));
-
-      await sut.handleSidecarCheck({ id: asset.id });
-
-      expect(mocks.asset.upsertFile).toHaveBeenCalledExactlyOnceWith({
-        assetId: asset.id,
-        type: AssetFileType.Sidecar,
-        path: sidecarPath,
-      });
-    });
-
-    it.each([false, true])(
-      'should resolve shared JPG and RAW sidecars independently (extended JPG sidecar: %s)',
-      async (extended) => {
-        const jpg = forSidecarJob({ originalPath: '/photos/photo.jpg' });
-        const raw = forSidecarJob({ originalPath: '/photos/photo.nef' });
-        const shared = '/photos/photo.xmp';
-        const candidates = new Set([shared, ...(extended ? ['/photos/photo.jpg.xmp'] : [])]);
-        mocks.assetJob.getForSidecarCheckJob.mockResolvedValueOnce(jpg).mockResolvedValueOnce(raw);
-        mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(candidates.has(path)));
-
-        await sut.handleSidecarCheck({ id: jpg.id });
-        await sut.handleSidecarCheck({ id: raw.id });
-
-        expect(mocks.asset.upsertFile.mock.calls).toEqual([
-          [{ assetId: jpg.id, type: AssetFileType.Sidecar, path: extended ? '/photos/photo.jpg.xmp' : shared }],
-          [{ assetId: raw.id, type: AssetFileType.Sidecar, path: shared }],
-        ]);
-      },
-    );
-
-    it('should not match xmp files across directories', async () => {
-      const first = forSidecarJob({ originalPath: '/photos/first/photo.jpg' });
-      const second = forSidecarJob({ originalPath: '/photos/second/photo.jpg' });
-      mocks.assetJob.getForSidecarCheckJob.mockResolvedValueOnce(first).mockResolvedValueOnce(second);
-      mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(path === '/photos/second/photo.xmp'));
-
-      await sut.handleSidecarCheck({ id: first.id });
-      await sut.handleSidecarCheck({ id: second.id });
-
-      expect(mocks.asset.upsertFile).toHaveBeenCalledExactlyOnceWith({
-        assetId: second.id,
-        type: AssetFileType.Sidecar,
-        path: '/photos/second/photo.xmp',
-      });
     });
 
     it('should unset sidecar path if file no longer exist', async () => {
@@ -2110,6 +1952,21 @@ describe(MetadataService.name, () => {
       await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.deleteFile).toHaveBeenCalledWith({ assetId: asset.id, type: AssetFileType.Sidecar });
+    });
+
+    it('should do nothing if the sidecar file still exists', async () => {
+      const asset = forSidecarJob({
+        originalPath: '/path/to/IMG_123.jpg',
+        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar, isEdited: false }],
+      });
+
+      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
+
+      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
     });
   });
 

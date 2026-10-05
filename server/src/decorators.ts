@@ -238,15 +238,6 @@ export class HistoryBuilder {
     return this.push({ version, state: ApiState.Deprecated, replacementId });
   }
 
-  v3PatchMigration() {
-    return this.push({
-      version: 'v3.0.0',
-      state: 'Updated',
-      description:
-        'This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly.',
-    });
-  }
-
   isDeprecated(): boolean {
     return this.hasDeprecated;
   }

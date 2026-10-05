@@ -48,7 +48,7 @@ export class ApiKeyService extends BaseService {
   }
 
   async rotate(auth: AuthDto, id: string): Promise<ApiKeyCreateResponseDto> {
-    const existing = await findOrFail(() => this.apiKeyRepository.getById(auth.user.id, id), 'API Key not found');
+    const existing = await findOrFail(() => this.apiKeyRepository.getById(undefined, id), 'API Key not found');
 
     if (
       auth.apiKey &&
@@ -59,7 +59,7 @@ export class ApiKeyService extends BaseService {
 
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
-    const newKey = await this.apiKeyRepository.update(auth.user.id, id, { key: hashed });
+    const newKey = await this.apiKeyRepository.update(existing.userId, id, { key: hashed });
     const apiKey = this.map(newKey);
 
     return { ...apiKey, secret: token, apiKey };
@@ -95,8 +95,8 @@ export class ApiKeyService extends BaseService {
     return this.map(key);
   }
 
-  async getAll(auth: AuthDto): Promise<ApiKeyResponseDto[]> {
-    const keys = await this.apiKeyRepository.getByUserId(auth.user.id);
+  async getAll(auth: AuthDto, userId = auth.user.id): Promise<ApiKeyResponseDto[]> {
+    const keys = await this.apiKeyRepository.getByUserId(userId);
     return keys.map((key) => this.map(key));
   }
 

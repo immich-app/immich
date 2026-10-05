@@ -748,6 +748,7 @@
   "client_cert_subtitle": "Solo se admite el formato PKCS12 (.p12, .pfx). La importación/eliminación de certificados solo está disponible antes de iniciar sesión",
   "client_cert_title": "Certificado de cliente SSL [EXPERIMENTAL]",
   "close": "Cerrar",
+  "cluster_group": "Grupo de agrupación",
   "cluster_group_description": "Las personas se reconocen en las fotos de todos los miembros del grupo",
   "cluster_group_facial_recognition": "Restablecer el reconocimiento facial",
   "cluster_group_facial_recognition_prompt": "Al restablecer el reconocimiento facial, se eliminarán todas las personas de todos los usuarios de este grupo. Se perderán los nombres y las fechas de nacimiento ya establecidos. ¿Está seguro de que desea continuar?",

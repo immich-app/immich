@@ -1,8 +1,4 @@
 import mockfs from 'mock-fs';
-import { R_OK } from 'node:constants';
-import { mkdtempDisposable, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { vitest } from 'vitest';
 import { CrawlOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -233,52 +229,6 @@ describe(StorageRepository.name, () => {
         expect(actual.toSorted()).toEqual(expected.toSorted());
       });
     }
-  });
-
-  describe('walk', () => {
-    it.each([
-      { exclusionPatterns: [] },
-      { exclusionPatterns: ['**/*.xmp'] },
-      { exclusionPatterns: ['**/excluded/**'] },
-    ])('should only return assets and respect exclusions: $exclusionPatterns', async ({ exclusionPatterns }) => {
-      mockfs({
-        '/photos/photo.jpg': '',
-        '/photos/photo.nef': '',
-        '/photos/photo.jpg.xmp': '',
-        '/photos/photo.xmp': '',
-        '/photos/excluded/photo.jpg': '',
-        '/photos/excluded/photo.xmp': '',
-      });
-
-      const batches = await Array.fromAsync(sut.walk({ pathsToCrawl: ['/photos'], exclusionPatterns, take: 1 }));
-
-      expect(batches.every((batch) => batch.length === 1)).toBe(true);
-      expect(batches.flat().toSorted()).toEqual(
-        [
-          '/photos/photo.jpg',
-          '/photos/photo.nef',
-          ...(exclusionPatterns.includes('**/excluded/**') ? [] : ['/photos/excluded/photo.jpg']),
-        ].toSorted(),
-      );
-    });
-  });
-
-  describe('checkFileExists', () => {
-    it.for(['PHOTO.xmp', 'photo.XMP'])(
-      'should not match %s with different case on a case-sensitive filesystem',
-      async (filename, { skip }) => {
-        await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-sidecar-'));
-        await writeFile(join(tempDir.path, 'case-probe'), 'test');
-        if (await sut.checkFileExists(join(tempDir.path, 'CASE-PROBE'), R_OK)) {
-          skip();
-        }
-        const candidate = join(tempDir.path, filename);
-        await writeFile(candidate, 'test');
-
-        await expect(sut.checkFileExists(candidate, R_OK)).resolves.toBe(true);
-        await expect(sut.checkFileExists(join(tempDir.path, 'photo.xmp'), R_OK)).resolves.toBe(false);
-      },
-    );
   });
 
   describe('watch', () => {

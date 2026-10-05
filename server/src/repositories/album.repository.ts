@@ -107,14 +107,6 @@ export class AlbumRepository {
       .selectFrom('album')
       .selectAll('album')
       .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
-      .where((eb) =>
-        eb.exists(
-          eb
-            .selectFrom('album_user')
-            .whereRef('album_user.albumId', '=', 'album.id')
-            .where('album_user.userId', '=', ownerId),
-        ),
-      )
       .where('album_asset.assetId', '=', assetId)
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(ownerId))

@@ -18,7 +18,7 @@
   };
 </script>
 
-<Modal title={$t('people_cluster_group')} {onClose} size="small">
+<Modal title={$t('cluster_group')} {onClose} size="small">
   <ModalBody>
     {#await loadUsers()}
       <div class="flex w-full place-content-center place-items-center">

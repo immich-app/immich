@@ -300,7 +300,7 @@ export class AssetService extends BaseService {
     let count = 0;
     for await (const assets of batched(this.assetJobRepository.streamForDeletedJob(trashedBefore))) {
       await this.jobRepository.queueAll(
-        assets.map(({ id }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: true } })),
+        assets.map(({ id, isOffline }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: !isOffline } })),
       );
       count += assets.length;
     }
@@ -313,16 +313,13 @@ export class AssetService extends BaseService {
 
   @OnJob({ name: JobName.AssetDelete, queue: QueueName.BackgroundTask })
   async handleAssetDeletion(job: JobOf<JobName.AssetDelete>): Promise<JobStatus> {
-    const { id, deleteOnDisk: isDeleteOnDiskRequest } = job;
+    const { id, deleteOnDisk } = job;
 
     const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.Failed;
     }
-
-    // isOffline is an alias for excluded library assets
-    const deleteOnDisk = isDeleteOnDiskRequest && !asset.isOffline;
 
     if (asset.stack) {
       // asset.stack.assets only includes timeline visible assets and excludes the primary asset
@@ -375,7 +372,7 @@ export class AssetService extends BaseService {
       assetFiles.encodedVideoFile?.path,
     ];
 
-    if (deleteOnDisk) {
+    if (deleteOnDisk && !asset.isOffline) {
       files.push(assetFiles.sidecarFile?.path, asset.originalPath);
     }
 

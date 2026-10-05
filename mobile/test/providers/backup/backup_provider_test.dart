@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
@@ -97,27 +96,6 @@ void main() {
       expect(notifier.state.totalCount, 91);
       expect(notifier.state.remainderCount, 7);
       expect(notifier.state.backupCount, 84);
-    });
-
-    test('on iOS uploads start only after the background queue is cancelled', () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      addTearDown(() => debugDefaultTargetPlatformOverride = null);
-      mockCounts(total: 1, remainder: 1);
-      final cancel = Completer<int>();
-      when(() => backgroundUploadService.cancel()).thenAnswer((_) => cancel.future);
-      when(
-        () => foregroundUploadService.uploadCandidates(any(), any(), callbacks: any(named: 'callbacks')),
-      ).thenAnswer((_) async {});
-
-      final backup = notifier.startForegroundBackup('user-1');
-      await pumpEventQueue();
-      verifyNever(() => foregroundUploadService.uploadCandidates(any(), any(), callbacks: any(named: 'callbacks')));
-
-      cancel.complete(0);
-      await backup;
-      verify(
-        () => foregroundUploadService.uploadCandidates(any(), any(), callbacks: any(named: 'callbacks')),
-      ).called(1);
     });
 
     test('a late success after dispose does not throw', () async {

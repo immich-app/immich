@@ -34,6 +34,23 @@ export class AlbumUserRepository {
       .execute();
   }
 
+  async transferOwnership(albumId: string, previousOwnerId: string, userId: string) {
+    await this.db.transaction().execute(async (tx) => {
+      await tx
+        .updateTable('album_user')
+        .set({ role: AlbumUserRole.Editor })
+        .where('albumId', '=', albumId)
+        .where('userId', '=', previousOwnerId)
+        .execute();
+      await tx
+        .updateTable('album_user')
+        .set({ role: AlbumUserRole.Owner })
+        .where('albumId', '=', albumId)
+        .where('userId', '=', userId)
+        .execute();
+    });
+  }
+
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
   async delete({ userId, albumId }: AlbumPermissionId): Promise<void> {
     await this.db.deleteFrom('album_user').where('userId', '=', userId).where('albumId', '=', albumId).execute();

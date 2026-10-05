@@ -59,7 +59,6 @@ android/app/.cxx
 
 # Fastlane
 ios/fastlane/report.xml
-android/immich-play-store-key.json
 
 # Isar
 default.isar

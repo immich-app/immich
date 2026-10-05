@@ -1,5 +1,6 @@
 import {
   AssetVisibility,
+  bulkTagAssets,
   getBaseUrl,
   getDownloadInfo,
   untagAssets,
@@ -29,6 +30,25 @@ import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
+
+export const tagAssets = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  await bulkTagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    toastManager.primary($t('tagged_assets', { values: { count: assetIds.length } }));
+  }
+
+  return assetIds;
+};
 
 export const removeTag = async ({
   assetIds,

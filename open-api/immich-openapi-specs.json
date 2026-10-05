@@ -1635,6 +1635,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing user.",
         "operationId": "updateUserAdmin",
         "parameters": [
@@ -1684,7 +1685,8 @@
         ],
         "summary": "Update a user",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1701,13 +1703,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/admin/users/{id}/calendar-heatmap": {
@@ -1863,6 +1865,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of a specific user.",
         "operationId": "updateUserPreferencesAdmin",
         "parameters": [
@@ -1912,7 +1915,8 @@
         ],
         "summary": "Update user preferences",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1929,13 +1933,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserPreferencesAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/admin/users/{id}/restore": {
@@ -3333,6 +3337,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
         "operationId": "updateApiKey",
         "parameters": [
@@ -3382,7 +3387,8 @@
         ],
         "summary": "Update an API key",
         "tags": [
-          "API keys"
+          "API keys",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3398,13 +3404,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateApiKey"
           }
         ],
         "x-immich-permission": "apiKey.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/api-keys/{id}/rotate": {
@@ -3867,6 +3873,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates multiple assets at the same time.",
         "operationId": "updateAssets",
         "parameters": [],
@@ -3898,7 +3905,8 @@
         ],
         "summary": "Update assets",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3914,13 +3922,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAssets"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/bulk-upload-check": {
@@ -4349,6 +4357,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update information of a specific asset.",
         "operationId": "updateAsset",
         "parameters": [
@@ -4398,7 +4407,8 @@
         ],
         "summary": "Update an asset",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -4414,13 +4424,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAsset"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/{id}/edits": {
@@ -7629,6 +7639,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing external library.",
         "operationId": "updateLibrary",
         "parameters": [
@@ -7678,7 +7689,8 @@
         ],
         "summary": "Update a library",
         "tags": [
-          "Libraries"
+          "Libraries",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -7695,13 +7707,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateLibrary"
           }
         ],
         "x-immich-permission": "library.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/libraries/{id}/scan": {
@@ -8532,6 +8544,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing memory by its ID.",
         "operationId": "updateMemory",
         "parameters": [
@@ -8581,7 +8594,8 @@
         ],
         "summary": "Update a memory",
         "tags": [
-          "Memories"
+          "Memories",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -8597,13 +8611,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMemory"
           }
         ],
         "x-immich-permission": "memory.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/memories/{id}/assets": {
@@ -9791,15 +9805,6 @@
             }
           },
           {
-            "name": "name",
-            "required": false,
-            "in": "query",
-            "description": "Filter by person name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -10123,7 +10128,7 @@
             "state": "Stable"
           }
         ],
-        "x-immich-permission": "person.update",
+        "x-immich-permission": "person.delete",
         "x-immich-state": "Stable"
       },
       "get": {
@@ -10223,13 +10228,13 @@
       },
       "put": {
         "description": "Give users access to people",
-        "operationId": "upsertPeopleUsers",
+        "operationId": "addUsersToPeople",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PeopleUsersUpsertDto"
+                "$ref": "#/components/schemas/PersonUsersCreateDto"
               }
             }
           },
@@ -10251,7 +10256,7 @@
             "api_key": []
           }
         ],
-        "summary": "Upsert user access",
+        "summary": "Give users access to people",
         "tags": [
           "People"
         ],
@@ -10392,6 +10397,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an individual person.",
         "operationId": "updatePerson",
         "parameters": [
@@ -10441,7 +10447,8 @@
         ],
         "summary": "Update person",
         "tags": [
-          "People"
+          "People",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -10457,13 +10464,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updatePerson"
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/people/{id}/merge": {
@@ -13766,6 +13773,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update a specific session identified by id.",
         "operationId": "updateSession",
         "parameters": [
@@ -13815,7 +13823,8 @@
         ],
         "summary": "Update a session",
         "tags": [
-          "Sessions"
+          "Sessions",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -13831,13 +13840,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateSession"
           }
         ],
         "x-immich-permission": "session.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/sessions/{id}/lock": {
@@ -14787,6 +14796,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing stack by its ID.",
         "operationId": "updateStack",
         "parameters": [
@@ -14836,7 +14846,8 @@
         ],
         "summary": "Update a stack",
         "tags": [
-          "Stacks"
+          "Stacks",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -14852,13 +14863,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateStack"
           }
         ],
         "x-immich-permission": "stack.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
@@ -15916,6 +15927,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing tag identified by its ID.",
         "operationId": "updateTag",
         "parameters": [
@@ -15965,7 +15977,8 @@
         ],
         "summary": "Update a tag",
         "tags": [
-          "Tags"
+          "Tags",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -15981,13 +15994,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateTag"
           }
         ],
         "x-immich-permission": "tag.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/tags/{id}/assets": {
@@ -16790,6 +16803,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the current user making the API request.",
         "operationId": "updateMyUser",
         "parameters": [],
@@ -16828,7 +16842,8 @@
         ],
         "summary": "Update current user",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -16844,13 +16859,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyUser"
           }
         ],
         "x-immich-permission": "user.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/users/me/calendar-heatmap": {
@@ -17281,6 +17296,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of the current user.",
         "operationId": "updateMyPreferences",
         "parameters": [],
@@ -17319,7 +17335,8 @@
         ],
         "summary": "Update my preferences",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -17335,13 +17352,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyPreferences"
           }
         ],
         "x-immich-permission": "userPreference.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/users/profile-image": {
@@ -17972,6 +17989,7 @@
         "x-immich-permission": "workflow.read"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
         "operationId": "updateWorkflow",
         "parameters": [
@@ -18021,7 +18039,8 @@
         ],
         "summary": "Update a workflow",
         "tags": [
-          "Workflows"
+          "Workflows",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -18029,12 +18048,13 @@
             "state": "Added"
           },
           {
-            "version": "v3.0.0",
-            "state": "Updated",
-            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateWorkflow"
           }
         ],
-        "x-immich-permission": "workflow.update"
+        "x-immich-permission": "workflow.update",
+        "x-immich-state": "Deprecated"
       }
     },
     "/workflows/{id}/logs": {
@@ -24924,15 +24944,11 @@
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
-          },
-          "updateStrategy": {
-            "$ref": "#/components/schemas/PersonUpdateStrategy"
           }
         },
         "required": [
           "enabled",
-          "sidebarWeb",
-          "updateStrategy"
+          "sidebarWeb"
         ],
         "type": "object"
       },
@@ -24995,9 +25011,6 @@
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
-          },
-          "updateStrategy": {
-            "$ref": "#/components/schemas/PersonUpdateStrategy"
           }
         },
         "type": "object"
@@ -25056,7 +25069,7 @@
             "type": "string"
           },
           "userId": {
-            "description": "Restrict the update to the person record of this User ID",
+            "description": "User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
@@ -25112,47 +25125,6 @@
           "role"
         ],
         "type": "object"
-      },
-      "PeopleUsersUpsertDto": {
-        "properties": {
-          "personIds": {
-            "description": "Person IDs, required when type is omitted",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "role": {
-            "$ref": "#/components/schemas/PersonUserRole",
-            "description": "Role that should be applied"
-          },
-          "sharedWithIds": {
-            "description": "User IDs that should be given access to the person",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "type": {
-            "$ref": "#/components/schemas/PeopleUsersUpsertType"
-          }
-        },
-        "required": [
-          "role",
-          "sharedWithIds"
-        ],
-        "type": "object"
-      },
-      "PeopleUsersUpsertType": {
-        "description": "Which people to update when personIds is omitted",
-        "enum": [
-          "everyone"
-        ],
-        "type": "string"
       },
       "Permission": {
         "description": "List of permissions",
@@ -25555,21 +25527,13 @@
             "type": "string"
           },
           "userId": {
-            "description": "Restrict the update to the person record of this User ID",
+            "description": "User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
           }
         },
         "type": "object"
-      },
-      "PersonUpdateStrategy": {
-        "description": "Which person records to update when editing a person",
-        "enum": [
-          "self",
-          "everyone"
-        ],
-        "type": "string"
       },
       "PersonUserRole": {
         "description": "Levels of access for managing people resources on behalf of another user.",
@@ -25579,6 +25543,38 @@
           "admin"
         ],
         "type": "string"
+      },
+      "PersonUsersCreateDto": {
+        "properties": {
+          "personIds": {
+            "description": "Person IDs",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PersonUserRole",
+            "description": "Role that should be applied"
+          },
+          "sharedWithIds": {
+            "description": "User IDs that should be given access to the person",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "personIds",
+          "role",
+          "sharedWithIds"
+        ],
+        "type": "object"
       },
       "PersonUsersDeleteDto": {
         "items": {

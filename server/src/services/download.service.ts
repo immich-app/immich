@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { parse } from 'node:path';
+import { dirname, parse, resolve } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
@@ -88,7 +88,11 @@ export class DownloadService extends BaseService {
   }
 
   async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
-    await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
+    await this.requireAccess({
+      auth,
+      permission: auth.sharedLink ? Permission.AssetRead : Permission.AssetDownload,
+      ids: dto.assetIds,
+    });
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getForOriginals(dto.assetIds, dto.edited ?? false);
@@ -112,6 +116,10 @@ export class DownloadService extends BaseService {
       }
 
       let realpath = dto.edited && editedPath ? editedPath : originalPath;
+      const downloadMetadata = await this.assetRepository.getMetadataByKey(assetId, 'immich:download');
+      if (typeof downloadMetadata?.value.originalPath === 'string') {
+        realpath = resolve(dirname(originalPath), downloadMetadata.value.originalPath);
+      }
 
       try {
         realpath = await this.storageRepository.realpath(realpath);

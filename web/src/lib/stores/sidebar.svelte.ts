@@ -14,7 +14,7 @@ class SidebarStore {
    * Toggles the sidebar visibility, if available at the current screen width.
    */
   toggle() {
-    this.isOpen = mediaQueryManager.isFullSidebar || !this.isOpen;
+    this.isOpen = mediaQueryManager.isFullSidebar ? true : !this.isOpen;
   }
 }
 

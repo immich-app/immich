@@ -737,6 +737,7 @@
   "client_cert_subtitle": "Este suportat doar formatul PKCS12 (.p12, .pfx). Importul/ștergerea certificatului este disponibil(ă) doar înainte de autentificare",
   "client_cert_title": "Certificat SSL pentru client [EXPERIMENTAL]",
   "close": "Închideți",
+  "cluster_group": "Group de clustere",
   "cluster_group_description": "Oamenii sunt recunoscuți în toate pozele fiecăruia din grup",
   "cluster_group_facial_recognition": "Resetează recunoașterea faciala",
   "cluster_group_facial_recognition_prompt": "Resetarea recunoașterii faciale va șterge toate persoanele pentru toți utilizatorii din acest grup. Numele și datele de naștere deja setate se vor pierde. Sigur doriți să continuați?",

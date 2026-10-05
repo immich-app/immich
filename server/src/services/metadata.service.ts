@@ -448,7 +448,7 @@ export class MetadataService extends BaseService {
 
     const { sidecarFile } = getAssetFiles(asset.files);
 
-    const isChanged = sidecarPath !== (sidecarFile?.path ?? null);
+    const isChanged = sidecarPath !== sidecarFile?.path;
 
     if (sidecarFile?.path || sidecarPath) {
       this.logger.debug(

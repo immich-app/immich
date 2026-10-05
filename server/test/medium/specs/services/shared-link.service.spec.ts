@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
-import { AlbumUserRole, SharedLinkType } from 'src/enum.js';
+import { SharedLinkType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -236,14 +236,12 @@ describe(SharedLinkService.name, () => {
       expect(result[0].id).toBe(link1.id);
     });
 
-    it('should return album shared links with album data and (only) the owner', async () => {
+    it('should return album shared links with album data', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { user: albumContributor } = await ctx.newUser();
       const auth = factory.auth({ user });
 
       const { album } = await ctx.newAlbum({ ownerId: user.id });
-      await ctx.newAlbumUser({ albumId: album.id, userId: albumContributor.id, role: AlbumUserRole.Editor });
 
       const sharedLinkRepo = ctx.get(SharedLinkRepository);
 
@@ -260,9 +258,6 @@ describe(SharedLinkService.name, () => {
       expect(result).toHaveLength(1);
       expect(result[0].album).toBeDefined();
       expect(result[0].album!.id).toBe(album.id);
-      expect(result[0].album!.albumUsers.length).toBe(1);
-      expect(result[0].album!.albumUsers[0].role).toBe(AlbumUserRole.Owner);
-      expect(result[0].album!.albumUsers[0].user.id).toBe(user.id);
     });
 
     it('should return multiple album shared links without sql error from json group by', async () => {

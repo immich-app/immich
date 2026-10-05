@@ -62,7 +62,6 @@ class Settings(BaseSettings):
     worker_timeout: int = Field(default_factory=default_worker_timeout)
     http_keepalive_timeout_s: int = 2
     test_full: bool = False
-    test_provider: str | None = None
     request_threads: int = os.cpu_count() or 4
     model_inter_op_threads: int = 0
     model_intra_op_threads: int = 0

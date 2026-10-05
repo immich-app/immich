@@ -140,10 +140,7 @@ export const controllerSetup = async (controller: ControllerClass | ControllerCl
     .overrideInterceptor(AssetUploadInterceptor)
     .useValue(noopInterceptor)
     .compile();
-  const app = moduleRef.createNestApplication({
-    routeConflictPolicy: { duplicate: 'error' },
-    routeResolutionStrategy: 'specificity',
-  });
+  const app = moduleRef.createNestApplication();
   await app.init();
 
   // allow the AuthController to override the AuthService itself

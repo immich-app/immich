@@ -77,11 +77,7 @@
 </script>
 
 {#if sharedLink?.allowUpload || assets.length > 1}
-  <main
-    class="isolate mx-4 mt-24 mb-40 max-h-screen"
-    bind:clientHeight={viewport.height}
-    bind:clientWidth={viewport.width}
-  >
+  <main class="isolate mx-4 mt-24 mb-40" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
     <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
   </main>
 

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -10,7 +11,7 @@ import {
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
-import { Authenticated } from 'src/middleware/auth.guard.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { UUIDParamDto } from 'src/validation.js';
 
@@ -31,14 +32,14 @@ export class LibraryController {
   }
 
   @Post()
-  @Authenticated({ permission: Permission.LibraryCreate, admin: true })
+  @Authenticated({ permission: Permission.LibraryCreate })
   @Endpoint({
     summary: 'Create a library',
     description: 'Create a new external library.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  createLibrary(@Body() dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    return this.service.create(dto);
+  createLibrary(@Auth() auth: AuthDto, @Body() dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    return this.service.createForUser(auth, dto);
   }
 
   @Get(':id')
@@ -57,7 +58,11 @@ export class LibraryController {
   @Endpoint({
     summary: 'Update a library',
     description: 'Update an existing external library.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateLibrary' }),
   })
   updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     return this.service.update(id, dto);
@@ -108,14 +113,14 @@ export class LibraryController {
   }
 
   @Post(':id/scan')
-  @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
+  @Authenticated({ permission: Permission.LibraryUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Scan a library',
     description: 'Queue a scan for the external library to find and import new assets.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  scanLibrary(@Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.queueScan(id);
+  scanLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.scanForUser(auth, id);
   }
 }

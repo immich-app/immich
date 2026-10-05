@@ -38,6 +38,9 @@ const ApiKeyCreateResponseSchema = z
   })
   .meta({ id: 'ApiKeyCreateResponseDto' });
 
+export class ApiKeySearchDto extends createZodDto(
+  z.object({ userId: z.uuidv4().optional().describe('Filter by user ID') }).meta({ id: 'ApiKeySearchDto' }),
+) {}
 export class ApiKeyCreateDto extends createZodDto(ApiKeyCreateSchema) {}
 export class ApiKeyUpdateDto extends createZodDto(ApiKeyUpdateSchema) {}
 export class ApiKeyResponseDto extends createZodDto(ApiKeyResponseSchema) {}

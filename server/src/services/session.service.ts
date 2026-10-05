@@ -28,14 +28,14 @@ export class SessionService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: SessionCreateDto): Promise<SessionCreateResponseDto> {
-    if (!auth.session) {
-      throw new BadRequestException('This endpoint can only be used with a session token');
+    if (!auth.session && !auth.apiKey) {
+      throw new BadRequestException('This endpoint requires a session or API key');
     }
 
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
     const session = await this.sessionRepository.create({
-      parentId: auth.session.id,
+      parentId: auth.session?.id ?? null,
       userId: auth.user.id,
       expiresAt: dto.duration ? DateTime.now().plus({ seconds: dto.duration }).toJSDate() : null,
       deviceType: dto.deviceType,

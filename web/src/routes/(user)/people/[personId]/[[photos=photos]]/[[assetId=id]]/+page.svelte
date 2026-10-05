@@ -4,7 +4,6 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
@@ -14,28 +13,31 @@
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { getPersonActions, handleUpdatePersonName } from '$lib/services/person.service';
+  import { getPersonActions } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import { AssetVisibility, PersonUserRole, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
@@ -69,9 +71,7 @@
 
   let numberOfAssets = $derived(data.statistics.assets);
   let person = $derived(data.person);
-  const altNames = $derived([
-    ...new Set(person.otherPeople.map(({ name }) => name).filter((name) => !!name && name !== person.name)),
-  ]);
+  const altItems = $derived(person.otherPeople.filter(({ name }) => !!name && name !== person.name));
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -217,7 +217,12 @@
       return;
     }
 
-    person = (await handleUpdatePersonName({ id: person.id, name: personName }, { notify: true })) ?? person;
+    try {
+      person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
+      toastManager.primary($t('change_name_successfully'));
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_save_name'));
+    }
   };
 
   const handleCancelEditName = () => {
@@ -402,10 +407,28 @@
                       aria-label={$t('edit')}
                     />
                   </div>
-                  {#if altNames.length > 0}
+                  {#if altItems.length > 0}
+                    {@const parts = new Intl.ListFormat($locale).formatToParts(
+                      altItems.map(({ sharedById }) => sharedById),
+                    )}
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {$t('also_known_as')}
-                      {new Intl.ListFormat($locale).format(altNames)}
+                      {#each parts as { type, value } (value)}
+                        {#if type === 'element'}
+                          {@const altItem = altItems.find(({ sharedById }) => sharedById === value)!}
+                          {#if [PersonUserRole.Write, PersonUserRole.Admin].includes(altItem.role)}
+                            <button
+                              type="button"
+                              onclick={() =>
+                                modalManager.show(PersonEditModal, { person, targetUserId: altItem.sharedById })}
+                              class="underline">{altItem.name}</button
+                            >
+                          {:else}
+                            {altItem.name}
+                          {/if}
+                        {:else}
+                          {value}
+                        {/if}
+                      {/each}
                     </p>
                   {/if}
                   <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -478,7 +501,7 @@
     <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t)}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-      <ActionButton action={Actions.CreateSharedLink} />
+      <CreateSharedLink />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       <ActionButton action={Actions.AddToAlbum} />
       <FavoriteAction
@@ -503,7 +526,9 @@
               asset.visibility = visibility;
             })}
         />
-        <ActionMenuItem action={Actions.Tag} />
+        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <DeleteAssets
           menuItem

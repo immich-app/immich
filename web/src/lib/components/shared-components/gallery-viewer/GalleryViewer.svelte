@@ -37,6 +37,7 @@
     assets: AssetResponseDto[];
     viewerAssets?: AssetResponseDto[];
     assetInteraction: AssetMultiSelectManager;
+    disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
     viewport: Viewport;
     onEndReached?: (() => void) | undefined;
@@ -52,6 +53,7 @@
     assets = $bindable(),
     viewerAssets,
     assetInteraction,
+    disableAssetSelect = false,
     showArchiveIcon = false,
     viewport,
     onEndReached = undefined,
@@ -349,6 +351,7 @@
         {@const currentAsset = toTimelineAsset(asset)}
         <div class="absolute" style:overflow="clip" style={getStyle(index)}>
           <Thumbnail
+            readonly={disableAssetSelect}
             onClick={() => {
               if (assetInteraction.selectionActive) {
                 handleSelectAssets(currentAsset);

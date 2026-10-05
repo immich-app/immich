@@ -59,7 +59,7 @@ export class SystemConfigService extends BaseService {
   @OnEvent({ name: 'ConfigInit', priority: -100 })
   onConfigInit({ newConfig: { logging, machineLearning } }: ArgOf<'ConfigInit'>) {
     const { logLevel: envLevel } = this.configRepository.getEnv();
-    const configLevel = logging.enabled && logging.level;
+    const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
     this.logger.setLogLevel(level);
     this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);

@@ -12,21 +12,20 @@ import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:logging/logging.dart';
 
-// The provider is also the cache key and can be resolved more than once.
-// Keep mutable state per load so cancelling one cannot affect the next load.
-class ImageLoader {
-  static final _log = Logger('ImageLoader');
+abstract class CancellableImageProvider<T extends Object> extends ImageProvider<T> {
+  void cancel();
+}
 
-  final ImageProvider key;
+mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvider<T> {
+  static final _log = Logger('CancellableImageProviderMixin');
+
   bool isCancelled = false;
   bool isFinished = false;
   ImageRequest? request;
   CancelableOperation<ImageInfo?>? cachedOperation;
 
-  ImageLoader(this.key);
-
-  ImageInfo? getInitialImage(ImageProvider provider) {
-    final completer = CancelableCompleter<ImageInfo?>();
+  ImageInfo? getInitialImage(CancellableImageProvider provider) {
+    final completer = CancelableCompleter<ImageInfo?>(onCancel: provider.cancel);
     final cachedStream = provider.resolve(ImageConfiguration.empty);
     ImageInfo? cachedImage;
     final listener = ImageStreamListener((image, synchronousCall) {
@@ -74,7 +73,7 @@ class ImageLoader {
       }
       if (isFinal) {
         isFinished = true;
-        PaintingBinding.instance.imageCache.evict(key);
+        PaintingBinding.instance.imageCache.evict(this);
         rethrow;
       }
       _log.warning('Non-fatal image load error', e, stack);
@@ -103,7 +102,7 @@ class ImageLoader {
       }
       if (isFinal) {
         isFinished = true;
-        PaintingBinding.instance.imageCache.evict(key);
+        PaintingBinding.instance.imageCache.evict(this);
         rethrow;
       }
       return null;
@@ -134,6 +133,7 @@ class ImageLoader {
     }
   }
 
+  @override
   void cancel() {
     isCancelled = true;
     final hasActiveWork = !isFinished;
@@ -151,7 +151,7 @@ class ImageLoader {
     }
 
     if (hasActiveWork) {
-      PaintingBinding.instance.imageCache.evict(key);
+      PaintingBinding.instance.imageCache.evict(this);
     }
   }
 }

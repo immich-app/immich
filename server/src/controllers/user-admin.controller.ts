@@ -61,7 +61,11 @@ export class UserAdminController {
   @Endpoint({
     summary: 'Update a user',
     description: 'Update an existing user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateUserAdmin' }),
   })
   updateUserAdmin(
     @Auth() auth: AuthDto,
@@ -154,7 +158,11 @@ export class UserAdminController {
   @Endpoint({
     summary: 'Update user preferences',
     description: 'Update the preferences of a specific user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateUserPreferencesAdmin' }),
   })
   updateUserPreferencesAdmin(
     @Auth() auth: AuthDto,

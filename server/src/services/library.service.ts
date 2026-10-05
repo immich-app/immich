@@ -9,6 +9,7 @@ import type { JobOf } from 'src/types.js';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -233,6 +234,24 @@ export class LibraryService extends BaseService {
     return JobStatus.Success;
   }
 
+  async createForUser(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    for (const importPath of dto.importPaths ?? []) {
+      const result = await this.validateImportPath(importPath);
+      if (!result.isValid) {
+        throw new BadRequestException(result.message);
+      }
+    }
+    return this.create({ ...dto, ownerId: auth.user.isAdmin ? dto.ownerId : auth.user.id });
+  }
+
+  async scanForUser(auth: AuthDto, id: string): Promise<void> {
+    const library = await this.findOrFail(id);
+    if (!auth.user.isAdmin && library.ownerId !== auth.user.id) {
+      throw new BadRequestException('Library is not owned by the current user');
+    }
+    await this.queueScan(id);
+  }
+
   async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     const library = await this.libraryRepository.create({
       ownerId: dto.ownerId,
@@ -300,7 +319,7 @@ export class LibraryService extends BaseService {
     validation.importPath = importPath;
     validation.isValid = false;
 
-    if (StorageCore.isImmichPath(importPath)) {
+    if (importPath.startsWith(StorageCore.getMediaLocation())) {
       validation.message = 'Cannot use media upload folder for external libraries';
       return validation;
     }
@@ -521,9 +540,7 @@ export class LibraryService extends BaseService {
             break;
           }
 
-          const isExcluded = job.exclusionPatterns.some((pattern) =>
-            picomatch.isMatch(asset.originalPath, pattern, { nocase: true }),
-          );
+          const isExcluded = job.exclusionPatterns.some((pattern) => picomatch.isMatch(asset.originalPath, pattern));
 
           if (!isExcluded) {
             this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);

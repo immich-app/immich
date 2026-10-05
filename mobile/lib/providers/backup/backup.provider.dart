@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
@@ -134,12 +133,6 @@ class BackupNotifier extends StateNotifier<BackupState> {
     final cancelToken = Completer<void>();
     _cancelToken = cancelToken;
 
-    // TODO: Once the tmp cleanup is fixed, revert this and handle it differently.
-    // Since we clean up tmp files whenever a foreground upload starts, we need to cancel ongoing background uploads.
-    if (CurrentPlatform.isIOS) {
-      await _backgroundUploadService.cancel();
-    }
-
     // Re-baseline the counters against the same DB read that feeds this run's candidate list,
     // otherwise a resume counts duplicate successes against the old baseline (#26215).
     await getBackupStatus(userId);
@@ -258,7 +251,7 @@ class BackupNotifier extends StateNotifier<BackupState> {
     _uploadSpeedManager.removeTask(localAssetId);
   }
 
-  Future<void> startBackupWithURLSession(String userId, Future<bool> remoteSync) async {
+  Future<void> startBackupWithURLSession(String userId) async {
     if (!mounted) {
       _logger.warning("Skip handleBackupResume (pre-call): notifier disposed");
       return;
@@ -273,10 +266,6 @@ class BackupNotifier extends StateNotifier<BackupState> {
     _logger.info("Found ${tasks.length} pending tasks");
 
     if (tasks.isEmpty) {
-      if (!await remoteSync) {
-        _logger.warning("Remote sync did not complete successfully, skipping new upload");
-        return;
-      }
       _logger.info("No pending tasks, starting new upload");
       return _backgroundUploadService.uploadBackupCandidates(userId);
     }

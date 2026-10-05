@@ -13,7 +13,7 @@ import {
   mapWorkflow,
   mapWorkflowShare,
 } from 'src/dtos/workflow.dto.js';
-import { Permission } from 'src/enum.js';
+import { JobName, Permission } from 'src/enum.js';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';
@@ -78,6 +78,15 @@ export class WorkflowService extends BaseService {
     );
 
     return mapWorkflow(workflow);
+  }
+
+  async run(auth: AuthDto, id: string, assetId: string): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [id] });
+    await this.findOrFail(id);
+    await this.jobRepository.queue({
+      name: JobName.WorkflowAssetTrigger,
+      data: { workflowId: id, assetId },
+    });
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {

@@ -14,7 +14,7 @@ const IntegrityGetReportSchema = z
   .object({
     type: IntegrityReportSchema,
     cursor: z.string().optional().describe('Cursor for pagination'),
-    limit: z.coerce.number().int().positive().default(500).optional().describe('Number of items per page'),
+    limit: z.int().positive().default(500).optional().describe('Number of items per page'),
   })
   .meta({ id: 'IntegrityGetReportDto' });
 

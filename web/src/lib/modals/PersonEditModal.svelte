@@ -1,68 +1,196 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleUpdatePerson } from '$lib/services/person.service';
-  import { PersonUpdateStrategy, type PersonResponseDto } from '@immich/sdk';
-  import { Checkbox, DatePicker, Field, FormModal, HelperText, HStack, Input, Label, Stack } from '@immich/ui';
-  import { mdiPencilOutline } from '@mdi/js';
+  import PeopleFilterUserPicker from '$lib/modals/PeopleFilterUserPicker.svelte';
+  import { handleUpdatePeople } from '$lib/services/person.service';
+  import { locale } from '$lib/stores/preferences.store';
+  import { PersonUserRole, type PersonResponseDto } from '@immich/sdk';
+  import {
+    Alert,
+    Button,
+    Checkbox,
+    DatePicker,
+    Field,
+    FormModal,
+    HelperText,
+    HStack,
+    Input,
+    Label,
+    modalManager,
+    Stack,
+    Text,
+  } from '@immich/ui';
+  import { mdiAccountMultipleOutline, mdiChevronDown, mdiText } from '@mdi/js';
   import { DateTime } from 'luxon';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
     person: PersonResponseDto;
+    targetUserId?: string;
     onClose: () => void;
   };
 
-  const { person, onClose }: Props = $props();
+  const { person, targetUserId: initialTargetUserId, onClose }: Props = $props();
 
-  let name = $state(person.name);
-  let birthDate = $state(person.birthDate);
-  let onlyForMe = $state(authManager.preferences.people?.updateStrategy !== PersonUpdateStrategy.Everyone);
+  const candidates = $derived([
+    { name: person.name, birthDate: person.birthDate, sharedById: authManager.user.id },
+    ...(person.otherPeople ?? []),
+  ]);
+
+  const userNames = $derived(
+    new Map([
+      [authManager.user.id, authManager.user.name],
+      ...person.sharedBy.map(({ id, name }) => [id, name] as const),
+    ]),
+  );
+
+  const writableRoles = new Set([PersonUserRole.Write, PersonUserRole.Admin]);
+
+  let targetUserId = $state(initialTargetUserId ?? authManager.user.id);
+  let targetPerson = $state(candidates[0]);
+  let applyToEveryone = $state(false);
+
+  const isWritable = $derived.by(() => {
+    if (!targetUserId) {
+      return false;
+    }
+
+    if (targetUserId === authManager.user.id) {
+      return true;
+    }
+
+    const sharedBy = person.sharedBy.find((user) => user.id === targetUserId);
+    if (!sharedBy) {
+      return false;
+    }
+
+    return writableRoles.has(sharedBy.role);
+  });
 
   const onSubmit = async () => {
-    const response = await handleUpdatePerson({
-      id: person.id,
-      name,
-      birthDate,
-      userId: onlyForMe ? authManager.user.id : undefined,
+    const userIdsToUpdate = applyToEveryone
+      ? candidates.map(({ sharedById }) => sharedById)
+      : [targetPerson.sharedById];
+
+    const success = await handleUpdatePeople({
+      people: userIdsToUpdate.map((userId) => ({
+        id: person.id,
+        name: targetPerson.name,
+        birthDate: targetPerson.birthDate,
+        userId,
+      })),
     });
 
-    if (response) {
+    if (success) {
       onClose();
     }
   };
+
+  const handleCopyFromMine = () => {
+    targetPerson.name = person.name;
+    targetPerson.birthDate = person.birthDate;
+  };
+
+  const onChange = (value: string) => {
+    targetUserId = value;
+    const match = candidates.find((person) => person.sharedById === value);
+    if (match) {
+      targetPerson.name = match.name;
+      targetPerson.birthDate = match.birthDate;
+      targetPerson.sharedById = match.sharedById;
+    }
+  };
+
+  const onViewAsAnotherUser = async () => {
+    const candidateIds = new Set(candidates.map(({ sharedById }) => sharedById));
+    const userId = await modalManager.show(PeopleFilterUserPicker, {
+      title: $t('user'),
+      selected: targetUserId,
+      users: person.sharedBy.filter(({ id }) => candidateIds.has(id)),
+      allowEmpty: false,
+    });
+    if (userId) {
+      onChange(userId);
+    }
+  };
+
+  onMount(() => {
+    onChange(targetUserId);
+  });
 </script>
 
 <FormModal
-  title={$t('edit_person')}
+  title={$t('person')}
   size="small"
-  icon={mdiPencilOutline}
+  icon={mdiText}
   {onClose}
   {onSubmit}
   submitText={$t('submit')}
+  disabled={!isWritable}
 >
   <Stack gap={6}>
-    <Field label={$t('name')}>
-      <Input bind:value={name} />
+    {#if candidates.length > 1}
+      <div class="flex flex-col gap-2">
+        <Button
+          color="secondary"
+          size="small"
+          shape="round"
+          trailingIcon={mdiChevronDown}
+          onclick={onViewAsAnotherUser}
+        >
+          {$t('view_as', { values: { name: userNames.get(targetUserId) ?? targetUserId } })}
+        </Button>
+        {#if isWritable}
+          <Button
+            size="small"
+            color="secondary"
+            shape="round"
+            variant="ghost"
+            leadingIcon={mdiAccountMultipleOutline}
+            onclick={handleCopyFromMine}
+          >
+            {$t('copy_from_my_person')}
+          </Button>
+        {:else}
+          <Alert shape="rectangle" color="warning" size="small" icon={false} class="mt-4" title={$t('readonly_access')}>
+            <Text size="tiny">{$t('person_read_access_message')}</Text>
+          </Alert>
+        {/if}
+      </div>
+    {/if}
+
+    <Field label={$t('name')} disabled={!isWritable}>
+      <Input bind:value={targetPerson.name} />
     </Field>
 
-    <Field label={$t('date_of_birth')}>
+    <Field label={$t('date_of_birth')} disabled={!isWritable}>
       <DatePicker
         bind:value={
-          () => (birthDate ? DateTime.fromISO(birthDate) : undefined), (value) => (birthDate = value?.toISO() ?? null)
+          () => (targetPerson.birthDate ? DateTime.fromISO(targetPerson.birthDate) : undefined),
+          (value) => (targetPerson.birthDate = value?.toISO() ?? null)
         }
         maxDate={DateTime.now()}
       />
       <HelperText>{$t('birthdate_set_description')}</HelperText>
     </Field>
 
-    {#if person.otherPeople.length > 0}
-      <div>
-        <HStack gap={4}>
-          <Checkbox id="only-for-me-checkbox" color="secondary" size="small" bind:checked={onlyForMe} />
-          <Label label={$t('person_edit_only_change_for_me')} size="small" for="only-for-me-checkbox" />
-        </HStack>
-        <HelperText>{$t('person_edit_only_change_for_me_description')}</HelperText>
-      </div>
+    {#if candidates.length > 1 && isWritable}
+      <HStack fullWidth gap={4}>
+        <Checkbox id="apply-for-all-users-checkbox" color="secondary" size="small" bind:checked={applyToEveryone} />
+        <Label
+          label={$t('person_edit_change_for_all_users', {
+            values: {
+              people: new Intl.ListFormat($locale, { style: 'long' }).format(
+                candidates
+                  .filter(({ sharedById }) => sharedById !== targetUserId)
+                  .map(({ sharedById }) => userNames.get(sharedById) ?? sharedById),
+              ),
+            },
+          })}
+          size="small"
+          for="apply-for-all-users-checkbox"
+        />
+      </HStack>
     {/if}
   </Stack>
 </FormModal>

@@ -45,17 +45,6 @@ lint = [
     { include-group = "types" },
 ]
 dev = ["locust>=2.15.1", { include-group = "test" }, { include-group = "lint" }]
-# the image replaces onnxruntime-openvino with one built against and bundling this openvino
-onnxruntime-openvino-build = ["openvino>=2026.4.1,<2027", "setuptools", "wheel"]
-# the CUDA libraries the cuda image has in its nvidia/cuda base, for running outside it
-cuda-libs = [
-    "nvidia-cuda-runtime-cu12==12.2.140 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
-    "nvidia-cuda-nvrtc-cu12==12.2.140 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
-    "nvidia-cublas-cu12==12.2.5.6 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
-    "nvidia-cufft-cu12==11.0.8.103 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
-    "nvidia-curand-cu12==10.3.3.141 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
-    "nvidia-cudnn-cu12==9.10.2.21 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
-]
 
 [project.optional-dependencies]
 cpu = ["onnxruntime>=1.23.2,<2"]
@@ -73,7 +62,7 @@ compile-bytecode = true
 override-dependencies = ["opencv-python ; sys_platform == 'never'"] # only install the headless version
 
 [tool.uv.sources]
-immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "20a8ec79a1e6414d311f0e28b6e6082968a31ad7" }
+immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "88d2b64ff95ce7117760660681d95e0e1308819b" }
 onnxruntime-gpu = { index = "onnxruntime-cuda-12" }
 
 [[tool.uv.index]]
