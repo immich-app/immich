@@ -39,6 +39,7 @@ export interface PersonFilterOptions {
   sharedWithId?: string;
   isFavorite?: boolean;
   isHidden?: boolean;
+  name?: string;
 }
 
 export interface PersonSearchOptions extends PersonFilterOptions {
@@ -172,8 +173,13 @@ const withOtherPeopleForPerson = (userId: string) => {
 };
 
 const withFilters = (userId: string, options: PersonFilterOptions = {}) => {
-  const { sharedById, sharedWithId, isFavorite, isHidden } = options;
-  return (eb: ExpressionBuilder<DB & { owned: DB['person'] }, 'person_group' | 'owned'>) => {
+  const { sharedById, sharedWithId, isFavorite, isHidden, name } = options;
+  return (
+    eb: ExpressionBuilder<
+      DB & { owned: DB['person']; similarity_threshold: unknown },
+      'person_group' | 'owned' | 'similarity_threshold'
+    >,
+  ) => {
     const filters: Expression<SqlBool>[] = [];
 
     if (sharedById || sharedWithId) {
@@ -198,6 +204,10 @@ const withFilters = (userId: string, options: PersonFilterOptions = {}) => {
 
     if (isHidden !== undefined) {
       filters.push(eb('owned.isHidden', '=', isHidden));
+    }
+
+    if (name !== undefined) {
+      filters.push(sql`f_unaccent("owned"."name") %> f_unaccent(${name})`);
     }
 
     return eb.and(filters);
@@ -429,7 +439,10 @@ export class PersonRepository {
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
     const items = await this.db
-      .selectFrom('person_group')
+      .with('similarity_threshold', (db) =>
+        db.selectNoFrom(sql`set_config('pg_trgm.word_similarity_threshold', '0.5', true)`.as('thresh')),
+      )
+      .selectFrom(['similarity_threshold', 'person_group'])
       .innerJoin('person as owned', (join) =>
         join.onRef('owned.personGroupId', '=', 'person_group.id').on('owned.ownerId', '=', userId),
       )
@@ -502,6 +515,7 @@ export class PersonRepository {
       // an explicit isHidden filter takes precedence over withHidden
       .$if(!options?.withHidden && options?.isHidden === undefined, (qb) => qb.where('owned.isHidden', '=', false))
       .where(withFilters(userId, options))
+      .$if(!!options?.name, (qb) => qb.orderBy(sql`f_unaccent("owned"."name") <->>> f_unaccent(${options!.name!})`))
       .offset(pagination.skip ?? 0)
       .limit(pagination.take + 1)
       .execute();
@@ -726,7 +740,10 @@ export class PersonRepository {
   getNumberOfPeople(userId: string, options?: PersonFilterOptions) {
     const zero = sql.lit(0);
     return this.db
-      .selectFrom('person_group')
+      .with('similarity_threshold', (db) =>
+        db.selectNoFrom(sql`set_config('pg_trgm.word_similarity_threshold', '0.5', true)`.as('thresh')),
+      )
+      .selectFrom(['similarity_threshold', 'person_group'])
       .leftJoin('person as owned', (join) =>
         join.onRef('owned.personGroupId', '=', 'person_group.id').on('owned.ownerId', '=', userId),
       )

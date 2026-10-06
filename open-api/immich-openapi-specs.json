@@ -9805,6 +9805,15 @@
             }
           },
           {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "Filter by person name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -18202,7 +18211,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.3.0-rc.1",
+    "version": "3.3.0-rc.2",
     "contact": {}
   },
   "tags": [

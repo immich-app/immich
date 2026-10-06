@@ -173,9 +173,12 @@
 
   const faces = $derived(Array.from(faceToNameMap.keys()));
 
-  const boundingBoxes = $derived.by(() => {
+  // we want to bind to `boundingbox.labelWidth`, which requires deep reactivity
+  // $derived does not currently support that, only $state does.
+  let boundingBoxes = $state<Array<BoundingBox & { name?: string; face: Faces }>>([]);
+  $effect(() => {
     if (assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
-      return [];
+      return;
     }
 
     const knownBoxes = getBoundingBox(faces, overlaySize);
@@ -186,7 +189,7 @@
     }));
 
     if (assetViewerManager.highlightedFaces.length === 0) {
-      return result;
+      boundingBoxes = result;
     }
 
     const knownIds = new Set(faces.map((f) => f.id));
@@ -196,7 +199,7 @@
       result.push({ ...unassignedBoxes[i], face: unassignedFaces[i], name: undefined });
     }
 
-    return result;
+    boundingBoxes = result;
   });
 </script>
 
