@@ -728,6 +728,7 @@ jobs:
         env:
           DEVICE: ${{ matrix.device }}
           MACHINE_LEARNING_TEST_PROVIDER: ${{ matrix.provider }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           if [ "$DEVICE" = openvino ]; then
             clinfo -l
