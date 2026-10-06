@@ -60,6 +60,7 @@ jobs:
             mobile:
               - 'mobile/**'
               - 'open-api/**'
+              - 'i18n/**'
               - 'mise.toml'
             machine-learning:
               - 'machine-learning/**'
