@@ -514,6 +514,7 @@ export type SyncItem = {
   [SyncEntityType.MemoryV2]: SyncMemoryV2;
   [SyncEntityType.MemoryDeleteV1]: SyncMemoryDeleteV1;
   [SyncEntityType.MemoryToAssetV1]: SyncMemoryAssetV1;
+  [SyncEntityType.MemoryToAssetV2]: SyncMemoryAssetV1;
   [SyncEntityType.MemoryToAssetDeleteV1]: SyncMemoryAssetDeleteV1;
   [SyncEntityType.StackV1]: SyncStackV1;
   [SyncEntityType.StackDeleteV1]: SyncStackDeleteV1;

@@ -85,6 +85,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.MemoriesV1,
   SyncRequestType.MemoriesV2,
   SyncRequestType.MemoryToAssetsV1,
+  SyncRequestType.MemoryToAssetsV2,
   SyncRequestType.PeopleV1,
   SyncRequestType.AssetFacesV1,
   SyncRequestType.AssetFacesV2,
@@ -213,6 +214,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.MemoriesV1]: () => this.syncMemoriesV1(options, response, checkpointMap),
       [SyncRequestType.MemoriesV2]: () => this.syncMemoriesV2(options, response, checkpointMap),
       [SyncRequestType.MemoryToAssetsV1]: () => this.syncMemoryAssetsV1(options, response, checkpointMap),
+      [SyncRequestType.MemoryToAssetsV2]: () => this.syncMemoryAssetsV2(options, response, checkpointMap),
       [SyncRequestType.StacksV1]: () => this.syncStackV1(options, response, checkpointMap),
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, session.id),
       [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(options, response, checkpointMap),
@@ -817,6 +819,20 @@ export class SyncService extends BaseService {
     }
 
     const upsertType = SyncEntityType.MemoryToAssetV1;
+    const upserts = this.syncRepository.memoryToAsset.getUpsertsV1({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
+      await send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncMemoryAssetsV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.MemoryToAssetDeleteV1;
+    const deletes = this.syncRepository.memoryToAsset.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      await send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.MemoryToAssetV2;
     const upserts = this.syncRepository.memoryToAsset.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       await send(response, { type: upsertType, ids: [updateId], data });

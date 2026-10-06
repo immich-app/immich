@@ -1057,6 +1057,7 @@ export enum SyncRequestType {
   MemoriesV1 = 'MemoriesV1',
   MemoriesV2 = 'MemoriesV2',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
+  MemoryToAssetsV2 = 'MemoryToAssetsV2',
   PartnersV1 = 'PartnersV1',
   /** @deprecated */
   PartnerAssetsV1 = 'PartnerAssetsV1',
@@ -1144,6 +1145,7 @@ export enum SyncEntityType {
   MemoryDeleteV1 = 'MemoryDeleteV1',
 
   MemoryToAssetV1 = 'MemoryToAssetV1',
+  MemoryToAssetV2 = 'MemoryToAssetV2',
   MemoryToAssetDeleteV1 = 'MemoryToAssetDeleteV1',
 
   StackV1 = 'StackV1',
