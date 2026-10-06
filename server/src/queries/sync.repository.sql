@@ -768,6 +768,28 @@ where
 order by
   "memory_asset_audit"."id" asc
 
+-- SyncRepository.memoryToAsset.getUpsertsV1
+select
+  "memoriesId" as "memoryId",
+  "assetId" as "assetId",
+  "updateId"
+from
+  "memory_asset" as "memory_asset"
+where
+  "memory_asset"."updateId" < $1
+  and "memory_asset"."updateId" > $2
+  and "memoriesId" in (
+    select
+      "id"
+    from
+      "memory"
+    where
+      "ownerId" = $3
+      and "type" = 'on_this_day'
+  )
+order by
+  "memory_asset"."updateId" asc
+
 -- SyncRepository.memoryToAsset.getUpserts
 select
   "memoriesId" as "memoryId",
