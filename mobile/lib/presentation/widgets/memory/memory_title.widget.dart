@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/object_extensions.dart';
@@ -45,18 +44,7 @@ class MemoryTitle extends StatelessWidget {
       children: [
         Icon(Icons.cake_rounded, color: textStyle.color, size: 20),
         const SizedBox(height: 4),
-        DecoratedBox(
-          decoration: const BoxDecoration(color: immichLogoYellow, borderRadius: BorderRadius.all(Radius.circular(8))),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            child: Text(
-              title,
-              style: textStyle.copyWith(color: Colors.black),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
+        Text(title, style: style, maxLines: 2, overflow: TextOverflow.ellipsis),
       ],
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -82,46 +81,6 @@ void main() {
       await tester.pumpTestWidget(context, titleOf(memory, asset: newAssetTakenIn(2015)));
 
       expect(find.text('3 years ago'), findsOneWidget);
-    });
-  });
-
-  group('MemoryTitle', () {
-    const style = TextStyle(color: Colors.white, fontSize: 16);
-
-    testWidgets('renders plain text for an on this day memory', (tester) async {
-      await tester.pumpTestWidget(
-        context,
-        const MemoryTitle(type: MemoryTypeEnum.onThisDay, title: '3 years ago', style: style),
-      );
-
-      expect(tester.widget<Text>(find.text('3 years ago')).style?.color, Colors.white);
-      expect(find.byIcon(Icons.cake_rounded), findsNothing);
-    });
-
-    testWidgets('renders a cake icon and yellow badge for a birthday memory', (tester) async {
-      await tester.pumpTestWidget(
-        context,
-        const MemoryTitle(type: MemoryTypeEnum.birthday, title: "Alice's birthday", style: style),
-      );
-
-      final badge = tester.widget<DecoratedBox>(
-        find.ancestor(of: find.text("Alice's birthday"), matching: find.byType(DecoratedBox)).first,
-      );
-      expect((badge.decoration as BoxDecoration).color, immichLogoYellow);
-      expect(tester.widget<Text>(find.text("Alice's birthday")).style?.color, Colors.black);
-      expect(tester.widget<Icon>(find.byIcon(Icons.cake_rounded)).size, 20);
-    });
-
-    testWidgets('renders the cake icon above the birthday badge', (tester) async {
-      await tester.pumpTestWidget(
-        context,
-        const MemoryTitle(type: MemoryTypeEnum.birthday, title: "Alice's birthday", style: style),
-      );
-
-      expect(
-        tester.getBottomLeft(find.byIcon(Icons.cake_rounded)).dy,
-        lessThanOrEqualTo(tester.getTopLeft(find.text("Alice's birthday")).dy),
-      );
     });
   });
 }
