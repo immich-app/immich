@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "commander": "^15.0.0",
-    "semver": "^7.8.1"
+    "semver": "^7.8.1",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/node": "^24.13.6",

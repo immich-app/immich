@@ -372,6 +372,9 @@ importers:
       semver:
         specifier: ^7.8.1
         version: 7.8.5
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
     devDependencies:
       '@types/node':
         specifier: ^24.13.6
