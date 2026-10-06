@@ -52,7 +52,8 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
   }
 
   bool _onTagsMetrics(ScrollMetricsNotification notification) {
-    final hasOverflow = notification.metrics.maxScrollExtent > 0;
+    final hasOverflow =
+        notification.metrics.maxScrollExtent + notification.metrics.viewportDimension > _collapsedTagsMaxHeight;
     if (hasOverflow != _hasOverflow) {
       setState(() => _hasOverflow = hasOverflow);
     }
@@ -95,12 +96,12 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
                 constraints: BoxConstraints(maxWidth: context.width * 0.6),
                 child: Text(tag.value, overflow: TextOverflow.ellipsis),
               ),
-              labelStyle: TextStyle(color: tagText, fontSize: 14, fontWeight: FontWeight.w300),
+              labelStyle: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w300),
               backgroundColor: tagBackground,
               shape: const StadiumBorder(),
               side: BorderSide(color: tagBorder),
               deleteIcon: Icon(Icons.close, size: 16, color: tagText),
-              onDeleted: switch (UnTagAction(source: .viewer, tagId: tag.id).create(context, ref)) {
+              onDeleted: switch (UntagAction(source: .viewer, tagId: tag.id).create(context, ref)) {
                 final action? => () async => await action.onAction(),
                 null => null,
               },
@@ -110,15 +111,13 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
       ),
     );
 
-    Widget tagArea = isCollapsed
-        ? NotificationListener<ScrollMetricsNotification>(
-            onNotification: _onTagsMetrics,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: _collapsedTagsMaxHeight),
-              child: SingleChildScrollView(physics: const NeverScrollableScrollPhysics(), child: tagWrap),
-            ),
-          )
-        : tagWrap;
+    Widget tagArea = NotificationListener<ScrollMetricsNotification>(
+      onNotification: _onTagsMetrics,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: isCollapsed ? _collapsedTagsMaxHeight : double.infinity),
+        child: SingleChildScrollView(physics: const NeverScrollableScrollPhysics(), child: tagWrap),
+      ),
+    );
 
     if (isCollapsed && _hasOverflow) {
       tagArea = ShaderMask(
@@ -153,7 +152,7 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
                 ActionChip(
                   label: Text(
                     _isExpanded ? context.t.show_less : context.t.view_more,
-                    style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w500),
+                    style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
                   ),
                   side: BorderSide.none,
                   shape: const StadiumBorder(),

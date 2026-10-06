@@ -82,10 +82,10 @@ Future<void> tagAssets(
   }
 }
 
-class UnTagAction extends AssetActionBuilder {
+class UntagAction extends AssetActionBuilder {
   final String tagId;
 
-  const UnTagAction({required super.source, required this.tagId});
+  const UntagAction({required super.source, required this.tagId});
 
   @override
   ActionItem? create(BuildContext context, WidgetRef ref) {

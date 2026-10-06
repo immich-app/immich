@@ -154,8 +154,8 @@ void main() {
     });
   });
 
-  group('UnTagAction', () {
-    List<Override> unTagOverrides(Set<BaseAsset> selection) => [
+  group('UntagAction', () {
+    List<Override> untagOverrides(Set<BaseAsset> selection) => [
       ...context.selected(selection),
       toastServiceProvider.overrideWithValue(context.service.toast),
       Store.userMetadata.preferences().overrideWith((ref) => Stream.value(const .new(tagsEnabled: true))),
@@ -167,8 +167,8 @@ void main() {
 
       await tester.pumpTestAction(
         context,
-        const UnTagAction(source: .timeline, tagId: 'tag'),
-        overrides: unTagOverrides({asset}),
+        const UntagAction(source: .timeline, tagId: 'tag'),
+        overrides: untagOverrides({asset}),
       );
       await tester.pumpAndSettle();
 
@@ -184,9 +184,9 @@ void main() {
       await tester.pumpTestWidget(
         context,
         const ActionIconButton(
-          action: UnTagAction(source: .timeline, tagId: 'tag'),
+          action: UntagAction(source: .timeline, tagId: 'tag'),
         ),
-        overrides: unTagOverrides(selection),
+        overrides: untagOverrides(selection),
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
