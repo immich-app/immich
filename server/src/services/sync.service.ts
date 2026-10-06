@@ -13,7 +13,7 @@ import {
   SyncStreamDto,
   syncAlbumV2ToV1,
 } from 'src/dtos/sync.dto.js';
-import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { JobName, MemoryType, QueueName, SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { SyncQueryOptions } from 'src/repositories/sync.repository.js';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table.js';
 import { BaseService } from 'src/services/base.service.js';
@@ -83,6 +83,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.AssetOcrV1,
   SyncRequestType.PartnerAssetExifsV1,
   SyncRequestType.MemoriesV1,
+  SyncRequestType.MemoriesV2,
   SyncRequestType.MemoryToAssetsV1,
   SyncRequestType.PeopleV1,
   SyncRequestType.AssetFacesV1,
@@ -210,6 +211,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.AlbumAssetExifsV1]: () =>
         this.syncAlbumAssetExifsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.MemoriesV1]: () => this.syncMemoriesV1(options, response, checkpointMap),
+      [SyncRequestType.MemoriesV2]: () => this.syncMemoriesV2(options, response, checkpointMap),
       [SyncRequestType.MemoryToAssetsV1]: () => this.syncMemoryAssetsV1(options, response, checkpointMap),
       [SyncRequestType.StacksV1]: () => this.syncStackV1(options, response, checkpointMap),
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, session.id),
@@ -785,6 +787,22 @@ export class SyncService extends BaseService {
     }
 
     const upsertType = SyncEntityType.MemoryV1;
+    const upserts = this.syncRepository.memory.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
+      if (data.type === MemoryType.OnThisDay) {
+        await send(response, { type: upsertType, ids: [updateId], data: { ...data, type: data.type } });
+      }
+    }
+  }
+
+  private async syncMemoriesV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.MemoryDeleteV1;
+    const deletes = this.syncRepository.memory.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      await send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.MemoryV2;
     const upserts = this.syncRepository.memory.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       await send(response, { type: upsertType, ids: [updateId], data });

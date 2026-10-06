@@ -295,7 +295,7 @@ const SyncMemoryV1Schema = z
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     deletedAt: isoDatetimeToDate.nullable().describe('Deleted at'),
     ownerId: z.uuidv4().describe('Owner ID'),
-    type: MemoryTypeSchema,
+    type: MemoryTypeSchema.extract(['OnThisDay']).meta({ id: 'MemoryTypeV1' }),
     data: z.record(z.string(), z.unknown()).describe('Data'),
     isSaved: z.boolean().describe('Is saved'),
     memoryAt: isoDatetimeToDate.describe('Memory at'),
@@ -304,6 +304,10 @@ const SyncMemoryV1Schema = z
     hideAt: isoDatetimeToDate.nullable().describe('Hide at'),
   })
   .meta({ id: 'SyncMemoryV1' });
+
+const SyncMemoryV2Schema = SyncMemoryV1Schema.extend({
+  type: MemoryTypeSchema,
+}).meta({ id: 'SyncMemoryV2' });
 
 const SyncMemoryDeleteV1Schema = z
   .object({ memoryId: z.uuidv4().describe('Memory ID') })
@@ -402,6 +406,8 @@ const SyncCompleteV1Schema = z.object({}).meta({ id: 'SyncCompleteV1' });
 
 @ExtraModel()
 class SyncMemoryV1 extends createZodDto(SyncMemoryV1Schema) {}
+@ExtraModel()
+class SyncMemoryV2 extends createZodDto(SyncMemoryV2Schema) {}
 @ExtraModel()
 class SyncMemoryDeleteV1 extends createZodDto(SyncMemoryDeleteV1Schema) {}
 @ExtraModel()
@@ -505,6 +511,7 @@ export type SyncItem = {
   [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;
   [SyncEntityType.AlbumToAssetDeleteV1]: SyncAlbumToAssetDeleteV1;
   [SyncEntityType.MemoryV1]: SyncMemoryV1;
+  [SyncEntityType.MemoryV2]: SyncMemoryV2;
   [SyncEntityType.MemoryDeleteV1]: SyncMemoryDeleteV1;
   [SyncEntityType.MemoryToAssetV1]: SyncMemoryAssetV1;
   [SyncEntityType.MemoryToAssetDeleteV1]: SyncMemoryAssetDeleteV1;
