@@ -61,7 +61,7 @@ describe('ImageThumbnail component', () => {
     expect(onComplete).toHaveBeenCalledWith(true);
   });
 
-  it('applies hidden styles when hidden is true', () => {
+  it('applies hidden classes when hidden is true', () => {
     const { baseElement } = render(ImageThumbnail, {
       url: '/test-thumbnail.jpg',
       altText: 'Test image',
@@ -69,9 +69,9 @@ describe('ImageThumbnail component', () => {
       hidden: true,
     });
     const img = baseElement.querySelector('img')!;
-    const style = img.getAttribute('style') ?? '';
-    expect(style).toContain('grayscale');
-    expect(style).toContain('opacity');
+    const className = img.getAttribute('class') ?? '';
+    expect(className).toContain('grayscale');
+    expect(className).toContain('opacity');
   });
 
   it('sets alt text after loading', async () => {

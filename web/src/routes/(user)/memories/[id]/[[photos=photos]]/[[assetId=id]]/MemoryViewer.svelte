@@ -1,6 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import { shortcuts } from '$lib/actions/shortcut';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import BirthdayConfetti from '$lib/components/memories/BirthdayConfetti.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
@@ -8,11 +11,9 @@
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -24,9 +25,10 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
-  import { ActionButton, IconButton, Text } from '@immich/ui';
+  import { AssetMediaSize, AssetTypeEnum, getAssetInfo, MemoryType } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text } from '@immich/ui';
   import {
+    mdiCakeVariant,
     mdiCardsOutline,
     mdiChevronDown,
     mdiChevronLeft,
@@ -67,6 +69,15 @@
     currentAssetId ? await getAssetInfo({ ...authManager.params, id: currentAssetId }) : undefined,
   );
   let currentTimelineAssets = $derived(current?.memory.assets ?? []);
+
+  const birthdayAge = $derived.by(() => {
+    if (current?.memory.type !== MemoryType.Birthday) {
+      return;
+    }
+
+    const age = current.asset.localDateTime.year - current.memory.data.year;
+    return age >= 0 ? age : undefined;
+  });
 
   let viewerHeight = $state(0);
 
@@ -172,7 +183,8 @@
     galleryInView = false;
     // only call play after the first page load. When page first loads the gallery will not be visible
     // and calling play here will result in duplicate invocation.
-    if (!galleryFirstLoad) {
+    // also check if the element is visible to avoid playback in the background
+    if (!galleryFirstLoad && videoPlayer?.checkVisibility()) {
       handlePromiseError(handleAction('galleryOutOfView', 'play'));
     }
     galleryFirstLoad = false;
@@ -230,7 +242,7 @@
   });
 
   $effect(() => {
-    if (current || memoryManager.loading !== undefined) {
+    if (current) {
       return;
     }
 
@@ -266,7 +278,9 @@
   <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t)}
-      <CreateSharedLink />
+      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+
+      <ActionButton action={Actions.CreateSharedLink} />
       <IconButton
         shape="round"
         color="secondary"
@@ -286,9 +300,7 @@
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={handleHideAssets} />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets menuItem onAssetDelete={handleHideAssets} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
@@ -299,11 +311,26 @@
   id="memory-viewer"
   data-sveltekit-noscroll
   class="dark w-full bg-immich-dark-gray text-white"
+  use:scrollMemoryClearer={{ routeStartsWith: Route.memories() }}
   bind:this={memoryWrapper}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
 >
   {#if current}
+    {#key current.memory.id}
+      {#if current.memory.type === MemoryType.Birthday}
+        <div class="pointer-events-none fixed inset-x-0 -top-12 z-1 flex h-screen justify-center overflow-hidden">
+          <BirthdayConfetti
+            x={[-5, 5]}
+            y={[0, 0.1]}
+            delay={[0, 1500]}
+            duration={4000}
+            amount={200}
+            fallDistance="100vh"
+          />
+        </div>
+      {/if}
+    {/key}
     <div class="dark grid grid-cols-[100%] p-2 max-md:h-auto max-md:flex-col md:grid-cols-[25%_50%_25%] md:p-4">
       {#if current}
         <div class="flex items-center gap-2 md:gap-6">
@@ -316,7 +343,10 @@
             size="large"
             onclick={() => goto(memoryManager.memoriesHref)}
           />
-          <p class="text-lg">
+          <p class="flex items-center gap-2 text-lg">
+            {#if current.memory.type === MemoryType.Birthday}
+              <Icon icon={mdiCakeVariant} size="1.25em" />
+            {/if}
             {$memoryLaneTitle(current.memory)}
           </p>
         </div>
@@ -530,9 +560,12 @@
 
             <div class="absolute inset-s-8 top-4 text-sm font-medium text-white">
               <p>
-                {fromISODateTimeUTC(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
-                  locale: $locale,
-                })}
+                {fromISODateTimeUTC(current.memory.assets[assetIndex].localDateTime).toLocaleString(
+                  DateTime.DATE_FULL,
+                  {
+                    locale: $locale,
+                  },
+                )}
               </p>
               <p>
                 {#await currentMemoryAssetFull then asset}
@@ -540,6 +573,13 @@
                   {asset?.exifInfo?.country || ''}
                 {/await}
               </p>
+              {#if birthdayAge !== undefined}
+                <p class="mt-1 flex items-center gap-2">
+                  <span class="rounded-sm bg-logo-yellow px-1.5 py-0.5 whitespace-nowrap text-black">
+                    {$t('birthday_memory_age', { values: { age: birthdayAge } })}
+                  </span>
+                </p>
+              {/if}
             </div>
           </div>
         </div>

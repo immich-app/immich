@@ -21,7 +21,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'folders': FoldersResponse(enabled: false, sidebarWeb: false).toJson(),
     'memories': MemoriesResponse(enabled: true, duration: 5, sidebarWeb: false).toJson(),
     'ratings': RatingsResponse(enabled: false).toJson(),
-    'people': PeopleResponse(enabled: true, sidebarWeb: false).toJson(),
+    'people': PeopleResponse(enabled: true, sidebarWeb: false, updateStrategy: PersonUpdateStrategy.everyone).toJson(),
     'tags': TagsResponse(enabled: false, sidebarWeb: false).toJson(),
     'sharedLinks': SharedLinksResponse(enabled: true, sidebarWeb: false).toJson(),
     'cast': CastResponse(gCastEnabled: false).toJson(),
@@ -40,10 +40,14 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
   'SyncAssetV1': {'isEdited': false},
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
+  'SearchAssetResponseDto': {'nextCursor': null},
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
+  'PeopleResponse': {'updateStrategy': 'everyone'},
+  'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'WorkflowResponseDto': {'logging': false},
 };
 
+// ignore: unused-code
 void upgradeDto(dynamic value, String targetType) {
   if (value is! Map) {
     return;

@@ -7,13 +7,13 @@ import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 
-final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
+final localAlbumProvider = StreamProvider<List<LocalAlbum>>(
   (ref) => LocalAlbumService(ref.watch(driftProvider).localAlbumRepository)
-      .getAll(sortBy: {SortLocalAlbumsBy.newestAsset})
-      .then((albums) => albums.where((album) => album.assetCount > 0).toList()),
+      .watchAll(sortBy: {SortLocalAlbumsBy.newestAsset})
+      .map((albums) => albums.where((album) => album.assetCount > 0).toList()),
 );
 
 final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(
@@ -23,7 +23,7 @@ final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(
 final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
   (ref) => RemoteAlbumService(
     ref.watch(driftProvider).remoteAlbumRepository,
-    ref.watch(driftAlbumApiRepositoryProvider),
+    ref.watch(albumApiRepositoryProvider),
     ref.watch(foregroundUploadServiceProvider),
   ),
 );

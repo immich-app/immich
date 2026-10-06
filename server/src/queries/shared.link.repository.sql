@@ -64,6 +64,40 @@ from
   left join lateral (
     select
       "album".*,
+      (
+        select
+          coalesce(json_agg(agg), '[]')
+        from
+          (
+            select
+              "album_user"."role",
+              (
+                select
+                  to_json(obj)
+                from
+                  (
+                    select
+                      "id",
+                      "name",
+                      "email",
+                      "avatarColor",
+                      "profileImagePath",
+                      "profileChangedAt"
+                    from
+                      (
+                        select
+                          1
+                      ) as "dummy"
+                  ) as obj
+              ) as "user"
+            from
+              "album_user"
+              inner join "user" on "user"."id" = "album_user"."userId"
+            where
+              "album_user"."role" = 'owner'
+              and "album_user"."albumId" = "album"."id"
+          ) as agg
+      ) as "albumUsers",
       coalesce(
         json_agg(
           "assets"
@@ -74,8 +108,7 @@ from
             "assets"."id" is not null
         ),
         '[]'
-      ) as "assets",
-      to_json("owner") as "owner"
+      ) as "assets"
     from
       "album"
       left join "album_asset" on "album_asset"."albumId" = "album"."id"
@@ -128,34 +161,11 @@ from
         order by
           "asset"."fileCreatedAt" asc
       ) as "assets" on true
-      inner join lateral (
-        select
-          "id",
-          "name",
-          "email",
-          "avatarColor",
-          "profileImagePath",
-          "profileChangedAt"
-        from
-          "user"
-        where
-          exists (
-            select
-            from
-              "album_user"
-            where
-              "album_user"."role" = 'owner'
-              and "album_user"."albumId" = "album"."id"
-              and "album_user"."userId" = "user"."id"
-          )
-          and "user"."deletedAt" is null
-      ) as "owner" on true
     where
       "album"."id" = "shared_link"."albumId"
       and "album"."deletedAt" is null
     group by
-      "album"."id",
-      "owner".*
+      "album"."id"
   ) as "album" on true
 where
   "shared_link"."id" = $1
@@ -195,31 +205,42 @@ from
   left join lateral (
     select
       "album".*,
-      to_json("owner") as "owner"
-    from
-      "album"
-      inner join lateral (
+      (
         select
-          "id",
-          "name",
-          "email",
-          "avatarColor",
-          "profileImagePath",
-          "profileChangedAt"
+          coalesce(json_agg(agg), '[]')
         from
-          "user"
-        where
-          exists (
+          (
             select
+              "album_user"."role",
+              (
+                select
+                  to_json(obj)
+                from
+                  (
+                    select
+                      "id",
+                      "name",
+                      "email",
+                      "avatarColor",
+                      "profileImagePath",
+                      "profileChangedAt"
+                    from
+                      (
+                        select
+                          1
+                      ) as "dummy"
+                  ) as obj
+              ) as "user"
             from
               "album_user"
+              inner join "user" on "user"."id" = "album_user"."userId"
             where
               "album_user"."role" = 'owner'
               and "album_user"."albumId" = "album"."id"
-              and "album_user"."userId" = "user"."id"
-          )
-          and "user"."deletedAt" is null
-      ) as "owner" on true
+          ) as agg
+      ) as "albumUsers"
+    from
+      "album"
     where
       "album"."id" = "shared_link"."albumId"
       and "album"."deletedAt" is null

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { type Insertable, type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, IntegrityReport } from 'src/enum';
-import { DB } from 'src/schema';
-import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetFileType, IntegrityReport } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table.js';
 
 export type ReportPaginationOptions = {
   cursor?: string;
@@ -91,6 +91,24 @@ export class IntegrityRepository {
       .selectFrom('person')
       .select('person.thumbnailPath')
       .where('person.thumbnailPath', 'in', paths)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getTrackedPaths(paths: string[]) {
+    return this.db
+      .selectFrom('asset')
+      .select('asset.originalPath as path')
+      .where('asset.originalPath', 'in', paths)
+      .union((eb) =>
+        eb.selectFrom('asset_file').select('asset_file.path as path').where('asset_file.path', 'in', paths),
+      )
+      .union((eb) =>
+        eb
+          .selectFrom('person')
+          .select((eb) => eb.ref('person.thumbnailPath').$castTo<string>().as('path'))
+          .where('person.thumbnailPath', 'in', paths),
+      )
       .execute();
   }
 
