@@ -166,11 +166,11 @@ describe('utils', () => {
   });
   describe('semverToName', () => {
     it('should not append release candidate tag if prelease is not set', () => {
-      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null })).toEqual('v3.0.0');
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null, featureLevel: 1 })).toEqual('v3.0.0');
     });
 
     it('should append release candidate if set', () => {
-      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0 })).toEqual('v3.0.0-rc.0');
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0, featureLevel: 1 })).toEqual('v3.0.0-rc.0');
     });
   });
 
