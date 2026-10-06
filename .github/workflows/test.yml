@@ -716,7 +716,7 @@ jobs:
         if: ${{ matrix.device == 'openvino' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ocl-icd-libopencl1
+          sudo apt-get install -y --no-install-recommends ocl-icd-libopencl1 clinfo
           sudo scripts/install-intel-runtime.sh ~/intel-runtime
 
       - name: Install
@@ -730,6 +730,9 @@ jobs:
           DEVICE: ${{ matrix.device }}
           MACHINE_LEARNING_TEST_PROVIDER: ${{ matrix.provider }}
         run: |
+          if [ "$DEVICE" = openvino ]; then
+            clinfo -l
+          fi
           if [ "$DEVICE" = cuda ]; then
             nvidia-smi --query-gpu=name,driver_version,compute_cap --format=csv
             # the CUDA libraries come from the venv here, where the image has them in its base
