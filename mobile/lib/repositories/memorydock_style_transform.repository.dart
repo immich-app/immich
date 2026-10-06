@@ -15,7 +15,7 @@ class MemoryDockStyleTransformRepository {
   final ApiService _apiService;
   final http.Client? _httpClient;
 
-  const MemoryDockStyleTransformRepository(this._apiService, {http.Client? httpClient}) : _httpClient = httpClient;
+  const MemoryDockStyleTransformRepository(this._apiService, {this._httpClient});
 
   Future<void> submit({required String assetId, required String style}) async {
     final endpoint = _apiService.apiClient.basePath;

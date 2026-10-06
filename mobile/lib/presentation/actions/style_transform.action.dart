@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset/remote_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/repositories/memorydock_style_transform.repository.dart';
@@ -31,11 +31,7 @@ class StyleTransformAction extends AssetActionBuilder {
       return null;
     }
 
-    return .new(
-      icon: Icons.auto_fix_high_rounded,
-      label: _styleTransformLabel,
-      onAction: () => _prompt(context, ref),
-    );
+    return .new(icon: Icons.auto_fix_high_rounded, label: _styleTransformLabel, onAction: () => _prompt(context, ref));
   }
 
   Future<void> _prompt(BuildContext context, WidgetRef ref) async {
@@ -72,12 +68,7 @@ class _StyleTransformDialog extends StatelessWidget {
     return AlertDialog(
       title: const Text(_styleTransformLabel),
       contentPadding: const EdgeInsets.only(top: 12, bottom: 8),
-      content: const RadioListTile<String>(
-        value: _ghibliStyle,
-        groupValue: _ghibliStyle,
-        onChanged: null,
-        title: Text(_ghibliStyleLabel),
-      ),
+      content: const ListTile(leading: Icon(Icons.auto_fix_high_rounded), title: Text(_ghibliStyleLabel)),
       actions: [
         TextButton(onPressed: () => context.pop(false), child: const Text('取消')),
         TextButton(onPressed: () => context.pop(true), child: const Text('生成')),
