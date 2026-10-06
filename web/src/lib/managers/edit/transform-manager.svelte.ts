@@ -1,4 +1,11 @@
-import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
+import {
+  AssetEditAction,
+  AssetMediaSize,
+  MirrorAxis,
+  type AssetResponseDto,
+  type ColorParameters,
+  type CropParameters,
+} from '@immich/sdk';
 import { clamp } from 'lodash-es';
 import { tick } from 'svelte';
 import { type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
@@ -63,6 +70,8 @@ class TransformManager implements EditToolManager {
   imageRotation = $state(0);
   mirrorHorizontal = $state(false);
   mirrorVertical = $state(false);
+  brightness = $state(0);
+  contrast = $state(0);
   normalizedRotation = $derived.by(() => {
     const newAngle = this.imageRotation % 360;
     return newAngle < 0 ? newAngle + 360 : newAngle;
@@ -91,7 +100,9 @@ class TransformManager implements EditToolManager {
       Math.abs(this.previewImageSize.height - this.region.height) > 2 ||
       this.mirrorHorizontal ||
       this.mirrorVertical ||
-      this.normalizedRotation !== 0
+      this.normalizedRotation !== 0 ||
+      this.brightness !== 0 ||
+      this.contrast !== 0
     );
   }
 
@@ -159,13 +170,27 @@ class TransformManager implements EditToolManager {
       });
     }
 
+    if (this.brightness !== 0 || this.contrast !== 0) {
+      edits.push({
+        action: AssetEditAction.Color,
+        parameters: { brightness: this.brightness, contrast: this.contrast },
+      });
+    }
+
     return edits;
+  }
+
+  setColorAdjustment(type: 'brightness' | 'contrast', value: number) {
+    this.hasChanges = true;
+    this[type] = clamp(value, -100, 100);
   }
 
   async resetAllChanges() {
     this.imageRotation = 0;
     this.mirrorHorizontal = false;
     this.mirrorVertical = false;
+    this.brightness = 0;
+    this.contrast = 0;
     await tick();
 
     this.onImageLoad([]);
@@ -202,6 +227,13 @@ class TransformManager implements EditToolManager {
     this.mirrorHorizontal = normalizedTransformation.mirrorHorizontal;
     this.mirrorVertical = normalizedTransformation.mirrorVertical;
 
+    const colorEdit = edits.find((e) => e.action === AssetEditAction.Color);
+    if (colorEdit) {
+      const { brightness, contrast } = colorEdit.parameters as ColorParameters;
+      this.brightness = brightness;
+      this.contrast = contrast;
+    }
+
     await tick();
 
     this.resizeCanvas();
@@ -226,6 +258,8 @@ class TransformManager implements EditToolManager {
     this.imageRotation = 0;
     this.mirrorHorizontal = false;
     this.mirrorVertical = false;
+    this.brightness = 0;
+    this.contrast = 0;
     this.region = { x: 0, y: 0, width: 100, height: 100 };
     this.cropImageSize = { width: 1000, height: 1000 };
     this.originalImageSize = { width: 1000, height: 1000 };

@@ -4,6 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import type { SyncAck } from 'src/types.js';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetEditAction } from 'src/dtos/editing.dto.js';
 import { DB } from 'src/schema/index.js';
 
 export type SyncBackfillOptions = {
@@ -535,6 +536,16 @@ class AssetEditSync extends BaseSync {
 
   cleanupAuditTable(daysAgo: number) {
     return this.auditCleanup('asset_edit_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpsertsV1(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_edit', options)
+      .select([...columns.syncAssetEdit, 'asset_edit.updateId'])
+      .innerJoin('asset', 'asset.id', 'asset_edit.assetId')
+      .where('asset.ownerId', '=', options.userId)
+      .where('asset_edit.action', 'in', [AssetEditAction.Crop, AssetEditAction.Rotate, AssetEditAction.Mirror])
+      .stream();
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })

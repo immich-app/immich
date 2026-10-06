@@ -1,0 +1,10 @@
+# PR #31040: intentional color-edit additions, not a general exemption for these endpoints.
+# The asset-edit endpoints are beta. Clients consuming their responses need color support.
+# Sync uses opt-in request versions: AssetEditsV1 still returns only crop/rotate/mirror;
+# AssetEditV2 acknowledgements are created only when a client requests AssetEditsV2.
+# Keep each exception specific to its method, path, response property, value, and status.
+GET /assets/{id}/edits added `#/components/schemas/ColorParameters` to the `edits/items/parameters` response property `anyOf` list for the response status `200`
+PUT /assets/{id}/edits added `#/components/schemas/ColorParameters` to the `edits/items/parameters` response property `anyOf` list for the response status `200`
+GET /assets/{id}/edits added the new `color` enum value to the `edits/items/action` response property for the response status `200`
+PUT /assets/{id}/edits added the new `color` enum value to the `edits/items/action` response property for the response status `200`
+GET /sync/ack added the new `AssetEditV2` enum value to the `items/type` response property for the response status `200`
