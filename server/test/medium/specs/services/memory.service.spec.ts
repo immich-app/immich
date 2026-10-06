@@ -475,7 +475,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
       expect(memories[0]).toEqual(
         expect.objectContaining({
@@ -502,7 +502,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
       expect(memories[0]).toEqual(
         expect.objectContaining({
@@ -524,7 +524,7 @@ describe(MemoryService.name, () => {
       await sut.onMemoriesCreate();
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
     });
 
@@ -544,7 +544,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(0);
     });
 
@@ -559,7 +559,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(0);
     });
 
@@ -583,7 +583,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
       expect(memories[0].assets.map(({ id }) => id)).toEqual([onBirthday.id]);
     });
@@ -598,7 +598,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(0);
     });
 
@@ -622,7 +622,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
       const memoryAssetIds = memories[0].assets.map(({ id }) => id).sort();
       expect(memoryAssetIds).toEqual(assetIds.slice(-5).sort());
@@ -651,7 +651,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
       // 6 birthdays share the budget of 25 assets, so each birthday includes its 4 newest assets
       expect(memories[0].assets.length).toBe(24);
@@ -688,7 +688,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
       // 28 birthdays exist, so 25 of them are sampled with one asset each
       expect(memories[0].assets.length).toBe(25);
@@ -711,7 +711,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(1);
       expect(memories[0]).toEqual(
         expect.objectContaining({
@@ -736,7 +736,7 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, { type: MemoryType.Birthday });
+      const memories = await memoryRepo.search(user.id, { types: [MemoryType.Birthday] });
       expect(memories.length).toBe(0);
     });
   });

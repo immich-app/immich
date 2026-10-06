@@ -13,10 +13,14 @@ import { InjectKysely } from 'nestjs-kysely';
 import type { IBulkAsset } from 'src/types.js';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
 import { MemorySearchDto } from 'src/dtos/memory.dto.js';
-import { AssetFileType, AssetOrderWithRandom, AssetVisibility } from 'src/enum.js';
+import { AssetFileType, AssetOrderWithRandom, AssetVisibility, MemoryType } from 'src/enum.js';
 import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { DB } from 'src/schema/index.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
+
+export type MemorySearchOptions = Omit<MemorySearchDto, 'type'> & {
+  types?: MemoryType[];
+};
 
 const asMakeDate = (eb: ExpressionBuilder<DB, 'asset'>, { year, month, day }: YearMonthDay) =>
   eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]);
@@ -40,11 +44,11 @@ export class MemoryRepository implements IBulkAsset {
       .execute();
   }
 
-  searchBuilder(ownerId: string, dto: MemorySearchDto) {
+  searchBuilder(ownerId: string, dto: MemorySearchOptions) {
     return this.db
       .selectFrom('memory')
       .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
-      .$if(dto.type !== undefined, (qb) => qb.where('type', '=', dto.type!))
+      .$if(dto.types !== undefined, (qb) => qb.where('type', 'in', dto.types!))
       .$if(dto.for !== undefined, (qb) =>
         qb
           .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
@@ -63,8 +67,9 @@ export class MemoryRepository implements IBulkAsset {
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+    { name: 'types filter', params: [DummyValue.UUID, { types: [MemoryType.OnThisDay] }] },
   )
-  statistics(ownerId: string, dto: MemorySearchDto) {
+  statistics(ownerId: string, dto: MemorySearchOptions) {
     return this.searchBuilder(ownerId, dto)
       .select((qb) => qb.fn.countAll<number>().as('total'))
       .executeTakeFirstOrThrow();
@@ -75,8 +80,9 @@ export class MemoryRepository implements IBulkAsset {
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
     { name: 'upcoming filter', params: [DummyValue.UUID, { isUpcoming: true }] },
     { name: 'not upcoming filter', params: [DummyValue.UUID, { isUpcoming: false }] },
+    { name: 'types filter', params: [DummyValue.UUID, { types: [MemoryType.OnThisDay] }] },
   )
-  search(ownerId: string, dto: MemorySearchDto) {
+  search(ownerId: string, dto: MemorySearchOptions) {
     return this.searchBuilder(ownerId, dto)
       .select((eb) =>
         jsonArrayFrom(

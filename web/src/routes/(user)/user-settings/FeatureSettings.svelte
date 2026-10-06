@@ -19,6 +19,8 @@
   let memoriesEnabled = $state(authManager.preferences.memories?.enabled ?? true);
   let memoriesDuration = $state(authManager.preferences.memories?.duration ?? 5);
   let memoriesSidebar = $state(authManager.preferences.memories?.sidebarWeb ?? false);
+  let memoriesOnThisDay = $state(authManager.preferences.memories?.onThisDayEnabled ?? true);
+  let memoriesBirthday = $state(authManager.preferences.memories?.birthdayEnabled ?? true);
 
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
@@ -49,7 +51,13 @@
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
-          memories: { enabled: memoriesEnabled, duration: memoriesDuration, sidebarWeb: memoriesSidebar },
+          memories: {
+            enabled: memoriesEnabled,
+            duration: memoriesDuration,
+            sidebarWeb: memoriesSidebar,
+            onThisDayEnabled: memoriesOnThisDay,
+            birthdayEnabled: memoriesBirthday,
+          },
           people: {
             enabled: peopleEnabled,
             sidebarWeb: peopleSidebar,
@@ -108,7 +116,7 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
+        <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
           <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={memoriesEnabled} />
@@ -117,6 +125,12 @@
             {#if memoriesEnabled}
               <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
                 <Switch bind:checked={memoriesSidebar} />
+              </Field>
+              <Field label={$t('on_this_day')} description={$t('memories_on_this_day_description')}>
+                <Switch bind:checked={memoriesOnThisDay} />
+              </Field>
+              <Field label={$t('birthdays')} description={$t('memories_birthday_description')}>
+                <Switch bind:checked={memoriesBirthday} />
               </Field>
             {/if}
 

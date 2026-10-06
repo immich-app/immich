@@ -19,7 +19,13 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'UserPreferencesResponseDto': {
     'download.includeEmbeddedVideos': false,
     'folders': FoldersResponse(enabled: false, sidebarWeb: false).toJson(),
-    'memories': MemoriesResponse(enabled: true, duration: 5, sidebarWeb: false).toJson(),
+    'memories': MemoriesResponse(
+      enabled: true,
+      duration: 5,
+      sidebarWeb: false,
+      onThisDayEnabled: true,
+      birthdayEnabled: true,
+    ).toJson(),
     'ratings': RatingsResponse(enabled: false).toJson(),
     'people': PeopleResponse(enabled: true, sidebarWeb: false, updateStrategy: PersonUpdateStrategy.everyone).toJson(),
     'tags': TagsResponse(enabled: false, sidebarWeb: false).toJson(),
@@ -41,7 +47,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'SyncAssetV1': {'isEdited': false},
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
   'SearchAssetResponseDto': {'nextCursor': null},
-  'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
+  'MemoriesResponse': {'duration': 5, 'sidebarWeb': false, 'onThisDayEnabled': true, 'birthdayEnabled': true},
   'PeopleResponse': {'updateStrategy': 'everyone'},
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'WorkflowResponseDto': {'logging': false},

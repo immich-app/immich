@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { MemoryType } from 'src/enum.js';
+import { MemoryType, UserMetadataKey } from 'src/enum.js';
 import { MemoryService } from 'src/services/memory.service.js';
 import { OnThisDayData } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
@@ -35,6 +35,7 @@ describe(MemoryService.name, () => {
       const asset = AssetFactory.create();
       const memory1 = MemoryFactory.from({ ownerId: userId }).asset(asset).build();
       const memory2 = MemoryFactory.create({ ownerId: userId });
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.memory.search.mockResolvedValue([getForMemory(memory1), getForMemory(memory2)]);
       mocks.memory.statistics.mockResolvedValue({ total: 2 });
 
@@ -51,8 +52,84 @@ describe(MemoryService.name, () => {
     });
 
     it('should map empty result', async () => {
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.memory.search.mockResolvedValue([]);
       await expect(sut.search(factory.auth(), {})).resolves.toEqual([]);
+    });
+
+    it('should search every type by default', async () => {
+      const auth = factory.auth();
+      mocks.user.getMetadata.mockResolvedValue([]);
+      mocks.memory.search.mockResolvedValue([]);
+
+      await sut.search(auth, {});
+
+      expect(mocks.memory.search).toHaveBeenCalledWith(auth.user.id, {
+        types: [MemoryType.OnThisDay, MemoryType.Birthday],
+      });
+    });
+
+    it('should skip a type the user disabled', async () => {
+      const auth = factory.auth();
+      mocks.user.getMetadata.mockResolvedValue([
+        { key: UserMetadataKey.Preferences, value: { memories: { birthdayEnabled: false } } },
+      ]);
+      mocks.memory.search.mockResolvedValue([]);
+
+      await sut.search(auth, { isSaved: true });
+
+      expect(mocks.memory.search).toHaveBeenCalledWith(auth.user.id, { isSaved: true, types: [MemoryType.OnThisDay] });
+    });
+
+    it('should not query when every type is disabled', async () => {
+      mocks.user.getMetadata.mockResolvedValue([
+        { key: UserMetadataKey.Preferences, value: { memories: { onThisDayEnabled: false, birthdayEnabled: false } } },
+      ]);
+
+      await expect(sut.search(factory.auth(), {})).resolves.toEqual([]);
+
+      expect(mocks.memory.search).not.toHaveBeenCalled();
+    });
+
+    it('should search only the requested type', async () => {
+      const auth = factory.auth();
+      mocks.user.getMetadata.mockResolvedValue([]);
+      mocks.memory.search.mockResolvedValue([]);
+
+      await sut.search(auth, { type: MemoryType.Birthday });
+
+      expect(mocks.memory.search).toHaveBeenCalledWith(auth.user.id, { types: [MemoryType.Birthday] });
+    });
+
+    it('should not query when the requested type is disabled', async () => {
+      mocks.user.getMetadata.mockResolvedValue([
+        { key: UserMetadataKey.Preferences, value: { memories: { birthdayEnabled: false } } },
+      ]);
+
+      await expect(sut.search(factory.auth(), { type: MemoryType.Birthday })).resolves.toEqual([]);
+
+      expect(mocks.memory.search).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('statistics', () => {
+    it('should count every type regardless of preferences', async () => {
+      const auth = factory.auth();
+      mocks.memory.statistics.mockResolvedValue({ total: 2 });
+
+      await expect(sut.statistics(auth, {})).resolves.toEqual({ total: 2 });
+
+      expect(mocks.memory.statistics).toHaveBeenCalledWith(auth.user.id, { types: undefined });
+      expect(mocks.user.getMetadata).not.toHaveBeenCalled();
+    });
+
+    it('should count only the requested type', async () => {
+      const auth = factory.auth();
+      mocks.memory.statistics.mockResolvedValue({ total: 1 });
+
+      await expect(sut.statistics(auth, { type: MemoryType.Birthday })).resolves.toEqual({ total: 1 });
+
+      expect(mocks.memory.statistics).toHaveBeenCalledWith(auth.user.id, { types: [MemoryType.Birthday] });
     });
   });
 
