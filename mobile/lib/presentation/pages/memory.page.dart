@@ -53,7 +53,7 @@ class MemoryPage extends HookConsumerWidget {
         // Clean up to normal edge to edge when we are done
         unawaited(restoreEdgeToEdge());
       };
-    }, []);
+    }, const []);
 
     void toNextMemory() {
       unawaited(memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
