@@ -1,60 +1,41 @@
+import asyncio
+from collections.abc import Hashable
 from typing import Any
 
-from aiocache.backends.memory import SimpleMemoryCache
-from aiocache.lock import OptimisticLock
-from aiocache.plugins import TimingPlugin
+from immich_ml import allocator
+from immich_ml.models.base import InferenceEntry, InferenceModel
+from immich_ml.schemas import Options
 
-from immich_ml.models import from_model_type
-from immich_ml.models.base import InferenceModel
-
-from ..schemas import ModelTask, ModelType, has_profiling
+Key = tuple[type[InferenceModel[Any]], str, Hashable]
 
 
 class ModelCache:
-    """Fetches a model from an in-memory cache, instantiating it if it's missing."""
+    def __init__(self) -> None:
+        self._models: dict[Key, InferenceModel[Any]] = {}
+        self._expiries: dict[Key, asyncio.TimerHandle] = {}
 
-    def __init__(
-        self,
-        revalidate: bool = False,
-        timeout: int | None = None,
-        profiling: bool = False,
-    ) -> None:
-        """
-        Args:
-            revalidate: Resets TTL on cache hit. Useful to keep models in memory while active. Defaults to False.
-            timeout: Maximum allowed time for model to load. Disabled if None. Defaults to None.
-            profiling: Collects metrics for cache operations, adding slight overhead. Defaults to False.
-        """
+    def get[O: Options](self, entry: InferenceEntry[O], ttl: int | None = None) -> InferenceModel[O]:
+        key = (entry.model, entry.name, entry.model.graph(entry.options))
+        if key not in self._models:
+            self._models[key] = entry.model.create(entry.name, entry.options)
+        elif key not in self._expiries:
+            ttl = None  # a model that was preloaded stays
+        if ttl:
+            if key in self._expiries:
+                self._expiries[key].cancel()
+            self._expiries[key] = asyncio.get_running_loop().call_later(ttl, self._evict, key)
+        return self._models[key]
 
-        plugins = []
+    def clear(self) -> None:
+        if not self._models:
+            return
+        self._models.clear()
+        for key in list(self._expiries.keys()):
+            self._expiries.pop(key).cancel()
+        allocator.release()
 
-        if profiling:
-            plugins.append(TimingPlugin())
-
-        self.should_revalidate = revalidate
-
-        self.cache = SimpleMemoryCache(timeout=timeout, plugins=plugins, namespace=None)
-
-    async def get(
-        self, model_name: str, model_type: ModelType, model_task: ModelTask, **model_kwargs: Any
-    ) -> InferenceModel:
-        key = f"{model_name}{model_type}{model_task}"
-
-        async with OptimisticLock(self.cache, key) as lock:
-            model: InferenceModel | None = await self.cache.get(key)
-            if model is None:
-                model = from_model_type(model_name, model_type, model_task, **model_kwargs)
-                await lock.cas(model, ttl=model_kwargs.get("ttl", None))
-            elif self.should_revalidate:
-                await self.revalidate(key, model_kwargs.get("ttl", None))
-        return model
-
-    async def get_profiling(self) -> dict[str, float] | None:
-        if not has_profiling(self.cache):
-            return None
-
-        return self.cache.profiling
-
-    async def revalidate(self, key: str, ttl: int | None) -> None:
-        if ttl is not None and key in self.cache._handlers:
-            await self.cache.expire(key, ttl)
+    def _evict(self, key: Key) -> None:
+        if key not in self._models:
+            return
+        del self._models[key], self._expiries[key]
+        allocator.release()

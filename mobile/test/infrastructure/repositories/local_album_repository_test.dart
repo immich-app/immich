@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,6 +39,20 @@ void main() {
       expect(albums[1].id, '3'); // selected & isIosSharedAlbum
       expect(albums[2].id, '1'); // none
       expect(albums[3].id, '2'); // excluded
+    });
+  });
+
+  group('watchAll', () {
+    test('re-emits when an album loses its assets', () async {
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
+      await localAlbumRepo.upsert(mediumFactory.localAlbum(), toUpsert: [_localAsset('1'), _localAsset('2')]);
+
+      final counts = StreamQueue(localAlbumRepo.watchAll().map((albums) => albums.single.assetCount));
+      addTearDown(counts.cancel);
+
+      expect(await counts.next, 2);
+      await localAlbumRepo.processDelta(updates: [], deletes: ['1', '2'], assetAlbums: {});
+      expect(await counts.next, 0);
     });
   });
 

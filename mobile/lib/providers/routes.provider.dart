@@ -8,7 +8,7 @@ bool isRouteInStack(Ref ref, String routeName) {
   return router.stackData.any((route) => route.name == routeName);
 }
 
-final inLockedViewProvider = Provider<bool>((ref) => isRouteInStack(ref, DriftLockedFolderRoute.name));
+final inLockedViewProvider = Provider<bool>((ref) => isRouteInStack(ref, LockedFolderRoute.name));
 final isAssetViewerOpenProvider = Provider<bool>((ref) => isRouteInStack(ref, AssetViewerRoute.name));
 
 final currentRouteNameProvider = StateProvider<String?>((ref) => null);

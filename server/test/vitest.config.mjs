@@ -1,12 +1,14 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import swc from 'unplugin-swc';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const serverRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     name: 'server:unit',
     root: serverRoot,
@@ -22,14 +24,9 @@ export default defineConfig({
         'src/services/index.ts',
       ],
     },
-    server: {
-      deps: {
-        fallbackCJS: true,
-      },
-    },
     env: {
       TZ: 'UTC',
     },
   },
-  plugins: [swc.vite(), tsconfigPaths()],
+  plugins: [swc.vite()],
 });

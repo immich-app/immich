@@ -1,12 +1,12 @@
 import { Selectable } from 'kysely';
-import { SharedLinkType } from 'src/enum';
-import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { build } from 'test/factories/builder.factory';
-import { AlbumLike, AssetLike, FactoryBuilder, SharedLinkLike, UserLike } from 'test/factories/types';
-import { UserFactory } from 'test/factories/user.factory';
-import { factory, newDate, newUuid } from 'test/small.factory';
+import { SharedLinkType } from 'src/enum.js';
+import { SharedLinkTable } from 'src/schema/tables/shared-link.table.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { build } from 'test/factories/builder.factory.js';
+import { AlbumLike, AssetLike, FactoryBuilder, SharedLinkLike, UserLike } from 'test/factories/types.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { factory, newDate, newUuid } from 'test/small.factory.js';
 
 export class SharedLinkFactory {
   #owner: UserFactory;

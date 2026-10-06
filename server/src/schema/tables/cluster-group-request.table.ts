@@ -1,14 +1,14 @@
 import {
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   Unique,
 } from '@immich/sql-tools';
-import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table';
-import { UserTable } from 'src/schema/tables/user.table';
+import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('cluster_group_request')
 @Unique({ columns: ['clusterGroupId', 'userId'] })

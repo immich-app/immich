@@ -1,6 +1,6 @@
-import { AccessRepository } from 'src/repositories/access.repository';
-import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
 
 type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInterface<AccessRepository[K]> };
 
@@ -61,7 +61,7 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
 
     person: {
       checkFaceOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
-      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkAccess: vitest.fn().mockResolvedValue(new Set()),
     },
 
     partner: {

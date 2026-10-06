@@ -5,7 +5,9 @@
   import { Button, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
   import { mdiClose } from '@mdi/js';
+  import SearchButton from './SearchButton.svelte';
   import { getSearchTagsTitle } from './search-bar-utils';
   import { searchManager } from '$lib/managers/search-manager.svelte';
 
@@ -17,6 +19,7 @@
   // eslint-disable-next-line no-useless-assignment
   let { title = $bindable(), parentPromise }: Props = $props();
 
+  let container = $state<HTMLDivElement>();
   let selectedTags = $derived(searchManager.filter.tagIds);
   let allTags: TagResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
@@ -45,13 +48,22 @@
       return;
     }
 
+    // Move focus back to the container so it doesn't fallback to the body and closes the search bar
+    container?.focus();
     selectedTags.delete(tag);
     title = getSearchTagsTitle(allTags, selectedTags);
+  };
+
+  const handleToggleUntagged = () => {
+    const isSearchUntagged = selectedTags === null;
+
+    searchManager.filter.tagIds = isSearchUntagged ? new SvelteSet() : null;
+    title = isSearchUntagged ? undefined : $t('untagged');
   };
 </script>
 
 {#if authManager.authenticated && authManager.preferences.tags.enabled}
-  <div id="location-selection">
+  <div id="location-selection" bind:this={container} tabindex="-1">
     <form autocomplete="off" id="create-tag-form">
       <Text class="pb-5">{$t('search_filter_tags_description')}</Text>
       <Combobox
@@ -84,5 +96,10 @@
         {/each}
       </section>
     {/if}
+
+    <div class="flex flex-wrap gap-2 pt-5">
+      <SearchButton checked active={selectedTags === null} onclick={handleToggleUntagged}>{$t('untagged')}</SearchButton
+      >
+    </div>
   </div>
 {/if}

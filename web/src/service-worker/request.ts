@@ -23,7 +23,6 @@ export const handleFetch = async (request: URL | Request): Promise<Response> => 
   if (existing) {
     // Clone the response since response bodies can only be read once
     // Each caller gets an independent clone they can consume
-    // eslint-disable-next-line unicorn/prefer-await
     return existing.promise.then((response) => response.clone());
   }
 
@@ -36,7 +35,6 @@ export const handleFetch = async (request: URL | Request): Promise<Response> => 
 
   // NOTE: fetch returns after headers received, not the body
   pendingRequest.promise = fetch(request, { signal: pendingRequest.controller.signal })
-    // eslint-disable-next-line unicorn/prefer-await
     .catch((error: unknown) => {
       const standardError = error instanceof Error ? error : new Error(String(error));
       if (standardError.name === 'AbortError' || standardError.message === CANCELATION_MESSAGE) {
@@ -45,7 +43,6 @@ export const handleFetch = async (request: URL | Request): Promise<Response> => 
       }
       throw standardError;
     })
-    // eslint-disable-next-line unicorn/prefer-await
     .finally(() => {
       // Schedule cleanup after timeout to allow response body streaming to complete
       const cleanupTimeout = setTimeout(() => {
@@ -55,7 +52,6 @@ export const handleFetch = async (request: URL | Request): Promise<Response> => 
     });
 
   // Clone for the first caller to keep the original response unconsumed for future callers
-  // eslint-disable-next-line unicorn/prefer-await
   return pendingRequest.promise.then((response) => response.clone());
 };
 

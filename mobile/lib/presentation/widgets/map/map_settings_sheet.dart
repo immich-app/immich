@@ -6,16 +6,15 @@ import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_custom_time_range.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_settings_list_tile.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_settings_time_dropdown.dart';
-import 'package:immich_mobile/widgets/map/map_settings/map_theme_picker.dart';
 
-class DriftMapSettingsSheet extends ConsumerStatefulWidget {
-  const DriftMapSettingsSheet({super.key});
+class MapSettingsSheet extends ConsumerStatefulWidget {
+  const MapSettingsSheet({super.key});
 
   @override
-  ConsumerState<DriftMapSettingsSheet> createState() => _DriftMapSettingsSheetState();
+  ConsumerState<MapSettingsSheet> createState() => _MapSettingsSheetState();
 }
 
-class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
+class _MapSettingsSheetState extends ConsumerState<MapSettingsSheet> {
   late bool useCustomRange;
 
   @override
@@ -43,10 +42,17 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              MapThemePicker(
-                themeMode: mapState.themeMode,
-                onThemeChange: (mode) => ref.read(mapStateProvider.notifier).switchTheme(mode),
+              MapSettingsListTile(
+                title: context.t.theme_setting_system_theme_switch,
+                selected: mapState.themeMode == .system,
+                onChanged: (isSystem) => ref.read(mapStateProvider.notifier).switchTheme(isSystem ? .system : .light),
               ),
+              if (mapState.themeMode != .system)
+                MapSettingsListTile(
+                  title: context.t.map_settings_dark_mode,
+                  selected: mapState.themeMode == .dark,
+                  onChanged: (isDark) => ref.read(mapStateProvider.notifier).switchTheme(isDark ? .dark : .light),
+                ),
               const Divider(height: 30, thickness: 1),
               MapSettingsListTile(
                 title: context.t.map_settings_only_show_favorites,

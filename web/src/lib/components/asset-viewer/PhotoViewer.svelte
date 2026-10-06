@@ -3,9 +3,9 @@
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
+  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
@@ -173,9 +173,12 @@
 
   const faces = $derived(Array.from(faceToNameMap.keys()));
 
-  const boundingBoxes = $derived.by(() => {
+  // we want to bind to `boundingbox.labelWidth`, which requires deep reactivity
+  // $derived does not currently support that, only $state does.
+  let boundingBoxes = $state<Array<BoundingBox & { name?: string; face: Faces }>>([]);
+  $effect(() => {
     if (assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
-      return [];
+      return;
     }
 
     const knownBoxes = getBoundingBox(faces, overlaySize);
@@ -186,7 +189,7 @@
     }));
 
     if (assetViewerManager.highlightedFaces.length === 0) {
-      return result;
+      boundingBoxes = result;
     }
 
     const knownIds = new Set(faces.map((f) => f.id));
@@ -196,7 +199,7 @@
       result.push({ ...unassignedBoxes[i], face: unassignedFaces[i], name: undefined });
     }
 
-    return result;
+    boundingBoxes = result;
   });
 </script>
 
@@ -273,9 +276,12 @@
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
-              style="top: {boundingbox.height + 4}px; right: {assetViewerManager.imgRef
-                ? Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)
-                : 0}px;"
+              bind:clientWidth={boundingbox.labelWidth}
+              style="top: {boundingbox.height + 4}px; {assetViewerManager.imgRef
+                ? boundingbox.left >= boundingbox.labelWidth - boundingbox.width
+                  ? `right: ${Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)}px;`
+                  : `left: ${-boundingbox.left}px;`
+                : ''}"
             >
               {boundingbox.name}
             </div>

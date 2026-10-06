@@ -27,8 +27,4 @@ class NetworkRepository {
     }
     return _networkInfo.getWifiName();
   }
-
-  Future<String?> getWifiIp() {
-    return _networkInfo.getWifiIP();
-  }
 }

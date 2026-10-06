@@ -23,21 +23,10 @@ class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
     return permission;
   }
 
-  /// Whether the user has the permission or not
-  /// Note: In Android, this is always true
-  Future<bool> hasNotificationPermission() {
-    return Permission.notification.isGranted;
-  }
-
   Future<PermissionStatus> getNotificationPermission() async {
     final status = await Permission.notification.status;
     state = status;
     return status;
-  }
-
-  /// Either the permission was granted already or else ask for the permission
-  Future<bool> hasOrAskForNotificationPermission() {
-    return requestNotificationPermission().then((p) => p.isGranted);
   }
 }
 

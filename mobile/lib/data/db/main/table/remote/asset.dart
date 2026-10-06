@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/user.dart';
 import 'package:immich_mobile/data/db/util/asset_mixin.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
@@ -21,6 +22,10 @@ WHERE (library_id IS NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created
 ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)
 ''')
+@TableIndex.sql('''
+CREATE INDEX IF NOT EXISTS idx_remote_asset_group
+ON remote_asset_entity (owner_id, visibility, deleted_at, group_date DESC, created_at DESC)
+''')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_uploaded ON remote_asset_entity (uploaded_at)')
 class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
@@ -33,13 +38,15 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
-  DateTimeColumn get localDateTime => dateTime().nullable()();
+  DateTimeColumn get localDateTime => customType(clampedDateTime).nullable()();
+
+  TextColumn get groupDate => text().nullable()();
 
   TextColumn get thumbHash => text().nullable()();
 
-  DateTimeColumn get deletedAt => dateTime().nullable()();
+  DateTimeColumn get deletedAt => customType(clampedDateTime).nullable()();
 
-  DateTimeColumn get uploadedAt => dateTime().nullable()();
+  DateTimeColumn get uploadedAt => customType(clampedDateTime).nullable()();
 
   TextColumn get livePhotoVideoId => text().nullable()();
 

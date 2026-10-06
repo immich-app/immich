@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/services/tag.service.dart';
+import 'package:immich_mobile/data/server/tag.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -18,7 +18,7 @@ class MockAuthApiRepository extends Mock implements AuthApiRepository {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
-class MockTagService extends Mock implements TagService {}
+class MockTagApiRepository extends Mock implements TagApiRepository {}
 
 class MockDownloadRepository extends Mock implements DownloadRepository {}
 

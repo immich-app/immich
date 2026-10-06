@@ -130,6 +130,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   double? _rotationBefore;
 
   late final AnimationController _scaleAnimationController;
+  Tween<double>? _scaleTween;
   Animation<double>? _scaleAnimation;
 
   late final AnimationController _positionAnimationController;
@@ -201,26 +202,26 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     if (scaleState == PhotoViewScaleState.zoomedOut) {
       scaleStateController.scaleState = PhotoViewScaleState.initial;
     } else if (scaleState == PhotoViewScaleState.zoomedIn) {
-      animateRotation(controller.rotation, 0);
+      unawaited(animateRotation(controller.rotation, 0));
       if (_shouldAllowPanRotate()) {
-        animatePosition(controller.position, clampPosition());
+        unawaited(animatePosition(controller.position, clampPosition()));
       }
     }
 
     //animate back to maxScale if gesture exceeded the maxScale specified
     if (s > maxScale) {
       final double scaleComebackRatio = maxScale / s;
-      animateScale(s, maxScale);
+      unawaited(animateScale(s, maxScale));
       final Offset clampedPosition = clampPosition(position: p * scaleComebackRatio, scale: maxScale);
-      animatePosition(p, clampedPosition);
+      unawaited(animatePosition(p, clampedPosition));
       return;
     }
 
     //animate back to minScale if gesture fell smaller than the minScale specified
     if (s < minScale) {
       final double scaleComebackRatio = minScale / s;
-      animateScale(s, minScale);
-      animatePosition(p, clampPosition(position: p * scaleComebackRatio, scale: minScale));
+      unawaited(animateScale(s, minScale));
+      unawaited(animatePosition(p, clampPosition(position: p * scaleComebackRatio, scale: minScale)));
       return;
     }
     // get magnitude from gesture velocity
@@ -229,7 +230,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     // animate velocity only if there is no scale change and a significant magnitude
     if (_scaleBefore! / s == 1.0 && magnitude >= 400.0) {
       final Offset direction = details.velocity.pixelsPerSecond / magnitude;
-      animatePosition(p, clampPosition(position: p + direction * 100.0));
+      unawaited(animatePosition(p, clampPosition(position: p + direction * 100.0)));
     }
   }
 
@@ -237,31 +238,32 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     nextScaleState();
   }
 
-  void animateScale(double from, double to) {
+  Future<void> animateScale(double from, double to) {
     if (!mounted) {
-      return;
+      return Future.value();
     }
-    _scaleAnimation = Tween<double>(begin: from, end: to).animate(_scaleAnimationController);
+    _scaleTween = Tween<double>(begin: from, end: to);
+    _scaleAnimation = _scaleTween!.animate(_scaleAnimationController);
     _scaleAnimationController.value = 0.0;
-    unawaited(_scaleAnimationController.fling(velocity: 0.4));
+    return _scaleAnimationController.fling(velocity: 0.4);
   }
 
-  void animatePosition(Offset from, Offset to) {
+  Future<void> animatePosition(Offset from, Offset to) {
     if (!mounted) {
-      return;
+      return Future.value();
     }
     _positionAnimation = Tween<Offset>(begin: from, end: to).animate(_positionAnimationController);
     _positionAnimationController.value = 0.0;
-    unawaited(_positionAnimationController.fling(velocity: 0.4));
+    return _positionAnimationController.fling(velocity: 0.4);
   }
 
-  void animateRotation(double from, double to) {
+  Future<void> animateRotation(double from, double to) {
     if (!mounted) {
-      return;
+      return Future.value();
     }
     _rotationAnimation = Tween<double>(begin: from, end: to).animate(_rotationAnimationController);
     _rotationAnimationController.value = 0.0;
-    unawaited(_rotationAnimationController.fling(velocity: 0.4));
+    return _rotationAnimationController.fling(velocity: 0.4);
   }
 
   void onAnimationStatus(AnimationStatus status) {
@@ -277,18 +279,19 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     }
   }
 
-  void _animateControllerPosition(Offset position) {
-    animatePosition(controller.position, position);
+  Future<void> _animateControllerPosition(Offset position) {
+    return animatePosition(controller.position, position);
   }
 
-  void _animateControllerScale(double scale) {
+  Future<void> _animateControllerScale(double scale) {
     if (controller.scale != null) {
-      animateScale(controller.scale!, scale);
+      return animateScale(controller.scale!, scale);
     }
+    return Future.value();
   }
 
-  void _animateControllerRotation(double rotation) {
-    animateRotation(controller.rotation, rotation);
+  Future<void> _animateControllerRotation(double rotation) {
+    return animateRotation(controller.rotation, rotation);
   }
 
   @override
@@ -300,7 +303,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     controller.scaleAnimationBuilder(_animateControllerScale);
     controller.rotationAnimationBuilder(_animateControllerRotation);
 
-    _updateScaleBoundaries();
+    _syncScaleBoundaries();
 
     _scaleAnimationController = AnimationController(vsync: this)
       ..addListener(handleScaleAnimation)
@@ -309,9 +312,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void animateOnScaleStateUpdate(double prevScale, double nextScale) {
-    animateScale(prevScale, nextScale);
-    animatePosition(controller.position, Offset.zero);
-    animateRotation(controller.rotation, 0.0);
+    unawaited(animateScale(prevScale, nextScale));
+    unawaited(animatePosition(controller.position, Offset.zero));
+    unawaited(animateRotation(controller.rotation, 0.0));
   }
 
   @override
@@ -323,15 +326,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     super.dispose();
   }
 
-  void onTapUp(TapUpDetails details) {
-    widget.onTapUp?.call(context, details, controller.value);
-  }
-
-  void onTapDown(TapDownDetails details) {
-    widget.onTapDown?.call(context, details, controller.value);
-  }
-
-  void _updateScaleBoundaries() {
+  void _syncScaleBoundaries() {
     final prev = controller.scaleBoundaries;
     if (prev == widget.scaleBoundaries) {
       return;
@@ -340,6 +335,16 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     if (prev != null && controller.scale != null && prev.initialScale > 0) {
       final ratio = widget.scaleBoundaries.initialScale / prev.initialScale;
       controller.setScaleInvisibly(controller.scale! * ratio);
+
+      if (_scaleBefore != null) {
+        _scaleBefore = _scaleBefore! * ratio;
+      }
+
+      final tween = _scaleTween;
+      if (tween != null && _scaleAnimationController.isAnimating) {
+        tween.begin = tween.begin! * ratio;
+        tween.end = tween.end! * ratio;
+      }
     } else {
       markNeedsScaleRecalc = true;
     }
@@ -349,7 +354,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   @override
   void didUpdateWidget(PhotoViewCore oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _updateScaleBoundaries();
+    _syncScaleBoundaries();
   }
 
   @override
