@@ -4,7 +4,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_title.widget.dart';
@@ -88,8 +87,7 @@ class MemoryCard extends StatelessWidget {
           right: 16,
           bottom: 16,
           child: MemoryTitle(
-            type: memory.type,
-            title: getMemoryTitle(context.t, memory),
+            memory: memory,
             style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
           ),
         ),

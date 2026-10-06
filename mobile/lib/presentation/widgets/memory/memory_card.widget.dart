@@ -13,15 +13,13 @@ import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 
 class MemoryCard extends StatelessWidget {
   final RemoteAsset asset;
-  final String title;
-  final MemoryTypeEnum type;
+  final Memory memory;
   final bool showTitle;
   final bool isCurrent;
 
   const MemoryCard({
     required this.asset,
-    required this.title,
-    required this.type,
+    required this.memory,
     required this.showTitle,
     this.isCurrent = false,
     super.key,
@@ -32,7 +30,7 @@ class MemoryCard extends StatelessWidget {
     return Card(
       color: Colors.black,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+        borderRadius: BorderRadius.all(Radius.circular(24.0)),
         side: BorderSide(color: Colors.black, width: 1.0),
       ),
       clipBehavior: Clip.hardEdge,
@@ -79,8 +77,7 @@ class MemoryCard extends StatelessWidget {
               right: 18.0,
               bottom: 18.0,
               child: MemoryTitle(
-                type: type,
-                title: title,
+                memory: memory,
                 style: context.textTheme.headlineMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
               ),
             ),

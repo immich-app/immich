@@ -12,7 +12,7 @@ String getMemoryTitle(Translations t, Memory memory, {RemoteAsset? asset}) => sw
 
 String _getBirthdayTitle(Translations t, MemoryData data, RemoteAsset? asset) {
   final name = data.personName;
-  if (name == null) {
+  if (name == null || name.isEmpty) {
     return t.unknown;
   }
 
@@ -25,24 +25,23 @@ String _getBirthdayTitle(Translations t, MemoryData data, RemoteAsset? asset) {
 }
 
 class MemoryTitle extends StatelessWidget {
-  final MemoryTypeEnum type;
-  final String title;
+  final Memory memory;
   final TextStyle? style;
 
-  const MemoryTitle({super.key, required this.type, required this.title, this.style});
+  const MemoryTitle({super.key, required this.memory, this.style});
 
   @override
   Widget build(BuildContext context) {
-    if (type != MemoryTypeEnum.birthday) {
+    final title = getMemoryTitle(context.t, memory);
+    if (memory.type != MemoryTypeEnum.birthday) {
       return Text(title, style: style);
     }
 
-    final textStyle = DefaultTextStyle.of(context).style.merge(style);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.cake_rounded, color: textStyle.color, size: 20),
+        Icon(Icons.cake_rounded, color: style?.color, size: 20),
         const SizedBox(height: 4),
         Text(title, style: style, maxLines: 2, overflow: TextOverflow.ellipsis),
       ],

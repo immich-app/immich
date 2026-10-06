@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/memory.page.dart';
@@ -79,11 +77,7 @@ class _MemoryListPageState extends ConsumerState<MemoryListPage> {
                           left: 16,
                           right: 16,
                           child: MemoryTitle(
-                            type: memories[index].type,
-                            title: switch (memories[index].type) {
-                              MemoryTypeEnum.onThisDay => DateFormat.yMMMMd().format(memories[index].memoryAt),
-                              MemoryTypeEnum.birthday => getMemoryTitle(context.t, memories[index]),
-                            },
+                            memory: memories[index],
                             style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
                           ),
                         ),
