@@ -835,7 +835,7 @@ lint = [
     { name = "types-ujson", specifier = ">=5.10.0.20240515" },
 ]
 onnxruntime-openvino-build = [
-    { name = "openvino", specifier = ">=2026.4.1,<2027" },
+    { name = "openvino", specifier = "==2026.5.0.dev20261005", index = "https://storage.openvinotoolkit.org/simple/wheels/nightly" },
     { name = "setuptools" },
     { name = "wheel" },
 ]
@@ -1536,29 +1536,29 @@ wheels = [
 
 [[package]]
 name = "openvino"
-version = "2026.4.1"
-source = { registry = "https://pypi.org/simple" }
+version = "2026.5.0.dev20261005"
+source = { registry = "https://storage.openvinotoolkit.org/simple/wheels/nightly" }
 dependencies = [
     { name = "numpy" },
     { name = "openvino-telemetry" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/4e/865889882a3be23beaf9808f93069c05e2eb8c8ff4e9b913568fc0383ce4/openvino-2026.4.1-22982-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:726ac547b8474a5e7b145bc1ae5a8bb6fbcbb60b79bd9a611c67eec2c74b7a5f", size = 33341733, upload-time = "2026-10-01T09:58:47.515Z" },
-    { url = "https://files.pythonhosted.org/packages/ec/3a/2a173ac1ad749ff0b041788eefc1ade0d410231fedfc43f77474f3b806cc/openvino-2026.4.1-22982-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:6b4375c17ddcac83a5180349e2e2bb811185c261066e2a920659892d58ef0e3b", size = 59144434, upload-time = "2026-10-01T09:58:51.34Z" },
-    { url = "https://files.pythonhosted.org/packages/b2/d7/390c0ec5b81b6e089b012aaba6a2dc14f3ac7c52bfd78d10f074e72616ab/openvino-2026.4.1-22982-cp312-cp312-manylinux_2_35_aarch64.whl", hash = "sha256:82efccb2f9f1bdc7e5a1996e05a3b719ebff9232dd54b44150d6d2e983a86b7d", size = 30332437, upload-time = "2026-10-01T09:58:54.385Z" },
-    { url = "https://files.pythonhosted.org/packages/d0/44/66a61b7cfccea1dfa20e95a04b4157f07a0e4dc3f7e894b22a92abb8822b/openvino-2026.4.1-22982-cp312-cp312-win_amd64.whl", hash = "sha256:4e04316abff1b99e29b8cbd38deaef9bde4739eba216d982d4b3981e456ecd87", size = 84964415, upload-time = "2026-10-01T09:58:59.18Z" },
-    { url = "https://files.pythonhosted.org/packages/3e/75/66fc1f74a4c9cdc7bf2d4773dd7e199589ec87884d10b9e58b4eca1e3a50/openvino-2026.4.1-22982-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:60496e3153122913c8a2fa69d86b3a77ccc4e2469db87d76eb8acb49a5d22d63", size = 33341974, upload-time = "2026-10-01T09:59:03.149Z" },
-    { url = "https://files.pythonhosted.org/packages/7f/8b/d2fb2611cd8160cb4c0e5401b9d87312961d77891eade431381e396a8d83/openvino-2026.4.1-22982-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:a9b637846c579d7b81b17b6585e0c7b1947574e8d13cf83d7307ce50cd2c352e", size = 59142703, upload-time = "2026-10-01T09:59:06.972Z" },
-    { url = "https://files.pythonhosted.org/packages/4f/2b/e3b9cb3870cfeb0f9b2ad0f9adba18e06e0168e0c72ed14a11adb66982e1/openvino-2026.4.1-22982-cp313-cp313-manylinux_2_35_aarch64.whl", hash = "sha256:fc45339ff7d539de76e6d7b04135c120504c797cfc8c2a0dde3d2d616b30c758", size = 30333747, upload-time = "2026-10-01T09:59:10.03Z" },
-    { url = "https://files.pythonhosted.org/packages/35/e2/917952cd8d21351d10bf0ce694421de92a2b14a6269f0ba13d2504fcf6a9/openvino-2026.4.1-22982-cp313-cp313-win_amd64.whl", hash = "sha256:37c270c99d6de23439965e97cb5106389d3c8985f3b8bb90909a6ea0270db3f2", size = 84964362, upload-time = "2026-10-01T09:59:15.467Z" },
-    { url = "https://files.pythonhosted.org/packages/fa/0d/113b7dad0f3a2a87b394898bfafa810c50a97ebfa10e91ab03a9bbce11d6/openvino-2026.4.1-22982-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:f57d1cc75c77c18b2be8ab628d8e0a8e01f4be44f521823b6fba7ede31d708d3", size = 33317735, upload-time = "2026-10-01T09:59:20.236Z" },
-    { url = "https://files.pythonhosted.org/packages/77/cf/830aff97404d73b8ada3ba3f02a626089a384299322cb94b52c37eaebd18/openvino-2026.4.1-22982-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:3631dd889dccf3d5087775948590a6609a662f90c24a9cf85bb4dfa0cdd7fd2f", size = 59145072, upload-time = "2026-10-01T09:59:24.04Z" },
-    { url = "https://files.pythonhosted.org/packages/5d/97/6fe7443b66179413c21cca9e36267e22711398debdd3ba4ad59fa2f933b3/openvino-2026.4.1-22982-cp314-cp314-manylinux_2_35_aarch64.whl", hash = "sha256:b70a01f6961bf8fe4b647b14fb122be4d30ece02292a9831f9241a64be089676", size = 30342100, upload-time = "2026-10-01T09:59:27.175Z" },
-    { url = "https://files.pythonhosted.org/packages/56/bc/5ebb236e5c10155d7693ea282308b9dbfe4142c5f3350a77203ab859684b/openvino-2026.4.1-22982-cp314-cp314-win_amd64.whl", hash = "sha256:96d5ecb8cca4d61a3eee754c9e477702509cf782eb45596c653a00ddb2176d96", size = 84966232, upload-time = "2026-10-01T09:59:32.323Z" },
-    { url = "https://files.pythonhosted.org/packages/14/b0/a0e6a1b0938ed87107a1db91d27c0f57168e20b066a3681adc430c51cd46/openvino-2026.4.1-22982-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:24c73d3c61a8b71c09bf512a294d37ff8ea6e4b0c65c1b136bb842bbbd6c9c31", size = 33553140, upload-time = "2026-10-01T09:59:35.894Z" },
-    { url = "https://files.pythonhosted.org/packages/e6/81/f437957dbb73002e38a3c25cfcb0eddf3faa3b328bae586836d40ff13cc2/openvino-2026.4.1-22982-cp314-cp314t-manylinux_2_28_x86_64.whl", hash = "sha256:645e8788370b1037cc21d19078f2f235478292e23938b00ab4fe0d2614a5f7d0", size = 59189953, upload-time = "2026-10-01T09:59:39.877Z" },
-    { url = "https://files.pythonhosted.org/packages/da/d1/3904a8913f717d92ef383e7f105425944012ed73c816d85f790dc2fb5923/openvino-2026.4.1-22982-cp314-cp314t-manylinux_2_35_aarch64.whl", hash = "sha256:6c5672d6cc0fba4e22fd8d1352ffd7e395f6135da741e002bfad7a0344c183f2", size = 27452183, upload-time = "2026-10-01T09:59:43.135Z" },
-    { url = "https://files.pythonhosted.org/packages/e2/b4/0f24c785d915269fa2fc087cc2242b1216f6ed2584598ba0f8bada2d53e9/openvino-2026.4.1-22982-cp314-cp314t-win_amd64.whl", hash = "sha256:c383422d3e7e457441ec88911da0b16ed5132f55b8c9fb21411749d3eff90a60", size = 85132406, upload-time = "2026-10-01T09:59:47.575Z" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp312-cp312-macosx_11_0_arm64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp312-cp312-manylinux_2_28_x86_64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp312-cp312-manylinux_2_35_aarch64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp312-cp312-win_amd64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp313-cp313-macosx_11_0_arm64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp313-cp313-manylinux_2_28_x86_64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp313-cp313-manylinux_2_35_aarch64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp313-cp313-win_amd64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314-macosx_11_0_arm64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314-manylinux_2_28_x86_64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314-manylinux_2_35_aarch64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314-win_amd64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314t-macosx_11_0_arm64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314t-manylinux_2_28_x86_64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314t-manylinux_2_35_aarch64.whl" },
+    { url = "https://storage.openvinotoolkit.org/wheels/nightly/openvino/openvino-2026.5.0.dev20261005-23342-cp314-cp314t-win_amd64.whl" },
 ]
 
 [[package]]
