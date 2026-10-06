@@ -622,7 +622,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
-  Future<void> updateMemoriesV1(Iterable<SyncMemoryV1> data) async {
+  Future<void> updateMemoriesV2(Iterable<SyncMemoryV2> data) async {
     try {
       await _db.batch((batch) {
         for (final memory in data) {
@@ -647,7 +647,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateMemoriesV1', error, stack);
+      _logger.severe('Error: updateMemoriesV2', error, stack);
       rethrow;
     }
   }
