@@ -675,9 +675,6 @@ jobs:
           - runner: pokedex-dgpu-intel-alchemist
             device: openvino
             provider: OpenVINOExecutionProvider
-          - runner: pokedex-dgpu-intel-battlemage
-            device: openvino
-            provider: OpenVINOExecutionProvider
     defaults:
       run:
         working-directory: ./machine-learning
