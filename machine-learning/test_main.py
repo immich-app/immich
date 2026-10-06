@@ -1695,6 +1695,8 @@ class TestOcr:
         fetched = fetch.call_args.args[0]
         assert fetched.file_url.endswith("/onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx")
         assert fetched.save_path == tmp_path / "recognition/model.onnx"
+        TextDetector("PP-OCRv6_tiny", cache_dir=tmp_path).download()
+        assert fetch.call_args.args[0].file_url.endswith("/onnx/PP-OCRv6/det/PP-OCRv6_det_tiny.onnx")
         snapshot_download.assert_not_called()
 
         mocker.patch.object(settings, "model_revision", "v2")
