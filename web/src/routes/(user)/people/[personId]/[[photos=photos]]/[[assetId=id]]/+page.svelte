@@ -362,7 +362,7 @@
           class="relative w-fit p-4 pt-12 sm:px-6"
           use:clickOutside={{
             onOutclick: handleCancelEditName,
-            onEscape: handleCancelEditName,
+            onEscape: isEditingName ? handleCancelEditName : undefined,
           }}
           use:listNavigation={suggestionContainer}
         >
