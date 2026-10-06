@@ -61,6 +61,7 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  const faceLabelOffset = 32;
 
   const container = $derived({
     width: containerWidth,
@@ -273,11 +274,14 @@
           onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
         >
           {#if isActive && boundingbox.name}
+            {@const labelAbove =
+              boundingbox.top + boundingbox.height + faceLabelOffset > overlaySize.height &&
+              boundingbox.top >= faceLabelOffset}
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
               bind:clientWidth={boundingbox.labelWidth}
-              style="top: {boundingbox.height + 4}px; {assetViewerManager.imgRef
+              style="{labelAbove ? 'bottom' : 'top'}: {boundingbox.height + 4}px; {assetViewerManager.imgRef
                 ? boundingbox.left >= boundingbox.labelWidth - boundingbox.width
                   ? `right: ${Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)}px;`
                   : `left: ${-boundingbox.left}px;`
