@@ -671,6 +671,7 @@ jobs:
           - runner: pokedex-igpu-intel-jasperlake
             device: openvino
             provider: OpenVINOExecutionProvider
+          # TODO: Build onnxruntime-openvino in a separate workflow as an artifact and test it here instead of the locked wheel
           - runner: pokedex-dgpu-intel-alchemist
             device: openvino
             provider: OpenVINOExecutionProvider
