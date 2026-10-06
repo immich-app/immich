@@ -70,6 +70,7 @@ describe(VersionService.name, () => {
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
     });
   });
@@ -175,6 +176,7 @@ describe(VersionService.name, () => {
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
       expect(mocks.websocket.clientSend).toHaveBeenCalledTimes(1);
     });
@@ -187,6 +189,7 @@ describe(VersionService.name, () => {
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
       expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
@@ -199,6 +202,7 @@ describe(VersionService.name, () => {
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
       expect(mocks.websocket.clientSend).not.toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
