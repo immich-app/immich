@@ -672,6 +672,7 @@
   "birthdate_set_description": "Date of birth is used to calculate the age of this person at the time of a photo.",
   "birthday_memory_age": "{age, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} birthday",
   "birthday_memory_title": "{name}'s birthday",
+  "birthday_memory_title_with_age": "{name}'s birthday · {age, plural, one {# year old} other {# years old}}",
   "blurred_background": "Blurred background",
   "browse_templates": "Browse templates",
   "bugs_and_feature_requests": "Bugs & Feature Requests",
