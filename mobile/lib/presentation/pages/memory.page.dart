@@ -8,7 +8,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
@@ -247,8 +246,6 @@ class MemoryPage extends HookConsumerWidget {
                 );
               }
 
-              final yearsAgo = DateTime.now().year - memories[mIndex].data.year;
-              final title = context.t.years_ago(years: yearsAgo);
               // Build horizontal page
               final assetController = memoryAssetPageControllers[mIndex];
               return Column(
@@ -287,7 +284,7 @@ class MemoryPage extends HookConsumerWidget {
                                   color: Colors.black,
                                   child: MemoryCard(
                                     asset: asset,
-                                    title: title,
+                                    memory: memories[mIndex],
                                     showTitle: index == 0,
                                     isCurrent: mIndex == currentMemoryIndex.value && index == currentAssetPage.value,
                                   ),
@@ -348,7 +345,16 @@ class MemoryPage extends HookConsumerWidget {
                       ],
                     ),
                   ),
-                  MemoryBottomInfo(memory: memories[mIndex], title: title),
+                  AnimatedBuilder(
+                    animation: assetController,
+                    builder: (context, child) {
+                      int assetIndex = 0;
+                      if (assetController.hasClients) {
+                        assetIndex = (assetController.page ?? 0).round().clamp(0, memories[mIndex].assets.length - 1);
+                      }
+                      return MemoryBottomInfo(memory: memories[mIndex], asset: memories[mIndex].assets[assetIndex]);
+                    },
+                  ),
                 ],
               );
             },
