@@ -51,6 +51,7 @@ describe(PersonService.name, () => {
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+      mocks.partner.getAll.mockResolvedValue([]);
       await expect(sut.getAll(auth, { withHidden: true, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
@@ -65,6 +66,7 @@ describe(PersonService.name, () => {
       });
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
         withHidden: true,
+        partnerIds: [],
       });
     });
 
@@ -77,6 +79,7 @@ describe(PersonService.name, () => {
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+      mocks.partner.getAll.mockResolvedValue([]);
       await expect(sut.getAll(auth, { withHidden: false, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
@@ -91,6 +94,7 @@ describe(PersonService.name, () => {
       });
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
         withHidden: false,
+        partnerIds: [],
       });
     });
   });
