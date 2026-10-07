@@ -8,6 +8,7 @@ const _crate = '../crates/immich_core_ffi';
 
 // Cargo's dep-info only lists source files, so these have to rerun the hook too.
 const _manifests = [
+  '../.cargo/config.toml',
   '../Cargo.toml',
   '../Cargo.lock',
   '../crates/immich_core/Cargo.toml',
@@ -24,11 +25,7 @@ void main(List<String> args) async {
     if (target != null) {
       await _rustup(['target', 'add', '--toolchain', await _channel(input), target]);
     }
-    await RustBuilder(
-      assetName: 'src/bindings.g.dart',
-      cratePath: _crate,
-      extraCargoEnvironmentVariables: {if (code.targetOS == OS.android) 'RUSTFLAGS': _androidRustFlags(code)},
-    ).run(input: input, output: output);
+    await RustBuilder(assetName: 'src/bindings.g.dart', cratePath: _crate).run(input: input, output: output);
   });
 }
 
@@ -63,17 +60,4 @@ Future<void> _rustup(List<String> args) async {
   if (result.exitCode != 0) {
     throw ProcessException('rustup', args, '${result.stderr}', result.exitCode);
   }
-}
-
-// Link against minSdk instead of the API 35 that native_toolchain_rust picks.
-// Neon on 32 bit arm is the NDK's default for C, the rust target leaves it off.
-String _androidRustFlags(CodeConfig code) {
-  final triple = switch (code.targetArchitecture) {
-    Architecture.arm => 'armv7a-linux-androideabi',
-    Architecture.arm64 => 'aarch64-linux-android',
-    Architecture.x64 => 'x86_64-linux-android',
-    _ => throw UnsupportedError('Unsupported Android architecture: ${code.targetArchitecture}'),
-  };
-  final neon = code.targetArchitecture == Architecture.arm ? ' -C target-feature=+neon' : '';
-  return '-C link-arg=--target=$triple${code.android.targetNdkApi}$neon';
 }
