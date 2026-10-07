@@ -106,7 +106,6 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recommendDeferredLoading = ref.watch(timelineStateProvider.select((s) => s.recommendDeferredLoading));
     final timelineService = ref.watch(timelineServiceProvider);
     final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
 
@@ -119,18 +118,18 @@ class _FixedSegmentRow extends ConsumerWidget {
       );
     }
 
-    if (recommendDeferredLoading) {
-      return _buildPlaceholder(context);
-    }
-
-    return FutureBuilder<List<BaseAsset>>(
-      future: timelineService.loadAssets(assetIndex, assetCount),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return _buildPlaceholder(context);
-        }
-        return _buildAssetRow(context, snapshot.requireData, timelineService, isDynamicLayout);
-      },
+    return _DeferredRowLoader(
+      key: ValueKey(assetIndex),
+      placeholder: _buildPlaceholder,
+      builder: (context) => FutureBuilder<List<BaseAsset>>(
+        future: timelineService.loadAssets(assetIndex, assetCount),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return _buildPlaceholder(context);
+          }
+          return _buildAssetRow(context, snapshot.requireData, timelineService, isDynamicLayout);
+        },
+      ),
     );
   }
 
@@ -196,6 +195,32 @@ class _FixedSegmentRow extends ConsumerWidget {
         children: children,
       ),
     );
+  }
+}
+
+/// Lock to displaying placeholders while the timeline is quickly scrolling
+/// Automatically stops watching the deferred loading flag once the row has started loading, preventing ever rebuilding the view and losing state
+class _DeferredRowLoader extends ConsumerStatefulWidget {
+  final WidgetBuilder placeholder;
+  final WidgetBuilder builder;
+
+  const _DeferredRowLoader({super.key, required this.placeholder, required this.builder});
+
+  @override
+  ConsumerState<_DeferredRowLoader> createState() => _DeferredRowLoaderState();
+}
+
+class _DeferredRowLoaderState extends ConsumerState<_DeferredRowLoader> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isLoading && ref.watch(timelineStateProvider.select((state) => state.recommendDeferredLoading))) {
+      return widget.placeholder(context);
+    }
+
+    _isLoading = true;
+    return widget.builder(context);
   }
 }
 
