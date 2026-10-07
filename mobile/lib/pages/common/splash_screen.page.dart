@@ -274,7 +274,9 @@ class _ErrorCard extends StatelessWidget {
 
 @RoutePage()
 class SplashScreenPage extends StatefulHookConsumerWidget {
-  const SplashScreenPage({super.key});
+  const SplashScreenPage({super.key, this.deepLink});
+
+  final PageRouteInfo? deepLink;
 
   @override
   SplashScreenPageState createState() => SplashScreenPageState();
@@ -371,10 +373,15 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
-    // clean install - change the default of the flag
-    // current install not using beta timeline
     if (context.router.current.name == SplashScreenRoute.name) {
-      unawaited(context.replaceRoute(const TabShellRoute()));
+      unawaited(
+        widget.deepLink != null
+            ? context.router.replaceAll([
+                const TabShellRoute(children: [MainTimelineRoute()]),
+                widget.deepLink!,
+              ])
+            : context.replaceRoute(const TabShellRoute()),
+      );
     }
   }
 
