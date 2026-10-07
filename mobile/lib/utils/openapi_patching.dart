@@ -55,6 +55,15 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'ServerVersionResponseDto': {'featureLevel': 0},
   'UserConfigDto': {'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson()},
   'WorkflowResponseDto': {'logging': false},
+  'AdminConfigDto': {
+    'passkey': {'enabled': false, 'domain': null, 'additionalDomains': const []},
+  },
+  'PublicConfigDto': {
+    'passkey': {'enabled': false},
+  },
+  'UserConfigDto': {
+    'passkey': {'enabled': false},
+  },
 };
 
 // ignore: unused-code
