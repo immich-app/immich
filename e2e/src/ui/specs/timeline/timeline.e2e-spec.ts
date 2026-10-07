@@ -566,10 +566,10 @@ test.describe('Timeline', () => {
       await expect(page.getByRole('button', { name: 'Restore all' })).toHaveCount(0);
     });
     test('trash with assets shows trash actions', async ({ page }) => {
-      const trashedAsset = assets[0];
-      changes.assetDeletions.push(trashedAsset.id);
+      const assetToTrash = assets[0];
+      changes.assetDeletions.push(assetToTrash.id);
       await page.goto('/trash');
-      await thumbnailUtils.expectInViewport(page, trashedAsset.id);
+      await thumbnailUtils.expectInViewport(page, assetToTrash.id);
       await expect(page.getByRole('button', { name: 'Empty trash' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Restore all' })).toBeVisible();
     });
