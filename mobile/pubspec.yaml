@@ -53,7 +53,7 @@ dependencies:
   octo_image: ^2.1.0
   openapi:
     path: generated/openapi
-  package_info_plus: ^8.3.1
+  package_info_plus: ^10.0.0
   path: ^1.9.1
   path_provider: ^2.1.6
   path_provider_foundation: ^2.6.0
