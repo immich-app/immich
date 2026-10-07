@@ -559,6 +559,20 @@ test.describe('Timeline', () => {
       await pageUtils.openAlbumPage(page, album.id);
       await thumbnailUtils.expectInViewport(page, assetToTrash.id);
     });
+    test('empty trash does not show trash actions', async ({ page }) => {
+      await page.goto('/trash');
+      await expect(page.getByText('Trashed photos and videos will show up here.')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Empty trash' })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Restore all' })).toHaveCount(0);
+    });
+    test('trash with assets shows trash actions', async ({ page }) => {
+      const trashedAsset = assets[0];
+      changes.assetDeletions.push(trashedAsset.id);
+      await page.goto('/trash');
+      await thumbnailUtils.expectInViewport(page, trashedAsset.id);
+      await expect(page.getByRole('button', { name: 'Empty trash' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Restore all' })).toBeVisible();
+    });
   });
   test.describe('/archive', () => {
     test('open /photos, archive photo, open /archive, unarchive', async ({ page }) => {
