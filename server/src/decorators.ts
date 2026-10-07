@@ -5,7 +5,6 @@ import { chunk, flatten } from 'lodash-es';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
 import { EmitEvent } from 'src/repositories/event.repository.js';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
-import { setUnion } from 'src/utils/set.js';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
@@ -105,7 +104,8 @@ export function ChunkedArray(options?: { paramIndex?: number; chunkSize?: number
 }
 
 export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: (args: Set<any>[]) => setUnion(...args) });
+  // eslint-disable-next-line unicorn/no-array-reduce
+  return Chunked({ ...options, mergeFn: (args: Set<any>[]) => args.reduce((unionSet, set) => unionSet.union(set)) });
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
@@ -236,6 +236,15 @@ export class HistoryBuilder {
     const { replacementId } = options || {};
     this.hasDeprecated = true;
     return this.push({ version, state: ApiState.Deprecated, replacementId });
+  }
+
+  v3PatchMigration() {
+    return this.push({
+      version: 'v3.0.0',
+      state: 'Updated',
+      description:
+        'This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly.',
+    });
   }
 
   isDeprecated(): boolean {

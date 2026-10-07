@@ -747,7 +747,6 @@
   "client_cert_subtitle": "Supportere kun PKCS12 (.p12, .pfx) format. Certifikat importering/fjernelse er kun tilgængeligt før login",
   "client_cert_title": "SSL Klient Certifikat [EKSPERIMENTAL]",
   "close": "Luk",
-  "cluster_group": "Klyngegruppe",
   "cluster_group_description": "Personer genkendes på tværs af billederne fra alle i gruppen",
   "cluster_group_facial_recognition": "Nulstil ansigtsgenkendelse",
   "cluster_group_facial_recognition_prompt": "Nulstilling af ansigtsgenkendelse vil slette alle personer for alle brugere i denne gruppe. Allerede indstillede navne og fødselsdatoer vil gå tabt. Er du sikker på, at du vil fortsætte?",

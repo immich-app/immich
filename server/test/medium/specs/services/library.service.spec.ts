@@ -503,6 +503,50 @@ describe(LibraryService.name, () => {
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([]);
     });
 
+    // https://github.com/immich-app/immich/issues/23619
+    it.each([
+      { pattern: '**/*.{arw,ARW,dng,DNG}', extensions: ['arw', 'ARW', 'dng', 'DNG'] },
+      { pattern: '**/*.{arw,dng}', extensions: ['arw', 'ARW', 'ArW', 'dng', 'DNG', 'DnG'] },
+      { pattern: '**/*.ARW', extensions: ['arw', 'ARW', 'ArW'] },
+      { pattern: '**/*.{tif,jpg}', extensions: ['tif', 'TIF', 'TiF', 'jpg', 'JPG', 'JpG'] },
+    ])(
+      'should offline existing assets covered by $pattern regardless of extension case',
+      async ({ pattern, extensions }) => {
+        const { sut, ctx } = setup();
+
+        const excludedAssets = await Promise.all(
+          extensions.map((extension, index) => createFile(join(importRoot, 'nested', `asset${index}.${extension}`))),
+        );
+        const includedAsset = await createFile(join(importRoot, 'included.png'));
+        const library = await ctx.createLibrary({ importPaths: [importRoot] });
+
+        await ctx.scan(library.id);
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([...excludedAssets, includedAsset].sort());
+
+        await sut.update(library.id, { exclusionPatterns: [pattern] });
+        await ctx.scan(library.id);
+
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([includedAsset]);
+        const excluded = await ctx.database
+          .selectFrom('asset')
+          .select(['originalPath', 'isOffline', 'deletedAt'])
+          .where('libraryId', '=', library.id)
+          .where('originalPath', 'in', excludedAssets)
+          .orderBy('originalPath')
+          .execute();
+        expect(excluded).toEqual(
+          excludedAssets.sort().map((originalPath) => ({
+            originalPath,
+            isOffline: true,
+            deletedAt: expect.any(Date),
+          })),
+        );
+
+        await ctx.scan(library.id);
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([includedAsset]);
+      },
+    );
+
     // https://github.com/immich-app/immich/issues/17121
     it('should respect exclusion patterns when using multiple import paths', async () => {
       const { sut, ctx } = setup();

@@ -48,6 +48,13 @@ run = [
   { task = "//:open-api" },
 ]
 
+[tasks.notes]
+run = [
+  "pnpm --filter @immich/scripts install --frozen-lockfile",
+  "pnpm --filter @immich/scripts build",
+  "pnpm --filter @immich/scripts cli notes {{arg(name='args', var=true)}}",
+]
+
 [tasks.plugins]
 run = [
   "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",

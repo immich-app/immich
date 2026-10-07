@@ -16,13 +16,11 @@
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode } from '$lib/constants';
@@ -48,7 +46,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
-  import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import { AlbumUserRole, AssetVisibility, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, toastManager } from '@immich/ui';
   import {
     mdiAccountEye,
@@ -69,6 +67,7 @@
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import { delay } from '$lib/utils/asset-utils';
 
   interface Props {
     data: PageData;
@@ -123,8 +122,17 @@
     await goto(Route.albums());
   };
 
-  const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id });
+  const refreshAlbum = async (updated?: AlbumResponseDto) => {
+    if (updated) {
+      if (updated.id !== album.id) {
+        return;
+      }
+      album = updated;
+    }
+
+    // invalidating during navigation causes an infinite page load
+    await navigating.complete;
+    await invalidate('album:data');
   };
 
   const setModeToView = async () => {
@@ -147,9 +155,10 @@
     assetMultiSelectManager.clear();
   };
 
-  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
+  const onAlbumRemoveAssets = async ({ albumIds }: { assetIds: string[]; albumIds: string[] }) => {
     if (albumIds.includes(album.id)) {
-      await handleRemoveAssets(assetIds);
+      await delay(1000);
+      await refreshAlbum();
     }
   };
 
@@ -205,8 +214,8 @@
     }
   });
 
-  let album = $state(data.album);
-  let albumId = $derived(album.id);
+  let album = $derived(data.album);
+  const albumId = $derived(album.id);
 
   const albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
@@ -302,15 +311,6 @@
     album = { ...album, albumUsers };
   };
 
-  const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
-    album = newAlbum;
-
-    // invalidating during navigation causes an infinite page load
-    await navigating.complete;
-
-    await invalidate('album:data');
-  };
-
   const { Cast } = $derived(getGlobalActions($t));
   const Actions = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
@@ -325,15 +325,16 @@
 </script>
 
 <OnEvents
-  onSharedLinkCreate={refreshAlbum}
-  onSharedLinkDelete={refreshAlbum}
+  onSharedLinkCreate={(link) => refreshAlbum(link.album)}
+  onSharedLinkDelete={() => refreshAlbum()}
   {onAlbumDelete}
   {onAlbumAddAssets}
   {onAlbumRemoveAssets}
   {onAlbumShare}
   {onAlbumUserUpdate}
-  onAlbumUserDelete={refreshAlbum}
-  {onAlbumUpdate}
+  onAlbumUserDelete={() => refreshAlbum()}
+  onAlbumUpdate={(album) => refreshAlbum(album)}
+  onAssetsDelete={() => refreshAlbum()}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 
@@ -453,7 +454,7 @@
       <AssetSelectControlBar>
         {@const Actions = getAssetBulkActions($t, album)}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-        <CreateSharedLink />
+        <ActionButton action={Actions.CreateSharedLink} />
         <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
         <ActionButton action={Actions.AddToAlbum} />
         {#if assetMultiSelectManager.isAllUserOwned}
@@ -483,10 +484,7 @@
             />
           {/if}
 
-          {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-            <TagAction menuItem />
-          {/if}
-
+          <ActionMenuItem action={Actions.Tag} />
           <ActionMenuItem action={Actions.RemoveFromAlbum} />
           {#if assetMultiSelectManager.isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />

@@ -69,6 +69,7 @@ const PersonSearchSchema = z
     sharedWithId: z.uuid().optional().describe('Only include people to which the user was given access'),
     isFavorite: stringToBool.optional().describe('Filter by favorite status'),
     isHidden: stringToBool.optional().describe('Filter by hidden status'),
+    name: z.string().optional().describe('Filter by person name'),
   })
   .meta({ id: 'PersonSearchDto' });
 

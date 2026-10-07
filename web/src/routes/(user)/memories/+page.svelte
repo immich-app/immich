@@ -76,7 +76,7 @@
               assetId: memory.assets[0].id,
               isSaved: userPreferencesManager.memories.onlyFavorites || undefined,
             }),
-            src: getAssetMediaUrl({ id: memory.assets[0].id }),
+            src: getAssetMediaUrl({ id: memory.assets[0].id, cacheKey: memory.assets[0].thumbhash }),
             alt: $getAltText(toTimelineAsset(memory.assets[0])),
             isSaved: memory.isSaved,
             type: memory.type,
