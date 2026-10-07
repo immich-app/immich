@@ -329,6 +329,17 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should prefer the 32-bit sensitivity tags over a saturated ISO', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ ISO: 65_535, RecommendedExposureIndex: 128_000 });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ exif: expect.objectContaining({ iso: 128_000 }) }),
+      );
+    });
+
     it('should not delete latituide and longitude without reverse geocode', async () => {
       // regression test for issue 17511
       const asset = AssetFactory.from().exif().build();
