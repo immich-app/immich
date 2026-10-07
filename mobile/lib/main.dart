@@ -215,6 +215,10 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       return DeepLink.none;
     }
 
+    if (deepLink.initial) {
+      return DeepLink([SplashScreenRoute(deepLink: route)]);
+    }
+
     return DeepLink([
       // we need something to segue back to if the app was cold started
       if (isColdStart) const TabShellRoute(children: [MainTimelineRoute()]),
