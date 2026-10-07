@@ -389,6 +389,12 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.partner.checkUpdateAccess(auth.user.id, ids);
     }
 
+    case Permission.PasskeyRead:
+    case Permission.PasskeyUpdate:
+    case Permission.PasskeyDelete: {
+      return access.passkey.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.SessionRead:
     case Permission.SessionUpdate:
     case Permission.SessionDelete:

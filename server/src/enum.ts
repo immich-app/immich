@@ -4,6 +4,12 @@ import z from 'zod';
 export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
+  Passkey = 'passkey',
+}
+
+export enum AuthChallengeType {
+  PasskeyRegistration = 'PasskeyRegistration',
+  PasskeyAuthentication = 'PasskeyAuthentication',
 }
 
 export enum ImmichCookie {
@@ -242,6 +248,10 @@ export enum Permission {
   PartnerRead = 'partner.read',
   PartnerUpdate = 'partner.update',
   PartnerDelete = 'partner.delete',
+
+  PasskeyRead = 'passkey.read',
+  PasskeyUpdate = 'passkey.update',
+  PasskeyDelete = 'passkey.delete',
 
   PersonCreate = 'person.create',
   PersonRead = 'person.read',
@@ -892,6 +902,8 @@ export enum JobName {
 
   AuditTableCleanup = 'AuditTableCleanup',
 
+  AuthChallengeCleanup = 'AuthChallengeCleanup',
+
   DatabaseBackup = 'DatabaseBackup',
 
   FacialRecognitionQueueAll = 'FacialRecognitionQueueAll',
@@ -1269,6 +1281,7 @@ export enum ApiTag {
   NotificationsAdmin = 'Notifications (admin)',
   ClusterGroups = 'Cluster groups',
   Partners = 'Partners',
+  Passkeys = 'Passkeys',
   People = 'People',
   Plugins = 'Plugins',
   Queues = 'Queues',

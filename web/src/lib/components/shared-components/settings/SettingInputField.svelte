@@ -14,6 +14,7 @@
     label?: string;
     description?: string;
     title?: string;
+    placeholder?: string;
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
@@ -39,6 +40,7 @@
     label = '',
     description = '',
     title = '',
+    placeholder = '',
     required = false,
     disabled = false,
     isEdited = false,
@@ -81,7 +83,10 @@
 
 <div class="mb-4 w-full">
   <div class="flex place-items-center gap-1">
-    <label class="min-h-6 text-sm font-medium text-primary" for={label}>{label}</label>
+    {#if label}
+      <label class="min-h-6 text-sm font-medium text-primary" for={label}>{label}</label>
+    {/if}
+
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -100,7 +105,7 @@
     <p class="pb-2 text-sm immich-form-label" id="{label}-desc">
       {description}
     </p>
-  {:else}
+  {:else if descriptionSnippet}
     <div class="pb-2">
       {@render descriptionSnippet?.()}
     </div>
@@ -145,6 +150,7 @@
         onchange={handleChange}
         {disabled}
         {title}
+        {placeholder}
       />
 
       {@render trailingSnippet?.()}

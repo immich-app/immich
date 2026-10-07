@@ -357,6 +357,14 @@ export type AdminConfigOAuthDto = {
     timeout: number;
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
 };
+export type AdminConfigPasskeyDto = {
+    /** Additional domains */
+    additionalDomains: string[];
+    /** Passkey domain */
+    domain: string | null;
+    /** Enabled */
+    enabled: boolean;
+};
 export type AdminConfigPasswordLoginDto = {
     /** Enabled */
     enabled: boolean;
@@ -421,6 +429,7 @@ export type AdminConfigDto = {
     nightlyTasks: AdminConfigNightlyTasksDto;
     notifications: AdminConfigNotificationsDto;
     oauth: AdminConfigOAuthDto;
+    passkey: AdminConfigPasskeyDto;
     passwordLogin: AdminConfigPasswordLoginDto;
     reverseGeocoding: AdminConfigReverseGeocodingDto;
     server: AdminConfigServerDto;
@@ -1607,6 +1616,10 @@ export type UserConfigOAuthDto = {
     /** Enabled */
     enabled: boolean;
 };
+export type UserConfigPasskeyDto = {
+    /** Enabled */
+    enabled: boolean;
+};
 export type UserConfigPasswordLoginDto = {
     /** Enabled */
     enabled: boolean;
@@ -1643,6 +1656,7 @@ export type UserConfigDto = {
     machineLearning: UserConfigMachineLearningDto;
     map: UserConfigMapDto;
     oauth: UserConfigOAuthDto;
+    passkey: UserConfigPasskeyDto;
     passwordLogin: UserConfigPasswordLoginDto;
     reverseGeocoding: UserConfigReverseGeocodingDto;
     server: UserConfigServerDto;
@@ -1994,6 +2008,172 @@ export type PartnerUpdateDto = {
     /** Show partner assets in timeline */
     inTimeline: boolean;
 };
+export type PasskeyResponseDto = {
+    /** Creation date */
+    createdAt: string;
+    /** Passkey ID */
+    id: string;
+    /** Passkey name */
+    name: string | null;
+    /** Last update date */
+    updatedAt: string;
+    /** Last used date */
+    usedAt: string | null;
+};
+export type PasskeyExtensionResultsDto = {
+    /** App ID extension result */
+    appid?: boolean;
+    /** Credential properties extension result */
+    credProps?: {
+        /** Resident key */
+        rk?: boolean;
+    };
+    /** HMAC create secret extension result */
+    hmacCreateSecret?: boolean;
+};
+export type PasskeyAssertionResponseDto = {
+    /** Authenticator data (base64url) */
+    authenticatorData: string;
+    /** Client data JSON (base64url) */
+    clientDataJSON: string;
+    /** Signature (base64url) */
+    signature: string;
+    /** User handle (base64url) */
+    userHandle?: string;
+};
+export type PasskeyAuthenticationResponseDto = {
+    /** Authenticator attachment (platform, cross-platform) */
+    authenticatorAttachment?: string;
+    clientExtensionResults: PasskeyExtensionResultsDto;
+    /** Credential ID (base64url) */
+    id: string;
+    /** Raw credential ID (base64url) */
+    rawId: string;
+    response: PasskeyAssertionResponseDto;
+    /** Credential type (public-key) */
+    "type": string;
+};
+export type PasskeyAuthenticationFinishDto = {
+    response: PasskeyAuthenticationResponseDto;
+};
+export type PasskeyCredentialDescriptorDto = {
+    /** Credential ID (base64url) */
+    id: string;
+    /** Authenticator transports */
+    transports?: string[];
+    /** Credential type */
+    "type": string;
+};
+export type PasskeyExtensionsDto = {
+    /** App ID extension */
+    appid?: string;
+    /** Credential properties extension */
+    credProps?: boolean;
+    /** HMAC create secret extension */
+    hmacCreateSecret?: boolean;
+    /** Minimum PIN length extension */
+    minPinLength?: boolean;
+};
+export type PasskeyAuthenticationOptionsDto = {
+    /** Allowed credentials */
+    allowCredentials?: PasskeyCredentialDescriptorDto[];
+    /** Challenge (base64url) */
+    challenge: string;
+    extensions?: PasskeyExtensionsDto;
+    /** Authenticator hints */
+    hints?: string[];
+    /** Relying party ID */
+    rpId?: string;
+    /** Timeout in milliseconds */
+    timeout?: number;
+    /** User verification (discouraged, preferred, required) */
+    userVerification?: string;
+};
+export type PasskeyAttestationResponseDto = {
+    /** Attestation object (base64url) */
+    attestationObject: string;
+    /** Authenticator data (base64url) */
+    authenticatorData?: string;
+    /** Client data JSON (base64url) */
+    clientDataJSON: string;
+    /** Public key (base64url) */
+    publicKey?: string;
+    /** COSE algorithm identifier */
+    publicKeyAlgorithm?: number;
+    /** Authenticator transports */
+    transports?: string[];
+};
+export type PasskeyRegistrationResponseDto = {
+    /** Authenticator attachment (platform, cross-platform) */
+    authenticatorAttachment?: string;
+    clientExtensionResults: PasskeyExtensionResultsDto;
+    /** Credential ID (base64url) */
+    id: string;
+    /** Raw credential ID (base64url) */
+    rawId: string;
+    response: PasskeyAttestationResponseDto;
+    /** Credential type (public-key) */
+    "type": string;
+};
+export type PasskeyRegistrationFinishDto = {
+    /** Passkey name */
+    name?: string;
+    response: PasskeyRegistrationResponseDto;
+};
+export type PasskeyAuthenticatorSelectionDto = {
+    /** Authenticator attachment (platform, cross-platform) */
+    authenticatorAttachment?: string;
+    /** Require resident key */
+    requireResidentKey?: boolean;
+    /** Resident key requirement (discouraged, preferred, required) */
+    residentKey?: string;
+    /** User verification (discouraged, preferred, required) */
+    userVerification?: string;
+};
+export type PasskeyCredentialParametersDto = {
+    /** COSE algorithm identifier */
+    alg: number;
+    /** Credential type (public-key) */
+    "type": string;
+};
+export type PasskeyRelyingPartyDto = {
+    /** Relying party ID */
+    id?: string;
+    /** Relying party name */
+    name: string;
+};
+export type PasskeyUserDto = {
+    /** User display name */
+    displayName: string;
+    /** User handle (base64url) */
+    id: string;
+    /** User name */
+    name: string;
+};
+export type PasskeyRegistrationOptionsDto = {
+    /** Attestation preference (none, direct, enterprise, indirect) */
+    attestation?: string;
+    /** Attestation formats */
+    attestationFormats?: string[];
+    authenticatorSelection?: PasskeyAuthenticatorSelectionDto;
+    /** Challenge (base64url) */
+    challenge: string;
+    /** Credentials to exclude */
+    excludeCredentials?: PasskeyCredentialDescriptorDto[];
+    extensions?: PasskeyExtensionsDto;
+    /** Authenticator hints */
+    hints?: string[];
+    /** Supported public key algorithms */
+    pubKeyCredParams: PasskeyCredentialParametersDto[];
+    rp: PasskeyRelyingPartyDto;
+    /** Timeout in milliseconds */
+    timeout?: number;
+    user: PasskeyUserDto;
+};
+export type PasskeyUpdateDto = {
+    /** Passkey name */
+    name: string | null;
+};
 export type PeopleDeleteDto = {
     /** IDs to process */
     ids: string[];
@@ -2180,6 +2360,10 @@ export type PublicConfigOAuthDto = {
     /** Enabled */
     enabled: boolean;
 };
+export type PublicConfigPasskeyDto = {
+    /** Enabled */
+    enabled: boolean;
+};
 export type PublicConfigPasswordLoginDto = {
     /** Enabled */
     enabled: boolean;
@@ -2194,6 +2378,7 @@ export type PublicConfigThemeDto = {
 };
 export type PublicConfigDto = {
     oauth: PublicConfigOAuthDto;
+    passkey: PublicConfigPasskeyDto;
     passwordLogin: PublicConfigPasswordLoginDto;
     server: PublicConfigServerDto;
     theme: PublicConfigThemeDto;
@@ -6110,6 +6295,115 @@ export function updatePartner({ id, partnerUpdateDto }: {
     })));
 }
 /**
+ * Search passkeys
+ */
+export function searchPasskeys({ id }: {
+    id?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyResponseDto[];
+    }>(`/passkeys${QS.query(QS.explode({
+        id
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Finish passkey authentication
+ */
+export function finishAuthentication({ passkeyAuthenticationFinishDto }: {
+    passkeyAuthenticationFinishDto: PasskeyAuthenticationFinishDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: LoginResponseDto;
+    }>("/passkeys/authentication/finish", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: passkeyAuthenticationFinishDto
+    })));
+}
+/**
+ * Start passkey authentication
+ */
+export function startAuthentication(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyAuthenticationOptionsDto;
+    }>("/passkeys/authentication/start", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Finish passkey registration
+ */
+export function finishRegistration({ passkeyRegistrationFinishDto }: {
+    passkeyRegistrationFinishDto: PasskeyRegistrationFinishDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PasskeyResponseDto;
+    }>("/passkeys/registration/finish", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: passkeyRegistrationFinishDto
+    })));
+}
+/**
+ * Start passkey registration
+ */
+export function startRegistration(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyRegistrationOptionsDto;
+    }>("/passkeys/registration/start", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Delete a passkey
+ */
+export function deletePasskey({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/passkeys/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve a passkey
+ */
+export function getPasskey({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyResponseDto;
+    }>(`/passkeys/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a passkey
+ */
+export function updatePasskey({ id, passkeyUpdateDto }: {
+    id: string;
+    passkeyUpdateDto: PasskeyUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyResponseDto;
+    }>(`/passkeys/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PATCH",
+        body: passkeyUpdateDto
+    })));
+}
+/**
  * Delete people
  */
 export function deletePeople({ peopleDeleteDto }: {
@@ -8204,6 +8498,9 @@ export enum Permission {
     PartnerRead = "partner.read",
     PartnerUpdate = "partner.update",
     PartnerDelete = "partner.delete",
+    PasskeyRead = "passkey.read",
+    PasskeyUpdate = "passkey.update",
+    PasskeyDelete = "passkey.delete",
     PersonCreate = "person.create",
     PersonRead = "person.read",
     PersonUpdate = "person.update",
@@ -8439,6 +8736,7 @@ export enum JobName {
     AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
     AssetGenerateThumbnails = "AssetGenerateThumbnails",
     AuditTableCleanup = "AuditTableCleanup",
+    AuthChallengeCleanup = "AuthChallengeCleanup",
     DatabaseBackup = "DatabaseBackup",
     FacialRecognitionQueueAll = "FacialRecognitionQueueAll",
     FacialRecognition = "FacialRecognition",

@@ -208,6 +208,10 @@ export class HistoryBuilder {
     return new HistoryBuilder().added('v3.0.0');
   }
 
+  static v4() {
+    return new HistoryBuilder().added('v4.0.0');
+  }
+
   added(version: string, description?: string) {
     return this.push({ version, state: 'Added', description });
   }

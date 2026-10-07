@@ -518,6 +518,26 @@ class ClusterGroupRequestAccess {
   }
 }
 
+class PasskeyAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, passkeyIds: Set<string>) {
+    if (passkeyIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('passkey')
+      .select('passkey.id')
+      .where('passkey.id', 'in', [...passkeyIds])
+      .where('passkey.userId', '=', userId)
+      .execute()
+      .then((passkeys) => new Set(passkeys.map((passkey) => passkey.id)));
+  }
+}
+
 class PersonAccess {
   constructor(private db: Kysely<DB>) {}
 
@@ -663,6 +683,7 @@ export class AccessRepository {
   clusterGroupRequest: ClusterGroupRequestAccess;
   person: PersonAccess;
   partner: PartnerAccess;
+  passkey: PasskeyAccess;
   session: SessionAccess;
   stack: StackAccess;
   tag: TagAccess;
@@ -682,6 +703,7 @@ export class AccessRepository {
     this.clusterGroupRequest = new ClusterGroupRequestAccess(db);
     this.person = new PersonAccess(db);
     this.partner = new PartnerAccess(db);
+    this.passkey = new PasskeyAccess(db);
     this.session = new SessionAccess(db);
     this.stack = new StackAccess(db);
     this.tag = new TagAccess(db);

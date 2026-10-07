@@ -45,6 +45,15 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'PeopleResponse': {'updateStrategy': 'everyone'},
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'WorkflowResponseDto': {'logging': false},
+  'AdminConfigDto': {
+    'passkey': {'enabled': false, 'domain': null, 'additionalDomains': const []},
+  },
+  'PublicConfigDto': {
+    'passkey': {'enabled': false},
+  },
+  'UserConfigDto': {
+    'passkey': {'enabled': false},
+  },
 };
 
 // ignore: unused-code
