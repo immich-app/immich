@@ -4,6 +4,11 @@ use std::ptr;
 
 #[cfg(target_os = "android")]
 mod android;
+/// cbindgen:ignore
+#[cfg(target_os = "android")]
+mod bitmap;
+#[cfg(target_os = "android")]
+mod rotate;
 
 /// Returns the core version as a C string. Free it with `immich_core_free_string`.
 #[unsafe(no_mangle)]
