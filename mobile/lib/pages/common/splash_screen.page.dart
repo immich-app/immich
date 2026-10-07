@@ -374,14 +374,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
 
     if (context.router.current.name == SplashScreenRoute.name) {
-      unawaited(
-        widget.deepLink != null
-            ? context.router.replaceAll([
-                const TabShellRoute(children: [MainTimelineRoute()]),
-                widget.deepLink!,
-              ])
-            : context.replaceRoute(const TabShellRoute()),
-      );
+      unawaited(context.router.replaceAll([const TabShellRoute(), ?widget.deepLink]));
     }
   }
 
