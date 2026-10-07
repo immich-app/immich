@@ -33,6 +33,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
 
+  void requestFullResume() => _fullSyncPending = true;
+
   Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
     _log.info("App resumed");
@@ -65,7 +67,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> _performResume() async {
     if (_firstLaunch) {
       // a delta sync can miss photos taken after a background launch
-      _fullSyncPending = await _ref.read(backgroundWorkerFgServiceProvider).wasLaunchedInBackground();
+      _fullSyncPending =
+          await _ref.read(backgroundWorkerFgServiceProvider).wasLaunchedInBackground() || _fullSyncPending;
       _firstLaunch = false;
     }
 
