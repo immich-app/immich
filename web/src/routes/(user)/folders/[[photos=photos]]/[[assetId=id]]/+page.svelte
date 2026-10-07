@@ -10,7 +10,6 @@
   import TreeItemThumbnails from '$lib/components/shared-components/tree/TreeItemThumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
   import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -103,7 +102,11 @@
     </Sidebar>
   {/snippet}
 
-  <OnEvents onAssetsDelete={invalidateAll} />
+  <OnEvents
+    onAssetsDelete={invalidateAll}
+    onAssetsArchive={triggerAssetUpdate}
+    onAssetsUnarchive={triggerAssetUpdate}
+  />
 
   <TreeBreadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
@@ -160,7 +163,8 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Unarchive} />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />

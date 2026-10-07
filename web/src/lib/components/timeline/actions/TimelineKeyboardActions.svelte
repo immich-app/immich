@@ -7,7 +7,6 @@
   } from '$lib/components/timeline/actions/focus-actions';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -21,8 +20,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets } from '$lib/utils/asset-utils';
-  import { AssetVisibility } from '@immich/sdk';
+  import { selectAllAssets } from '$lib/utils/asset-utils';
   import { isModalOpen, modalManager } from '@immich/ui';
 
   type Props = {
@@ -62,14 +60,6 @@
   const onStackAssets = async () => {
     await handleStack(assetInteraction.assets.map((asset) => asset.id));
     onEscape?.();
-  };
-
-  const toggleArchive = async () => {
-    const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
-    const ids = await archiveAssets(assetInteraction.assets, visibility);
-    timelineManager.update(ids, (asset) => (asset.visibility = visibility));
-    eventManager.emit('AssetsArchive', ids);
-    assetInteraction.clear();
   };
 
   const onSelectStart = (e: Event) => {
@@ -135,7 +125,6 @@
         { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
-        { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
       );
     } else {
       // conflicting shortcuts
