@@ -138,20 +138,20 @@ test.describe('Yucca Backups', () => {
     await dialog.getByRole('button', { name: 'Save' }).click();
 
     await expect(dialog.filter({ hasText: 'Where would you like to restore from?' })).toBeVisible();
-    await dialog.getByText('Local Folder').click();
+    await dialog.getByText('Local Storage').click();
 
     await expect(dialog.filter({ hasText: 'Create local backend' })).toBeVisible();
     await dialog.getByLabel('Path').fill('/local-backend');
     await dialog.getByRole('button', { name: 'Save' }).click();
 
-    await expect(dialog.filter({ hasText: 'Select Restore Point' })).toBeVisible();
-    await dialog.getByRole('button', { name: 'Select' }).first().click();
+    await expect(dialog.filter({ hasText: 'Select Backup' })).toBeVisible();
+    await dialog.getByText('Immich', { exact: true }).click();
 
-    await expect(dialog.filter({ hasText: /Restore from/ })).toBeVisible();
+    await expect(dialog.filter({ hasText: 'Restore from Immich' })).toBeVisible();
     await dialog.getByRole('button', { name: 'Restore' }).first().click();
 
     await expect(dialog.filter({ hasText: 'Confirm restore from snapshot' })).toBeVisible();
-    await dialog.getByRole('button', { name: 'Restore' }).click();
+    await dialog.getByRole('button', { name: 'Restore', exact: true }).click();
 
     await expect(dialog.filter({ hasText: 'Restoring' })).toBeVisible();
     await expect(dialog.filter({ hasText: 'Restoring' })).toBeHidden({ timeout: 60_000 });
