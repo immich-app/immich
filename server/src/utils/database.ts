@@ -88,6 +88,10 @@ export const anyUuid = (ids: string[]) => sql<string>`any(${`{${ids}}`}::uuid[])
 
 export const unnest = (array: string[]) => sql<Record<string, string>>`unnest(array[${sql.join(array)}]::text[])`;
 
+export const unnestUuid = (ids: string[]) => sql<string>`unnest(${ids}::uuid[])`;
+
+export const generateSeries = (start: number, end: number) => sql<number>`generate_series(${start}::int, ${end}::int)`;
+
 export const removeUndefinedKeys = <T extends object>(update: T, template: unknown) => {
   for (const key in update) {
     if ((template as T)[key] === undefined) {

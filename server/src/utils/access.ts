@@ -1,5 +1,4 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import stableJsonStringify from 'json-stable-stringify';
 import { AuthSharedLink } from 'src/database.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { PersonUserRole } from 'src/dtos/person.dto.js';
@@ -20,26 +19,11 @@ export const isGranted = ({ requested, current }: GrantedRequest) => {
   return new Set(current).isSupersetOf(new Set(requested));
 };
 
-const isSetSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
-  if (!set.values().some((value) => typeof value === 'object')) {
-    return set.isSupersetOf(subset);
-  }
-
-  const map = new Map(set.values().map((value) => [stableJsonStringify(value) as string, value]));
-
-  for (const element of subset) {
-    if (!map.has(stableJsonStringify(element) as string)) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
 export const areSetsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
-  return setA.size === setB.size && isSetSuperset(setA, setB);
+  return setA.size === setB.size && setA.isSupersetOf(setB);
 };
 
+// object ids are compared by identity, so checks must return the request's own elements, not copies
 type PermissionIdOverrides = {
   // TODO remove once first real override exists
   [Permission.AssetRead]: string;
@@ -74,8 +58,9 @@ export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
 };
 
 export const requireAccess = async <T extends Permission>(access: AccessRepository, request: AccessRequest<T>) => {
-  const allowedIds = await checkAccess(access, request);
-  if (!areSetsEqual(new Set(request.ids), allowedIds)) {
+  const ids = Array.isArray(request.ids) ? new Set(request.ids) : request.ids;
+  const allowedIds = await checkAccess(access, { auth: request.auth, permission: request.permission, ids });
+  if (!areSetsEqual(ids, allowedIds)) {
     throw new BadRequestException(`Not found or no ${request.permission} access`);
   }
 };
@@ -84,12 +69,10 @@ const PERSON_READ_ROLES = [PersonUserRole.Read, PersonUserRole.Write, PersonUser
 const PERSON_WRITE_ROLES = [PersonUserRole.Write, PersonUserRole.Admin];
 const PERSON_ADMIN_ROLES = [PersonUserRole.Admin];
 
-const asStringSet = (source: Set<PersonId>): Set<string> =>
-  new Set(source.values().map((item) => `${item.personGroupId}/$${item.ownerId}`));
-
 export const requirePersonAccess = async (access: AccessRepository, request: AccessPersonRequest) => {
-  const allowedIds = await checkPersonAccess(access, request);
-  if (!areSetsEqual(asStringSet(new Set(request.ids)), asStringSet(allowedIds))) {
+  const ids = Array.isArray(request.ids) ? new Set(request.ids) : request.ids;
+  const allowedIds = await checkPersonAccess(access, { auth: request.auth, permission: request.permission, ids });
+  if (!areSetsEqual(ids, allowedIds)) {
     throw new BadRequestException(`Not found or no ${request.permission} access`);
   }
 };

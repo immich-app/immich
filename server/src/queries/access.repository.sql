@@ -242,35 +242,35 @@ where
   )
 
 -- AccessRepository.person.checkAccess
-select
-  "personGroupId",
-  "ownerId"
-from
-  (
+with
+  "people" as (
     select
       unnest($1::uuid[]) as "personGroupId",
-      unnest($2::uuid[]) as "ownerId"
-  ) as "people"
+      unnest($2::uuid[]) as "ownerId",
+      generate_series($3::int, $4::int) as "index"
+  )
+select
+  coalesce(json_agg("people"."index"), '[]') as "index"
+from
+  "people"
 where
   (
     exists (
       select
-        *
       from
         "person"
       where
         "people"."personGroupId" = "person"."personGroupId"
         and "people"."ownerId" = "person"."ownerId"
-        and "person"."ownerId" = $3
+        and "person"."ownerId" = $5
     )
     or exists (
       select
-        *
       from
         "person_user"
       where
-        "person_user"."sharedWithId" = $4
-        and "person_user"."role" in ($5)
+        "person_user"."sharedWithId" = $6
+        and "person_user"."role" in ($7)
         and "people"."personGroupId" = "person_user"."personGroupId"
         and "people"."ownerId" = "person_user"."sharedById"
     )
