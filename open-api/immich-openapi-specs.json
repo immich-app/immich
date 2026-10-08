@@ -21070,7 +21070,6 @@
           }
         },
         "required": [
-          "beta",
           "database"
         ],
         "type": "object"

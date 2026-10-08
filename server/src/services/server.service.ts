@@ -105,7 +105,7 @@ export class ServerService extends BaseService {
       facialRecognition: isFacialRecognitionEnabled(machineLearning),
       duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
-      backups: backup.beta,
+      backups: !!backup.beta,
       reverseGeocoding: reverseGeocoding.enabled,
       importFaces: metadata.faces.import,
       sidecar: true,

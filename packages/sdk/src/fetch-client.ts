@@ -64,7 +64,7 @@ export type AdminConfigDatabaseBackupDto = {
 };
 export type AdminConfigBackupsDto = {
     /** Whether the backups feature is enabled */
-    beta: boolean;
+    beta?: boolean;
     database: AdminConfigDatabaseBackupDto;
 };
 export type AdminConfigFFmpegRealtimeDto = {

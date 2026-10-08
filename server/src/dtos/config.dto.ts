@@ -151,7 +151,7 @@ const AdminConfigSchemaWithVisibility = z
   .object({
     backup: z
       .object({
-        beta: configBool.describe('Whether the backups feature is enabled'),
+        beta: configBool.default(false).optional().describe('Whether the backups feature is enabled'),
         database: z
           .object({
             enabled: configBool.describe('Enabled'),
