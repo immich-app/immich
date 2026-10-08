@@ -1,5 +1,5 @@
 import * as sdk from '@futo-org/backups-orchestrator-ui/sdk';
-import { LoginResponseDto } from '@immich/sdk';
+import { LoginResponseDto, StorageFolder, getServerFeatures } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { io, type Socket } from 'socket.io-client';
 import { asBearerAuth, baseUrl, utils } from 'src/utils';
@@ -52,25 +52,50 @@ test.describe('Yucca Backups', () => {
     socket?.close();
   });
 
-  test('onboarding configures a local backend', async ({ context, page }) => {
-    test.setTimeout(30_000);
+  test('the backups link opens the upsell before backups are configured', async ({ context, page }) => {
+    const headers = asBearerAuth(admin.accessToken);
     await utils.setAuthCookies(context, admin.accessToken);
 
-    await page.goto('/admin/backups');
+    await expect(getServerFeatures({ headers })).resolves.toMatchObject({ backups: false });
 
-    const dialog = page.getByRole('dialog');
-    await expect(dialog.filter({ hasText: 'Backup options' })).toBeVisible();
-    await dialog.getByText('Local Folder').click();
+    await page.goto('/link?target=backups');
+    await page.waitForURL('/admin/backups');
 
-    await expect(dialog.filter({ hasText: 'Create local backend' })).toBeVisible();
-    await dialog.getByLabel('Path').fill('/local-backend');
-    await dialog.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('heading', { name: 'FUTO Backups' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Get Started' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Backups', exact: true })).toBeVisible();
+    await expect(getServerFeatures({ headers })).resolves.toMatchObject({ backups: true });
+  });
 
-    await expect(dialog.filter({ hasText: 'Configure Your Immich Backup' })).toBeVisible();
-    await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(dialog).toHaveCount(0);
+  test('the backups link opens the dashboard once backups are configured', async ({ context, page }) => {
+    test.setTimeout(60_000);
+    const headers = asBearerAuth(admin.accessToken);
+    await utils.setAuthCookies(context, admin.accessToken);
 
-    await expect(page.getByRole('link', { name: 'Repositories' })).toBeVisible();
+    await sdk.createLocalBackend({ path: '/local-backend' }, { headers });
+    await sdk.configureImmichIntegration(
+      {
+        name: 'Immich',
+        worm: false,
+        cron: '0 3 * * *',
+        backupConfiguration: true,
+        dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
+        libraries: 'all',
+      },
+      { headers },
+    );
+
+    const { repositories } = await sdk.getRepositories({ headers });
+    const backupEnd = waitForTaskEnd();
+    await sdk.createBackup(repositories[0].id, { headers });
+    await backupEnd;
+
+    await page.goto('/link?target=backups');
+    await page.waitForURL('/admin/backups');
+
+    await expect(page.getByRole('heading', { name: 'Backups', exact: true })).toBeVisible();
+    await expect(page.getByText('Your library backup')).toBeVisible();
+    await expect(page.getByText('Last backup successful')).toBeVisible();
   });
 
   test('manually triggers a backup and waits for completion', async ({ context, page }) => {
