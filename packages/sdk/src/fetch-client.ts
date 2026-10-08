@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.2.4
+ * 3.3.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -696,6 +696,7 @@ export type PeopleResponse = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb: boolean;
+    updateStrategy: PersonUpdateStrategy;
 };
 export type PurchaseResponse = {
     /** Date until which to hide buy button */
@@ -782,6 +783,7 @@ export type PeopleUpdate = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb?: boolean;
+    updateStrategy?: PersonUpdateStrategy;
 };
 export type PurchaseUpdate = {
     /** Date until which to hide buy button */
@@ -1224,6 +1226,27 @@ export type ExifResponseDto = {
     /** Time zone */
     timeZone?: string | null;
 };
+export type PersonOtherResponseDto = {
+    birthDate: string | null;
+    name: string;
+    role: PersonUserRole;
+    sharedById: string;
+};
+export type PeopleUserResponseDto = {
+    avatarColor: UserAvatarColor;
+    /** User email */
+    email: string;
+    /** User ID */
+    id: string;
+    /** User name */
+    name: string;
+    /** Profile change date */
+    profileChangedAt: string;
+    /** Profile image path */
+    profileImagePath: string;
+    /** Access role */
+    role: PersonUserRole;
+};
 export type PersonResponseDto = {
     /** Person date of birth */
     birthDate: string | null;
@@ -1237,6 +1260,11 @@ export type PersonResponseDto = {
     isHidden: boolean;
     /** Person name */
     name: string;
+    otherPeople: PersonOtherResponseDto[];
+    /** Users that gave the current user access to this person */
+    sharedBy: PeopleUserResponseDto[];
+    /** Users the current user gave access to this person */
+    sharedWith: PeopleUserResponseDto[];
     /** Thumbnail path */
     thumbnailPath: string;
     /** Last update date */
@@ -1708,6 +1736,8 @@ export type AssetFaceCreateDto = {
     imageWidth: number;
     /** Person ID */
     personId: string;
+    /** User ID */
+    userId?: string;
     /** Face bounding box width */
     width: number;
     /** Face bounding box X coordinate */
@@ -1850,15 +1880,19 @@ export type MapReverseGeocodeResponseDto = {
     /** State/Province name */
     state: string | null;
 };
-export type OnThisDayDto = {
-    /** Year for on this day memory */
+export type MemoryDataDto = {
+    /** Person ID (birthday memories) */
+    personId?: string;
+    /** Name of the person when the memory was created (birthday memories) */
+    personName?: string;
+    /** Year of the memory */
     year: number;
 };
 export type MemoryResponseDto = {
     assets: AssetResponseDto[];
     /** Creation date */
     createdAt: string;
-    data: OnThisDayDto;
+    data: MemoryDataDto;
     /** Deletion date */
     deletedAt?: string;
     /** Date when memory should be hidden */
@@ -1882,7 +1916,7 @@ export type MemoryResponseDto = {
 export type MemoryCreateDto = {
     /** Asset IDs to associate with memory */
     assetIds?: string[];
-    data: OnThisDayDto;
+    data: MemoryDataDto;
     /** Date when memory should be hidden */
     hideAt?: string;
     /** Is memory saved */
@@ -1968,6 +2002,11 @@ export type PartnerUpdateDto = {
     /** Show partner assets in timeline */
     inTimeline: boolean;
 };
+export type PeopleDeleteDto = {
+    /** IDs to process */
+    ids: string[];
+    userId?: string;
+};
 export type PeopleResponseDto = {
     /** Whether there are more pages */
     hasNextPage?: boolean;
@@ -2004,6 +2043,8 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** Restrict the update to the person record of this User ID */
+    userId?: string;
 };
 export type PeopleUpdateDto = {
     /** People to update */
@@ -2012,6 +2053,40 @@ export type PeopleUpdateDto = {
 export type MergePersonDto = {
     /** Person IDs to merge */
     ids: string[];
+};
+export type PersonUsersDeleteDto = {
+    /** Person ID */
+    personId: string;
+    /** User ID of the user that gave access to the person */
+    sharedById?: string;
+    /** User ID of the user that was given access to the person */
+    sharedWithId: string;
+}[];
+export type PersonUsersResponseDto = {
+    /** Person ID */
+    personId: string;
+    /** Access role */
+    role: PersonUserRole;
+    /** The user that gave access to this person */
+    sharedBy: UserResponseDto;
+    /** User ID of the user that gave access to this person */
+    sharedById: string;
+    /** The user that was given access to this person */
+    sharedWith: UserResponseDto;
+    /** User ID of the user that was given access to this person */
+    sharedWithId: string;
+}[];
+export type PeopleUsersUpsertDto = {
+    /** Person IDs, required when type is omitted */
+    personIds?: string[];
+    /** Role that should be applied */
+    role: PersonUserRole;
+    /** User IDs that should be given access to the person */
+    sharedWithIds: string[];
+    "type"?: PeopleUsersUpsertType;
+};
+export type PersonDeleteDto = {
+    userId?: string;
 };
 export type PersonUpdateDto = {
     /** Person date of birth */
@@ -2026,12 +2101,16 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** Restrict the update to the person record of this User ID */
+    userId?: string;
 };
 export type AssetFaceUpdateItem = {
     /** Asset ID */
     assetId: string;
     /** Person ID */
     personId: string;
+    /** User ID */
+    userId?: string;
 };
 export type AssetFaceUpdateDto = {
     /** Face update items */
@@ -3277,6 +3356,16 @@ export type CreateLocalBackendRequestDto = {
 export type BackendResponseDto = {
     backend: BackendDto;
 };
+export type BandwidthDto = {
+    bytesPerSec: number;
+    quietHours?: string;
+};
+export type ConfigResponseDto = {
+    bandwidth: BandwidthDto;
+};
+export type ConfigUpdateRequestDto = {
+    bandwidth: BandwidthDto;
+};
 export type FilesystemListingItemDto = {
     isDirectory: boolean;
     path: string;
@@ -3327,13 +3416,25 @@ export type ConfigureImmichIntegrationRequestDto = {
     libraries: "all" | string[];
     name: string;
     paused?: boolean;
+    repositoryId?: string;
     retentionPolicy?: (RetentionPolicyDto) | null;
     worm: boolean;
+};
+export type ConfigureImmichIntegrationResponseDto = {
+    repositoryId: string;
+};
+export type ConfigureImmichDatabaseDumpRequestDto = {
+    enabled?: boolean;
+    keepLastAmount?: number;
 };
 export type ImmichRollbackRequestDto = {
     backupFileName?: string;
     repositoryId: string;
     snapshotId: string;
+};
+export type ImmichDatabaseDumpConfigDto = {
+    enabled: boolean;
+    keepLastAmount: number;
 };
 export type RunDto = {
     end?: string;
@@ -3343,6 +3444,60 @@ export type RunDto = {
     start: string;
     status: RunStatus;
     "type": RunType;
+};
+export type RepositoryBackendDto = {
+    id: string;
+    online: boolean;
+    "type": BackendType;
+};
+export type RepositoryBackendsDto = {
+    primary: RepositoryBackendDto;
+    secondary: RepositoryBackendDto[];
+};
+export type RepositoryConfigurationDto = {
+    paths: string[];
+    retentionPolicy?: (RetentionPolicyDto) | null;
+};
+export type RepositoryMeterDto = {
+    lastUpdated?: string | null;
+    objectCount: number;
+    sizeBytes: number;
+};
+export type RepositoryMetricsDto = {
+    lastBackup?: string | null;
+    lastBackupDuration?: number | null;
+    lastBackupStatus?: (BackupStatus) | null;
+    lastStarted?: string | null;
+    sizeBytes: number;
+};
+export type LocalRepositoryDto = {
+    backends?: RepositoryBackendsDto;
+    configuration?: RepositoryConfigurationDto;
+    id: string;
+    meter?: RepositoryMeterDto;
+    metrics: RepositoryMetricsDto;
+    name: string;
+    siteCode: string | null;
+    storageClusterCode: string | null;
+    worm: boolean;
+};
+export type ScheduleDto = {
+    cron: string;
+    id: string;
+    lastFinished?: string;
+    lastRun?: string;
+    name: string;
+    paused: boolean;
+    repositories: string[];
+};
+export type ImmichBackupStatusDto = {
+    backend?: BackendDto;
+    databaseDump?: ImmichDatabaseDumpConfigDto;
+    databaseDumpWarningIgnored?: boolean;
+    integration?: ImmichIntegrationDto;
+    latestBackupRun?: RunDto;
+    repository?: LocalRepositoryDto;
+    schedule?: ScheduleDto;
 };
 export type RunResponseDto = {
     run: RunDto;
@@ -3365,47 +3520,13 @@ export type CurrentRecoveryKeyResponse = {
 export type ImportRecoveryKeyRequest = {
     recoveryKey: string;
 };
-export type RepositoryBackendDto = {
-    id: string;
-    online: boolean;
-    "type": BackendType;
-};
-export type RepositoryBackendsDto = {
-    primary: RepositoryBackendDto;
-    secondary: RepositoryBackendDto[];
-};
-export type RepositoryConfigurationDto = {
-    paths: string[];
-    retentionPolicy?: (RetentionPolicyDto) | null;
-};
-export type RepositoryMeterDto = {
-    lastUpdated?: string | null;
-    objectCount: number;
-    sizeBytes: number;
-};
-export type RepositoryMetricsDto = {
-    lastBackup?: string | null;
-    lastBackupDuration?: number;
-    lastBackupStatus?: TaskStatus;
-    sizeBytes: number;
-};
-export type LocalRepositoryDto = {
-    backends?: RepositoryBackendsDto;
-    configuration?: RepositoryConfigurationDto;
-    id: string;
-    meter?: RepositoryMeterDto;
-    metrics: RepositoryMetricsDto;
-    name: string;
-    siteCode: string | null;
-    storageClusterCode: string | null;
-    worm: boolean;
-};
 export type RepositoryListResponseDto = {
     repositories: LocalRepositoryDto[];
 };
 export type RepositoryCreateRequestDto = {
     name: string;
     paths?: string[];
+    retentionPolicy?: (RetentionPolicyDto) | null;
     /** Internal site code from environment metadata */
     site?: string;
     worm: boolean;
@@ -3475,21 +3596,13 @@ export type RepositorySnapshotRestoreFromPointRequestDto = {
     include?: string[];
     yuccaConfig?: string;
 };
-export type ScheduleDto = {
-    cron: string;
-    id: string;
-    lastFinished?: string;
-    lastRun?: string;
-    name: string;
-    paused: boolean;
-    repositories: string[];
-};
 export type ScheduleListResponseDto = {
     schedules: ScheduleDto[];
 };
 export type ScheduleCreateRequestDto = {
     cron: string;
     name: string;
+    paused?: boolean;
     repositories: string[];
 };
 export type ScheduleCreateResponseDto = {
@@ -3693,7 +3806,7 @@ export type SyncAssetFaceV1 = {
     /** Source type */
     sourceType: string;
 };
-export type SyncAssetFaceV2 = {
+export type SyncAssetFaceV3 = {
     /** Asset ID */
     assetId: string;
     /** Bounding box X1 */
@@ -3880,6 +3993,33 @@ export type SyncAuthUserV1 = {
     /** User storage label */
     storageLabel: string | null;
 };
+export type SyncAuthUserV2 = {
+    avatarColor?: (UserAvatarColor) | null;
+    /** User deleted at */
+    deletedAt: string | null;
+    /** User email */
+    email: string;
+    /** User has profile image */
+    hasProfileImage: boolean;
+    /** User ID */
+    id: string;
+    /** User is admin */
+    isAdmin: boolean;
+    /** User name */
+    name: string;
+    /** User OAuth ID */
+    oauthId: string | null;
+    /** User pin code */
+    pinCode: string | null;
+    /** User profile changed at */
+    profileChangedAt: string;
+    /** Quota size in bytes */
+    quotaSizeInBytes: number | null;
+    /** Quota usage in bytes */
+    quotaUsageInBytes: number;
+    /** User storage label */
+    storageLabel: string | null;
+};
 export type SyncCompleteV1 = {};
 export type SyncMemoryAssetDeleteV1 = {
     /** Asset ID */
@@ -3898,6 +4038,33 @@ export type SyncMemoryDeleteV1 = {
     memoryId: string;
 };
 export type SyncMemoryV1 = {
+    /** Created at */
+    createdAt: string;
+    /** Data */
+    data: {
+        [key: string]: any;
+    };
+    /** Deleted at */
+    deletedAt: string | null;
+    /** Hide at */
+    hideAt: string | null;
+    /** Memory ID */
+    id: string;
+    /** Is saved */
+    isSaved: boolean;
+    /** Memory at */
+    memoryAt: string;
+    /** Owner ID */
+    ownerId: string;
+    /** Seen at */
+    seenAt: string | null;
+    /** Show at */
+    showAt: string | null;
+    "type": MemoryTypeV1;
+    /** Updated at */
+    updatedAt: string;
+};
+export type SyncMemoryV2 = {
     /** Created at */
     createdAt: string;
     /** Data */
@@ -6265,22 +6432,27 @@ export function updatePartner({ id, partnerUpdateDto }: {
 /**
  * Delete people
  */
-export function deletePeople({ bulkIdsDto }: {
-    bulkIdsDto: BulkIdsDto;
+export function deletePeople({ peopleDeleteDto }: {
+    peopleDeleteDto: PeopleDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/people", oazapfts.json({
         ...opts,
         method: "DELETE",
-        body: bulkIdsDto
+        body: peopleDeleteDto
     })));
 }
 /**
  * Get all people
  */
-export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
+export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHidden, name, page, sharedById, sharedWithId, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
+    isFavorite?: boolean;
+    isHidden?: boolean;
+    name?: string;
     page?: number;
+    sharedById?: string;
+    sharedWithId?: string;
     size?: number;
     withHidden?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -6290,7 +6462,12 @@ export function getAllPeople({ closestAssetId, closestPersonId, page, size, with
     }>(`/people${QS.query(QS.explode({
         closestAssetId,
         closestPersonId,
+        isFavorite,
+        isHidden,
+        name,
         page,
+        sharedById,
+        sharedWithId,
         size,
         withHidden
     }))}`, {
@@ -6343,15 +6520,64 @@ export function mergePeople({ mergePersonDto }: {
     })));
 }
 /**
+ * Remove users from people
+ */
+export function removeUsersFromPeople({ personUsersDeleteDto }: {
+    personUsersDeleteDto: PersonUsersDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people/users", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: personUsersDeleteDto
+    })));
+}
+/**
+ * Get people access
+ */
+export function getUsersForPeople({ direction, personId, role, sharedById, sharedWithId }: {
+    direction?: SharingDirection;
+    personId?: string;
+    role?: PersonUserRole;
+    sharedById?: string;
+    sharedWithId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PersonUsersResponseDto;
+    }>(`/people/users${QS.query(QS.explode({
+        direction,
+        personId,
+        role,
+        sharedById,
+        sharedWithId
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Upsert user access
+ */
+export function upsertPeopleUsers({ peopleUsersUpsertDto }: {
+    peopleUsersUpsertDto: PeopleUsersUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people/users", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: peopleUsersUpsertDto
+    })));
+}
+/**
  * Delete person
  */
-export function deletePerson({ id }: {
+export function deletePerson({ id, personDeleteDto }: {
     id: string;
+    personDeleteDto: PersonDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, {
+    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
-        method: "DELETE"
-    }));
+        method: "DELETE",
+        body: personDeleteDto
+    })));
 }
 /**
  * Get a person
@@ -8046,7 +8272,10 @@ export function getWorkflowForShare({ id }: {
         ...opts
     }));
 }
-export function connectDeviceFlow(opts?: Oazapfts.RequestOpts) {
+/**
+ * Connect a FUTO Backups account
+ */
+export function yuccaConnectDeviceFlow(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: DeviceFlowEventDto;
@@ -8054,7 +8283,10 @@ export function connectDeviceFlow(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function createSession2({ createSessionRequestDto }: {
+/**
+ * Create session
+ */
+export function yuccaCreateSession({ createSessionRequestDto }: {
     createSessionRequestDto: CreateSessionRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/auth/session", oazapfts.json({
@@ -8063,7 +8295,10 @@ export function createSession2({ createSessionRequestDto }: {
         body: createSessionRequestDto
     })));
 }
-export function sessionDeviceFlow(opts?: Oazapfts.RequestOpts) {
+/**
+ * Sign in with FUTO Backups account
+ */
+export function yuccaSessionDeviceFlow(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: DeviceFlowEventDto;
@@ -8071,11 +8306,14 @@ export function sessionDeviceFlow(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function createTicket({ ticketCreateRequestDto }: {
+/**
+ * Create a ticket
+ */
+export function yuccaCreateTicket({ ticketCreateRequestDto }: {
     ticketCreateRequestDto: TicketCreateRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: TicketCreateResponseDto;
     }>("/yucca/auth/ticket", oazapfts.json({
         ...opts,
@@ -8083,7 +8321,10 @@ export function createTicket({ ticketCreateRequestDto }: {
         body: ticketCreateRequestDto
     })));
 }
-export function getBackends(opts?: Oazapfts.RequestOpts) {
+/**
+ * List backends
+ */
+export function yuccaGetBackends(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: BackendsResponseDto;
@@ -8091,11 +8332,14 @@ export function getBackends(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function createLocalBackend({ createLocalBackendRequestDto }: {
+/**
+ * Create a local backend
+ */
+export function yuccaCreateLocalBackend({ createLocalBackendRequestDto }: {
     createLocalBackendRequestDto: CreateLocalBackendRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: BackendResponseDto;
     }>("/yucca/backend/local", oazapfts.json({
         ...opts,
@@ -8103,13 +8347,45 @@ export function createLocalBackend({ createLocalBackendRequestDto }: {
         body: createLocalBackendRequestDto
     })));
 }
-export function resetOrchestrator(opts?: Oazapfts.RequestOpts) {
+/**
+ * Get backups orchestrator configuration
+ */
+export function yuccaGetConfig(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ConfigResponseDto;
+    }>("/yucca/config", {
+        ...opts
+    }));
+}
+/**
+ * Update backups orchestrator configuration
+ */
+export function yuccaUpdateConfig({ configUpdateRequestDto }: {
+    configUpdateRequestDto: ConfigUpdateRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ConfigResponseDto;
+    }>("/yucca/config", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: configUpdateRequestDto
+    })));
+}
+/**
+ * Reset the backups orchestrator
+ */
+export function yuccaResetOrchestrator(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/debug/reset", {
         ...opts,
         method: "POST"
     }));
 }
-export function getFileListing({ path }: {
+/**
+ * List files
+ */
+export function yuccaGetFileListing({ path }: {
     path?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -8121,7 +8397,10 @@ export function getFileListing({ path }: {
         ...opts
     }));
 }
-export function getIntegrations(opts?: Oazapfts.RequestOpts) {
+/**
+ * Get backup integrations
+ */
+export function yuccaGetIntegrations(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: IntegrationsResponseDto;
@@ -8129,16 +8408,46 @@ export function getIntegrations(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function configureImmichIntegration({ configureImmichIntegrationRequestDto }: {
+/**
+ * Configure the Immich backup integration
+ */
+export function yuccaConfigureImmichIntegration({ configureImmichIntegrationRequestDto }: {
     configureImmichIntegrationRequestDto: ConfigureImmichIntegrationRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/yucca/integrations/immich", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: ConfigureImmichIntegrationResponseDto;
+    }>("/yucca/integrations/immich", oazapfts.json({
         ...opts,
         method: "POST",
         body: configureImmichIntegrationRequestDto
     })));
 }
-export function startImmichRollback({ immichRollbackRequestDto }: {
+/**
+ * Configure Immich database dumps
+ */
+export function yuccaConfigureImmichDatabaseDump({ configureImmichDatabaseDumpRequestDto }: {
+    configureImmichDatabaseDumpRequestDto: ConfigureImmichDatabaseDumpRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/yucca/integrations/immich/database-dump", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: configureImmichDatabaseDumpRequestDto
+    })));
+}
+/**
+ * Ignore the Immich database dump warning
+ */
+export function yuccaIgnoreImmichDatabaseDumpWarning(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/yucca/integrations/immich/database-dump/ignore-warning", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Roll Immich back to a snapshot
+ */
+export function yuccaStartImmichRollback({ immichRollbackRequestDto }: {
     immichRollbackRequestDto: ImmichRollbackRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/integrations/immich/rollback", oazapfts.json({
@@ -8147,7 +8456,21 @@ export function startImmichRollback({ immichRollbackRequestDto }: {
         body: immichRollbackRequestDto
     })));
 }
-export function getRun({ id }: {
+/**
+ * Get Immich backup status
+ */
+export function yuccaGetImmichBackupStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ImmichBackupStatusDto;
+    }>("/yucca/integrations/immich/status", {
+        ...opts
+    }));
+}
+/**
+ * Get a run
+ */
+export function yuccaGetRun({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -8157,14 +8480,33 @@ export function getRun({ id }: {
         ...opts
     }));
 }
-export function logStreamSse({ id }: {
+/**
+ * Download a run log
+ */
+export function yuccaDownloadRunLog({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/yucca/logs/${encodeURIComponent(id)}/download`, {
+        ...opts
+    }));
+}
+/**
+ * Stream a run log
+ */
+export function yuccaLogStreamSse({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/yucca/logs/${encodeURIComponent(id)}/stream`, {
         ...opts
     }));
 }
-export function onboardingStatus(opts?: Oazapfts.RequestOpts) {
+/**
+ * Get backup onboarding status
+ */
+export function yuccaOnboardingStatus(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: OnboardingStatusResponseDto;
@@ -8172,7 +8514,10 @@ export function onboardingStatus(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function currentRecoveryKey(opts?: Oazapfts.RequestOpts) {
+/**
+ * Get the backup recovery key
+ */
+export function yuccaCurrentRecoveryKey(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: CurrentRecoveryKeyResponse;
@@ -8180,13 +8525,19 @@ export function currentRecoveryKey(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function confirmRecoveryKey(opts?: Oazapfts.RequestOpts) {
+/**
+ * Confirm the backup recovery key
+ */
+export function yuccaConfirmRecoveryKey(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/recovery-key", {
         ...opts,
         method: "POST"
     }));
 }
-export function importRecoveryKey({ importRecoveryKeyRequest }: {
+/**
+ * Import a backup recovery key
+ */
+export function yuccaImportRecoveryKey({ importRecoveryKeyRequest }: {
     importRecoveryKeyRequest: ImportRecoveryKeyRequest;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/recovery-key", oazapfts.json({
@@ -8195,25 +8546,37 @@ export function importRecoveryKey({ importRecoveryKeyRequest }: {
         body: importRecoveryKeyRequest
     })));
 }
-export function reportError(opts?: Oazapfts.RequestOpts) {
+/**
+ * Report a startup error
+ */
+export function yuccaReportError(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/report-error", {
         ...opts,
         method: "POST"
     }));
 }
-export function skipOnboardingExtraConfig(opts?: Oazapfts.RequestOpts) {
+/**
+ * Skip optional backup onboarding
+ */
+export function yuccaSkipOnboardingExtraConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/skip", {
         ...opts,
         method: "POST"
     }));
 }
-export function enableTelemetry(opts?: Oazapfts.RequestOpts) {
+/**
+ * Enable FUTO Backups telemetry
+ */
+export function yuccaEnableTelemetry(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/telemetry", {
         ...opts,
         method: "POST"
     }));
 }
-export function getRepositories(opts?: Oazapfts.RequestOpts) {
+/**
+ * List backups
+ */
+export function yuccaGetRepositories(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: RepositoryListResponseDto;
@@ -8221,12 +8584,15 @@ export function getRepositories(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function createRepository({ backend, repositoryCreateRequestDto }: {
+/**
+ * Create a new backup
+ */
+export function yuccaCreateRepository({ backend, repositoryCreateRequestDto }: {
     backend?: string;
     repositoryCreateRequestDto: RepositoryCreateRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: RepositoryCreateResponseDto;
     }>(`/yucca/repository${QS.query(QS.explode({
         backend
@@ -8236,7 +8602,10 @@ export function createRepository({ backend, repositoryCreateRequestDto }: {
         body: repositoryCreateRequestDto
     })));
 }
-export function inspectRepositories({ backend }: {
+/**
+ * List remote backups
+ */
+export function yuccaInspectRepositories({ backend }: {
     backend?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -8248,7 +8617,10 @@ export function inspectRepositories({ backend }: {
         ...opts
     }));
 }
-export function deleteRepository({ id }: {
+/**
+ * Remove a backup
+ */
+export function yuccaDeleteRepository({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/yucca/repository/${encodeURIComponent(id)}`, {
@@ -8256,7 +8628,10 @@ export function deleteRepository({ id }: {
         method: "DELETE"
     }));
 }
-export function updateRepository({ backend, id, repositoryUpdateRequestDto }: {
+/**
+ * Update a backup
+ */
+export function yuccaUpdateRepository({ backend, id, repositoryUpdateRequestDto }: {
     backend?: string;
     id: string;
     repositoryUpdateRequestDto: RepositoryUpdateRequestDto;
@@ -8272,18 +8647,24 @@ export function updateRepository({ backend, id, repositoryUpdateRequestDto }: {
         body: repositoryUpdateRequestDto
     })));
 }
-export function createBackup({ id }: {
+/**
+ * Start a backup
+ */
+export function yuccaCreateBackup({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: LogResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}`, {
         ...opts,
         method: "POST"
     }));
 }
-export function reconfigureRepositoryPrimaryBackend({ id, repositoryPrimaryBackendReconfigureRequestDto }: {
+/**
+ * Change the primary backend
+ */
+export function yuccaReconfigureRepositoryPrimaryBackend({ id, repositoryPrimaryBackendReconfigureRequestDto }: {
     id: string;
     repositoryPrimaryBackendReconfigureRequestDto: RepositoryPrimaryBackendReconfigureRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -8296,7 +8677,10 @@ export function reconfigureRepositoryPrimaryBackend({ id, repositoryPrimaryBacke
         body: repositoryPrimaryBackendReconfigureRequestDto
     })));
 }
-export function checkImportRepository({ backend, id }: {
+/**
+ * Check a repository import
+ */
+export function yuccaCheckImportRepository({ backend, id }: {
     backend: string;
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -8309,12 +8693,15 @@ export function checkImportRepository({ backend, id }: {
         ...opts
     }));
 }
-export function importRepository({ backend, id }: {
+/**
+ * Import a repository
+ */
+export function yuccaImportRepository({ backend, id }: {
     backend: string;
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: RepositoryCreateResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}/import${QS.query(QS.explode({
         backend
@@ -8323,7 +8710,10 @@ export function importRepository({ backend, id }: {
         method: "POST"
     }));
 }
-export function getRunHistory({ id }: {
+/**
+ * List backup runs
+ */
+export function yuccaGetRunHistory({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -8333,7 +8723,10 @@ export function getRunHistory({ id }: {
         ...opts
     }));
 }
-export function getSnapshots({ id }: {
+/**
+ * List snapshots
+ */
+export function yuccaGetSnapshots({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -8343,18 +8736,24 @@ export function getSnapshots({ id }: {
         ...opts
     }));
 }
-export function pruneRepository({ id }: {
+/**
+ * Prune a repository
+ */
+export function yuccaPruneRepository({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: LogResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}/snapshots/prune`, {
         ...opts,
         method: "POST"
     }));
 }
-export function forgetSnapshot({ id, snapshot }: {
+/**
+ * Delete a snapshot
+ */
+export function yuccaForgetSnapshot({ id, snapshot }: {
     id: string;
     snapshot: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -8366,13 +8765,16 @@ export function forgetSnapshot({ id, snapshot }: {
         method: "DELETE"
     }));
 }
-export function restoreSnapshot({ id, snapshot, repositorySnapshotRestoreRequestDto }: {
+/**
+ * Restore a snapshot
+ */
+export function yuccaRestoreSnapshot({ id, snapshot, repositorySnapshotRestoreRequestDto }: {
     id: string;
     snapshot: string;
     repositorySnapshotRestoreRequestDto: RepositorySnapshotRestoreRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: LogResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}/snapshots/${encodeURIComponent(snapshot)}`, oazapfts.json({
         ...opts,
@@ -8380,7 +8782,10 @@ export function restoreSnapshot({ id, snapshot, repositorySnapshotRestoreRequest
         body: repositorySnapshotRestoreRequestDto
     })));
 }
-export function getSnapshotListing({ id, path, snapshot }: {
+/**
+ * List snapshot files
+ */
+export function yuccaGetSnapshotListing({ id, path, snapshot }: {
     id: string;
     path?: string;
     snapshot: string;
@@ -8394,14 +8799,17 @@ export function getSnapshotListing({ id, path, snapshot }: {
         ...opts
     }));
 }
-export function restoreFromPoint({ backend, id, snapshot, repositorySnapshotRestoreFromPointRequestDto }: {
+/**
+ * Restore from snapshot
+ */
+export function yuccaRestoreFromPoint({ backend, id, snapshot, repositorySnapshotRestoreFromPointRequestDto }: {
     backend: string;
     id: string;
     snapshot: string;
     repositorySnapshotRestoreFromPointRequestDto: RepositorySnapshotRestoreFromPointRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: LogResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}/snapshots/${encodeURIComponent(snapshot)}/restore-from-point${QS.query(QS.explode({
         backend
@@ -8411,7 +8819,10 @@ export function restoreFromPoint({ backend, id, snapshot, repositorySnapshotRest
         body: repositorySnapshotRestoreFromPointRequestDto
     })));
 }
-export function getSchedules(opts?: Oazapfts.RequestOpts) {
+/**
+ * List schedules
+ */
+export function yuccaGetSchedules(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ScheduleListResponseDto;
@@ -8419,11 +8830,14 @@ export function getSchedules(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function createSchedule({ scheduleCreateRequestDto }: {
+/**
+ * Create a schedule
+ */
+export function yuccaCreateSchedule({ scheduleCreateRequestDto }: {
     scheduleCreateRequestDto: ScheduleCreateRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: ScheduleCreateResponseDto;
     }>("/yucca/schedule", oazapfts.json({
         ...opts,
@@ -8431,7 +8845,10 @@ export function createSchedule({ scheduleCreateRequestDto }: {
         body: scheduleCreateRequestDto
     })));
 }
-export function removeSchedule({ id }: {
+/**
+ * Delete a schedule
+ */
+export function yuccaRemoveSchedule({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/yucca/schedule/${encodeURIComponent(id)}`, {
@@ -8439,7 +8856,10 @@ export function removeSchedule({ id }: {
         method: "DELETE"
     }));
 }
-export function updateSchedule({ id, scheduleUpdateRequestDto }: {
+/**
+ * Update a schedule
+ */
+export function yuccaUpdateSchedule({ id, scheduleUpdateRequestDto }: {
     id: string;
     scheduleUpdateRequestDto: ScheduleUpdateRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -8452,7 +8872,10 @@ export function updateSchedule({ id, scheduleUpdateRequestDto }: {
         body: scheduleUpdateRequestDto
     })));
 }
-export function getRunningTasks(opts?: Oazapfts.RequestOpts) {
+/**
+ * List running tasks
+ */
+export function yuccaGetRunningTasks(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: RunningTaskListResponse;
@@ -8460,7 +8883,10 @@ export function getRunningTasks(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function cancelTask({ parentId }: {
+/**
+ * Cancel a task
+ */
+export function yuccaCancelTask({ parentId }: {
     parentId: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/yucca/tasks/${encodeURIComponent(parentId)}/cancel`, {
@@ -8609,6 +9035,10 @@ export enum CalendarHeatmapType {
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
+}
+export enum PersonUpdateStrategy {
+    Self = "self",
+    Everyone = "everyone"
 }
 export enum AssetVisibility {
     Archive = "archive",
@@ -8823,6 +9253,11 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
+export enum PersonUserRole {
+    Read = "read",
+    Write = "write",
+    Admin = "admin"
+}
 export enum AssetTypeEnum {
     Image = "IMAGE",
     Video = "VIDEO",
@@ -8900,11 +9335,19 @@ export enum MemorySearchOrder {
     Random = "random"
 }
 export enum MemoryType {
-    OnThisDay = "on_this_day"
+    OnThisDay = "on_this_day",
+    Birthday = "birthday"
 }
 export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
+}
+export enum SharingDirection {
+    SharedBy = "shared-by",
+    SharedWith = "shared-with"
+}
+export enum PeopleUsersUpsertType {
+    Everyone = "everyone"
 }
 export enum WorkflowType {
     AssetV1 = "AssetV1"
@@ -9015,6 +9458,7 @@ export enum AssetIdErrorReason {
 }
 export enum SyncEntityType {
     AuthUserV1 = "AuthUserV1",
+    AuthUserV2 = "AuthUserV2",
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
     AssetV1 = "AssetV1",
@@ -9058,8 +9502,10 @@ export enum SyncEntityType {
     AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",
     AlbumToAssetBackfillV1 = "AlbumToAssetBackfillV1",
     MemoryV1 = "MemoryV1",
+    MemoryV2 = "MemoryV2",
     MemoryDeleteV1 = "MemoryDeleteV1",
     MemoryToAssetV1 = "MemoryToAssetV1",
+    MemoryToAssetV2 = "MemoryToAssetV2",
     MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
     StackV1 = "StackV1",
     StackDeleteV1 = "StackDeleteV1",
@@ -9067,6 +9513,7 @@ export enum SyncEntityType {
     PersonDeleteV1 = "PersonDeleteV1",
     AssetFaceV1 = "AssetFaceV1",
     AssetFaceV2 = "AssetFaceV2",
+    AssetFaceV3 = "AssetFaceV3",
     AssetFaceDeleteV1 = "AssetFaceDeleteV1",
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
@@ -9089,8 +9536,11 @@ export enum SyncRequestType {
     AssetMetadataV1 = "AssetMetadataV1",
     AssetOcrV1 = "AssetOcrV1",
     AuthUsersV1 = "AuthUsersV1",
+    AuthUsersV2 = "AuthUsersV2",
     MemoriesV1 = "MemoriesV1",
+    MemoriesV2 = "MemoriesV2",
     MemoryToAssetsV1 = "MemoryToAssetsV1",
+    MemoryToAssetsV2 = "MemoryToAssetsV2",
     PartnersV1 = "PartnersV1",
     PartnerAssetsV1 = "PartnerAssetsV1",
     PartnerAssetsV2 = "PartnerAssetsV2",
@@ -9101,6 +9551,7 @@ export enum SyncRequestType {
     PeopleV1 = "PeopleV1",
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
+    AssetFacesV3 = "AssetFacesV3",
     UserMetadataV1 = "UserMetadataV1"
 }
 export enum AssetOrderBy {
@@ -9136,13 +9587,21 @@ export enum RunStatus {
     Incomplete = "incomplete",
     Complete = "complete",
     Warn = "warn",
-    Failed = "failed"
+    Failed = "failed",
+    Cancelled = "cancelled"
 }
 export enum RunType {
     Schedule = "schedule",
     Restore = "restore",
     Backup = "backup",
     Forget = "forget"
+}
+export enum BackupStatus {
+    Incomplete = "incomplete",
+    Complete = "complete",
+    Warn = "warn",
+    Failed = "failed",
+    Cancelled = "cancelled"
 }
 export enum TelemetryLevel {
     Full = "full",
@@ -9157,13 +9616,17 @@ export enum TaskStatus {
     Incomplete = "incomplete",
     Complete = "complete",
     Warn = "warn",
-    Failed = "failed"
+    Failed = "failed",
+    Cancelled = "cancelled"
 }
 export enum TaskType {
     Schedule = "schedule",
     Restore = "restore",
     Backup = "backup",
     Forget = "forget"
+}
+export enum MemoryTypeV1 {
+    OnThisDay = "on_this_day"
 }
 export enum ReleaseType {
     Major = "major",

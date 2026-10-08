@@ -7,35 +7,35 @@ import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
 import { basename } from 'node:path';
-import { serverVersion } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
+import type { MaintenanceModeState } from 'src/types.js';
+import { serverVersion } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
-} from 'src/dtos/maintenance.dto';
-import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
-import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
-import { AppRepository } from 'src/repositories/app.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { ProcessRepository } from 'src/repositories/process.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { type ApiService as _ApiService } from 'src/services/api.service';
-import { type BaseService as _BaseService } from 'src/services/base.service';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { type ServerService as _ServerService } from 'src/services/server.service';
-import { type VersionService as _VersionService } from 'src/services/version.service';
-import { MaintenanceModeState } from 'src/types';
-import { getConfig } from 'src/utils/config';
-import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
-import { getExternalDomain } from 'src/utils/misc';
-import { detectMediaLocation } from 'src/utils/storage';
+} from 'src/dtos/maintenance.dto.js';
+import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
+import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
+import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
+import { AppRepository } from 'src/repositories/app.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { type ApiService as _ApiService } from 'src/services/api.service.js';
+import { type BaseService as _BaseService } from 'src/services/base.service.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { type ServerService as _ServerService } from 'src/services/server.service.js';
+import { type VersionService as _VersionService } from 'src/services/version.service.js';
+import { getConfig } from 'src/utils/config.js';
+import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance.js';
+import { getExternalDomain } from 'src/utils/misc.js';
+import { detectMediaLocation } from 'src/utils/storage.js';
 
 /**
  * This service is available inside of maintenance mode to manage maintenance mode
@@ -376,10 +376,8 @@ export class MaintenanceWorkerService {
       action: MaintenanceAction.Rollback,
     });
 
-    // code needs to be pulled back into yucca sdk
-
     const yucca = this.moduleRef.get(YuccaService, { strict: false });
-    const { logId, task, tags } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
+    const { logId, task, immichBackupFileName } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
 
     this.setStatus({
       active: true,
@@ -389,18 +387,13 @@ export class MaintenanceWorkerService {
 
     await task;
 
-    enum ResticTagPrefix {
-      ImmichBackupFileName = 'yucca.v1.immichBackupFileName',
-    }
-
-    const backupFileNameTag = tags.find((item) => item.startsWith(`${ResticTagPrefix.ImmichBackupFileName}=`));
-    if (!backupFileNameTag) {
+    if (!immichBackupFileName) {
       return this.setAction({
         action: MaintenanceAction.SelectDatabaseRestore,
       });
     }
 
-    const backupFileName = basename(backupFileNameTag.slice(ResticTagPrefix.ImmichBackupFileName.length + 1));
+    const backupFileName = basename(immichBackupFileName);
     await this.restoreBackup(backupFileName);
   }
 

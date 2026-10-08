@@ -1,9 +1,9 @@
-import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
-import { JobService } from 'src/services/job.service';
-import { JobItem } from 'src/types';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import type { JobItem } from 'src/types.js';
+import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum.js';
+import { JobService } from 'src/services/job.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { newUuid } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(JobService.name, () => {
   let sut: JobService;
@@ -20,6 +20,18 @@ describe(JobService.name, () => {
   });
 
   describe('onJobRun', () => {
+    it('should queue metadata extraction when sidecar discovery is skipped', async () => {
+      const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
+      mocks.job.run.mockResolvedValue(JobStatus.Skipped);
+
+      await sut.onJobRun(QueueName.Sidecar, job);
+
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.AssetExtractMetadata,
+        data: job.data,
+      });
+    });
+
     it('should process a successful job', async () => {
       mocks.job.run.mockResolvedValue(JobStatus.Success);
 

@@ -1,10 +1,5 @@
-import {
-  LoginResponseDto,
-  confirmRecoveryKey,
-  enableTelemetry,
-  importRecoveryKey,
-  resetOrchestrator,
-} from '@immich/sdk';
+import * as sdk from '@futo-org/backups-orchestrator-ui/sdk';
+import { LoginResponseDto } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { io, type Socket } from 'socket.io-client';
 import { asBearerAuth, baseUrl, utils } from 'src/utils';
@@ -33,14 +28,15 @@ test.describe('Yucca Backups', () => {
 
   test.beforeAll(async () => {
     utils.initSdk();
+    sdk.defaults.baseUrl = baseUrl;
     await utils.resetDatabase();
     admin = await utils.adminSetup();
 
     const headers = asBearerAuth(admin.accessToken);
-    await resetOrchestrator({ headers });
-    await importRecoveryKey({ importRecoveryKeyRequest: { recoveryKey: '0'.repeat(64) } }, { headers });
-    await confirmRecoveryKey({ headers });
-    await enableTelemetry({ headers });
+    await sdk.resetOrchestrator({ headers });
+    await sdk.importRecoveryKey({ recoveryKey: '0'.repeat(64) }, { headers });
+    await sdk.confirmRecoveryKey({ headers });
+    await sdk.enableTelemetry({ headers });
     await utils.mkFolder('/local-backend');
 
     socket = io(baseUrl, {
@@ -99,7 +95,7 @@ test.describe('Yucca Backups', () => {
     await utils.resetBackups(admin.accessToken);
     await utils.createBackup(admin.accessToken);
 
-    await resetOrchestrator({ headers: asBearerAuth(admin.accessToken) });
+    await sdk.resetOrchestrator({ headers: asBearerAuth(admin.accessToken) });
     await utils.resetDatabase();
 
     await page.goto('/');

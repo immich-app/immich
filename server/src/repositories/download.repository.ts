@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetVisibility } from 'src/enum';
-import { DB } from 'src/schema';
-import { anyUuid } from 'src/utils/database';
+import { AssetVisibility } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { anyUuid } from 'src/utils/database.js';
 
 const builder = (db: Kysely<DB>) =>
   db

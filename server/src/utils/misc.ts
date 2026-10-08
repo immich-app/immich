@@ -7,16 +7,16 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import _ from 'lodash';
+import { get, isArray, isDate, isEmpty, isObject, orderBy, unset } from 'lodash-es';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
-import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
-import { extraModels } from 'src/decorators';
-import { SystemConfig } from 'src/dtos/config.dto';
-import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants.js';
+import { HistoryBuilder, extraModels } from 'src/decorators.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
 type ReferenceOrSchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
@@ -69,7 +69,7 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
       continue;
     }
 
-    if (_.isObject(value) && !_.isArray(value) && !_.isDate(value)) {
+    if (isObject(value) && !isArray(value) && !isDate(value)) {
       properties.push(...getKeysDeep(value, [...path, key]));
       continue;
     }
@@ -83,14 +83,14 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
 export const unsetDeep = (object: unknown, key: string) => {
   const parts = key.split('.');
   while (parts.length > 0) {
-    _.unset(object, parts);
+    unset(object, parts);
     parts.pop();
-    if (!_.isEmpty(_.get(object, parts))) {
+    if (!isEmpty(get(object, parts))) {
       break;
     }
   }
 
-  return _.isEmpty(object) ? undefined : object;
+  return isEmpty(object) ? undefined : object;
 };
 
 const isMachineLearningEnabled = (machineLearning: SystemConfig['machineLearning']) => machineLearning.enabled;
@@ -104,11 +104,11 @@ export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machi
   isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metadata.faces.import;
 
-export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
-
 export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingRepository): void => {
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
+
+export const hasSomeDefined = (values: unknown[]) => values.some((value) => value !== undefined);
 
 export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
   const value = await find();
@@ -125,10 +125,12 @@ export async function* batched<T>(items: AsyncIterable<T>, size = JOBS_ASSET_PAG
   for await (const item of items) {
     batch.push(item);
 
-    if (batch.length >= size) {
-      yield batch;
-      batch = [];
+    if (batch.length < size) {
+      continue;
     }
+
+    yield batch;
+    batch = [];
   }
 
   if (batch.length > 0) {
@@ -245,17 +247,19 @@ const patchOpenAPI = (document: OpenAPIObject) => {
           value = value.items;
         }
 
-        if (isSchema(value) && value.type === 'number') {
-          if (value.format === 'float') {
-            errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-          }
+        if (!(isSchema(value) && value.type === 'number')) {
+          continue;
+        }
 
-          // verify it was meant to be a number (and not an integer)
-          if (!value.format) {
-            errors.push(
-              `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
-            );
-          }
+        if (value.format === 'float') {
+          errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        }
+
+        // verify it was meant to be a number (and not an integer)
+        if (!value.format) {
+          errors.push(
+            `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
+          );
         }
       }
       schema.required?.sort();
@@ -272,7 +276,9 @@ const patchOpenAPI = (document: OpenAPIObject) => {
     document.paths[newKey] = value;
   }
 
-  for (const path of Object.values(document.paths)) {
+  const backupsHistory = new HistoryBuilder().added('v3.4.0').internal('v3.4.0').getExtensions();
+
+  for (const [key, path] of Object.entries(document.paths)) {
     const operations = {
       get: path.get,
       put: path.put,
@@ -307,8 +313,25 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       }
 
       if (operation.parameters) {
-        operation.parameters = _.orderBy(operation.parameters, 'name');
+        operation.parameters = orderBy(operation.parameters, 'name');
       }
+
+      if (!key.startsWith('/yucca')) {
+        continue;
+      }
+
+      // add FUTO Backups specific metadata
+
+      if (operation.operationId) {
+        operation.operationId = `yucca${operation.operationId.charAt(0).toUpperCase()}${operation.operationId.slice(1)}`;
+      }
+
+      operation.tags = ['Backups'];
+      Object.assign(operation, backupsHistory);
+
+      // matches auth.guard.ts#Authenticated() guard
+      operation.security = [{ bearer: [] }, { cookie: [] }, { [MetadataKey.ApiKeySecurity]: [] }];
+      operation[ApiCustomExtension.AdminOnly] = true;
     }
   }
 
@@ -361,11 +384,13 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   SwaggerModule.setup('doc', app, openApiDoc, customOptions);
 
-  if (write) {
-    // Generate API Documentation only in development mode
-    const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
+  // Generate API Documentation only in development mode
+  if (!write) {
+    return;
   }
+
+  const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
+  writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
 };
 
 // Compiles a glob to the equivalent Postgres regex (Postgres's Advanced Regular Expression

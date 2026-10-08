@@ -35,7 +35,12 @@
 <section class="my-4">
   <div class="flex flex-col gap-2 sm:ms-8" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button leadingIcon={Create.icon} shape="round" size="small" onclick={() => Create.onAction(Create)}>
+      <Button
+        leadingIcon={Create.icon}
+        shape="round"
+        size="small"
+        onclick={(event: MouseEvent) => Create.onAction({ event, action: Create })}
+      >
         {Create.title}
       </Button>
     </div>

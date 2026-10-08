@@ -34,6 +34,7 @@ jobs:
           filters: |
             mobile:
               - 'mobile/**'
+              - 'open-api/**'
               - 'i18n/en.json'
           force-filters: |
             - '.github/workflows/static_analysis.yml'
@@ -80,7 +81,7 @@ jobs:
         run: mise //mobile:codegen
 
       - name: Run analyze
-        run: mise //mobile:analyze
+        run: mise //mobile:analyze --full
 
       - name: Run format
         run: mise //mobile:format

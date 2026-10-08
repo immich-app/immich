@@ -77,7 +77,14 @@
           {/if}
         {/if}
       {:else if $status?.action === MaintenanceAction.Rollback && $status.yuccaLogId}
-        <ViewStatusModal logId={$status.yuccaLogId} onClose={() => void 0} />
+        <ViewStatusModal
+          logId={$status.yuccaLogId}
+          onClose={() => {
+            if ($status?.error) {
+              $status.yuccaLogId = '';
+            }
+          }}
+        />
       {:else if $status?.action === MaintenanceAction.Rollback && $status.error}
         <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_rollback')}</Heading>
         {@render errorLog()}

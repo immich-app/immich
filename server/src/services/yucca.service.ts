@@ -1,20 +1,20 @@
 import {
-  GatewayEvent,
-  ImmichDatabaseDumpConfig,
+  type GatewayEvent,
+  type ImmichDatabaseDumpConfig,
   YuccaService as YuccaOrchestratorService,
 } from '@futo-org/backups-orchestrator-api';
 import { Injectable, Optional } from '@nestjs/common';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
-import { SystemConfig } from 'src/dtos/config.dto';
-import { DatabaseLock, ImmichWorker, MaintenanceAction, StorageFolder } from 'src/enum';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { ArgOf } from 'src/repositories/event.repository';
-import { LibraryRepository } from 'src/repositories/library.repository';
-import { DatabaseBackupService } from 'src/services/database-backup.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
-import { SystemConfigService } from 'src/services/system-config.service';
-import { getExternalDomain } from 'src/utils/misc';
+import type { SystemConfig } from 'src/dtos/config.dto.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent } from 'src/decorators.js';
+import { DatabaseLock, ImmichWorker, MaintenanceAction, StorageFolder } from 'src/enum.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LibraryRepository } from 'src/repositories/library.repository.js';
+import { DatabaseBackupService } from 'src/services/database-backup.service.js';
+import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { SystemConfigService } from 'src/services/system-config.service.js';
+import { getExternalDomain } from 'src/utils/misc.js';
 
 @Injectable()
 export class YuccaService {

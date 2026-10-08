@@ -1,5 +1,5 @@
-import { serverVersion } from 'src/constants';
-import { configureUserAgent } from 'src/utils/fetch';
+import { serverVersion } from 'src/constants.js';
+import { configureUserAgent } from 'src/utils/fetch.js';
 
 describe('fetch', () => {
   it('should set the default user-agent header', async () => {

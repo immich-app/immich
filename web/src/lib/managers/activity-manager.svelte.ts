@@ -98,7 +98,7 @@ class ActivityManager {
     return activity;
   }
 
-  async deleteActivity(activity: ActivityResponseDto, index?: number) {
+  async deleteActivity(activity: ActivityResponseDto) {
     if (!this.#albumId) {
       return;
     }
@@ -111,9 +111,7 @@ class ActivityManager {
       this.#likeCount--;
     }
 
-    this.#activities = index
-      ? this.#activities.splice(index, 1)
-      : this.#activities.filter(({ id }) => id !== activity.id);
+    this.#activities = this.#activities.filter(({ id }) => id !== activity.id);
 
     await deleteActivity({ id: activity.id });
     this.#invalidateCache(this.#albumId, this.#assetId);

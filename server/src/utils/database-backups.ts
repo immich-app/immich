@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { DatabaseBackupDto } from 'src/dtos/database-backup.dto';
+import { DatabaseBackupDto } from 'src/dtos/database-backup.dto.js';
 
 export function isValidDatabaseBackupName(filename: string) {
   return filename.match(/^[\d\w-.]+\.sql(?:\.gz)?$/);

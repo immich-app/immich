@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { serverVersion } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
+import { serverVersion } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent } from 'src/decorators.js';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
 import {
   ServerAboutResponseDto,
   ServerApkLinksDto,
@@ -13,18 +13,18 @@ import {
   ServerStatsResponseDto,
   ServerStorageResponseDto,
   UsageByUserDto,
-} from 'src/dtos/server.dto';
-import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { UserStatsQueryResponse } from 'src/repositories/user.repository';
-import { BaseService } from 'src/services/base.service';
-import { asHumanReadable } from 'src/utils/bytes';
-import { mimeTypes } from 'src/utils/mime-types';
+} from 'src/dtos/server.dto.js';
+import { StorageFolder, SystemMetadataKey } from 'src/enum.js';
+import { UserStatsQueryResponse } from 'src/repositories/user.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { asHumanReadable } from 'src/utils/bytes.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 import {
   isDuplicateDetectionEnabled,
   isFacialRecognitionEnabled,
   isOcrEnabled,
   isSmartSearchEnabled,
-} from 'src/utils/misc';
+} from 'src/utils/misc.js';
 
 @Injectable()
 export class ServerService extends BaseService {
@@ -90,7 +90,7 @@ export class ServerService extends BaseService {
       reverseGeocoding,
       metadata,
       map,
-      backup: _backup,
+      backup,
       machineLearning,
       trash,
       oauth,
@@ -105,8 +105,7 @@ export class ServerService extends BaseService {
       facialRecognition: isFacialRecognitionEnabled(machineLearning),
       duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
-      backups: true, // TODO[YUCCA]: pinned to true for closed beta
-      // backups: backup.beta,
+      backups: backup.beta,
       reverseGeocoding: reverseGeocoding.enabled,
       importFaces: metadata.faces.import,
       sidecar: true,

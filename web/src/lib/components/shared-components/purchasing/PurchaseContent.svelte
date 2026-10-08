@@ -42,9 +42,8 @@
     </Heading>
   {/if}
 
-  <!-- TODO[YUCCA]: i18n keys & link -->
-  <Text>Product keys support Immich development and gives you a supporter badge.</Text>
-  <Text fontWeight="bold">Product keys do not include FUTO Backups.</Text>
+  <Text>{$t('purchase_product_key_description')}</Text>
+  <Text fontWeight="bold">{$t('purchase_product_key_excludes_backups')}</Text>
 
   {#if showMessage}
     <div class="mt-2">

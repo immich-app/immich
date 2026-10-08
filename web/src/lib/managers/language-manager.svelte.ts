@@ -24,6 +24,10 @@ class LanguageManager {
   }
 
   async setLanguage(code: string) {
+    const locale = convertBCP47(code);
+    const messages = await loadMessages(locale);
+    backupsLocale.set(locale, messages);
+
     const item = langs.find((item) => item.code === code);
     if (!item) {
       return;
@@ -34,10 +38,6 @@ class LanguageManager {
     document.body.setAttribute('dir', item.rtl ? 'rtl' : 'ltr');
 
     eventManager.emit('LanguageChange', item);
-
-    const locale = convertBCP47(code);
-    const messages = await loadMessages(locale);
-    backupsLocale.set(locale, messages);
   }
 }
 

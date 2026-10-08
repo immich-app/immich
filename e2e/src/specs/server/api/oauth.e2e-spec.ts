@@ -9,8 +9,8 @@ import {
   updateConfig,
 } from '@immich/sdk';
 import { createHash, randomBytes } from 'node:crypto';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, baseUrl, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 

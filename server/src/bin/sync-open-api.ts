@@ -2,8 +2,8 @@
 process.env.DB_URL = 'postgres://postgres:postgres@localhost:5432/immich';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ApiModule } from 'src/app.module';
-import { useSwagger } from 'src/utils/misc';
+import { ApiModule } from 'src/app.module.js';
+import { useSwagger } from 'src/utils/misc.js';
 
 const sync = async () => {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { preview: true });

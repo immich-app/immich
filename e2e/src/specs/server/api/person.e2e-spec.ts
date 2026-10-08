@@ -1,7 +1,7 @@
 import { getPerson, LoginResponseDto, PersonResponseDto } from '@immich/sdk';
-import { uuidDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, utils } from 'src/utils';
+import { uuidDto } from 'src/fixtures.js';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -122,7 +122,7 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: false,
-        total: 11,
+        total: 10,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'Freddy' }),
@@ -144,7 +144,7 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body.hasNextPage).toBe(false);
-      expect(body.total).toBe(11); // All persons
+      expect(body.total).toBe(10);
       expect(body.hidden).toBe(1); // 'hidden_person'
 
       const people = body.people as PersonResponseDto[];
@@ -170,7 +170,7 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: false,
-        total: 11,
+        total: 10,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'Freddy' }),
@@ -195,7 +195,7 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: true,
-        total: 11,
+        total: 10,
         hidden: 1,
         people: [expect.objectContaining({ name: 'Alice' })],
       });

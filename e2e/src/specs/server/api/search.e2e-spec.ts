@@ -11,7 +11,7 @@ import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Socket } from 'socket.io-client';
-import { app, asBearerAuth, TEN_TIMES, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, TEN_TIMES, testAssetDir, utils } from 'src/utils.js';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 const today = DateTime.now();
@@ -491,6 +491,7 @@ describe('/search', () => {
         .get('/search/suggestions?type=country&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
+        'China',
         'Cuba',
         'France',
         'Georgia',
@@ -498,12 +499,11 @@ describe('/search', () => {
         'Ghana',
         'Japan',
         'Morocco',
-        "People's Republic of China",
-        'Russian Federation',
+        'Russia',
         'Singapore',
         'Spain',
         'Switzerland',
-        'United States of America',
+        'United States',
         null,
       ]);
       expect(status).toBe(200);
@@ -514,6 +514,7 @@ describe('/search', () => {
         .get('/search/suggestions?type=country')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
+        'China',
         'Cuba',
         'France',
         'Georgia',
@@ -521,12 +522,11 @@ describe('/search', () => {
         'Ghana',
         'Japan',
         'Morocco',
-        "People's Republic of China",
-        'Russian Federation',
+        'Russia',
         'Singapore',
         'Spain',
         'Switzerland',
-        'United States of America',
+        'United States',
       ]);
       expect(status).toBe(200);
     });

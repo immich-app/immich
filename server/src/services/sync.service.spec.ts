@@ -1,8 +1,8 @@
 import { Writable } from 'node:stream';
-import { SyncEntityType } from 'src/enum';
-import { send } from 'src/services/sync.service';
-import { ClientDisconnectedError } from 'src/utils/response';
-import { serialize } from 'src/utils/sync';
+import { SyncEntityType } from 'src/enum.js';
+import { send } from 'src/services/sync.service.js';
+import { ClientDisconnectedError } from 'src/utils/response.js';
+import { serialize } from 'src/utils/sync.js';
 
 type TestStream = {
   stream: Writable;

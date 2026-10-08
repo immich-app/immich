@@ -4,17 +4,17 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  Generated,
+  type Generated,
   Index,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { person_delete_audit } from 'src/schema/functions';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { PersonGroupTable } from 'src/schema/tables/person-group.table';
-import { UserTable } from 'src/schema/tables/user.table';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
+import { person_delete_audit, person_delete_shares } from 'src/schema/functions.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('person')
 @Index({
@@ -28,6 +28,12 @@ import { UserTable } from 'src/schema/tables/user.table';
   function: person_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() <= 1',
+})
+@AfterDeleteTrigger({
+  name: 'person_delete_shares',
+  scope: 'statement',
+  function: person_delete_shares,
+  referencingOldTableAs: 'deleted_rows',
 })
 @Check({ name: 'person_birthDate_chk', expression: `"birthDate" <= CURRENT_DATE` })
 export class PersonTable {

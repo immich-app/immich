@@ -39,6 +39,7 @@
         { key: ['i'], action: $t('show_or_hide_info') },
         { key: ['s'], action: $t('stack_selected_photos') },
         { key: ['l'], action: $t('add_to_album') },
+        { key: ['⇧', 'l'], action: $t('remove_from_album') },
         { key: ['t'], action: $t('tag_assets') },
         { key: ['p'], action: $t('tag_people') },
         { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
@@ -46,7 +47,7 @@
         { key: ['Space'], action: $t('play_or_pause_video') },
         { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
         ...(authManager.authenticated && authManager.preferences.ratings.enabled
-          ? [{ key: ['1-5'], action: $t('rate_asset'), info: $t('zero_to_clear_rating') }]
+          ? [{ key: ['0-5'], action: $t('rate_asset'), info: $t('rate_asset_description') }]
           : []),
       ],
     },

@@ -74,8 +74,8 @@ class TimelineFactory {
 
   TimelineService place(String place) => TimelineService(_timelineRepository.place(place, groupBy));
 
-  TimelineService person(String userId, String personId) =>
-      TimelineService(_timelineRepository.person(userId, personId, groupBy));
+  TimelineService person(List<String> userIds, String personId) =>
+      TimelineService(_timelineRepository.person(userIds, personId, groupBy));
 
   TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));
@@ -193,15 +193,6 @@ class TimelineService {
   Future<void> preloadAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
   BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
-
-  BaseAsset getAsset(int index) {
-    if (!hasRange(index, 1)) {
-      throw RangeError(
-        'TimelineService::getAsset Index $index not in buffer range [$_bufferOffset, ${_bufferOffset + _buffer.length})',
-      );
-    }
-    return _buffer.elementAt(index - _bufferOffset);
-  }
 
   /// Gets an asset at the given index, automatically loading the buffer if needed.
   /// This is an async version that can handle out-of-range indices by loading the appropriate buffer.

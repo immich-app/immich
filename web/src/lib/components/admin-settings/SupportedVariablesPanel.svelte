@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Card, CardBody, Text } from '@immich/ui';
+  import { Card, CardBody, Heading, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 </script>
 
-<Text size="small">{$t('other_variables')}</Text>
+<Heading>{$t('other_variables')}</Heading>
 
-<Card class="mt-2 bg-light-50 text-sm shadow-none">
+<Card class="bg-light-50 text-sm shadow-none">
   <CardBody>
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <div>

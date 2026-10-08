@@ -144,11 +144,11 @@ jobs:
           PRERELEASE: ${{ needs.tag.outputs.rc }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          exclude=()
+          tags=$(git -c versionsort.suffix=-rc tag --list 'v[0-9]*' --sort=-v:refname)
           if [[ "${PRERELEASE}" != 'true' ]]; then
-            exclude=(--exclude '*-rc*')
+            tags=$(grep -v -- '-rc.' <<< "${tags}")
           fi
-          previous=$(git describe --tags --abbrev=0 --match 'v*' "${exclude[@]}" --exclude "${TAG}" HEAD)
+          previous=$(grep -A1 -xF "${TAG}" <<< "${tags}" | tail -1)
           echo "generating notes from ${previous}"
 
           gh release create "${TAG}" \

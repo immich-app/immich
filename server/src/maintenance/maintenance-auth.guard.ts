@@ -1,10 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, applyDecorators } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { MetadataKey } from 'src/enum';
-import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto.js';
+import { MetadataKey } from 'src/enum.js';
+import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 export const MaintenanceRoute = (options = {}): MethodDecorator => {
   const decorators: MethodDecorator[] = [SetMetadata(MetadataKey.AuthRoute, options)];

@@ -7,6 +7,8 @@ import { Route } from '$lib/route';
 import type { SearchFilter } from '$lib/types';
 import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
 
+const QUERY_TYPE_STORAGE_KEY = 'searchQueryType';
+
 class SearchManager {
   #filter = $state<SearchFilter>(this.#fromQuery({}));
 
@@ -20,6 +22,11 @@ class SearchManager {
 
   setQuery(query: MetadataSearchDto | SmartSearchDto) {
     this.#filter = this.#fromQuery(query);
+  }
+
+  setQueryType(queryType: SearchFilter['queryType']) {
+    this.#filter.queryType = queryType;
+    localStorage.setItem(QUERY_TYPE_STORAGE_KEY, queryType);
   }
 
   async submit() {
@@ -143,7 +150,7 @@ class SearchManager {
   }
 
   #defaultQueryType(): QueryType {
-    const storedQueryType = localStorage.getItem('searchQueryType') as QueryType;
+    const storedQueryType = localStorage.getItem(QUERY_TYPE_STORAGE_KEY) as QueryType;
     return validQueryTypes.has(storedQueryType) ? storedQueryType : QueryType.SMART;
   }
 }
