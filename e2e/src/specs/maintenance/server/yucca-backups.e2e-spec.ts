@@ -210,10 +210,6 @@ describe('/yucca', () => {
               "isDirectory": true,
               "path": "/data/upload",
             },
-            {
-              "isDirectory": true,
-              "path": "/data/yucca",
-            },
           ],
           "parent": "/",
           "path": "/data",
