@@ -76,7 +76,7 @@
 
 <BasicModal title={$t('manage_person_access')} size="medium" icon={mdiAccountMultipleOutline} {onClose}>
   <Text size="small" color="muted" class="mb-4">
-    {$t('manage_person_access_description')}
+    {$t('manage_people_access_description_v2', { values: { count: 1 } })}
   </Text>
 
   <HStack fullWidth class="my-2 justify-between">
