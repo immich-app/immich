@@ -610,7 +610,9 @@ export class MetadataService extends BaseService {
 
     // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
     // prefer irot (ExifTool QuickTime:Rotation) mapped to ExifOrientation.
-    if (mimeTypes.isHeifImage(asset.originalPath)) {
+    // Only do this for actual HEIF content: files with a HEIF extension but JPEG content
+    // (e.g. Google Takeout exports) have a valid EXIF Orientation that must be preserved.
+    if (mimeTypes.isHeifImage(asset.originalPath) && mediaTags.FileType?.toUpperCase() !== 'JPEG') {
       const orientation = this.getHeifOrientation(mediaTags);
       if (orientation === null) {
         delete mediaTags.Orientation;

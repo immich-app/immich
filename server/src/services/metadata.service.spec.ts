@@ -1127,6 +1127,63 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should keep the EXIF orientation for a HEIF extension with JPEG content', async () => {
+      // Google Takeout exports can have a .heic extension while containing JPEG data.
+      // ExifTool reports the actual content type, so the EXIF orientation must be preserved.
+      const asset = AssetFactory.create({
+        originalPath: '/data/library/IMG_123.heic',
+        originalFileName: 'IMG_123.heic',
+      });
+      const tags: ImmichTags = {
+        FileType: 'JPEG',
+        MIMEType: 'image/jpeg',
+        Orientation: ExifOrientation.Rotate90CW,
+        ImageWidth: 4128,
+        ImageHeight: 3096,
+      };
+
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags(tags);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({
+            orientation: ExifOrientation.Rotate90CW.toString(),
+            exifImageWidth: 4128,
+            exifImageHeight: 3096,
+          }),
+        }),
+      );
+    });
+
+    it('should use the QuickTime rotation for actual HEIF content', async () => {
+      const asset = AssetFactory.create({
+        originalPath: '/data/library/IMG_123.heic',
+        originalFileName: 'IMG_123.heic',
+      });
+      const tags: ImmichTags = {
+        FileType: 'HEIC',
+        MIMEType: 'image/heic',
+        Orientation: ExifOrientation.Horizontal,
+        Rotation: 3,
+        ImageWidth: 3024,
+        ImageHeight: 4032,
+      };
+
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags(tags);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({
+            orientation: ExifOrientation.Rotate90CW.toString(),
+          }),
+        }),
+      );
+    });
+
     it('should extract +00:00 timezone from raw value', async () => {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
