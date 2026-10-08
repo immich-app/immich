@@ -133,6 +133,9 @@ test.describe('Yucca Backups', () => {
     await page.getByRole('button', { name: 'FUTO Backups' }).click();
 
     const dialog = page.getByRole('dialog');
+    await expect(dialog.filter({ hasText: 'Telemetry required for closed beta' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Continue' }).click();
+
     await expect(dialog.filter({ hasText: 'Import recovery key' })).toBeVisible();
     await dialog.getByLabel('Recovery Key').fill('0'.repeat(64));
     await dialog.getByRole('button', { name: 'Save' }).click();
