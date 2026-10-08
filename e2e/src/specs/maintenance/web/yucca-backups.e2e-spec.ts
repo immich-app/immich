@@ -102,15 +102,12 @@ test.describe('Yucca Backups', () => {
     test.setTimeout(60_000);
     await utils.setAuthCookies(context, admin.accessToken);
 
-    await page.goto('/admin/backups/repositories');
-    const backupNow = page.getByRole('button', { name: 'Backup Now' });
-    await expect(backupNow).toBeVisible();
+    await page.goto('/admin/backups');
+    await page.getByRole('button', { name: 'Back up now', exact: true }).click();
 
-    const taskEnd = waitForTaskEnd();
-    await backupNow.click();
-    await expect(page.getByRole('dialog').filter({ hasText: 'Log Output' })).toBeVisible();
-
-    await taskEnd;
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: 'Backing up your library' })).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Backup complete' })).toBeVisible({ timeout: 45_000 });
   });
 
   test('resets immich and restores from the local yucca backup', async ({ context, page }) => {
