@@ -6,7 +6,6 @@
   "acknowledge": "รับทราบ",
   "action": "การกระทำ",
   "action_common_update": "อัปเดต",
-  "action_description": "ชุดการดำเนินการที่จะทำกับรายการที่ผ่านการกรอง",
   "actions": "การกระทำ",
   "active": "กำลังทำงาน",
   "active_count": "กำลังทำงาน: {count}",
