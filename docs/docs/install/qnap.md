@@ -65,6 +65,17 @@ Open the docker-compose and .env files in text editors on your computer.
 - Recommended: Keep default value for postgres password or the immich_server container will error during startup.
 - Recommended: Uncomment the DB_STORAGE_TYPE: 'HDD' line in the database: section if your NAS uses hard-drives, not SSDs.
 
+- ### Optional: Persist the PostgreSQL database on the NAS
+  - By default, Container Station may remove the database files when you recreate the application. To keep them across upgrades, create a folder on the NAS for the database, for example `/share/Container/immich/postgres`.
+  - In the `database` service, map that folder to PostgreSQL's data directory:
+    ```
+    volumes:
+      - type: bind
+        source: /share/Container/immich/postgres
+        target: /var/lib/postgresql/data
+    ```
+  - Make sure the folder is writable by the PostgreSQL container. Set this up before the first start. For an existing installation, migrate the current database files into the folder while PostgreSQL is stopped; mapping an empty folder does not copy the existing database. Keep the same host path when recreating or updating the application; changing it will make PostgreSQL start with a new, empty database.
+
 - ### Optional: Store Immich Data Outside Containers Folder
   - In general, it's best practice to have Container Station applications store files under the `./Container` directory. Folders will automatically be created by Container Station.
   - Storing Immich-server data outside the Container folder allows easier navigation and sharing of files uploaded to Immich because the `./Container` directory has restrictive permission.
@@ -139,9 +150,9 @@ Edit the docker compose text to update versions or just click Update button.
 
 The latest version of the image major version will be downloaded.
 
-The postgres database will be cleared by this operation, the Immich data and backups will be preserved and used to restore the app.
+If you did not configure a persistent host-folder mapping for `/var/lib/postgresql/data`, the postgres database may be cleared by this operation. The Immich data and backups will be preserved and can be used to restore the app. If you configured the optional mapping above, Container Station should reuse the database files from that folder when recreating the application, so a restore should not be needed for a routine upgrade. Keep regular backups in either case.
 
-When the Immich website comes back online, it displays options for Getting Started and Restore From Backup. Click Restore From Backup.
+If the database was cleared, or the application asks you to set up or restore, choose Restore From Backup when the Immich website comes back online.
 
 Manually refresh the browser if it doesn't automatically refresh the page.
 
