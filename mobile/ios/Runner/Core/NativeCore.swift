@@ -1,14 +1,14 @@
 import Foundation
 
 enum NativeCore {
-  private static let library = dlopen("@rpath/immich_core_ffi.framework/immich_core_ffi", RTLD_NOW)
+  private static let library = dlopen("@rpath/native_core_ffi.framework/native_core_ffi", RTLD_NOW)
 
   private static func symbol<T>(_ name: String, as type: T.Type) -> T? {
     guard let library, let symbol = dlsym(library, name) else { return nil }
     return unsafeBitCast(symbol, to: type)
   }
 
-  private static let coreThumbhash = symbol("immich_core_thumbhash", as: ImmichCoreThumbhashFn.self)
+  private static let coreThumbhash = symbol("native_core_thumbhash", as: NativeCoreThumbhashFn.self)
 
   static func thumbhash(_ hash: Data) -> (width: Int, height: Int, pointer: UnsafeMutableRawPointer)? {
     guard let coreThumbhash else { return nil }

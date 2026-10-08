@@ -113,7 +113,7 @@ jobs:
             ~/.cargo/bin
             ~/.cargo/registry
             ~/.cargo/git
-          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/immich_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/native_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
           restore-keys: |
             build-mobile-rust-${{ runner.os }}-
 
@@ -261,7 +261,7 @@ jobs:
             ~/.cargo/bin
             ~/.cargo/registry
             ~/.cargo/git
-          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/immich_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/native_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
           restore-keys: |
             build-mobile-rust-${{ runner.os }}-
 

@@ -4,14 +4,14 @@ import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
 import 'package:native_toolchain_rust/native_toolchain_rust.dart';
 
-const _crate = '../crates/immich_core_ffi';
+const _crate = '../crates/native_core_ffi';
 
 // Cargo's dep-info only lists source files, so these have to rerun the hook too.
 const _manifests = [
   '../.cargo/config.toml',
   '../Cargo.toml',
   '../Cargo.lock',
-  '../crates/immich_core/Cargo.toml',
+  '../crates/native_core/Cargo.toml',
   '$_crate/Cargo.toml',
   '$_crate/rust-toolchain.toml',
 ];

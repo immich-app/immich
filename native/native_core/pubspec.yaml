@@ -1,4 +1,4 @@
-name: immich_native_core
+name: native_core
 publish_to: none
 
 environment:
