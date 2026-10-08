@@ -1491,7 +1491,7 @@ describe(PersonService.name, () => {
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
     });
 
-    it('should only include partners that are shown in the timeline', async () => {
+    it('should include all partners that are shown in the timeline', async () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
@@ -1507,7 +1507,7 @@ describe(PersonService.name, () => {
       await expect(sut.getStatistics(auth, person.personGroupId)).resolves.toEqual({ assets: 3 });
       expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.personGroupId, {
         ownerId: auth.user.id,
-        partnerIds: [inTimeline.id],
+        partnerIds: [inTimeline.id, notInTimeline.id],
       });
     });
 
