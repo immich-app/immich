@@ -6,7 +6,6 @@
   "acknowledge": "Acknowledge",
   "action": "Action",
   "action_common_update": "Update",
-  "action_description": "A set of action to perform on the filtered assets",
   "actions": "Actions",
   "active": "Active",
   "active_count": "Active: {count}",
