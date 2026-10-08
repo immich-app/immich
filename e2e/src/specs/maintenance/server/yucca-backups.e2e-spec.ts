@@ -218,16 +218,11 @@ describe('/yucca', () => {
 
       await expect(sdk.getSnapshotListing(id, snapshotId, { path: '/data/backups' }, requestOpts)).resolves.toEqual(
         expect.objectContaining({
-          items: [
-            {
-              isDirectory: false,
-              path: '/data/backups/.immich',
-            },
-            {
-              isDirectory: false,
-              path: expect.stringContaining('/data/backups/immich-db-backup-'),
-            },
-          ],
+          items: expect.arrayContaining([
+            { isDirectory: false, path: '/data/backups/.immich' },
+            { isDirectory: false, path: `/data/backups/${filename}` },
+            { isDirectory: true, path: '/data/backups/yucca' },
+          ]),
           parent: '/data',
           path: '/data/backups',
         }),

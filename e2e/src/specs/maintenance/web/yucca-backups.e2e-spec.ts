@@ -61,7 +61,7 @@ test.describe('Yucca Backups', () => {
     await page.goto('/link?target=backups');
     await page.waitForURL('/admin/backups');
 
-    await expect(page.getByRole('heading', { name: 'FUTO Backups' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'FUTO Backups', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Get Started' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Backups', exact: true })).toBeVisible();
     await expect(getServerFeatures({ headers })).resolves.toMatchObject({ backups: true });
