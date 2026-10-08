@@ -15,7 +15,7 @@ const nextId = () => count++;
 const noop = () => {};
 
 export class BaseEventManager<Events extends EventsBase> {
-  #callbacks: EventItem<Events>[] = $state.raw([]);
+  #callbacks: EventItem<Events>[] = [];
 
   on(subscriptions: EventMap<Events>): () => void {
     const cleanups = Object.entries(subscriptions).map(([event, callback]) =>
