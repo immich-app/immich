@@ -291,43 +291,49 @@ url = "https://github.com/opentofu/opentofu/releases/download/v1.12.6/tofu_1.12.
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/520762708"
 
 [[tools.pnpm]]
-version = "11.27.1"
+version = "12.9.1"
 backend = "aqua:pnpm/pnpm"
 
 [tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:dbf8f84263d2bc696306d4219be68256d881d9af409345374d878676a7edcf0c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602580"
+checksum = "sha256:468294b77633d29889c6e4a79cefb1277eba30cd62e7d6a754218cb85a1d730d"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/608496442"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-arm64-musl"]
-checksum = "sha256:7a7854e90bdb7d339430d9943ea482b34d7bde817cfc1c749d3c04ddd464142d"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602583"
+checksum = "sha256:11de22634b9eb543d2f6ae9ccbc728274fb9a7ee81ee1bc7e5e45bec876ebca8"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/608496446"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:6be1426540406747b7731564a46c5b30d3023ea6c19e4ce99f994c4ec122f3d2"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602576"
+checksum = "sha256:b4f58449ac02d9d24023ac89e17e05e8331f8ddc12ca1f489cf231bc2bb2bce1"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/608496438"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl"]
-checksum = "sha256:cc66c1558a1a03b320ff5b4022f755386fa1de54db3f97ff624112015be1ccf1"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602579"
+checksum = "sha256:7c52e6db59c9cd3837ae1ec0b96ab3209d3c42cb0e3a77f5db8cbe86661d85a6"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/608496441"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:352f67ceaaa5aba294a53f483da93c376005b4c7e785fe5411e0ce720fe74741"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602575"
+checksum = "sha256:4dcea94654bc8f2189dfd591aea7af4adddd29243e4bfcc8d4c8b4289e7983ba"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/608496449"
+provenance = "github-attestations"
+
+[tools.pnpm."platforms.macos-x64"]
+checksum = "sha256:e8b47f538f95167c57fdeacffc9cb3af82261217f31eb764151aaf500b76f1b3"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/608496437"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64"]
-checksum = "sha256:4b56d1184c3390b08146060fa4b414b8ceec9164aa41bf996e87a0f0bc135851"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.27.1/pnpm-win32-x64.zip"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/577602578"
+checksum = "sha256:2b30f6bc53228187881aeae604cc6cedf092641df30d3be1cf4cd3d17bf630f5"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-win32-x64.zip"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/608496448"
 provenance = "github-attestations"
 
 [[tools.terragrunt]]
