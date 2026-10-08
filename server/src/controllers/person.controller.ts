@@ -231,7 +231,7 @@ export class PersonController {
   @Endpoint({
     summary: 'Get people access',
     description: 'Retrieve a list of users and the people to which they have been given access',
-    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+    history: new HistoryBuilder().added('v3.3.0').beta('v3.3.0'),
   })
   getUsersForPeople(@Auth() auth: AuthDto, @Query() dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {
     return this.service.getUsersForPeople(auth, dto);
@@ -242,7 +242,7 @@ export class PersonController {
   @Endpoint({
     summary: 'Upsert user access',
     description: 'Give users access to people',
-    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+    history: new HistoryBuilder().added('v3.3.0').beta('v3.3.0'),
   })
   upsertPeopleUsers(@Auth() auth: AuthDto, @Body() dto: PeopleUsersUpsertDto): Promise<void> {
     return this.service.upsertPeopleUsers(auth, dto);
@@ -253,7 +253,7 @@ export class PersonController {
   @Endpoint({
     summary: 'Remove users from people',
     description: 'Remove user access to people',
-    history: new HistoryBuilder().added('v3.3').stable('v3.3'),
+    history: new HistoryBuilder().added('v3.3.0').beta('v3.3.0'),
   })
   removeUsersFromPeople(@Auth() auth: AuthDto, @Body() dto: PersonUsersDeleteDto): Promise<void> {
     return this.service.removeUsersFromPeople(auth, dto);
