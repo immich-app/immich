@@ -95,6 +95,8 @@ select
         where
           "workflow_step"."workflowId" = "workflow"."id"
           and "workflow_step"."enabled" = $1
+        order by
+          "workflow_step"."order" asc
       ) as agg
   ) as "steps"
 from
