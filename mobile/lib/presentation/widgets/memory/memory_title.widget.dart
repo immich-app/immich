@@ -10,7 +10,7 @@ String getMemoryTitle(Translations t, Memory memory, {RemoteAsset? asset, bool p
     switch (memory.type) {
       MemoryTypeEnum.onThisDay =>
         preferDate
-            ? DateFormat.yMMMMd().format(memory.memoryAt).toString()
+            ? DateFormat.yMMMMd().format(memory.memoryAt)
             : t.years_ago(years: DateTime.now().year - memory.data.year),
       MemoryTypeEnum.birthday => _getBirthdayTitle(t, memory.data, asset),
     };
