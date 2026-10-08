@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/memory.page.dart';
@@ -10,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/presentation/widgets/memory/memory_title.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:intl/intl.dart';
 
 @RoutePage()
 class MemoryListPage extends ConsumerStatefulWidget {
@@ -72,15 +74,7 @@ class _MemoryListPageState extends ConsumerState<MemoryListPage> {
                             ),
                           ),
                         ),
-                        Positioned(
-                          bottom: 16,
-                          left: 16,
-                          right: 16,
-                          child: MemoryTitle(
-                            memory: memories[index],
-                            style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
-                          ),
-                        ),
+                        Positioned(bottom: 16, left: 16, right: 16, child: _MemoryListTitle(memory: memories[index])),
                         if (memories[index].isSaved)
                           const Positioned(
                             top: 16,
@@ -98,4 +92,18 @@ class _MemoryListPageState extends ConsumerState<MemoryListPage> {
       },
     );
   }
+}
+
+class _MemoryListTitle extends StatelessWidget {
+  final Memory memory;
+
+  const _MemoryListTitle({required this.memory});
+
+  static const _style = TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15);
+
+  @override
+  Widget build(BuildContext context) => switch (memory.type) {
+    MemoryTypeEnum.onThisDay => Text(DateFormat.yMMMMd().format(memory.memoryAt), style: _style),
+    MemoryTypeEnum.birthday => MemoryTitle(memory: memory, style: _style),
+  };
 }
