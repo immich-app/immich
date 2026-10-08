@@ -118,11 +118,13 @@ class _FixedSegmentRow extends ConsumerWidget {
       );
     }
 
+    // Purposefully created outside of the FutureBuilder so it's created only once
+    late final assets = timelineService.loadAssets(assetIndex, assetCount);
     return _DeferredRowLoader(
       key: ValueKey(assetIndex),
       placeholder: _buildPlaceholder,
       builder: (context) => FutureBuilder<List<BaseAsset>>(
-        future: timelineService.loadAssets(assetIndex, assetCount),
+        future: assets,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return _buildPlaceholder(context);
