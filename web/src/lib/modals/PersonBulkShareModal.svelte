@@ -178,7 +178,9 @@
   onClose={() => onClose()}
 >
   <div class="flex flex-col gap-4">
-    <Text size="small" color="muted">{$t('manage_people_access_description')}</Text>
+    <Text size="small" color="muted">
+      {$t('manage_people_access_description_v2', { values: { count: selectedPeople.length } })}
+    </Text>
 
     {#if users.length > 1}
       <Field label={$t('share_with')}>
