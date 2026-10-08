@@ -80,7 +80,7 @@ test.describe('Yucca Backups', () => {
         cron: '0 3 * * *',
         backupConfiguration: true,
         dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
-        libraries: 'all',
+        libraries: ['all'],
       },
       { headers },
     );

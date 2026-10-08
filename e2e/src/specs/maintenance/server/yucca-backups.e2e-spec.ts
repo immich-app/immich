@@ -118,7 +118,7 @@ describe('/yucca', () => {
           cron: '0 3 * * *',
           backupConfiguration: true,
           dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
-          libraries: 'all',
+          libraries: ['all'],
         },
         requestOpts,
       );
@@ -131,7 +131,7 @@ describe('/yucca', () => {
             configuration: {
               backupConfiguration: true,
               dataFolders: ['backups', 'upload'],
-              libraries: 'all',
+              libraries: ['all'],
             },
           }),
           immichState: {

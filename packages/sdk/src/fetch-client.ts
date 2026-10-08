@@ -3378,7 +3378,8 @@ export type FilesystemListingResponseDto = {
 export type ImmichIntegrationConfigurationDto = {
     backupConfiguration: boolean;
     dataFolders: string[];
-    libraries: "all" | string[];
+    /** IDs of the external libraries to back up. Use ["all"] to back up every library, including ones added later. */
+    libraries: string[];
 };
 export type ImmichIntegrationDto = {
     configuration: ImmichIntegrationConfigurationDto;
@@ -3413,7 +3414,8 @@ export type ConfigureImmichIntegrationRequestDto = {
     backupConfiguration: boolean;
     cron: string;
     dataFolders: string[];
-    libraries: "all" | string[];
+    /** IDs of the external libraries to back up. Use ["all"] to back up every library, including ones added later. */
+    libraries: string[];
     name: string;
     paused?: boolean;
     repositoryId?: string;
@@ -3619,7 +3621,7 @@ export type ScheduleUpdateResponseDto = {
 };
 export type ActiveScheduleItemDto = {
     repositoryId: string;
-    status: TaskStatus;
+    status: RunningTaskStatus;
 };
 export type RunningTaskDto = {
     logId?: string;
@@ -9612,7 +9614,7 @@ export enum BootstrapStatus {
     Ready = "ready",
     Error = "error"
 }
-export enum TaskStatus {
+export enum RunningTaskStatus {
     Incomplete = "incomplete",
     Complete = "complete",
     Warn = "warn",

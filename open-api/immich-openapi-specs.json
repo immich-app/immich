@@ -20941,7 +20941,7 @@
             "type": "string"
           },
           "status": {
-            "$ref": "#/components/schemas/TaskStatus"
+            "$ref": "#/components/schemas/RunningTaskStatus"
           }
         },
         "required": [
@@ -24464,20 +24464,11 @@
             "type": "array"
           },
           "libraries": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "all"
-                ]
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            ]
+            "description": "IDs of the external libraries to back up. Use [\"all\"] to back up every library, including ones added later.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "name": {
             "type": "string"
@@ -25600,20 +25591,11 @@
             "type": "array"
           },
           "libraries": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "all"
-                ]
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            ]
+            "description": "IDs of the external libraries to back up. Use [\"all\"] to back up every library, including ones added later.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -30793,6 +30775,16 @@
           "tasks"
         ],
         "type": "object"
+      },
+      "RunningTaskStatus": {
+        "enum": [
+          "incomplete",
+          "complete",
+          "warn",
+          "failed",
+          "cancelled"
+        ],
+        "type": "string"
       },
       "ScheduleCreateRequestDto": {
         "properties": {
@@ -36145,16 +36137,6 @@
           }
         },
         "type": "object"
-      },
-      "TaskStatus": {
-        "enum": [
-          "incomplete",
-          "complete",
-          "warn",
-          "failed",
-          "cancelled"
-        ],
-        "type": "string"
       },
       "TaskType": {
         "enum": [
