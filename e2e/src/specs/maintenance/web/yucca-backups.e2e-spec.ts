@@ -148,7 +148,10 @@ test.describe('Yucca Backups', () => {
     await dialog.getByRole('button', { name: 'Save' }).click();
 
     await expect(dialog.filter({ hasText: 'Select Backup' })).toBeVisible();
-    await dialog.getByRole('button', { name: /Last backup/ }).first().click();
+    await dialog
+      .getByRole('button', { name: /Last backup/ })
+      .first()
+      .click();
 
     await expect(dialog.filter({ hasText: /Restore from/ })).toBeVisible();
     await dialog.getByRole('button', { name: 'Restore' }).first().click();
