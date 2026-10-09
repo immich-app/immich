@@ -24,13 +24,14 @@
   },
   "dependencies": {
     "commander": "^15.0.0",
-    "semver": "^7.8.1"
+    "semver": "^7.8.1",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@types/node": "^24.13.4",
+    "@types/node": "^24.13.6",
     "@types/semver": "^7.7.1",
     "vite": "^8.0.16",
     "vitest": "^4.1.8"
   },
-  "packageManager": "pnpm@11.24.0"
+  "packageManager": "pnpm@11.27.1"
 }

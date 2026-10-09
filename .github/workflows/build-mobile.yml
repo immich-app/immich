@@ -73,6 +73,8 @@ jobs:
             mobile:
               - 'mobile/**'
               - 'open-api/**'
+              - 'i18n/**'
+              - 'native/**'
           force-filters: |
             - '.github/workflows/build-mobile.yml'
           force-events: 'workflow_call,workflow_dispatch'
@@ -101,6 +103,20 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
+      - name: Restore Rust Cache
+        id: cache-rust-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/native_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          restore-keys: |
+            build-mobile-rust-${{ runner.os }}-
+
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
@@ -114,7 +130,7 @@ jobs:
         working-directory: ./mobile
         run: printf "%s" $KEY_JKS | base64 -d > android/key.jks
 
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -131,7 +147,7 @@ jobs:
           key: build-mobile-gradle-${{ runner.os }}-main
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
         with:
           packages: ''
 
@@ -196,6 +212,19 @@ jobs:
             mobile/android/.gradle
           key: ${{ steps.cache-gradle-restore.outputs.cache-primary-key }}
 
+      - name: Save Rust Cache
+        id: cache-rust-save
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cache-rust-restore.outputs.cache-primary-key }}
+
   build-sign-ios:
     name: Build and sign iOS
     needs: pre-job
@@ -222,6 +251,20 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
+      - name: Restore Rust Cache
+        id: cache-rust-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/native_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          restore-keys: |
+            build-mobile-rust-${{ runner.os }}-
+
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
@@ -229,9 +272,9 @@ jobs:
           working_directory: ./mobile
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
-          ruby-version: '3.3'
+          ruby-version: '3.4'
           bundler-cache: true # zizmor: ignore[cache-poisoning] release branches cannot read caches written by pull requests
           working-directory: ./mobile/ios
 
@@ -313,3 +356,16 @@ jobs:
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa
+
+      - name: Save Rust Cache
+        id: cache-rust-save
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cache-rust-restore.outputs.cache-primary-key }}

@@ -29,10 +29,11 @@ abstract class MultiSelectState with _$MultiSelectState {
   bool get hasRemote =>
       selectedAssets.any((asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged);
 
+  // ignore: unused-code
   bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);
-
+  // ignore: unused-code
   bool get onlyLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
-
+  // ignore: unused-code
   bool get onlyRemote => selectedAssets.any((asset) => asset.storage == AssetState.remote);
 }
 
@@ -101,14 +102,3 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 }
-
-final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>((ref, bucketAssets) {
-  final selectedAssets = ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
-
-  if (bucketAssets.isEmpty) {
-    return false;
-  }
-
-  // Check if all assets in the bucket are selected
-  return bucketAssets.every((asset) => selectedAssets.contains(asset));
-}, dependencies: [multiSelectProvider, timelineServiceProvider]);

@@ -29,10 +29,12 @@ export class MaintenanceHealthRepository {
 
         output += data;
 
-        if (output.includes(IMMICH_SERVER_START)) {
-          resolve();
-          worker.kill('SIGTERM');
+        if (!output.includes(IMMICH_SERVER_START)) {
+          return;
         }
+
+        resolve();
+        worker.kill('SIGTERM');
       });
 
       worker.on('exit', (code, signal) =>

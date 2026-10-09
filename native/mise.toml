@@ -1,0 +1,18 @@
+[tools]
+rust = { version = "1.98.0", components = "rustfmt,clippy" } # keep in sync with crates/native_core_ffi/rust-toolchain.toml
+
+[tasks.build]
+description = "Build the native crates for the host"
+run = "cargo build --workspace"
+
+[tasks.test]
+description = "Run the Rust tests"
+run = "cargo test --workspace --locked"
+
+[tasks.fmt]
+description = "Check Rust formatting"
+run = "cargo fmt --all --check"
+
+[tasks.lint]
+description = "Run clippy with warnings as errors"
+run = "cargo clippy --workspace --all-targets --locked -- -D warnings"

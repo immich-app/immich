@@ -3,7 +3,7 @@ import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { mapNormalizedRectToContent, type Rect, type Size } from '$lib/utils/container-utils';
 
-export type BoundingBox = Rect & { id: string };
+export type BoundingBox = Rect & { id: string; labelWidth: number };
 
 export const getBoundingBox = (faces: Faces[], imageSize: Size): BoundingBox[] => {
   const boxes: BoundingBox[] = [];
@@ -15,7 +15,7 @@ export const getBoundingBox = (faces: Faces[], imageSize: Size): BoundingBox[] =
       imageSize,
     );
 
-    boxes.push({ id: face.id, ...rect });
+    boxes.push({ id: face.id, ...rect, labelWidth: rect.width });
   }
 
   return boxes;

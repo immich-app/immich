@@ -1,5 +1,7 @@
 [tools]
 java = "21.0.2"
+# RUSTUP_TOOLCHAIN makes rustup ignore the targets in rust-toolchain.toml, so the cross targets are listed here too.
+rust = { version = "1.98.0", targets = "aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" }
 
 [tools."aqua:flutter/flutter"]
 version = "3.47.2"
@@ -34,6 +36,7 @@ depends = [
   "codegen:dart",
   "codegen:drift:migration",
   "codegen:drift:schema",
+  "codegen:native",
   "codegen:pigeon",
   "codegen:translation",
 ]
@@ -80,6 +83,15 @@ alias = "watch"
 description = "Watch and auto-generate dart code"
 run = "dart run build_runner watch"
 
+[tasks."codegen:native"]
+description = "Generate the C header and the ffigen bindings for the native core"
+dir = "../native/native_core"
+run = [
+  "cargo build -p native_core_ffi",
+  "flutter pub get",
+  "dart run ffigen --config ffigen.yaml",
+]
+
 [tasks."codegen:pigeon"]
 alias = "pigeon"
 description = "Generate pigeon platform code"
@@ -109,7 +121,15 @@ run = "flutter test"
 [tasks.analyze]
 alias = "lint"
 description = "Analyze Dart code"
+usage = '''
+flag "--full" help="Check for unused code" default=#false
+'''
 depends = ["analyze:dart", "analyze:dcm"]
+run = '''
+if [ "${usage_full}" = "true" ]; then
+  mise run analyze:unused
+fi
+'''
 
 [tasks."analyze-fix"]
 alias = "lint-fix"
@@ -199,6 +219,10 @@ run = "dart analyze --fatal-infos"
 description = "Run Dart Code Metrics"
 hide = true
 run = "dcm analyze lib --fatal-style --fatal-warnings"
+
+[tasks."analyze:unused"]
+description = "Find unused code"
+run = "dcm check-unused-code lib test integration_test --concise"
 
 [tasks."analyze-fix:dart"]
 description = "Auto-fix Dart analysis"

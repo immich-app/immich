@@ -16,13 +16,11 @@
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode } from '$lib/constants';
@@ -34,13 +32,13 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import { Route } from '$lib/route';
   import {
     getAlbumActions,
     getAlbumAssetsActions,
     handleDeleteAlbum,
-    handleDownloadAlbum,
+    isAlbumEditor,
+    isAlbumOwner,
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -48,24 +46,14 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
-  import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
-  import {
-    ActionButton,
-    CommandPaletteDefaultProvider,
-    Icon,
-    IconButton,
-    modalManager,
-    toastManager,
-  } from '@immich/ui';
+  import { AlbumUserRole, AssetVisibility, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, toastManager } from '@immich/ui';
   import {
     mdiAccountEye,
     mdiAccountEyeOutline,
     mdiArrowLeft,
-    mdiCogOutline,
-    mdiDeleteOutline,
     mdiDotsHorizontal,
     mdiDotsVertical,
-    mdiDownload,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -79,6 +67,7 @@
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import { delay } from '$lib/utils/asset-utils';
 
   interface Props {
     data: PageData;
@@ -133,8 +122,17 @@
     await goto(Route.albums());
   };
 
-  const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id });
+  const refreshAlbum = async (updated?: AlbumResponseDto) => {
+    if (updated) {
+      if (updated.id !== album.id) {
+        return;
+      }
+      album = updated;
+    }
+
+    // invalidating during navigation causes an infinite page load
+    await navigating.complete;
+    await invalidate('album:data');
   };
 
   const setModeToView = async () => {
@@ -157,9 +155,10 @@
     assetMultiSelectManager.clear();
   };
 
-  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
+  const onAlbumRemoveAssets = async ({ albumIds }: { assetIds: string[]; albumIds: string[] }) => {
     if (albumIds.includes(album.id)) {
-      await handleRemoveAssets(assetIds);
+      await delay(1000);
+      await refreshAlbum();
     }
   };
 
@@ -215,9 +214,10 @@
     }
   });
 
-  let album = $state(data.album);
-  let albumId = $derived(album.id);
+  let album = $derived(data.album);
+  const albumId = $derived(album.id);
 
+  const albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
   const albumUsers = $derived(showAlbumUsers && containsEditors ? album.albumUsers.map(({ user }) => user) : []);
 
@@ -238,7 +238,7 @@
     return { albumId, order: album.order };
   });
 
-  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 1);
+  const isShared = $derived(viewMode !== AlbumPageViewMode.SELECT_ASSETS && album.albumUsers.length > 1);
 
   $effect(() => {
     if (assetViewerManager.isViewing || !isShared) {
@@ -250,23 +250,20 @@
 
   onDestroy(() => activityManager.reset());
 
-  const isOwned = $derived(album.albumUsers[0].user.id === authManager.user.id);
+  const isOwned = $derived(isAlbumOwner(album));
 
   let showActivityStatus = $derived(
     album.albumUsers.length > 1 &&
       !assetViewerManager.isViewing &&
       (album.isActivityEnabled || activityManager.commentCount > 0),
   );
-  const isEditor = $derived(
-    album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor || isOwned,
-  );
+  const isEditor = $derived(isAlbumEditor(album));
 
-  let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   const isSelectionMode = $derived(
-    viewMode === AlbumPageViewMode.SELECT_ASSETS ? true : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
+    viewMode === AlbumPageViewMode.SELECT_ASSETS || viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
   const singleSelect = $derived(
-    viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
+    viewMode !== AlbumPageViewMode.SELECT_ASSETS && viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
   const showArchiveIcon = $derived(viewMode !== AlbumPageViewMode.SELECT_ASSETS);
   const onSelect = ({ id }: { id: string }) => {
@@ -278,10 +275,6 @@
     viewMode === AlbumPageViewMode.SELECT_ASSETS ? timelineMultiSelectManager : assetMultiSelectManager,
   );
 
-  const onSharedLinkCreate = async () => {
-    await refreshAlbum();
-  };
-
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
     if (id !== album.id) {
       return;
@@ -291,12 +284,13 @@
     viewMode = AlbumPageViewMode.VIEW;
   };
 
-  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
+  const onAlbumAddAssets = async ({ albumIds, assetIds }: { albumIds: string[]; assetIds: string[] }) => {
     if (!albumIds.includes(album.id)) {
       return;
     }
 
-    await refreshAlbum();
+    album = { ...album, assetCount: album.assetCount + assetIds.length };
+
     timelineMultiSelectManager.clear();
     await setModeToView();
   };
@@ -317,17 +311,8 @@
     album = { ...album, albumUsers };
   };
 
-  const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
-    album = newAlbum;
-
-    // invalidating during navigation causes an infinite page load
-    await navigating.complete;
-
-    await invalidate('album:data');
-  };
-
   const { Cast } = $derived(getGlobalActions($t));
-  const { Share } = $derived(getAlbumActions($t, album));
+  const Actions = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
 
   const Close = $derived({
@@ -340,17 +325,18 @@
 </script>
 
 <OnEvents
-  {onSharedLinkCreate}
-  onSharedLinkDelete={refreshAlbum}
+  onSharedLinkCreate={(link) => refreshAlbum(link.album)}
+  onSharedLinkDelete={() => refreshAlbum()}
   {onAlbumDelete}
   {onAlbumAddAssets}
   {onAlbumRemoveAssets}
   {onAlbumShare}
   {onAlbumUserUpdate}
-  onAlbumUserDelete={refreshAlbum}
-  {onAlbumUpdate}
+  onAlbumUserDelete={() => refreshAlbum()}
+  onAlbumUpdate={(album) => refreshAlbum(album)}
+  onAssetsDelete={() => refreshAlbum()}
 />
-<CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
+<CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
   <div class="relative w-full shrink">
@@ -377,7 +363,7 @@
               <AlbumTitle
                 id={album.id}
                 albumName={album.albumName}
-                {isOwned}
+                {isEditor}
                 onUpdate={(albumName) => (album = { ...album, albumName })}
               />
 
@@ -391,7 +377,7 @@
                   <button
                     class="flex gap-x-1"
                     type="button"
-                    onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+                    onclick={(event) => Actions.Options.onAction({ event, action: Actions.Options })}
                   >
                     <!-- owner & users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
@@ -420,14 +406,12 @@
                     {/if}
                   </button>
 
-                  {#if isOwned}
-                    <ActionButton action={Share} />
-                  {/if}
+                  <ActionButton action={Actions.Share} />
                 </div>
               {/if}
               <AlbumDescription
                 id={album.id}
-                {isOwned}
+                {isEditor}
                 bind:description={() => album.description, (description) => (album = { ...album, description })}
               />
             </section>
@@ -470,7 +454,7 @@
       <AssetSelectControlBar>
         {@const Actions = getAssetBulkActions($t, album)}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-        <CreateSharedLink />
+        <ActionButton action={Actions.CreateSharedLink} />
         <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
         <ActionButton action={Actions.AddToAlbum} />
         {#if assetMultiSelectManager.isAllUserOwned}
@@ -500,10 +484,7 @@
             />
           {/if}
 
-          {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-            <TagAction menuItem />
-          {/if}
-
+          <ActionMenuItem action={Actions.Tag} />
           <ActionMenuItem action={Actions.RemoveFromAlbum} />
           {#if assetMultiSelectManager.isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
@@ -535,7 +516,7 @@
               />
             {/if}
 
-            <ActionButton action={Share} />
+            <ActionButton action={Actions.Share} />
 
             {#if featureFlagsManager.value.map}
               <AlbumMap {album} />
@@ -550,17 +531,10 @@
                 onclick={handleStartSlideshow}
                 icon={mdiPresentationPlay}
               />
-              <IconButton
-                shape="round"
-                variant="ghost"
-                color="secondary"
-                aria-label={$t('download')}
-                onclick={() => handleDownloadAlbum(album)}
-                icon={mdiDownload}
-              />
             {/if}
+            <ActionButton action={Actions.Download} />
 
-            {#if isOwned || containsEditors}
+            {#if isOwned || album.albumUsers.length > 1}
               <ButtonContextMenu
                 icon={mdiDotsVertical}
                 title={$t('album_options')}
@@ -574,26 +548,17 @@
                     onClick={() => timelineManager.toggleShowAssetOwners()}
                   />
                 {/if}
+                <ActionMenuItem action={Actions.Options} />
                 {#if isOwned && album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
                     text={$t('select_album_cover')}
                     onClick={() => (viewMode = AlbumPageViewMode.SELECT_THUMBNAIL)}
                   />
-                  <MenuOption
-                    icon={mdiCogOutline}
-                    text={$t('options')}
-                    onClick={() => modalManager.show(AlbumOptionsModal, { album })}
-                  />
                 {/if}
 
-                {#if isOwned}
-                  <MenuOption
-                    icon={mdiDeleteOutline}
-                    text={$t('delete_album')}
-                    onClick={() => handleDeleteAlbum(album)}
-                  />
-                {/if}
+                <ActionMenuItem action={Actions.Delete} />
+                <ActionMenuItem action={Actions.Leave} />
               </ButtonContextMenu>
             {/if}
           {/snippet}

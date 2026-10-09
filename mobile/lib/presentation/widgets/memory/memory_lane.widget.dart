@@ -4,9 +4,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/memory/memory_title.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -22,22 +22,43 @@ class MemoryLane extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 200),
-      child: CarouselView(
-        itemExtent: 145.0,
-        shrinkExtent: 1.0,
-        elevation: 2,
-        backgroundColor: Colors.black,
-        overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.1)),
-        onTap: (index) {
-          ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-          if (memories[index].assets.isNotEmpty) {
-            MemoryPage.setMemory(ref, memories[index]);
-          }
-          unawaited(context.pushRoute(MemoryRoute(memories: memories, memoryIndex: index)));
-        },
-        children: memories.map((memory) => MemoryCard(key: Key(memory.id), memory: memory)).toList(growable: false),
+    void handleTap(int index) {
+      ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+      if (memories[index].assets.isNotEmpty) {
+        MemoryPage.setMemory(ref, memories[index]);
+      }
+      unawaited(context.pushRoute(MemoryRoute(memories: memories, memoryIndex: index)));
+    }
+
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemExtent: 170.0,
+        itemCount: memories.length,
+        itemBuilder: (context, index) => Padding(
+          key: Key(memories[index].id),
+          padding: const EdgeInsets.all(4),
+          child: Material(
+            color: Colors.black,
+            elevation: 2,
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                MemoryCard(memory: memories[index]),
+                Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.1)),
+                    onTap: () => handleTap(index),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -50,36 +71,27 @@ class MemoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final yearsAgo = DateTime.now().year - memory.data.year;
-    final title = context.t.years_ago(years: yearsAgo);
-    return Center(
-      child: Stack(
-        children: [
-          ColorFiltered(
-            colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.2), BlendMode.darken),
-            child: SizedBox(
-              width: 205,
-              height: 200,
-              child: Thumbnail.remote(
-                remoteId: memory.assets[0].id,
-                thumbhash: memory.assets[0].thumbHash ?? "",
-                fit: BoxFit.cover,
-              ),
-            ),
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ColorFiltered(
+          colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.2), BlendMode.darken),
+          child: Thumbnail.remote(
+            remoteId: memory.assets[0].id,
+            thumbhash: memory.assets[0].thumbHash ?? "",
+            fit: BoxFit.cover,
           ),
-          Positioned(
-            bottom: 16,
-            left: 16,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 114),
-              child: Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
-              ),
-            ),
+        ),
+        Positioned(
+          left: 16,
+          right: 16,
+          bottom: 16,
+          child: MemoryTitle(
+            memory: memory,
+            style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

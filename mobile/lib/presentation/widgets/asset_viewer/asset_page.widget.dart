@@ -514,7 +514,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         child: AnimatedOpacity(
                           opacity: _showingDetails ? 1.0 : 0.0,
                           duration: Durations.short2,
-                          child: AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget),
+                          child: _showingDetails
+                              ? AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget)
+                              : SizedBox(height: viewportHeight - snapTarget),
                         ),
                       ),
                     ],
