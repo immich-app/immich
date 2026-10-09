@@ -39,7 +39,7 @@ describe(PersonService.name, () => {
     mocks.access.person.checkAccess.mockImplementation((_, personIds) =>
       Promise.resolve(
         new Set(
-          [...personIds].filter((id) =>
+          personIds.filter((id) =>
             allowed.some((item) => item.personGroupId === id.personGroupId && item.ownerId === id.ownerId),
           ),
         ),
@@ -120,7 +120,7 @@ describe(PersonService.name, () => {
       await expect(sut.getById(auth, person.personGroupId)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
-        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        [{ personGroupId: person.personGroupId, ownerId: auth.user.id }],
         PERSON_READ_ROLES,
       );
     });
@@ -131,7 +131,7 @@ describe(PersonService.name, () => {
 
       allowPeople(ids);
       await expect(sut.getById(auth, 'unknown')).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_READ_ROLES);
     });
 
     it('should get a person by id', async () => {
@@ -148,7 +148,7 @@ describe(PersonService.name, () => {
         userId: auth.user.id,
         personGroupId: person.personGroupId,
       });
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_READ_ROLES);
     });
   });
 
@@ -165,7 +165,7 @@ describe(PersonService.name, () => {
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
-        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        [{ personGroupId: person.personGroupId, ownerId: auth.user.id }],
         PERSON_READ_ROLES,
       );
     });
@@ -178,7 +178,7 @@ describe(PersonService.name, () => {
       mocks.person.getForThumbnail.mockResolvedValue(undefined);
       await expect(sut.getThumbnail(auth, 'unknown')).rejects.toBeInstanceOf(NotFoundException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_READ_ROLES);
     });
 
     it('should throw an error when person has no thumbnail', async () => {
@@ -190,7 +190,7 @@ describe(PersonService.name, () => {
       allowPeople(ids);
       await expect(sut.getThumbnail(auth, person.personGroupId)).rejects.toBeInstanceOf(NotFoundException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_READ_ROLES);
     });
 
     it('should serve the thumbnail', async () => {
@@ -210,7 +210,7 @@ describe(PersonService.name, () => {
           cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_READ_ROLES);
     });
 
     it('should fall back to a shared thumbnail', async () => {
@@ -244,7 +244,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
-        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        [{ personGroupId: person.personGroupId, ownerId: auth.user.id }],
         PERSON_WRITE_ROLES,
       );
     });
@@ -256,7 +256,7 @@ describe(PersonService.name, () => {
       await expect(sut.update(auth, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
-        new Set([{ personGroupId: 'person-1', ownerId: auth.user.id }]),
+        [{ personGroupId: 'person-1', ownerId: auth.user.id }],
         PERSON_WRITE_ROLES,
       );
       expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
@@ -297,7 +297,7 @@ describe(PersonService.name, () => {
         personGroupId: person.personGroupId,
         name: 'Person 1',
       });
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_WRITE_ROLES);
     });
 
     it("should update another user's person when userId is provided", async () => {
@@ -318,7 +318,7 @@ describe(PersonService.name, () => {
         name: 'Person 1',
       });
       expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_WRITE_ROLES);
     });
 
     it("should only update the user's own person when userId is the current user", async () => {
@@ -340,7 +340,7 @@ describe(PersonService.name, () => {
         isFavorite: true,
       });
       expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_WRITE_ROLES);
     });
 
     it("should update a person's date of birth for every user with write access", async () => {
@@ -395,7 +395,7 @@ describe(PersonService.name, () => {
         isHidden: true,
       });
       expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_WRITE_ROLES);
     });
 
     it('should update a person favorite status', async () => {
@@ -416,7 +416,7 @@ describe(PersonService.name, () => {
         isFavorite: true,
       });
       expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_WRITE_ROLES);
     });
 
     it('should update shared and personal properties together', async () => {
@@ -444,7 +444,7 @@ describe(PersonService.name, () => {
       });
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
-        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        [{ personGroupId: person.personGroupId, ownerId: auth.user.id }],
         PERSON_WRITE_ROLES,
       );
     });
@@ -477,7 +477,7 @@ describe(PersonService.name, () => {
         name: JobName.PersonGenerateThumbnail,
         data: { ownerId: person.ownerId, personGroupId: person.personGroupId },
       });
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_WRITE_ROLES);
     });
 
     it('should throw an error when the face feature assetId is invalid', async () => {
@@ -506,7 +506,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
-        new Set([{ personGroupId: 'person-1', ownerId: authStub.admin.user.id }]),
+        [{ personGroupId: 'person-1', ownerId: authStub.admin.user.id }],
         PERSON_WRITE_ROLES,
       );
     });
@@ -1485,7 +1485,7 @@ describe(PersonService.name, () => {
         ownerId: auth.user.id,
         partnerIds: [],
       });
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, ids, PERSON_READ_ROLES);
     });
 
     it('should include all partners that are shown in the timeline', async () => {
@@ -1516,7 +1516,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.getStatistics).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
-        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        [{ personGroupId: person.personGroupId, ownerId: auth.user.id }],
         PERSON_READ_ROLES,
       );
     });

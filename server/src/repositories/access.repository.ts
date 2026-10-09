@@ -521,21 +521,22 @@ class ClusterGroupRequestAccess {
 class PersonAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, [PersonUserRole.Admin]] })
+  @GenerateSql({
+    params: [DummyValue.UUID, [{ personGroupId: DummyValue.UUID, ownerId: DummyValue.UUID }], [PersonUserRole.Admin]],
+  })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAccess(userId: string, personIds: Set<PersonId>, roles: PersonUserRole[]) {
-    if (personIds.size === 0 || roles.length === 0) {
+  async checkAccess(userId: string, personIds: PersonId[], roles: PersonUserRole[]) {
+    if (personIds.length === 0 || roles.length === 0) {
       return new Set<PersonId>();
     }
 
     // positions map rows back to the caller's own objects, which access checks compare by identity
-    const ids = [...personIds];
     const { index } = await this.db
       .with('people', (eb) =>
         eb.selectNoFrom([
-          unnestUuid(ids.map(({ personGroupId }) => personGroupId)).as('personGroupId'),
-          unnestUuid(ids.map(({ ownerId }) => ownerId)).as('ownerId'),
-          generateSeries(0, ids.length - 1).as('index'),
+          unnestUuid(personIds.map(({ personGroupId }) => personGroupId)).as('personGroupId'),
+          unnestUuid(personIds.map(({ ownerId }) => ownerId)).as('ownerId'),
+          generateSeries(0, personIds.length - 1).as('index'),
         ]),
       )
       .selectFrom('people')
@@ -563,7 +564,7 @@ class PersonAccess {
 
     const allowed = new Set<PersonId>();
     for (const i of index) {
-      allowed.add(ids[i]);
+      allowed.add(personIds[i]);
     }
     return allowed;
   }

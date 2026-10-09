@@ -40,7 +40,7 @@ export type AccessRequest<T extends Permission> = {
 export type AccessPersonRequest = {
   auth: AuthDto;
   permission: Permission;
-  ids: Set<PersonId> | PersonId[];
+  ids: PersonId[];
 };
 
 type SharedLinkAccessRequest<T extends Permission = Permission> = T extends Permission
@@ -70,10 +70,11 @@ const PERSON_WRITE_ROLES = [PersonUserRole.Write, PersonUserRole.Admin];
 const PERSON_ADMIN_ROLES = [PersonUserRole.Admin];
 
 export const requirePersonAccess = async (access: AccessRepository, request: AccessPersonRequest) => {
-  const ids = Array.isArray(request.ids) ? new Set(request.ids) : request.ids;
-  const allowedIds = await checkPersonAccess(access, { auth: request.auth, permission: request.permission, ids });
-  if (!areSetsEqual(ids, allowedIds)) {
-    throw new BadRequestException(`Not found or no ${request.permission} access`);
+  const allowedIds = await checkPersonAccess(access, request);
+  for (const id of request.ids) {
+    if (!allowedIds.has(id)) {
+      throw new BadRequestException(`Not found or no ${request.permission} access`);
+    }
   }
 };
 
@@ -81,23 +82,22 @@ export const checkPersonAccess = async (
   access: AccessRepository,
   { ids, auth, permission }: AccessPersonRequest,
 ): Promise<Set<PersonId>> => {
-  const idSet = Array.isArray(ids) ? new Set(ids) : ids;
-  if (idSet.size === 0) {
+  if (ids.length === 0) {
     return new Set<PersonId>();
   }
 
   switch (permission) {
     case Permission.PersonRead: {
-      return access.person.checkAccess(auth.user.id, idSet, PERSON_READ_ROLES);
+      return access.person.checkAccess(auth.user.id, ids, PERSON_READ_ROLES);
     }
 
     case Permission.PersonUpdate: {
-      return access.person.checkAccess(auth.user.id, idSet, PERSON_WRITE_ROLES);
+      return access.person.checkAccess(auth.user.id, ids, PERSON_WRITE_ROLES);
     }
 
     case Permission.PersonDelete:
     case Permission.PersonMerge: {
-      return access.person.checkAccess(auth.user.id, idSet, PERSON_ADMIN_ROLES);
+      return access.person.checkAccess(auth.user.id, ids, PERSON_ADMIN_ROLES);
     }
 
     default: {
