@@ -22,6 +22,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
@@ -76,9 +77,12 @@ class BootstrapErrorWidget extends StatelessWidget {
                     ),
                   ),
                   const Divider(height: 1),
-                  const SafeArea(
+                  SafeArea(
                     top: false,
-                    child: Padding(padding: EdgeInsets.fromLTRB(24, 16, 24, 16), child: _BottomPanel()),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+                      child: _BottomPanel(startupError: '$error\n\n$stack'),
+                    ),
                   ),
                 ],
               ),
@@ -91,7 +95,9 @@ class BootstrapErrorWidget extends StatelessWidget {
 }
 
 class _BottomPanel extends StatefulWidget {
-  const _BottomPanel();
+  final String startupError;
+
+  const _BottomPanel({required this.startupError});
 
   @override
   State<_BottomPanel> createState() => _BottomPanelState();
@@ -155,8 +161,8 @@ class _BottomPanelState extends State<_BottomPanel> {
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
           children: [
             _ActionLink(
               icon: Icons.chat_bubble_outline,
@@ -170,6 +176,11 @@ class _BottomPanelState extends State<_BottomPanel> {
                 Uri.parse('https://github.com/immich-app/immich/issues'),
                 mode: LaunchMode.externalApplication,
               ),
+            ),
+            _ActionLink(
+              icon: Icons.share_outlined,
+              label: context.t.share_logs,
+              onTap: () => ImmichLogger.shareLogs(context, startupError: widget.startupError),
             ),
             if (!_cleared)
               _ActionLink(
