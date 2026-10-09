@@ -19,7 +19,6 @@ import { handlePromiseError } from 'src/utils/misc.js';
 export const serverEvents = [
   'ConfigUpdate',
   'AppRestart',
-  'YuccaEvent',
   'LibraryCreate',
   'LibraryUpdate',
   'LibraryDelete',
