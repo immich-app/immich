@@ -356,7 +356,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                 }
               },
               onError: (exception) {
-                log.severe('Failed to update auth info with access token: $accessToken');
+                log.severe('Failed to update auth info', exception);
                 if (!mounted) {
                   return;
                 }
