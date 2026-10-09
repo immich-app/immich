@@ -117,8 +117,8 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
     ScheduleModule.forRoot(),
     OrchestrationApiModule.forRootAsync({
       imports: [forwardRef(() => ApiModule)],
-      inject: [AuthService, WebsocketRepository],
-      useFactory: (authService: AuthService, websocketRepository: WebsocketRepository) => ({
+      inject: [AuthService],
+      useFactory: (authService: AuthService) => ({
         statePath: yuccaStatePath,
         cachePath: yuccaCachePath,
         requireWsAuth: true,
@@ -130,9 +130,6 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
             queryParams: {},
             metadata: { adminRoute: true, sharedLinkRoute: false, uri: '/api/yucca/socket.io' },
           }),
-        onInternalEvent: (event) => {
-          websocketRepository.serverSend('YuccaEvent', event);
-        },
       }),
     }),
   ],
@@ -147,11 +144,8 @@ export class ApiModule extends BaseModule {}
     ...commonImports,
     OrchestrationApiModule.forRootAsync({
       imports: [forwardRef(() => MaintenanceModule)],
-      inject: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
-      useFactory: (
-        maintenanceWorkerService: MaintenanceWorkerService,
-        websocketRepository: MaintenanceWebsocketRepository,
-      ) => ({
+      inject: [MaintenanceWorkerService],
+      useFactory: (maintenanceWorkerService: MaintenanceWorkerService) => ({
         statePath: yuccaStatePath,
         cachePath: yuccaCachePath,
         externalBaseUrl: 'https://my.immich.app',
@@ -161,9 +155,6 @@ export class ApiModule extends BaseModule {}
         authenticate: async (client) => {
           await maintenanceWorkerService.authenticate(client.request.headers);
           return { user: { isAdmin: true } };
-        },
-        onInternalEvent: (event) => {
-          websocketRepository.serverSend('YuccaEvent', event);
         },
       }),
     }),

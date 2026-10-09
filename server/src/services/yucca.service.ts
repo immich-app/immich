@@ -1,5 +1,4 @@
 import {
-  type GatewayEvent,
   type ImmichDatabaseDumpConfig,
   YuccaService as YuccaOrchestratorService,
 } from '@futo-org/backups-orchestrator-api';
@@ -116,10 +115,5 @@ export class YuccaService {
   @OnEvent({ name: 'LibraryDelete', workers: [ImmichWorker.Api], server: true })
   onLibraryDelete() {
     void this.updateLibraryConfig();
-  }
-
-  @OnEvent({ name: 'YuccaEvent', workers: [ImmichWorker.Api], server: true })
-  onYuccaEvent(event: GatewayEvent) {
-    this.yuccaService.emit(event);
   }
 }
