@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/data/db/logger/database.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -14,7 +12,6 @@ import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:sqlite3/sqlite3.dart';
 
 /// [ImmichLogger] is a custom logger that is built on top of the [logging] package.
 /// The logs are written to the database and onto console, using `debugPrint` method.
@@ -71,78 +68,15 @@ abstract final class ImmichLogger {
     ];
   }
 
-  // the same values read from the database file, for when the store and settings never started;
-  // a database that can't be read leaves only the generic patterns
-  static Future<Iterable<String>> _heldInFile() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final store = [
-      StoreKey.serverUrl,
-      StoreKey.accessToken,
-      StoreKey.serverEndpoint,
-      StoreKey.legacyLocalEndpoint,
-      StoreKey.legacyExternalEndpointList,
-      StoreKey.legacyPreferredWifiName,
-      StoreKey.legacyCustomHeaders,
-    ];
-    final settings = [
-      SettingsKey.networkLocalEndpoint,
-      SettingsKey.networkExternalEndpointList,
-      SettingsKey.networkPreferredWifiName,
-      SettingsKey.networkCustomHeaders,
-    ];
-    final values = <Object?>[];
-    try {
-      final db = sqlite3.open('${dir.path}/immich.sqlite', mode: OpenMode.readOnly);
-      try {
-        final ids = store.map((key) => key.id).join(', ');
-        values.addAll(
-          db.select('SELECT string_value FROM store_entity WHERE id IN ($ids)').map((row) => row.values.single),
-        );
-        // older schemas keep these in the legacy store keys and have no settings table
-        if (db.select("SELECT 1 FROM sqlite_master WHERE name = 'settings'").isNotEmpty) {
-          final names = settings.map((key) => "'${key.name}'").join(', ');
-          values.addAll(db.select('SELECT value FROM settings WHERE key IN ($names)').map((row) => row.values.single));
-        }
-      } finally {
-        db.close();
-      }
-    } on SqliteException {
-      // nothing to read
-    }
-
-    Iterable<Object?> leaves(Object? json) => switch (json) {
-      List() => json.expand(leaves),
-      Map() => json.values.expand(leaves),
-      _ => [json],
-    };
-    // list and map settings hold their values as JSON
-    Iterable<String> strings(String value) {
-      try {
-        final json = jsonDecode(value);
-        if (json is List || json is Map) {
-          return leaves(json).whereType<String>();
-        }
-      } on FormatException {
-        // a plain value
-      }
-      return [value];
-    }
-
-    return [
-      for (final value in values.whereType<String>())
-        for (final part in strings(value)) ...[part, ?Uri.tryParse(part)?.host],
-    ];
-  }
-
   // the startup error screen can show before the log service starts, and the store and settings start before it,
-  // so without it the logs and the values to hide come straight from the database files
+  // so without it the logs come straight from their file and only the patterns hide what they hold
   static Future<(List<LogMessage>, Iterable<String>)> _read() async {
     try {
       return (await LogService.I.getMessages(), _held());
     } on LoggerUnInitializedException {
       final logs = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
       try {
-        return (await LogRepository(logs).getAll(), await _heldInFile());
+        return (await LogRepository(logs).getAll(), const <String>[]);
       } finally {
         await logs.close();
       }
