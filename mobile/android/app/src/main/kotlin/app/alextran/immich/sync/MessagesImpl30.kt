@@ -77,13 +77,14 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
 
       hasChanges = true
 
+      // generation_modified >= generation_added on every row, so it alone finds new and changed rows.
+      // The unary + keeps SQLite on generation_modified_index; it also drops the column's affinity,
+      // so the media types are literals: bound as strings they would never match
       val selection =
-        "$MEDIA_SELECTION AND (${MediaStore.MediaColumns.GENERATION_MODIFIED} > ? OR ${MediaStore.MediaColumns.GENERATION_ADDED} > ?)"
-      val selectionArgs = arrayOf(
-        *MEDIA_SELECTION_ARGS,
-        storedGen.toString(),
-        storedGen.toString()
-      )
+        "(+${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE} OR " +
+          "+${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO}) AND " +
+          "${MediaStore.MediaColumns.GENERATION_MODIFIED} > ?"
+      val selectionArgs = arrayOf(storedGen.toString())
 
       getAssets(getCursor(volume, selection, selectionArgs)).forEach {
         when (it) {

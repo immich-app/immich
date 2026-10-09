@@ -344,12 +344,7 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
             checksum: const Constant(null),
             previousChecksum: coalesce([_db.localAssetEntity.previousChecksum, _db.localAssetEntity.checksum]),
           ),
-          where: (row) =>
-              row.id.equals(asset.id) &
-              (row.updatedAt.isNotValue(asset.updatedAt) |
-                  row.size.isNotExp(Variable(asset.size)) |
-                  row.width.isNotExp(Variable(asset.width)) |
-                  row.height.isNotExp(Variable(asset.height))),
+          where: (row) => row.id.equals(asset.id) & _fileChanged(row, asset),
         );
       }
     });
@@ -379,6 +374,31 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
       }
     });
   }
+
+  // Size catches OEM cameras that rewrite the file in place and keep DATE_MODIFIED
+  Expression<bool> _fileChanged($LocalAssetEntityTable row, LocalAsset asset) {
+    final changed =
+        row.updatedAt.isNotValue(asset.updatedAt) |
+        row.width.isNotExp(Variable(asset.width)) |
+        row.height.isNotExp(Variable(asset.height));
+    final size = asset.size;
+    if (size == null) {
+      return changed;
+    }
+    return changed |
+        (row.size.isNotNull() & row.size.isNotValue(size)) |
+        (row.size.isNull() & _notVerifiedByServer(row, size));
+  }
+
+  // Rows synced before the size column existed have nothing to compare against. Instead of re-hashing
+  // all of them, keep the checksum only where the server holds an asset with that checksum and the
+  // same file size as the file on the device now
+  Expression<bool> _notVerifiedByServer($LocalAssetEntityTable row, int size) => notExistsQuery(
+    _db.remoteAssetEntity.selectOnly()
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..join([innerJoin(_db.remoteExifEntity, _db.remoteExifEntity.assetId.equalsExp(_db.remoteAssetEntity.id))])
+      ..where(_db.remoteAssetEntity.checksum.equalsExp(row.checksum) & _db.remoteExifEntity.fileSize.equals(size)),
+  );
 
   Future<void> _removeAssets(String albumId, Iterable<String> assetIds) async {
     if (assetIds.isEmpty) {
