@@ -98,7 +98,9 @@ class _StackItemState extends ConsumerState<_StackItem> {
       thumbnail = Stack(children: [thumbnail, playIcon]);
     }
     thumbnail = ClipRRect(borderRadius: const BorderRadius.all(Radius.circular(10)), child: thumbnail);
-    final isSelected = ref.watch(assetViewerProvider.select((s) => s.stackIndex == widget.index));
+    final isSelected = ref.watch(
+      assetViewerProvider.select((s) => s.currentAsset?.refersToSameAsset(widget.asset) ?? false),
+    );
     return SizedBox(
       width: 60,
       height: 40,

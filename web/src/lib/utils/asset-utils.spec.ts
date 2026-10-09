@@ -1,5 +1,11 @@
 import { AssetVisibility, updateAsset, type AssetResponseDto } from '@immich/sdk';
-import { canCopyImageToClipboard, getAssetFilename, getFilenameExtension, toggleArchive } from './asset-utils';
+import {
+  canCopyImageToClipboard,
+  getAssetFilename,
+  getFilenameExtension,
+  orderStackAssets,
+  toggleArchive,
+} from './asset-utils';
 
 vi.mock('@immich/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@immich/sdk')>();
@@ -102,5 +108,17 @@ describe('toggleArchive', () => {
 
     expect(asset.isArchived).toBe(false);
     expect(asset.visibility).toBe(AssetVisibility.Timeline);
+  });
+});
+
+describe('order stack assets', () => {
+  it('orders assets from newest to oldest independently of the primary asset', () => {
+    const assets = [
+      { id: 'primary', fileCreatedAt: '2026-01-02T00:00:00.000Z' },
+      { id: 'before-primary', fileCreatedAt: '2026-01-01T00:00:00.000Z' },
+      { id: 'after-primary', fileCreatedAt: '2026-01-03T00:00:00.000Z' },
+    ] as AssetResponseDto[];
+
+    expect(orderStackAssets(assets).map(({ id }) => id)).toEqual(['after-primary', 'primary', 'before-primary']);
   });
 });
