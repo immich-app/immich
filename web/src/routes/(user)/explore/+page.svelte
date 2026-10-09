@@ -52,14 +52,13 @@
     })),
   );
 
-  const thumbnailUpdatedAt = new SvelteMap<string, string>();
-
   let needFadeInTransition = $state(false);
   const markNeedFadeInTrasition = () => {
     const timer = setTimeout(() => (needFadeInTransition = true), 50);
     return () => clearTimeout(timer);
   };
 
+  const thumbnailUpdatedAt = new SvelteMap<string, string>();
   const onPersonThumbnailReady = ({ id }: { id: string }) => {
     thumbnailUpdatedAt.set(id, new Date().toISOString());
   };
