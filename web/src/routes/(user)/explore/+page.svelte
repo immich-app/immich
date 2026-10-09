@@ -19,6 +19,7 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import Portal from '$lib/elements/Portal.svelte';
   import { SvelteMap } from 'svelte/reactivity';
+  import { fade } from 'svelte/transition';
 
   interface Props {
     data: PageData;
@@ -53,6 +54,12 @@
 
   const thumbnailUpdatedAt = new SvelteMap<string, string>();
 
+  let needFadeInTransition = $state(false);
+  const markNeedFadeInTrasition = () => {
+    const timer = setTimeout(() => (needFadeInTransition = true), 50);
+    return () => clearTimeout(timer);
+  };
+
   const onPersonThumbnailReady = ({ id }: { id: string }) => {
     thumbnailUpdatedAt.set(id, new Date().toISOString());
   };
@@ -82,7 +89,7 @@
 
 <UserPageLayout title={data.meta.title}>
   {#await data.peoplePromise}
-    <div class="mt-2 mb-6" aria-busy="true">
+    <div class="mt-2 mb-6" aria-busy="true" {@attach markNeedFadeInTrasition}>
       {@render peopleHeader()}
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
@@ -102,7 +109,11 @@
         <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
           {#snippet children({ itemCount })}
             {#each people.slice(0, itemCount) as person (person.id)}
-              <a href={Route.viewPerson(person)} class="text-center">
+              <a
+                href={Route.viewPerson(person)}
+                class="text-center"
+                in:fade={{ duration: needFadeInTransition ? 250 : 0 }}
+              >
                 <div class="@container relative">
                   <ImageThumbnail
                     circle
