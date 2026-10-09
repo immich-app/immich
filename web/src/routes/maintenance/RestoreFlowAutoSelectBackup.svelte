@@ -8,6 +8,7 @@
   import type { DatabaseBackupDto } from '@immich/sdk';
   import { Alert, Button, Heading, HStack, Icon, Text } from '@immich/ui';
   import { mdiArrowRight, mdiRefresh } from '@mdi/js';
+  import { handleError } from '$lib/utils/handle-error';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -22,7 +23,12 @@
   let backups: DatabaseBackupDto[] | undefined = $state();
 
   onMount(async () => {
-    backups = await loadDatabaseBackups();
+    try {
+      backups = await loadDatabaseBackups();
+    } catch (error) {
+      handleError(error, $t('errors.failed_to_load_database_backups'));
+      backups = [];
+    }
   });
 
   const latest = $derived(backups ? getLatestBackup(backups) : undefined);
