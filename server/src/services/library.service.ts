@@ -249,6 +249,7 @@ export class LibraryService extends BaseService {
     });
 
     await this.eventRepository.emit('LibraryCreate');
+    this.websocketRepository.serverSend('LibraryCreate');
     return mapLibrary(library);
   }
 
@@ -361,6 +362,7 @@ export class LibraryService extends BaseService {
 
     const library = await this.libraryRepository.update(id, dto);
     await this.eventRepository.emit('LibraryUpdate');
+    this.websocketRepository.serverSend('LibraryUpdate');
     return mapLibrary(library);
   }
 
@@ -375,6 +377,7 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LibraryDelete, data: { id } });
 
     await this.eventRepository.emit('LibraryDelete');
+    this.websocketRepository.serverSend('LibraryDelete');
   }
 
   @OnJob({ name: JobName.LibraryDelete, queue: QueueName.Library })
