@@ -5,12 +5,13 @@ import {
   type TagResponseDto,
   type TagsForAssetsResponseDto,
 } from '@immich/sdk';
+import { modalManager } from '@immich/ui';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
-import { tagUntagAssets } from '$lib/utils/asset-utils';
+import { handleTagUntagAssets } from '$lib/services/asset.service';
 import AssetTagModal from './AssetTagModal.svelte';
 
 vi.mock('@immich/sdk', () => {
@@ -20,12 +21,12 @@ vi.mock('@immich/sdk', () => {
     upsertTags: vi.fn(),
   };
 });
-vi.mock('$lib/utils/asset-utils', () => {
+vi.mock('$lib/services/asset.service', () => {
   return {
-    tagUntagAssets: vi.fn(),
+    handleTagUntagAssets: vi.fn(),
   };
 });
-const mockTagUntagAssets = vi.mocked(tagUntagAssets);
+const mockHandleTagUntagAssets = vi.mocked(handleTagUntagAssets);
 const mockGetAllTags = vi.mocked(getAllTags);
 const mockQueryTagsForAssets = vi.mocked(queryTagsForAssets);
 const mockUpsertTags = vi.mocked(upsertTags);
@@ -74,6 +75,7 @@ describe('AssetTagModal component', () => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
     vi.stubGlobal('visualViewport', getVisualViewportMock());
     vi.resetAllMocks();
+    mockHandleTagUntagAssets.mockResolvedValue(true);
     Element.prototype.animate = getAnimateMock();
   });
 
@@ -362,32 +364,77 @@ describe('AssetTagModal component', () => {
     expect(tagPills[0]).toHaveTextContent('NewTag');
   });
 
-  test('displays confirmation dialog with correct asset count if modifying tags for over 40 assets', async () => {
+  test.each([
+    { count: 40, confirmed: true },
+    { count: 41, confirmed: true },
+    { count: 41, confirmed: false },
+  ])('saves tags for $count assets when confirmation is $confirmed', async ({ count, confirmed }) => {
+    const showDialog = vi.spyOn(modalManager, 'showDialog').mockResolvedValueOnce(confirmed);
+    const assetIds = Array.from({ length: count }, (_, index) => `asset-id-${index}`);
     mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+    mockQueryTagsForAssets.mockResolvedValueOnce([]);
 
-    render(AssetTagModal, {
-      props: {
-        assetIds: Array.from({ length: 41 }, () => 'asset-id') as string[],
-        onClose,
-      },
-    });
+    render(AssetTagModal, { props: { assetIds, onClose } });
 
     await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
+      expect(mockQueryTagsForAssets).toHaveBeenCalledWith({ tagsForAssetsDto: { assetIds } });
     });
 
     await fireEvent.focus(getTagsCombobox());
-    const options = getTagComboboxOptions();
-    await fireEvent.click(options[0]);
-
-    // Click save button
+    await fireEvent.click(getTagComboboxOptions()[0]);
     await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
 
-    expect(screen.getByText(/modify_tags_confirmation/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalledExactlyOnceWith(confirmed);
+    });
+    if (count > 40) {
+      expect(showDialog).toHaveBeenCalledExactlyOnceWith({ prompt: 'modify_tags_confirmation' });
+    } else {
+      expect(showDialog).not.toHaveBeenCalled();
+    }
+    if (confirmed) {
+      expect(mockHandleTagUntagAssets).toHaveBeenCalledExactlyOnceWith(assetIds, [simpleTag.id], []);
+    } else {
+      expect(mockHandleTagUntagAssets).not.toHaveBeenCalled();
+    }
+    showDialog.mockRestore();
   });
 
-  test('calls tagUntagAssets correctly with the correct set of tag/asset ids', async () => {
+  test.each([true, false])('closes with the service result %s after promoting a partial tag', async (updated) => {
+    mockGetAllTags.mockResolvedValueOnce(tagDtos);
+    mockQueryTagsForAssets.mockResolvedValueOnce([{ tagId: simpleTag.id, assetIds: ['asset-id'] }]);
+    mockHandleTagUntagAssets.mockResolvedValueOnce(updated);
+    const assetIds = ['asset-id', 'asset-id2'];
+
+    render(AssetTagModal, { props: { assetIds, onClose } });
+
+    await waitFor(() => expect(getTagPills()).toHaveLength(1));
+    await fireEvent.focus(getTagsCombobox());
+    await fireEvent.click(getTagComboboxOptions()[0]);
+    await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledExactlyOnceWith(updated));
+    expect(mockHandleTagUntagAssets).toHaveBeenCalledExactlyOnceWith(assetIds, [simpleTag.id], []);
+  });
+
+  test('closes without updating when full and partial tags are unchanged', async () => {
+    const assetIds = ['asset-id', 'asset-id2'];
+    mockGetAllTags.mockResolvedValueOnce(tagDtos);
+    mockQueryTagsForAssets.mockResolvedValueOnce([
+      { tagId: simpleTag.id, assetIds },
+      { tagId: parentTag.id, assetIds: ['asset-id'] },
+    ]);
+
+    render(AssetTagModal, { props: { assetIds, onClose } });
+
+    await waitFor(() => expect(getTagPills()).toHaveLength(2));
+    await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
+
+    expect(mockHandleTagUntagAssets).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledExactlyOnceWith(false);
+  });
+
+  test('calls handleTagUntagAssets correctly with the correct set of tag/asset ids', async () => {
     const addedTag1: TagResponseDto = {
       id: 'tag-id-added1',
       value: 'TagAdded1',
@@ -445,13 +492,13 @@ describe('AssetTagModal component', () => {
     // Click save button
     await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
 
-    // Check tagAssets is called with correct tag and asset ids
+    // Check the service is called with only the changed tag and asset ids
     // The partial tag ID should not be included in the tag ids to add.
-    expect(mockTagUntagAssets).toHaveBeenCalledWith({
-      assetIds: ['asset-id', 'asset-id2', 'asset-id3'],
-      showNotification: false,
-      tagIdsToAdd: [addedTag2.id, addedTag1.id],
-      tagIdsToRemove: [simpleTag.id, parentTag.id],
-    });
+    expect(mockHandleTagUntagAssets).toHaveBeenCalledExactlyOnceWith(
+      ['asset-id', 'asset-id2', 'asset-id3'],
+      [addedTag2.id, addedTag1.id],
+      [simpleTag.id, parentTag.id],
+    );
+    expect(onClose).toHaveBeenCalledExactlyOnceWith(true);
   });
 });

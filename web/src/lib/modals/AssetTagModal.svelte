@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { handleTagUntagAssets } from '$lib/services/asset.service';
   import {
     getAllTags,
@@ -67,11 +66,10 @@
       .map((tagForAsset) => tagForAsset.tagId);
 
     const isConfirmed =
-      assetIds.length > 40
-        ? await modalManager.showDialog({
-            prompt: $t('modify_tags_confirmation', { values: { count: assetIds.length } }),
-          })
-        : true;
+      assetIds.length <= 40 ||
+      (await modalManager.showDialog({
+        prompt: $t('modify_tags_confirmation', { values: { count: assetIds.length } }),
+      }));
 
     if (isConfirmed && (tagIdsToAdd.length > 0 || tagIdsToRemove.length > 0)) {
       onClose(await handleTagUntagAssets(assetIds, tagIdsToAdd, tagIdsToRemove));
