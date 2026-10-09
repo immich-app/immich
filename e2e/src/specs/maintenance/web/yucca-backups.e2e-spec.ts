@@ -159,8 +159,7 @@ test.describe('Yucca Backups', () => {
     await expect(dialog.filter({ hasText: 'Restoring' })).toBeVisible();
     await expect(dialog.filter({ hasText: 'Restoring' })).toBeHidden({ timeout: 60_000 });
 
-    await page.getByRole('button', { name: 'Next' }).click();
-    await page.getByRole('button', { name: 'Restore', exact: true }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
