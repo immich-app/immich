@@ -3,8 +3,6 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import '../../utils.dart';
 
 class LocalAlbumFactory {
-  const LocalAlbumFactory();
-
   static LocalAlbum create({
     String? id,
     String? name,

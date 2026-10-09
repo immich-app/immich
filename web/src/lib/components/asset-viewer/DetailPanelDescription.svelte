@@ -33,7 +33,7 @@
   <section class="mt-10 px-4">
     <Textarea
       bind:value={description}
-      class="max-h-40 resize-none border-b border-gray-500 bg-transparent pl-0 ring-0 outline-none focus:border-b-2 focus:border-immich-primary focus:ring-0 dark:bg-transparent dark:focus:border-immich-dark-primary"
+      class="max-h-40 resize-none border-b border-gray-500 bg-transparent ps-0 ring-0 outline-none focus:border-b-2 focus:border-immich-primary focus:ring-0 dark:bg-transparent dark:focus:border-immich-dark-primary"
       rows={1}
       grow
       shape="rectangle"

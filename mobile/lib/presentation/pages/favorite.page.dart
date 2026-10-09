@@ -28,7 +28,7 @@ class FavoritePage extends StatelessWidget {
         }),
       ],
       child: Timeline(
-        appBar: MesmerizingSliverAppBar(title: context.t.favorites, icon: Icons.favorite_outline),
+        appBar: MesmerizingSliverAppBar(title: context.t.favorites),
         bottomSheet: const FavoriteBottomSheet(),
       ),
     );

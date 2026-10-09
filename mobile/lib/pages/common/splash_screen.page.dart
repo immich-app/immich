@@ -10,9 +10,11 @@ import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -272,7 +274,9 @@ class _ErrorCard extends StatelessWidget {
 
 @RoutePage()
 class SplashScreenPage extends StatefulHookConsumerWidget {
-  const SplashScreenPage({super.key});
+  const SplashScreenPage({super.key, this.deepLink});
+
+  final PageRouteInfo? deepLink;
 
   @override
   SplashScreenPageState createState() => SplashScreenPageState();
@@ -311,6 +315,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final wsProvider = ref.read(websocketProvider.notifier);
       final backgroundManager = ref.read(backgroundSyncProvider);
       final backupNotifier = ref.read(backupProvider.notifier);
+      final lifeCycle = ref.read(appStateProvider.notifier);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
       unawaited(
@@ -334,9 +339,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                   if (syncSuccess) {
                     await Future.wait([
                       backgroundManager.hashAssets().then((_) {
-                        unawaited(_resumeBackup(backupNotifier));
+                        unawaited(_resumeBackup(backupNotifier, lifeCycle));
                       }),
-                      _resumeBackup(backupNotifier),
+                      _resumeBackup(backupNotifier, lifeCycle),
                       backgroundManager.syncCloudIds(),
                     ]);
                   } else {
@@ -368,19 +373,24 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
-    // clean install - change the default of the flag
-    // current install not using beta timeline
     if (context.router.current.name == SplashScreenRoute.name) {
-      unawaited(context.replaceRoute(const TabShellRoute()));
+      unawaited(context.router.replaceAll([const TabShellRoute(), ?widget.deepLink]));
     }
   }
 
-  Future<void> _resumeBackup(BackupNotifier notifier) async {
+  Future<void> _resumeBackup(BackupNotifier notifier, AppLifeCycleNotifier lifeCycle) async {
     final isEnableBackup = SettingsRepository.instance.appConfig.backup.enabled;
 
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
+        // TODO(rewrite): Remove this check and requestFullResume once the splash no longer runs in background launches
+        // iOS also runs the splash in background launches, where the app is never resumed.
+        // there the foreground backup waits for the first resume instead of uploading off screen
+        if (CurrentPlatform.isIOS && WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+          lifeCycle.requestFullResume();
+          return;
+        }
         unawaited(notifier.startForegroundBackup(currentUser.id));
       }
     }

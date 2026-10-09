@@ -4,6 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import type { SyncAck } from 'src/types.js';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { MemoryType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 
 export type SyncBackfillOptions = {
@@ -461,8 +462,9 @@ class PersonGroupSync extends BaseSync {
 }
 
 class AssetFaceSync extends BaseSync {
+  // TODO(v5) drop when AssetFacesV2 is removed
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
-  getDeletes(options: SyncQueryOptions) {
+  getDeletesV2(options: SyncQueryOptions) {
     return this.auditQuery('asset_face_audit', options)
       .select(['asset_face_audit.id', 'assetFaceId'])
       .leftJoin('asset', 'asset.id', 'asset_face_audit.assetId')
@@ -470,30 +472,43 @@ class AssetFaceSync extends BaseSync {
       .stream();
   }
 
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletesV3(options: SyncQueryOptions) {
+    return this.auditQuery('asset_face_audit', options)
+      .select(['asset_face_audit.id', 'assetFaceId'])
+      .innerJoin('asset', 'asset.id', 'asset_face_audit.assetId')
+      .innerJoin('user as owner', 'owner.id', 'asset.ownerId')
+      .where('owner.clusterGroupId', '=', ({ selectFrom }) =>
+        selectFrom('user').select('user.clusterGroupId').where('user.id', '=', options.userId),
+      )
+      .stream();
+  }
+
   cleanupAuditTable(daysAgo: number) {
     return this.auditCleanup('asset_face_audit', daysAgo);
   }
 
+  // TODO(v5) drop when AssetFacesV2 is removed
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
-  getUpserts(options: SyncQueryOptions) {
+  getUpsertsV2(options: SyncQueryOptions) {
     return this.upsertQuery('asset_face', options)
-      .select([
-        'asset_face.id',
-        'assetId',
-        'personGroupId as personId',
-        'imageWidth',
-        'imageHeight',
-        'boundingBoxX1',
-        'boundingBoxY1',
-        'boundingBoxX2',
-        'boundingBoxY2',
-        'sourceType',
-        'isVisible',
-        'asset_face.deletedAt',
-        'asset_face.updateId',
-      ])
+      .select(columns.syncAssetFace)
+      .select('asset_face.updateId')
       .leftJoin('asset', 'asset.id', 'asset_face.assetId')
       .where('asset.ownerId', '=', options.userId)
+      .stream();
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpsertsV3(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_face', options)
+      .select(columns.syncAssetFace)
+      .select('asset_face.updateId')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .innerJoin('user as owner', 'owner.id', 'asset.ownerId')
+      .where('owner.clusterGroupId', '=', ({ selectFrom }) =>
+        selectFrom('user').select('user.clusterGroupId').where('user.id', '=', options.userId),
+      )
       .stream();
   }
 }
@@ -580,6 +595,21 @@ class MemoryToAssetSync extends BaseSync {
 
   cleanupAuditTable(daysAgo: number) {
     return this.auditCleanup('memory_asset_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpsertsV1(options: SyncQueryOptions) {
+    return this.upsertQuery('memory_asset', options)
+      .select(['memoriesId as memoryId', 'assetId as assetId'])
+      .select('updateId')
+      .where('memoriesId', 'in', (eb) =>
+        eb
+          .selectFrom('memory')
+          .select('id')
+          .where('ownerId', '=', options.userId)
+          .where('type', '=', sql.lit(MemoryType.OnThisDay)),
+      )
+      .stream();
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })

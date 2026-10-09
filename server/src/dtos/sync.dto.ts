@@ -295,7 +295,7 @@ const SyncMemoryV1Schema = z
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     deletedAt: isoDatetimeToDate.nullable().describe('Deleted at'),
     ownerId: z.uuidv4().describe('Owner ID'),
-    type: MemoryTypeSchema,
+    type: MemoryTypeSchema.extract(['OnThisDay']).meta({ id: 'MemoryTypeV1' }),
     data: z.record(z.string(), z.unknown()).describe('Data'),
     isSaved: z.boolean().describe('Is saved'),
     memoryAt: isoDatetimeToDate.describe('Memory at'),
@@ -304,6 +304,10 @@ const SyncMemoryV1Schema = z
     hideAt: isoDatetimeToDate.nullable().describe('Hide at'),
   })
   .meta({ id: 'SyncMemoryV1' });
+
+const SyncMemoryV2Schema = SyncMemoryV1Schema.extend({
+  type: MemoryTypeSchema,
+}).meta({ id: 'SyncMemoryV2' });
 
 const SyncMemoryDeleteV1Schema = z
   .object({ memoryId: z.uuidv4().describe('Memory ID') })
@@ -371,10 +375,11 @@ const SyncAssetFaceV1Schema = z
   })
   .meta({ id: 'SyncAssetFaceV1' });
 
-const SyncAssetFaceV2Schema = SyncAssetFaceV1Schema.extend({
+// same shape as V2, but scoped to the whole cluster group instead of the user's own assets
+const SyncAssetFaceV3Schema = SyncAssetFaceV1Schema.extend({
   deletedAt: isoDatetimeToDate.nullable().describe('Face deleted at'),
   isVisible: z.boolean().describe('Is the face visible in the asset'),
-}).meta({ id: 'SyncAssetFaceV2' });
+}).meta({ id: 'SyncAssetFaceV3' });
 
 const SyncAssetFaceDeleteV1Schema = z
   .object({ assetFaceId: z.uuidv4().describe('Asset face ID') })
@@ -401,6 +406,8 @@ const SyncCompleteV1Schema = z.object({}).meta({ id: 'SyncCompleteV1' });
 
 @ExtraModel()
 class SyncMemoryV1 extends createZodDto(SyncMemoryV1Schema) {}
+@ExtraModel()
+class SyncMemoryV2 extends createZodDto(SyncMemoryV2Schema) {}
 @ExtraModel()
 class SyncMemoryDeleteV1 extends createZodDto(SyncMemoryDeleteV1Schema) {}
 @ExtraModel()
@@ -453,7 +460,7 @@ class SyncPersonDeleteV1 extends createZodDto(SyncPersonDeleteV1Schema) {}
 @ExtraModel()
 class SyncAssetFaceV1 extends createZodDto(SyncAssetFaceV1Schema) {}
 @ExtraModel()
-class SyncAssetFaceV2 extends createZodDto(SyncAssetFaceV2Schema) {}
+class SyncAssetFaceV3 extends createZodDto(SyncAssetFaceV3Schema) {}
 @ExtraModel()
 class SyncAssetFaceDeleteV1 extends createZodDto(SyncAssetFaceDeleteV1Schema) {}
 @ExtraModel()
@@ -504,8 +511,10 @@ export type SyncItem = {
   [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;
   [SyncEntityType.AlbumToAssetDeleteV1]: SyncAlbumToAssetDeleteV1;
   [SyncEntityType.MemoryV1]: SyncMemoryV1;
+  [SyncEntityType.MemoryV2]: SyncMemoryV2;
   [SyncEntityType.MemoryDeleteV1]: SyncMemoryDeleteV1;
   [SyncEntityType.MemoryToAssetV1]: SyncMemoryAssetV1;
+  [SyncEntityType.MemoryToAssetV2]: SyncMemoryAssetV1;
   [SyncEntityType.MemoryToAssetDeleteV1]: SyncMemoryAssetDeleteV1;
   [SyncEntityType.StackV1]: SyncStackV1;
   [SyncEntityType.StackDeleteV1]: SyncStackDeleteV1;
@@ -515,7 +524,8 @@ export type SyncItem = {
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
   [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
-  [SyncEntityType.AssetFaceV2]: SyncAssetFaceV2;
+  [SyncEntityType.AssetFaceV2]: SyncAssetFaceV3;
+  [SyncEntityType.AssetFaceV3]: SyncAssetFaceV3;
   [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;

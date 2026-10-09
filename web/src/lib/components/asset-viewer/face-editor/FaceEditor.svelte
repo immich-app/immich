@@ -209,12 +209,14 @@
 
     for (const position of positions) {
       const overlap = overlapArea(position);
-      if (overlap < leastOverlap) {
-        leastOverlap = overlap;
-        bestPosition = position;
-        if (overlap === 0) {
-          break;
-        }
+      if (overlap >= leastOverlap) {
+        continue;
+      }
+
+      leastOverlap = overlap;
+      bestPosition = position;
+      if (overlap === 0) {
+        break;
       }
     }
 

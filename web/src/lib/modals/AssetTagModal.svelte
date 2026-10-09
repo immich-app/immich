@@ -1,6 +1,6 @@
 <script lang="ts">
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { tagUntagAssets } from '$lib/utils/asset-utils';
+  import { handleTagUntagAssets } from '$lib/services/asset.service';
   import {
     getAllTags,
     queryTagsForAssets,
@@ -74,14 +74,7 @@
         : true;
 
     if (isConfirmed && (tagIdsToAdd.length > 0 || tagIdsToRemove.length > 0)) {
-      await tagUntagAssets({
-        tagIdsToAdd,
-        tagIdsToRemove,
-        assetIds,
-        showNotification: false,
-      });
-      eventManager.emit('AssetsTag', assetIds);
-      onClose(true);
+      onClose(await handleTagUntagAssets(assetIds, tagIdsToAdd, tagIdsToRemove));
     } else {
       onClose(false);
     }

@@ -14,12 +14,14 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
+import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { DB } from 'src/schema/index.js';
 import { WorkflowExecutionService } from 'src/services/workflow-execution.service.js';
 import { resolveMethod } from 'src/utils/workflow.js';
 import { MediumTestContext } from 'test/medium.factory.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
+import { newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
 let isInitialized = false;
@@ -40,7 +42,7 @@ class WorkflowTestContext extends MediumTestContext<typeof WorkflowExecutionServ
         UserRepository,
         WorkflowRepository,
       ],
-      mock: [ConfigRepository, EventRepository],
+      mock: [ConfigRepository, EventRepository, WebsocketRepository],
     });
   }
 
@@ -54,6 +56,7 @@ class WorkflowTestContext extends MediumTestContext<typeof WorkflowExecutionServ
     mockData.plugins.external.allow = false;
     this.getMock(ConfigRepository).getEnv.mockReturnValue(mockData);
     this.getMock(EventRepository).emit.mockResolvedValue();
+    this.getMock(WebsocketRepository).clientSend.mockReturnValue();
     this.get(LoggingRepository).setLogLevel(LogLevel.Verbose);
 
     await this.sut.onPluginSync();
@@ -106,8 +109,10 @@ const createWorkflow = async (template: WorkflowTemplate) => {
 
 let ctx: WorkflowTestContext;
 
+let db: Kysely<DB>;
+
 beforeAll(async () => {
-  const db = await getKyselyDB();
+  db = await getKyselyDB();
   ctx = new WorkflowTestContext(db);
   await ctx.init();
 }, 30_000);
@@ -600,6 +605,126 @@ describe('core plugin', () => {
     });
   });
 
+  describe('assetTagFilter', () => {
+    it('should favorite asset if it matches any tag', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { tag } = await ctx.newTag({ userId: user.id, value: 'foo' });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetTagFilter',
+            config: { matching: 'any', tags: [tag.id, newUuid()] },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+
+    it('should not favorite asset if it has no tags with any filter', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { tag } = await ctx.newTag({ userId: user.id, value: 'foo' });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetTagFilter',
+            config: { matching: 'any', tags: [tag.id, newUuid()] },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
+    });
+
+    it('should favorite asset if it matches all tags', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { tag } = await ctx.newTag({ userId: user.id, value: 'foo' });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetTagFilter',
+            config: { matching: 'all', tags: [tag.id] },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+
+    it('should not favorite asset if it has no tags with all filter', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { tag } = await ctx.newTag({ userId: user.id, value: 'foo' });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetTagFilter',
+            config: { matching: 'all', tags: [tag.id, newUuid()] },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
+    });
+
+    it('should favorite asset if it has none of the tags', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { tag } = await ctx.newTag({ userId: user.id, value: 'foo' });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetTagFilter',
+            config: { matching: 'none', tags: [newUuid()] },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+  });
+
   describe('webhook', () => {
     it('should trigger a webhook on asset upload', async () => {
       const { user } = await ctx.newUser();
@@ -625,6 +750,39 @@ describe('core plugin', () => {
 
     afterEach(() => {
       vi.unstubAllGlobals();
+    });
+  });
+
+  describe('step order', () => {
+    it('should run steps by their order, not by the order the rows come back', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, originalFileName: 'nomatch.jpg' });
+
+      // Insert the action BEFORE the filter so a plain scan returns it first, then give the filter order 0.
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          { method: 'immich-plugin-core#assetFavorite' },
+          { method: 'immich-plugin-core#assetFileFilter', config: { matchType: 'contains', pattern: 'screenshot' } },
+        ],
+      });
+      const steps = await db
+        .selectFrom('workflow_step')
+        .innerJoin('plugin_method', 'plugin_method.id', 'workflow_step.pluginMethodId')
+        .select(['workflow_step.id', 'plugin_method.name'])
+        .where('workflow_step.workflowId', '=', workflow.id)
+        .execute();
+      for (const step of steps) {
+        await db
+          .updateTable('workflow_step')
+          .set({ order: step.name === 'assetFileFilter' ? 0 : 1 })
+          .where('id', '=', step.id)
+          .execute();
+      }
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
     });
   });
 });

@@ -22,6 +22,12 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     print("BackgroundWorkerApiImpl:disableUploadWorker Disabled background workers")
   }
   
+  func wasLaunchedInBackground() throws -> Bool {
+    return BackgroundWorkerApiImpl.launchedInBackground
+  }
+
+  // Stays false until iOS runs one of the background tasks
+  private static var launchedInBackground = false
   private static let taskIDs = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as! [String]
   private static let refreshTaskID = taskIDs.first { $0.hasSuffix(".refreshUpload") }!
   private static let processingTaskID = taskIDs.first { $0.hasSuffix(".processingUpload") }!
@@ -30,6 +36,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   public static func registerBackgroundWorkers() {
       BGTaskScheduler.shared.register(
           forTaskWithIdentifier: processingTaskID, using: nil) { task in
+          launchedInBackground = true
           if task is BGProcessingTask {
             handleBackgroundProcessing(task: task as! BGProcessingTask)
           }
@@ -37,6 +44,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
 
       BGTaskScheduler.shared.register(
           forTaskWithIdentifier: refreshTaskID, using: nil) { task in
+          launchedInBackground = true
           if task is BGAppRefreshTask {
             handleBackgroundRefresh(task: task as! BGAppRefreshTask)
           }

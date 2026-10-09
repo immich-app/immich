@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.drift.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 
 enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount, newestAsset }
 
@@ -284,9 +285,10 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
     // Reset checksum if asset changed
     await _db.batch((batch) async {
       for (final asset in localAssets) {
-        final companion = LocalAssetEntityCompanion(
-          checksum: const Value(null),
-          adjustmentTime: Value(asset.adjustmentTime),
+        final companion = LocalAssetEntityCompanion.custom(
+          checksum: const Constant(null),
+          adjustmentTime: Variable(asset.adjustmentTime),
+          previousChecksum: coalesce([_db.localAssetEntity.previousChecksum, _db.localAssetEntity.checksum]),
         );
         batch.update(
           _db.localAssetEntity,
@@ -313,6 +315,7 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
           latitude: Value(asset.latitude),
           longitude: Value(asset.longitude),
           adjustmentTime: Value(asset.adjustmentTime),
+          groupDate: Value(timelineGroupDate(asset.createdAt.toLocal())),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
@@ -343,11 +346,19 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
           playbackStyle: Value(asset.playbackStyle),
+          groupDate: Value(timelineGroupDate(asset.createdAt.toLocal())),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
           companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+          onConflict: DoUpdate(
+            // SET reads the existing row, so this keeps the checksum being cleared
+            (_) => RawValuesInsertable({
+              ...companion.toColumns(true),
+              'previous_checksum': coalesce([_db.localAssetEntity.previousChecksum, _db.localAssetEntity.checksum]),
+            }),
+            where: (old) => old.updatedAt.isNotValue(asset.updatedAt),
+          ),
         );
       }
     });

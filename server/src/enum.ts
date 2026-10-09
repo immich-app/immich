@@ -89,9 +89,28 @@ export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting p
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
+
+  /** pictures of a person, shown leading up to their birthday */
+  Birthday = 'birthday',
 }
 
 export const MemoryTypeSchema = z.enum(MemoryType).describe('Memory type').meta({ id: 'MemoryType' });
+
+export enum SharingDirection {
+  SharedBy = 'shared-by',
+  SharedWith = 'shared-with',
+}
+
+export const SharingDirectionSchema = z
+  .enum(SharingDirection)
+  .describe('Sharing direction')
+  .meta({ id: 'SharingDirection' });
+
+// TODO(v4) replace with SharingDirection
+export const PartnerDirectionSchema = z
+  .enum(SharingDirection)
+  .describe('Partner direction')
+  .meta({ id: 'PartnerDirection' });
 
 export enum AssetOrderWithRandom {
   // Include existing values
@@ -397,6 +416,16 @@ export const UserAvatarColorSchema = z
   .enum(UserAvatarColor)
   .describe('User avatar color')
   .meta({ id: 'UserAvatarColor' });
+
+export enum PersonUpdateStrategy {
+  Self = 'self',
+  Everyone = 'everyone',
+}
+
+export const PersonUpdateStrategySchema = z
+  .enum(PersonUpdateStrategy)
+  .describe('Which person records to update when editing a person')
+  .meta({ id: 'PersonUpdateStrategy' });
 
 export enum UserStatus {
   Active = 'active',
@@ -1026,7 +1055,9 @@ export enum SyncRequestType {
   AuthUsersV1 = 'AuthUsersV1',
   AuthUsersV2 = 'AuthUsersV2',
   MemoriesV1 = 'MemoriesV1',
+  MemoriesV2 = 'MemoriesV2',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
+  MemoryToAssetsV2 = 'MemoryToAssetsV2',
   PartnersV1 = 'PartnersV1',
   /** @deprecated */
   PartnerAssetsV1 = 'PartnerAssetsV1',
@@ -1038,7 +1069,9 @@ export enum SyncRequestType {
   PeopleV1 = 'PeopleV1',
   /** @deprecated */
   AssetFacesV1 = 'AssetFacesV1',
+  /** @deprecated */
   AssetFacesV2 = 'AssetFacesV2',
+  AssetFacesV3 = 'AssetFacesV3',
   UserMetadataV1 = 'UserMetadataV1',
 }
 
@@ -1108,9 +1141,11 @@ export enum SyncEntityType {
   AlbumToAssetBackfillV1 = 'AlbumToAssetBackfillV1',
 
   MemoryV1 = 'MemoryV1',
+  MemoryV2 = 'MemoryV2',
   MemoryDeleteV1 = 'MemoryDeleteV1',
 
   MemoryToAssetV1 = 'MemoryToAssetV1',
+  MemoryToAssetV2 = 'MemoryToAssetV2',
   MemoryToAssetDeleteV1 = 'MemoryToAssetDeleteV1',
 
   StackV1 = 'StackV1',
@@ -1119,8 +1154,11 @@ export enum SyncEntityType {
   PersonV1 = 'PersonV1',
   PersonDeleteV1 = 'PersonDeleteV1',
 
+  /** @deprecated */
   AssetFaceV1 = 'AssetFaceV1',
+  /** @deprecated */
   AssetFaceV2 = 'AssetFaceV2',
+  AssetFaceV3 = 'AssetFaceV3',
   AssetFaceDeleteV1 = 'AssetFaceDeleteV1',
 
   UserMetadataV1 = 'UserMetadataV1',

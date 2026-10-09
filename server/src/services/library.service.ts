@@ -79,11 +79,13 @@ export class LibraryService extends BaseService {
       start: library.scan.enabled,
     });
 
-    if (library.watch.enabled !== this.watchLibraries) {
-      // Watch configuration changed, update accordingly
-      this.watchLibraries = library.watch.enabled;
-      await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+    if (library.watch.enabled === this.watchLibraries) {
+      return;
     }
+
+    // Watch configuration changed, update accordingly
+    this.watchLibraries = library.watch.enabled;
+    await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
   }
 
   private async watch(id: string): Promise<boolean> {
@@ -133,6 +135,7 @@ export class LibraryService extends BaseService {
       {
         usePolling: false,
         ignoreInitial: true,
+        ignored: library.exclusionPatterns,
         awaitWriteFinish: {
           stabilityThreshold: 5000,
           pollInterval: 1000,
@@ -518,7 +521,9 @@ export class LibraryService extends BaseService {
             break;
           }
 
-          const isExcluded = job.exclusionPatterns.some((pattern) => picomatch.isMatch(asset.originalPath, pattern));
+          const isExcluded = job.exclusionPatterns.some((pattern) =>
+            picomatch.isMatch(asset.originalPath, pattern, { nocase: true }),
+          );
 
           if (!isExcluded) {
             this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);

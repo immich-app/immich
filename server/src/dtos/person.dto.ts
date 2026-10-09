@@ -2,15 +2,17 @@ import { Selectable } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import type { ImageDimensions, MaybeDehydrated } from 'src/types.js';
-import { AssetFace, Person } from 'src/database.js';
+import { AssetFace, Person, PersonUser, User } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
-import { SourceTypeSchema } from 'src/enum.js';
+import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
+import { SharingDirectionSchema, SourceTypeSchema } from 'src/enum.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
+import { hasSomeDefined } from 'src/utils/misc.js';
 import { transformFaceBoundingBox } from 'src/utils/transform.js';
-import { hexColor, stringToBool } from 'src/validation.js';
+import { hexColor, stringToBool, uniqueIds } from 'src/validation.js';
 
 const PersonCreateSchema = z
   .object({
@@ -20,7 +22,7 @@ const PersonCreateSchema = z
       .meta({ format: 'date' })
       .nullable()
       .optional()
-      .refine((val) => (val ? new Date(val) <= new Date() : true), { error: 'Birth date cannot be in the future' })
+      .refine((val) => !val || new Date(val) <= new Date(), { error: 'Birth date cannot be in the future' })
       .describe('Person date of birth'),
     isHidden: z.boolean().optional().describe('Person visibility (hidden)'),
     isFavorite: z.boolean().optional().describe('Mark as favorite'),
@@ -28,9 +30,17 @@ const PersonCreateSchema = z
   })
   .meta({ id: 'PersonCreateDto' });
 
-const PersonUpdateSchema = PersonCreateSchema.extend({
+const PersonUpdateBaseSchema = PersonCreateSchema.extend({
   featureFaceAssetId: z.uuidv4().optional().describe('Asset ID used for feature face thumbnail'),
-}).meta({ id: 'PersonUpdateDto' });
+});
+
+const PersonUpdateSchema = PersonUpdateBaseSchema.extend({
+  userId: z.uuid().optional().describe('Restrict the update to the person record of this User ID'),
+})
+  .refine((dto) => Object.entries(dto).some(([key, value]) => key !== 'userId' && value !== undefined), {
+    message: `At least one of the following fields is required: ${Object.keys(PersonUpdateBaseSchema.shape).join(', ')}`,
+  })
+  .meta({ id: 'PersonUpdateDto' });
 
 const PeopleUpdateItemSchema = PersonUpdateSchema.extend({
   id: z.uuidv4().describe('Person ID'),
@@ -55,8 +65,46 @@ const PersonSearchSchema = z
     closestAssetId: z.uuidv4().optional().describe('Closest asset ID for similarity search'),
     page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
     size: z.coerce.number().int().min(1).max(1000).default(500).describe('Number of items per page'),
+    sharedById: z.uuid().optional().describe('Only include people to which the user gave access'),
+    sharedWithId: z.uuid().optional().describe('Only include people to which the user was given access'),
+    isFavorite: stringToBool.optional().describe('Filter by favorite status'),
+    isHidden: stringToBool.optional().describe('Filter by hidden status'),
+    name: z.string().optional().describe('Filter by person name'),
   })
   .meta({ id: 'PersonSearchDto' });
+
+export enum PersonUserRole {
+  Read = 'read',
+  Write = 'write',
+  Admin = 'admin',
+}
+
+const PersonUserRoleSchema = z
+  .enum(PersonUserRole)
+  .describe('Levels of access for managing people resources on behalf of another user.')
+  .meta({ id: 'PersonUserRole' });
+
+export enum PeopleUsersUpsertType {
+  Everyone = 'everyone',
+}
+
+const PeopleUsersUpsertTypeSchema = z
+  .enum(PeopleUsersUpsertType)
+  .describe('Which people to update when personIds is omitted')
+  .meta({ id: 'PeopleUsersUpsertType' });
+
+const PersonOtherResponseSchema = z
+  .object({
+    sharedById: z.uuid(),
+    name: z.string(),
+    birthDate: z.string().nullable(),
+    role: PersonUserRoleSchema,
+  })
+  .meta({ id: 'PersonOtherResponseDto' });
+
+const PeopleUserResponseSchema = UserResponseSchema.extend({
+  role: PersonUserRoleSchema.describe('Access role'),
+}).meta({ id: 'PeopleUserResponseDto' });
 
 export const PersonResponseSchema = z
   .object({
@@ -83,17 +131,33 @@ export const PersonResponseSchema = z
       .optional()
       .describe('Person color (hex)')
       .meta(new HistoryBuilder().added('v1.126.0').stable('v2').getExtensions()),
+    otherPeople: z.array(PersonOtherResponseSchema),
+    sharedBy: z.array(PeopleUserResponseSchema).describe('Users that gave the current user access to this person'),
+    sharedWith: z.array(PeopleUserResponseSchema).describe('Users the current user gave access to this person'),
   })
   .meta({ id: 'PersonResponseDto' });
 
+const PersonDeleteSchema = z
+  .object({ userId: z.string().optional() })
+  .default({})
+  .meta({ id: 'PersonDeleteDto', ...new HistoryBuilder().added('v3.3').stable('v3.3').getExtensions() });
+// TODO(v4) change to {userId: string, personId: string}[]
+const PeopleDeleteSchema = BulkIdsSchema.extend({ userId: z.string().optional() }).meta({
+  id: 'PeopleDeleteDto',
+  ...new HistoryBuilder().added('v3.3').getExtensions(),
+});
+
 export class PersonCreateDto extends createZodDto(PersonCreateSchema) {}
 export class PersonUpdateDto extends createZodDto(PersonUpdateSchema) {}
+export class PersonDeleteDto extends createZodDto(PersonDeleteSchema) {}
+export class PeopleDeleteDto extends createZodDto(PeopleDeleteSchema) {}
 export class PeopleUpdateDto extends createZodDto(PeopleUpdateSchema) {}
 export class MergePersonDto extends createZodDto(MergePersonSchema) {}
 export class PersonSearchDto extends createZodDto(PersonSearchSchema) {}
 export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
+export class PeopleUserResponseDto extends createZodDto(PeopleUserResponseSchema) {}
 
-export const AssetFaceResponseSchema = z
+const AssetFaceResponseSchema = z
   .object({
     id: z.uuidv4().describe('Face ID'),
     imageHeight: z.int().min(0).describe('Image height in pixels'),
@@ -114,6 +178,7 @@ const AssetFaceUpdateItemSchema = z
   .object({
     personId: z.uuidv4().describe('Person ID'),
     assetId: z.uuidv4().describe('Asset ID'),
+    userId: z.uuidv4().optional().describe('User ID'),
   })
   .meta({ id: 'AssetFaceUpdateItem' });
 
@@ -150,11 +215,61 @@ const PersonStatisticsResponseSchema = z
   })
   .meta({ id: 'PersonStatisticsResponseDto' });
 
+const PersonUsersResponseSchema = z
+  .array(
+    z.object({
+      personId: z.uuid().describe('Person ID'),
+      sharedById: z.uuid().describe('User ID of the user that gave access to this person'),
+      sharedWithId: z.uuid().describe('User ID of the user that was given access to this person'),
+      sharedBy: UserResponseSchema.describe('The user that gave access to this person'),
+      sharedWith: UserResponseSchema.describe('The user that was given access to this person'),
+      role: PersonUserRoleSchema.describe('Access role'),
+    }),
+  )
+  .meta({ id: 'PersonUsersResponseDto' });
+
+const PersonUsersSearchSchema = z
+  .object({
+    personId: z.uuid().optional().describe('Person ID'),
+    direction: SharingDirectionSchema.optional(),
+    sharedById: z.uuid().optional().describe('User ID of the user that gave access'),
+    sharedWithId: z.uuid().optional().describe('User ID of the user that was given access'),
+    role: PersonUserRoleSchema.optional().describe('Role of user'),
+  })
+  .meta({ id: 'PersonUsersSearchDto' });
+
+const PeopleUsersUpsertSchema = z
+  .object({
+    personIds: uniqueIds.optional().describe('Person IDs, required when type is omitted'),
+    type: PeopleUsersUpsertTypeSchema.optional(),
+    sharedWithIds: uniqueIds.describe('User IDs that should be given access to the person'),
+    role: PersonUserRoleSchema.describe('Role that should be applied'),
+  })
+  .refine((data) => hasSomeDefined([data.personIds, data.type]), {
+    error: 'Either personIds or type must be provided',
+    path: ['personIds'],
+  })
+  .meta({ id: 'PeopleUsersUpsertDto' });
+
+const PersonUsersDeleteSchema = z
+  .array(
+    z.object({
+      personId: z.uuid().describe('Person ID'),
+      sharedWithId: z.uuid().describe('User ID of the user that was given access to the person'),
+      sharedById: z.uuid().optional().describe('User ID of the user that gave access to the person'),
+    }),
+  )
+  .meta({ id: 'PersonUsersDeleteDto' });
+
 export class AssetFaceUpdateDto extends createZodDto(AssetFaceUpdateSchema) {}
 export class FaceDto extends createZodDto(FaceSchema) {}
 export class AssetFaceCreateDto extends createZodDto(AssetFaceCreateSchema) {}
 export class AssetFaceDeleteDto extends createZodDto(AssetFaceDeleteSchema) {}
 export class PersonStatisticsResponseDto extends createZodDto(PersonStatisticsResponseSchema) {}
+export class PersonUsersResponseDto extends createZodDto(PersonUsersResponseSchema) {}
+export class PersonUsersSearchDto extends createZodDto(PersonUsersSearchSchema) {}
+export class PeopleUsersUpsertDto extends createZodDto(PeopleUsersUpsertSchema) {}
+export class PersonUsersDeleteDto extends createZodDto(PersonUsersDeleteSchema) {}
 
 const PeopleResponseSchema = z
   .object({
@@ -171,7 +286,11 @@ const PeopleResponseSchema = z
   .describe('People response');
 export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 
-export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
+type OptionalKeys = 'otherPeople' | 'sharedBy' | 'sharedWith';
+
+export function mapPerson(
+  person: MaybeDehydrated<Omit<Person, OptionalKeys> & Partial<Pick<Person, OptionalKeys>>>,
+): PersonResponseDto {
   return {
     id: person.personGroupId,
     name: person.name,
@@ -181,8 +300,36 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
     updatedAt: asDateTimeString(person.updatedAt),
+    // TODO: use different response dtos for asset faces, which do not load the sharing properties
+    otherPeople: person.otherPeople ?? [],
+    sharedBy: (person.sharedBy ?? []).map((user) => mapPeopleUser(user)),
+    sharedWith: (person.sharedWith ?? []).map((user) => mapPeopleUser(user)),
   };
 }
+
+const mapPeopleUser = (user: MaybeDehydrated<PersonUser>): PeopleUserResponseDto => ({
+  ...mapUser(user),
+  role: user.role,
+});
+
+type PersonUserShare = {
+  personId: string;
+  sharedById: string;
+  sharedWithId: string;
+  role: PersonUserRole;
+  sharedBy: MaybeDehydrated<User>;
+  sharedWith: MaybeDehydrated<User>;
+};
+
+export const mapPersonUsers = (shares: PersonUserShare[]): PersonUsersResponseDto =>
+  shares.map((share) => ({
+    personId: share.personId,
+    sharedById: share.sharedById,
+    sharedWithId: share.sharedWithId,
+    role: share.role,
+    sharedBy: mapUser(share.sharedBy),
+    sharedWith: mapUser(share.sharedWith),
+  }));
 
 function mapFacesWithoutPerson(
   face: MaybeDehydrated<Selectable<AssetFaceTable>>,
@@ -209,7 +356,6 @@ function mapFacesWithoutPerson(
 
 export function mapFaces(
   face: AssetFace,
-  auth: AuthDto,
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
 ): AssetFaceResponseDto {

@@ -33,17 +33,21 @@ data class Request(
   val callback: (Result<Map<String, Long>?>) -> Unit
 )
 
+// Impeller shrinks each side to the GPU texture limit on its own, which squishes long images.
+const val MAX_PIXEL_SIZE = 16384
+
 /** Set [exactSize] to decode at the smallest size that covers [target] without upscaling. */
 @RequiresApi(Build.VERSION_CODES.Q)
 inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0), exactSize: Boolean = false): Bitmap {
   return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->
+    var scale = 1.0
     if (target.width > 0 && target.height > 0) {
       if (exactSize) {
         val fillScale = max(
           target.width.toDouble() / info.size.width,
           target.height.toDouble() / info.size.height
         )
-        val scale = min(1.0, fillScale)
+        scale = min(1.0, fillScale)
         if (scale < 1) {
           val width = ceil(info.size.width * scale).toInt()
           val height = ceil(info.size.height * scale).toInt()
@@ -54,7 +58,15 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0), exactSize
       } else {
         val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
         decoder.setTargetSampleSize(sample)
+        scale = 1.0 / sample
       }
+    }
+    val longSide = max(info.size.width, info.size.height)
+    if (longSide * scale > MAX_PIXEL_SIZE) {
+      val bound = MAX_PIXEL_SIZE.toDouble() / longSide
+      val width = max(1, (info.size.width * bound).roundToInt())
+      val height = max(1, (info.size.height * bound).roundToInt())
+      decoder.setTargetSize(width, height)
     }
     decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
     decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
@@ -117,12 +129,16 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     threadPool.execute {
       try {
         val bytes = Base64.getDecoder().decode(thumbhash)
-        val image = ThumbHash.thumbHashToRGBA(bytes)
+        val info = IntArray(3)
+        val pointer = ThumbHash.decode(bytes, info)
+        if (pointer == 0L) {
+          throw IllegalArgumentException("invalid thumbhash")
+        }
         val res = mapOf(
-          "pointer" to image.pointer,
-          "width" to image.width.toLong(),
-          "height" to image.height.toLong(),
-          "rowBytes" to (image.width * 4).toLong()
+          "pointer" to pointer,
+          "width" to info[0].toLong(),
+          "height" to info[1].toLong(),
+          "rowBytes" to info[2].toLong()
         )
         callback(Result.success(res))
       } catch (e: Exception) {

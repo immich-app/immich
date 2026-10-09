@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,6 +108,36 @@ void main() {
         verify(() => assetService.trash([asset.id])).called(1);
       });
 
+      testWidgets('finishes trashing when the action context is disposed during local cleanup', (tester) async {
+        final asset = owned(localId: 'local');
+        final cleanupResult = Completer<int>();
+        when(() => cleanupService.deleteLocalAssets(['local'])).thenAnswer((_) => cleanupResult.future);
+        var showAction = true;
+        late StateSetter updateHost;
+
+        await tester.pumpTestWidget(
+          context,
+          StatefulBuilder(
+            builder: (_, setState) {
+              updateHost = setState;
+              return showAction
+                  ? const ActionIconButton(action: DeleteAction(source: .timeline))
+                  : const SizedBox.shrink();
+            },
+          ),
+          overrides: context.selected({asset}),
+        );
+
+        await tester.tap(find.byType(ImmichIconButton));
+        await tester.pump();
+        updateHost(() => showAction = false);
+        await tester.pump();
+        cleanupResult.complete(1);
+        await tester.pumpAndSettle();
+
+        verify(() => assetService.trash([asset.id])).called(1);
+      });
+
       testWidgets('offers an undo that restores the trashed assets', (tester) async {
         final asset = owned();
 
@@ -205,6 +237,8 @@ void main() {
 
     group('prompt handling', () {
       testWidgets('permanent delete shows a single app dialog', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
         final asset = owned(localId: 'local');
 
         await pumpDelete(tester, {asset}, trashEnabled: false);
@@ -214,9 +248,10 @@ void main() {
         await tester.tap(find.byType(TextButton).at(1));
         await tester.pumpAndSettle();
 
-        expect(find.text(StaticTranslations.instance.move_to_device_trash), findsNothing);
+        expect(find.byType(ConfirmDialog), findsNothing);
         verify(() => assetService.delete([asset.id])).called(1);
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
+        debugDefaultTargetPlatformOverride = null;
       });
 
       testWidgets('local only delete on Android with MANAGE_MEDIA shows the prompt', (tester) async {
@@ -245,6 +280,49 @@ void main() {
         await respondToDialog(tester, confirm: false);
 
         verifyNever(() => cleanupService.deleteLocalAssets(any()));
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('local only delete on Android 30 shows no Flutter prompt', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
+        final asset = LocalAssetFactory.create();
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ConfirmDialog), findsNothing);
+        verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('backed up device copy below API 30 shows the delete prompt, not the backup warning', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        final asset = LocalAssetFactory.create(remoteId: 'remote');
+
+        await pumpDelete(tester, {asset});
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text(StaticTranslations.instance.delete_dialog_alert_local), findsOneWidget);
+        await respondToDialog(tester, confirm: true);
+
+        verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('mixed selection below API 30 warns about the local only asset', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        final backedUp = owned(localId: 'local');
+        final localOnly = LocalAssetFactory.create();
+
+        await pumpDelete(tester, {backedUp, localOnly});
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text(StaticTranslations.instance.delete_dialog_alert_local_non_backed_up), findsOneWidget);
+        await respondToDialog(tester, confirm: true);
+
+        verify(() => assetService.trash([backedUp.id])).called(1);
+        verify(() => cleanupService.deleteLocalAssets(['local', localOnly.id])).called(1);
         debugDefaultTargetPlatformOverride = null;
       });
     });
@@ -283,6 +361,24 @@ void main() {
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
+    });
+
+    testWidgets('asks before deleting on Android below API 30', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+      final asset = LocalAssetFactory.create(remoteId: 'remote');
+
+      await tester.pumpTestAction(
+        context,
+        const CleanupLocalAction(source: .timeline),
+        overrides: context.selected({asset}),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text(StaticTranslations.instance.delete_dialog_alert_local), findsOneWidget);
+      await respondToDialog(tester, confirm: true);
+
+      verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+      debugDefaultTargetPlatformOverride = null;
     });
   });
 }

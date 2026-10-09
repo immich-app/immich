@@ -122,7 +122,7 @@ export class TagController {
   @Endpoint({
     summary: 'Update a tag',
     description: 'Update an existing tag identified by its ID.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').deprecated('v3', { replacementId: 'updateTag' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: TagUpdateDto): Promise<TagResponseDto> {
     return this.service.update(auth, id, dto);

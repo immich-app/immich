@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
-import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/tag.action.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
-
 import '../../../repository.mocks.dart';
 import '../../factories/local_asset_factory.dart';
 import '../../factories/remote_asset_factory.dart';
@@ -22,11 +20,11 @@ import '../presentation_context.dart';
 
 void main() {
   late PresentationContext context;
-  late MockTagService tagService;
+  late MockTagApiRepository tagApi;
 
   setUp(() async {
     context = await PresentationContext.create();
-    tagService = context.service.tag.service;
+    tagApi = context.service.tag.repo;
   });
 
   tearDown(() async {
@@ -97,8 +95,7 @@ void main() {
       overrides: [
         ...context.selected(selection),
         toastServiceProvider.overrideWithValue(context.service.toast),
-        tagServiceProvider.overrideWithValue(tagService),
-        userMetadataPreferencesProvider.overrideWith((ref) async => const .new(tagsEnabled: true)),
+        Store.userMetadata.preferences().overrideWith((ref) => Stream.value(const .new(tagsEnabled: true))),
       ],
     );
 
@@ -119,13 +116,13 @@ void main() {
 
     testWidgets('applies the picked tags and reports the count', (tester) async {
       final asset = owned();
-      when(() => tagService.bulkTagAssets(any(), any())).thenAnswer((_) async => 1);
+      when(() => tagApi.bulkTagAssets(any(), any())).thenAnswer((_) async => 1);
 
       await pumpTag(tester, {asset});
       await applyTags([asset.id], selected: {'tag-1'});
       await tester.pumpAndSettle();
 
-      verify(() => tagService.bulkTagAssets([asset.id], ['tag-1'])).called(1);
+      verify(() => tagApi.bulkTagAssets([asset.id], ['tag-1'])).called(1);
 
       final message = verify(() => context.service.toast.success(captureAny())).captured.single as String;
       expect(message, StaticTranslations.instance.tagged_assets(count: 1));
@@ -133,15 +130,15 @@ void main() {
 
     testWidgets('creates new tags first and applies them alongside the picked ones', (tester) async {
       final asset = owned();
-      when(() => tagService.upsertTags(any())).thenAnswer((_) async => [const Tag(id: 'made-1', value: 'brand new')]);
-      when(() => tagService.bulkTagAssets(any(), any())).thenAnswer((_) async => 1);
+      when(() => tagApi.upsert(any())).thenAnswer((_) async => [const Tag(id: 'made-1', value: 'brand new')]);
+      when(() => tagApi.bulkTagAssets(any(), any())).thenAnswer((_) async => 1);
 
       await pumpTag(tester, {asset});
       await applyTags([asset.id], selected: {'tag-1'}, created: {'brand new'});
       await tester.pumpAndSettle();
 
-      verify(() => tagService.upsertTags(['brand new'])).called(1);
-      final tagIds = verify(() => tagService.bulkTagAssets([asset.id], captureAny())).captured.single as List<String>;
+      verify(() => tagApi.upsert(['brand new'])).called(1);
+      final tagIds = verify(() => tagApi.bulkTagAssets([asset.id], captureAny())).captured.single as List<String>;
       expect(tagIds, containsAll(['tag-1', 'made-1']));
     });
 
@@ -152,7 +149,7 @@ void main() {
       await applyTags([asset.id]);
       await tester.pumpAndSettle();
 
-      verifyNever(() => tagService.bulkTagAssets(any(), any()));
+      verifyNever(() => tagApi.bulkTagAssets(any(), any()));
       verifyNever(() => context.service.toast.success(any()));
     });
   });
