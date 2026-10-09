@@ -8,7 +8,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetMediaUrl, getPeopleThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { getAssetInfo, AssetMediaSize, MemorySearchOrder, type SearchExploreResponseDto } from '@immich/sdk';
+  import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
