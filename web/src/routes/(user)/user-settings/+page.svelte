@@ -17,6 +17,11 @@
 
 <UserPageLayout title={data.meta.title} actions={[KeyboardShortcuts]}>
   <Container size="medium" center>
-    <UserSettingsList keys={data.keys} sessions={data.sessions} />
+    <UserSettingsList
+      keys={data.keys}
+      sessions={data.sessions}
+      passkeys={data.passkeys}
+      passkeyEnabled={data.publicConfig.passkey.enabled}
+    />
   </Container>
 </UserPageLayout>

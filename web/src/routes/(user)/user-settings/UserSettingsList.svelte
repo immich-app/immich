@@ -9,7 +9,7 @@
   import { OpenQueryParam, QueryParameter } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { oauth } from '$lib/utils';
-  import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
+  import { type ApiKeyResponseDto, type PasskeyResponseDto, type SessionResponseDto } from '@immich/sdk';
   import {
     mdiAccountGroupOutline,
     mdiAccountOutline,
@@ -23,6 +23,7 @@
     mdiKeyOutline,
     mdiLockSmart,
     mdiServerOutline,
+    mdiShieldKeyOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -33,14 +34,22 @@
   import OauthSettings from './OauthSettings.svelte';
   import SharingSettings from './SharingSettings.svelte';
   import UserApiKeyList from './UserApiKeyList.svelte';
+  import UserPasskeyList from './UserPasskeyList.svelte';
   import UserProfileSettings from './UserProfileSettings.svelte';
 
   interface Props {
     keys?: ApiKeyResponseDto[];
     sessions?: SessionResponseDto[];
+    passkeys?: PasskeyResponseDto[];
+    passkeyEnabled?: boolean;
   }
 
-  let { keys = $bindable([]), sessions = $bindable([]) }: Props = $props();
+  let {
+    keys = $bindable([]),
+    sessions = $bindable([]),
+    passkeys = $bindable([]),
+    passkeyEnabled = false,
+  }: Props = $props();
 
   let oauthOpen =
     oauth.isCallback(location) || $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
@@ -117,6 +126,17 @@
     isOpen={oauthOpen || undefined}
   >
     <OauthSettings />
+  </SettingAccordion>
+{/if}
+
+{#if passkeyEnabled}
+  <SettingAccordion
+    icon={mdiShieldKeyOutline}
+    key="passkeys"
+    title={$t('passkeys')}
+    subtitle={$t('manage_your_passkeys')}
+  >
+    <UserPasskeyList bind:passkeys />
   </SettingAccordion>
 {/if}
 

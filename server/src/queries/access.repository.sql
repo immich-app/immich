@@ -296,6 +296,15 @@ where
   "partner"."sharedById" in ($1)
   and "partner"."sharedWithId" = $2
 
+-- AccessRepository.passkey.checkOwnerAccess
+select
+  "passkey"."id"
+from
+  "passkey"
+where
+  "passkey"."id" in ($1)
+  and "passkey"."userId" = $2
+
 -- AccessRepository.session.checkOwnerAccess
 select
   "session"."id"
