@@ -1,15 +1,18 @@
+import { OrchestrationApiModule } from '@futo-org/backups-orchestrator-api';
 import { BullModule } from '@nestjs/bullmq';
-import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Module, OnModuleDestroy, OnModuleInit, forwardRef } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands/index.js';
 import { IWorker } from 'src/constants.js';
 import { controllers } from 'src/controllers/index.js';
-import { ImmichWorker } from 'src/enum.js';
+import { ImmichEnvironment, ImmichWorker } from 'src/enum.js';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
@@ -39,6 +42,7 @@ import { services } from 'src/services/index.js';
 import { QueueService } from 'src/services/queue.service.js';
 import { getKyselyConfig } from 'src/utils/database.js';
 import { configureUserAgent } from 'src/utils/fetch.js';
+import { detectMediaLocation, getBackupsStatePath } from 'src/utils/storage.js';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -53,7 +57,11 @@ const commonMiddleware = [
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
-const { bull, cls, database, otel } = configRepository.getEnv();
+const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
+
+const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
+const yuccaStatePath = getBackupsStatePath(storage.mediaLocation);
+const yuccaCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
 
 const commonImports = [
   ClsModule.forRoot(cls.config),
@@ -103,14 +111,63 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
 }
 
 @Module({
-  imports: [...bullImports, ...commonImports, ScheduleModule.forRoot()],
+  imports: [
+    ...bullImports,
+    ...commonImports,
+    ScheduleModule.forRoot(),
+    OrchestrationApiModule.forRootAsync({
+      imports: [forwardRef(() => ApiModule)],
+      inject: [AuthService, WebsocketRepository],
+      useFactory: (authService: AuthService, websocketRepository: WebsocketRepository) => ({
+        statePath: yuccaStatePath,
+        cachePath: yuccaCachePath,
+        requireWsAuth: true,
+        requireLock: true,
+        developmentMode: isYuccaDevelopmentMode,
+        authenticate: (client) =>
+          authService.authenticate({
+            headers: client.request.headers,
+            queryParams: {},
+            metadata: { adminRoute: true, sharedLinkRoute: false, uri: '/api/yucca/socket.io' },
+          }),
+        onInternalEvent: (event) => {
+          websocketRepository.serverSend('YuccaEvent', event);
+        },
+      }),
+    }),
+  ],
   controllers: [...controllers],
   providers: [...common, ...apiMiddleware, { provide: IWorker, useValue: ImmichWorker.Api }],
+  exports: [AuthService, WebsocketRepository],
 })
 export class ApiModule extends BaseModule {}
 
 @Module({
-  imports: [...commonImports],
+  imports: [
+    ...commonImports,
+    OrchestrationApiModule.forRootAsync({
+      imports: [forwardRef(() => MaintenanceModule)],
+      inject: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
+      useFactory: (
+        maintenanceWorkerService: MaintenanceWorkerService,
+        websocketRepository: MaintenanceWebsocketRepository,
+      ) => ({
+        statePath: yuccaStatePath,
+        cachePath: yuccaCachePath,
+        externalBaseUrl: 'https://my.immich.app',
+        requireWsAuth: true,
+        requireLock: true,
+        developmentMode: isYuccaDevelopmentMode,
+        authenticate: async (client) => {
+          await maintenanceWorkerService.authenticate(client.request.headers);
+          return { user: { isAdmin: true } };
+        },
+        onInternalEvent: (event) => {
+          websocketRepository.serverSend('YuccaEvent', event);
+        },
+      }),
+    }),
+  ],
   controllers: [MaintenanceWorkerController],
   providers: [
     ConfigRepository,
@@ -129,6 +186,7 @@ export class ApiModule extends BaseModule {}
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },
     { provide: IWorker, useValue: ImmichWorker.Maintenance },
   ],
+  exports: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
 })
 export class MaintenanceModule {
   constructor(

@@ -18177,6 +18177,2524 @@
         ],
         "x-immich-permission": "workflow.read"
       }
+    },
+    "/yucca/auth/oidc/device": {
+      "get": {
+        "description": "Connect an existing FUTO Backups account to this server.",
+        "operationId": "yuccaConnectDeviceFlow",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceFlowEventDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Connect a FUTO Backups account",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/auth/session": {
+      "post": {
+        "description": "Use existing session token to create a session on your device.",
+        "operationId": "yuccaCreateSession",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create session",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/auth/session/device": {
+      "get": {
+        "description": "Log into standalone backups app using the associated cloud account.",
+        "operationId": "yuccaSessionDeviceFlow",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceFlowEventDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Sign in with FUTO Backups account",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/auth/ticket": {
+      "post": {
+        "description": "Create a ticket to perform a protected repository action.",
+        "operationId": "yuccaCreateTicket",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create a ticket",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/backend": {
+      "get": {
+        "description": "List the storage backends configured on this server.",
+        "operationId": "yuccaGetBackends",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List backends",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/backend/local": {
+      "post": {
+        "description": "Add a storage backend that writes to a local path on this server.",
+        "operationId": "yuccaCreateLocalBackend",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocalBackendRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create a local backend",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/config": {
+      "get": {
+        "description": "Retrieve the current backups orchestrator configuration.",
+        "operationId": "yuccaGetConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get backups orchestrator configuration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "put": {
+        "description": "Update the backups orchestrator configuration.",
+        "operationId": "yuccaUpdateConfig",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update backups orchestrator configuration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/debug/reset": {
+      "post": {
+        "description": "Delete all orchestrator state. Only available in development mode.",
+        "operationId": "yuccaResetOrchestrator",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Reset the backups orchestrator",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/fs": {
+      "get": {
+        "description": "List the files and folders at a path on this server.",
+        "operationId": "yuccaGetFileListing",
+        "parameters": [
+          {
+            "name": "path",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemListingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List files",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/integrations": {
+      "get": {
+        "description": "Retrieve the configuration and state of each integration.",
+        "operationId": "yuccaGetIntegrations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get backup integrations",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/integrations/immich": {
+      "post": {
+        "description": "Set up backups for the Immich backup integration.",
+        "operationId": "yuccaConfigureImmichIntegration",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureImmichIntegrationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigureImmichIntegrationResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Configure the Immich backup integration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/integrations/immich/database-dump": {
+      "post": {
+        "description": "Configure the Immich database dumps included in backups.",
+        "operationId": "yuccaConfigureImmichDatabaseDump",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureImmichDatabaseDumpRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Configure Immich database dumps",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/integrations/immich/database-dump/ignore-warning": {
+      "post": {
+        "description": "Stop warning that Immich database dumps are not configured.",
+        "operationId": "yuccaIgnoreImmichDatabaseDumpWarning",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Ignore the Immich database dump warning",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/integrations/immich/rollback": {
+      "post": {
+        "description": "Put Immich into maintenance mode and restore it from a snapshot.",
+        "operationId": "yuccaStartImmichRollback",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImmichRollbackRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Roll Immich back to a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/integrations/immich/status": {
+      "get": {
+        "description": "Retrieve the backup status of the Immich integration.",
+        "operationId": "yuccaGetImmichBackupStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImmichBackupStatusDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get Immich backup status",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/logs/{id}": {
+      "get": {
+        "description": "Retrieve a run and its status.",
+        "operationId": "yuccaGetRun",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get a run",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/logs/{id}/download": {
+      "get": {
+        "description": "Download the log of a run.",
+        "operationId": "yuccaDownloadRunLog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/jsonl": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Download a run log",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/logs/{id}/stream": {
+      "get": {
+        "description": "Stream the log of a run.",
+        "operationId": "yuccaLogStreamSse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "A stream of run log events."
+          }
+        },
+        "summary": "Stream a run log",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/onboarding": {
+      "get": {
+        "description": "Retrieve which onboarding steps this server has completed.",
+        "operationId": "yuccaOnboardingStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingStatusResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get backup onboarding status",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/onboarding/recovery-key": {
+      "get": {
+        "description": "Retrieve the recovery key that encrypts the backups of this server.",
+        "operationId": "yuccaCurrentRecoveryKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentRecoveryKeyResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get the backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "post": {
+        "description": "Record that the user has saved the recovery key.",
+        "operationId": "yuccaConfirmRecoveryKey",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Confirm the backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "put": {
+        "description": "Replace the recovery key with one from an earlier installation.",
+        "operationId": "yuccaImportRecoveryKey",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRecoveryKeyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Import a backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/onboarding/report-error": {
+      "post": {
+        "description": "Send the current startup error to telemetry.",
+        "operationId": "yuccaReportError",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Report a startup error",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/onboarding/skip": {
+      "post": {
+        "description": "Skip the optional configuration steps of onboarding.",
+        "operationId": "yuccaSkipOnboardingExtraConfig",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Skip optional backup onboarding",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/onboarding/telemetry": {
+      "post": {
+        "description": "Record that the user consents to sending telemetry.",
+        "operationId": "yuccaEnableTelemetry",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Enable FUTO Backups telemetry",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository": {
+      "get": {
+        "description": "List the backup repositories known to this server.",
+        "operationId": "yuccaGetRepositories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List backups",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "post": {
+        "description": "Create a backup repository on a backend.",
+        "operationId": "yuccaCreateRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create a new backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/inspect": {
+      "get": {
+        "description": "List repositories on a backend that are not configured on this server.",
+        "operationId": "yuccaInspectRepositories",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryInspectResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List remote backups",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}": {
+      "delete": {
+        "description": "Remove a repository from this server.",
+        "operationId": "yuccaDeleteRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Remove a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "patch": {
+        "description": "Update the settings of a repository.",
+        "operationId": "yuccaUpdateRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryUpdateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "post": {
+        "description": "Start a backup to a repository and return the ID of its run log.",
+        "operationId": "yuccaCreateBackup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Start a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/backend": {
+      "put": {
+        "description": "Create a new empty repository on the selected backend and redirect future backups to it. Existing snapshots are not migrated.",
+        "operationId": "yuccaReconfigureRepositoryPrimaryBackend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryPrimaryBackendReconfigureRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Change the primary backend",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/import": {
+      "get": {
+        "description": "Check that an existing repository on a backend can be opened with the recovery key.",
+        "operationId": "yuccaCheckImportRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCheckImportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Check a repository import",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "post": {
+        "description": "Add an existing repository on a backend to this server.",
+        "operationId": "yuccaImportRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Import a repository",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/runs": {
+      "get": {
+        "description": "List the backup, prune and restore runs of a repository.",
+        "operationId": "yuccaGetRunHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunHistoryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List backup runs",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/snapshots": {
+      "get": {
+        "description": "List the snapshots in a repository.",
+        "operationId": "yuccaGetSnapshots",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSnapshotsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List snapshots",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/snapshots/prune": {
+      "post": {
+        "description": "Remove snapshots outside the retention policy and return the ID of the run log.",
+        "operationId": "yuccaPruneRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Prune a repository",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/snapshots/{snapshot}": {
+      "delete": {
+        "description": "Remove a snapshot from a repository.",
+        "operationId": "yuccaForgetSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSnapshotsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Delete a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "post": {
+        "description": "Restore files from a snapshot and return the ID of the run log.",
+        "operationId": "yuccaRestoreSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySnapshotRestoreRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Restore a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/snapshots/{snapshot}/listing": {
+      "get": {
+        "description": "List the files and folders at a path in a snapshot.",
+        "operationId": "yuccaGetSnapshotListing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemListingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List snapshot files",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/snapshots/{snapshot}/restore-from-point": {
+      "post": {
+        "description": "Restore the orchestrator to a previous state, wiping the current state.",
+        "operationId": "yuccaRestoreFromPoint",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySnapshotRestoreFromPointRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Restore from snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/schedule": {
+      "get": {
+        "description": "List the backup schedules.",
+        "operationId": "yuccaGetSchedules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List schedules",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "post": {
+        "description": "Create a backup schedule for one or more repositories.",
+        "operationId": "yuccaCreateSchedule",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/schedule/{id}": {
+      "delete": {
+        "description": "Delete a backup schedule.",
+        "operationId": "yuccaRemoveSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Delete a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
+      "patch": {
+        "description": "Update a backup schedule.",
+        "operationId": "yuccaUpdateSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleUpdateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/tasks": {
+      "get": {
+        "description": "List the tasks running on this server.",
+        "operationId": "yuccaGetRunningTasks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningTaskListResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List running tasks",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/tasks/{parentId}/cancel": {
+      "post": {
+        "description": "Cancel a running task and its subtasks.",
+        "operationId": "yuccaCancelTask",
+        "parameters": [
+          {
+            "name": "parentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Cancel a task",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
     }
   },
   "info": {
@@ -18213,6 +20731,10 @@
     {
       "name": "Authentication (admin)",
       "description": "Administrative endpoints related to authentication."
+    },
+    {
+      "name": "Backups",
+      "description": "FUTO Backups."
     },
     {
       "name": "Cluster groups",
@@ -18384,6 +20906,21 @@
       }
     },
     "schemas": {
+      "ActiveScheduleItemDto": {
+        "properties": {
+          "repositoryId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunningTaskStatus"
+          }
+        },
+        "required": [
+          "repositoryId",
+          "status"
+        ],
+        "type": "object"
+      },
       "ActivityCreateDto": {
         "description": "Activity create",
         "properties": {
@@ -18495,6 +21032,10 @@
       },
       "AdminConfigBackupsDto": {
         "properties": {
+          "beta": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "database": {
             "$ref": "#/components/schemas/AdminConfigDatabaseBackupDto"
           }
@@ -21514,6 +24055,92 @@
         },
         "type": "object"
       },
+      "BackendDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/BackendType"
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "isOnline",
+          "type"
+        ],
+        "type": "object"
+      },
+      "BackendResponseDto": {
+        "properties": {
+          "backend": {
+            "$ref": "#/components/schemas/BackendDto"
+          }
+        },
+        "required": [
+          "backend"
+        ],
+        "type": "object"
+      },
+      "BackendType": {
+        "enum": [
+          "yucca",
+          "local",
+          "s3"
+        ],
+        "type": "string"
+      },
+      "BackendsResponseDto": {
+        "properties": {
+          "backends": {
+            "items": {
+              "$ref": "#/components/schemas/BackendDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backends"
+        ],
+        "type": "object"
+      },
+      "BackupStatus": {
+        "enum": [
+          "incomplete",
+          "complete",
+          "warn",
+          "failed",
+          "cancelled"
+        ],
+        "type": "string"
+      },
+      "BandwidthDto": {
+        "properties": {
+          "bytesPerSec": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "quietHours": {
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d-([01]\\d|2[0-3]):[0-5]\\d$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bytesPerSec"
+        ],
+        "type": "object"
+      },
       "BoolFilter": {
         "properties": {
           "eq": {
@@ -21524,6 +24151,14 @@
           "eq"
         ],
         "type": "object"
+      },
+      "BootstrapStatus": {
+        "enum": [
+          "not-ready",
+          "ready",
+          "error"
+        ],
+        "type": "string"
       },
       "BulkIdErrorReason": {
         "description": "Error reason",
@@ -21749,6 +24384,104 @@
         ],
         "type": "string"
       },
+      "ConfigResponseDto": {
+        "properties": {
+          "bandwidth": {
+            "$ref": "#/components/schemas/BandwidthDto"
+          }
+        },
+        "required": [
+          "bandwidth"
+        ],
+        "type": "object"
+      },
+      "ConfigUpdateRequestDto": {
+        "properties": {
+          "bandwidth": {
+            "$ref": "#/components/schemas/BandwidthDto"
+          }
+        },
+        "required": [
+          "bandwidth"
+        ],
+        "type": "object"
+      },
+      "ConfigureImmichDatabaseDumpRequestDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ConfigureImmichIntegrationRequestDto": {
+        "properties": {
+          "backupConfiguration": {
+            "type": "boolean"
+          },
+          "cron": {
+            "type": "string"
+          },
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "libraries": {
+            "description": "IDs of the external libraries to back up. Use [\"all\"] to back up every library, including ones added later.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "backupConfiguration",
+          "cron",
+          "dataFolders",
+          "libraries",
+          "name",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "ConfigureImmichIntegrationResponseDto": {
+        "properties": {
+          "repositoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId"
+        ],
+        "type": "object"
+      },
       "ContributorCountResponseDto": {
         "properties": {
           "assetCount": {
@@ -21849,6 +24582,17 @@
         ],
         "type": "object"
       },
+      "CreateLocalBackendRequestDto": {
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
       "CreateProfileImageDto": {
         "properties": {
           "file": {
@@ -21889,6 +24633,17 @@
         ],
         "type": "object"
       },
+      "CreateSessionRequestDto": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
       "CropParameters": {
         "properties": {
           "height": {
@@ -21921,6 +24676,17 @@
           "width",
           "x",
           "y"
+        ],
+        "type": "object"
+      },
+      "CurrentRecoveryKeyResponse": {
+        "properties": {
+          "recoveryKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recoveryKey"
         ],
         "type": "object"
       },
@@ -22071,6 +24837,49 @@
           }
         },
         "type": "object"
+      },
+      "DeviceFlowEventDto": {
+        "properties": {
+          "backendId": {
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/DeviceFlowFailureReason"
+          },
+          "token": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DeviceFlowEventType"
+          },
+          "userCode": {
+            "type": "string"
+          },
+          "verificationUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "DeviceFlowEventType": {
+        "enum": [
+          "START",
+          "SUCCESS",
+          "FAILURE"
+        ],
+        "type": "string"
+      },
+      "DeviceFlowFailureReason": {
+        "enum": [
+          "NOT_CONNECTED",
+          "DEVICE_FLOW_FAILED",
+          "WRONG_ACCOUNT",
+          "UNKNOWN"
+        ],
+        "type": "string"
       },
       "DownloadArchiveDto": {
         "properties": {
@@ -22547,6 +25356,43 @@
         ],
         "type": "object"
       },
+      "FilesystemListingItemDto": {
+        "properties": {
+          "isDirectory": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "isDirectory",
+          "path"
+        ],
+        "type": "object"
+      },
+      "FilesystemListingResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FilesystemListingItemDto"
+            },
+            "type": "array"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "parent",
+          "path"
+        ],
+        "type": "object"
+      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -22659,6 +25505,236 @@
           "webp"
         ],
         "type": "string"
+      },
+      "ImmichBackupStatusDto": {
+        "properties": {
+          "backend": {
+            "$ref": "#/components/schemas/BackendDto"
+          },
+          "databaseDump": {
+            "$ref": "#/components/schemas/ImmichDatabaseDumpConfigDto"
+          },
+          "databaseDumpWarningIgnored": {
+            "type": "boolean"
+          },
+          "integration": {
+            "$ref": "#/components/schemas/ImmichIntegrationDto"
+          },
+          "latestBackupRun": {
+            "$ref": "#/components/schemas/RunDto"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "type": "object"
+      },
+      "ImmichDatabaseDumpConfigDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "keepLastAmount"
+        ],
+        "type": "object"
+      },
+      "ImmichIntegrationConfigurationDto": {
+        "properties": {
+          "backupConfiguration": {
+            "type": "boolean"
+          },
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "libraries": {
+            "description": "IDs of the external libraries to back up. Use [\"all\"] to back up every library, including ones added later.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backupConfiguration",
+          "dataFolders",
+          "libraries"
+        ],
+        "type": "object"
+      },
+      "ImmichIntegrationDto": {
+        "properties": {
+          "configuration": {
+            "$ref": "#/components/schemas/ImmichIntegrationConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "scheduleId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "configuration",
+          "id",
+          "scheduleId"
+        ],
+        "type": "object"
+      },
+      "ImmichLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "exclusionPatterns",
+          "id",
+          "importPaths",
+          "name"
+        ],
+        "type": "object"
+      },
+      "ImmichRollbackRequestDto": {
+        "properties": {
+          "backupFileName": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "snapshotId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId",
+          "snapshotId"
+        ],
+        "type": "object"
+      },
+      "ImmichStateDto": {
+        "properties": {
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dataPath": {
+            "type": "string"
+          },
+          "libraries": {
+            "items": {
+              "$ref": "#/components/schemas/ImmichLibraryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dataFolders",
+          "dataPath",
+          "libraries"
+        ],
+        "type": "object"
+      },
+      "ImportRecoveryKeyRequest": {
+        "properties": {
+          "recoveryKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recoveryKey"
+        ],
+        "type": "object"
+      },
+      "InspectedLocalRepositoryDto": {
+        "properties": {
+          "backends": {
+            "$ref": "#/components/schemas/RepositoryBackendsDto"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/RepositoryConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RepositoryMetricsDto"
+          },
+          "name": {
+            "type": "string"
+          },
+          "siteCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotDto"
+            },
+            "type": "array"
+          },
+          "storageClusterCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "metrics",
+          "name",
+          "siteCode",
+          "storageClusterCode",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "IntegrationsResponseDto": {
+        "properties": {
+          "immichIntegration": {
+            "$ref": "#/components/schemas/ImmichIntegrationDto"
+          },
+          "immichState": {
+            "$ref": "#/components/schemas/ImmichStateDto"
+          }
+        },
+        "type": "object"
       },
       "IntegrityReport": {
         "description": "Integrity report type",
@@ -22944,6 +26020,62 @@
       "LicenseResponseDto": {
         "$ref": "#/components/schemas/UserLicense"
       },
+      "ListSnapshotsResponseDto": {
+        "properties": {
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "snapshots"
+        ],
+        "type": "object"
+      },
+      "LocalRepositoryDto": {
+        "properties": {
+          "backends": {
+            "$ref": "#/components/schemas/RepositoryBackendsDto"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/RepositoryConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RepositoryMetricsDto"
+          },
+          "name": {
+            "type": "string"
+          },
+          "siteCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "storageClusterCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "metrics",
+          "name",
+          "siteCode",
+          "storageClusterCode",
+          "worm"
+        ],
+        "type": "object"
+      },
       "LogLevel": {
         "description": "Log level",
         "enum": [
@@ -22955,6 +26087,17 @@
           "fatal"
         ],
         "type": "string"
+      },
+      "LogResponseDto": {
+        "properties": {
+          "logId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "logId"
+        ],
+        "type": "object"
       },
       "LoginCredentialDto": {
         "properties": {
@@ -23051,7 +26194,8 @@
           "start",
           "end",
           "select_database_restore",
-          "restore_database"
+          "restore_database",
+          "rollback"
         ],
         "type": "string"
       },
@@ -23135,6 +26279,10 @@
             "type": "integer"
           },
           "task": {
+            "type": "string"
+          },
+          "yuccaLogId": {
+            "description": "Yucca log ID",
             "type": "string"
           }
         },
@@ -24806,6 +27954,52 @@
         },
         "required": [
           "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnboardingStatusResponseDto": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "hasBackend": {
+            "type": "boolean"
+          },
+          "hasBackup": {
+            "type": "boolean"
+          },
+          "hasOnboardedKey": {
+            "type": "boolean"
+          },
+          "hasSchedule": {
+            "type": "boolean"
+          },
+          "hasSkippedExtraConfig": {
+            "type": "boolean"
+          },
+          "hasTelemetry": {
+            "$ref": "#/components/schemas/TelemetryLevel"
+          },
+          "isAuthenticated": {
+            "type": "boolean"
+          },
+          "requiresAuthentication": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BootstrapStatus"
+          }
+        },
+        "required": [
+          "hasBackend",
+          "hasBackup",
+          "hasOnboardedKey",
+          "hasSchedule",
+          "hasSkippedExtraConfig",
+          "hasTelemetry",
+          "isAuthenticated",
+          "requiresAuthentication",
+          "status"
         ],
         "type": "object"
       },
@@ -27100,6 +30294,309 @@
         ],
         "type": "string"
       },
+      "RepositoryBackendDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/BackendType"
+          }
+        },
+        "required": [
+          "id",
+          "online",
+          "type"
+        ],
+        "type": "object"
+      },
+      "RepositoryBackendsDto": {
+        "properties": {
+          "primary": {
+            "$ref": "#/components/schemas/RepositoryBackendDto"
+          },
+          "secondary": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryBackendDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "primary",
+          "secondary"
+        ],
+        "type": "object"
+      },
+      "RepositoryCheckImportResponseDto": {
+        "properties": {
+          "readable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "readable"
+        ],
+        "type": "object"
+      },
+      "RepositoryConfigurationDto": {
+        "properties": {
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "paths"
+        ],
+        "type": "object"
+      },
+      "RepositoryCreateRequestDto": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          },
+          "site": {
+            "description": "Internal site code from environment metadata",
+            "type": "string"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "RepositoryCreateResponseDto": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          }
+        },
+        "required": [
+          "repository"
+        ],
+        "type": "object"
+      },
+      "RepositoryInspectResponseDto": {
+        "properties": {
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/InspectedLocalRepositoryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "RepositoryListResponseDto": {
+        "properties": {
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/LocalRepositoryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "RepositoryMeterDto": {
+        "properties": {
+          "lastUpdated": {
+            "nullable": true,
+            "type": "string"
+          },
+          "objectCount": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "objectCount",
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "RepositoryMetricsDto": {
+        "properties": {
+          "lastBackup": {
+            "nullable": true,
+            "type": "string"
+          },
+          "lastBackupDuration": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "lastBackupStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BackupStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "lastStarted": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sizeBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "RepositoryPrimaryBackendReconfigureRequestDto": {
+        "properties": {
+          "backendId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "backendId"
+        ],
+        "type": "object"
+      },
+      "RepositorySnapshotRestoreFromPointRequestDto": {
+        "properties": {
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "yuccaConfig": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RepositorySnapshotRestoreRequestDto": {
+        "properties": {
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RepositoryUpdateRequestDto": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "RepositoryUpdateResponseDto": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          }
+        },
+        "required": [
+          "repository"
+        ],
+        "type": "object"
+      },
+      "RetentionPolicyDto": {
+        "properties": {
+          "keepLast": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "keepWithin": {
+            "type": "string"
+          },
+          "keepWithinDaily": {
+            "type": "string"
+          },
+          "keepWithinHourly": {
+            "type": "string"
+          },
+          "keepWithinMonthly": {
+            "type": "string"
+          },
+          "keepWithinWeekly": {
+            "type": "string"
+          },
+          "keepWithinYearly": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -27130,6 +30627,250 @@
         },
         "required": [
           "angle"
+        ],
+        "type": "object"
+      },
+      "RunDto": {
+        "properties": {
+          "end": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "logFilePath": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RunType"
+          }
+        },
+        "required": [
+          "id",
+          "logFilePath",
+          "repositoryId",
+          "start",
+          "status",
+          "type"
+        ],
+        "type": "object"
+      },
+      "RunHistoryResponseDto": {
+        "properties": {
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/RunDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "runs"
+        ],
+        "type": "object"
+      },
+      "RunResponseDto": {
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/RunDto"
+          }
+        },
+        "required": [
+          "run"
+        ],
+        "type": "object"
+      },
+      "RunStatus": {
+        "enum": [
+          "incomplete",
+          "complete",
+          "warn",
+          "failed",
+          "cancelled"
+        ],
+        "type": "string"
+      },
+      "RunType": {
+        "enum": [
+          "schedule",
+          "restore",
+          "backup",
+          "forget"
+        ],
+        "type": "string"
+      },
+      "RunningTaskDto": {
+        "properties": {
+          "logId": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "scheduleStatus": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveScheduleItemDto"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TaskType"
+          }
+        },
+        "required": [
+          "parentId",
+          "type"
+        ],
+        "type": "object"
+      },
+      "RunningTaskListResponse": {
+        "properties": {
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/RunningTaskDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tasks"
+        ],
+        "type": "object"
+      },
+      "RunningTaskStatus": {
+        "enum": [
+          "incomplete",
+          "complete",
+          "warn",
+          "failed",
+          "cancelled"
+        ],
+        "type": "string"
+      },
+      "ScheduleCreateRequestDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "default": false,
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cron",
+          "name",
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "ScheduleCreateResponseDto": {
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "required": [
+          "schedule"
+        ],
+        "type": "object"
+      },
+      "ScheduleDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastFinished": {
+            "type": "string"
+          },
+          "lastRun": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cron",
+          "id",
+          "name",
+          "paused",
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "ScheduleListResponseDto": {
+        "properties": {
+          "schedules": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "schedules"
+        ],
+        "type": "object"
+      },
+      "ScheduleUpdateRequestDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ScheduleUpdateResponseDto": {
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "required": [
+          "schedule"
         ],
         "type": "object"
       },
@@ -27792,6 +31533,10 @@
       },
       "ServerFeaturesDto": {
         "properties": {
+          "backups": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "configFile": {
             "description": "Whether config file is available",
             "type": "boolean"
@@ -27858,6 +31603,7 @@
           }
         },
         "required": [
+          "backups",
           "configFile",
           "duplicateDetection",
           "email",
@@ -28252,6 +31998,14 @@
           },
           "restoreBackupFilename": {
             "description": "Restore backup filename",
+            "type": "string"
+          },
+          "rollbackRepositoryId": {
+            "description": "Rollback repository ID",
+            "type": "string"
+          },
+          "rollbackSnapshotId": {
+            "description": "Rollback snapshot ID",
             "type": "string"
           }
         },
@@ -29219,6 +32973,80 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "SnapshotDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/SnapshotSummaryDto"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "time": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "paths",
+          "time"
+        ],
+        "type": "object"
+      },
+      "SnapshotSummaryDto": {
+        "properties": {
+          "dataAdded": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "filesChanged": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "filesNew": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "filesUnmodified": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "totalBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "totalFiles": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataAdded",
+          "filesChanged",
+          "filesNew",
+          "filesUnmodified",
+          "totalBytes",
+          "totalFiles"
+        ],
         "type": "object"
       },
       "SourceType": {
@@ -32280,6 +36108,22 @@
         },
         "type": "object"
       },
+      "TaskType": {
+        "enum": [
+          "schedule",
+          "restore",
+          "backup",
+          "forget"
+        ],
+        "type": "string"
+      },
+      "TelemetryLevel": {
+        "enum": [
+          "full",
+          "none"
+        ],
+        "type": "string"
+      },
       "TemplateDto": {
         "properties": {
           "template": {
@@ -32318,6 +36162,43 @@
         },
         "required": [
           "messageId"
+        ],
+        "type": "object"
+      },
+      "TicketAction": {
+        "enum": [
+          "repository.delete",
+          "repository.disable-worm"
+        ],
+        "type": "string"
+      },
+      "TicketCreateRequestDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/TicketAction"
+          },
+          "repositoryId": {
+            "description": "Repository the ticket is bound to",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "repositoryId"
+        ],
+        "type": "object"
+      },
+      "TicketCreateResponseDto": {
+        "properties": {
+          "redirectTo": {
+            "description": "Identity provider URL the browser must be sent to",
+            "type": "string"
+          }
+        },
+        "required": [
+          "redirectTo"
         ],
         "type": "object"
       },

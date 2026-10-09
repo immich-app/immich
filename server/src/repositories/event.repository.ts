@@ -1,3 +1,4 @@
+import { GatewayEvent as YuccaGatewayEvent } from '@futo-org/backups-orchestrator-api';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { orderBy } from 'lodash-es';
@@ -70,6 +71,10 @@ type EventMap = {
   /** job finishes with error */
   JobError: [JobErrorEvent];
 
+  LibraryCreate: [];
+  LibraryUpdate: [];
+  LibraryDelete: [];
+
   // queue events
   QueueStart: [QueueStartEvent];
 
@@ -105,6 +110,8 @@ type EventMap = {
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
+
+  YuccaEvent: [YuccaGatewayEvent];
 };
 
 export type AppRestartEvent = {
