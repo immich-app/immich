@@ -2,9 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/data/db/logger/database.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -64,9 +68,25 @@ abstract final class ImmichLogger {
     ];
   }
 
-  static Future<void> shareLogs(BuildContext context) async {
-    final messages = await LogService.I.getMessages();
-    final hidden = sensitive(_held(), [
+  // the startup error screen can show before the log service starts, and the store and settings start before it,
+  // so without it the logs come straight from their file and only the patterns hide what they hold
+  static Future<(List<LogMessage>, Iterable<String>)> _read() async {
+    try {
+      return (await LogService.I.getMessages(), _held());
+    } on LoggerUnInitializedException {
+      final logs = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
+      try {
+        return (await LogRepository(logs).getAll(), const <String>[]);
+      } finally {
+        await logs.close();
+      }
+    }
+  }
+
+  static Future<void> shareLogs(BuildContext context, {String? startupError}) async {
+    final (messages, held) = await _read();
+    final hidden = sensitive(held, [
+      ?startupError,
       for (final m in messages) ...[m.message, ?m.error, ?m.stack],
     ]);
     final tempDir = await getTemporaryDirectory();
@@ -75,6 +95,9 @@ abstract final class ImmichLogger {
     final logFile = await File(filePath).create();
     final io = logFile.openWrite();
     try {
+      if (startupError != null) {
+        io.write('$startupError\n\n'.replaceAll(hidden, '<redacted>'));
+      }
       // Write messages
       for (final m in messages) {
         final created = m.createdAt;
