@@ -6,6 +6,8 @@ const SetMaintenanceModeSchema = z
   .object({
     action: MaintenanceActionSchema,
     restoreBackupFilename: z.string().optional().describe('Restore backup filename'),
+    rollbackRepositoryId: z.string().optional().describe('Rollback repository ID'),
+    rollbackSnapshotId: z.string().optional().describe('Rollback snapshot ID'),
   })
   .refine(
     (data) => data.action !== MaintenanceAction.RestoreDatabase || (data.restoreBackupFilename?.length ?? 0) > 0,
@@ -32,6 +34,7 @@ const MaintenanceStatusResponseSchema = z
     progress: z.int().optional(),
     task: z.string().optional(),
     error: z.string().optional(),
+    yuccaLogId: z.string().optional().describe('Yucca log ID'),
   })
   .meta({ id: 'MaintenanceStatusResponseDto' });
 

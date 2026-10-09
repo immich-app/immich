@@ -70,6 +70,10 @@ type EventMap = {
   /** job finishes with error */
   JobError: [JobErrorEvent];
 
+  LibraryCreate: [];
+  LibraryUpdate: [];
+  LibraryDelete: [];
+
   // queue events
   QueueStart: [QueueStartEvent];
 

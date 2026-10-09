@@ -1,3 +1,4 @@
+import { configureYucca } from '@futo-org/backups-orchestrator-ui';
 import { commandPaletteManager } from '@immich/ui';
 import { goto } from '$app/navigation';
 import { languageManager } from '$lib/managers/language-manager.svelte';
@@ -10,6 +11,8 @@ export const ssr = false;
 export const csr = true;
 
 export const load = (async ({ fetch, url }) => {
+  configureYucca({ api: 'orchestrator' });
+
   let error;
   try {
     await init(fetch);
