@@ -1,3 +1,4 @@
+import math
 from collections.abc import Hashable, Sequence
 from typing import Any, Self
 
@@ -23,9 +24,10 @@ class TextDetector(TextModel[TextDetectionOptions]):
         self, model_name: str, max_resolution: int = TextDetectionOptions.max_resolution, **model_kwargs: Any
     ) -> None:
         super().__init__(model_name, **model_kwargs)
+        size = self._canvas_size(max_resolution)
         # RKNPU ships a binary per short side, which the label picks
-        canvases = tuple(Shape(batch=1, **canvas) for canvas in ocr_canvases(max_resolution))
-        self.shape_policy = ShapePolicy(dims=canvases, label=f"res{max_resolution}")
+        canvases = tuple(Shape(batch=1, **canvas) for canvas in ocr_canvases(size))
+        self.shape_policy = ShapePolicy(dims=canvases, label=f"res{size}")
         self.scale = np.float32(1.0 / 127.5)  # (x/255 - 0.5) / 0.5
         self._empty: TextDetectionOutput = {
             "boxes": np.empty(0, dtype=np.float32),
@@ -35,7 +37,7 @@ class TextDetector(TextModel[TextDetectionOptions]):
 
     @classmethod
     def graph(cls, options: TextDetectionOptions) -> Hashable:
-        return options.max_resolution
+        return cls._canvas_size(options.max_resolution)
 
     @classmethod
     def create(cls, model_name: str, options: TextDetectionOptions) -> Self:
@@ -96,6 +98,11 @@ class TextDetector(TextModel[TextDetectionOptions]):
             key=lambda canvas: (-min(canvas[0] / height, canvas[1] / width, 1.0), canvas[0] * canvas[1]),
             default=(height, width),
         )
+
+    @staticmethod
+    def _canvas_size(max_resolution: int) -> int:
+        # the graph only takes sides divisible by 32; up, so the short side _transform rounds to always fits
+        return math.ceil(max_resolution / 32) * 32
 
     @staticmethod
     def _round32(value: float) -> int:
