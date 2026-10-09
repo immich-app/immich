@@ -27,6 +27,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart' show LaunchMode, launchUrl;
 
 class BootstrapErrorWidget extends StatelessWidget {
@@ -99,6 +100,7 @@ class _BottomPanel extends StatefulWidget {
 
 class _BottomPanelState extends State<_BottomPanel> {
   bool _cleared = false;
+  bool _exporting = false;
 
   Future<void> _clearDatabase() async {
     final confirmed = await showDialog<bool>(
@@ -144,6 +146,33 @@ class _BottomPanelState extends State<_BottomPanel> {
     setState(() => _cleared = true);
   }
 
+  Future<void> _exportDatabase() async {
+    if (_exporting) {
+      return;
+    }
+
+    setState(() => _exporting = true);
+    try {
+      final files = await exportSqliteDatabase();
+      if (!mounted) {
+        return;
+      }
+
+      final size = MediaQuery.sizeOf(context);
+      await Share.shareXFiles([
+        for (final file in files) XFile(file.path),
+      ], sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)));
+    } on Exception catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _exporting = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -155,8 +184,9 @@ class _BottomPanelState extends State<_BottomPanel> {
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        if (_exporting) const LinearProgressIndicator(),
+        Wrap(
+          alignment: WrapAlignment.center,
           children: [
             _ActionLink(
               icon: Icons.chat_bubble_outline,
@@ -171,6 +201,7 @@ class _BottomPanelState extends State<_BottomPanel> {
                 mode: LaunchMode.externalApplication,
               ),
             ),
+            if (!_cleared) _ActionLink(icon: Icons.download, label: context.t.export_database, onTap: _exportDatabase),
             if (!_cleared)
               _ActionLink(
                 icon: Icons.delete_outline,

@@ -6,20 +6,20 @@ part 'store.model.freezed.dart';
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value
 enum StoreKey<T> {
-  version<int>._(0),
+  version<int>._(0, sensitive: false),
   currentUser<UserDto>._(2),
   deviceId<String>._(4),
   serverUrl<String>._(10),
   accessToken<String>._(11),
   serverEndpoint<String>._(12),
-  advancedTroubleshooting<bool>._(114),
-  enableHapticFeedback<bool>._(126),
+  advancedTroubleshooting<bool>._(114, sensitive: false),
+  enableHapticFeedback<bool>._(126, sensitive: false),
 
-  manageLocalMediaAndroid<bool>._(137),
+  manageLocalMediaAndroid<bool>._(137, sensitive: false),
   // Read-only Mode settings
-  readonlyModeEnabled<bool>._(138),
+  readonlyModeEnabled<bool>._(138, sensitive: false),
 
-  syncMigrationStatus<String>._(1013),
+  syncMigrationStatus<String>._(1013, sensitive: false),
 
   // Legacy keys that have been migrated to the new metadata store
   legacyBackupRequireCharging<bool>._(7),
@@ -61,8 +61,9 @@ enum StoreKey<T> {
   legacyMapwithPartners<bool>._(125),
   legacyLogLevel<int>._(115);
 
-  const StoreKey._(this.id);
+  const StoreKey._(this.id, {this.sensitive = true});
   final int id;
+  final bool sensitive;
   Type get type => T;
 }
 

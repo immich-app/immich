@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:drift/drift.dart';
 // ignore: implementation_imports, invalid_use_of_internal_member
@@ -37,6 +39,9 @@ import 'package:immich_mobile/data/db/main/table/user/auth_user.dart';
 import 'package:immich_mobile/data/db/main/table/user/metadata.dart';
 import 'package:immich_mobile/data/db/main/table/user/partner.dart';
 import 'package:immich_mobile/data/db/main/table/user/user.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -477,6 +482,174 @@ Future<void> deleteSqliteDatabase({required String name}) async {
     '${file.path}-wal',
     '${file.path}-shm',
   ].map((path) => File(path).delete().catchError((_) => File(path), test: (e) => e is FileSystemException)).wait;
+}
+
+Future<List<File>> exportSqliteDatabase() async {
+  final main = (await _databaseFile('immich')).path;
+  final logs = (await _databaseFile('immich_logs')).path;
+  final dir = (await getTemporaryDirectory()).path;
+  return Isolate.run(() => _exportDatabases(main, logs, dir));
+}
+
+List<File> _exportDatabases(String main, String logs, String dir) {
+  final report = File(p.join(dir, 'immich_export.txt'));
+  final files = [report];
+  final lines = <String>[];
+
+  void attempt(String step, void Function() run) {
+    try {
+      run();
+    } on SqliteException catch (error) {
+      // no statement parameters, they can hold the values the export hides
+      lines.add(
+        '$step: ${error.causingStatement ?? error.operation}: ${error.message} (code ${error.extendedResultCode})',
+      );
+    }
+  }
+
+  final kept = [
+    ('store_entity', 'id', 'string_value', [...StoreKey.values.where((key) => !key.sensitive).map((key) => key.id)]),
+    ('settings', 'key', 'value', [...SettingsKey.values.where((key) => !key.sensitive).map((key) => key.name)]),
+  ];
+
+  attempt('check', () {
+    final db = sqlite3.open(main, mode: OpenMode.readOnly);
+    try {
+      lines.add('user_version ${db.userVersion}');
+      // a damaged page stops the check with an error, the rows before it say where
+      final check = db.prepare('PRAGMA integrity_check');
+      try {
+        final rows = check.selectCursor();
+        while (rows.moveNext()) {
+          lines.add('${rows.current.values.single}');
+        }
+      } finally {
+        check.close();
+      }
+    } finally {
+      db.close();
+    }
+  });
+
+  attempt('database', () {
+    final export = File(p.join(dir, 'immich_export.sqlite'));
+    _cleanCopy(main, export, (copy) {
+      for (final (table, key, _, keep) in kept) {
+        if (_has(copy, table, key)) {
+          copy.execute('DELETE FROM $table WHERE $key NOT IN (SELECT value FROM json_each(?))', [jsonEncode(keep)]);
+        }
+      }
+      if (_has(copy, 'auth_user_entity', 'pin_code')) {
+        copy.execute('UPDATE auth_user_entity SET pin_code = NULL');
+      }
+      if (_has(copy, 'user_metadata_entity', 'key')) {
+        copy.execute('DELETE FROM user_metadata_entity WHERE key = ?', [UserMetadataKey.license.index]);
+      }
+    });
+    files.add(export);
+  });
+
+  attempt('logs', () {
+    // older log lines can print tokens and addresses the db no longer holds, rows with these go too
+    final hidden = {'://', 'token', 'host lookup', 'address = ', 'oauth'};
+    final db = sqlite3.open(main, mode: OpenMode.readOnly);
+    try {
+      for (final (table, key, value, keep) in kept) {
+        if (_has(db, table, key)) {
+          final rows = db.select('SELECT $value FROM $table WHERE $key NOT IN (SELECT value FROM json_each(?))', [
+            jsonEncode(keep),
+          ]);
+          hidden.addAll(_secrets(rows));
+        }
+      }
+    } finally {
+      db.close();
+    }
+
+    final export = File(p.join(dir, 'immich_logs_export.sqlite'));
+    _cleanCopy(logs, export, (copy) {
+      // sqlite errors end with the values they were given, the db may no longer hold them
+      for (final column in ['message', 'details']) {
+        copy.execute(
+          'UPDATE logger_messages SET $column = substr($column, 1, instr($column, ?1) - 1) WHERE instr($column, ?1)',
+          [', parameters: '],
+        );
+      }
+      copy.execute(
+        'DELETE FROM logger_messages WHERE EXISTS (SELECT 1 FROM json_each(?) WHERE '
+        "instr(lower(message || char(10) || ifnull(details, '') || char(10) || ifnull(stack, '')), lower(value)))",
+        [jsonEncode(hidden.toList())],
+      );
+    });
+    files.add(export);
+  });
+
+  report.writeAsStringSync(lines.join('\n'));
+  return files;
+}
+
+void _cleanCopy(String source, File target, void Function(Database copy) clean) {
+  final raw = File('${target.path}-raw');
+  for (final file in [raw, target]) {
+    if (file.existsSync()) {
+      file.deleteSync();
+    }
+  }
+  try {
+    final db = sqlite3.open(source, mode: OpenMode.readOnly);
+    try {
+      db.execute('VACUUM INTO ?', [raw.path]);
+    } finally {
+      db.close();
+    }
+
+    final copy = sqlite3.open(raw.path);
+    try {
+      clean(copy);
+      // deleted rows can leave old bytes in the pages, a fresh copy holds only the kept rows
+      copy.execute('VACUUM INTO ?', [target.path]);
+    } finally {
+      copy.close();
+    }
+  } finally {
+    if (raw.existsSync()) {
+      raw.deleteSync();
+    }
+  }
+}
+
+bool _has(Database db, String table, String column) =>
+    db.select('SELECT 1 FROM pragma_table_info(?) WHERE name = ?', [table, column]).isNotEmpty;
+
+// log lines print a stored value as is, as the strings inside its JSON or as its url host,
+// and values under 8 characters are flags and words that would match most rows
+Iterable<String> _secrets(ResultSet rows) sync* {
+  Iterable<Object?> leaves(Object? json) => switch (json) {
+    List() => json.expand(leaves),
+    Map() => json.values.expand(leaves),
+    _ => [json],
+  };
+
+  for (final row in rows) {
+    final value = row.values.single;
+    if (value is! String) {
+      continue;
+    }
+    Object? json;
+    try {
+      json = jsonDecode(value);
+    } on FormatException {
+      // a plain value
+    }
+    final parts = json is List || json is Map ? leaves(json).whereType<String>() : [value];
+    for (final part in parts) {
+      for (final secret in [part, Uri.tryParse(part)?.host ?? '']) {
+        if (secret.length >= 8) {
+          yield secret;
+        }
+      }
+    }
+  }
 }
 
 Future<SqliteConnection> openSqliteConnection({required String name}) async {
