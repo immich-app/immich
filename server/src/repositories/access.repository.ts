@@ -6,7 +6,7 @@ import { PersonUserRole } from 'src/dtos/person.dto.js';
 import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
 import { PersonId } from 'src/repositories/person.repository.js';
 import { DB } from 'src/schema/index.js';
-import { asUuid } from 'src/utils/database.js';
+import { asUuid, generateSeries, unnestUuid } from 'src/utils/database.js';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
@@ -521,31 +521,26 @@ class ClusterGroupRequestAccess {
 class PersonAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, [PersonUserRole.Admin]] })
+  @GenerateSql({
+    params: [DummyValue.UUID, [{ personGroupId: DummyValue.UUID, ownerId: DummyValue.UUID }], [PersonUserRole.Admin]],
+  })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAccess(userId: string, personIds: Set<PersonId>, roles: PersonUserRole[]) {
-    if (personIds.size === 0 || roles.length === 0) {
+  async checkAccess(userId: string, personIds: PersonId[], roles: PersonUserRole[]) {
+    if (personIds.length === 0 || roles.length === 0) {
       return new Set<PersonId>();
     }
 
-    const personGroupIds = personIds
-      .values()
-      .map(({ personGroupId }) => personGroupId)
-      .toArray();
-    const ownerIds = personIds
-      .values()
-      .map(({ ownerId }) => ownerId)
-      .toArray();
-
-    return this.db
-      .selectFrom(
-        sql<{ personGroupId: string; ownerId: string }>`(
-      select
-        unnest(${personGroupIds}::uuid[]) as "personGroupId",
-        unnest(${ownerIds}::uuid[]) as "ownerId"
-    )`.as('people'),
+    // positions map rows back to the caller's own objects, which access checks compare by identity
+    const { index } = await this.db
+      .with('people', (eb) =>
+        eb.selectNoFrom([
+          unnestUuid(personIds.map(({ personGroupId }) => personGroupId)).as('personGroupId'),
+          unnestUuid(personIds.map(({ ownerId }) => ownerId)).as('ownerId'),
+          generateSeries(0, personIds.length - 1).as('index'),
+        ]),
       )
-      .select(['personGroupId', 'ownerId'])
+      .selectFrom('people')
+      .select((eb) => eb.fn.coalesce(eb.fn.jsonAgg('people.index').$castTo<number[]>(), sql.lit('[]')).as('index'))
       .where((eb) =>
         eb.or([
           eb.exists(
@@ -553,8 +548,7 @@ class PersonAccess {
               .selectFrom('person')
               .whereRef('people.personGroupId', '=', 'person.personGroupId')
               .whereRef('people.ownerId', '=', 'person.ownerId')
-              .where('person.ownerId', '=', userId)
-              .selectAll(),
+              .where('person.ownerId', '=', userId),
           ),
           eb.exists(
             eb
@@ -562,13 +556,17 @@ class PersonAccess {
               .where('person_user.sharedWithId', '=', userId)
               .where('person_user.role', 'in', roles)
               .whereRef('people.personGroupId', '=', 'person_user.personGroupId')
-              .whereRef('people.ownerId', '=', 'person_user.sharedById')
-              .selectAll(),
+              .whereRef('people.ownerId', '=', 'person_user.sharedById'),
           ),
         ]),
       )
-      .execute()
-      .then((items) => new Set(items));
+      .executeTakeFirstOrThrow();
+
+    const allowed = new Set<PersonId>();
+    for (const i of index) {
+      allowed.add(personIds[i]);
+    }
+    return allowed;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
