@@ -4,6 +4,7 @@ import {
   AssetTypeEnum,
   AssetVisibility,
   bulkTagAssets,
+  bulkTagUntagAssets,
   getAssetInfo,
   removeAssetFromAlbum,
   runAssetJobs,
@@ -491,6 +492,27 @@ export const handleTagAssets = async (assetIds: string[], tagIds: string[]) => {
   try {
     const response = await bulkTagAssets({ tagBulkAssetsDto: { assetIds, tagIds } });
     toastManager.primary($t('tagged_assets', { values: { count: response.count } }));
+    eventManager.emit('AssetsTag', assetIds);
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_tag_assets'));
+    return false;
+  }
+};
+
+export const handleTagUntagAssets = async (assetIds: string[], tagIdsToAdd: string[], tagIdsToRemove: string[]) => {
+  const $t = await getFormatter();
+
+  try {
+    const { addedCount, removedCount } = await bulkTagUntagAssets({
+      tagBulkAddRemoveAssetsDto: { tagIdsToAdd, tagIdsToRemove, assetIds },
+    });
+    if (addedCount) {
+      toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
+    }
+    if (removedCount) {
+      toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
+    }
     eventManager.emit('AssetsTag', assetIds);
     return true;
   } catch (error) {
