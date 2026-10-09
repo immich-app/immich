@@ -1742,6 +1742,22 @@ class TestOcr:
         # the legacy path swaps to BGR on the way in; the fused graph does its own
         assert fed[0, 0, 0].tolist() == [10, 20, 30]
 
+    @pytest.mark.parametrize(("max_resolution", "label"), [(736, "res736"), (1000, "res1024"), (1080, "res1088")])
+    def test_det_rounds_its_canvases_up_to_a_multiple_of_32(
+        self, path: mock.Mock, max_resolution: int, label: str
+    ) -> None:
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=max_resolution, cache_dir=path)
+
+        dims = [dim for shape in text_detector.shape_policy.dims for dim in (shape.height, shape.width)]
+        assert dims and all(dim is not None and dim % 32 == 0 for dim in dims)  # the graph cannot take any other size
+        assert text_detector.shape_policy.label == label  # up, so 1080 finds the res1088 binary RKNPU ships
+
+    def test_det_resolutions_in_one_32_band_share_a_graph(self) -> None:
+        graph = [TextDetector.graph(TextDetectionOptions(max_resolution=size)) for size in (1080, 1088, 1089)]
+
+        assert graph[0] == graph[1]
+        assert graph[1] != graph[2]  # the next band compiles canvases of its own
+
     def test_rec_runs_the_batch_at_a_compiled_width(
         self, path: mock.Mock, mocker: MockerFixture, stub_session: Callable[..., mock.Mock]
     ) -> None:
