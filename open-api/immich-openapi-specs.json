@@ -10129,16 +10129,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v3.3",
+            "version": "v3.3.0",
             "state": "Added"
           },
           {
-            "version": "v3.3",
-            "state": "Stable"
+            "version": "v3.3.0",
+            "state": "Beta"
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Beta"
       },
       "get": {
         "description": "Retrieve a list of users and the people to which they have been given access",
@@ -10224,16 +10224,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v3.3",
+            "version": "v3.3.0",
             "state": "Added"
           },
           {
-            "version": "v3.3",
-            "state": "Stable"
+            "version": "v3.3.0",
+            "state": "Beta"
           }
         ],
         "x-immich-permission": "person.read",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Beta"
       },
       "put": {
         "description": "Give users access to people",
@@ -10271,16 +10271,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v3.3",
+            "version": "v3.3.0",
             "state": "Added"
           },
           {
-            "version": "v3.3",
-            "state": "Stable"
+            "version": "v3.3.0",
+            "state": "Beta"
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Beta"
       }
     },
     "/people/{id}": {
@@ -20729,7 +20729,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.3.0",
+    "version": "3.3.1",
     "contact": {}
   },
   "tags": [

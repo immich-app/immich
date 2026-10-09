@@ -138,8 +138,7 @@ const withOtherPeopleFor = (userId: string, personGroupId: Expression<string>) =
           .on('person_user.sharedWithId', '=', userId),
       )
       .select(['person_user.sharedById', 'person_user.role', 'other.name', 'other.birthDate'])
-      .where('other.personGroupId', '=', personGroupId)
-      .where((eb) => eb.or([eb('other.birthDate', 'is not', null), eb('other.name', '!=', '')])),
+      .where('other.personGroupId', '=', personGroupId),
   ).as('otherPeople');
 
 const withPersonUsersFor = (userId: string, personGroupId: Expression<string>, direction: SharingDirection) => {
