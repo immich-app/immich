@@ -150,8 +150,14 @@
     override get nextAutoLevel(): number {
       const level = this.encodedLevel(super.nextAutoLevel);
       const target = this.hls.levels[this.switchTarget];
-      // Hold the committed level, but only while hls.js still considers it healthy.
-      if (target && level < this.switchTarget && target.loadError === 0 && target.fragmentError === 0) {
+      // Hold healthy encoded levels only; switching to Auto must never retain Original.
+      if (
+        target &&
+        !isOriginalLevel(target) &&
+        level < this.switchTarget &&
+        target.loadError === 0 &&
+        target.fragmentError === 0
+      ) {
         return this.switchTarget;
       }
       return level;
