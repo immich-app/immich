@@ -13,6 +13,7 @@ const _imageSize = Size(400, 300);
 const _firstLine = Offset(100, 195);
 // Viewport rect (40, 240) - (240, 270)
 const _secondLine = Offset(100, 255);
+const _noText = Offset(300, 500);
 
 Ocr _line(String id, String text, double top) => Ocr(
   id: id,
@@ -30,6 +31,14 @@ Ocr _line(String id, String text, double top) => Ocr(
   text: text,
   isVisible: true,
 );
+
+class _Below {
+  int taps = 0;
+  int longPresses = 0;
+  int horizontalDrags = 0;
+  int scales = 0;
+  int selectionStarts = 0;
+}
 
 void main() {
   final ocrData = [_line('1', 'hello world', 0.1), _line('2', 'second line', 0.3)];
@@ -55,31 +64,59 @@ void main() {
     );
   });
 
-  Future<void> pumpLayer(WidgetTester tester) async {
+  Future<_Below> pumpLayer(WidgetTester tester, {bool scalable = false}) async {
+    final below = _Below();
     await tester.pumpWidget(
       MaterialApp(
         home: Align(
           alignment: Alignment.topLeft,
           child: SizedBox.fromSize(
             size: _viewportSize,
-            child: OcrSelectionLayer(ocrData: ocrData, imageSize: _imageSize, viewportSize: _viewportSize),
+            // Stands in for the page view around the viewer
+            child: GestureDetector(
+              onHorizontalDragStart: scalable ? null : (_) => below.horizontalDrags++,
+              child: Stack(
+                children: [
+                  // Stands in for the photo view
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => below.taps++,
+                      onLongPress: () => below.longPresses++,
+                      onScaleStart: scalable ? (_) => below.scales++ : null,
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: OcrSelectionLayer(
+                      ocrData: ocrData,
+                      imageSize: _imageSize,
+                      viewportSize: _viewportSize,
+                      onSelectionStart: () => below.selectionStarts++,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
     // The lines take a few frames to register as selectable
     await tester.pumpAndSettle();
+    return below;
   }
 
   const mobile = TargetPlatformVariant({TargetPlatform.iOS, TargetPlatform.android});
 
-  testWidgets('long press on text selects it', (tester) async {
-    await pumpLayer(tester);
+  testWidgets('long press on text selects it instead of reaching the viewer', (tester) async {
+    final below = await pumpLayer(tester);
 
     await tester.longPressAt(_firstLine);
     await tester.pumpAndSettle();
 
+    expect(below.longPresses, 0);
     expect(find.text('Copy'), findsOneWidget);
+    expect(below.selectionStarts, 1);
 
     await tester.tap(find.text('Copy'));
     await tester.pumpAndSettle();
@@ -98,5 +135,62 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(clipboard, 'hello world\nsecond line');
+  }, variant: mobile);
+
+  testWidgets('tap clears the selection', (tester) async {
+    final below = await pumpLayer(tester);
+
+    await tester.longPressAt(_firstLine);
+    await tester.pumpAndSettle();
+    expect(find.text('Copy'), findsOneWidget);
+
+    await tester.tapAt(_noText);
+    await tester.pumpAndSettle();
+    expect(find.text('Copy'), findsNothing);
+    expect(below.taps, 0);
+
+    await tester.tapAt(_noText);
+    await tester.pumpAndSettle();
+    expect(below.taps, 1);
+  }, variant: mobile);
+
+  testWidgets('gestures next to the text reach the viewer', (tester) async {
+    final below = await pumpLayer(tester);
+
+    await tester.longPressAt(_noText);
+    await tester.pumpAndSettle();
+    expect(below.longPresses, 1);
+    expect(find.text('Copy'), findsNothing);
+
+    await tester.tapAt(_noText);
+    await tester.pumpAndSettle();
+    expect(below.taps, 1);
+  }, variant: mobile);
+
+  testWidgets('tap on text reaches the viewer', (tester) async {
+    final below = await pumpLayer(tester);
+
+    await tester.tapAt(_firstLine);
+    await tester.pumpAndSettle();
+
+    expect(below.taps, 1);
+  }, variant: mobile);
+
+  testWidgets('horizontal swipe starting on text reaches the page view', (tester) async {
+    final below = await pumpLayer(tester);
+
+    await tester.dragFrom(_firstLine, const Offset(-150, 0));
+    await tester.pumpAndSettle();
+
+    expect(below.horizontalDrags, 1);
+  }, variant: mobile);
+
+  testWidgets('pan starting on text reaches the viewer', (tester) async {
+    final below = await pumpLayer(tester, scalable: true);
+
+    await tester.dragFrom(_firstLine, const Offset(-150, 0));
+    await tester.pumpAndSettle();
+
+    expect(below.scales, 1);
   }, variant: mobile);
 }

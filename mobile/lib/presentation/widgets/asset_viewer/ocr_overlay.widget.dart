@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/ocr.model.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 class OcrOverlay extends ConsumerStatefulWidget {
@@ -103,6 +105,7 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
           imageSize: widget.imageSize,
           viewportSize: widget.viewportSize,
           controllerValue: _controllerValue,
+          onSelectionStart: () => ref.read(hapticFeedbackProvider.notifier).selectionClick(),
         );
       },
       loading: () => const SizedBox.shrink(),
@@ -120,6 +123,7 @@ class OcrSelectionLayer extends StatefulWidget {
   final Size imageSize;
   final Size viewportSize;
   final PhotoViewControllerValue? controllerValue;
+  final VoidCallback? onSelectionStart;
 
   const OcrSelectionLayer({
     super.key,
@@ -128,6 +132,7 @@ class OcrSelectionLayer extends StatefulWidget {
     required this.viewportSize,
     this.controller,
     this.controllerValue,
+    this.onSelectionStart,
   });
 
   @override
@@ -135,13 +140,60 @@ class OcrSelectionLayer extends StatefulWidget {
 }
 
 class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
+  final _selectionAreaKey = GlobalKey<SelectionAreaState>();
   final _selectionDelegate = _OcrSelectionDelegate();
+  final _focusNode = FocusNode(debugLabel: 'OcrSelectionLayer');
+
+  // We handle gestures ourself so that we don't steal the gestures from the PhotoView.
+  late final _longPressRecognizer = LongPressGestureRecognizer(debugOwner: this)
+    ..onLongPressStart = _onLongPressStart
+    ..onLongPressMoveUpdate = _onLongPressMoveUpdate;
+  late final _tapRecognizer = TapGestureRecognizer(debugOwner: this)..onTap = _clearSelection;
+
+  List<List<Offset>> _quads = const [];
 
   @override
   void dispose() {
+    _longPressRecognizer.dispose();
+    _tapRecognizer.dispose();
     _selectionDelegate.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
+
+  bool get _hasSelection => _selectionDelegate.value.hasSelection;
+
+  bool _isOnText(Offset position) => _quads.any((quad) => (Path()..addPolygon(quad, true)).contains(position));
+
+  void _onPointerDown(PointerDownEvent event) {
+    if (_hasSelection) {
+      _tapRecognizer.addPointer(event);
+    }
+    if (_isOnText(event.localPosition)) {
+      _longPressRecognizer.addPointer(event);
+    }
+  }
+
+  void _onLongPressStart(LongPressStartDetails details) {
+    final selectableRegion = _selectionAreaKey.currentState?.selectableRegion;
+    if (selectableRegion == null) {
+      return;
+    }
+    widget.onSelectionStart?.call();
+    _focusNode.requestFocus();
+    _selectionDelegate.selectWordAt(selectableRegion, details.globalPosition);
+  }
+
+  void _onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    if (!_hasSelection) {
+      return;
+    }
+    _selectionDelegate.dispatchSelectionEvent(
+      SelectionEdgeUpdateEvent.forEnd(globalPosition: details.globalPosition, granularity: TextGranularity.word),
+    );
+  }
+
+  void _clearSelection() => _selectionAreaKey.currentState?.selectableRegion.clearSelection();
 
   @override
   Widget build(BuildContext context) {
@@ -214,20 +266,26 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
       );
     }
 
+    _quads = quads;
+
     return ClipRect(
-      child: SelectionArea(
-        child: SelectionContainer(
-          delegate: _selectionDelegate,
-          child: Stack(
-            children: [
+      // Translucent + ignored child: receive pointers
+      // but don't block the gestures of the viewer
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: _onPointerDown,
+        child: IgnorePointer(
+          child: SelectionArea(
+            key: _selectionAreaKey,
+            focusNode: _focusNode,
+            child: SelectionContainer(
+              delegate: _selectionDelegate,
               // Dark scrim with the text boxes punched out
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(painter: _OcrBoxesPainter(quads: quads)),
-                ),
+              child: CustomPaint(
+                painter: _OcrBoxesPainter(quads: quads),
+                child: Stack(children: lines),
               ),
-              ...lines,
-            ],
+            ),
           ),
         ),
       ),
@@ -236,6 +294,24 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
 }
 
 class _OcrSelectionDelegate extends StaticSelectionContainerDelegate {
+  Offset? _wordPosition;
+
+  /// Selects the word at [globalPosition] and shows the handles and toolbar.
+  void selectWordAt(SelectableRegionState region, Offset globalPosition) {
+    _wordPosition = globalPosition;
+    region.selectAll(SelectionChangedCause.toolbar);
+    _wordPosition = null;
+  }
+
+  @override
+  SelectionResult handleSelectAll(SelectAllSelectionEvent event) {
+    final position = _wordPosition;
+    if (position == null) {
+      return super.handleSelectAll(event);
+    }
+    return handleSelectWord(SelectWordSelectionEvent(globalPosition: position));
+  }
+
   @override
   SelectedContent? getSelectedContent() {
     final lines = [
