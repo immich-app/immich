@@ -211,6 +211,21 @@ describe(SmartInfoService.name, () => {
       expect(mocks.search.upsert).toHaveBeenCalledWith(asset.id, '[0.01, 0.02, 0.03]');
     });
 
+    it('should use the edited preview when both preview variants exist', async () => {
+      const asset = AssetFactory.from()
+        .file({ type: AssetFileType.Preview, isEdited: false, path: 'original-preview' })
+        .file({ type: AssetFileType.Preview, isEdited: true, path: 'edited-preview' })
+        .build();
+      mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(asset);
+
+      expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Success);
+      expect(mocks.machineLearning.encodeImage).toHaveBeenCalledWith(
+        'edited-preview',
+        expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
+      );
+    });
+
     it('should skip invisible assets', async () => {
       const asset = AssetFactory.from({ visibility: AssetVisibility.Hidden })
         .file({ type: AssetFileType.Preview })
