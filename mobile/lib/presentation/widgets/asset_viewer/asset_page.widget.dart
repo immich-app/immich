@@ -492,13 +492,19 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     remoteThumbnailSize: thumbnailSize,
                   ),
                 ),
-                if (showingOcr && displayAsset.width != null && displayAsset.height != null)
+                if (isCurrent &&
+                    displayAsset.isImage &&
+                    !isPlayingMotionVideo &&
+                    !_showingDetails &&
+                    displayAsset.width != null &&
+                    displayAsset.height != null)
                   Positioned.fill(
                     child: OcrOverlay(
                       asset: displayAsset,
                       imageSize: Size(displayAsset.width!.toDouble(), displayAsset.height!.toDouble()),
                       viewportSize: Size(viewportWidth, viewportHeight),
                       controller: _viewController,
+                      showBoxes: showingOcr,
                     ),
                   ),
                 IgnorePointer(
