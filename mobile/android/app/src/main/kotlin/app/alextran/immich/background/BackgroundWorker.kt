@@ -144,18 +144,12 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       .setContentText(content)
       .build()
 
-    if (isIgnoringBatteryOptimizations()) {
-      foregroundFuture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-        setForegroundAsync(
-          ForegroundInfo(
-            NOTIFICATION_ID,
-            notification,
-            FOREGROUND_SERVICE_TYPE_DATA_SYNC
-          )
-        )
-      } else {
-        setForegroundAsync(ForegroundInfo(NOTIFICATION_ID, notification))
-      }
+    // On Android 14+ (UPSIDE_DOWN_CAKE / Android 15 / 17), calling setForegroundAsync from the
+    // background triggers ForegroundServiceStartNotAllowedException for dataSync services.
+    // When running under WorkManager with battery optimizations ignored, let WorkManager
+    // execute in the background with a standard user-facing notification.
+    if (isIgnoringBatteryOptimizations() && Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      foregroundFuture = setForegroundAsync(ForegroundInfo(NOTIFICATION_ID, notification))
     } else {
       notificationManager.notify(NOTIFICATION_ID, notification)
     }

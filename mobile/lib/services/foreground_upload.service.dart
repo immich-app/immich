@@ -95,7 +95,7 @@ class ForegroundUploadService {
     }
 
     final networkCapabilities = await _connectivityApi.getCapabilities();
-    final hasWifi = networkCapabilities.isUnmetered;
+    final hasWifi = networkCapabilities.hasWifi || networkCapabilities.isUnmetered;
     _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
 
     if (useSequentialUpload) {

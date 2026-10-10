@@ -207,7 +207,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     _pauseOperation = Completer<void>();
 
     try {
-      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+      await _ref.read(backgroundWorkerLockServiceProvider).unlock();
       await _performPause();
     } catch (e, stackTrace) {
       _log.severe("Error during app pause", e, stackTrace);
