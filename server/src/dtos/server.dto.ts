@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import type { SemVer } from 'semver';
 import { ExtraModel, HistoryBuilder } from 'src/decorators.js';
+import { ServerFeatureLevel, ServerFeatureLevelSchema } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
 
 const ServerPingResponseSchema = z
@@ -68,6 +69,11 @@ const ServerVersionResponseSchema = z
       .nullable()
       .meta(HistoryBuilder.v3().getExtensions())
       .describe('Pre-release version number'),
+    featureLevel: z
+      .int()
+      .min(0)
+      .meta(HistoryBuilder.v4().getExtensions())
+      .describe('Highest feature level supported by the server, which increments independently of the release version'),
   })
   .meta({ id: 'ServerVersionResponseDto' });
 
@@ -175,6 +181,8 @@ export class ServerAboutResponseDto extends createZodDto(ServerAboutResponseSche
 export class ServerApkLinksDto extends createZodDto(ServerApkLinksSchema) {}
 export class ServerStorageResponseDto extends createZodDto(ServerStorageResponseSchema) {}
 
+const serverFeatureLevel = Math.max(...(Object.values(ServerFeatureLevel) as number[]));
+
 export class ServerVersionResponseDto extends createZodDto(ServerVersionResponseSchema) {
   static fromSemVer(value: SemVer): z.infer<typeof ServerVersionResponseSchema> {
     return {
@@ -182,6 +190,7 @@ export class ServerVersionResponseDto extends createZodDto(ServerVersionResponse
       minor: value.minor,
       patch: value.patch,
       prerelease: (value.prerelease[1] as number) ?? null,
+      featureLevel: serverFeatureLevel,
     };
   }
 }
@@ -195,3 +204,6 @@ export class ServerFeaturesDto extends createZodDto(ServerFeaturesSchema) {}
 
 @ExtraModel()
 export class ReleaseEventV1 extends createZodDto(ReleaseEventV1Schema) {}
+
+@ExtraModel()
+export class ServerFeatureLevelDto extends createZodDto(ServerFeatureLevelSchema as unknown as z.ZodObject) {}
