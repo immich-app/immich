@@ -4,10 +4,10 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import BirthdayConfetti from '$lib/components/memories/BirthdayConfetti.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -274,6 +274,8 @@
       ]}
 />
 
+<OnEvents onAssetsArchive={handleHideAssets} />
+
 {#if assetMultiSelectManager.selectionActive}
   <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar>
@@ -299,7 +301,7 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={handleHideAssets} />
+        <ActionMenuItem action={Actions.Archive} />
         <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets menuItem onAssetDelete={handleHideAssets} />
       </ButtonContextMenu>

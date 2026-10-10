@@ -7,7 +7,6 @@
   import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/SearchBar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -20,7 +19,7 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { searchManager } from '$lib/managers/search-manager.svelte';
-  import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { lang, locale } from '$lib/stores/preferences.store';
@@ -234,6 +233,21 @@
     }
   };
 
+  const onAssetsArchive = (assetIds: string[]) => {
+    if (!terms.visibility || terms.visibility === AssetVisibility.Timeline) {
+      const assetIdSet = new Set(assetIds);
+      searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
+    }
+  };
+
+  // TODO: add back in opposite case
+  const onAssetsUnarchive = (assets: TimelineAsset[]) => {
+    if (terms.visibility === AssetVisibility.Archive) {
+      const assetIdSet = new Set(assets.map((asset) => asset.id));
+      searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
+    }
+  };
+
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
@@ -250,7 +264,7 @@
 
 <svelte:window bind:scrollY />
 
-<OnEvents {onAlbumAddAssets} />
+<OnEvents {onAlbumAddAssets} {onAssetsArchive} {onAssetsUnarchive} />
 
 {#if searchTermKeys.length > 0}
   <section id="search-chips" class="mx-auto mt-24 w-full max-w-7xl px-4 sm:px-8 lg:px-12">
@@ -373,7 +387,8 @@
               <ChangeDate menuItem />
               <ChangeDescription menuItem />
               <ChangeLocation menuItem />
-              <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} />
+              <ActionMenuItem action={Actions.Archive} />
+              <ActionMenuItem action={Actions.Unarchive} />
               <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
               <ActionMenuItem action={Actions.Tag} />
               <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
