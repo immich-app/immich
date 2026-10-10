@@ -33,12 +33,13 @@
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
               { value: ImageFormat.Webp, text: 'WebP' },
+              { value: ImageFormat.Avif, text: 'AVIF' },
             ]}
             name="format"
             isEdited={configToEdit.image.thumbnail.format !== config.image.thumbnail.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.thumbnail.progressive = false;
               }
             }}
@@ -76,7 +77,7 @@
             checked={configToEdit.image.thumbnail.progressive}
             onToggle={(isChecked) => (configToEdit.image.thumbnail.progressive = isChecked)}
             isEdited={configToEdit.image.thumbnail.progressive !== config.image.thumbnail.progressive}
-            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.thumbnail.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -92,12 +93,13 @@
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
               { value: ImageFormat.Webp, text: 'WebP' },
+              { value: ImageFormat.Avif, text: 'AVIF' },
             ]}
             name="format"
             isEdited={configToEdit.image.preview.format !== config.image.preview.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.preview.progressive = false;
               }
             }}
@@ -134,7 +136,7 @@
             checked={configToEdit.image.preview.progressive}
             onToggle={(isChecked) => (configToEdit.image.preview.progressive = isChecked)}
             isEdited={configToEdit.image.preview.progressive !== config.image.preview.progressive}
-            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.preview.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -161,12 +163,13 @@
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
               { value: ImageFormat.Webp, text: 'WebP' },
+              { value: ImageFormat.Avif, text: 'AVIF' },
             ]}
             name="format"
             isEdited={configToEdit.image.fullsize.format !== config.image.fullsize.format}
             disabled={disabled || !configToEdit.image.fullsize.enabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.fullsize.progressive = false;
               }
             }}
@@ -189,7 +192,7 @@
             isEdited={configToEdit.image.fullsize.progressive !== config.image.fullsize.progressive}
             disabled={disabled ||
               !configToEdit.image.fullsize.enabled ||
-              configToEdit.image.fullsize.format === ImageFormat.Webp}
+              configToEdit.image.fullsize.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
