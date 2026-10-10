@@ -153,4 +153,44 @@ void main() {
       verifyNever(() => context.service.toast.success(any()));
     });
   });
+
+  group('UntagAction', () {
+    List<Override> untagOverrides(Set<BaseAsset> selection) => [
+      ...context.selected(selection),
+      toastServiceProvider.overrideWithValue(context.service.toast),
+      Store.userMetadata.preferences().overrideWith((ref) => Stream.value(const .new(tagsEnabled: true))),
+    ];
+
+    testWidgets('removes the tag from the owned assets and reports the count', (tester) async {
+      final asset = owned();
+      when(context.service.tag.untagAssets).thenAnswer((_) async => 1);
+
+      await tester.pumpTestAction(
+        context,
+        const UntagAction(source: .timeline, tagId: 'tag'),
+        overrides: untagOverrides({asset}),
+      );
+      await tester.pumpAndSettle();
+
+      verify(() => tagApi.untagAssets('tag', [asset.id])).called(1);
+
+      final message = verify(() => context.service.toast.success(captureAny())).captured.single as String;
+      expect(message, StaticTranslations.instance.removed_tagged_assets(count: 1));
+    });
+
+    testWidgets('is hidden for assets owned by someone else', (tester) async {
+      final selection = {RemoteAssetFactory.create()};
+
+      await tester.pumpTestWidget(
+        context,
+        const ActionIconButton(
+          action: UntagAction(source: .timeline, tagId: 'tag'),
+        ),
+        overrides: untagOverrides(selection),
+      );
+
+      expect(find.byType(ImmichIconButton), findsNothing);
+      verifyNever(() => tagApi.untagAssets(any(), any()));
+    });
+  });
 }
