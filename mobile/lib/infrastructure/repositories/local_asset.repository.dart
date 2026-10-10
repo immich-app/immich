@@ -56,8 +56,6 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
     return query.map((row) => row.toDto()).get();
   }
 
-  Stream<LocalAsset?> watch(String id) => _assetSelectable(id).watchSingleOrNull();
-
   Future<void> updateHashes(Map<String, String> hashes) {
     if (hashes.isEmpty) {
       return Future.value();
