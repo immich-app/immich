@@ -72,6 +72,18 @@ void main() {
     expect(await secondFile.exists(), isFalse);
   });
 
+  test('cleanup of an old temp file preserves the current managed path', () async {
+    final firstFile = File('${cacheDir.path}/view_intent_first.jpg')..writeAsStringSync('first');
+    final secondFile = File('${cacheDir.path}/view_intent_second.jpg')..writeAsStringSync('second');
+
+    await service.setManagedTempFilePath(firstFile.path);
+    await service.setManagedTempFilePath(secondFile.path);
+    await service.cleanupManagedTempFileIfCurrent(firstFile.path);
+    await service.cleanupManagedTempFile();
+
+    expect(await secondFile.exists(), isFalse);
+  });
+
   test('cleanupTempFile ignores non-managed paths', () async {
     final nonManagedFile = File('${tempRoot.path}/plain_file.jpg')..writeAsStringSync('content');
 

@@ -334,7 +334,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                     backgroundManager.syncRemote().then((success) => syncSuccess = success),
                   ]);
 
-                  await viewIntentHandler.flushDeferredViewIntent();
+                  await viewIntentHandler?.flushDeferredViewIntent();
 
                   if (syncSuccess) {
                     await Future.wait([

@@ -51,6 +51,46 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return query.map((row) => row.toDto()).get();
   }
 
+  /// Returns independently selected own and timeline-visible candidates.
+  Future<({RemoteAsset? own, RemoteAsset? timelineVisible})> getCandidatesByChecksum(
+    List<String> timelineUserIds,
+    String checksum,
+  ) async {
+    final currentUserIdQuery = _db.selectOnly(_db.authUserEntity)
+      ..addColumns([_db.authUserEntity.id])
+      ..limit(1);
+    final currentUserId = await currentUserIdQuery.map((row) => row.read(_db.authUserEntity.id)).getSingleOrNull();
+
+    final query = _db.remoteAssetEntity.select()
+      ..where((row) {
+        final timelineCandidate =
+            row.ownerId.isIn(timelineUserIds) &
+            row.deletedAt.isNull() &
+            row.visibility.equalsValue(AssetVisibility.timeline);
+        final ownCandidate = currentUserId == null
+            ? const Constant(false)
+            : row.ownerId.equals(currentUserId) & row.visibility.equalsValue(AssetVisibility.hidden).not();
+        return row.checksum.equals(checksum) & (ownCandidate | timelineCandidate);
+      });
+
+    RemoteAsset? own;
+    RemoteAsset? timelineVisible;
+    for (final asset in await query.map((row) => row.toDto()).get()) {
+      if (asset.ownerId == currentUserId) {
+        if (!asset.isTrashed && asset.visibility == AssetVisibility.timeline) {
+          own = asset;
+          timelineVisible = asset;
+        } else {
+          own ??= asset;
+        }
+      } else if (timelineVisible == null && !asset.isTrashed && asset.visibility == AssetVisibility.timeline) {
+        timelineVisible = asset;
+      }
+    }
+
+    return (own: own, timelineVisible: timelineVisible);
+  }
+
   Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {
     final stackId = asset.stackId;
     if (stackId == null) {
