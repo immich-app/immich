@@ -400,6 +400,9 @@ const AdminConfigSchemaWithVisibility = z
       .meta({ id: 'AdminConfigTemplatesDto' }),
     server: z
       .object({
+        emailLinksViaMyImmich: configBool.describe(
+          'Open album links in emails through my.immich.app, so the mobile app opens them when installed',
+        ),
         externalDomain: emptyOrUrl('External domain must be an empty string or a valid URL')
           .describe('External domain')
           .meta({ visibility: User }),
@@ -743,6 +746,7 @@ export const defaults = Object.freeze<SystemConfig>({
     },
   },
   server: {
+    emailLinksViaMyImmich: false,
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,

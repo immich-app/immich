@@ -181,6 +181,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: true,
   },
   server: {
+    emailLinksViaMyImmich: false,
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,

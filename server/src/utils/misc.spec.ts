@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getKeysDeep, globToPostgresRegex, unsetDeep } from 'src/utils/misc.js';
+import { getAlbumEmailLink, getKeysDeep, globToPostgresRegex, unsetDeep } from 'src/utils/misc.js';
 
 describe('getKeysDeep', () => {
   it('should handle an empty object', () => {
@@ -73,5 +73,29 @@ describe('globToPostgresRegex', () => {
 
   it.each(testCases)('should match %s against %s as %s', (glob, value, expected) => {
     expect(matches(glob, value)).toEqual(expected);
+  });
+});
+
+describe('getAlbumEmailLink', () => {
+  const albumId = '5283e99b-0028-44a4-84e1-9f2f892f0cbe';
+  const server = {
+    emailLinksViaMyImmich: true,
+    externalDomain: 'https://photos.example.com',
+    loginPageMessage: '',
+    publicUsers: true,
+  };
+
+  it('should link through my.immich.app with the instance URL when enabled', () => {
+    expect(getAlbumEmailLink(server, albumId)).toBe(
+      `https://my.immich.app/albums/${albumId}?instanceUrl=https%3A%2F%2Fphotos.example.com`,
+    );
+  });
+
+  it('should return undefined when disabled', () => {
+    expect(getAlbumEmailLink({ ...server, emailLinksViaMyImmich: false }, albumId)).toBeUndefined();
+  });
+
+  it('should return undefined when no external domain is set', () => {
+    expect(getAlbumEmailLink({ ...server, externalDomain: '' }, albumId)).toBeUndefined();
   });
 });

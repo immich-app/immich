@@ -216,6 +216,7 @@ The default configuration looks like this:
     "enabled": true
   },
   "server": {
+    "emailLinksViaMyImmich": false,
     "externalDomain": "",
     "loginPageMessage": "",
     "publicUsers": true

@@ -59,6 +59,7 @@ export interface WelcomeEmailProps extends BaseEmailProps {
 export interface AlbumInviteEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
+  albumUrl?: string;
   senderName: string;
   recipientName: string;
   cid?: string;
@@ -67,6 +68,7 @@ export interface AlbumInviteEmailProps extends BaseEmailProps {
 export interface AlbumUpdateEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
+  albumUrl?: string;
   recipientName: string;
   cid?: string;
 }

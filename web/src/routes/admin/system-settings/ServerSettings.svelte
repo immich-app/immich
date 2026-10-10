@@ -25,6 +25,13 @@
           isEdited={configToEdit.server.externalDomain !== config.server.externalDomain}
         />
 
+        <SettingSwitch
+          title={$t('admin.server_email_links_via_my_immich')}
+          subtitle={$t('admin.server_email_links_via_my_immich_description')}
+          disabled={disabled || !configToEdit.server.externalDomain}
+          bind:checked={configToEdit.server.emailLinksViaMyImmich}
+        />
+
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_welcome_message')}

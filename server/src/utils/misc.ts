@@ -52,6 +52,16 @@ export const getMethodNames = (instance: any) => {
 export const getExternalDomain = (server: SystemConfig['server'], defaultDomain = 'https://my.immich.app') =>
   server.externalDomain || defaultDomain;
 
+export const getAlbumEmailLink = (server: SystemConfig['server'], albumId: string): string | undefined => {
+  if (!server.emailLinksViaMyImmich || !server.externalDomain) {
+    return;
+  }
+
+  const url = new URL(`/albums/${albumId}`, 'https://my.immich.app');
+  url.searchParams.set('instanceUrl', server.externalDomain);
+  return url.href;
+};
+
 /**
  * @returns a list of strings representing the keys of the object in dot notation
  */

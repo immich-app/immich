@@ -26,7 +26,7 @@ import {
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getFilenameExtension } from 'src/utils/file.js';
-import { getExternalDomain } from 'src/utils/misc.js';
+import { getAlbumEmailLink, getExternalDomain } from 'src/utils/misc.js';
 import { isEqualObject } from 'src/utils/object.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
@@ -350,6 +350,7 @@ export class NotificationService extends BaseService {
       data: {
         baseUrl: getExternalDomain(server),
         albumId: album.id,
+        albumUrl: getAlbumEmailLink(server, album.id),
         albumName: album.albumName,
         senderName,
         recipientName: recipient.name,
@@ -407,6 +408,7 @@ export class NotificationService extends BaseService {
       data: {
         baseUrl: getExternalDomain(server),
         albumId: album.id,
+        albumUrl: getAlbumEmailLink(server, album.id),
         albumName: album.albumName,
         recipientName: user.name,
         cid: attachment ? attachment.cid : undefined,

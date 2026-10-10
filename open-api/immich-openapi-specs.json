@@ -19518,6 +19518,10 @@
       },
       "AdminConfigServerDto": {
         "properties": {
+          "emailLinksViaMyImmich": {
+            "description": "Open album links in emails through my.immich.app, so the mobile app opens them when installed",
+            "type": "boolean"
+          },
           "externalDomain": {
             "description": "External domain",
             "type": "string"
@@ -19532,6 +19536,7 @@
           }
         },
         "required": [
+          "emailLinksViaMyImmich",
           "externalDomain",
           "loginPageMessage",
           "publicUsers"

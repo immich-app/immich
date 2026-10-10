@@ -366,6 +366,8 @@ export type AdminConfigReverseGeocodingDto = {
     enabled: boolean;
 };
 export type AdminConfigServerDto = {
+    /** Open album links in emails through my.immich.app, so the mobile app opens them when installed */
+    emailLinksViaMyImmich: boolean;
     /** External domain */
     externalDomain: string;
     /** Login page message */

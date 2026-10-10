@@ -344,6 +344,8 @@
     "scanning_library": "Scanning library",
     "search_jobs": "Search jobs…",
     "send_welcome_email": "Send welcome email",
+    "server_email_links_via_my_immich": "Open album links from emails in the Immich app",
+    "server_email_links_via_my_immich_description": "Album links in invitation and update emails point to my.immich.app, which opens the Immich mobile app when it is installed and otherwise redirects to the external domain above. Requires an external domain to be set.",
     "server_external_domain_settings": "External domain",
     "server_external_domain_settings_description": "Domain used for external links",
     "server_public_users": "Public Users",
