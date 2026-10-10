@@ -83,3 +83,25 @@ title="Android backup options"
 Local albums containing assets from iCloud and marked for backup in Immich will be pulled from iCloud and temporarily stored in the app's cache folder. Once the hashing and uploading process is completed, the temporary files will be emptied.
 
 This process may consume additional data and storage space on your device, especially if you have a large number of iCloud photos and videos. Please ensure you have sufficient storage space and monitor your data usage if you are not connected to Wi-Fi.
+
+#### Automation for New Photos
+
+The iOS Camera app stores all new images and videos in a global Recents album, which can be quite large. If your external library already contains all or most of your photos, and you only want new images uploaded within seconds rather than minutes/hours, follow these steps to define an Immich-specific upload album using Apple's Shortcuts app:
+
+* In iOS Photos, create a blank album; e.g. `ForImmich`
+* In iOS Shortcuts, create a shortcut "Send Recent to Immich":
+  * search for built-in action `Find All Photos`
+  * add three filters: where Album is `Recents`, Date Taken `is today`, Album `is not` ForImmich
+  * sort by `Last Modified Date`
+  * order `Latest First`
+  * action `Save Photos` to `ForImmich`
+* From main Shortcuts screen, select Automation, then + to add new
+  * when App `Camera` is closed, run `Immediately`; press next
+  * search for `Send Recent to Immich` and save
+
+Then at top of the Immich iOS app's home screen, choose the cloud Backup icon and:
+
+* select Backup Album `ForImmich`; then
+* toggle `Enable Backup` button on
+
+Take a photo and switch to the Photos app to verify that it, along with any others you've taken today, appears in your new `ForImmich` album.
