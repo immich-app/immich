@@ -347,7 +347,7 @@
     "server_email_links_via_my_immich": "Open album links from emails in the Immich app",
     "server_email_links_via_my_immich_description": "Album links in invitation and update emails point to my.immich.app, which opens the Immich mobile app when it is installed and otherwise redirects to the external domain above. Requires an external domain to be set.",
     "server_external_domain_settings": "External domain",
-    "server_external_domain_settings_description": "Domain used for external links",
+    "server_external_domain_settings_description": "URL used for external links, including the protocol (e.g. https://photos.example.com)",
     "server_public_users": "Public Users",
     "server_public_users_description": "All users (name and email) are listed when adding a user to shared albums. When disabled, the user list will only be available to admin users.",
     "server_settings": "Server Settings",
