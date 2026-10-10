@@ -25,12 +25,14 @@
           isEdited={configToEdit.server.externalDomain !== config.server.externalDomain}
         />
 
-        <SettingSwitch
-          title={$t('admin.server_email_links_via_my_immich')}
-          subtitle={$t('admin.server_email_links_via_my_immich_description')}
-          disabled={disabled || !configToEdit.server.externalDomain}
-          bind:checked={configToEdit.server.emailLinksViaMyImmich}
-        />
+        <div class="mb-4">
+          <SettingSwitch
+            title={$t('admin.server_email_links_via_my_immich')}
+            subtitle={$t('admin.server_email_links_via_my_immich_description')}
+            disabled={disabled || !configToEdit.server.externalDomain}
+            bind:checked={configToEdit.server.emailLinksViaMyImmich}
+          />
+        </div>
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
