@@ -191,7 +191,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
     var status = _mapStatus(playbackInfo.status);
     if (playbackInfo.status == PlaybackStatus.stopped && state.status != VideoPlaybackStatus.completed) {
-      // Never played yet, not completed
+      // Never played yet, not completed = we show the resume button instead of the replay button
       status = VideoPlaybackStatus.paused;
     }
 
