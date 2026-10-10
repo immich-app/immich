@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/widgets/common/dropdown_search_menu.dart';
@@ -108,7 +109,7 @@ class _DateTimePicker extends HookWidget {
     }
 
     void popWithDateTime() {
-      final formattedDateTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date.value);
+      final formattedDateTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss", 'en').format(date.value);
       final dtWithOffset =
           formattedDateTime + Duration(milliseconds: tzOffset.value.offsetInMilliseconds).formatAsOffset();
       context.pop(dtWithOffset);
@@ -149,7 +150,10 @@ class _DateTimePicker extends HookWidget {
               1,
             ),
             trailing: Icon(Icons.edit_outlined, size: 18, color: context.primaryColor),
-            title: Text(DateFormat("dd-MM-yyyy hh:mm a").format(date.value), style: context.textTheme.bodyMedium),
+            title: Text(
+              DateFormat("dd-MM-yyyy hh:mm a", resolvedDateTimeLocale()).format(date.value),
+              style: context.textTheme.bodyMedium,
+            ),
             onTap: pickDate,
           ),
           const SizedBox(height: 24),
