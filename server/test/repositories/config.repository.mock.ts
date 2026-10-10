@@ -6,6 +6,7 @@ import { ConfigRepository, EnvData } from 'src/repositories/config.repository.js
 export const envData: EnvData = {
   port: 2283,
   environment: ImmichEnvironment.Production,
+  configOverrides: {},
   logFormat: LogFormat.Console,
 
   buildMetadata: {},

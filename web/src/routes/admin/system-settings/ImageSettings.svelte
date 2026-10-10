@@ -8,11 +8,9 @@
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
@@ -29,6 +27,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.thumbnail.format"
             bind:value={configToEdit.image.thumbnail.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -36,7 +35,6 @@
             ]}
             name="format"
             isEdited={configToEdit.image.thumbnail.format !== config.image.thumbnail.format}
-            {disabled}
             onSelect={(value) => {
               if (value === ImageFormat.Webp) {
                 configToEdit.image.thumbnail.progressive = false;
@@ -48,6 +46,7 @@
             label={$t('admin.image_resolution')}
             desc={$t('admin.image_resolution_description')}
             number
+            key="image.thumbnail.size"
             bind:value={configToEdit.image.thumbnail.size}
             options={[
               { value: 1080, text: '1080p' },
@@ -58,16 +57,15 @@
             ]}
             name="resolution"
             isEdited={configToEdit.image.thumbnail.size !== config.image.thumbnail.size}
-            {disabled}
           />
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_thumbnail_quality_description')}
+            key="image.thumbnail.quality"
             bind:value={configToEdit.image.thumbnail.quality}
             isEdited={configToEdit.image.thumbnail.quality !== config.image.thumbnail.quality}
-            {disabled}
           />
 
           <SettingSwitch
@@ -76,7 +74,8 @@
             checked={configToEdit.image.thumbnail.progressive}
             onToggle={(isChecked) => (configToEdit.image.thumbnail.progressive = isChecked)}
             isEdited={configToEdit.image.thumbnail.progressive !== config.image.thumbnail.progressive}
-            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Webp}
+            key="image.thumbnail.progressive"
+            disabled={configToEdit.image.thumbnail.format === ImageFormat.Webp}
           />
         </SettingAccordion>
 
@@ -88,6 +87,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.preview.format"
             bind:value={configToEdit.image.preview.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -95,7 +95,6 @@
             ]}
             name="format"
             isEdited={configToEdit.image.preview.format !== config.image.preview.format}
-            {disabled}
             onSelect={(value) => {
               if (value === ImageFormat.Webp) {
                 configToEdit.image.preview.progressive = false;
@@ -107,6 +106,7 @@
             label={$t('admin.image_resolution')}
             desc={$t('admin.image_resolution_description')}
             number
+            key="image.preview.size"
             bind:value={configToEdit.image.preview.size}
             options={[
               { value: 2160, text: '4K' },
@@ -116,16 +116,15 @@
             ]}
             name="resolution"
             isEdited={configToEdit.image.preview.size !== config.image.preview.size}
-            {disabled}
           />
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_preview_quality_description')}
+            key="image.preview.quality"
             bind:value={configToEdit.image.preview.quality}
             isEdited={configToEdit.image.preview.quality !== config.image.preview.quality}
-            {disabled}
           />
 
           <SettingSwitch
@@ -134,7 +133,8 @@
             checked={configToEdit.image.preview.progressive}
             onToggle={(isChecked) => (configToEdit.image.preview.progressive = isChecked)}
             isEdited={configToEdit.image.preview.progressive !== config.image.preview.progressive}
-            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Webp}
+            key="image.preview.progressive"
+            disabled={configToEdit.image.preview.format === ImageFormat.Webp}
           />
         </SettingAccordion>
 
@@ -149,7 +149,7 @@
             checked={configToEdit.image.fullsize.enabled}
             onToggle={(isChecked) => (configToEdit.image.fullsize.enabled = isChecked)}
             isEdited={configToEdit.image.fullsize.enabled !== config.image.fullsize.enabled}
-            {disabled}
+            key="image.fullsize.enabled"
           />
 
           <hr class="my-4" />
@@ -157,6 +157,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.fullsize.format"
             bind:value={configToEdit.image.fullsize.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -164,7 +165,7 @@
             ]}
             name="format"
             isEdited={configToEdit.image.fullsize.format !== config.image.fullsize.format}
-            disabled={disabled || !configToEdit.image.fullsize.enabled}
+            disabled={!configToEdit.image.fullsize.enabled}
             onSelect={(value) => {
               if (value === ImageFormat.Webp) {
                 configToEdit.image.fullsize.progressive = false;
@@ -176,9 +177,10 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_fullsize_quality_description')}
+            key="image.fullsize.quality"
             bind:value={configToEdit.image.fullsize.quality}
             isEdited={configToEdit.image.fullsize.quality !== config.image.fullsize.quality}
-            disabled={disabled || !configToEdit.image.fullsize.enabled}
+            disabled={!configToEdit.image.fullsize.enabled}
           />
 
           <SettingSwitch
@@ -187,9 +189,8 @@
             checked={configToEdit.image.fullsize.progressive}
             onToggle={(isChecked) => (configToEdit.image.fullsize.progressive = isChecked)}
             isEdited={configToEdit.image.fullsize.progressive !== config.image.fullsize.progressive}
-            disabled={disabled ||
-              !configToEdit.image.fullsize.enabled ||
-              configToEdit.image.fullsize.format === ImageFormat.Webp}
+            key="image.fullsize.progressive"
+            disabled={!configToEdit.image.fullsize.enabled || configToEdit.image.fullsize.format === ImageFormat.Webp}
           />
         </SettingAccordion>
 
@@ -200,7 +201,7 @@
             checked={configToEdit.image.colorspace === Colorspace.P3}
             onToggle={(isChecked) => (configToEdit.image.colorspace = isChecked ? Colorspace.P3 : Colorspace.Srgb)}
             isEdited={configToEdit.image.colorspace !== config.image.colorspace}
-            {disabled}
+            key="image.colorspace"
           />
         </div>
 
@@ -211,13 +212,13 @@
             checked={configToEdit.image.extractEmbedded}
             onToggle={() => (configToEdit.image.extractEmbedded = !configToEdit.image.extractEmbedded)}
             isEdited={configToEdit.image.extractEmbedded !== config.image.extractEmbedded}
-            {disabled}
+            key="image.extractEmbedded"
           />
         </div>
       </div>
 
       <div class="ms-4 mt-4">
-        <SettingButtonsRow bind:configToEdit keys={['image']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['image']} />
       </div>
     </form>
   </div>

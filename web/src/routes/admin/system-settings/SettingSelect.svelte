@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import { systemConfigManager, type ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiChevronDown } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -12,6 +14,7 @@
     desc?: string;
     name?: string;
     isEdited?: boolean;
+    key?: ConfigKey;
     number?: boolean;
     disabled?: boolean;
     onSelect?: (setting: string | number) => void;
@@ -24,6 +27,7 @@
     desc = '',
     name = '',
     isEdited = false,
+    key,
     number = false,
     disabled = false,
     onSelect = () => {},
@@ -36,6 +40,9 @@
     }
     onSelect(value);
   };
+
+  const field = $derived(key ? systemConfigManager.getField(key) : undefined);
+  const isDisabled = $derived(disabled || field?.isEditable === false);
 </script>
 
 <div class="mb-4 w-full">
@@ -63,13 +70,13 @@
       icon={mdiChevronDown}
       size="1.2em"
       aria-hidden
-      class="pointer-events-none relative inset-e-1 col-start-1 row-start-1 self-center justify-self-end {disabled
+      class="pointer-events-none relative inset-e-1 col-start-1 row-start-1 self-center justify-self-end {isDisabled
         ? 'text-immich-bg'
         : 'text-immich-fg dark:text-immich-bg'}"
     />
     <select
       class="col-start-1 row-start-1 immich-form-input w-full appearance-none pe-6!"
-      {disabled}
+      disabled={isDisabled}
       aria-describedby={desc ? `${name}-desc` : undefined}
       {name}
       id="{name}-select"
@@ -81,4 +88,5 @@
       {/each}
     </select>
   </div>
+  <SettingSourceHint {key} />
 </div>
