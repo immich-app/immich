@@ -7,9 +7,10 @@
   import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { Route } from '$lib/route';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '$lib/utils';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
   import { ImageCarousel } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -17,6 +18,8 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import Portal from '$lib/elements/Portal.svelte';
+  import { SvelteMap } from 'svelte/reactivity';
+  import { fade } from 'svelte/transition';
 
   interface Props {
     data: PageData;
@@ -33,7 +36,11 @@
   let recents = $derived(
     getFieldItems(data.explore, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
   );
-  let people = $state(data.people.people);
+
+  // Because the memory viewer previous/next button uses the memoryManager's list
+  // We call it here to ensure the memoryManager has applied the user's preferences before rendering memories.
+  handlePromiseError(memoryManager.applyPreferences());
+
   let memories = $derived(
     data.memories.map((memory) => ({
       id: memory.id,
@@ -45,14 +52,15 @@
     })),
   );
 
-  let hasPeople = $derived(data.people.total > 0);
+  let needFadeInTransition = $state(false);
+  const markNeedFadeInTrasition = () => {
+    const timer = setTimeout(() => (needFadeInTransition = true), 50);
+    return () => clearTimeout(timer);
+  };
 
+  const thumbnailUpdatedAt = new SvelteMap<string, string>();
   const onPersonThumbnailReady = ({ id }: { id: string }) => {
-    for (const person of people) {
-      if (person.id === id) {
-        person.updatedAt = new Date().toISOString();
-      }
-    }
+    thumbnailUpdatedAt.set(id, new Date().toISOString());
   };
 
   const onViewAsset = async (id: string) => {
@@ -67,38 +75,62 @@
 
 <OnEvents {onPersonThumbnailReady} />
 
+{#snippet peopleHeader()}
+  <div class="flex justify-between">
+    <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('people')}</p>
+    <a
+      href={Route.people()}
+      class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+      draggable="false">{$t('view_all')}</a
+    >
+  </div>
+{/snippet}
+
 <UserPageLayout title={data.meta.title}>
-  {#if hasPeople}
-    <div class="mt-2 mb-6">
-      <div class="flex justify-between">
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('people')}</p>
-        <a
-          href={Route.people()}
-          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
-        >
-      </div>
+  {#await data.peoplePromise}
+    <div class="mt-2 mb-6" aria-busy="true" {@attach markNeedFadeInTrasition}>
+      {@render peopleHeader()}
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
-          {#each people.slice(0, itemCount) as person (person.id)}
-            <a href={Route.viewPerson(person)} class="text-center">
-              <div class="@container relative">
-                <ImageThumbnail
-                  circle
-                  shadow
-                  url={getPeopleThumbnailUrl(person)}
-                  altText={person.name}
-                  widthStyle="100%"
-                />
-                <PersonIndicator {person} />
-              </div>
-              <p class="mt-2 text-sm font-medium text-ellipsis dark:text-white">{person.name}</p>
-            </a>
+          {#each { length: itemCount }, index (index)}
+            <div class="animate-pulse">
+              <div class="aspect-square w-full rounded-full bg-subtle"></div>
+              <div class="mx-auto mt-2.5 mb-0.5 h-4 w-2/3 rounded-sm bg-subtle"></div>
+            </div>
           {/each}
         {/snippet}
       </SingleGridRow>
     </div>
-  {/if}
+  {:then { people, total }}
+    {#if total > 0}
+      <div class="mt-2 mb-6">
+        {@render peopleHeader()}
+        <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
+          {#snippet children({ itemCount })}
+            {#each people.slice(0, itemCount) as person (person.id)}
+              <a
+                href={Route.viewPerson(person)}
+                class="text-center"
+                in:fade={{ duration: needFadeInTransition ? 250 : 0 }}
+              >
+                <div class="@container relative">
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={getPeopleThumbnailUrl(person, thumbnailUpdatedAt.get(person.id))}
+                    altText={person.name}
+                    widthStyle="100%"
+                  />
+                  <PersonIndicator {person} />
+                </div>
+                <p class="mt-2 text-sm font-medium text-ellipsis dark:text-white">{person.name}</p>
+              </a>
+            {/each}
+          {/snippet}
+        </SingleGridRow>
+      </div>
+    {/if}
+  {/await}
 
   {#if places.length > 0}
     <div class="mt-2 mb-6">
@@ -180,8 +212,12 @@
     </div>
   {/if}
 
-  {#if !hasPeople && places.length === 0 && recents.length === 0}
-    <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />
+  {#if places.length === 0 && recents.length === 0}
+    {#await data.peoplePromise then { total }}
+      {#if total === 0}
+        <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />
+      {/if}
+    {/await}
   {/if}
 </UserPageLayout>
 

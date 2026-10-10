@@ -43,7 +43,9 @@
   <NavbarItem title={$t('photos')} href={Route.photos()} icon={mdiImageMultipleOutline} activeIcon={mdiImageMultiple} />
 
   {#if featureFlagsManager.value.search}
-    <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />
+    <div data-sveltekit-preload-data="hover">
+      <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />
+    </div>
   {/if}
 
   {#if featureFlagsManager.value.map}
@@ -55,7 +57,9 @@
   {/if}
 
   {#if authManager.preferences.people.enabled && authManager.preferences.people.sidebarWeb}
-    <NavbarItem title={$t('people')} href={Route.people()} icon={mdiAccountOutline} activeIcon={mdiAccount} />
+    <div data-sveltekit-preload-data="hover">
+      <NavbarItem title={$t('people')} href={Route.people()} icon={mdiAccountOutline} activeIcon={mdiAccount} />
+    </div>
   {/if}
 
   {#if authManager.preferences.sharedLinks.enabled && authManager.preferences.sharedLinks.sidebarWeb}
