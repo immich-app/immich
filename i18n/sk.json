@@ -1401,6 +1401,7 @@
   "manage_media_access_title": "Prístup k správe médií",
   "manage_oauth_account": "Spravovať OAuth účet",
   "manage_people": "Spravovať ľudí",
+  "manage_people_access_description_v2": "Udeľte ostatným používateľom prístup k {count, plural, one {tejto osobe} other {vašim ľuďom}}, čím im umožníte, aby ich mohli zobraziť alebo spravovať vo vašom mene. Táto akcia nespôsobuje zdieľanie žiadnych položiek.",
   "manage_person_access": "Spravovať prístup",
   "manage_sharing_with_other_users": "Spravovať zdieľania s ostatnými používateľmi",
   "manage_sharing_with_partners": "Spravovať zdieľanie s partnermi",

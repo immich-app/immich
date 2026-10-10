@@ -1401,6 +1401,7 @@
   "manage_media_access_title": "Médiakezelés hozzáférés",
   "manage_oauth_account": "OAuth-fiók kezelése",
   "manage_people": "Személyek kezelése",
+  "manage_people_access_description_v2": "Más felhasználók számára hozzáférés biztosítása {count, plural, one {ehhez a személyhez} other {a személyeidhez}}, lehetővé téve számukra, hogy a nevedben megtekintsék vagy kezeljék őket. Ez a művelet nem oszt meg semmilyen médiatartalmat.",
   "manage_person_access": "Hozzáférés kezelése",
   "manage_sharing_with_other_users": "Más felhasználókkal való megosztások kezelése",
   "manage_sharing_with_partners": "Partnerekkel való megosztás kezelése",

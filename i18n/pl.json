@@ -1401,6 +1401,7 @@
   "manage_media_access_title": "Dostęp do zarządzania mediami",
   "manage_oauth_account": "Zarządzaj kontem OAuth",
   "manage_people": "Zarządzaj osobami",
+  "manage_people_access_description_v2": "Przyznaj innym użytkownikom dostęp do {count, plural, one {tej osoby} other {twoich osób}}, umożliwiając im przeglądanie lub zarządzanie {count, plural, one {nią} other {nimi}} w Twoim imieniu. Ta czynność nie powoduje udostępnienia żadnych zasobów.",
   "manage_person_access": "Zarządzaj dostępem",
   "manage_sharing_with_other_users": "Zarządzaj udostępnianiem innym użytkownikom",
   "manage_sharing_with_partners": "Zarządzaj dzieleniem z partnerami",

@@ -1401,6 +1401,7 @@
   "manage_media_access_title": "Dostop do upravljanja medijev",
   "manage_oauth_account": "Upravljanje računa OAuth",
   "manage_people": "Upravljanje ljudi",
+  "manage_people_access_description_v2": "Omogočite drugim uporabnikom dostop do {count, plural, one {te osebe} other {vaših oseb}}, kar jim omogoča ogled ali upravljanje teh podatkov v vašem imenu. To dejanje ne deli nobenih sredstev.",
   "manage_person_access": "Upravljanje dostopa",
   "manage_sharing_with_other_users": "Upravljanje deljenja z drugimi uporabniki",
   "manage_sharing_with_partners": "Upravljajte skupno rabo s partnerji",
