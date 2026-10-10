@@ -3,60 +3,20 @@
 
   import PurchaseContent from '$lib/components/shared-components/purchasing/PurchaseContent.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import { dateFormats } from '$lib/constants';
+  import { dateFormats, ImmichProduct } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { licenseManager } from '$lib/managers/license-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
-  import {
-    deleteUserLicense as deleteIndividualProductKey,
-    deleteServerLicense as deleteServerProductKey,
-    getAboutInfo,
-    getMyUser,
-    getServerLicense,
-    isHttpError,
-    type LicenseResponseDto,
-  } from '@immich/sdk';
   import { Button, Icon, modalManager } from '@immich/ui';
   import { mdiKey } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { copyToClipboard, handlePromiseError } from '$lib/utils';
   import { t } from 'svelte-i18n';
 
-  let isServerProduct = $state(false);
-  let serverPurchaseInfo: LicenseResponseDto | null = $state(null);
+  const license = $derived(licenseManager.license);
 
-  const checkPurchaseInfo = async () => {
-    const serverInfo = await getAboutInfo();
-    isServerProduct = serverInfo.licensed;
-
-    const response = await getMyUser();
-    if (response.license) {
-      authManager.setUser(response);
-    }
-
-    if (isServerProduct && authManager.user.isAdmin) {
-      serverPurchaseInfo = await getServerPurchaseInfo();
-    }
-  };
-
-  const getServerPurchaseInfo = async () => {
-    try {
-      return await getServerLicense();
-    } catch (error) {
-      if (isHttpError(error) && error.status === 404) {
-        return null;
-      }
-      throw error;
-    }
-  };
-
-  onMount(async () => {
-    if (!authManager.isPurchased) {
-      return;
-    }
-
-    await checkPurchaseInfo();
-  });
+  $effect.pre(() => handlePromiseError(licenseManager.load()));
 
   const removeIndividualProductKey = async () => {
     try {
@@ -70,8 +30,7 @@
         return;
       }
 
-      await deleteIndividualProductKey();
-      authManager.isPurchased = false;
+      await licenseManager.removeUserLicense();
     } catch (error) {
       handleError(error, $t('errors.failed_to_remove_product_key'));
     }
@@ -89,22 +48,16 @@
         return;
       }
 
-      await deleteServerProductKey();
-      authManager.isPurchased = false;
+      await licenseManager.removeServerLicense();
     } catch (error) {
       handleError(error, $t('errors.failed_to_remove_product_key'));
     }
-  };
-
-  const onProductActivated = async () => {
-    authManager.isPurchased = true;
-    await checkPurchaseInfo();
   };
 </script>
 
 <section class="my-4">
   <div class="sm:ms-8" in:fade={{ duration: 500 }}>
-    {#if authManager.isPurchased}
+    {#if license}
       <!-- BADGE TOGGLE -->
       <div class="mb-4">
         <SettingSwitch
@@ -116,7 +69,7 @@
       </div>
 
       <!-- PRODUCT KEY INFO CARD -->
-      {#if isServerProduct}
+      {#if license.type === ImmichProduct.Server}
         <div
           class="flex place-content-center gap-4 rounded-xl border border-immich-dark-primary/20 bg-gray-50 p-6 pe-12 dark:bg-immich-dark-primary/15"
         >
@@ -127,11 +80,11 @@
               {$t('purchase_server_title')}
             </p>
 
-            {#if authManager.user.isAdmin && serverPurchaseInfo?.activatedAt}
+            {#if license.activatedAt}
               <p class="col-start-2 mt-1 text-sm dark:text-white">
                 {$t('purchase_activated_time', {
                   values: {
-                    date: new Date(serverPurchaseInfo.activatedAt).toLocaleString($locale, dateFormats.settings),
+                    date: new Date(license.activatedAt).toLocaleString($locale, dateFormats.settings),
                   },
                 })}
               </p>
@@ -158,11 +111,11 @@
             <p class="text-lg font-semibold text-primary">
               {$t('purchase_individual_title')}
             </p>
-            {#if authManager.user.license?.activatedAt}
+            {#if license.activatedAt}
               <p class="col-start-2 mt-1 text-sm dark:text-white">
                 {$t('purchase_activated_time', {
                   values: {
-                    date: new Date(authManager.user.license?.activatedAt).toLocaleString($locale, dateFormats.settings),
+                    date: new Date(license.activatedAt).toLocaleString($locale, dateFormats.settings),
                   },
                 })}
               </p>
@@ -170,14 +123,20 @@
           </div>
         </div>
 
-        <div class="mt-4 text-right">
+        <div class="mt-4 flex justify-between text-right">
           <Button shape="round" size="small" color="danger" onclick={removeIndividualProductKey}
             >{$t('purchase_button_remove_key')}</Button
           >
+          {#if license.licenseKey}
+            {@const licenseKey = license.licenseKey}
+            <Button shape="round" size="small" onclick={() => copyToClipboard(licenseKey)}>
+              {$t('copy_to_clipboard')}
+            </Button>
+          {/if}
         </div>
       {/if}
     {:else}
-      <PurchaseContent onActivate={onProductActivated} showTitle={false} />
+      <PurchaseContent showTitle={false} />
     {/if}
   </div>
 </section>
