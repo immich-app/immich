@@ -104,7 +104,7 @@
     "postgres": "3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-email": "^5.0.0",
+    "react-email": "^6.0.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
