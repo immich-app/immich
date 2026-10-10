@@ -15,6 +15,7 @@
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
+  import { toggleFavoriteAssets } from '$lib/services/asset.service';
   import { handleStack } from '$lib/services/stack.service';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
@@ -62,6 +63,14 @@
   const onStackAssets = async () => {
     await handleStack(assetInteraction.assets.map((asset) => asset.id));
     onEscape?.();
+  };
+
+  const toggleFavoriteSelected = async () => {
+    const allAssets = assetInteraction.ownedAssets;
+    const isFavorite = allAssets.some((a) => !a.isFavorite);
+    const assetsToUpdate = allAssets.filter((asset) => asset.isFavorite !== isFavorite);
+    await toggleFavoriteAssets(assetsToUpdate, isFavorite);
+    assetInteraction.clear();
   };
 
   const toggleArchive = async () => {
@@ -136,6 +145,7 @@
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
         { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+        { shortcut: { key: 'f' }, onShortcut: () => toggleFavoriteSelected() },
       );
     } else {
       // conflicting shortcuts
