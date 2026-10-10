@@ -57,6 +57,7 @@
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
   let searchResultAssets: AssetResponseDto[] = $state([]);
   let isLoading = $state(true);
+  let searchId = 0;
   let scrollY = $state(0);
   let scrollYHistory = 0;
 
@@ -118,6 +119,7 @@
   };
 
   async function onSearchQueryUpdate() {
+    searchId++;
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
@@ -131,6 +133,7 @@
     }
     isLoading = true;
 
+    const currentSearchId = searchId;
     const searchDto: SearchTerms = {
       page: nextPage,
       withExif: true,
@@ -145,6 +148,11 @@
             })
           : await searchAssets({ metadataSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto } });
 
+      // the search changed while this request was in flight
+      if (currentSearchId !== searchId) {
+        return;
+      }
+
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
 
@@ -152,7 +160,9 @@
     } catch (error) {
       handleError(error, $t('loading_search_results_failed'));
     } finally {
-      isLoading = false;
+      if (currentSearchId === searchId) {
+        isLoading = false;
+      }
     }
   };
 
