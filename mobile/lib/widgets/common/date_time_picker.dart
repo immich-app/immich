@@ -181,6 +181,7 @@ abstract class _TimeZoneOffset with _$TimeZoneOffset implements Comparable<_Time
 
   @override
   int compareTo(_TimeZoneOffset other) {
-    return offsetInMilliseconds.compareTo(other.offsetInMilliseconds);
+    final offset = offsetInMilliseconds.compareTo(other.offsetInMilliseconds);
+    return offset != 0 ? offset : location.name.compareTo(other.location.name);
   }
 }
