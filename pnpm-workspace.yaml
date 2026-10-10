@@ -14,6 +14,7 @@ allowBuilds:
   '@scarf/scarf': false
   '@swc/core': false
   bcrypt: true
+  better-sqlite3: true
   canvas: false
   core-js: false
   cpu-features: false
@@ -28,47 +29,48 @@ allowBuilds:
   core-js-pure: false
   postman-code-generators: false
   unrs-resolver: false
+dedupePeerDependents: false
+injectWorkspacePackages: true
 overrides:
   canvas: 3.2.3
   sharp: ^0.35.3
   # 1.9.3-1.9.5 are confirmed broken
   tsc-alias: 1.9.2
 packageExtensions:
-  nestjs-kysely:
+  '@immich/ui':
     dependencies:
-      tslib: '*'
-  nestjs-otel:
-    dependencies:
-      tslib: '*'
+      tailwindcss: '>=4.1'
+  '@nestjs/swagger':
+    peerDependencies:
+      typescript: '*'
   '@photo-sphere-viewer/equirectangular-video-adapter':
     dependencies:
       three: '*'
   '@photo-sphere-viewer/video-plugin':
     dependencies:
       three: '*'
-  sharp:
-    dependencies:
-      node-addon-api: '*'
-      node-gyp: '*'
-  '@immich/ui':
-    dependencies:
-      tailwindcss: '>=4.1'
-  tailwind-variants:
-    dependencies:
-      tailwindcss: '>=4.1'
   bcrypt:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
-  '@nestjs/swagger':
-    peerDependencies:
-      typescript: '*'
-dedupePeerDependents: false
+  nestjs-kysely:
+    dependencies:
+      tslib: '*'
+  nestjs-otel:
+    dependencies:
+      tslib: '*'
+  sharp:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  tailwind-variants:
+    dependencies:
+      tailwindcss: '>=4.1'
 preferWorkspacePackages: true
-injectWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
   - '@immich/ui'
   - '@immich/sql-tools@0.6.3'
   - '@nestjs/cli@12.0.1'
+  - '@futo-org/*'
