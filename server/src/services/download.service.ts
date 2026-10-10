@@ -13,6 +13,7 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
+import { getContentDisposition } from 'src/utils/file.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
@@ -126,7 +127,7 @@ export class DownloadService extends BaseService {
 
     return {
       stream: zip.stream,
-      disposition: dto.archiveName && `attachment; filename*=UTF-8''${encodeURIComponent(dto.archiveName)}.zip`,
+      disposition: dto.archiveName && getContentDisposition('attachment', `${dto.archiveName}.zip`),
     };
   }
 }

@@ -24,6 +24,18 @@ export function getLivePhotoMotionFilename(stillName: string, motionName: string
   return getFileNameWithoutExtension(stillName) + getFilenameExtension(motionName);
 }
 
+const rfc8187Escapes: Record<string, string> = { "'": '%27', '(': '%28', ')': '%29', '*': '%2A' };
+
+/**
+ * Builds a Content-Disposition header value with an RFC 8187 encoded `filename*` parameter.
+ * `encodeURIComponent` leaves `' ( ) *` unescaped, but they are not valid `attr-char`s
+ * (`'` is the charset/language delimiter), and Chromium discards the filename when it sees one.
+ */
+export function getContentDisposition(type: 'attachment' | 'inline', fileName: string) {
+  const encoded = encodeURIComponent(fileName).replaceAll(/['()*]/g, (char) => rfc8187Escapes[char]);
+  return `${type}; filename*=UTF-8''${encoded}`;
+}
+
 export class ImmichFileResponse {
   public readonly path!: string;
   public readonly contentType!: string;
@@ -67,7 +79,7 @@ export const sendFile = async (
 
     res.header('Content-Type', file.contentType);
     if (file.fileName) {
-      res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
+      res.header('Content-Disposition', getContentDisposition('inline', file.fileName));
     }
 
     return await _sendFile(file.path, { dotfiles: 'allow' });

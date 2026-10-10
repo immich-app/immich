@@ -98,6 +98,26 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, asset2.originalPath, asset2.originalFileName);
     });
 
+    it('should escape apostrophes in the archive name so the filename survives strict parsers', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(
+        sut.downloadArchive(authStub.admin, { assetIds: [asset.id], archiveName: "Sam's birthday" }),
+      ).resolves.toEqual({
+        stream: archiveMock.stream,
+        disposition: "attachment; filename*=UTF-8''Sam%27s%20birthday.zip",
+      });
+    });
+
     it('should handle duplicate file names', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
