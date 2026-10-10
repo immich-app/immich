@@ -189,10 +189,21 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
       return;
     }
 
+    var status = _mapStatus(playbackInfo.status);
+    if (playbackInfo.status == PlaybackStatus.stopped && state.status != VideoPlaybackStatus.completed) {
+      // Never played yet, not completed
+      status = VideoPlaybackStatus.paused;
+    }
+
+    if (status != VideoPlaybackStatus.playing) {
+      // No playback = no loading indicator needed
+      _bufferingTimer?.cancel();
+    }
+
     state = state.copyWith(
       position: Duration(milliseconds: playbackInfo.position),
       duration: Duration(milliseconds: videoInfo.duration),
-      status: _mapStatus(playbackInfo.status),
+      status: status,
     );
   }
 
