@@ -168,10 +168,10 @@ where
 select
   "album_asset"."albumId" as "albumId",
   min(
-    ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date
+    ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)
   ) as "startDate",
   max(
-    ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date
+    ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)
   ) as "endDate",
   max("asset"."updatedAt") as "lastModifiedAssetTimestamp",
   count("asset"."id")::int as "assetCount"
