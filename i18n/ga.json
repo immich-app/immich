@@ -1401,6 +1401,7 @@
   "manage_media_access_title": "Rochtain Bainistíochta Meán",
   "manage_oauth_account": "Bainistigh Cuntas OAuth",
   "manage_people": "Daoine a bhainistiú",
+  "manage_people_access_description_v2": "Tabhair rochtain d’úsáideoirí eile ar {count, plural, one {an duine seo} other {do dhaoine}}, ionas gur féidir leo iad a fheiceáil nó a bhainistiú thar do cheann. Ní roinntear aon sócmhainní leis an ngníomh seo.",
   "manage_person_access": "Bainistigh rochtain",
   "manage_sharing_with_other_users": "Bainistigh comhroinnt le húsáideoirí eile",
   "manage_sharing_with_partners": "Bainistigh comhroinnt le comhpháirtithe",

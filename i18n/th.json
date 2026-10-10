@@ -663,6 +663,7 @@
   "birthdate_set_description": "วันเกิดจะใช้เพื่อคำนวณอายุของบุคคลนี้ในขณะที่ถ่ายรูป",
   "birthday_memory_age": "วันเกิดครบรอบ {age, selectordinal, one {#} two {#} few {#} other {#}} ปี",
   "birthday_memory_title": "วันเกิดของ {name}",
+  "birthday_memory_title_with_age": "วันเกิดของ {name} · อายุ {age, plural, one {#} other {#}} ปี",
   "blurred_background": "พื้นหลังแบบเบลอ",
   "browse_templates": "ค้นหาเท็มเพลต",
   "bugs_and_feature_requests": "รายงานข้อผิดพลาดและข้อเสนอแนะ",

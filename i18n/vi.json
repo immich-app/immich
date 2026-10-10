@@ -1401,6 +1401,7 @@
   "manage_media_access_title": "Quản lý media",
   "manage_oauth_account": "Quản lý tài khoản OAuth",
   "manage_people": "Quản lý người",
+  "manage_people_access_description_v2": "Cho phép người dùng khác truy cập {count, plural, one {người này} other {người khác của bạn}}, cho phép họ xem hoặc quản lý người thay mặt bạn. Hành động này không chia sẻ bất kỳ tài nguyên nào.",
   "manage_person_access": "Quản lý truy cập",
   "manage_sharing_with_other_users": "Quản lý chia sẻ với người dùng khác",
   "manage_sharing_with_partners": "Quản lý chia sẻ với người thân",

@@ -1401,6 +1401,7 @@
   "manage_media_access_title": "Üksuste haldamise ligipääs",
   "manage_oauth_account": "Halda OAuth kontot",
   "manage_people": "Halda isikuid",
+  "manage_people_access_description_v2": "Anna teistele kasutajatele ligipääs {count, plural, one {sellele isikule} other {oma isikutele}}, lubades neil andmeid vaadata ja sinu nimel hallata. See tegevus ei jaga üksuseid.",
   "manage_person_access": "Halda ligipääsu",
   "manage_sharing_with_other_users": "Halda teiste kasutajatega jagamist",
   "manage_sharing_with_partners": "Halda partneritega jagamist",
