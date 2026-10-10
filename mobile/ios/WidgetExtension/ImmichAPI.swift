@@ -227,7 +227,7 @@ class ImmichAPI {
     return try JSONDecoder().decode([MemoryResult].self, from: data)
   }
 
-  func fetchImage(asset: Asset) async throws(FetchError) -> UIImage {
+  func fetchImage(asset: Asset, targetSize: CGSize? = nil) async throws(FetchError) -> UIImage {
     let thumbnailParams = [URLQueryItem(name: "size", value: "preview"), URLQueryItem(name: "edited", value: "true")]
     let assetEndpoint = "/assets/" + asset.id + "/thumbnail"
 
@@ -245,10 +245,19 @@ class ImmichAPI {
     else {
       throw .invalidURL
     }
+    var maxPixelSize = 512
+
+    if let targetSize,
+      let props = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any],
+      let width = props[kCGImagePropertyPixelWidth] as? Int,
+      let height = props[kCGImagePropertyPixelHeight] as? Int {
+      let scale = max(targetSize.width / CGFloat(width), targetSize.height / CGFloat(height))
+      maxPixelSize = Int(ceil(CGFloat(max(width, height)) * scale))
+    }
 
     let decodeOptions: [NSString: Any] = [
       kCGImageSourceCreateThumbnailFromImageAlways: true,
-      kCGImageSourceThumbnailMaxPixelSize: 512,
+      kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
       kCGImageSourceCreateThumbnailWithTransform: true,
     ]
 
@@ -260,6 +269,17 @@ class ImmichAPI {
       )
     else {
       throw .fetchFailed
+    }
+
+    if let targetSize {
+      let ratio = targetSize.width / targetSize.height
+      let cropWidth = min(CGFloat(thumbnail.width), CGFloat(thumbnail.height) * ratio)
+      let cropHeight = min(CGFloat(thumbnail.height), CGFloat(thumbnail.width) / ratio)
+      let x = (CGFloat(thumbnail.width) - cropWidth) / 2
+      let y = (CGFloat(thumbnail.height) - cropHeight) / 2
+      if let cropped = thumbnail.cropping(to: CGRect(x: x, y: y, width: cropWidth, height: cropHeight)) {
+        return UIImage(cgImage: cropped)
+      }
     }
 
     return UIImage(cgImage: thumbnail)
