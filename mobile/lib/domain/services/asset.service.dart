@@ -210,6 +210,7 @@ class AssetService {
     } finally {
       // the upload went through even when the stack call did not, so this version is the new base
       await _localRepository.updatePreviousChecksum(localId, uploadedChecksum);
+      await _localRepository.updateHashes({localId: uploadedChecksum});
     }
   }
 }
