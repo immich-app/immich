@@ -8,6 +8,7 @@ import {
   removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
+  updateAssets,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -25,6 +26,7 @@ import {
   mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
+  mdiHeartMinusOutline,
   mdiHeartOutline,
   mdiImageRefreshOutline,
   mdiImageRemoveOutline,
@@ -83,6 +85,22 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds }),
   };
 
+  const Favorite: ActionItem = {
+    title: $t('to_favorite'),
+    icon: mdiHeartOutline,
+    $if: () => !assetMultiSelectManager.isAllFavorite,
+    onAction: async () => {
+      if (
+        await handleFavorite(
+          ownedAssets.filter((asset) => !asset.isFavorite).map(({ id }) => id),
+          true,
+        )
+      ) {
+        assetMultiSelectManager.clear();
+      }
+    },
+  };
+
   const RemoveFromAlbum: ActionItem = {
     title: $t('remove_from_album'),
     icon: mdiImageRemoveOutline,
@@ -101,6 +119,22 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
       }
     },
     shortcuts: { key: 't' },
+  };
+
+  const Unfavorite: ActionItem = {
+    title: $t('remove_from_favorites'),
+    icon: mdiHeartMinusOutline,
+    $if: () => assetMultiSelectManager.isAllFavorite,
+    onAction: async () => {
+      if (
+        await handleFavorite(
+          ownedAssets.map((asset) => asset.id),
+          false,
+        )
+      ) {
+        assetMultiSelectManager.clear();
+      }
+    },
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -131,8 +165,10 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
   return {
     AddToAlbum,
     CreateSharedLink,
+    Favorite,
     RemoveFromAlbum,
     Tag,
+    Unfavorite,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -207,7 +243,7 @@ export const getAssetActions = (
     title: $t('to_favorite'),
     icon: mdiHeartOutline,
     $if: () => isOwner && !asset.isFavorite,
-    onAction: () => handleFavorite(asset),
+    onAction: () => handleFavorite([asset.id], true),
     shortcuts: [{ key: 'f' }],
   };
 
@@ -215,7 +251,7 @@ export const getAssetActions = (
     title: $t('unfavorite'),
     icon: mdiHeart,
     $if: () => isOwner && asset.isFavorite,
-    onAction: () => handleUnfavorite(asset),
+    onAction: () => handleFavorite([asset.id], false),
     shortcuts: [{ key: 'f' }],
   };
 
@@ -440,28 +476,22 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   }
 };
 
-const handleFavorite = async (asset: AssetResponseDto) => {
+const handleFavorite = async (assetIds: string[], isFavorite: boolean) => {
   const $t = await getFormatter();
 
   try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.primary($t('added_to_favorites'));
-    eventManager.emit('AssetUpdate', response);
+    await updateAssets({ assetBulkUpdateDto: { ids: assetIds, isFavorite } });
+    if (isFavorite) {
+      toastManager.primary($t('added_to_favorites', { values: { count: assetIds.length } }));
+    } else {
+      toastManager.primary($t('removed_from_favorites', { values: { count: assetIds.length } }));
+    }
+    // (the server emits AssetUpdate when successful)
   } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
+    return false;
   }
-};
-
-const handleUnfavorite = async (asset: AssetResponseDto) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.primary($t('removed_from_favorites'));
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
-  }
+  return true;
 };
 
 const handleRate = async (asset: AssetResponseDto, rating: number) => {
