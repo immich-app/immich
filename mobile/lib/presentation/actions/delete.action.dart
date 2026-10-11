@@ -123,7 +123,11 @@ class DeleteAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final message = context.t.trash_action_prompt(count: remoteIds.length);
     if (localIds.isNotEmpty) {
-      await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
+      final deletedCount = await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
+      // Zero means the user declined the device prompt (iOS "Don't Allow"), so leave the server copy alone too.
+      if (deletedCount <= 0) {
+        return null;
+      }
     }
 
     await assetService.trash(remoteIds);
