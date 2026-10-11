@@ -204,7 +204,7 @@ class AssetService {
     try {
       // previous_checksum still points at the version the server had before this upload
       final previousId = await _localRepository.getPreviousRemoteId(localId);
-      if (previousId != null) {
+      if (previousId != null && previousId != remoteId) {
         await _apiRepository.stack([remoteId, previousId]);
       }
     } finally {

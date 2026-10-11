@@ -1,25 +1,23 @@
 import asyncio
+from collections.abc import Hashable
 from typing import Any
 
 from immich_ml import allocator
-from immich_ml.models import get_model_class
-from immich_ml.models.base import InferenceModel
+from immich_ml.models.base import InferenceEntry, InferenceModel
+from immich_ml.schemas import Options
 
-from ..schemas import ModelTask, ModelType
+Key = tuple[type[InferenceModel[Any]], str, Hashable]
 
 
 class ModelCache:
     def __init__(self) -> None:
-        self._models: dict[tuple[Any, ...], InferenceModel] = {}
-        self._expiries: dict[tuple[Any, ...], asyncio.TimerHandle] = {}
+        self._models: dict[Key, InferenceModel[Any]] = {}
+        self._expiries: dict[Key, asyncio.TimerHandle] = {}
 
-    def get(
-        self, model_name: str, model_type: ModelType, model_task: ModelTask, ttl: int | None = None, **options: Any
-    ) -> InferenceModel:
-        model_cls = get_model_class(model_name, model_type, model_task)
-        key = (model_name, model_type, model_task, *(options.get(option) for option in model_cls.graph_options))
+    def get[O: Options](self, entry: InferenceEntry[O], ttl: int | None = None) -> InferenceModel[O]:
+        key = (entry.model, entry.name, entry.model.graph(entry.options))
         if key not in self._models:
-            self._models[key] = model_cls(model_name, **options)
+            self._models[key] = entry.model.create(entry.name, entry.options)
         elif key not in self._expiries:
             ttl = None  # a model that was preloaded stays
         if ttl:
@@ -36,7 +34,7 @@ class ModelCache:
             self._expiries.pop(key).cancel()
         allocator.release()
 
-    def _evict(self, key: tuple[Any, ...]) -> None:
+    def _evict(self, key: Key) -> None:
         if key not in self._models:
             return
         del self._models[key], self._expiries[key]

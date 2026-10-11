@@ -1,16 +1,16 @@
-from typing import Any
-
 from immich_ml.config import log, settings
 from immich_ml.models.base import InferenceModel
-from immich_ml.schemas import ModelFormat, ModelType
+from immich_ml.schemas import ModelFormat, ModelSource, ModelType, Options
 
 
 # TODO: Remove once everything uses the new model graphs
-class TextModel(InferenceModel):
-    def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        if settings.legacy_models:
-            model_kwargs["model_format"] = ModelFormat.ONNX  # the older exports come in no other format
-        super().__init__(model_name, **model_kwargs)
+class TextModel[O: Options](InferenceModel[O]):
+    sources = (ModelSource.PADDLE,)
+
+    @property
+    def _model_format_default(self) -> ModelFormat:
+        # the older exports come in no other format
+        return ModelFormat.ONNX if settings.legacy_models else super()._model_format_default
 
     def download(self) -> None:
         if not settings.legacy_models or self.cached:
@@ -23,13 +23,14 @@ class TextModel(InferenceModel):
 
         detects = self.model_type == ModelType.DETECTION
         language = self.model_name.split("__")[0] if "__" in self.model_name else "CH"
+        version, size = self.model_name.split("__")[-1].rsplit("_", 1)
         model_info = InferSession.get_model_url(
             FileInfo(
                 engine_type=EngineType.ONNXRUNTIME,
-                ocr_version=OCRVersion.PPOCRV5,
+                ocr_version=OCRVersion(version),
                 task_type=TaskType.DET if detects else TaskType.REC,
                 lang_type=LangDet.CH if detects else LangRec[language],
-                model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
+                model_type=RapidModelType(size),
             )
         )
         log.info(

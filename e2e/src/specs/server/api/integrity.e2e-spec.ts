@@ -427,7 +427,7 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/integrity/report?type=missing_file')
+        .get('/admin/integrity/report?type=missing_file&limit=5')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 

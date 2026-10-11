@@ -12,7 +12,7 @@ from immich_ml.config import log
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.constants import WEBLATE_TO_FLORES200
 from immich_ml.models.transforms import clean_text, serialize_np_array
-from immich_ml.schemas import ModelSession, ModelTask, ModelType
+from immich_ml.schemas import ModelSession, ModelSource, ModelTask, ModelType, TextualOptions
 
 
 def _mapped(model_path: Path, name: str) -> NDArray[Any]:
@@ -25,13 +25,13 @@ def _mapped(model_path: Path, name: str) -> NDArray[Any]:
     return np.memmap(model_path.parent / data["location"], dtype=dtype, mode="r", offset=offset, shape=shape)
 
 
-class BaseCLIPTextualEncoder(InferenceModel):
+class BaseCLIPTextualEncoder(InferenceModel[TextualOptions]):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
     threads = 4  # lower search latency
 
-    def _predict(self, inputs: str, language: str | None = None) -> str:
-        tokens: dict[str, NDArray[Any]] = self.tokenize(inputs, language=language)
+    def _predict(self, inputs: str, options: TextualOptions) -> str:
+        tokens: dict[str, NDArray[Any]] = self.tokenize(inputs, language=options.language)
         graph = self.session.for_shape(self.shape_policy.dims[0])
         if self.embedding is not None:  # a graph that left its token table to the host
             tokens["token_embeds"] = self.embedding[next(iter(tokens.values()))]
@@ -99,6 +99,8 @@ class BaseCLIPTextualEncoder(InferenceModel):
 
 
 class OpenClipTextualEncoder(BaseCLIPTextualEncoder):
+    sources = (ModelSource.OPENCLIP,)
+
     def _load_tokenizer(self) -> Tokenizer:
         context_length: int = self.text_cfg.get("context_length", 77)
         pad_token: str = self.tokenizer_cfg["pad_token"]
@@ -129,6 +131,8 @@ class OpenClipTextualEncoder(BaseCLIPTextualEncoder):
 
 
 class MClipTextualEncoder(OpenClipTextualEncoder):
+    sources = (ModelSource.MCLIP,)
+
     def tokenize(self, text: str, language: str | None = None) -> dict[str, NDArray[np.int32]]:
         text = clean_text(text, canonicalize=self.canonicalize)
         tokens: Encoding = self.tokenizer.encode(text)

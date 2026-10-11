@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
+import sanitize from 'sanitize-filename';
 import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import {
@@ -20,6 +21,7 @@ import {
   SignUpDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto.js';
+import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
 import { OAuthProfile } from 'src/repositories/oauth.repository.js';
@@ -39,8 +41,15 @@ export interface LoginDetails {
 
 interface ClaimOptions<T> {
   key: string;
-  default: T;
-  isValid: (value: unknown) => boolean;
+  isValid: (value: unknown) => value is T;
+  parse?: (raw: unknown) => T;
+}
+
+type OAuthClaimsConfig = Pick<SystemConfig['oauth'], 'defaultStorageQuota' | 'storageLabelClaim' | 'storageQuotaClaim'>;
+
+interface ParsedOAuthClaims {
+  storageLabel?: string | null;
+  quotaSizeInBytes?: number | null;
 }
 
 export type ValidateRequest = {
@@ -309,7 +318,7 @@ export class AuthService extends BaseService {
       idToken: oauthBearerToken,
     } = await this.oauthRepository.getProfileAndOAuthSid(oauth, url, expectedState, codeVerifier);
     const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
+    const { autoRegister, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -333,7 +342,9 @@ export class AuthService extends BaseService {
     }
 
     // register new user
-    if (!user) {
+    if (user) {
+      user = await this.syncOAuthClaims(user, profile, oauth);
+    } else {
       if (!autoRegister) {
         this.logger.warn(
           `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. User does not exist and auto registering is disabled. To enable set OAuth Auto Register to true in admin settings.`,
@@ -347,16 +358,7 @@ export class AuthService extends BaseService {
 
       this.logger.log(`Registering new user: ${profile.sub}/${normalizedEmail}`);
 
-      const storageLabel = this.getClaim(profile, {
-        key: storageLabelClaim,
-        default: '',
-        isValid: (value: unknown): value is string => typeof value === 'string',
-      });
-      const storageQuota = this.getClaim(profile, {
-        key: storageQuotaClaim,
-        default: defaultStorageQuota,
-        isValid: (value: unknown) => Number(value) >= 0,
-      });
+      const claims = this.parseOAuthClaims(profile, oauth, true);
 
       user = await this.createUser({
         name:
@@ -366,8 +368,8 @@ export class AuthService extends BaseService {
           normalizedEmail,
         email: normalizedEmail,
         oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
-        storageLabel: storageLabel || null,
+        quotaSizeInBytes: claims.quotaSizeInBytes ?? null,
+        storageLabel: claims.storageLabel ?? null,
         isAdmin,
       });
     }
@@ -632,9 +634,84 @@ export class AuthService extends BaseService {
     return mapLoginResponse(user, token);
   }
 
-  private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
-    const value = profile[options.key as keyof OAuthProfile];
-    return options.isValid(value) ? (value as T) : options.default;
+  private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T | undefined {
+    const raw = profile[options.key as keyof OAuthProfile];
+    const value = options.parse ? options.parse(raw) : raw;
+    return options.isValid(value) ? value : undefined;
+  }
+
+  private parseOAuthClaims(profile: OAuthProfile, oauth: OAuthClaimsConfig, useDefaults: boolean): ParsedOAuthClaims {
+    const { defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
+    const claims: ParsedOAuthClaims = {};
+
+    const storageLabel = this.getClaim(profile, {
+      key: storageLabelClaim,
+      isValid: (value): value is string => typeof value === 'string',
+    });
+
+    if (useDefaults) {
+      claims.storageLabel = storageLabel || null;
+    }
+    // Default claim (preferred_username) is registration-only; login sync is opt-in.
+    else if (storageLabelClaim !== defaults.oauth.storageLabelClaim && storageLabel !== undefined) {
+      claims.storageLabel = this.formatStorageLabel(storageLabel);
+    }
+
+    const storageQuota = this.getClaim(profile, {
+      key: storageQuotaClaim,
+      parse: Number,
+      isValid: (value): value is number =>
+        typeof value === 'number' && Number.isFinite(value) && (value === -1 || value >= 0),
+    });
+
+    if (storageQuota !== undefined) {
+      claims.quotaSizeInBytes = storageQuota === -1 ? null : storageQuota * HumanReadableSize.GiB;
+    } else if (useDefaults) {
+      claims.quotaSizeInBytes =
+        defaultStorageQuota === null || defaultStorageQuota === -1 ? null : defaultStorageQuota * HumanReadableSize.GiB;
+    }
+
+    return claims;
+  }
+
+  private formatStorageLabel(label: string): string | null {
+    if (!label) {
+      return null;
+    }
+
+    return sanitize(label);
+  }
+
+  private async syncOAuthClaims(user: UserAdmin, profile: OAuthProfile, oauth: OAuthClaimsConfig): Promise<UserAdmin> {
+    const claims = this.parseOAuthClaims(profile, oauth, false);
+    const updates: {
+      storageLabel?: string | null;
+      quotaSizeInBytes?: number | null;
+    } = {};
+
+    if (claims.storageLabel && claims.storageLabel !== user.storageLabel) {
+      const duplicate = await this.userRepository.getByStorageLabel(claims.storageLabel);
+
+      if (duplicate && duplicate.id !== user.id) {
+        this.logger.warn(`Unable to sync OAuth storage label for user ${user.id}: label already in use`);
+      } else {
+        updates.storageLabel = claims.storageLabel;
+      }
+    }
+
+    if (claims.quotaSizeInBytes !== undefined && claims.quotaSizeInBytes !== user.quotaSizeInBytes) {
+      updates.quotaSizeInBytes = claims.quotaSizeInBytes;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return user;
+    }
+
+    if (updates.quotaSizeInBytes) {
+      await this.userRepository.syncUsage(user.id);
+    }
+
+    return this.userRepository.update(user.id, { ...updates, updatedAt: new Date() });
   }
 
   private getRoleClaim(profile: OAuthProfile, roleClaim: string): 'admin' | 'user' | undefined {

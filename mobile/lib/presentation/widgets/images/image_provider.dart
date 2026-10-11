@@ -12,20 +12,21 @@ import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:logging/logging.dart';
 
-abstract class CancellableImageProvider<T extends Object> extends ImageProvider<T> {
-  void cancel();
-}
+// The provider is also the cache key and can be resolved more than once.
+// Keep mutable state per load so cancelling one cannot affect the next load.
+class ImageLoader {
+  static final _log = Logger('ImageLoader');
 
-mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvider<T> {
-  static final _log = Logger('CancellableImageProviderMixin');
-
+  final ImageProvider key;
   bool isCancelled = false;
   bool isFinished = false;
   ImageRequest? request;
   CancelableOperation<ImageInfo?>? cachedOperation;
 
-  ImageInfo? getInitialImage(CancellableImageProvider provider) {
-    final completer = CancelableCompleter<ImageInfo?>(onCancel: provider.cancel);
+  ImageLoader(this.key);
+
+  ImageInfo? getInitialImage(ImageProvider provider) {
+    final completer = CancelableCompleter<ImageInfo?>();
     final cachedStream = provider.resolve(ImageConfiguration.empty);
     ImageInfo? cachedImage;
     final listener = ImageStreamListener((image, synchronousCall) {
@@ -47,7 +48,6 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     unawaited(
       completer.operation.valueOrCancellation().whenComplete(() {
         cachedStream.removeListener(listener);
-        cachedOperation = null;
       }),
     );
     cachedOperation = completer.operation;
@@ -74,7 +74,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       }
       if (isFinal) {
         isFinished = true;
-        PaintingBinding.instance.imageCache.evict(this);
+        PaintingBinding.instance.imageCache.evict(key);
         rethrow;
       }
       _log.warning('Non-fatal image load error', e, stack);
@@ -98,9 +98,12 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       isFinished = isFinal;
       return codec;
     } catch (e) {
+      if (isCancelled) {
+        return null;
+      }
       if (isFinal) {
         isFinished = true;
-        PaintingBinding.instance.imageCache.evict(this);
+        PaintingBinding.instance.imageCache.evict(key);
         rethrow;
       }
       return null;
@@ -111,23 +114,26 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
   Stream<ImageInfo> initialImageStream() async* {
     final cachedOperation = this.cachedOperation;
-    if (cachedOperation == null) {
+    if (isCancelled || cachedOperation == null) {
       return;
     }
 
     try {
       final cachedImage = await cachedOperation.valueOrCancellation();
-      if (cachedImage != null && !isCancelled) {
-        yield cachedImage;
+      if (isCancelled || cachedImage == null) {
+        return;
       }
+      yield cachedImage;
     } catch (e, stack) {
+      if (isCancelled) {
+        return;
+      }
       _log.severe('Error loading initial image', e, stack);
     } finally {
       this.cachedOperation = null;
     }
   }
 
-  @override
   void cancel() {
     isCancelled = true;
     final hasActiveWork = !isFinished;
@@ -145,7 +151,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     }
 
     if (hasActiveWork) {
-      PaintingBinding.instance.imageCache.evict(this);
+      PaintingBinding.instance.imageCache.evict(key);
     }
   }
 }

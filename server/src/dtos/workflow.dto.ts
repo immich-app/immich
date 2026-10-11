@@ -160,7 +160,7 @@ export const mapWorkflowShare = (workflow: Workflow & { steps: WorkflowStep[] })
       method: `${step.pluginName}#${step.methodName}`,
       // TODO fix this
       config: step.config as any,
-      enabled: step.enabled ? undefined : false,
+      enabled: step.enabled && undefined,
     })),
   };
 };

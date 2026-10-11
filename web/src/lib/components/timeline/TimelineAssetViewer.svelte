@@ -107,21 +107,12 @@
   };
 
   const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
-    if (!album || !albumIds.includes(album.id)) {
-      return;
+    if (!!album && albumIds.includes(album.id) && assetIds.includes(assetCursor.current.id)) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      (await navigateToAsset(assetCursor?.nextAsset)) ||
+        (await navigateToAsset(assetCursor?.previousAsset)) ||
+        (await handleClose(assetCursor.current.id));
     }
-
-    timelineManager.removeAssets(assetIds);
-
-    if (!assetIds.includes(assetCursor.current.id)) {
-      return;
-    }
-
-    // keep the cleanup workflow in viewer by moving to adjacent asset first
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    (await navigateToAsset(assetCursor?.nextAsset)) ||
-      (await navigateToAsset(assetCursor?.previousAsset)) ||
-      (await handleClose(assetCursor.current.id));
   };
 
   const handlePreAction = async (action: Action) => {

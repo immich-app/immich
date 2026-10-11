@@ -285,11 +285,20 @@ export class MetadataService extends BaseService {
 
       // camera
       make:
-        exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
+        exifTags.Make ??
+        exifTags.Device?.Manufacturer ??
+        exifTags.AndroidMake ??
+        exifTags.DeviceManufacturer ??
+        (exifTags.SamsungModel ? 'Samsung' : null),
       model:
-        exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
+        exifTags.Model ??
+        exifTags.Device?.ModelName ??
+        exifTags.AndroidModel ??
+        exifTags.DeviceModelName ??
+        exifTags.Author ??
+        null,
       fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
-      iso: validate(exifTags.ISO) as number,
+      iso: validate(exifTags.RecommendedExposureIndex ?? exifTags.StandardOutputSensitivity ?? exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
       fNumber: validate(exifTags.FNumber),
@@ -439,7 +448,7 @@ export class MetadataService extends BaseService {
 
     const { sidecarFile } = getAssetFiles(asset.files);
 
-    const isChanged = sidecarPath !== sidecarFile?.path;
+    const isChanged = sidecarPath !== (sidecarFile?.path ?? null);
 
     if (sidecarFile?.path || sidecarPath) {
       this.logger.debug(

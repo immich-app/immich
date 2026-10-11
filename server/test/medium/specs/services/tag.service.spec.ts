@@ -1,9 +1,10 @@
 import { Kysely } from 'kysely';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
-import { JobStatus } from 'src/enum.js';
+import { JobName, JobStatus } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -19,7 +20,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(TagService, {
     database: db || defaultDatabase,
     real: [AssetRepository, TagRepository, AccessRepository],
-    mock: [EventRepository, LoggingRepository],
+    mock: [EventRepository, JobRepository, LoggingRepository],
   });
 };
 
@@ -53,6 +54,45 @@ describe(TagService.name, () => {
 
       await expect(sut.update(otherAuth, tag.id, { color: '#000000' })).rejects.toThrow(
         'Not found or no tag.update access',
+      );
+    });
+
+    it('should sync renamed tags and descendants to the exif table', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: parentAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: childAsset } = await ctx.newAsset({ ownerId: user.id });
+      const tagRepo = ctx.get(TagRepository);
+      const [parentTag, childTag] = await upsertTags(tagRepo, {
+        userId: user.id,
+        tags: ['parent', 'parent/child'],
+      });
+      await ctx.newTagAsset({ tagIds: [parentTag.id], assetIds: [parentAsset.id] });
+      await ctx.newTagAsset({ tagIds: [childTag.id], assetIds: [childAsset.id] });
+      await ctx.newExif({ assetId: parentAsset.id, tags: ['parent'] });
+      await ctx.newExif({ assetId: childAsset.id, tags: ['parent/child'] });
+
+      await sut.update(factory.auth({ user }), parentTag.id, { name: 'renamed' });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select(['assetId', 'lockedProperties', 'tags'])
+          .where('assetId', 'in', [parentAsset.id, childAsset.id])
+          .orderBy('assetId')
+          .execute(),
+      ).resolves.toEqual(
+        expect.arrayContaining([
+          { assetId: parentAsset.id, lockedProperties: ['tags'], tags: ['renamed'] },
+          { assetId: childAsset.id, lockedProperties: ['tags'], tags: ['renamed/child'] },
+        ]),
+      );
+      expect(ctx.getMock(JobRepository).queueAll).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          { name: JobName.SidecarWrite, data: { id: parentAsset.id } },
+          { name: JobName.SidecarWrite, data: { id: childAsset.id } },
+        ]),
       );
     });
   });

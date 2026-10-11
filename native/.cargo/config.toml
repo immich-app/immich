@@ -1,0 +1,10 @@
+# Link against minSdk (mobile/android/app/build.gradle) instead of the API 35 that native_toolchain_rust picks.
+[target.aarch64-linux-android]
+rustflags = ["-C", "link-arg=--target=aarch64-linux-android26"]
+
+# Neon on 32 bit arm is the NDK's default for C, the rust target leaves it off.
+[target.armv7-linux-androideabi]
+rustflags = ["-C", "link-arg=--target=armv7a-linux-androideabi26", "-C", "target-feature=+neon"]
+
+[target.x86_64-linux-android]
+rustflags = ["-C", "link-arg=--target=x86_64-linux-android26"]

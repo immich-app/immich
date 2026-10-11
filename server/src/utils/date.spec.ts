@@ -1,7 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { asDateString, asDateTimeString, isLeapDayObserved } from 'src/utils/date.js';
+import { DateTime } from 'luxon';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { asDateString, asDateTimeString, asLocalTime, isLeapDayObserved } from 'src/utils/date.js';
 
 describe('asDateString', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('should return null for null input', () => {
     expect(asDateString(null)).toBeNull();
   });
@@ -10,13 +15,17 @@ describe('asDateString', () => {
     expect(asDateString('2000-01-15')).toBe('2000-01-15');
   });
 
-  it('should return the local calendar date, not the UTC date', () => {
-    const date = new Date(2000, 0, 15); // 15 Jan 2000, local midnight
-    expect(asDateString(date)).toBe('2000-01-15');
-  });
+  // a `date` column is parsed as `new Date('YYYY-MM-DD')`, which is UTC midnight regardless of the server time zone
+  it.each(['UTC', 'America/Los_Angeles', 'America/New_York', 'Europe/Istanbul', 'Pacific/Kiritimati'])(
+    'should return the UTC calendar date of a date column when the server time zone is %s',
+    (timeZone) => {
+      vi.stubEnv('TZ', timeZone);
+      expect(asDateString(new Date('2000-01-15'))).toBe('2000-01-15');
+    },
+  );
 
   it('should correctly pad years with a leading 0', () => {
-    expect(asDateString(new Date('280-12-12'))).toBe('0280-12-12');
+    expect(asDateString(new Date('0280-12-12'))).toBe('0280-12-12');
   });
 });
 
@@ -54,5 +63,12 @@ describe('asDateTimeString', () => {
   it('should return an ISO 8601 datetime string for a Date', () => {
     const date = new Date('2000-01-15T12:00:00.000Z');
     expect(asDateTimeString(date)).toBe('2000-01-15T12:00:00.000Z');
+  });
+});
+
+describe('asLocalTime', () => {
+  it('should keep the wall-clock time and reinterpret it as UTC', () => {
+    const date = DateTime.fromISO('2026-10-06T08:00:00', { zone: 'America/New_York' }) as DateTime<true>;
+    expect(asLocalTime(date).toISOString()).toBe('2026-10-06T08:00:00.000Z');
   });
 });

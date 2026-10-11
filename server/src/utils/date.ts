@@ -32,3 +32,5 @@ export const mergeTimeZone = (dateTimeOriginal?: string | null, timeZone?: strin
     ? DateTime.fromISO(dateTimeOriginal, { zone: 'UTC' }).setZone(timeZone ?? undefined)
     : undefined;
 };
+
+export const asLocalTime = (date: DateTime<true>) => date.setZone('UTC', { keepLocalTime: true }).toJSDate();

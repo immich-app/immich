@@ -9,7 +9,7 @@ from numpy.typing import NDArray
 from PIL import Image
 
 from immich_ml.config import settings
-from immich_ml.schemas import ModelGraph, ModelSession, ModelTask, ModelType, Shape
+from immich_ml.schemas import ModelGraph, ModelSession, ModelTask, ModelType, Shape, TextRecognitionOptions
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 
 from .ctc import GREEDY, CtcDecoder, probabilities
@@ -20,7 +20,7 @@ REC_HEIGHT = 48
 SCALE = np.float32(1.0 / 127.5)
 
 
-class TextRecognizer(TextModel):
+class TextRecognizer(TextModel[TextRecognitionOptions]):
     depends = [(ModelType.DETECTION, ModelTask.OCR)]
     identity = (ModelType.RECOGNITION, ModelTask.OCR)
 
@@ -53,7 +53,9 @@ class TextRecognizer(TextModel):
             else CtcDecoder.from_file(self.model_dir / "charset.txt", greedy)
         )
 
-    def _predict(self, img: Image.Image, texts: TextDetectionOutput, minScore: float = 0.9) -> TextRecognitionOutput:
+    def _predict(
+        self, img: Image.Image, texts: TextDetectionOutput, options: TextRecognitionOptions
+    ) -> TextRecognitionOutput:
         boxes, box_scores = texts["boxes"], texts["scores"]
         if boxes.shape[0] == 0:
             return self._empty
@@ -101,7 +103,7 @@ class TextRecognizer(TextModel):
         boxes[:, :, 0] /= img.width
         boxes[:, :, 1] /= img.height
 
-        valid = score_list > minScore
+        valid = score_list > options.min_score
         valid_list = valid.tolist()
         return {
             "box": boxes.reshape(-1, 8)[valid].reshape(-1),

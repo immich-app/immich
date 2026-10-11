@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { PartnerDirection } from 'src/repositories/partner.repository.js';
+import { SharingDirection } from 'src/enum.js';
 import { PartnerService } from 'src/services/partner.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { PartnerFactory } from 'test/factories/partner.factory.js';
@@ -29,7 +29,7 @@ describe(PartnerService.name, () => {
 
       mocks.partner.getAll.mockResolvedValue([getForPartner(sharedWithUser1), getForPartner(sharedWithUser2)]);
 
-      await expect(sut.search(auth, { direction: PartnerDirection.SharedBy })).resolves.toBeDefined();
+      await expect(sut.search(auth, { direction: SharingDirection.SharedBy })).resolves.toBeDefined();
       expect(mocks.partner.getAll).toHaveBeenCalledWith(user1.id);
     });
 
@@ -41,7 +41,7 @@ describe(PartnerService.name, () => {
       const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.getAll.mockResolvedValue([getForPartner(sharedWithUser1), getForPartner(sharedWithUser2)]);
-      await expect(sut.search(auth, { direction: PartnerDirection.SharedWith })).resolves.toBeDefined();
+      await expect(sut.search(auth, { direction: SharingDirection.SharedWith })).resolves.toBeDefined();
       expect(mocks.partner.getAll).toHaveBeenCalledWith(user1.id);
     });
   });

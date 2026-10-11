@@ -35,7 +35,7 @@ export class TimelineService extends BaseService {
         const partnerIds = await getMyPartnerIds({
           userId: auth.user.id,
           repository: this.partnerRepository,
-          timelineEnabled: true,
+          timelineEnabled: !options.personId || undefined,
         });
         userIds.push(...partnerIds);
       }

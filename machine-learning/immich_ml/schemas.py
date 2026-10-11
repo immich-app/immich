@@ -1,10 +1,11 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Literal, Protocol, TypeAlias, TypeVar
+from typing import Annotated, Any, Protocol, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
+from pydantic import ConfigDict, Field
 from typing_extensions import TypedDict
 
 
@@ -121,25 +122,39 @@ class DetectedFace(TypedDict):
 FacialRecognitionOutput = list[DetectedFace]
 
 
-class PipelineEntry(TypedDict):
-    modelName: str
-    options: dict[str, Any]
+class Options:
+    __pydantic_config__ = ConfigDict(extra="ignore")  # so that an older service ignores an option a newer server adds
 
 
-PipelineRequest = dict[ModelTask, dict[ModelType, PipelineEntry]]
+@dataclass(frozen=True)
+class VisualOptions(Options):
+    pass
 
 
-class InferenceEntry(TypedDict):
-    name: str
-    task: ModelTask
-    type: ModelType
-    options: dict[str, Any]
+@dataclass(frozen=True)
+class TextualOptions(Options):
+    language: str | None = None
 
 
-InferenceEntries = tuple[list[InferenceEntry], list[InferenceEntry]]
+@dataclass(frozen=True)
+class FaceDetectionOptions(Options):
+    min_score: Annotated[float, Field(alias="minScore")] = 0.7
 
 
-InferenceResponse = dict[ModelTask | Literal["imageHeight"] | Literal["imageWidth"], Any]
+@dataclass(frozen=True)
+class FaceRecognitionOptions(Options):
+    pass
 
 
-T = TypeVar("T")
+@dataclass(frozen=True)
+class TextDetectionOptions(Options):
+    max_resolution: Annotated[int, Field(alias="maxResolution")] = 736
+    min_score: Annotated[float, Field(alias="minScore")] = 0.5
+
+
+@dataclass(frozen=True)
+class TextRecognitionOptions(Options):
+    min_score: Annotated[float, Field(alias="minScore")] = 0.9
+
+
+InferenceResponse = dict[str, Any]

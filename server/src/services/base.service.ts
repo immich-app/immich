@@ -39,6 +39,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OAuthRepository } from 'src/repositories/oauth.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
@@ -62,7 +63,14 @@ import { ViewRepository } from 'src/repositories/view-repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
-import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access.js';
+import {
+  AccessPersonRequest,
+  AccessRequest,
+  checkAccess,
+  checkPersonAccess,
+  requireAccess,
+  requirePersonAccess,
+} from 'src/utils/access.js';
 import { getConfig, updateConfig } from 'src/utils/config.js';
 
 export const BASE_SERVICE_DEPENDENCIES = [
@@ -100,6 +108,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   OcrRepository,
   PartnerRepository,
   PersonRepository,
+  PersonUserRepository,
   PluginRepository,
   ProcessRepository,
   SearchRepository,
@@ -162,6 +171,7 @@ export class BaseService {
     protected ocrRepository: OcrRepository,
     protected partnerRepository: PartnerRepository,
     protected personRepository: PersonRepository,
+    protected personUserRepository: PersonUserRepository,
     protected pluginRepository: PluginRepository,
     protected processRepository: ProcessRepository,
     protected searchRepository: SearchRepository,
@@ -233,6 +243,7 @@ export class BaseService {
       ctx.ocrRepository,
       ctx.partnerRepository,
       ctx.personRepository,
+      ctx.personUserRepository,
       ctx.pluginRepository,
       ctx.processRepository,
       ctx.searchRepository,
@@ -289,6 +300,14 @@ export class BaseService {
     return checkAccess(this.accessRepository, request);
   }
 
+  requirePersonAccess(request: AccessPersonRequest) {
+    return requirePersonAccess(this.accessRepository, request);
+  }
+
+  checkPersonAccess(request: AccessPersonRequest) {
+    return checkPersonAccess(this.accessRepository, request);
+  }
+
   async isSetupAvailable(): Promise<boolean> {
     const { setup } = this.configRepository.getEnv();
     return setup.allow && !(await this.userRepository.hasAdmin());
@@ -319,7 +338,7 @@ export class BaseService {
       payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }
     if (payload.storageLabel) {
-      payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
+      payload.storageLabel = sanitize(payload.storageLabel);
     }
 
     const clusterGroup = await this.clusterGroupRepository.create();
