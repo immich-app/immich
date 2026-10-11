@@ -4,15 +4,16 @@ This server helper develops an original photo using Lightroom XMP and streams an
 RGBA bitmap into Immich's existing preview pipeline. It writes no image files.
 Lightcraft is a pinned Cargo Git dependency: its public XMP mapper and CPU pipeline
 are called directly, without copying their implementation or running its app.
-The current [fork pin](https://github.com/ilyador/lightcraft/commit/2d2465b1bad45091d4fea16a0e097ddc0780cff2)
+The current [fork pin](https://github.com/ilyador/lightcraft/commit/172ec37ce5749524faa6606a1a5d0e74024ad5b4)
 keeps camera-preview calibration active, respects declared embedded-preview
 color spaces before resizing, retains saved numeric white balance,
 selects Enhanced DNG pixels and provides a source loader independent of external
 camera-profile configuration. It also retains imported-profile monochrome
 treatment and supported profile parameters, curves and conventional detail
-controls. The engine handoff reports all eight Lightcraft CI gates passing, with
-mixed Lightroom fidelity results. Camera support follows file metadata and decoder
-capabilities; the Immich adapter has no camera-model branches.
+controls. Local mask sharpening is independent of global Detail-panel Masking.
+All eight Lightcraft CI gates pass at this revision; Lightroom fidelity results
+remain mixed. Camera support follows file metadata and decoder capabilities;
+the Immich adapter has no camera-model branches.
 
 Build with Rust and the system LibRaw development package (`libraw-dev` on Debian
 or Ubuntu; version 0.21 or newer):
@@ -62,7 +63,7 @@ Stdout contains a single JSON line (at most 64 KiB), then exactly
 ```json
 {
   "version": 1,
-  "rendererVersion": "immich-sidecar-renderer/0.1.0/adapter/BUILD_HASH/lightcraft/2d2465b1bad45091d4fea16a0e097ddc0780cff2/libraw/0.21.5-Release",
+  "rendererVersion": "immich-sidecar-renderer/0.1.0/adapter/BUILD_HASH/lightcraft/172ec37ce5749524faa6606a1a5d0e74024ad5b4/libraw/0.21.5-Release",
   "status": "developed",
   "isDeveloped": true,
   "width": 2160,
@@ -147,8 +148,9 @@ external precedence, AlreadyApplied handling, decoded-source white-balance
 targets, missing runtime profile tables, Amount-0 monochrome treatment,
 output color space, orientation, skipped packets and malformed
 XML/transparency errors. Real camera samples are local validation data and must
-not be committed or modified. An offline DSC_0045 check with this engine pin
-returned 900 × 600 from its 6000 × 4000 native base, with maximum 8-bit RGB
-channel range 1 and unchanged source/XMP hashes. This verifies monochrome
+not be committed or modified. An offline DSC_0045 check against `2d2465b1`,
+before the local-sharpening correction, returned 900 × 600 from its
+6000 × 4000 native base, with maximum 8-bit RGB channel range 1 and unchanged
+source/XMP hashes. This verifies monochrome
 preservation, not Lightroom appearance parity. `LIGHTCRAFT_PROFILE=1` enables source and existing
 pipeline timing diagnostics on stderr.

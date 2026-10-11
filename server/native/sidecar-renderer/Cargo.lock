@@ -1243,7 +1243,7 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 [[package]]
 name = "lightcraft-catalog"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "crc32fast",
  "lightcraft-develop",
@@ -1258,7 +1258,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-codecs"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "avif-serialize",
  "bytemuck",
@@ -1285,7 +1285,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-color"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-geom",
  "serde",
@@ -1294,7 +1294,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-denoise-core"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-raster",
  "miniz_oxide 0.8.9",
@@ -1309,7 +1309,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-develop"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-color",
  "lightcraft-geom",
@@ -1321,7 +1321,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-engine"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "ab_glyph",
  "harfrust",
@@ -1355,7 +1355,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-faces"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "matrixmultiply",
  "ndarray",
@@ -1369,7 +1369,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-fetch"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "log",
  "rustls",
@@ -1381,7 +1381,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-geom"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "serde",
 ]
@@ -1389,7 +1389,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-gpu"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "bytemuck",
  "lightcraft-color",
@@ -1405,7 +1405,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-merge"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-codecs",
  "lightcraft-color",
@@ -1422,7 +1422,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-meta"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-geom",
  "lightcraft-tiff",
@@ -1433,7 +1433,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-pipeline"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-color",
  "lightcraft-develop",
@@ -1447,7 +1447,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-preview"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "jpeg-encoder",
  "lightcraft-raster",
@@ -1460,7 +1460,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-raster"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-color",
  "lightcraft-geom",
@@ -1471,7 +1471,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-raw"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "jxl-oxide",
  "lightcraft-color",
@@ -1491,7 +1491,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-scenes"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "lightcraft-color",
  "lightcraft-raster",
@@ -1502,7 +1502,7 @@ dependencies = [
 [[package]]
 name = "lightcraft-tiff"
 version = "0.5.0"
-source = "git+https://github.com/ilyador/lightcraft?rev=2d2465b1bad45091d4fea16a0e097ddc0780cff2#2d2465b1bad45091d4fea16a0e097ddc0780cff2"
+source = "git+https://github.com/ilyador/lightcraft?rev=172ec37ce5749524faa6606a1a5d0e74024ad5b4#172ec37ce5749524faa6606a1a5d0e74024ad5b4"
 dependencies = [
  "serde",
  "thiserror",

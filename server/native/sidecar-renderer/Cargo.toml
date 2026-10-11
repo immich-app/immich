@@ -7,13 +7,13 @@ publish = false
 
 [dependencies]
 bytemuck = "1"
-lightcraft-engine = { git = "https://github.com/ilyador/lightcraft", rev = "2d2465b1bad45091d4fea16a0e097ddc0780cff2", default-features = false }
-lightcraft-meta = { git = "https://github.com/ilyador/lightcraft", rev = "2d2465b1bad45091d4fea16a0e097ddc0780cff2" }
-lightcraft-codecs = { git = "https://github.com/ilyador/lightcraft", rev = "2d2465b1bad45091d4fea16a0e097ddc0780cff2", default-features = false }
-lightcraft-color = { git = "https://github.com/ilyador/lightcraft", rev = "2d2465b1bad45091d4fea16a0e097ddc0780cff2" }
-lightcraft-geom = { git = "https://github.com/ilyador/lightcraft", rev = "2d2465b1bad45091d4fea16a0e097ddc0780cff2" }
-lightcraft-raster = { git = "https://github.com/ilyador/lightcraft", rev = "2d2465b1bad45091d4fea16a0e097ddc0780cff2" }
-lightcraft-raw = { git = "https://github.com/ilyador/lightcraft", rev = "2d2465b1bad45091d4fea16a0e097ddc0780cff2" }
+lightcraft-engine = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4", default-features = false }
+lightcraft-meta = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
+lightcraft-codecs = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4", default-features = false }
+lightcraft-color = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
+lightcraft-geom = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
+lightcraft-raster = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
+lightcraft-raw = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
 quick-xml = "0.38"
 roxmltree = "0.21"
 serde = { version = "1", features = ["derive"] }
