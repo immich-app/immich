@@ -172,7 +172,7 @@ Overrides the domain name in shared links and email notifications. The URL shoul
 
 ### Open Album Links From Emails In The Immich App
 
-Disabled by default. The album invitation and album update emails normally link to the [External Domain](#external-domain), which opens the album in the web browser, even on a phone with the Immich mobile app installed. When this option is enabled, those emails link to `https://my.immich.app/albums/<album id>?instanceUrl=<external domain>` instead. On Android, this link opens the album in the Immich mobile app when it is installed. Otherwise, `my.immich.app` redirects to the album on your own server.
+Disabled by default. The album invitation and album update emails normally link to the [External Domain](#external-domain), which opens the album in the web browser, even on a phone with the Immich mobile app installed. When this option is enabled, those emails link to `https://my.immich.app/albums/<album id>?instanceUrl=<external domain>` instead. On Android and iOS, this link opens the album in the Immich mobile app when it is installed. Otherwise, `my.immich.app` redirects to the album on your own server.
 
 The option requires an [External Domain](#external-domain) to be set, since it is used as the `instanceUrl`, and is unavailable without it. It only affects album emails and the "View Album" button, the thumbnail and the fallback link in them. Other links, such as shared links, are not changed. In the [configuration file](/install/config-file) the option is `server.emailLinksViaMyImmich`.
 
