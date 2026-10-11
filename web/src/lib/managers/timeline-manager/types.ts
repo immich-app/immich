@@ -21,6 +21,7 @@ export type TimelineAsset = {
   tags?: string[];
   ratio: number;
   thumbhash: string | null;
+  mediaRevision?: string;
   localDateTime: TimelineDateTime;
   createdAt: TimelineDateTime;
   fileCreatedAt: TimelineDateTime;

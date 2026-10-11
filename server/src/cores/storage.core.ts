@@ -1,4 +1,4 @@
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, parse, resolve } from 'node:path';
 import type { VideoInterfaces } from 'src/types.js';
 import { StorageAsset } from 'src/database.js';
 import {
@@ -29,6 +29,7 @@ export interface MoveRequest {
   pathType: PathType;
   oldPath: string | null;
   newPath: string;
+  expectedFilePath?: string;
   assetInfo?: {
     sizeInBytes: number;
     checksum: Buffer;
@@ -162,11 +163,17 @@ export class StorageCore {
   async moveAssetImage(asset: StorageAsset, fileType: AssetFileType, format: ImageFormat) {
     const { id: entityId, files } = asset;
     const oldFile = getAssetFile(files, fileType, { isEdited: false });
+    let newPath = StorageCore.getImagePath(asset, { fileType, format, isEdited: false });
+    if (oldFile && parse(oldFile.path).name.startsWith(`${parse(newPath).name}-`)) {
+      // Generation files keep their names when moving to a new media location.
+      newPath = join(dirname(newPath), basename(oldFile.path));
+    }
     return this.moveFile({
       entityId,
       pathType: fileType,
       oldPath: oldFile?.path || null,
-      newPath: StorageCore.getImagePath(asset, { fileType, format, isEdited: false }),
+      newPath,
+      expectedFilePath: oldFile?.path,
     });
   }
 
@@ -204,6 +211,22 @@ export class StorageCore {
     this.ensureFolders(newPath);
 
     let move = await this.moveRepository.getByEntity(entityId, pathType);
+    if (
+      move &&
+      request.expectedFilePath &&
+      move.oldPath !== request.expectedFilePath &&
+      move.newPath !== request.expectedFilePath
+    ) {
+      // An interrupted move belongs to a retired cache generation. Never resume
+      // its bytes into the current generation's destination.
+      await this.moveRepository.delete(move.id);
+      for (const path of new Set([move.oldPath, move.newPath])) {
+        if (path !== oldPath && path !== newPath) {
+          await this.storageRepository.unlink(path);
+        }
+      }
+      move = undefined;
+    }
     if (move) {
       this.logger.log(`Attempting to finish incomplete move: ${move.oldPath} => ${move.newPath}`);
       const isOldPathExists = await this.storageRepository.checkFileExists(move.oldPath);
@@ -269,7 +292,11 @@ export class StorageCore {
       }
     }
 
-    await this.savePath(pathType, entityId, newPath, ownerId);
+    const saved = await this.savePath(pathType, entityId, newPath, ownerId, request.expectedFilePath);
+    if (saved === false) {
+      // A newer publication retired this generation while its files were moving.
+      await this.storageRepository.unlink(newPath);
+    }
     await this.moveRepository.delete(move.id);
   }
 
@@ -322,7 +349,7 @@ export class StorageCore {
     return { dri, mali };
   }
 
-  private savePath(pathType: PathType, id: string, newPath: string, ownerId?: string) {
+  private savePath(pathType: PathType, id: string, newPath: string, ownerId?: string, expectedFilePath?: string) {
     switch (pathType) {
       case AssetPathType.Original: {
         return this.assetRepository.update({ id, originalPath: newPath });
@@ -334,6 +361,9 @@ export class StorageCore {
       case AssetFileType.Preview:
       case AssetFileType.Sidecar:
       case AssetPathType.EncodedVideo: {
+        if (expectedFilePath) {
+          return this.assetRepository.replaceFilePath(id, pathType as AssetFileType, expectedFilePath, newPath);
+        }
         return this.assetRepository.upsertFile({ assetId: id, type: pathType as AssetFileType, path: newPath });
       }
 

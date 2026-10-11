@@ -18,6 +18,17 @@ order by
 -- ViewRepository.getAssetsByOriginalPath
 select
   "asset".*,
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
   to_json("asset_exif") as "exifInfo"
 from
   "asset"

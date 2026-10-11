@@ -4,6 +4,12 @@ class LocalAsset extends BaseAsset {
   @override
   final String id;
   final String? remoteAssetId;
+  @override
+  final String? thumbHash;
+  @override
+  final String? mediaRevision;
+  @override
+  final bool isDeveloped;
   final String? cloudId;
   final int orientation;
   @override
@@ -16,6 +22,9 @@ class LocalAsset extends BaseAsset {
   const LocalAsset({
     required this.id,
     String? remoteId,
+    this.thumbHash,
+    this.mediaRevision,
+    this.isDeveloped = false,
     this.cloudId,
     required super.name,
     super.checksum,
@@ -82,6 +91,9 @@ class LocalAsset extends BaseAsset {
     }
     return super == other &&
         id == other.id &&
+        thumbHash == other.thumbHash &&
+        mediaRevision == other.mediaRevision &&
+        isDeveloped == other.isDeveloped &&
         cloudId == other.cloudId &&
         orientation == other.orientation &&
         playbackStyle == other.playbackStyle &&
@@ -95,6 +107,9 @@ class LocalAsset extends BaseAsset {
       super.hashCode ^
       id.hashCode ^
       remoteId.hashCode ^
+      thumbHash.hashCode ^
+      mediaRevision.hashCode ^
+      isDeveloped.hashCode ^
       orientation.hashCode ^
       playbackStyle.hashCode ^
       adjustmentTime.hashCode ^
@@ -104,6 +119,9 @@ class LocalAsset extends BaseAsset {
   LocalAsset copyWith({
     String? id,
     String? remoteId,
+    String? thumbHash,
+    String? mediaRevision,
+    bool? isDeveloped,
     String? cloudId,
     String? name,
     String? checksum,
@@ -124,6 +142,9 @@ class LocalAsset extends BaseAsset {
     return LocalAsset(
       id: id ?? this.id,
       remoteId: remoteId ?? this.remoteId,
+      thumbHash: thumbHash ?? this.thumbHash,
+      mediaRevision: mediaRevision ?? this.mediaRevision,
+      isDeveloped: isDeveloped ?? this.isDeveloped,
       cloudId: cloudId ?? this.cloudId,
       name: name ?? this.name,
       checksum: checksum ?? this.checksum,

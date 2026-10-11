@@ -30,7 +30,7 @@ describe(SyncRequestType.PartnerAssetsV2, () => {
     const date = new Date().toISOString();
 
     const { user: user2 } = await ctx.newUser();
-    const { asset } = await ctx.newAsset({
+    const { asset, result } = await ctx.newAsset({
       ownerId: user2.id,
       originalFileName,
       checksum: Buffer.from(checksum, 'base64'),
@@ -66,6 +66,8 @@ describe(SyncRequestType.PartnerAssetsV2, () => {
           visibility: asset.visibility,
           duration: asset.duration,
           isEdited: asset.isEdited,
+          isDeveloped: false,
+          mediaRevision: result.updateId,
           stackId: null,
           livePhotoVideoId: null,
           libraryId: asset.libraryId,

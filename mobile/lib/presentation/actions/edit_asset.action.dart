@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
@@ -50,12 +51,18 @@ class EditAssetAction extends AssetActionBuilder {
     try {
       // TODO(shenlong): Move all EXIF and Apply Edits logic onto the Route
       final repository = ref.read(driftProvider).remoteAssetRepository;
-      final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.watchExif(asset.id).first).wait;
+      final (edits, exif, baseDimensions) = await (
+        repository.getAssetEdits(asset.id),
+        repository.watchExif(asset.id).first,
+        asset.isDeveloped
+            ? ref.read(assetApiRepositoryProvider).getAssetEditBaseDimensions(asset.id)
+            : Future<({int width, int height})?>.value(null),
+      ).wait;
       if (exif == null || !context.mounted) {
         return;
       }
 
-      ref.read(editorStateProvider.notifier).init(edits, exif);
+      ref.read(editorStateProvider.notifier).init(edits, exif, baseDimensions: baseDimensions);
       unawaited(
         context.pushRoute(
           EditImageRoute(

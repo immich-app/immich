@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { type Kysely, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database.js';
+import { assetIsDeveloped, columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
@@ -54,10 +54,35 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select(['id', 'originalPath'])
+      .select(['asset.id', 'asset.originalPath'])
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .select('asset_job_status.development')
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .limit(1)
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getForSidecarPath(libraryId: string, sidecarPath: string) {
+    return this.db
+      .selectFrom('asset')
+      .select('asset.id')
+      .where('asset.libraryId', '=', asUuid(libraryId))
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          eb.exists(
+            eb
+              .selectFrom('asset_file')
+              .whereRef('asset_file.assetId', '=', 'asset.id')
+              .where('asset_file.type', '=', AssetFileType.Sidecar)
+              .where('asset_file.path', '=', sidecarPath),
+          ),
+          eb(sql<string>`asset."originalPath" || '.xmp'`, '=', sidecarPath),
+          eb(sql<string>`regexp_replace(asset."originalPath", '\\.[^./]+$', '') || '.xmp'`, '=', sidecarPath),
+        ]),
+      )
+      .execute();
   }
 
   @GenerateSql({ params: [{ force: false, fullsizeEnabled: true }], stream: true })
@@ -126,6 +151,9 @@ export class AssetJobRepository {
         'asset.thumbhash',
         'asset.type',
       ])
+      .select((eb) => withFilePath(eb, AssetFileType.Sidecar).as('sidecarPath'))
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .select('asset_job_status.development')
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -149,6 +177,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(columns.asset)
+      .select(assetIsDeveloped)
       .select(withFaces)
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .innerJoin('user', 'user.id', 'asset.ownerId')
@@ -422,23 +451,12 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [], stream: true })
-  streamForSidecar(force?: boolean) {
+  streamForSidecar(_force?: boolean) {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
-      .$if(!force, (qb) =>
-        qb.where((eb) =>
-          eb.not(
-            eb.exists(
-              eb
-                .selectFrom('asset_file')
-                .select('asset_file.id')
-                .whereRef('asset_file.assetId', '=', 'asset.id')
-                .where('asset_file.type', '=', AssetFileType.Sidecar),
-            ),
-          ),
-        ),
-      )
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.isOffline', '=', false)
       .stream();
   }
 

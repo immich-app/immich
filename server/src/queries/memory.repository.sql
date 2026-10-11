@@ -34,7 +34,18 @@ select
     from
       (
         select
-          "asset".*
+          "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped"
         from
           "asset"
           inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
@@ -75,7 +86,18 @@ select
     from
       (
         select
-          "asset".*
+          "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped"
         from
           "asset"
           inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
@@ -124,7 +146,18 @@ select
     from
       (
         select
-          "asset".*
+          "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped"
         from
           "asset"
           inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
@@ -166,7 +199,18 @@ select
     from
       (
         select
-          "asset".*
+          "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped"
         from
           "asset"
           inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
@@ -288,7 +332,18 @@ select
     from
       (
         select
-          "asset".*
+          "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped"
         from
           "asset"
           inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
@@ -321,7 +376,18 @@ select
     from
       (
         select
-          "asset".*
+          "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped"
         from
           "asset"
           inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"

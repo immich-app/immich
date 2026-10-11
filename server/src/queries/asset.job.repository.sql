@@ -49,8 +49,9 @@ limit
 
 -- AssetJobRepository.getForSidecarCheckJob
 select
-  "id",
-  "originalPath",
+  "asset"."id",
+  "asset"."originalPath",
+  "asset_job_status"."development",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -70,10 +71,33 @@ select
   ) as "files"
 from
   "asset"
+  left join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
   "asset"."id" = $2::uuid
 limit
   $3
+
+-- AssetJobRepository.getForSidecarPath
+select
+  "asset"."id"
+from
+  "asset"
+where
+  "asset"."libraryId" = $1::uuid
+  and "asset"."deletedAt" is null
+  and (
+    exists (
+      select
+      from
+        "asset_file"
+      where
+        "asset_file"."assetId" = "asset"."id"
+        and "asset_file"."type" = $2
+        and "asset_file"."path" = $3
+    )
+    or asset."originalPath" || '.xmp' = $4
+    or regexp_replace(asset."originalPath", '\.[^./]+$', '') || '.xmp' = $5
+  )
 
 -- AssetJobRepository.streamForThumbnailJob
 select
@@ -208,6 +232,17 @@ select
   "asset"."type",
   (
     select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'sidecar'
+      and "asset_file"."isEdited" = false
+  ) as "sidecarPath",
+  "asset_job_status"."development",
+  (
+    select
       coalesce(json_agg(agg), '[]')
     from
       (
@@ -237,6 +272,8 @@ select
           "asset_edit"
         where
           "asset_edit"."assetId" = "asset"."id"
+        order by
+          "asset_edit"."sequence" asc
       ) as agg
   ) as "edits",
   to_json("asset_exif") as "exifInfo",
@@ -299,6 +336,7 @@ select
   ) as "format"
 from
   "asset"
+  left join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   left join "asset_video" on "asset_video"."assetId" = "asset"."id"
 where
@@ -323,6 +361,17 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -813,15 +862,8 @@ select
 from
   "asset"
 where
-  not exists (
-    select
-      "asset_file"."id"
-    from
-      "asset_file"
-    where
-      "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $1
-  )
+  "asset"."deletedAt" is null
+  and "asset"."isOffline" = $1
 
 -- AssetJobRepository.streamForDetectFacesJob
 select

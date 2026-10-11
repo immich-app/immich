@@ -121,7 +121,7 @@
     return qualityList;
   };
 
-  const loaderKey = $derived(`${asset.id}:${asset.thumbhash}:${sharedLink?.id}`);
+  const loaderKey = $derived(`${asset.id}:${asset.mediaRevision ?? asset.thumbhash}:${sharedLink?.id}`);
 
   const adaptiveImageLoader = $derived.by(() => {
     void loaderKey;

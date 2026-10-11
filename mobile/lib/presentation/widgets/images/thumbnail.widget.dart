@@ -23,12 +23,18 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.remote({
     required String remoteId,
     required String thumbhash,
+    String? mediaRevision,
     this.fit = BoxFit.cover,
 
     /// Physical size to decode, or null for the source size.
     Size? decodeSize,
     super.key,
-  }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash, decodeSize: decodeSize),
+  }) : imageProvider = RemoteImageProvider.thumbnail(
+         assetId: remoteId,
+         thumbhash: thumbhash,
+         mediaRevision: mediaRevision,
+         decodeSize: decodeSize,
+       ),
        thumbhashProvider = null;
 
   Thumbnail.fromAsset({

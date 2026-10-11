@@ -3,10 +3,13 @@ import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
 import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
+import { promisify } from 'node:util';
 import sharp, { Sharp } from 'sharp';
+import z from 'zod';
 import type {
   Bitmap,
   DecodeToBufferOptions,
@@ -21,6 +24,7 @@ import type {
 } from 'src/types.js';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
 import { Exif } from 'src/database.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
   AacProfile,
@@ -47,6 +51,44 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   );
 
 const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
+const execFileAsync = promisify(execFile);
+// Lightroom can embed large masks and lookup tables in XMP. Keep this bound aligned with the renderer.
+const MAX_XMP_BYTES = 128 * 1024 * 1024;
+const rendererHeaderSchema = z.discriminatedUnion('status', [
+  z.object({
+    version: z.literal(1),
+    status: z.literal('skipped'),
+    rendererVersion: z.string(),
+    reason: z.string().optional(),
+    unmapped: z.array(z.string()).optional(),
+  }),
+  z.object({
+    version: z.literal(1),
+    status: z.literal('developed'),
+    rendererVersion: z.string(),
+    width: z.int().positive(),
+    height: z.int().positive(),
+    nativeWidth: z.int().positive(),
+    nativeHeight: z.int().positive(),
+    channels: z.literal(4),
+    colorspace: z.enum(['srgb', 'p3']),
+    isDeveloped: z.boolean().optional(),
+    unmapped: z.array(z.string()),
+  }),
+]);
+
+export interface DevelopImageOptions {
+  originalPath: string;
+  sidecarPath?: string;
+  colorspace: Colorspace;
+  size?: number;
+}
+
+export interface DevelopedImage extends Bitmap {
+  colorspace: Colorspace;
+  nativeDimensions: ImageDimensions;
+  isDeveloped: boolean;
+}
 
 type ProgressEvent = {
   frames: number;
@@ -64,12 +106,184 @@ export type ExtractResult = {
 
 @Injectable()
 export class MediaRepository {
+  private rendererVersion?: Promise<string>;
+
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
     // eslint-disable-next-line import-x/no-named-as-default-member
     sharp.concurrency(0);
     // eslint-disable-next-line import-x/no-named-as-default-member
     sharp.cache({ files: 0 });
+  }
+
+  private getRendererCommand() {
+    return process.env.IMMICH_SIDECAR_RENDERER || 'immich-sidecar-renderer';
+  }
+
+  private getRendererVersion(): Promise<string> {
+    this.rendererVersion ??= execFileAsync(this.getRendererCommand(), ['--version'], {
+      timeout: 10_000,
+      maxBuffer: 64 * 1024,
+    })
+      .then(({ stdout }) => {
+        const version = stdout.trim();
+        if (!version) {
+          throw new Error('Sidecar renderer returned an empty version');
+        }
+        return version;
+      })
+      .catch((error: unknown) => {
+        this.rendererVersion = undefined;
+        throw error;
+      });
+    return this.rendererVersion;
+  }
+
+  async getDevelopmentInputFingerprint({
+    originalPath,
+    sidecarPath,
+    image,
+  }: {
+    originalPath: string;
+    sidecarPath?: string | null;
+    image: SystemConfig['image'];
+  }): Promise<string> {
+    const [original, rendererVersion] = await Promise.all([fs.stat(originalPath), this.getRendererVersion()]);
+    const hash = createHash('sha256').update(
+      JSON.stringify({
+        originalPath,
+        size: original.size,
+        mtime: original.mtimeMs,
+        sidecarPath: sidecarPath ?? null,
+        rendererVersion,
+        image,
+      }),
+    );
+    if (sidecarPath) {
+      const file = await fs.open(sidecarPath, 'r');
+      try {
+        const stat = await file.stat();
+        if (stat.size > MAX_XMP_BYTES) {
+          throw new Error('XMP packet exceeds 128 MiB');
+        }
+        let length = 0;
+        // Bound the read itself: an XMP can grow after the initial size check.
+        for await (const chunk of file.createReadStream({ autoClose: false, end: MAX_XMP_BYTES })) {
+          length += chunk.length;
+          if (length > MAX_XMP_BYTES) {
+            throw new Error('XMP packet exceeds 128 MiB');
+          }
+          hash.update(chunk);
+        }
+      } finally {
+        await file.close();
+      }
+    }
+    return hash.digest('hex');
+  }
+
+  async developImage(options: DevelopImageOptions): Promise<DevelopedImage | null> {
+    const args = ['--original', options.originalPath];
+    if (options.sidecarPath !== undefined) {
+      args.push('--sidecar', options.sidecarPath);
+    }
+    args.push('--colorspace', options.colorspace);
+    if (options.size !== undefined) {
+      args.push('--size', String(options.size));
+    }
+
+    const result = await new Promise<{ header: z.infer<typeof rendererHeaderSchema>; data: Buffer }>(
+      (resolve, reject) => {
+        const child = spawn(this.getRendererCommand(), args, { timeout: 10 * 60 * 1000, killSignal: 'SIGKILL' });
+        child.stdin.end();
+        let headerBuffer = Buffer.alloc(0);
+        let header: z.infer<typeof rendererHeaderSchema> | undefined;
+        const buffers: Buffer[] = [];
+        let bytes = 0;
+        let stderr = '';
+        let failure: Error | undefined;
+        const fail = (error: unknown) => {
+          failure ??= error instanceof Error ? error : new Error(String(error));
+          child.kill('SIGKILL');
+        };
+        child.on('error', reject);
+        child.stderr.on('data', (chunk: Buffer) => {
+          stderr = (stderr + chunk.toString()).slice(-64 * 1024);
+        });
+        child.stdout.on('data', (chunk: Buffer) => {
+          if (failure) {
+            return;
+          }
+          try {
+            if (!header) {
+              headerBuffer = Buffer.concat([headerBuffer, chunk]);
+              const end = headerBuffer.indexOf(10);
+              if ((end === -1 && headerBuffer.length > 64 * 1024) || end > 64 * 1024) {
+                throw new Error('Sidecar renderer metadata exceeds 64 KiB');
+              }
+              if (end === -1) {
+                return;
+              }
+              header = rendererHeaderSchema.parse(JSON.parse(headerBuffer.subarray(0, end).toString()));
+              chunk = headerBuffer.subarray(end + 1);
+              headerBuffer = Buffer.alloc(0);
+              if (header.status === 'developed' && header.width * header.height * 4 > 400 * 1024 * 1024) {
+                throw new Error('Sidecar renderer output exceeds the supported image size');
+              }
+            }
+            bytes += chunk.length;
+            const expected = header.status === 'developed' ? header.width * header.height * 4 : 0;
+            if (bytes > expected) {
+              throw new Error('Sidecar renderer returned excess pixel data');
+            }
+            if (chunk.length > 0) {
+              buffers.push(chunk);
+            }
+          } catch (error) {
+            fail(error);
+          }
+        });
+        child.on('close', (code, signal) => {
+          if (failure) {
+            return reject(failure);
+          }
+          if (code !== 0) {
+            return reject(new Error(`Sidecar renderer failed (${signal ?? code}): ${stderr.trim()}`));
+          }
+          if (!header) {
+            return reject(new Error('Sidecar renderer returned no metadata'));
+          }
+          const expected = header.status === 'developed' ? header.width * header.height * 4 : 0;
+          if (bytes !== expected) {
+            return reject(new Error('Sidecar renderer returned incomplete pixel data'));
+          }
+          resolve({ header, data: Buffer.concat(buffers, bytes) });
+        });
+      },
+    );
+
+    if (result.header.unmapped?.length) {
+      this.logger.warn(`Sidecar settings not reproduced: ${result.header.unmapped.join(', ')}`);
+    }
+    if (result.header.status === 'skipped') {
+      if (options.sidecarPath === undefined) {
+        throw new Error('Native RAW renderer did not return a bitmap');
+      }
+      return null;
+    }
+    if (options.sidecarPath === undefined && result.header.isDeveloped === undefined) {
+      throw new Error('Native RAW renderer did not report its development state');
+    }
+    if (result.header.colorspace !== options.colorspace) {
+      throw new Error('Sidecar renderer returned the wrong output colorspace');
+    }
+    return {
+      data: result.data,
+      info: { width: result.header.width, height: result.header.height, channels: 4 },
+      colorspace: options.colorspace,
+      nativeDimensions: { width: result.header.nativeWidth, height: result.header.nativeHeight },
+      isDeveloped: result.header.isDeveloped ?? true,
+    };
   }
 
   /**

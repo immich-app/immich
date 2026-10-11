@@ -88,6 +88,12 @@ class AssetApiRepository extends ApiRepository {
     return _api.editAsset(assetId, AssetEditsCreateDto(edits: edits.map((e) => e.toApi()).toList()));
   }
 
+  Future<({int width, int height})?> getAssetEditBaseDimensions(String assetId) async {
+    final response = await checkNull(_api.getAssetEdits(assetId));
+    final dimensions = response.baseDimensions.orElse(null);
+    return dimensions == null ? null : (width: dimensions.width, height: dimensions.height);
+  }
+
   Future<void> removeEdits(String assetId) async {
     return _api.removeAssetEdits(assetId);
   }

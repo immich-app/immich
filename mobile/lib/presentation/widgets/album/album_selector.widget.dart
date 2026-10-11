@@ -691,6 +691,7 @@ class _GridAlbumCard extends ConsumerWidget {
                         return Thumbnail.remote(
                           remoteId: album.thumbnailAssetId!,
                           thumbhash: snapshot.data!.thumbHash ?? "",
+                          mediaRevision: snapshot.data!.mediaRevision,
                         );
                       }
 

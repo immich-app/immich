@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -136,6 +137,25 @@ void main() {
 
   tearDown(() async {
     await db.close();
+  });
+
+  test('persists developed preview revisions independently from an unchanged thumbhash', () async {
+    await sut.updateUsersV1([_createUser()]);
+    final asset = _createAssetV2(id: 'developed', checksum: 'source-hash', fileName: 'photo.nef')
+      ..thumbhash = 'same-hash'
+      ..mediaRevision = const Optional.present('first-render')
+      ..isDeveloped = const Optional.present(true);
+    await sut.updateAssetsV2([asset]);
+
+    var stored = await db.remoteAssetEntity.select().getSingle();
+    expect(stored.toDto().isDeveloped, isTrue);
+    expect(stored.toDto().mediaRevision, 'first-render');
+
+    asset.mediaRevision = const Optional.present('second-render');
+    await sut.updateAssetsV2([asset]);
+    stored = await db.remoteAssetEntity.select().getSingle();
+    expect(stored.thumbHash, 'same-hash');
+    expect(stored.toDto().mediaRevision, 'second-render');
   });
 
   group('SyncStreamRepository - Dimension swapping based on orientation', () {

@@ -2,6 +2,13 @@
 
 -- AssetEditRepository.replaceAll
 begin
+select
+  "id"
+from
+  "asset"
+where
+  "id" = $1
+for update
 delete from "asset_edit"
 where
   "assetId" = $1

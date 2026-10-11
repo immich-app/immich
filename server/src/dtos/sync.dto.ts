@@ -64,6 +64,8 @@ const SyncPartnerDeleteV1Schema = z
 const SyncAssetV1Schema = z
   .object({
     id: z.uuidv4().describe('Asset ID'),
+    mediaRevision: z.string().optional().describe('Asset media cache revision'),
+    isDeveloped: z.boolean().optional().describe('Whether the preview includes sidecar development'),
     ownerId: z.uuidv4().describe('Owner ID'),
     originalFileName: z.string().describe('Original file name'),
     thumbhash: z.string().nullable().describe('Thumbhash'),
@@ -89,6 +91,8 @@ const SyncAssetV1Schema = z
 const SyncAssetV2Schema = z
   .object({
     id: z.uuidv4().describe('Asset ID'),
+    mediaRevision: z.string().optional().describe('Asset media cache revision'),
+    isDeveloped: z.boolean().optional().describe('Whether the preview includes sidecar development'),
     ownerId: z.uuidv4().describe('Owner ID'),
     originalFileName: z.string().describe('Original file name'),
     thumbhash: z.string().nullable().describe('Thumbhash'),

@@ -1,4 +1,10 @@
-import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
+import {
+  editAsset,
+  removeAssetEdits,
+  type AssetEditsCreateDto,
+  type AssetEditsResponseDto,
+  type AssetResponseDto,
+} from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
@@ -12,7 +18,11 @@ export type EditAction = AssetEditsCreateDto['edits'][number];
 export type EditActions = EditAction[];
 
 export interface EditToolManager {
-  onActivate: (asset: AssetResponseDto, edits: EditActions) => Promise<void>;
+  onActivate: (
+    asset: AssetResponseDto,
+    edits: EditActions,
+    baseDimensions?: AssetEditsResponseDto['baseDimensions'],
+  ) => Promise<void>;
   onDeactivate: () => void;
   resetAllChanges: () => Promise<void>;
   hasChanges: boolean;
@@ -84,7 +94,11 @@ export class EditManager {
     this.selectedTool = this.tools[0];
   }
 
-  async activateTool(toolType: EditToolType, asset: AssetResponseDto, edits: AssetEditsCreateDto) {
+  async activateTool(
+    toolType: EditToolType,
+    asset: AssetResponseDto,
+    edits: AssetEditsCreateDto & Pick<AssetEditsResponseDto, 'baseDimensions'>,
+  ) {
     this.hasAppliedEdits = false;
     if (this.selectedTool?.type === toolType) {
       return;
@@ -96,7 +110,7 @@ export class EditManager {
     const newTool = this.tools.find((t) => t.type === toolType);
     if (newTool) {
       this.selectedTool = newTool;
-      await newTool.manager.onActivate?.(asset, edits.edits);
+      await newTool.manager.onActivate?.(asset, edits.edits, edits.baseDimensions);
     }
   }
 

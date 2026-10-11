@@ -787,6 +787,45 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('published edit base dimensions', () => {
+    it('returns the developed base dimensions while preserving source EXIF', async () => {
+      const asset = AssetFactory.from().exif({ exifImageWidth: 6000, exifImageHeight: 4000 }).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: asset.type,
+        originalPath: asset.originalPath,
+        originalFileName: asset.originalFileName,
+        livePhotoVideoId: null,
+        exifImageWidth: 6000,
+        exifImageHeight: 4000,
+        orientation: '1',
+        projectionType: null,
+        development: {
+          observedInputFingerprint: 'current',
+          publishedInputFingerprint: 'current',
+          publishedBase: { width: 3000, height: 2000, isDeveloped: true },
+        },
+      });
+
+      await expect(sut.getAssetEdits(authStub.admin, asset.id)).resolves.toEqual({
+        assetId: asset.id,
+        edits: [],
+        baseDimensions: { width: 3000, height: 2000 },
+      });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
+    });
+
+    it('leaves the optional base dimensions absent before a base has been published', async () => {
+      const id = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([id]));
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+
+      await expect(sut.getAssetEdits(authStub.admin, id)).resolves.toEqual({ assetId: id, edits: [] });
+    });
+  });
+
   describe('editAsset', () => {
     it('should enforce crop first', async () => {
       await expect(

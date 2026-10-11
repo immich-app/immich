@@ -576,6 +576,64 @@ describe(AssetMediaService.name, () => {
   });
 
   describe('viewThumbnail', () => {
+    it('serves developed fullsize for web-compatible originals', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.FullSize }).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: true });
+
+      await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.FULLSIZE })).resolves.toEqual(
+        new ImmichFileResponse({
+          path: asset.files[0].path,
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'image/jpeg',
+          fileName: `IMG_${asset.id}_fullsize.jpg`,
+        }),
+      );
+    });
+
+    it('keeps developed preview on zoom when fullsize is disabled', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: null, isDeveloped: true });
+
+      await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.FULLSIZE })).resolves.toEqual({
+        targetSize: AssetMediaSize.PREVIEW,
+      });
+    });
+
+    it('redirects an unedited developed fullsize request to its unedited preview after a native crop', async () => {
+      const asset = AssetFactory.from()
+        .edit({ action: AssetEditAction.Crop })
+        .file({ type: AssetFileType.Preview })
+        .file({ type: AssetFileType.FullSize, isEdited: true })
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail
+        .mockResolvedValueOnce({ ...asset, path: null, isDeveloped: true })
+        .mockResolvedValueOnce({ ...asset, path: asset.files[0].path, isDeveloped: true });
+
+      await expect(
+        sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.FULLSIZE, edited: false }),
+      ).resolves.toEqual({ targetSize: AssetMediaSize.PREVIEW });
+      await expect(
+        sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.PREVIEW, edited: false }),
+      ).resolves.toMatchObject({ path: asset.files[0].path });
+      expect(mocks.asset.getForThumbnail).toHaveBeenNthCalledWith(1, asset.id, AssetFileType.FullSize, false);
+      expect(mocks.asset.getForThumbnail).toHaveBeenNthCalledWith(2, asset.id, AssetFileType.Preview, false);
+    });
+
+    it('keeps original viewing for ordinary web-compatible images', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: null, isDeveloped: false });
+
+      await expect(
+        sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.FULLSIZE, edited: true }),
+      ).resolves.toEqual({
+        targetSize: 'original',
+      });
+    });
+
     it('should require asset.view permissions', async () => {
       await expect(sut.viewThumbnail(authStub.admin, 'id', {})).rejects.toBeInstanceOf(BadRequestException);
 
@@ -587,7 +645,7 @@ describe(AssetMediaService.name, () => {
     it('should fall back to preview if the requested thumbnail file does not exist', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
 
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toEqual(
         new ImmichFileResponse({
@@ -602,7 +660,7 @@ describe(AssetMediaService.name, () => {
     it('should get preview file', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.PREVIEW })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
@@ -618,7 +676,7 @@ describe(AssetMediaService.name, () => {
         .file({ type: AssetFileType.Thumbnail, path: '/uploads/user-id/webp/path.ext' })
         .build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
@@ -633,7 +691,7 @@ describe(AssetMediaService.name, () => {
     it('should get original thumbnail by default', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Thumbnail }).build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
@@ -648,7 +706,7 @@ describe(AssetMediaService.name, () => {
     it('should get edited thumbnail when edited=true', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Thumbnail, isEdited: true }).build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
       await expect(
         sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL, edited: true }),
       ).resolves.toEqual(
@@ -665,7 +723,7 @@ describe(AssetMediaService.name, () => {
     it('should get original thumbnail when edited=false', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Thumbnail }).build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
       await expect(
         sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL, edited: false }),
       ).resolves.toEqual(
@@ -682,7 +740,7 @@ describe(AssetMediaService.name, () => {
     it('should not return the unedited version if requested using a shared link', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Thumbnail }).build();
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
       await expect(
         sut.viewThumbnail(authStub.adminSharedLink, asset.id, {
           size: AssetMediaSize.THUMBNAIL,
@@ -703,7 +761,7 @@ describe(AssetMediaService.name, () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
 
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path, isDeveloped: false });
 
       const auth = AuthFactory.from().sharedLink({ showExif: false }).build();
 

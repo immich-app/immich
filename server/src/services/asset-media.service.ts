@@ -264,13 +264,18 @@ export class AssetMediaService extends BaseService {
     }
 
     const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
-    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(
+    const { originalPath, originalFileName, path, isDeveloped, isEdited } = await this.assetRepository.getForThumbnail(
       id,
       size,
       dto.edited ?? false,
     );
 
-    if (size === AssetFileType.FullSize && mimeTypes.isWebSupportedImage(originalPath) && !dto.edited) {
+    if (
+      size === AssetFileType.FullSize &&
+      !isDeveloped &&
+      mimeTypes.isWebSupportedImage(originalPath) &&
+      (!dto.edited || !isEdited)
+    ) {
       // use original file for web supported images
       return { targetSize: 'original' };
     }

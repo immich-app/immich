@@ -67,6 +67,7 @@ class _MemoryListPageState extends ConsumerState<MemoryListPage> {
                               child: Thumbnail.remote(
                                 remoteId: memories[index].assets[0].id,
                                 thumbhash: memories[index].assets[0].thumbHash ?? "",
+                                mediaRevision: memories[index].assets[0].mediaRevision,
                                 fit: BoxFit.cover,
                               ),
                             ),

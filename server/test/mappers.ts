@@ -1,4 +1,5 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
+import type { ImageDevelopmentState } from 'src/schema/tables/asset-job-status.table.js';
 import type { AudioStreamInfo, VideoFormat, VideoStreamInfo } from 'src/types.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
@@ -141,6 +142,7 @@ export const getForMetadataExtraction = (
   asset: ReturnType<AssetFactory['build']>,
   { clusterGroupId }: { clusterGroupId?: string } = {},
 ) => ({
+  isDeveloped: asset.isDeveloped,
   id: asset.id,
   clusterGroupId: clusterGroupId ?? newUuid(),
   checksum: asset.checksum,
@@ -171,7 +173,11 @@ export const getForGenerateThumbnail = (asset: ReturnType<AssetFactory['build']>
   ownerId: asset.ownerId,
   thumbhash: asset.thumbhash,
   type: asset.type,
-  files: asset.files.map((file) => getDehydrated(file)),
+  sidecarPath: asset.files.find((file) => file.type === AssetFileType.Sidecar)?.path ?? null,
+  development: null as ImageDevelopmentState | null,
+  files: asset.files
+    .filter((file) => [AssetFileType.Thumbnail, AssetFileType.Preview, AssetFileType.FullSize].includes(file.type))
+    .map((file) => getDehydrated(file)),
   exifInfo: getDehydrated(asset.exifInfo),
   edits: asset.edits.map(({ action, parameters }) => ({ action, parameters })) as AssetEditActionItem[],
   videoStream: null as (VideoStreamInfo & { timeBase: number }) | null,

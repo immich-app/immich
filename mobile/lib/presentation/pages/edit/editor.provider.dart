@@ -21,13 +21,13 @@ class EditorProvider extends Notifier<EditorState> {
     state = const EditorState();
   }
 
-  void init(List<AssetEdit> edits, ExifInfo exifInfo) {
+  void init(List<AssetEdit> edits, ExifInfo exifInfo, {({int width, int height})? baseDimensions}) {
     clear();
 
     final existingCrop = edits.whereType<CropEdit>().firstOrNull;
 
-    final originalWidth = exifInfo.isFlipped ? exifInfo.height : exifInfo.width;
-    final originalHeight = exifInfo.isFlipped ? exifInfo.width : exifInfo.height;
+    final originalWidth = baseDimensions?.width ?? (exifInfo.isFlipped ? exifInfo.height : exifInfo.width);
+    final originalHeight = baseDimensions?.height ?? (exifInfo.isFlipped ? exifInfo.width : exifInfo.height);
 
     final Rect crop = existingCrop != null && originalWidth != null && originalHeight != null
         ? convertCropParametersToRect(existingCrop.parameters, originalWidth, originalHeight)

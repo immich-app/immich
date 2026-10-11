@@ -15,8 +15,9 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
-import { LockableProperty, Stack } from 'src/database.js';
+import { LockableProperty, Stack, assetIsDeveloped } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
   AssetFileType,
   AssetOrder,
@@ -30,7 +31,7 @@ import { DB } from 'src/schema/index.js';
 import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
-import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js';
+import { AssetJobStatusTable, type ImageDevelopmentState } from 'src/schema/tables/asset-job-status.table.js';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import {
@@ -57,6 +58,26 @@ import {
 import { globToPostgresRegex } from 'src/utils/misc.js';
 
 export type AssetStats = Record<AssetType, number>;
+
+export interface PublishImageGeneration {
+  assetId: string;
+  originalPath: string;
+  sidecarPath: string | null;
+  fingerprint: string | null;
+  editedOnly?: boolean;
+  edits: AssetEditActionItem[];
+  files: Pick<
+    Insertable<AssetFileTable>,
+    'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
+  >[];
+  thumbhash: Buffer;
+  base?: NonNullable<ImageDevelopmentState['publishedBase']>;
+  dimensions: { width: number; height: number };
+  visibility: {
+    faces: { visible: string[]; hidden: string[] };
+    ocr: { visible: string[]; hidden: string[] };
+  };
+}
 
 export interface BoundingBox {
   west: number;
@@ -177,6 +198,16 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
 @Injectable()
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
+
+  private withAssetLocks<T>(assetIds: string[], operation: (db: Kysely<DB>) => Promise<T>): Promise<T> {
+    if (assetIds.length === 0) {
+      return operation(this.db);
+    }
+    return this.db.transaction().execute(async (tx) => {
+      await tx.selectFrom('asset').select('id').where('id', 'in', assetIds).orderBy('id').forUpdate().execute();
+      return operation(tx);
+    });
+  }
 
   @GenerateSql({
     params: [
@@ -369,12 +400,161 @@ export class AssetRepository {
               facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
+              development: eb.ref('excluded.development'),
             },
             values[0],
           ),
         ),
       )
       .execute();
+  }
+
+  async observeImageDevelopmentInput(assetId: string, fingerprint: string): Promise<void> {
+    const development: ImageDevelopmentState = {
+      observedInputFingerprint: fingerprint,
+      publishedInputFingerprint: null,
+      publishedBase: null,
+    };
+    await this.withAssetLocks([assetId], (tx) =>
+      tx
+        .insertInto('asset_job_status')
+        .values({ assetId: asUuid(assetId), development })
+        .onConflict((oc) =>
+          oc.column('assetId').doUpdateSet({
+            development: sql<ImageDevelopmentState>`jsonb_set(coalesce(asset_job_status.development, excluded.development), '{observedInputFingerprint}', to_jsonb(${fingerprint}::text))`,
+          }),
+        )
+        .execute()
+        .then(() => {}),
+    );
+  }
+
+  async publishImageGeneration(input: PublishImageGeneration): Promise<string[] | null> {
+    return this.db.transaction().execute(async (tx) => {
+      const asset = await tx
+        .selectFrom('asset')
+        .select(['id', 'originalPath'])
+        .where('id', '=', asUuid(input.assetId))
+        .forUpdate()
+        .executeTakeFirst();
+      if (!asset) {
+        return null;
+      }
+      const state = await tx
+        .selectFrom('asset_job_status')
+        .select('development')
+        .where('assetId', '=', asset.id)
+        .forUpdate()
+        .executeTakeFirst();
+      const edits = await tx
+        .selectFrom('asset_edit')
+        .select(['action', 'parameters'])
+        .where('assetId', '=', asset.id)
+        .orderBy('sequence', 'asc')
+        .execute();
+      const sidecar = await tx
+        .selectFrom('asset_file')
+        .select('path')
+        .where('assetId', '=', asset.id)
+        .where('type', '=', AssetFileType.Sidecar)
+        .executeTakeFirst();
+      if (
+        asset.originalPath !== input.originalPath ||
+        (sidecar?.path ?? null) !== input.sidecarPath ||
+        (input.fingerprint === null
+          ? !!state?.development || input.sidecarPath !== null
+          : state?.development?.observedInputFingerprint !== input.fingerprint) ||
+        JSON.stringify(edits) !== JSON.stringify(input.edits)
+      ) {
+        return null;
+      }
+
+      const types = [AssetFileType.Thumbnail, AssetFileType.Preview, AssetFileType.FullSize];
+      const previous = await tx
+        .selectFrom('asset_file')
+        .select(['id', 'path', 'type', 'isEdited'])
+        .where('assetId', '=', asset.id)
+        .where('type', 'in', types)
+        .$if(!!input.editedOnly, (qb) => qb.where('isEdited', '=', true))
+        .execute();
+      if (input.files.length > 0) {
+        await tx
+          .insertInto('asset_file')
+          .values(input.files)
+          .onConflict((oc) =>
+            oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
+              path: eb.ref('excluded.path'),
+              isProgressive: eb.ref('excluded.isProgressive'),
+              isTransparent: eb.ref('excluded.isTransparent'),
+            })),
+          )
+          .execute();
+      }
+      const obsolete = previous.filter((old) =>
+        input.files.every((file) => file.type !== old.type || (file.isEdited ?? false) !== old.isEdited),
+      );
+      if (obsolete.length > 0) {
+        await tx
+          .deleteFrom('asset_file')
+          .where(
+            'id',
+            'in',
+            obsolete.map((file) => file.id),
+          )
+          .execute();
+      }
+      for (const isVisible of [true, false]) {
+        const faceIds = isVisible ? input.visibility.faces.visible : input.visibility.faces.hidden;
+        if (faceIds.length > 0) {
+          await tx
+            .updateTable('asset_face')
+            .set({ isVisible })
+            .where('assetId', '=', asset.id)
+            .where('id', 'in', faceIds)
+            .execute();
+        }
+        const ocrIds = isVisible ? input.visibility.ocr.visible : input.visibility.ocr.hidden;
+        if (ocrIds.length > 0) {
+          await tx
+            .updateTable('asset_ocr')
+            .set({ isVisible })
+            .where('assetId', '=', asset.id)
+            .where('id', 'in', ocrIds)
+            .execute();
+        }
+      }
+      const visibleOcr = await tx
+        .selectFrom('asset_ocr')
+        .select('text')
+        .where('assetId', '=', asset.id)
+        .where('isVisible', '=', true)
+        .orderBy('id')
+        .execute();
+      await tx
+        .updateTable('ocr_search')
+        .set({ text: visibleOcr.map((item) => item.text.trim()).join(' ') })
+        .where('assetId', '=', asset.id)
+        .execute();
+      if (input.fingerprint !== null && input.base) {
+        await tx
+          .updateTable('asset_job_status')
+          .set({
+            development: {
+              observedInputFingerprint: input.fingerprint,
+              publishedInputFingerprint: input.fingerprint,
+              publishedBase: input.base,
+            },
+          })
+          .where('assetId', '=', asset.id)
+          .execute();
+      }
+      await tx
+        .updateTable('asset')
+        .set({ thumbhash: input.thumbhash, ...input.dimensions })
+        .where('id', '=', asset.id)
+        .execute();
+      return previous.map((file) => file.path).filter((path) => input.files.every((file) => file.path !== path));
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -511,7 +691,12 @@ export class AssetRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
   getByIds(ids: string[]) {
-    return this.db.selectFrom('asset').selectAll('asset').where('asset.id', '=', anyUuid(ids)).execute();
+    return this.db
+      .selectFrom('asset')
+      .selectAll('asset')
+      .select(assetIsDeveloped)
+      .where('asset.id', '=', anyUuid(ids))
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -520,6 +705,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
+      .select(assetIsDeveloped)
       .select(withFacesAndPeople({ viewingUserId }))
       .select(withTags)
       .$call(withExif)
@@ -577,6 +763,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
+      .select(assetIsDeveloped)
       .where('asset.id', '=', asUuid(id))
       .$if(!!exifInfo, withExif)
       .$if(!!faces, (qb) =>
@@ -636,18 +823,44 @@ export class AssetRepository {
     await this.db.updateTable('asset').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
-  async update(asset: Updateable<AssetTable> & { id: string }) {
+  async update(
+    asset: Updateable<AssetTable> & { id: string },
+    options?: { preservePublishedImageDimensions?: boolean },
+  ) {
     const value = omitBy(asset, isUndefined);
     delete value.id;
     if (!isEmpty(value)) {
-      return this.db
-        .with('asset', (qb) => qb.updateTable('asset').set(asset).where('id', '=', asUuid(asset.id)).returningAll())
-        .selectFrom('asset')
-        .selectAll('asset')
-        .$call(withExif)
-        .$call((qb) => qb.select(withFaces))
-        .$call((qb) => qb.select(withEdits))
-        .executeTakeFirst();
+      const update = (db: Kysely<DB>) =>
+        db
+          .with('asset', (qb) =>
+            qb
+              .updateTable('asset')
+              .set({
+                ...value,
+                ...(options?.preservePublishedImageDimensions && {
+                  ...(asset.width !== undefined && {
+                    width: sql<number>`CASE WHEN "asset"."width" IS NULL OR (NOT "asset"."isEdited" AND NOT EXISTS (SELECT FROM asset_job_status WHERE "assetId" = "asset"."id" AND development->'publishedBase' IS NOT NULL AND development->'publishedBase' <> 'null'::jsonb)) THEN ${asset.width} ELSE "asset"."width" END`,
+                  }),
+                  ...(asset.height !== undefined && {
+                    height: sql<number>`CASE WHEN "asset"."height" IS NULL OR (NOT "asset"."isEdited" AND NOT EXISTS (SELECT FROM asset_job_status WHERE "assetId" = "asset"."id" AND development->'publishedBase' IS NOT NULL AND development->'publishedBase' <> 'null'::jsonb)) THEN ${asset.height} ELSE "asset"."height" END`,
+                  }),
+                }),
+              })
+              .where('id', '=', asUuid(asset.id))
+              .returningAll(),
+          )
+          .selectFrom('asset')
+          .selectAll('asset')
+          .select(assetIsDeveloped)
+          .$call(withExif)
+          .$call((qb) => qb.select(withFaces))
+          .$call((qb) => qb.select(withEdits))
+          .executeTakeFirst();
+      if (options?.preservePublishedImageDimensions) {
+        // Wait for publication before taking the snapshot used by the dimension guard.
+        return this.withAssetLocks([asset.id], update);
+      }
+      return update(this.db);
     }
 
     return this.getById(asset.id, { exifInfo: true, faces: {}, edits: true });
@@ -823,6 +1036,7 @@ export class AssetRepository {
             'asset.duration',
             'asset.id',
             'asset.visibility',
+            'asset.updateId as mediaRevision',
             sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
@@ -947,6 +1161,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
+            eb.fn.coalesce(eb.fn('array_agg', ['mediaRevision']), sql.lit('{}')).as('mediaRevision'),
           ])
           .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
             qb.select((eb) => [
@@ -1019,15 +1234,18 @@ export class AssetRepository {
       'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
     >,
   ): Promise<void> {
-    await this.db
-      .insertInto('asset_file')
-      .values(file)
-      .onConflict((oc) =>
-        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
-          path: eb.ref('excluded.path'),
-        })),
-      )
-      .execute();
+    await this.withAssetLocks(file.type === AssetFileType.Sidecar ? [file.assetId] : [], (tx) =>
+      tx
+        .insertInto('asset_file')
+        .values(file)
+        .onConflict((oc) =>
+          oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
+            path: eb.ref('excluded.path'),
+          })),
+        )
+        .execute()
+        .then(() => {}),
+    );
   }
 
   async upsertFiles(
@@ -1040,17 +1258,33 @@ export class AssetRepository {
       return;
     }
 
-    await this.db
-      .insertInto('asset_file')
-      .values(files)
-      .onConflict((oc) =>
-        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
-          path: eb.ref('excluded.path'),
-          isProgressive: eb.ref('excluded.isProgressive'),
-          isTransparent: eb.ref('excluded.isTransparent'),
-        })),
-      )
-      .execute();
+    await this.withAssetLocks(
+      files.filter((file) => file.type === AssetFileType.Sidecar).map((file) => file.assetId),
+      (tx) =>
+        tx
+          .insertInto('asset_file')
+          .values(files)
+          .onConflict((oc) =>
+            oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
+              path: eb.ref('excluded.path'),
+              isProgressive: eb.ref('excluded.isProgressive'),
+              isTransparent: eb.ref('excluded.isTransparent'),
+            })),
+          )
+          .execute(),
+    );
+  }
+
+  async replaceFilePath(assetId: string, type: AssetFileType, oldPath: string, newPath: string): Promise<boolean> {
+    const result = await this.db
+      .updateTable('asset_file')
+      .set({ path: newPath })
+      .where('assetId', '=', asUuid(assetId))
+      .where('type', '=', type)
+      .where('isEdited', '=', false)
+      .where('path', 'in', [oldPath, newPath])
+      .executeTakeFirst();
+    return result.numUpdatedRows > 0n;
   }
 
   async deleteFile({
@@ -1062,12 +1296,15 @@ export class AssetRepository {
     type: AssetFileType;
     edited?: boolean;
   }): Promise<void> {
-    await this.db
-      .deleteFrom('asset_file')
-      .where('assetId', '=', asUuid(assetId))
-      .where('type', '=', type)
-      .$if(edited !== undefined, (qb) => qb.where('isEdited', '=', edited!))
-      .execute();
+    await this.withAssetLocks(type === AssetFileType.Sidecar ? [assetId] : [], (tx) =>
+      tx
+        .deleteFrom('asset_file')
+        .where('assetId', '=', asUuid(assetId))
+        .where('type', '=', type)
+        .$if(edited !== undefined, (qb) => qb.where('isEdited', '=', edited!))
+        .execute()
+        .then(() => {}),
+    );
   }
 
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {
@@ -1174,10 +1411,17 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', id)
-      .leftJoin('asset_file', (join) =>
-        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
+      .leftJoin('asset_file', (join) => {
+        const file = join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type);
+        return isEdited ? file : file.on('asset_file.isEdited', '=', false);
+      })
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .select(['asset.originalPath', 'asset.originalFileName', 'asset.isEdited', 'asset_file.path as path'])
+      .select(
+        sql<boolean | null>`"asset_job_status"."development"->'publishedBase'->>'isDeveloped' = 'true'`.as(
+          'isDeveloped',
+        ),
       )
-      .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
       .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
       .executeTakeFirstOrThrow();
   }
@@ -1211,6 +1455,8 @@ export class AssetRepository {
       .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalPath', 'asset.originalFileName'])
       .where('asset.id', '=', id)
       .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .select('asset_job_status.development')
       .select([
         'asset_exif.exifImageWidth',
         'asset_exif.exifImageHeight',

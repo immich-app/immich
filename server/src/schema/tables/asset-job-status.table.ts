@@ -1,6 +1,12 @@
 import { Column, ForeignKeyColumn, Table, Timestamp } from '@immich/sql-tools';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 
+export interface ImageDevelopmentState {
+  observedInputFingerprint: string;
+  publishedInputFingerprint: string | null;
+  publishedBase: { isDeveloped: boolean; width: number; height: number } | null;
+}
+
 @Table('asset_job_status')
 export class AssetJobStatusTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', primary: true })
@@ -17,4 +23,7 @@ export class AssetJobStatusTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   ocrAt!: Timestamp | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  development!: ImageDevelopmentState | null;
 }

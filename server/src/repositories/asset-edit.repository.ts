@@ -13,6 +13,8 @@ export class AssetEditRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   replaceAll(assetId: string, edits: AssetEditActionItem[]): Promise<AssetEditActionItemResponseDto[]> {
     return this.db.transaction().execute(async (trx) => {
+      // Image publication reads the edit list while holding the same asset lock.
+      await trx.selectFrom('asset').select('id').where('id', '=', assetId).forUpdate().executeTakeFirst();
       await trx.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
 
       if (edits.length > 0) {

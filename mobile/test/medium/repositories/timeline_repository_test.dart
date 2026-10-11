@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -20,6 +25,82 @@ void main() {
 
   tearDown(() async {
     await ctx.dispose();
+  });
+
+  group('localAlbum assets', () {
+    test('keeps local actions with the developed remote image, revision and dimensions', () async {
+      final user = await ctx.newUser();
+      await ctx.newAuthUser(id: user.id);
+      final remote = await ctx.newRemoteAsset(
+        ownerId: user.id,
+        checksum: 'source',
+        isDeveloped: true,
+        mediaRevision: 'developed-render',
+        thumbHash: 'developed-hash',
+        width: 3000,
+        height: 2000,
+      );
+      final local = await ctx.newLocalAsset(checksum: remote.checksum, width: 6000, height: 4000);
+      final album = await ctx.newLocalAlbum();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final asset = (await sut.localAlbum(album.id, .day).assetSource(0, 10)).single as LocalAsset;
+
+      expect(asset.id, local.id);
+      expect(asset.remoteId, remote.id);
+      expect(asset.localId, local.id);
+      expect(asset.isDeveloped, isTrue);
+      expect(asset.mediaRevision, 'developed-render');
+      expect(asset.thumbHash, 'developed-hash');
+      expect(asset.width, 3000);
+      expect(asset.height, 2000);
+      expect(asset.heroTag, '${local.id}_${remote.id}');
+    });
+
+    test('keeps ordinary device photos local, including those already backed up', () async {
+      final user = await ctx.newUser();
+      await ctx.newAuthUser(id: user.id);
+      final remote = await ctx.newRemoteAsset(ownerId: user.id, checksum: 'source');
+      final local = await ctx.newLocalAsset(checksum: remote.checksum);
+      final localOnly = await ctx.newLocalAsset();
+      final album = await ctx.newLocalAlbum();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: localOnly.id);
+
+      final assets = await sut.localAlbum(album.id, .day).assetSource(0, 10);
+
+      expect(assets, everyElement(isA<LocalAsset>()));
+      expect(assets.singleWhere((asset) => asset.id == local.id).remoteId, remote.id);
+      expect(assets.singleWhere((asset) => asset.id == localOnly.id).remoteId, isNull);
+    });
+
+    for (final groupBy in [GroupAssetsBy.day, GroupAssetsBy.none]) {
+      test('publishing a remote revision reloads $groupBy device album buckets', () async {
+        final user = await ctx.newUser();
+        await ctx.newAuthUser(id: user.id);
+        final remote = await ctx.newRemoteAsset(ownerId: user.id, checksum: 'source', isDeveloped: true);
+        final local = await ctx.newLocalAsset(checksum: remote.checksum);
+        final album = await ctx.newLocalAlbum();
+        await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+        final query = sut.localAlbum(album.id, groupBy);
+        final buckets = StreamIterator(query.bucketSource());
+
+        try {
+          expect(await buckets.moveNext(), isTrue);
+          expect(buckets.current.single.assetCount, 1);
+          await (ctx.db.remoteAssetEntity.update()..where((row) => row.id.equals(remote.id))).write(
+            const RemoteAssetEntityCompanion(mediaRevision: Value('new-render')),
+          );
+
+          expect(await buckets.moveNext().timeout(const Duration(seconds: 5)), isTrue);
+          expect(buckets.current.single.assetCount, 1);
+          final asset = (await query.assetSource(0, 10)).single as LocalAsset;
+          expect(asset.mediaRevision, 'new-render');
+        } finally {
+          await buckets.cancel();
+        }
+      });
+    }
   });
 
   group('remoteAlbum assets', () {

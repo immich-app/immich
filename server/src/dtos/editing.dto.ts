@@ -127,6 +127,10 @@ const AssetEditsResponseSchema = z
   .object({
     assetId: z.uuidv4().describe('Asset ID these edits belong to'),
     edits: z.array(AssetEditActionItemResponseSchema).describe('List of edit actions applied to the asset'),
+    baseDimensions: z
+      .object({ width: z.int().positive(), height: z.int().positive() })
+      .optional()
+      .describe('Dimensions of the published base image before Immich edits'),
   })
   .meta({ id: 'AssetEditsResponseDto' });
 

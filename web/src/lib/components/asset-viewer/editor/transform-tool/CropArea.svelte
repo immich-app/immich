@@ -20,7 +20,12 @@
   let canvasContainer = $state<HTMLElement | null>(null);
 
   let imageSrc = $derived(
-    getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, edited: false, size: AssetMediaSize.Preview }),
+    getAssetMediaUrl({
+      id: asset.id,
+      cacheKey: asset.mediaRevision ?? asset.thumbhash,
+      edited: false,
+      size: AssetMediaSize.Preview,
+    }),
   );
 
   let imageTransform = $derived.by(() => {

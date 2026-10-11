@@ -66,6 +66,8 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
                   updatedAt: row.updatedAt,
                   uploadedAt: row.uploadedAt,
                   thumbHash: row.thumbHash,
+                  mediaRevision: row.mediaRevision,
+                  isDeveloped: row.isDeveloped,
                   width: row.width,
                   height: row.height,
                   isFavorite: row.isFavorite,
@@ -105,15 +107,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   );
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
-    if (groupBy == GroupAssetsBy.none) {
-      return _db.localAlbumAssetEntity
-          .count(where: (row) => row.albumId.equals(albumId))
-          .map(_generateBuckets)
-          .watchSingle();
-    }
-
-    final assetCountExp = _db.localAssetEntity.id.count();
-    final dateExp = _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true);
+    final assetCountExp = _db.localAssetEntity.id.count(distinct: true);
 
     final query =
         _db.localAssetEntity.selectOnly().join([
@@ -122,11 +116,21 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
               _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
               useColumns: false,
             ),
+            leftOuterJoin(_db.remoteAssetEntity, _localAlbumRemoteMatch, useColumns: false),
           ])
-          ..addColumns([assetCountExp, dateExp])
-          ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-          ..groupBy([dateExp])
-          ..orderBy([OrderingTerm.desc(dateExp)]);
+          ..addColumns([assetCountExp])
+          ..where(_db.localAlbumAssetEntity.albumId.equals(albumId));
+
+    // Remote publications must reload the device album even when its dates and counts are unchanged.
+    if (groupBy == GroupAssetsBy.none) {
+      return query.map((row) => _generateBuckets(row.read(assetCountExp)!)).watchSingle();
+    }
+
+    final dateExp = _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true);
+    query
+      ..addColumns([dateExp])
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
       final timeline = row.read(dateExp)!.truncateDate(groupBy);
@@ -134,6 +138,14 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
   }
+
+  Expression<bool> get _localAlbumRemoteMatch =>
+      _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
+      _db.remoteAssetEntity.ownerId.isInQuery(
+        _db.selectOnly(_db.authUserEntity)
+          ..addColumns([_db.authUserEntity.id])
+          ..limit(1),
+      );
 
   Future<List<BaseAsset>> _getLocalAlbumBucketAssets(String albumId, {required int offset, required int count}) {
     final query =
@@ -143,25 +155,27 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
               _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
               useColumns: false,
             ),
-            leftOuterJoin(
-              _db.remoteAssetEntity,
-              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
-                  _db.remoteAssetEntity.ownerId.isInQuery(
-                    _db.selectOnly(_db.authUserEntity)
-                      ..addColumns([_db.authUserEntity.id])
-                      ..limit(1),
-                  ),
-              useColumns: false,
-            ),
+            leftOuterJoin(_db.remoteAssetEntity, _localAlbumRemoteMatch),
           ])
-          ..addColumns([_db.remoteAssetEntity.id])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
           ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
           ..limit(count, offset: offset);
 
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto(remoteId: row.read(_db.remoteAssetEntity.id)))
-        .get();
+    return query.map((row) {
+      final local = row.readTable(_db.localAssetEntity);
+      final remote = row.readTableOrNull(_db.remoteAssetEntity);
+      final usesRemoteImage = remote != null && (remote.isDeveloped || remote.isEdited);
+      return local
+          .toDto(remoteId: remote?.id)
+          .copyWith(
+            thumbHash: remote?.thumbHash,
+            mediaRevision: remote?.mediaRevision,
+            isDeveloped: remote?.isDeveloped,
+            isEdited: remote?.isEdited,
+            width: usesRemoteImage ? remote.width : local.width,
+            height: usesRemoteImage ? remote.height : local.height,
+          );
+    }).get();
   }
 
   TimelineQuery remoteAlbum(String albumId, GroupAssetsBy groupBy) => (

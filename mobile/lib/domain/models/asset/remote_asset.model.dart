@@ -7,7 +7,12 @@ class RemoteAsset extends BaseAsset {
   @override
   final String id;
   final String? localAssetId;
+  @override
   final String? thumbHash;
+  @override
+  final String? mediaRevision;
+  @override
+  final bool isDeveloped;
   final AssetVisibility visibility;
   final String ownerId;
   final String? stackId;
@@ -30,6 +35,8 @@ class RemoteAsset extends BaseAsset {
     super.durationMs,
     super.isFavorite = false,
     this.thumbHash,
+    this.mediaRevision,
+    this.isDeveloped = false,
     this.visibility = AssetVisibility.timeline,
     this.livePhotoVideoId,
     this.stackId,
@@ -114,6 +121,8 @@ class RemoteAsset extends BaseAsset {
         id == other.id &&
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
+        mediaRevision == other.mediaRevision &&
+        isDeveloped == other.isDeveloped &&
         visibility == other.visibility &&
         stackId == other.stackId &&
         livePhotoVideoId == other.livePhotoVideoId &&
@@ -128,6 +137,8 @@ class RemoteAsset extends BaseAsset {
       ownerId.hashCode ^
       localId.hashCode ^
       thumbHash.hashCode ^
+      mediaRevision.hashCode ^
+      isDeveloped.hashCode ^
       visibility.hashCode ^
       stackId.hashCode ^
       livePhotoVideoId.hashCode ^
@@ -149,6 +160,8 @@ class RemoteAsset extends BaseAsset {
     int? durationMs,
     bool? isFavorite,
     String? thumbHash,
+    String? mediaRevision,
+    bool? isDeveloped,
     AssetVisibility? visibility,
     String? livePhotoVideoId,
     String? stackId,
@@ -170,6 +183,8 @@ class RemoteAsset extends BaseAsset {
       durationMs: durationMs ?? this.durationMs,
       isFavorite: isFavorite ?? this.isFavorite,
       thumbHash: thumbHash ?? this.thumbHash,
+      mediaRevision: mediaRevision ?? this.mediaRevision,
+      isDeveloped: isDeveloped ?? this.isDeveloped,
       visibility: visibility ?? this.visibility,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
@@ -198,6 +213,8 @@ class RemoteAssetExif extends RemoteAsset {
     super.durationMs,
     super.isFavorite = false,
     super.thumbHash,
+    super.mediaRevision,
+    super.isDeveloped,
     super.visibility = AssetVisibility.timeline,
     super.livePhotoVideoId,
     super.stackId,
@@ -236,6 +253,8 @@ class RemoteAssetExif extends RemoteAsset {
     int? durationMs,
     bool? isFavorite,
     String? thumbHash,
+    String? mediaRevision,
+    bool? isDeveloped,
     AssetVisibility? visibility,
     String? livePhotoVideoId,
     String? stackId,
@@ -258,6 +277,8 @@ class RemoteAssetExif extends RemoteAsset {
       durationMs: durationMs ?? this.durationMs,
       isFavorite: isFavorite ?? this.isFavorite,
       thumbHash: thumbHash ?? this.thumbHash,
+      mediaRevision: mediaRevision ?? this.mediaRevision,
+      isDeveloped: isDeveloped ?? this.isDeveloped,
       visibility: visibility ?? this.visibility,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,

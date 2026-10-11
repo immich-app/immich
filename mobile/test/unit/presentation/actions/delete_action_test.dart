@@ -223,6 +223,19 @@ void main() {
         verifyNever(() => assetService.delete(any()));
       });
 
+      testWidgets('a developed device album photo removes only its device copy', (tester) async {
+        final asset = LocalAssetFactory.create(
+          remoteId: 'remote',
+        ).copyWith(isDeveloped: true, mediaRevision: 'developed-render', thumbHash: 'server-thumbnail');
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+
+        verify(() => cleanupService.deleteLocalAssets([asset.id])).called(1);
+        verifyNever(() => assetService.trash(any()));
+        verifyNever(() => assetService.delete(any()));
+      });
+
       testWidgets('is labelled trash', (tester) async {
         await tester.pumpTestWidget(
           context,

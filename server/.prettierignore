@@ -9,6 +9,8 @@ node_modules
 *.json
 coverage
 dist
+**/.scratch/**
+native/**/target/**
 **/migrations/**
 db.d.ts
 

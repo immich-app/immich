@@ -1308,6 +1308,8 @@ export type AssetResponseDto = {
     id: string;
     /** Is archived */
     isArchived: boolean;
+    /** Whether the preview includes sidecar development */
+    isDeveloped?: boolean;
     /** Is edited */
     isEdited: boolean;
     /** Is favorite */
@@ -1322,6 +1324,8 @@ export type AssetResponseDto = {
     livePhotoVideoId?: string | null;
     /** The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months. */
     localDateTime: string;
+    /** Asset media cache revision */
+    mediaRevision?: string;
     /** Original file name */
     originalFileName: string;
     /** Original MIME type */
@@ -1336,7 +1340,7 @@ export type AssetResponseDto = {
     resized?: boolean;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
-    /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting. */
+    /** Thumbhash for thumbnail placeholders (base64). Older clients also use it for cache busting. */
     thumbhash: string | null;
     "type": AssetTypeEnum;
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
@@ -1389,6 +1393,11 @@ export type AssetEditActionItemResponseDto = {
 export type AssetEditsResponseDto = {
     /** Asset ID these edits belong to */
     assetId: string;
+    /** Dimensions of the published base image before Immich edits */
+    baseDimensions?: {
+        height: number;
+        width: number;
+    };
     /** List of edit actions applied to the asset */
     edits: AssetEditActionItemResponseDto[];
 };
@@ -3162,6 +3171,8 @@ export type TimeBucketAssetResponseDto = {
     localOffsetHours: number[];
     /** Array of longitude coordinates extracted from EXIF GPS data */
     longitude?: (number | null)[];
+    /** Asset media cache revisions */
+    mediaRevision?: string[];
     /** Array of owner IDs for each asset */
     ownerId: string[];
     /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
@@ -3585,6 +3596,8 @@ export type SyncAssetV1 = {
     height: number | null;
     /** Asset ID */
     id: string;
+    /** Whether the preview includes sidecar development */
+    isDeveloped?: boolean;
     /** Is edited */
     isEdited: boolean;
     /** Is favorite */
@@ -3595,6 +3608,8 @@ export type SyncAssetV1 = {
     livePhotoVideoId: string | null;
     /** Local date time */
     localDateTime: string | null;
+    /** Asset media cache revision */
+    mediaRevision?: string;
     /** Original file name */
     originalFileName: string;
     /** Owner ID */
@@ -3625,6 +3640,8 @@ export type SyncAssetV2 = {
     height: number | null;
     /** Asset ID */
     id: string;
+    /** Whether the preview includes sidecar development */
+    isDeveloped?: boolean;
     /** Is edited */
     isEdited: boolean;
     /** Is favorite */
@@ -3635,6 +3652,8 @@ export type SyncAssetV2 = {
     livePhotoVideoId: string | null;
     /** Local date time */
     localDateTime: string | null;
+    /** Asset media cache revision */
+    mediaRevision?: string;
     /** Original file name */
     originalFileName: string;
     /** Owner ID */

@@ -180,19 +180,18 @@ ImageProvider getFullImageProvider(
     );
   } else {
     final String assetId;
-    final String thumbhash;
     if (asset is LocalAsset && asset.hasRemote) {
       assetId = asset.remoteId!;
-      thumbhash = "";
     } else if (asset is RemoteAsset) {
       assetId = asset.id;
-      thumbhash = asset.thumbHash ?? "";
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
     provider = RemoteFullImageProvider(
       assetId: assetId,
-      thumbhash: thumbhash,
+      thumbhash: asset.thumbHash ?? "",
+      mediaRevision: asset.mediaRevision,
+      isDeveloped: asset.isDeveloped,
       assetType: asset.type,
       isAnimated: asset.isAnimatedImage,
       edited: edited,
@@ -217,13 +216,19 @@ ImageProvider? getThumbnailImageProvider(
   }
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
-  final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
   return assetId != null
-      ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited, decodeSize: remoteSize)
+      ? RemoteImageProvider.thumbnail(
+          assetId: assetId,
+          thumbhash: asset.thumbHash ?? "",
+          mediaRevision: asset.mediaRevision,
+          edited: edited,
+          decodeSize: remoteSize,
+        )
       : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>
     asset.hasLocal &&
     (!asset.hasRemote || !SettingsRepository.instance.appConfig.image.preferRemote) &&
-    !asset.isEdited;
+    !asset.isEdited &&
+    !asset.isDeveloped;

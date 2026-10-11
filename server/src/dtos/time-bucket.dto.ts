@@ -76,6 +76,7 @@ const stackTupleSchema = z.array(z.string()).length(2).nullable();
 
 const TimeBucketAssetResponseSchema = z
   .object({
+    mediaRevision: z.array(z.string()).optional().describe('Asset media cache revisions'),
     id: z.array(z.string()).describe('Array of asset IDs in the time bucket'),
     ownerId: z.array(z.string()).describe('Array of owner IDs for each asset'),
     ratio: z

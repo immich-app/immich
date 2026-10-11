@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { type Kysely, type NotNull, type Selectable, type ShallowDehydrateObject, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database.js';
+import { assetIsDeveloped, columns } from 'src/database.js';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import { AssetType, VectorIndex } from 'src/enum.js';
@@ -49,6 +49,7 @@ export class DuplicateRepository {
                 qb
                   .selectFrom('asset_exif')
                   .selectAll('asset')
+                  .select(assetIsDeveloped)
                   .select((eb) =>
                     eb.fn
                       .toJson('asset_exif')
@@ -125,6 +126,7 @@ export class DuplicateRepository {
           qb
             .selectFrom('asset_exif')
             .selectAll('asset')
+            .select(assetIsDeveloped)
             .select((eb) => eb.fn.toJson('asset_exif').as('exifInfo'))
             .select((eb) =>
               jsonArrayFrom(

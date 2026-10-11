@@ -45,6 +45,7 @@ class AlbumTile extends ConsumerWidget {
                     child: Thumbnail.remote(
                       remoteId: album.thumbnailAssetId!,
                       thumbhash: snapshot.data!.thumbHash ?? "",
+                      mediaRevision: snapshot.data!.mediaRevision,
                     ),
                   ),
                 )

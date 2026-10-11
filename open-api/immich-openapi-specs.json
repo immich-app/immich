@@ -20438,6 +20438,28 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "baseDimensions": {
+            "description": "Dimensions of the published base image before Immich edits",
+            "properties": {
+              "height": {
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "width": {
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "width",
+              "height"
+            ],
+            "type": "object"
+          },
           "edits": {
             "description": "List of edit actions applied to the asset",
             "items": {
@@ -21221,6 +21243,10 @@
             "description": "Is archived",
             "type": "boolean"
           },
+          "isDeveloped": {
+            "description": "Whether the preview includes sidecar development",
+            "type": "boolean"
+          },
           "isEdited": {
             "description": "Is edited",
             "type": "boolean",
@@ -21274,6 +21300,10 @@
           "localDateTime": {
             "description": "The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.",
             "format": "date-time",
+            "type": "string"
+          },
+          "mediaRevision": {
+            "description": "Asset media cache revision",
             "type": "string"
           },
           "originalFileName": {
@@ -21333,7 +21363,7 @@
             "type": "array"
           },
           "thumbhash": {
-            "description": "Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.",
+            "description": "Thumbhash for thumbnail placeholders (base64). Older clients also use it for cache busting.",
             "nullable": true,
             "type": "string"
           },
@@ -30968,6 +30998,10 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "isDeveloped": {
+            "description": "Whether the preview includes sidecar development",
+            "type": "boolean"
+          },
           "isEdited": {
             "description": "Is edited",
             "type": "boolean"
@@ -30992,6 +31026,10 @@
             "format": "date-time",
             "nullable": true,
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "mediaRevision": {
+            "description": "Asset media cache revision",
             "type": "string"
           },
           "originalFileName": {
@@ -31110,6 +31148,10 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "isDeveloped": {
+            "description": "Whether the preview includes sidecar development",
+            "type": "boolean"
+          },
           "isEdited": {
             "description": "Is edited",
             "type": "boolean"
@@ -31134,6 +31176,10 @@
             "format": "date-time",
             "nullable": true,
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "mediaRevision": {
+            "description": "Asset media cache revision",
             "type": "string"
           },
           "originalFileName": {
@@ -32445,6 +32491,13 @@
               "format": "double",
               "nullable": true,
               "type": "number"
+            },
+            "type": "array"
+          },
+          "mediaRevision": {
+            "description": "Asset media cache revisions",
+            "items": {
+              "type": "string"
             },
             "type": "array"
           },

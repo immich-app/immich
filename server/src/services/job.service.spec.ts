@@ -2,6 +2,7 @@ import type { JobItem } from 'src/types.js';
 import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum.js';
 import { JobService } from 'src/services/job.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
+import { getForAsset } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
@@ -69,6 +70,65 @@ describe(JobService.name, () => {
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
+    it('should refresh changed sidecars through metadata without treating them as uploads', async () => {
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+
+      await sut.onJobRun(QueueName.Sidecar, { name: JobName.SidecarCheck, data: { id: 'asset-1' } });
+
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.AssetExtractMetadata,
+        data: { id: 'asset-1', source: 'sidecar' },
+      });
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should not chain unchanged periodic sidecar checks', async () => {
+      mocks.job.run.mockResolvedValue(undefined);
+
+      await sut.onJobRun(QueueName.Sidecar, {
+        name: JobName.SidecarCheck,
+        data: { id: 'asset-1', source: 'sidecar' },
+      });
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should include the published media revision and development marker in edit-ready updates', async () => {
+      const asset = AssetFactory.create();
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+      mocks.asset.getById.mockResolvedValue({ ...getForAsset(asset), isDeveloped: true });
+      mocks.assetEdit.getWithSyncInfo.mockResolvedValue([]);
+
+      await sut.onJobRun(QueueName.Editor, {
+        name: JobName.AssetEditThumbnailGeneration,
+        data: { id: asset.id },
+      });
+
+      expect(mocks.websocket.clientSend).toHaveBeenCalledExactlyOnceWith('AssetEditReadyV2', asset.ownerId, {
+        asset: expect.objectContaining({ id: asset.id, mediaRevision: asset.updateId, isDeveloped: true }),
+        edit: [],
+      });
+    });
+
+    it('should include the published media revision and development marker in upload-ready updates', async () => {
+      const asset = AssetFactory.from().exif().build();
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([
+        { ...getForAsset(asset), faces: [], isDeveloped: true },
+      ]);
+
+      await sut.onJobRun(QueueName.ThumbnailGeneration, {
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id, source: 'upload' },
+      });
+
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('AssetUploadReadyV2', asset.ownerId, {
+        asset: expect.objectContaining({ id: asset.id, mediaRevision: asset.updateId, isDeveloped: true }),
+        exif: expect.any(Object),
+      });
+    });
+
     const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
       {
         item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1', source: 'upload' } },
@@ -79,11 +139,24 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
+        item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1', source: 'sidecar' } },
+        jobs: [JobName.AssetGenerateThumbnails],
+      },
+      {
+        item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1', source: 'sidecar-write' } },
+        jobs: [JobName.AssetGenerateThumbnails],
+      },
+      {
         item: { name: JobName.PersonGenerateThumbnail, data: { ownerId: 'owner-1', personGroupId: 'person-group-1' } },
         jobs: [],
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
+        jobs: [],
+        stub: [AssetFactory.create({ id: 'asset-1' })],
+      },
+      {
+        item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'sidecar' } },
         jobs: [],
         stub: [AssetFactory.create({ id: 'asset-1' })],
       },

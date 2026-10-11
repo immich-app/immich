@@ -226,7 +226,7 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
-export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
+export type JobSource = 'upload' | 'sidecar-write' | 'sidecar' | 'copy' | 'edit';
 export interface IPersonJob {
   ownerId: string;
   personGroupId: string;

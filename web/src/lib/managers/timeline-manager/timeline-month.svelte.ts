@@ -208,6 +208,7 @@ export class TimelineMonth {
             }
           : null,
         thumbhash: bucketAssets.thumbhash[i],
+        mediaRevision: bucketAssets.mediaRevision?.[i],
         people: null, // People are not included in the bucket assets
       };
 

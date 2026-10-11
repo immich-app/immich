@@ -237,21 +237,27 @@
 >
   <div class="group absolute inset-y-0" style:width="inherit" style:height="inherit">
     <div class={['absolute size-full bg-transparent transition-transform select-none', { 'scale-[0.85]': selected }]}>
-      <ImageThumbnail
-        class={['absolute group-focus-visible:rounded-lg', imageClass]}
-        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', brokenAssetClass]}
-        url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
-        altText={$getAltText(asset)}
-        widthStyle="{width}px"
-        heightStyle="{height}px"
-        curve={selected}
-        onComplete={(errored) => {
-          const rect = element?.getBoundingClientRect();
-          skipFade = !rect || rect.bottom < 0 || rect.top > window.innerHeight;
-          loaded = true;
-          thumbError = errored;
-        }}
-      />
+      {#key asset.mediaRevision ?? asset.thumbhash}
+        <ImageThumbnail
+          class={['absolute group-focus-visible:rounded-lg', imageClass]}
+          brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', brokenAssetClass]}
+          url={getAssetMediaUrl({
+            id: asset.id,
+            size: AssetMediaSize.Thumbnail,
+            cacheKey: asset.mediaRevision ?? asset.thumbhash,
+          })}
+          altText={$getAltText(asset)}
+          widthStyle="{width}px"
+          heightStyle="{height}px"
+          curve={selected}
+          onComplete={(errored) => {
+            const rect = element?.getBoundingClientRect();
+            skipFade = !rect || rect.bottom < 0 || rect.top > window.innerHeight;
+            loaded = true;
+            thumbError = errored;
+          }}
+        />
+      {/key}
       {#if asset.isVideo}
         <div class="pointer-events-none absolute size-full group-focus-visible:rounded-lg">
           <VideoThumbnail

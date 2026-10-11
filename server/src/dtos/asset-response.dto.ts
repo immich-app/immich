@@ -26,11 +26,11 @@ const SanitizedAssetResponseSchema = z
   .object({
     id: z.uuidv4().describe('Asset ID'),
     type: AssetTypeSchema,
+    mediaRevision: z.string().optional().describe('Asset media cache revision'),
+    isDeveloped: z.boolean().optional().describe('Whether the preview includes sidecar development'),
     thumbhash: z
       .string()
-      .describe(
-        'Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.',
-      )
+      .describe('Thumbhash for thumbnail placeholders (base64). Older clients also use it for cache busting.')
       .nullable(),
     originalMimeType: z.string().optional().describe('Original MIME type'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -154,6 +154,7 @@ export type MapAsset = {
   width: number | null;
   height: number | null;
   isEdited: boolean;
+  isDeveloped?: boolean;
 };
 
 export type AssetMapOptions = {
@@ -197,6 +198,8 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
       id: entity.id,
       type: entity.type,
+      mediaRevision: entity.updateId,
+      isDeveloped: entity.isDeveloped ?? false,
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
       localDateTime: asDateTimeString(entity.localDateTime),
@@ -216,6 +219,8 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     owner: entity.owner ? mapUser(entity.owner) : undefined,
     libraryId: entity.libraryId,
     type: entity.type,
+    mediaRevision: entity.updateId,
+    isDeveloped: entity.isDeveloped ?? false,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),

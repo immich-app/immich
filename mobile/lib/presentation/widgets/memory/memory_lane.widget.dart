@@ -79,6 +79,7 @@ class MemoryCard extends StatelessWidget {
           child: Thumbnail.remote(
             remoteId: memory.assets[0].id,
             thumbhash: memory.assets[0].thumbHash ?? "",
+            mediaRevision: memory.assets[0].mediaRevision,
             fit: BoxFit.cover,
           ),
         ),

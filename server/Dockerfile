@@ -1,3 +1,19 @@
+FROM rust:1.90.0-trixie@sha256:e227f20ec42af3ea9a3c9c1dd1b2012aa15f12279b5e9d5fb890ca1c2bb5726c AS sidecar-renderer
+
+ARG TARGETPLATFORM
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends libraw-dev pkg-config && \
+  rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/src/sidecar-renderer
+COPY ./server/native/sidecar-renderer ./
+RUN --mount=type=cache,id=sidecar-cargo-registry,target=/usr/local/cargo/registry \
+  --mount=type=cache,id=sidecar-cargo-git,target=/usr/local/cargo/git \
+  --mount=type=cache,id=sidecar-cargo-target-${TARGETPLATFORM},target=/usr/src/sidecar-renderer/target \
+  cargo build --release --locked && \
+  install -Dm755 target/release/immich-sidecar-renderer /output/immich-sidecar-renderer
+
 FROM ghcr.io/immich-app/base-server-dev:202610131110@sha256:082dc5e2611953d63d7b30dc8427da37ff5cd1d932aa9e99ccc4a26298b5f7a5 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
@@ -88,6 +104,12 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   mise //:plugins
 
 FROM ghcr.io/immich-app/base-server-prod:202610131110@sha256:9d4ce4bfd72d77edddd3072fbca78b7f4307a32c8cbe75276349944dd6405be3
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends libraw23t64 && \
+  rm -rf /var/lib/apt/lists/*
+
+COPY --from=sidecar-renderer /output/immich-sidecar-renderer /usr/local/bin/immich-sidecar-renderer
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

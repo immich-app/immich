@@ -44,6 +44,10 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   TextColumn get thumbHash => text().nullable()();
 
+  TextColumn get mediaRevision => text().nullable()();
+
+  BoolColumn get isDeveloped => boolean().withDefault(const Constant(false))();
+
   DateTimeColumn get deletedAt => customType(clampedDateTime).nullable()();
 
   DateTimeColumn get uploadedAt => customType(clampedDateTime).nullable()();
@@ -77,6 +81,8 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     height: height,
     width: width,
     thumbHash: thumbHash,
+    mediaRevision: mediaRevision,
+    isDeveloped: isDeveloped,
     visibility: visibility,
     livePhotoVideoId: livePhotoVideoId,
     localId: localId,

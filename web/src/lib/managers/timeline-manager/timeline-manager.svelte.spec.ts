@@ -483,6 +483,28 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
     });
+
+    it('applies a new media revision from an asset update when thumbhash is unchanged', () => {
+      const existing = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({ mediaRevision: 'before-render', thumbhash: 'unchanged-hash' }),
+      );
+      timelineManager.upsertAssets([existing]);
+
+      eventManager.emit(
+        'AssetUpdate',
+        assetFactory.build({
+          id: existing.id,
+          ownerId: existing.ownerId,
+          visibility: existing.visibility,
+          isTrashed: existing.isTrashed,
+          thumbhash: existing.thumbhash,
+          mediaRevision: 'published-render',
+        }),
+      );
+
+      expect(timelineManager.months[0].getFirstAsset().mediaRevision).toBe('published-render');
+      expect(timelineManager.months[0].getFirstAsset().thumbhash).toBe('unchanged-hash');
+    });
   });
 
   describe('live event asset insertion', () => {

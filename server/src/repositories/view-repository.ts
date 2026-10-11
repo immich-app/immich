@@ -1,5 +1,6 @@
 import { InjectKysely } from 'nestjs-kysely';
 import type { Kysely } from 'kysely';
+import { assetIsDeveloped } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
@@ -33,6 +34,7 @@ export class ViewRepository {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
+      .select(assetIsDeveloped)
       .$call(withExif)
       .where('ownerId', '=', asUuid(userId))
       .where('visibility', '=', AssetVisibility.Timeline)

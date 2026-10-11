@@ -171,15 +171,15 @@ class TransformManager implements EditToolManager {
     this.onImageLoad([]);
   }
 
-  async onActivate(asset: AssetResponseDto, edits: EditActions): Promise<void> {
-    const originalSize = getDimensions(asset.exifInfo!);
+  async onActivate(asset: AssetResponseDto, edits: EditActions, baseDimensions?: ImageDimensions): Promise<void> {
+    const originalSize = baseDimensions ?? getDimensions(asset.exifInfo!);
     this.originalImageSize = { width: originalSize.width ?? 0, height: originalSize.height ?? 0 };
 
     this.imgElement = new Image();
 
     const imageURL = getAssetMediaUrl({
       id: asset.id,
-      cacheKey: asset.thumbhash,
+      cacheKey: asset.mediaRevision ?? asset.thumbhash,
       edited: false,
       size: AssetMediaSize.Preview,
     });

@@ -470,7 +470,7 @@ describe(LibraryService.name, () => {
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
-    it('should do nothing with unchanged online assets', async () => {
+    it('should check sidecars while the original file is unchanged', async () => {
       const asset = AssetFactory.create({ libraryId: 'library-id', isExternal: true });
       const mockAssetJob: ILibraryBulkIdsJob = {
         assetIds: [asset.id],
@@ -487,7 +487,9 @@ describe(LibraryService.name, () => {
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
-      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith([
+        { name: JobName.SidecarCheck, data: { id: asset.id, source: 'sidecar' } },
+      ]);
     });
 
     it('should not touch fileCreatedAt when un-trashing an asset previously marked as offline', async () => {
@@ -1046,6 +1048,77 @@ describe(LibraryService.name, () => {
             paths: [asset.originalPath],
           },
         });
+      });
+
+      it.each(['add', 'change', 'unlink'] as const)(
+        'should refresh all owners of an XMP %s event without importing or removing the sidecar',
+        async (event) => {
+          const library = factory.library({ importPaths: ['/photos'] });
+          const owners = [
+            AssetFactory.create({ originalPath: '/photos/photo.nef' }),
+            AssetFactory.create({ originalPath: '/photos/photo.jpg' }),
+          ];
+          mocks.library.get.mockResolvedValue(library);
+          mocks.library.getAll.mockResolvedValue([library]);
+          mocks.assetJob.getForSidecarPath.mockResolvedValue(owners);
+          mocks.storage.watch.mockImplementation(makeMockWatcher({ items: [{ event, value: '/photos/photo.xmp' }] }));
+
+          await sut.watchAll();
+
+          await vitest.waitFor(() =>
+            expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith(
+              owners.map(({ id }) => ({ name: JobName.SidecarCheck, data: { id, source: 'sidecar' } })),
+            ),
+          );
+          expect(mocks.assetJob.getForSidecarPath).toHaveBeenCalledExactlyOnceWith(library.id, '/photos/photo.xmp');
+          expect(mocks.job.queue).not.toHaveBeenCalled();
+          expect(mocks.storage.unlink).not.toHaveBeenCalled();
+        },
+      );
+
+      it('should rediscover owners after an XMP is replaced atomically', async () => {
+        const library = factory.library({ importPaths: ['/photos'] });
+        const owner = AssetFactory.create({ originalPath: '/photos/photo.nef' });
+        mocks.library.get.mockResolvedValue(library);
+        mocks.library.getAll.mockResolvedValue([library]);
+        mocks.assetJob.getForSidecarPath.mockResolvedValue([owner]);
+        mocks.storage.watch.mockImplementation(
+          makeMockWatcher({
+            items: [
+              { event: 'unlink', value: '/photos/photo.xmp' },
+              { event: 'add', value: '/photos/photo.xmp' },
+            ],
+          }),
+        );
+
+        await sut.watchAll();
+
+        await vitest.waitFor(() => expect(mocks.job.queueAll).toHaveBeenCalledTimes(2));
+        expect(mocks.job.queueAll).toHaveBeenNthCalledWith(2, [
+          { name: JobName.SidecarCheck, data: { id: owner.id, source: 'sidecar' } },
+        ]);
+        expect(mocks.job.queue).not.toHaveBeenCalled();
+      });
+
+      it('should ignore unlinked XMP files and excluded XMP unlink events', async () => {
+        const library = factory.library({ importPaths: ['/photos'], exclusionPatterns: ['**/excluded/**'] });
+        mocks.library.get.mockResolvedValue(library);
+        mocks.library.getAll.mockResolvedValue([library]);
+        mocks.assetJob.getForSidecarPath.mockResolvedValue([]);
+        mocks.storage.watch.mockImplementation(
+          makeMockWatcher({
+            items: [
+              { event: 'add', value: '/photos/unlinked.xmp' },
+              { event: 'unlink', value: '/photos/excluded/photo.xmp' },
+            ],
+          }),
+        );
+
+        await sut.watchAll();
+
+        expect(mocks.assetJob.getForSidecarPath).toHaveBeenCalledExactlyOnceWith(library.id, '/photos/unlinked.xmp');
+        expect(mocks.job.queueAll).not.toHaveBeenCalled();
+        expect(mocks.job.queue).not.toHaveBeenCalled();
       });
 
       it('should handle an error event', async () => {

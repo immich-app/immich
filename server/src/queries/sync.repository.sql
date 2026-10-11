@@ -59,6 +59,18 @@ where
 -- SyncRepository.albumAsset.getBackfill
 select
   "asset"."id",
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
+  "asset"."updateId" as "mediaRevision",
   "asset"."ownerId",
   "asset"."originalFileName",
   "asset"."thumbhash",
@@ -96,6 +108,18 @@ order by
 -- SyncRepository.albumAsset.getUpdates
 select
   "asset"."id",
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
+  "asset"."updateId" as "mediaRevision",
   "asset"."ownerId",
   "asset"."originalFileName",
   "asset"."thumbhash",
@@ -135,6 +159,18 @@ order by
 select
   "album_asset"."updateId",
   "asset"."id",
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
+  "asset"."updateId" as "mediaRevision",
   "asset"."ownerId",
   "asset"."originalFileName",
   "asset"."thumbhash",
@@ -413,6 +449,18 @@ order by
 -- SyncRepository.asset.getUpserts
 select
   "asset"."id",
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
+  "asset"."updateId" as "mediaRevision",
   "asset"."ownerId",
   "asset"."originalFileName",
   "asset"."thumbhash",
@@ -862,6 +910,18 @@ order by
 -- SyncRepository.partnerAsset.getBackfill
 select
   "asset"."id",
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
+  "asset"."updateId" as "mediaRevision",
   "asset"."ownerId",
   "asset"."originalFileName",
   "asset"."thumbhash",
@@ -915,6 +975,18 @@ order by
 -- SyncRepository.partnerAsset.getUpserts
 select
   "asset"."id",
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
+  "asset"."updateId" as "mediaRevision",
   "asset"."ownerId",
   "asset"."originalFileName",
   "asset"."thumbhash",

@@ -2,12 +2,30 @@ import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
 import { addMessages, init } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import en from '$i18n/en.json';
-import { getAssetUrl, memoryLaneTitle, semverToName } from '$lib/utils';
+import { getAssetUrl, getAssetUrls, memoryLaneTitle, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
 describe('utils', () => {
   describe(getAssetUrl.name, () => {
+    it('uses the media revision when a changed preview has the same thumbhash', () => {
+      const asset = assetFactory.build({ thumbhash: 'same-thumbhash', mediaRevision: 'first-render' });
+      const before = getAssetUrls(asset);
+      const after = getAssetUrls({ ...asset, mediaRevision: 'second-render' });
+
+      for (const quality of ['thumbnail', 'preview', 'original'] as const) {
+        expect(before[quality]).toContain('c=first-render');
+        expect(after[quality]).toContain('c=second-render');
+        expect(after[quality]).not.toBe(before[quality]);
+      }
+    });
+
+    it('requests fullsize viewing for static web-compatible photos', () => {
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, originalMimeType: 'image/jpeg', duration: null });
+
+      expect(getAssetUrl({ asset, forceOriginal: true })).toContain('/thumbnail?size=fullsize');
+    });
+
     it('should return thumbnail URL for static images', () => {
       const asset = assetFactory.build({
         originalPath: 'image.jpg',

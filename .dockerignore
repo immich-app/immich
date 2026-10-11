@@ -12,6 +12,9 @@
 **/dist/
 **/coverage/
 **/build/
+**/target/
+.scratch/
+**/.scratch/
 
 design/
 docker/

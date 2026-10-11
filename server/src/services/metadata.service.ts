@@ -371,17 +371,20 @@ export class MetadataService extends BaseService {
 
     tasks.push(
       () =>
-        this.assetRepository.update({
-          id: asset.id,
-          duration: this.getDuration(exifTags),
-          localDateTime: dates.localDateTime,
-          fileCreatedAt: dates.dateTimeOriginal ?? undefined,
-          fileModifiedAt: stats.mtime,
+        this.assetRepository.update(
+          {
+            id: asset.id,
+            duration: this.getDuration(exifTags),
+            localDateTime: dates.localDateTime,
+            fileCreatedAt: dates.dateTimeOriginal ?? undefined,
+            fileModifiedAt: stats.mtime,
 
-          // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
-          width: !asset.isEdited || asset.width === null ? assetWidth : undefined,
-          height: !asset.isEdited || asset.height === null ? assetHeight : undefined,
-        }),
+            // Published image dimensions remain valid until their replacement succeeds.
+            width: (!asset.isEdited && !asset.isDeveloped) || asset.width === null ? assetWidth : undefined,
+            height: (!asset.isEdited && !asset.isDeveloped) || asset.height === null ? assetHeight : undefined,
+          },
+          { preservePublishedImageDimensions: true },
+        ),
       async () => {
         await this.assetRepository.upsertExif({
           exif: exifData,
@@ -421,7 +424,10 @@ export class MetadataService extends BaseService {
   async handleQueueSidecar({ force }: JobOf<JobName.SidecarQueueAll>): Promise<JobStatus> {
     for await (const assets of batched(this.assetJobRepository.streamForSidecar(force))) {
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.SidecarCheck, data: { id: asset.id } })),
+        assets.map((asset) => ({
+          name: JobName.SidecarCheck,
+          data: { id: asset.id, ...(!force && { source: 'sidecar' as const }) },
+        })),
       );
     }
 
@@ -429,7 +435,7 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.SidecarCheck, queue: QueueName.Sidecar })
-  async handleSidecarCheck({ id }: JobOf<JobName.SidecarCheck>): Promise<JobStatus | undefined> {
+  async handleSidecarCheck({ id, source }: JobOf<JobName.SidecarCheck>): Promise<JobStatus | undefined> {
     const asset = await this.assetJobRepository.getForSidecarCheckJob(id);
     if (!asset) {
       return;
@@ -449,6 +455,21 @@ export class MetadataService extends BaseService {
     const { sidecarFile } = getAssetFiles(asset.files);
 
     const isChanged = sidecarPath !== (sidecarFile?.path ?? null);
+    let needsGeneration = false;
+
+    const canDevelop = mimeTypes.isImage(asset.originalPath) && !asset.originalPath.toLowerCase().endsWith('.gif');
+    if (canDevelop && (sidecarPath !== null || asset.development || mimeTypes.isRaw(asset.originalPath))) {
+      const { image } = await this.getConfig({ withCache: true });
+      const fingerprint = await this.mediaRepository.getDevelopmentInputFingerprint({
+        originalPath: asset.originalPath,
+        sidecarPath,
+        image,
+      });
+      if (asset.development?.observedInputFingerprint !== fingerprint) {
+        await this.assetRepository.observeImageDevelopmentInput(asset.id, fingerprint);
+      }
+      needsGeneration = asset.development?.publishedInputFingerprint !== fingerprint;
+    }
 
     if (sidecarFile?.path || sidecarPath) {
       this.logger.debug(
@@ -458,13 +479,17 @@ export class MetadataService extends BaseService {
       this.logger.verbose(`No sidecars found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
-    if (!isChanged) {
-      return JobStatus.Skipped;
+    if (!isChanged && !needsGeneration) {
+      // Initialization still needs metadata even when the source has no sidecar.
+      // Periodic sidecar checks must not regenerate unchanged photos.
+      return source === 'sidecar' ? undefined : JobStatus.Skipped;
     }
 
-    await (sidecarPath === null
-      ? this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar })
-      : this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath }));
+    if (isChanged) {
+      await (sidecarPath === null
+        ? this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar })
+        : this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath }));
+    }
 
     return JobStatus.Success;
   }

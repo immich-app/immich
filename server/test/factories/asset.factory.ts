@@ -140,6 +140,7 @@ export class AssetFactory {
 
     return {
       ...this.value,
+      isDeveloped: false,
       owner: this.#owner.build(),
       exifInfo: exif as NonNullable<typeof exif>,
       files: this.#files.map((file) => file.build()),

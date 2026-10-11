@@ -10,6 +10,17 @@ select
       (
         select
           "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped",
           to_json("exifInfo") as "exifInfo"
         from
           "asset"
@@ -78,6 +89,17 @@ select
       (
         select
           "asset".*,
+          coalesce(
+            (
+              select
+                "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+              from
+                "asset_job_status"
+              where
+                "assetId" = "asset"."id"
+            ),
+            false
+          ) as "isDeveloped",
           (
             select
               coalesce(json_agg(agg), '[]')

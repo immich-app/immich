@@ -26,7 +26,6 @@ import { derived, get } from 'svelte/store';
 import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { alwaysLoadOriginalFile, lang, locale } from '$lib/stores/preferences.store';
-import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { convertBCP47, langs } from '$lib/utils/i18n';
 
@@ -202,7 +201,7 @@ export const getAssetUrl = ({
     return;
   }
   const id = asset.id;
-  const cacheKey = asset.thumbhash;
+  const cacheKey = asset.mediaRevision ?? asset.thumbhash;
   if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
     return getAssetMediaUrl({ id, size: AssetMediaSize.Preview, cacheKey });
   }
@@ -212,7 +211,11 @@ export const getAssetUrl = ({
 
 export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkResponseDto) {
   return {
-    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, size: AssetMediaSize.Thumbnail }),
+    thumbnail: getAssetMediaUrl({
+      id: asset.id,
+      cacheKey: asset.mediaRevision ?? asset.thumbhash,
+      size: AssetMediaSize.Thumbnail,
+    }),
     preview: getAssetUrl({ asset, sharedLink })!,
     original: getAssetUrl({ asset, sharedLink, forceOriginal: true })!,
   };
@@ -224,7 +227,7 @@ const forceUseOriginal = (asset: AssetResponseDto) => {
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
+    return asset.type === AssetTypeEnum.Video || forceUseOriginal(asset)
       ? AssetMediaSize.Original
       : AssetMediaSize.Fullsize;
   }

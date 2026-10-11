@@ -234,7 +234,7 @@ describe(AssetService.name, () => {
 
       expect(jobRepo.queue).toHaveBeenCalledWith({
         name: JobName.AssetExtractMetadata,
-        data: { id: newAsset.id },
+        data: { id: newAsset.id, source: 'copy' },
       });
     });
   });

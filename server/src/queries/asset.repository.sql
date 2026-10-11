@@ -167,7 +167,18 @@ order by
 
 -- AssetRepository.getByIds
 select
-  "asset".*
+  "asset".*,
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped"
 from
   "asset"
 where
@@ -176,6 +187,17 @@ where
 -- AssetRepository.getByIdsWithAllRelationsButStacks
 select
   "asset".*,
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -291,7 +313,18 @@ limit
 
 -- AssetRepository.getById
 select
-  "asset".*
+  "asset".*,
+  coalesce(
+    (
+      select
+        "development" -> 'publishedBase' ->> 'isDeveloped' = 'true'
+      from
+        "asset_job_status"
+      where
+        "assetId" = "asset"."id"
+    ),
+    false
+  ) as "isDeveloped"
 from
   "asset"
 where
@@ -384,6 +417,7 @@ with
       "asset"."duration",
       "asset"."id",
       "asset"."visibility",
+      "asset"."updateId" as "mediaRevision",
       asset."isFavorite"
       and asset."ownerId" = $1 as "isFavorite",
       asset.type = 'IMAGE' as "isImage",
@@ -465,6 +499,7 @@ with
       coalesce(array_agg("ratio"), '{}') as "ratio",
       coalesce(array_agg("status"), '{}') as "status",
       coalesce(array_agg("thumbhash"), '{}') as "thumbhash",
+      coalesce(array_agg("mediaRevision"), '{}') as "mediaRevision",
       coalesce(array_agg("city"), '{}') as "city",
       coalesce(array_agg("country"), '{}') as "country",
       coalesce(json_agg("stack"), '[]') as "stack"
@@ -584,11 +619,14 @@ where
 select
   "asset"."originalPath",
   "asset"."originalFileName",
-  "asset_file"."path" as "path"
+  "asset"."isEdited",
+  "asset_file"."path" as "path",
+  "asset_job_status"."development" -> 'publishedBase' ->> 'isDeveloped' = 'true' as "isDeveloped"
 from
   "asset"
   left join "asset_file" on "asset"."id" = "asset_file"."assetId"
   and "asset_file"."type" = $1
+  left join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
   "asset"."id" = $2
 order by
@@ -627,6 +665,8 @@ select
           "asset_edit"
         where
           "asset_edit"."assetId" = "asset"."id"
+        order by
+          "asset_edit"."sequence" asc
       ) as agg
   ) as "edits",
   "asset_exif"."exifImageWidth",
@@ -644,6 +684,7 @@ select
   "asset"."livePhotoVideoId",
   "asset"."originalPath",
   "asset"."originalFileName",
+  "asset_job_status"."development",
   "asset_exif"."exifImageWidth",
   "asset_exif"."exifImageHeight",
   "asset_exif"."orientation",
@@ -651,6 +692,7 @@ select
 from
   "asset"
   inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+  left join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
   "asset"."id" = $1
 
@@ -679,6 +721,8 @@ select
           "asset_edit"
         where
           "asset_edit"."assetId" = "asset"."id"
+        order by
+          "asset_edit"."sequence" asc
       ) as agg
   ) as "edits"
 from

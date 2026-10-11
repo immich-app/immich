@@ -76,6 +76,11 @@ sealed class BaseAsset {
 
   bool get isEditable => false;
 
+  // A backed-up device asset can use the server's developed image while retaining local actions.
+  String? get thumbHash => null;
+  String? get mediaRevision => null;
+  bool get isDeveloped => false;
+
   // Overridden in subclasses
   AssetState get storage;
   String get id;

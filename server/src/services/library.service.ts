@@ -106,12 +106,15 @@ export class LibraryService extends BaseService {
       nocase: true,
       ignore: library.exclusionPatterns,
     });
+    const sidecarMatcher = picomatch('**/*.xmp', { nocase: true, ignore: library.exclusionPatterns });
 
     let _resolve: () => void;
     const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
     const handler = async (event: string, path: string) => {
-      if (matcher(path)) {
+      if (sidecarMatcher(path)) {
+        await this.queueSidecarRefresh(library.id, path);
+      } else if (matcher(path)) {
         this.logger.debug(`File ${event} event received for ${path} in library ${library.id}`);
         await this.jobRepository.queue({
           name: JobName.LibrarySyncFiles,
@@ -123,6 +126,15 @@ export class LibraryService extends BaseService {
     };
 
     const deletionHandler = async (path: string) => {
+      if (sidecarMatcher(path)) {
+        await this.queueSidecarRefresh(library.id, path);
+        return;
+      }
+
+      if (mimeTypes.isSidecar(path)) {
+        return;
+      }
+
       this.logger.debug(`File unlink event received for ${path} in library ${library.id}`);
       await this.jobRepository.queue({
         name: JobName.LibraryRemoveAsset,
@@ -162,6 +174,15 @@ export class LibraryService extends BaseService {
     await ready$;
 
     return true;
+  }
+
+  private async queueSidecarRefresh(libraryId: string, sidecarPath: string) {
+    const assets = await this.assetJobRepository.getForSidecarPath(libraryId, sidecarPath);
+    if (assets.length > 0) {
+      await this.jobRepository.queueAll(
+        assets.map(({ id }) => ({ name: JobName.SidecarCheck, data: { id, source: 'sidecar' } })),
+      );
+    }
   }
 
   async unwatch(id: string) {
@@ -484,6 +505,7 @@ export class LibraryService extends BaseService {
     const assetIdsToOnline: string[] = [];
     const trashedAssetIdsToOnline: string[] = [];
     const assetIdsToUpdate: string[] = [];
+    const assetIdsToCheckSidecar: string[] = [];
 
     this.logger.debug(`Checking batch of ${assets.length} existing asset(s) in library ${job.libraryId}`);
 
@@ -497,6 +519,9 @@ export class LibraryService extends BaseService {
       const action = this.checkExistingAsset(asset, stat);
       switch (action) {
         case AssetSyncResult.DO_NOTHING: {
+          if (stat && !asset.isOffline && asset.status !== AssetStatus.Deleted) {
+            assetIdsToCheckSidecar.push(asset.id);
+          }
           break;
         }
         case AssetSyncResult.OFFLINE: {
@@ -532,6 +557,7 @@ export class LibraryService extends BaseService {
             } else {
               assetIdsToOnline.push(asset.id);
             }
+            assetIdsToCheckSidecar.push(asset.id);
             break;
           }
 
@@ -563,6 +589,14 @@ export class LibraryService extends BaseService {
 
     if (assetIdsToUpdate.length > 0) {
       promises.push(this.queuePostSyncJobs(assetIdsToUpdate));
+    }
+
+    if (assetIdsToCheckSidecar.length > 0) {
+      promises.push(
+        this.jobRepository.queueAll(
+          assetIdsToCheckSidecar.map((id) => ({ name: JobName.SidecarCheck, data: { id, source: 'sidecar' } })),
+        ),
+      );
     }
 
     await Promise.all(promises);

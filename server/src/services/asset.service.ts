@@ -286,7 +286,10 @@ export class AssetService extends BaseService {
       path: `${targetAsset.originalPath}.xmp`,
       type: AssetFileType.Sidecar,
     });
-    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: targetAsset.id } });
+    await this.jobRepository.queue({
+      name: JobName.AssetExtractMetadata,
+      data: { id: targetAsset.id, source: 'copy' },
+    });
   }
 
   @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })
@@ -546,11 +549,16 @@ export class AssetService extends BaseService {
 
   async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
-    const edits = await this.assetEditRepository.getAll(id);
+    const [edits, asset] = await Promise.all([
+      this.assetEditRepository.getAll(id),
+      this.assetRepository.getForEdit(id),
+    ]);
+    const base = asset?.development?.publishedBase;
 
     return {
       assetId: id,
       edits,
+      ...(base && { baseDimensions: { width: base.width, height: base.height } }),
     };
   }
 
@@ -583,7 +591,7 @@ export class AssetService extends BaseService {
     }
 
     // check that crop parameters will not go out of bounds
-    const { width: assetWidth, height: assetHeight } = getDimensions(asset);
+    const { width: assetWidth, height: assetHeight } = asset.development?.publishedBase ?? getDimensions(asset);
 
     if (!assetWidth || !assetHeight) {
       throw new BadRequestException('Asset dimensions are not available for editing');
@@ -597,7 +605,7 @@ export class AssetService extends BaseService {
       }
 
       // check that crop parameters will not go out of bounds
-      const { width: assetWidth, height: assetHeight } = getDimensions(asset);
+      const { width: assetWidth, height: assetHeight } = asset.development?.publishedBase ?? getDimensions(asset);
 
       if (!assetWidth || !assetHeight) {
         throw new BadRequestException('Asset dimensions are not available for editing');
@@ -616,6 +624,12 @@ export class AssetService extends BaseService {
     return {
       assetId: id,
       edits: newEdits,
+      ...(asset.development?.publishedBase && {
+        baseDimensions: {
+          width: asset.development.publishedBase.width,
+          height: asset.development.publishedBase.height,
+        },
+      }),
     };
   }
 
