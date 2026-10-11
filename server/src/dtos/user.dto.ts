@@ -16,7 +16,22 @@ export const UserUpdateMeSchema = z
       .optional()
       .describe('User password (deprecated, use change password endpoint)')
       .meta({ deprecated: true }),
-    name: z.string().optional().describe('User name'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    name: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('User name')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     avatarColor: UserAvatarColorSchema.nullish(),
   })
   .meta({ id: 'UserUpdateMeDto' });
@@ -26,7 +41,18 @@ export class UserUpdateMeDto extends createZodDto(UserUpdateMeSchema) {}
 export const UserResponseSchema = z
   .object({
     id: z.uuidv4().describe('User ID'),
-    name: z.string().describe('User name'),
+    name: z
+      .string()
+      .describe('User name')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .getExtensions(),
+      }),
     email: toEmail.describe('User email'),
     profileImagePath: z.string().describe('Profile image path'),
     avatarColor: UserAvatarColorSchema,
@@ -59,7 +85,8 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
   return {
     id: entity.id,
     email: entity.email,
-    name: entity.name,
+    // TODO(v4): remove the mapping and make `name` nullable
+    name: entity.name ?? '',
     profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
     profileChangedAt: asDateTimeString(entity.profileChangedAt),
@@ -79,7 +106,21 @@ export const UserAdminCreateSchema = z
   .object({
     email: toEmail.describe('User email'),
     password: z.string().describe('User password'),
-    name: z.string().describe('User name'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    name: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .describe('User name')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     avatarColor: UserAvatarColorSchema.nullish(),
     pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
     storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
@@ -97,7 +138,22 @@ const UserAdminUpdateSchema = z
     email: toEmail.optional().describe('User email'),
     password: z.string().optional().describe('User password'),
     pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
-    name: z.string().optional().describe('User name'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    name: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('User name')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     avatarColor: UserAvatarColorSchema.nullish(),
     storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
     shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),

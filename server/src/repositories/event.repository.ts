@@ -119,7 +119,7 @@ type QueueStartEvent = {
 };
 
 type UserEvent = {
-  name: string;
+  name: string | null;
   id: string;
   createdAt: Date;
   updatedAt: Date;
