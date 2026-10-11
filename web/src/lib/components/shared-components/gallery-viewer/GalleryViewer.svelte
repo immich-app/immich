@@ -358,7 +358,7 @@
             }}
             onSelect={() => handleSelectAssets(currentAsset)}
             onPreview={assetInteraction.selectionActive ? () => void navigateToAsset(asset) : undefined}
-            onMouseEvent={() => assetMouseEventHandler(currentAsset)}
+            onMouseEvent={({ isMouseOver }) => assetMouseEventHandler(isMouseOver ? currentAsset : null)}
             {showArchiveIcon}
             asset={currentAsset}
             selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
