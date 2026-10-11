@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -18,6 +19,7 @@ import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
 import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
+import 'package:immich_mobile/presentation/actions/set_featured_photo.action.dart';
 import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
@@ -36,6 +38,7 @@ class ActionButtonContext {
   final bool isInLockedView;
   final bool isStacked;
   final RemoteAlbum? currentAlbum;
+  final Person? currentPerson;
   final bool advancedTroubleshooting;
   final ActionSource source;
   final bool isCasting;
@@ -49,6 +52,7 @@ class ActionButtonContext {
     required this.isStacked,
     required this.isInLockedView,
     required this.currentAlbum,
+    this.currentPerson,
     required this.advancedTroubleshooting,
     required this.source,
     this.isCasting = false,
@@ -65,6 +69,7 @@ enum ActionButtonType {
   cast,
   setAlbumCover,
   similarPhotos,
+  setFeaturedPhoto,
   setProfilePicture,
   viewInTimeline,
   slideshow,
@@ -145,6 +150,12 @@ enum ActionButtonType {
       ActionButtonType.similarPhotos =>
         !context.isInLockedView && //
             context.asset is RemoteAsset,
+      ActionButtonType.setFeaturedPhoto =>
+        !context.isInLockedView &&
+            context.timelineOrigin == TimelineOrigin.person &&
+            context.currentPerson != null &&
+            context.asset is RemoteAsset &&
+            context.isOwner,
       ActionButtonType.setProfilePicture =>
         !context.isInLockedView && //
             context.asset is RemoteAsset && //
@@ -198,6 +209,9 @@ enum ActionButtonType {
       ),
       ActionButtonType.similarPhotos => ActionMenuItem(
         action: SimilarPhotosAction(assetId: (context.asset as RemoteAsset).id),
+      ),
+      ActionButtonType.setFeaturedPhoto => ActionMenuItem(
+        action: SetFeaturedPhotoAction(assetId: (context.asset as RemoteAsset).id, personId: context.currentPerson!.id),
       ),
       ActionButtonType.setProfilePicture => ActionMenuItem(action: SetProfilePictureAction(asset: context.asset)),
       ActionButtonType.openInfo => BaseActionButton(
