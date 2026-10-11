@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
@@ -132,6 +133,12 @@ class BackupNotifier extends StateNotifier<BackupState> {
     // A pause during the recount below nulls _cancelToken, so the run keeps its own reference.
     final cancelToken = Completer<void>();
     _cancelToken = cancelToken;
+
+    // TODO: Once the tmp cleanup is fixed, revert this and handle it differently.
+    // Since we clean up tmp files whenever a foreground upload starts, we need to cancel ongoing background uploads.
+    if (CurrentPlatform.isIOS) {
+      await _backgroundUploadService.cancel();
+    }
 
     // Re-baseline the counters against the same DB read that feeds this run's candidate list,
     // otherwise a resume counts duplicate successes against the old baseline (#26215).

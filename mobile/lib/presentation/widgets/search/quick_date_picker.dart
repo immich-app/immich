@@ -59,7 +59,7 @@ class YearFilter extends DateFilterInputModel {
 
   @override
   String asHumanReadable(BuildContext context) {
-    return context.t.in_year(year: year);
+    return context.t.in_year(year: year.toString());
   }
 }
 

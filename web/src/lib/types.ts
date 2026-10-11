@@ -81,6 +81,7 @@ export type PeopleFilter = {
   sharedWithId?: string;
   isFavorite?: boolean;
   isHidden?: boolean;
+  name?: string;
 };
 
 export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
