@@ -43,7 +43,7 @@
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
 
-<div class="flex flex-col rounded-2xl bg-gray-100 sm:flex-row dark:bg-immich-dark-gray">
+<div class="flex flex-col overflow-clip rounded-2xl bg-gray-100 sm:flex-row dark:bg-immich-dark-gray">
   <div class="flex w-full flex-col">
     {#if queue.isPaused}
       <QueueCardBadge color="warning">{$t('paused')}</QueueCardBadge>
