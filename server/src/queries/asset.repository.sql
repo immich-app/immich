@@ -522,18 +522,22 @@ limit
   $4
 
 -- AssetRepository.detectOfflineExternalAssets
-update "asset"
-set
-  "isOffline" = $1,
-  "deletedAt" = $2
-where
-  "isOffline" = $3
-  and "isExternal" = $4
-  and "libraryId" = $5::uuid
-  and (
-    not "originalPath" like $6
-    or "originalPath" ~* $7
-  )
+begin
+declare offline_check no scroll cursor for (
+  select
+    "asset"."id",
+    "asset"."originalPath"
+  from
+    "asset"
+  where
+    "asset"."libraryId" = $1::uuid
+    and "asset"."isOffline" = $2
+    and "asset"."isExternal" = $3
+)
+fetch 10000
+from
+  offline_check
+commit
 
 -- AssetRepository.filterNewExternalAssetPaths
 select
