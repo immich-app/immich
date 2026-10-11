@@ -23,6 +23,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
@@ -40,6 +41,7 @@
     ActionButton,
     CommandPaletteDefaultProvider,
     ContextMenuButton,
+    Icon,
     IconButton,
     LoadingSpinner,
     modalManager,
@@ -51,6 +53,7 @@
     mdiAccountMultipleCheckOutline,
     mdiArrowLeft,
     mdiDotsVertical,
+    mdiHeart,
     mdiPencilOutline,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -324,7 +327,10 @@
     onAction: () => {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     },
+    shortcuts: { key: 'm' },
   };
+
+  const enablePersonActions = $derived(!assetViewerManager.isViewing && !assetMultiSelectManager.selectionActive);
 </script>
 
 <OnEvents
@@ -334,6 +340,12 @@
   onAssetsArchive={updateAssetCount}
   onAssetsUnarchive={updateAssetCount}
 />
+{#if enablePersonActions}
+  <CommandPaletteDefaultProvider
+    name={$t('person')}
+    actions={[SelectFeaturePhoto, Edit, HidePerson, ShowPerson, Merge, Favorite, Unfavorite]}
+  />
+{/if}
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)"
@@ -378,14 +390,22 @@
               />
             {:else}
               <div class="relative flex gap-4">
-                <ImageThumbnail
-                  circle
-                  shadow
-                  url={thumbnailData}
-                  altText={person.name}
-                  widthStyle="3.375rem"
-                  heightStyle="3.375rem"
-                />
+                <div class="relative">
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={thumbnailData}
+                    altText={person.name}
+                    widthStyle="3.375rem"
+                    heightStyle="3.375rem"
+                    hidden={person.isHidden}
+                  />
+                  {#if person.isFavorite}
+                    <div class="absolute inset-s-1 top-1">
+                      <Icon icon={mdiHeart} size="18" class="text-white drop-shadow-md" />
+                    </div>
+                  {/if}
+                </div>
                 <div class="flex flex-col text-start text-primary">
                   <div class="flex gap-2">
                     <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
