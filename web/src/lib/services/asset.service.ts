@@ -468,7 +468,7 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
 };
 
 export const toggleFavoriteAssets = async (
-  assets: AssetResponseDto[],
+  assets: Pick<AssetResponseDto, 'id' | 'isFavorite'>[],
   isFavorite: boolean,
   onFavorite?: OnFavorite,
 ) => {
