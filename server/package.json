@@ -82,7 +82,7 @@
     "geo-tz": "^8.0.0",
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",
-    "ioredis": "^5.8.2",
+    "ioredis": "^6.0.0",
     "jose": "^6.0.0",
     "js-yaml": "^5.0.0",
     "jsonwebtoken": "^9.0.2",
