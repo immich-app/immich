@@ -16,7 +16,7 @@ export const load = (async ({ params, url }) => {
 
   const [queue, failedJobs] = await Promise.all([
     getQueue({ name }),
-    getQueueJobs({ name, status: [QueueJobStatus.Failed, QueueJobStatus.Paused] }),
+    getQueueJobs({ name, status: [QueueJobStatus.Failed] }),
   ]);
   const $t = await getFormatter();
 
