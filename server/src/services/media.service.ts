@@ -400,7 +400,18 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const {
+      x1,
+      y1,
+      x2,
+      y2,
+      oldWidth,
+      oldHeight,
+      exifOrientation,
+      previewPath,
+      originalPath,
+      thumbnailPath: oldThumbnailPath,
+    } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
@@ -448,6 +459,10 @@ export class MediaService extends BaseService {
 
     await this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailPath);
     await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
+
+    if (oldThumbnailPath && oldThumbnailPath !== thumbnailPath) {
+      await this.storageRepository.unlink(oldThumbnailPath);
+    }
 
     return JobStatus.Success;
   }
