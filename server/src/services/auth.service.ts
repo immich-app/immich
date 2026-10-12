@@ -2,7 +2,6 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import sanitize from 'sanitize-filename';
 import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import {
@@ -14,6 +13,8 @@ import {
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
+  OAuthProfile,
+  OAuthProfileSchema,
   PinCodeChangeDto,
   PinCodeResetDto,
   PinCodeSetupDto,
@@ -24,10 +25,9 @@ import {
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
-import { OAuthProfile } from 'src/repositories/oauth.repository.js';
+import { OAuthConfig, OAuthRawProfile } from 'src/repositories/oauth.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
-import { HumanReadableSize } from 'src/utils/bytes.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
 import { getUserAgentDetails } from 'src/utils/request.js';
 
@@ -39,18 +39,10 @@ export interface LoginDetails {
   appVersion: string | null;
 }
 
-interface ClaimOptions<T> {
-  key: string;
-  isValid: (value: unknown) => value is T;
-  parse?: (raw: unknown) => T;
-}
-
-type OAuthClaimsConfig = Pick<SystemConfig['oauth'], 'defaultStorageQuota' | 'storageLabelClaim' | 'storageQuotaClaim'>;
-
-interface ParsedOAuthClaims {
-  storageLabel?: string | null;
-  quotaSizeInBytes?: number | null;
-}
+type OAuthClaimsConfig = Pick<
+  SystemConfig['oauth'],
+  'defaultStorageQuota' | 'storageLabelClaim' | 'storageQuotaClaim' | 'roleClaim'
+>;
 
 export type ValidateRequest = {
   headers: IncomingHttpHeaders;
@@ -295,6 +287,18 @@ export class AuthService extends BaseService {
     );
   }
 
+  private parseOAuthClaims(profile: OAuthRawProfile, oauth: OAuthConfig) {
+    const { defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
+
+    return OAuthProfileSchema.parse({
+      ...profile,
+      defaults: { immich_quota_bytes: defaultStorageQuota },
+      immich_storage_label: profile[storageLabelClaim],
+      immich_quota_bytes: profile[storageQuotaClaim],
+      immich_role: profile[roleClaim],
+    });
+  }
+
   async callback(dto: OAuthCallbackDto, headers: IncomingHttpHeaders, loginDetails: LoginDetails) {
     const { oauth } = await this.getConfig({ withCache: false });
     if (!oauth.enabled) {
@@ -313,18 +317,18 @@ export class AuthService extends BaseService {
 
     const url = this.resolveRedirectUri(oauth, dto.url);
     const {
-      profile,
+      rawProfile,
       sid: oauthSid,
       idToken: oauthBearerToken,
     } = await this.oauthRepository.getProfileAndOAuthSid(oauth, url, expectedState, codeVerifier);
-    const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
-    const { autoRegister, roleClaim } = oauth;
+    const profile = this.parseOAuthClaims(rawProfile, oauth);
+    const { autoRegister } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
     // link by email
-    if (!user && normalizedEmail) {
-      const emailUser = await this.userRepository.getByEmail(normalizedEmail);
+    if (!user && profile.email) {
+      const emailUser = await this.userRepository.getByEmail(profile.email);
       if (emailUser) {
         if (emailUser.oauthId) {
           this.logger.debug('OAuth login conflict: email already linked to different account');
@@ -334,10 +338,9 @@ export class AuthService extends BaseService {
       }
     }
 
-    const role = this.getRoleClaim(profile, roleClaim);
-    const isAdmin = role === 'admin';
+    const isAdmin = profile.immich_role === 'admin';
 
-    if (user && role && isAdmin !== user.isAdmin) {
+    if (user && profile.immich_role && isAdmin !== user.isAdmin) {
       user = await this.userRepository.update(user.id, { isAdmin });
     }
 
@@ -347,29 +350,28 @@ export class AuthService extends BaseService {
     } else {
       if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. User does not exist and auto registering is disabled. To enable set OAuth Auto Register to true in admin settings.`,
+          `Unable to register ${profile.sub}/${profile.email || '(no email)'}. User does not exist and auto registering is disabled. To enable set OAuth Auto Register to true in admin settings.`,
         );
         throw new BadRequestException('OAuth authentication failed');
       }
 
-      if (!normalizedEmail) {
+      if (!profile.email) {
         throw new BadRequestException('OAuth profile does not have an email address');
       }
 
-      this.logger.log(`Registering new user: ${profile.sub}/${normalizedEmail}`);
-
-      const claims = this.parseOAuthClaims(profile, oauth, true);
+      this.logger.log(`Registering new user: ${profile.sub}/${profile.email}`);
 
       user = await this.createUser({
         name:
           profile.name ||
           `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
           profile.preferred_username ||
-          normalizedEmail,
-        email: normalizedEmail,
+          profile.email,
+        email: profile.email,
         oauthId: profile.sub,
-        quotaSizeInBytes: claims.quotaSizeInBytes ?? null,
-        storageLabel: claims.storageLabel ?? null,
+        quotaSizeInBytes:
+          profile.immich_quota_bytes === undefined ? profile.defaults.immich_quota_bytes : profile.immich_quota_bytes,
+        storageLabel: profile.immich_storage_label ?? null,
         isAdmin,
       });
     }
@@ -416,11 +418,13 @@ export class AuthService extends BaseService {
     }
 
     const { oauth } = await this.getConfig({ withCache: false });
-    const {
-      profile: { sub: oauthId },
-      sid,
-      idToken,
-    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier);
+    const { rawProfile, sid, idToken } = await this.oauthRepository.getProfileAndOAuthSid(
+      oauth,
+      dto.url,
+      expectedState,
+      codeVerifier,
+    );
+    const { sub: oauthId } = this.parseOAuthClaims(rawProfile, oauth);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
@@ -634,73 +638,30 @@ export class AuthService extends BaseService {
     return mapLoginResponse(user, token);
   }
 
-  private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T | undefined {
-    const raw = profile[options.key as keyof OAuthProfile];
-    const value = options.parse ? options.parse(raw) : raw;
-    return options.isValid(value) ? value : undefined;
-  }
-
-  private parseOAuthClaims(profile: OAuthProfile, oauth: OAuthClaimsConfig, useDefaults: boolean): ParsedOAuthClaims {
-    const { defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
-    const claims: ParsedOAuthClaims = {};
-
-    const storageLabel = this.getClaim(profile, {
-      key: storageLabelClaim,
-      isValid: (value): value is string => typeof value === 'string',
-    });
-
-    if (useDefaults) {
-      claims.storageLabel = storageLabel || null;
-    }
-    // Default claim (preferred_username) is registration-only; login sync is opt-in.
-    else if (storageLabelClaim !== defaults.oauth.storageLabelClaim && storageLabel !== undefined) {
-      claims.storageLabel = this.formatStorageLabel(storageLabel);
-    }
-
-    const storageQuota = this.getClaim(profile, {
-      key: storageQuotaClaim,
-      parse: Number,
-      isValid: (value): value is number =>
-        typeof value === 'number' && Number.isFinite(value) && (value === -1 || value >= 0),
-    });
-
-    if (storageQuota !== undefined) {
-      claims.quotaSizeInBytes = storageQuota === -1 ? null : storageQuota * HumanReadableSize.GiB;
-    } else if (useDefaults) {
-      claims.quotaSizeInBytes =
-        defaultStorageQuota === null || defaultStorageQuota === -1 ? null : defaultStorageQuota * HumanReadableSize.GiB;
-    }
-
-    return claims;
-  }
-
-  private formatStorageLabel(label: string): string | null {
-    if (!label) {
-      return null;
-    }
-
-    return sanitize(label);
-  }
-
   private async syncOAuthClaims(user: UserAdmin, profile: OAuthProfile, oauth: OAuthClaimsConfig): Promise<UserAdmin> {
-    const claims = this.parseOAuthClaims(profile, oauth, false);
     const updates: {
       storageLabel?: string | null;
       quotaSizeInBytes?: number | null;
     } = {};
 
-    if (claims.storageLabel && claims.storageLabel !== user.storageLabel) {
-      const duplicate = await this.userRepository.getByStorageLabel(claims.storageLabel);
+    if (
+      oauth.storageLabelClaim !== defaults.oauth.storageLabelClaim &&
+      profile.immich_storage_label &&
+      profile.immich_storage_label !== user.storageLabel
+    ) {
+      const duplicate = await this.userRepository.getByStorageLabel(profile.immich_storage_label);
 
       if (duplicate && duplicate.id !== user.id) {
         this.logger.warn(`Unable to sync OAuth storage label for user ${user.id}: label already in use`);
       } else {
-        updates.storageLabel = claims.storageLabel;
+        updates.storageLabel = profile.immich_storage_label;
       }
     }
 
-    if (claims.quotaSizeInBytes !== undefined && claims.quotaSizeInBytes !== user.quotaSizeInBytes) {
-      updates.quotaSizeInBytes = claims.quotaSizeInBytes;
+    if (profile.immich_quota_bytes === undefined && user.quotaSizeInBytes !== profile.defaults.immich_quota_bytes) {
+      updates.quotaSizeInBytes = profile.defaults.immich_quota_bytes;
+    } else if (profile.immich_quota_bytes !== undefined && profile.immich_quota_bytes !== user.quotaSizeInBytes) {
+      updates.quotaSizeInBytes = profile.immich_quota_bytes;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -712,19 +673,6 @@ export class AuthService extends BaseService {
     }
 
     return this.userRepository.update(user.id, { ...updates, updatedAt: new Date() });
-  }
-
-  private getRoleClaim(profile: OAuthProfile, roleClaim: string): 'admin' | 'user' | undefined {
-    const value = profile[roleClaim as keyof OAuthProfile];
-    const roles = Array.isArray(value) ? value : [value];
-    const isRole = (role: string) => roles.includes(role);
-
-    if (isRole('admin')) {
-      return 'admin';
-    }
-    if (isRole('user')) {
-      return 'user';
-    }
   }
 
   private resolveRedirectUri(

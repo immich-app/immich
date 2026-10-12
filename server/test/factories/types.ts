@@ -1,7 +1,7 @@
 import { Selectable } from 'kysely';
 import { PersonUser } from 'src/database.js';
 import { PersonUserRole } from 'src/dtos/person.dto.js';
-import { OAuthProfile } from 'src/repositories/oauth.repository.js';
+import { OAuthRawProfile } from 'src/repositories/oauth.repository.js';
 import { ActivityTable } from 'src/schema/tables/activity.table.js';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
@@ -46,4 +46,4 @@ export type PartnerLike = Partial<Selectable<PartnerTable>>;
 export type ActivityLike = Partial<Selectable<ActivityTable>>;
 export type ApiKeyLike = Partial<Selectable<ApiKeyTable>>;
 export type SessionLike = Partial<Selectable<SessionTable>>;
-export type OAuthProfileLike = Partial<OAuthProfile>;
+export type OAuthProfileLike = Partial<OAuthRawProfile>;
