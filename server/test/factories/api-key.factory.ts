@@ -1,10 +1,10 @@
 import { Selectable } from 'kysely';
-import { Permission } from 'src/enum';
-import { ApiKeyTable } from 'src/schema/tables/api-key.table';
-import { build } from 'test/factories/builder.factory';
-import { ApiKeyLike, FactoryBuilder, UserLike } from 'test/factories/types';
-import { UserFactory } from 'test/factories/user.factory';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { Permission } from 'src/enum.js';
+import { ApiKeyTable } from 'src/schema/tables/api-key.table.js';
+import { build } from 'test/factories/builder.factory.js';
+import { ApiKeyLike, FactoryBuilder, UserLike } from 'test/factories/types.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class ApiKeyFactory {
   #user!: UserFactory;

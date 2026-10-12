@@ -1,24 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
-import chokidar, { ChokidarOptions } from 'chokidar';
-import { escapePath, glob, globStream } from 'fast-glob';
+import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
+import fastGlob from 'fast-glob';
 import {
+  Dirent,
+  ReadOptionsWithBuffer,
   constants,
   createReadStream,
   createWriteStream,
-  Dirent,
   existsSync,
   mkdirSync,
-  ReadOptionsWithBuffer,
   watch,
 } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
-import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { mimeTypes } from 'src/utils/mime-types';
+import picomatch from 'picomatch';
+import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
 
 export interface WatchEvents {
   onReady(): void;
@@ -28,9 +29,12 @@ export interface WatchEvents {
   onError(error: Error): void;
 }
 
+export type WatchOptions = Omit<ChokidarOptions, 'ignored'> & { ignored?: string[] };
+
 export interface ImmichReadStream {
   stream: Readable;
   type?: string;
+  disposition?: string | string[];
   length?: number;
 }
 
@@ -185,15 +189,17 @@ export class StorageRepository {
     const files = await fs.readdir(directory);
     await Promise.all(files.map((file) => this.removeEmptyDirs(path.join(directory, file), true)));
 
-    if (self) {
-      const updated = await fs.readdir(directory);
-      if (updated.length === 0) {
-        try {
-          await fs.rmdir(directory);
-        } catch (error: Error | any) {
-          if (error.code !== 'ENOTEMPTY') {
-            this.logger.warn(`Attempted to remove directory, but failed: ${error}`);
-          }
+    if (!self) {
+      return;
+    }
+
+    const updated = await fs.readdir(directory);
+    if (updated.length === 0) {
+      try {
+        await fs.rmdir(directory);
+      } catch (error: Error | any) {
+        if (error.code !== 'ENOTEMPTY') {
+          this.logger.warn(`Attempted to remove directory, but failed: ${error}`);
         }
       }
     }
@@ -212,9 +218,9 @@ export class StorageRepository {
   async checkDiskUsage(folder: string): Promise<DiskUsage> {
     const stats = await fs.statfs(folder);
     return {
-      available: stats.bavail * stats.bsize,
-      free: stats.bfree * stats.bsize,
-      total: stats.blocks * stats.bsize,
+      available: stats.bavail * stats.frsize,
+      free: stats.bfree * stats.frsize,
+      total: stats.blocks * stats.frsize,
     };
   }
 
@@ -226,7 +232,8 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
-    return glob(globbedPaths, {
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    return fastGlob.glob(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -244,7 +251,8 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
-    const stream = globStream(globbedPaths, {
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    const stream = fastGlob.globStream(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -255,10 +263,12 @@ export class StorageRepository {
     let batch: string[] = [];
     for await (const value of stream) {
       batch.push(value.toString());
-      if (batch.length === walkOptions.take) {
-        yield batch;
-        batch = [];
+      if (batch.length !== walkOptions.take) {
+        continue;
       }
+
+      yield batch;
+      batch = [];
     }
 
     if (batch.length > 0) {
@@ -266,8 +276,15 @@ export class StorageRepository {
     }
   }
 
-  watch(paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) {
-    const watcher = chokidar.watch(paths, options);
+  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
+    const matchesIgnoredPath = picomatch(options.ignored ?? [], {
+      dot: true, // Match the behavior of fast-glob's micromatch by using these settings
+      nocase: true,
+      posix: true,
+      strictSlashes: false,
+    });
+
+    const watcher = chokidarWatch(paths, { ...options, ignored: (path) => matchesIgnoredPath(path) });
 
     watcher.on('ready', () => events.onReady?.());
     watcher.on('add', (path) => events.onAdd?.(path));
@@ -281,7 +298,12 @@ export class StorageRepository {
   watchDir = watch; // Native fs.watch without chokidar overhead
 
   private asGlob(pathToCrawl: string): string {
-    const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
+    // eslint-disable-next-line import-x/no-named-as-default-member
+    const escapedPath = fastGlob
+      .escapePath(pathToCrawl)
+      .replaceAll('"', '["]')
+      .replaceAll("'", "[']")
+      .replaceAll('`', '[`]');
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
     return `${escapedPath}/**/${extensions}`;
   }

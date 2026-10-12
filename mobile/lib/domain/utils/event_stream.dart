@@ -30,9 +30,4 @@ class EventStream {
   }) {
     return where<T>().listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
-
-  /// Closes the stream controller
-  Future<void> dispose() {
-    return _controller.close();
-  }
 }

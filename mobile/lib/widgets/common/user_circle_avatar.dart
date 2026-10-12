@@ -12,6 +12,26 @@ class UserCircleAvatar extends StatelessWidget {
 
   const UserCircleAvatar({super.key, this.size = 44, this.hasBorder = false, this.opacity = 1, required this.user});
 
+  // TODO(shenlong): Remove this factory when the UserDto is removed from the domain layer
+  factory UserCircleAvatar.fromUser({
+    required User user,
+    double size = 44,
+    bool hasBorder = false,
+    double opacity = 1,
+  }) => .new(
+    user: .new(
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      profileChangedAt: user.profileChangedAt,
+      hasProfileImage: user.hasProfileImage,
+      avatarColor: user.avatarColor,
+    ),
+    size: size,
+    hasBorder: hasBorder,
+    opacity: opacity,
+  );
+
   @override
   Widget build(BuildContext context) {
     final userAvatarColor = user.avatarColor.toColor().withValues(alpha: opacity);

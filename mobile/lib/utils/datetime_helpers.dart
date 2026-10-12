@@ -1,5 +1,5 @@
-const int _maxMillisecondsSinceEpoch = 8640000000000000; // 275760-09-13
-const int _minMillisecondsSinceEpoch = -62135596800000; // 0001-01-01
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
+import 'package:intl/intl.dart';
 
 DateTime? tryFromSecondsSinceEpoch(int? secondsSinceEpoch, {bool isUtc = false}) {
   if (secondsSinceEpoch == null) {
@@ -7,13 +7,14 @@ DateTime? tryFromSecondsSinceEpoch(int? secondsSinceEpoch, {bool isUtc = false})
   }
 
   final milliSeconds = secondsSinceEpoch * 1000;
-  if (milliSeconds < _minMillisecondsSinceEpoch || milliSeconds > _maxMillisecondsSinceEpoch) {
-    return null;
-  }
-
   try {
     return DateTime.fromMillisecondsSinceEpoch(milliSeconds, isUtc: isUtc);
   } catch (e) {
     return null;
   }
 }
+
+final _groupDateFormat = DateFormat('yyyy-MM-dd', 'en_US');
+
+// the columns store clamped dates, the group date has to name the same day
+String timelineGroupDate(DateTime value) => _groupDateFormat.format(clampDateTime(value));

@@ -90,9 +90,9 @@ class FolderPage extends HookConsumerWidget {
       body: folderState.when(
         data: (rootFolder) {
           if (folder == null) {
-            return FolderContent(folder: rootFolder, root: rootFolder, sortOrder: sortOrder.value);
+            return FolderContent(folder: rootFolder, sortOrder: sortOrder.value);
           } else {
-            return FolderContent(folder: currentFolder.value, root: rootFolder, sortOrder: sortOrder.value);
+            return FolderContent(folder: currentFolder.value, sortOrder: sortOrder.value);
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -107,10 +107,9 @@ class FolderPage extends HookConsumerWidget {
 
 class FolderContent extends HookConsumerWidget {
   final RootFolder? folder;
-  final RootFolder root;
   final SortOrder sortOrder;
 
-  const FolderContent({super.key, this.folder, required this.root, this.sortOrder = SortOrder.asc});
+  const FolderContent({super.key, this.folder, this.sortOrder = SortOrder.asc});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -143,7 +142,7 @@ class FolderContent extends HookConsumerWidget {
 
     return Column(
       children: [
-        FolderPath(currentFolder: folder!, root: root),
+        FolderPath(currentFolder: folder!),
         Expanded(
           child: folderRenderlist.when(
             data: (folderAssets) {
@@ -224,9 +223,8 @@ class FolderContent extends HookConsumerWidget {
 
 class FolderPath extends StatelessWidget {
   final RootFolder currentFolder;
-  final RootFolder root;
 
-  const FolderPath({super.key, required this.currentFolder, required this.root});
+  const FolderPath({super.key, required this.currentFolder});
 
   @override
   Widget build(BuildContext context) {

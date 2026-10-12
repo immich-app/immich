@@ -1,4 +1,4 @@
-import { immichAdmin, utils } from 'src/utils';
+import { immichAdmin, utils } from 'src/utils.js';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 describe(`immich-admin`, () => {

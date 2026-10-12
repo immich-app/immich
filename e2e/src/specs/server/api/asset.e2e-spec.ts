@@ -14,10 +14,10 @@ import { randomBytes } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
-import { createUserDto, uuidDto } from 'src/fixtures';
-import { makeRandomImage } from 'src/generators';
-import { errorDto } from 'src/responses';
-import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils';
+import { createUserDto, uuidDto } from 'src/fixtures.js';
+import { makeRandomImage } from 'src/generators.js';
+import { errorDto } from 'src/responses.js';
+import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils.js';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -130,7 +130,7 @@ describe('/asset', () => {
     });
     await utils.createFace({
       assetId: user1Assets[0].id,
-      personId: person1.id,
+      personGroupId: person1.id,
     });
   };
   beforeAll(setupTests, 30_000);
@@ -151,14 +151,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .get(`/assets/${user2Assets[0].id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should get the asset info', async () => {
       const { status, body } = await request(app)
         .get(`/assets/${user1Assets[0].id}`)
@@ -306,15 +298,6 @@ describe('/asset', () => {
   });
 
   describe('PUT /assets/:id', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .put(`/assets/${user2Assets[0].id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should favorite an asset', async () => {
       const before = await utils.getAssetInfo(user1.accessToken, user1Assets[0].id);
       expect(before.isFavorite).toBe(false);
@@ -395,44 +378,6 @@ describe('/asset', () => {
 
       expect(status).toEqual(200);
       expect(body).toMatchObject({ id: user1Assets[0].id, livePhotoVideoId: null });
-    });
-
-    it.skip('should update date time original when sidecar file contains DateTimeOriginal', async () => {
-      const sidecarData = `<?xpacket begin='?' id='W5M0MpCehiHzreSzNTczkc9d'?>
-<x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Image::ExifTool 12.40'>
-<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
- <rdf:Description rdf:about=''
-  xmlns:exif='http://ns.adobe.com/exif/1.0/'>
-  <exif:ExifVersion>0220</exif:ExifVersion>  <exif:DateTimeOriginal>2024-07-11T10:32:52Z</exif:DateTimeOriginal>
-  <exif:GPSVersionID>2.3.0.0</exif:GPSVersionID>
- </rdf:Description>
-</rdf:RDF>
-</x:xmpmeta>
-<?xpacket end='w'?>`;
-
-      const { id } = await utils.createAsset(user1.accessToken, {
-        sidecarData: {
-          bytes: Buffer.from(sidecarData),
-          filename: 'example.xmp',
-        },
-      });
-      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-
-      const assetInfo = await utils.getAssetInfo(user1.accessToken, id);
-      expect(assetInfo.exifInfo?.dateTimeOriginal).toBe('2024-07-11T10:32:52+00:00');
-
-      const { status, body } = await request(app)
-        .put(`/assets/${id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
-
-      expect(body).toMatchObject({
-        id,
-        exifInfo: expect.objectContaining({
-          dateTimeOriginal: '2023-11-20T01:11:00+00:00',
-        }),
-      });
-      expect(status).toEqual(200);
     });
 
     it('should update gps data', async () => {

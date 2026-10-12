@@ -1,15 +1,15 @@
 import { Kysely } from 'kysely';
-import { serverVersion } from 'src/constants';
-import { JobName } from 'src/enum';
-import { CronRepository } from 'src/repositories/cron.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
-import { DB } from 'src/schema';
-import { VersionService } from 'src/services/version.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { serverVersion } from 'src/constants.js';
+import { JobName } from 'src/enum.js';
+import { CronRepository } from 'src/repositories/cron.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
+import { DB } from 'src/schema/index.js';
+import { VersionService } from 'src/services/version.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

@@ -1,10 +1,10 @@
-import { getConfig, getConfigDefaults, type SystemConfigDto } from '@immich/sdk';
+import { getConfig, getConfigDefaults, type AdminConfigDto } from '@immich/sdk';
 import { cloneDeep } from 'lodash-es';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class SystemConfigManager {
-  #value?: SystemConfigDto = $state();
-  #defaultValue?: SystemConfigDto = $state();
+  #value?: AdminConfigDto = $state();
+  #defaultValue?: AdminConfigDto = $state();
 
   constructor() {
     eventManager.on({
@@ -25,7 +25,7 @@ class SystemConfigManager {
     return this.#value;
   }
 
-  set value(config: SystemConfigDto) {
+  set value(config: AdminConfigDto) {
     this.#value = config;
   }
 

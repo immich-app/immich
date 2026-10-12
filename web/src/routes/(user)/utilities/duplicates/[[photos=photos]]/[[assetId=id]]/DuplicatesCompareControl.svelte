@@ -186,7 +186,7 @@
   </div>
 
   {#if hasMore}
-    <div class="flex justify-center pb-2">
+    <div class="flex justify-center">
       <Button size="small" variant="ghost" color="secondary" onclick={() => (showMore = !showMore)}>
         <Icon icon={showMore ? mdiChevronUp : mdiChevronDown} size="18" class="me-1" />
         {showMore

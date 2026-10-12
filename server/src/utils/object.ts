@@ -1,4 +1,4 @@
-import { isEqual, isPlainObject } from 'lodash';
+import { isEqual, isPlainObject } from 'lodash-es';
 
 /**
  * Deeply clones and converts a class instance to a plain object.

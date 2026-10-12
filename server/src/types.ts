@@ -1,11 +1,12 @@
 import { ShallowDehydrateObject } from 'kysely';
-import { SystemConfig } from 'src/config';
-import { VECTOR_EXTENSIONS } from 'src/constants';
-import { AssetFile } from 'src/database';
-import { UploadFieldName } from 'src/dtos/asset-media.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import { Mocked } from 'vitest';
+import { VECTOR_EXTENSIONS } from 'src/constants.js';
+import { AssetFile } from 'src/database.js';
+import { UploadFieldName } from 'src/dtos/asset-media.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
+import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto.js';
 import {
   AacProfile,
   AssetOrder,
@@ -23,21 +24,21 @@ import {
   IntegrityReport,
   JobName,
   MemoryType,
+  PersonUpdateStrategy,
   QueueName,
   StorageFolder,
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
   UserMetadataKey,
-} from 'src/enum';
-import { Mocked } from 'vitest';
+} from 'src/enum.js';
 
 export type DeepPartial<T> = T extends Date
   ? T
-  : T extends Record<string, unknown>
-    ? { [K in keyof T]?: DeepPartial<T[K]> }
-    : T extends Array<infer R>
-      ? DeepPartial<R>[]
+  : T extends Array<infer R>
+    ? DeepPartial<R>[]
+    : T extends object
+      ? { [K in keyof T]?: DeepPartial<T[K]> }
       : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
@@ -62,20 +63,31 @@ export type RawImageInfo = {
   channels: 1 | 2 | 3 | 4;
 };
 
-type DecodeImageOptions = {
-  colorspace: string;
-  processInvalidImages: boolean;
-  raw?: RawImageInfo;
-  edits?: AssetEditActionItem[];
+export type Bitmap = {
+  data: Buffer;
+  info: RawImageInfo;
 };
 
-export interface DecodeToBufferOptions extends DecodeImageOptions {
+type ImageColorOptions = {
+  colorspace: string;
+  processInvalidImages: boolean;
+};
+
+export interface DecodeToBufferOptions extends ImageColorOptions {
   size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
-export type GenerateThumbhashOptions = DecodeImageOptions;
+export type TransformOptions = {
+  size?: number;
+  fit?: 'inside' | 'outside';
+  edits?: AssetEditActionItem[];
+};
+
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> &
+  ImageColorOptions &
+  TransformOptions;
+export type GenerateThumbhashOptions = ImageColorOptions & Pick<TransformOptions, 'edits'>;
 
 export interface VideoStreamInfo {
   index: number;
@@ -215,6 +227,11 @@ export interface IDelayedJob extends IBaseJob {
 }
 
 export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
+export interface IPersonJob {
+  ownerId: string;
+  personGroupId: string;
+}
+
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;
@@ -316,6 +333,10 @@ export interface IIntegrityPathWithChecksumJob {
   items: { path: string; reportId: string | null; checksum?: string | null }[];
 }
 
+export interface IFacialRecognitionQueueAll extends INightlyJob {
+  clusterGroupId?: string;
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -352,7 +373,7 @@ export type JobItem =
   // Migration
   | { name: JobName.FileMigrationQueueAll; data?: IBaseJob }
   | { name: JobName.AssetFileMigration; data: IEntityJob }
-  | { name: JobName.PersonFileMigration; data: IEntityJob }
+  | { name: JobName.PersonFileMigration; data: IPersonJob }
 
   // Metadata Extraction
   | { name: JobName.AssetExtractMetadataQueueAll; data: IBaseJob }
@@ -369,9 +390,9 @@ export type JobItem =
   // Facial Recognition
   | { name: JobName.AssetDetectFacesQueueAll; data: IBaseJob }
   | { name: JobName.AssetDetectFaces; data: IEntityJob }
-  | { name: JobName.FacialRecognitionQueueAll; data: INightlyJob }
+  | { name: JobName.FacialRecognitionQueueAll; data: IFacialRecognitionQueueAll }
   | { name: JobName.FacialRecognition; data: IDeferrableJob }
-  | { name: JobName.PersonGenerateThumbnail; data: IEntityJob }
+  | { name: JobName.PersonGenerateThumbnail; data: IPersonJob }
 
   // Smart Search
   | { name: JobName.SmartSearchQueueAll; data: IBaseJob }
@@ -512,9 +533,11 @@ export type StorageAsset = {
 };
 
 export type OnThisDayData = { year: number };
+export type BirthdayData = { personId: string; personName: string; year: number };
 
 export interface MemoryData {
   [MemoryType.OnThisDay]: OnThisDayData;
+  [MemoryType.Birthday]: BirthdayData;
 }
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
@@ -552,11 +575,13 @@ export type UserPreferences = {
   memories: {
     enabled: boolean;
     duration: number;
+    sidebarWeb: boolean;
   };
   people: {
     enabled: boolean;
     sidebarWeb: boolean;
     minimumFaces: number;
+    updateStrategy: PersonUpdateStrategy;
   };
   ratings: {
     enabled: boolean;

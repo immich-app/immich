@@ -20,8 +20,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
-import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
-import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -87,7 +86,37 @@ class SyncStatusAndActions extends HookConsumerWidget {
     }
 
     Future<void> clearFileCache() async {
-      await ref.read(storageRepositoryProvider).clearCache();
+      try {
+        await ref.read(storageRepositoryProvider).clearCache();
+
+        if (!context.mounted) {
+          return;
+        }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              context.t.clear_file_cache_success,
+              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              context.t.clear_file_cache_error,
+              style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.error),
+            ),
+          ),
+        );
+      }
     }
 
     Future<void> resetSqliteDb(BuildContext context) {
@@ -223,7 +252,7 @@ class _SyncStatsCounts extends ConsumerWidget {
     final assetService = ref.watch(assetServiceProvider);
     final localAlbumService = LocalAlbumService(db.localAlbumRepository);
     final remoteAlbumService = ref.watch(remoteAlbumServiceProvider);
-    final memoryService = DriftMemoryService(db.memoryRepository);
+    final memoryService = MemoryService(db.memoryRepository);
     final appSettingsService = ref.watch(appSettingsServiceProvider);
 
     Future<List<dynamic>> loadCounts() async {
@@ -244,18 +273,14 @@ class _SyncStatsCounts extends ConsumerWidget {
         }
 
         if (snapshot.hasError) {
-          return ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Center(
-                  child: Text(
-                    "Error occur, reset the local database by tapping the button below",
-                    style: context.textTheme.bodyLarge,
-                  ),
-                ),
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                context.t.reset_sqlite_error_hint,
+                style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.error),
               ),
-            ],
+            ),
           );
         }
 

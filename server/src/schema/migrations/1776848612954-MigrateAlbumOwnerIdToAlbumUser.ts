@@ -1,5 +1,5 @@
 import { Kysely, sql } from 'kysely';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole } from 'src/enum.js';
 
 export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE OR REPLACE FUNCTION album_user_after_insert()

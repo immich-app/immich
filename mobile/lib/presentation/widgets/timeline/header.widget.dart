@@ -102,7 +102,11 @@ class _BulkSelectIconButton extends ConsumerWidget {
     }
 
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
-    final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
+    final isAllSelected = ref.watch(
+      multiSelectProvider.select(
+        (state) => bucketAssets.isNotEmpty && bucketAssets.every(state.selectedAssets.contains),
+      ),
+    );
 
     return isReadonlyModeEnabled
         ? const SizedBox.shrink()

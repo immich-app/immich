@@ -1,7 +1,7 @@
-import { Column, ForeignKeyColumn, Generated, PrimaryGeneratedColumn, Table, Unique } from '@immich/sql-tools';
-import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
-import { WorkflowType } from 'src/enum';
-import { PluginTable } from 'src/schema/tables/plugin.table';
+import { Column, ForeignKeyColumn, type Generated, PrimaryGeneratedColumn, Table, Unique } from '@immich/sql-tools';
+import { JsonSchemaDto } from 'src/dtos/json-schema.dto.js';
+import { WorkflowType } from 'src/enum.js';
+import { PluginTable } from 'src/schema/tables/plugin.table.js';
 
 @Unique({ columns: ['pluginId', 'name'] })
 @Table('plugin_method')

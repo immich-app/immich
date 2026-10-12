@@ -1,13 +1,13 @@
 import { schemaDiff } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import { isAbsolute, join } from 'node:path';
-import { SALT_ROUNDS } from 'src/constants';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { createMaintenanceLoginUrl, generateMaintenanceSecret } from 'src/utils/maintenance';
-import { getExternalDomain } from 'src/utils/misc';
+import { SALT_ROUNDS } from 'src/constants.js';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto.js';
+import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { createMaintenanceLoginUrl, generateMaintenanceSecret } from 'src/utils/maintenance.js';
+import { getExternalDomain } from 'src/utils/misc.js';
 
 export type SchemaReport = {
   migrations: MigrationStatus[];
@@ -22,8 +22,7 @@ type MigrationStatus = {
 @Injectable()
 export class CliService extends BaseService {
   async schemaReport(): Promise<SchemaReport> {
-    // eslint-disable-next-line unicorn/prefer-module
-    const allFiles = await this.storageRepository.readdir(join(__dirname, '../schema/migrations'));
+    const allFiles = await this.storageRepository.readdir(join(import.meta.dirname, '../schema/migrations'));
     const files = allFiles.filter((file) => file.endsWith('.js')).map((file) => file.slice(0, -3));
     const rows = await this.databaseRepository.getMigrations();
     const filesSet = new Set(files);

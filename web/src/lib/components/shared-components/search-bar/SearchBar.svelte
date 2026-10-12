@@ -11,6 +11,7 @@
   import { t } from 'svelte-i18n';
   import SearchFilters from './SearchFilters.svelte';
   import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { getSearchTypePlaceholder, isPopoverContent } from './search-bar-utils';
 
   type Props = {
     grayTheme: boolean;
@@ -19,6 +20,9 @@
   let { grayTheme }: Props = $props();
 
   let showClearIcon = $derived(searchManager.filter.query.length > 0);
+  let placeholder = $derived(
+    searchStore.isSearchEnabled ? getSearchTypePlaceholder(searchManager.filter.queryType) : $t('search_your_photos'),
+  );
 
   let input = $state<HTMLInputElement>();
   let searchFilters = $state<ReturnType<typeof SearchFilters>>();
@@ -63,8 +67,20 @@
     searchStore.isSearchEnabled = true;
   };
 
-  const onFocusOut = () => {
+  const onFocusOut = (event: FocusEvent) => {
+    if (isPopoverContent(event)) {
+      return;
+    }
+
     searchStore.isSearchEnabled = false;
+  };
+
+  const onDropdownFocusOut = (event: FocusEvent) => {
+    if (isPopoverContent(event)) {
+      return;
+    }
+
+    closeDropdown();
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
@@ -134,7 +150,7 @@
     onfocusin={onFocusIn}
     role="search"
   >
-    <div use:focusOutside={{ onFocusOut: closeDropdown }} tabindex="-1">
+    <div use:focusOutside={{ onFocusOut: onDropdownFocusOut }} tabindex="-1">
       <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
       <input
         type="text"
@@ -145,7 +161,7 @@
         {grayTheme || showSuggestions ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {showSuggestions ? 'rounded-t-3xl shadow-[0_8px_20px_rgba(0,0,0,0.12)]' : 'rounded-3xl bg-gray-200'}
         {searchStore.isSearchEnabled ? 'border-light-200 bg-white dark:border-dark-600' : 'border-transparent'}"
-        placeholder={$t('search_your_photos')}
+        {placeholder}
         required
         pattern="^(?!m:$).*$"
         bind:value={searchManager.filter.query}

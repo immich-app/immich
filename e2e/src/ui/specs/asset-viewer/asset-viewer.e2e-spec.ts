@@ -9,9 +9,9 @@ import {
   TimelineAssetConfig,
   TimelineData,
 } from 'src/ui/generators/timeline';
-import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
-import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network';
-import { utils } from 'src/utils';
+import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network.js';
+import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network.js';
+import { utils } from 'src/utils.js';
 import { assetViewerUtils } from '../timeline/utils';
 
 test.describe.configure({ mode: 'parallel' });

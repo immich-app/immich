@@ -4,7 +4,7 @@
   import { ProgressBarStatus } from '$lib/constants';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
-  import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetTypeEnum } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
@@ -31,7 +31,7 @@
     onSetToFullScreen = () => {},
   }: Props = $props();
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowAutoplay } =
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowState } =
     slideshowStore;
 
   let progressBarStatus: ProgressBarStatus | undefined = $state();
@@ -143,6 +143,16 @@
     true,
   );
 
+  const togglePause = () => {
+    if (progressBarStatus === ProgressBarStatus.Paused) {
+      $slideshowState = SlideshowState.PlaySlideshow;
+      progressBar?.play();
+    } else {
+      $slideshowState = SlideshowState.PauseSlideshow;
+      progressBar?.pause();
+    }
+  };
+
   const shortcutBindings = $derived.by((): ShortcutOptions[] => {
     const bindings: ShortcutOptions[] = [
       { shortcut: { key: 'Escape' }, onShortcut: onClose },
@@ -154,13 +164,7 @@
     if (!isVideoSlide) {
       bindings.push({
         shortcut: { key: ' ' },
-        onShortcut: () => {
-          if (progressBarStatus === ProgressBarStatus.Paused) {
-            progressBar?.play();
-          } else {
-            progressBar?.pause();
-          }
-        },
+        onShortcut: togglePause,
         preventDefault: true,
       });
     }
@@ -197,7 +201,7 @@
         shape="round"
         color="secondary"
         icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-        onclick={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar?.play() : progressBar?.pause())}
+        onclick={togglePause}
         aria-label={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
       />
     {/if}
@@ -240,7 +244,7 @@
 
 {#if !isVideoSlide}
   <ProgressBar
-    autoplay={$slideshowAutoplay}
+    autoplay={$slideshowState === SlideshowState.PlaySlideshow}
     hidden={!$showProgressBar}
     duration={$slideshowDelay}
     bind:this={progressBar}

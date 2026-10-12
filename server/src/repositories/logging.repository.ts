@@ -1,9 +1,9 @@
 import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
-import { Telemetry } from 'src/decorators';
-import { LogFormat, LogLevel } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
+import { Telemetry } from 'src/decorators.js';
+import { LogFormat, LogLevel } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 
 type LogDetails = any;
 type LogFunction = () => string;

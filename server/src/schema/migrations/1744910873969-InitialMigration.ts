@@ -1,8 +1,8 @@
 import { Kysely, sql } from 'kysely';
-import { ErrorMessages } from 'src/constants';
-import { getVectorExtension } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { vectorIndexQuery } from 'src/utils/database';
+import { ErrorMessages } from 'src/constants.js';
+import { getVectorExtension } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { vectorIndexQuery } from 'src/utils/database.js';
 
 const lastMigrationSql = sql<{ name: string }>`SELECT "name" FROM "migrations" ORDER BY "timestamp" DESC LIMIT 1;`;
 const tableExists = sql<{ result: string | null }>`select to_regclass('migrations') as "result"`;

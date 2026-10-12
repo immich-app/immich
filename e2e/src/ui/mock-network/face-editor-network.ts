@@ -1,5 +1,5 @@
 import { BrowserContext } from '@playwright/test';
-import { randomThumbnail } from 'src/ui/generators/timeline';
+import { randomThumbnail } from 'src/ui/generators/timeline.js';
 
 // Minimal valid H.264 MP4 (8x8px, 1 frame) that browsers can decode to get videoWidth/videoHeight
 const MINIMAL_MP4_BASE64 =

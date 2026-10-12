@@ -65,6 +65,28 @@ from
 where
   "person"."thumbnailPath" in $1
 
+-- IntegrityRepository.getTrackedPaths
+select
+  "asset"."originalPath" as "path"
+from
+  "asset"
+where
+  "asset"."originalPath" in $1
+union
+select
+  "asset_file"."path" as "path"
+from
+  "asset_file"
+where
+  "asset_file"."path" in $2
+union
+select
+  "person"."thumbnailPath" as "path"
+from
+  "person"
+where
+  "person"."thumbnailPath" in $3
+
 -- IntegrityRepository.getAssetCount
 select
   count(*) as "count"

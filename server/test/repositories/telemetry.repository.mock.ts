@@ -1,6 +1,6 @@
-import { TelemetryRepository } from 'src/repositories/telemetry.repository';
-import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
 
 const newMetricGroupMock = () => {
   return {

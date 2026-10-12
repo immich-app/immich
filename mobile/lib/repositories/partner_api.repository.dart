@@ -5,21 +5,12 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
-enum Direction { sharedWithMe, sharedByMe }
-
 final partnerApiRepositoryProvider = Provider((ref) => PartnerApiRepository(ref.watch(apiServiceProvider).partnersApi));
 
 class PartnerApiRepository extends ApiRepository {
   final PartnersApi _api;
 
   PartnerApiRepository(this._api);
-
-  Future<List<UserDto>> getAll(Direction direction) async {
-    final response = await checkNull(
-      _api.getPartners(direction == Direction.sharedByMe ? PartnerDirection.sharedBy : PartnerDirection.sharedWith),
-    );
-    return response.map(UserConverter.fromPartnerDto).toList();
-  }
 
   Future<UserDto> create(String sharedWithId) async {
     final dto = await checkNull(_api.createPartner(PartnerCreateDto(sharedWithId: sharedWithId)));

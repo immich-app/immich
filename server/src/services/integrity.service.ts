@@ -3,14 +3,24 @@ import { createHash } from 'node:crypto';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type {
+  IIntegrityDeleteReportTypeJob,
+  IIntegrityDeleteReportsJob,
+  IIntegrityJob,
+  IIntegrityMissingFilesJob,
+  IIntegrityPathWithChecksumJob,
+  IIntegrityPathWithReportJob,
+  IIntegrityUntrackedFilesJob,
+} from 'src/types.js';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
 import {
   IntegrityGetReportDto,
   IntegrityReportResponseDto,
   IntegrityReportSummaryResponseDto,
-} from 'src/dtos/integrity.dto';
+} from 'src/dtos/integrity.dto.js';
 import {
   AssetStatus,
   CacheControl,
@@ -22,20 +32,10 @@ import {
   QueueName,
   StorageFolder,
   SystemMetadataKey,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { BaseService } from 'src/services/base.service';
-import {
-  IIntegrityDeleteReportsJob,
-  IIntegrityDeleteReportTypeJob,
-  IIntegrityJob,
-  IIntegrityMissingFilesJob,
-  IIntegrityPathWithChecksumJob,
-  IIntegrityPathWithReportJob,
-  IIntegrityUntrackedFilesJob,
-} from 'src/types';
-import { ImmichFileResponse } from 'src/utils/file';
-import { batched, handlePromiseError } from 'src/utils/misc';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { ImmichFileResponse } from 'src/utils/file.js';
+import { batched, handlePromiseError } from 'src/utils/misc.js';
 
 /**
  * Untracked Files:
@@ -190,7 +190,10 @@ export class IntegrityService extends BaseService {
     } else if (fileAssetId) {
       await this.assetRepository.deleteFiles([{ id: fileAssetId }]);
     } else {
-      await this.storageRepository.unlink(path);
+      const trackedPaths = await this.integrityRepository.getTrackedPaths([path]);
+      if (trackedPaths.length === 0) {
+        await this.storageRepository.unlink(path);
+      }
       await this.integrityRepository.deleteById(id);
     }
   }
@@ -272,38 +275,42 @@ export class IntegrityService extends BaseService {
   async handleUntrackedFiles({ type, paths }: IIntegrityUntrackedFilesJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} files to check if they are untracked.`);
 
-    const untrackedFiles = new Set<string>(paths);
+    const lookupPaths = [...new Set(paths.flatMap((path) => [path, path.normalize('NFC'), path.normalize('NFD')]))];
+
+    const trackedPaths = new Set<string>();
     if (type === 'asset') {
-      const assets = await this.integrityRepository.getAssetPathsByPaths(paths);
+      const assets = await this.integrityRepository.getAssetPathsByPaths(lookupPaths);
       for (const { originalPath, encodedVideoPath } of assets) {
-        untrackedFiles.delete(originalPath);
+        trackedPaths.add(originalPath.normalize('NFC'));
 
         if (encodedVideoPath) {
-          untrackedFiles.delete(encodedVideoPath);
+          trackedPaths.add(encodedVideoPath.normalize('NFC'));
         }
       }
     } else {
-      const assets = await this.integrityRepository.getAssetFilePathsByPaths(paths);
+      const assets = await this.integrityRepository.getAssetFilePathsByPaths(lookupPaths);
       for (const { path } of assets) {
-        untrackedFiles.delete(path);
+        trackedPaths.add(path.normalize('NFC'));
       }
     }
 
-    const personThumbnailPaths = await this.integrityRepository.getPersonThumbnailPathsByPaths(paths);
+    const personThumbnailPaths = await this.integrityRepository.getPersonThumbnailPathsByPaths(lookupPaths);
     for (const { thumbnailPath } of personThumbnailPaths) {
-      untrackedFiles.delete(thumbnailPath);
+      trackedPaths.add(thumbnailPath.normalize('NFC'));
     }
 
-    if (untrackedFiles.size > 0) {
+    const untrackedFiles = [...new Set(paths)].filter((path) => !trackedPaths.has(path.normalize('NFC')));
+
+    if (untrackedFiles.length > 0) {
       await this.integrityRepository.create(
-        [...untrackedFiles].map((path) => ({
+        untrackedFiles.map((path) => ({
           type: IntegrityReport.UntrackedFile,
           path,
         })),
       );
     }
 
-    this.logger.log(`Processed ${paths.length} and found ${untrackedFiles.size} untracked file(s).`);
+    this.logger.log(`Processed ${paths.length} and found ${untrackedFiles.length} untracked file(s).`);
     return JobStatus.Success;
   }
 
@@ -311,8 +318,17 @@ export class IntegrityService extends BaseService {
   async handleUntrackedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
+    const tracked =
+      items.length > 0 ? await this.integrityRepository.getTrackedPaths(items.map(({ path }) => path)) : [];
+    const trackedPaths = new Set(tracked.map(({ path }) => path));
+
     const results = await Promise.all(
       items.map(async ({ reportId, path }) => {
+        // The path was untracked when the report was written; an asset may reference it now.
+        if (trackedPaths.has(path)) {
+          return reportId;
+        }
+
         try {
           await this.storageRepository.stat(path);
           return;
@@ -697,7 +713,13 @@ export class IntegrityService extends BaseService {
     }
 
     if (byPath.length > 0) {
-      await Promise.all(byPath.map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)));
+      const tracked = await this.integrityRepository.getTrackedPaths(byPath.map(({ path }) => path));
+      const trackedPaths = new Set(tracked.map(({ path }) => path));
+      await Promise.all(
+        byPath
+          .filter(({ path }) => !trackedPaths.has(path))
+          .map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)),
+      );
       await this.integrityRepository.deleteByIds(byPath.map(({ id }) => id));
     }
 

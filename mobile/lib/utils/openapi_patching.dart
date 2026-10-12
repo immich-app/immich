@@ -19,9 +19,9 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'UserPreferencesResponseDto': {
     'download.includeEmbeddedVideos': false,
     'folders': FoldersResponse(enabled: false, sidebarWeb: false).toJson(),
-    'memories': MemoriesResponse(enabled: true, duration: 5).toJson(),
+    'memories': MemoriesResponse(enabled: true, duration: 5, sidebarWeb: false).toJson(),
     'ratings': RatingsResponse(enabled: false).toJson(),
-    'people': PeopleResponse(enabled: true, sidebarWeb: false).toJson(),
+    'people': PeopleResponse(enabled: true, sidebarWeb: false, updateStrategy: PersonUpdateStrategy.everyone).toJson(),
     'tags': TagsResponse(enabled: false, sidebarWeb: false).toJson(),
     'sharedLinks': SharedLinksResponse(enabled: true, sidebarWeb: false).toJson(),
     'cast': CastResponse(gCastEnabled: false).toJson(),
@@ -35,15 +35,19 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   },
   'UserResponseDto': {'profileChangedAt': _now},
   'AssetResponseDto': {'visibility': 'timeline', 'createdAt': _now, 'isEdited': false},
-  'UserAdminResponseDto': {'profileChangedAt': _now},
+  'UserAdminResponseDto': {'profileChangedAt': _now, 'clusterGroupId': ''},
   'LoginResponseDto': {'isOnboarded': false},
   'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
   'SyncAssetV1': {'isEdited': false},
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
-  'MemoriesResponse': {'duration': 5},
+  'SearchAssetResponseDto': {'nextCursor': null},
+  'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
+  'PeopleResponse': {'updateStrategy': 'everyone'},
+  'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'WorkflowResponseDto': {'logging': false},
 };
 
+// ignore: unused-code
 void upgradeDto(dynamic value, String targetType) {
   if (value is! Map) {
     return;

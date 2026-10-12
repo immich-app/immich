@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
-import { JsonSchemaSchema } from 'src/dtos/json-schema.dto';
-import { WorkflowTriggerSchema, WorkflowTypeSchema } from 'src/enum';
 import z from 'zod';
+import { JsonSchemaSchema } from 'src/dtos/json-schema.dto.js';
+import { WorkflowTriggerSchema, WorkflowTypeSchema } from 'src/enum.js';
 
 const pluginNameRegex = /^[a-z0-9-]+[a-z0-9]$/;
 const semverRegex =

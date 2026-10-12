@@ -1,11 +1,11 @@
 import { Selectable } from 'kysely';
-import { AlbumUserRole } from 'src/enum';
-import { AlbumUserTable } from 'src/schema/tables/album-user.table';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { build } from 'test/factories/builder.factory';
-import { AlbumUserLike, FactoryBuilder, UserLike } from 'test/factories/types';
-import { UserFactory } from 'test/factories/user.factory';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { AlbumUserRole } from 'src/enum.js';
+import { AlbumUserTable } from 'src/schema/tables/album-user.table.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { build } from 'test/factories/builder.factory.js';
+import { AlbumUserLike, FactoryBuilder, UserLike } from 'test/factories/types.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class AlbumUserFactory {
   #user!: UserFactory;

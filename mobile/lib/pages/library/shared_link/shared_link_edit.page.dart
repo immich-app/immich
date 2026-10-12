@@ -157,8 +157,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
     Widget buildAllowDownloadButton() {
       return SwitchListTile.adaptive(
-        value: allowDownload.value,
-        onChanged: (value) => allowDownload.value = value,
+        value: allowDownload.value && showMetadata.value,
+        onChanged: showMetadata.value ? (value) => allowDownload.value = value : null,
         dense: true,
         title: Text(
           context.t.allow_public_user_to_download,

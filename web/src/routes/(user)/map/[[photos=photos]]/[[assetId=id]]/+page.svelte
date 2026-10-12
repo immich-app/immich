@@ -11,6 +11,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
+  import { mapSettings } from '$lib/stores/preferences.store';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
@@ -69,7 +70,14 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map hash onSelect={onViewAssets} {onClusterSelect} />
+          <Map
+            hash
+            onSelect={onViewAssets}
+            {onClusterSelect}
+            onViewportClose={closeTimelinePanel}
+            viewportGridActive={isTimelinePanelVisible}
+            autoOpenPanel={$mapSettings.showAssetPanel}
+          />
         {/await}
       </div>
 

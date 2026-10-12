@@ -1,20 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DB } from 'src/schema';
-import { PartnerTable } from 'src/schema/tables/partner.table';
+import type { ExpressionBuilder, Insertable, Kysely, NotNull, Updateable } from 'kysely';
+import { columns } from 'src/database.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { DB } from 'src/schema/index.js';
+import { PartnerTable } from 'src/schema/tables/partner.table.js';
 
 export interface PartnerIds {
   sharedById: string;
   sharedWithId: string;
-}
-
-export enum PartnerDirection {
-  SharedBy = 'shared-by',
-  SharedWith = 'shared-with',
 }
 
 const withSharedBy = (eb: ExpressionBuilder<DB, 'partner'>) => {

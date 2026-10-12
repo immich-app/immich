@@ -1,4 +1,12 @@
-import { ApiKeyResponseDto, getMyApiKey, getMyUser, init, isHttpError, Permission } from '@immich/sdk';
+import {
+  ApiKeyResponseDto,
+  getMyApiKey,
+  getMyUser,
+  init,
+  isHttpError,
+  isMalformedResponseError,
+  Permission,
+} from '@immich/sdk';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -55,14 +63,16 @@ export const requirePermissions = async (permissions: Permission[]) => {
     }
   }
 
-  if (missing.length > 0) {
-    const combined = missing.map((permission) => `"${permission}"`).join(', ');
-    console.log(
-      `Missing required permission${s(missing.length)}: ${combined}.
-Please make sure your API key has the correct permissions.`,
-    );
-    process.exit(1);
+  if (missing.length === 0) {
+    return;
   }
+
+  const combined = missing.map((permission) => `"${permission}"`).join(', ');
+  console.log(
+    `Missing required permission${s(missing.length)}: ${combined}.
+Please make sure your API key has the correct permissions.`,
+  );
+  process.exit(1);
 };
 
 export const connect = async (url: string, key: string) => {
@@ -82,7 +92,7 @@ export const connect = async (url: string, key: string) => {
   init({ baseUrl: url, apiKey: key });
 
   const [error] = await withError(getMyUser());
-  if (isHttpError(error)) {
+  if (isHttpError(error) || isMalformedResponseError(error)) {
     logError(error, `Failed to connect to server ${url}`);
     process.exit(1);
   }
@@ -94,6 +104,11 @@ export const logError = (error: unknown, message: string) => {
   if (isHttpError(error)) {
     console.error(`${message}: ${error.status}`);
     console.error(JSON.stringify(error.data, undefined, 2));
+  } else if (isMalformedResponseError(error)) {
+    console.error(`${message}: ${error.message}`);
+    console.error(
+      'Check that the URL points at the Immich API, and that nothing in front of it (reverse proxy, SSO portal) is answering instead.',
+    );
   } else {
     console.error(`${message} - ${error}`);
   }
@@ -107,10 +122,7 @@ export const readAuthFile = async (dir: string) => {
     // TODO add class-transform/validation
     const auth = yaml.parse(data.toString()) as AuthDto | OldAuthDto;
     const { instanceUrl, apiKey } = auth as OldAuthDto;
-    if (instanceUrl && apiKey) {
-      return { url: instanceUrl, key: apiKey };
-    }
-    return auth as AuthDto;
+    return instanceUrl && apiKey ? { url: instanceUrl, key: apiKey } : (auth as AuthDto);
   } catch (error: Error | any) {
     if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
       console.log('No auth file exists. Please login first.');

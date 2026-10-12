@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Observable, finalize } from 'rxjs';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 const maxArrayLength = 100;
 const replacer = (key: string, value: unknown) => {

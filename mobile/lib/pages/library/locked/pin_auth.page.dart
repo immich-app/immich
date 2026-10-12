@@ -37,7 +37,7 @@ class PinAuthPage extends HookConsumerWidget {
         ),
       );
 
-      unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
+      unawaited(context.replaceRoute(const LockedFolderRoute()));
     }
 
     Future<void> enableBiometricAuth() {
@@ -85,7 +85,7 @@ class PinAuthPage extends HookConsumerWidget {
                         child: PinVerificationForm(
                           autoFocus: true,
                           onSuccess: (_) {
-                            unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
+                            unawaited(context.replaceRoute(const LockedFolderRoute()));
                           },
                         ),
                       ),

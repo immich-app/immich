@@ -1,5 +1,5 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { VersionService } from 'src/services/version.service';
+import { VersionService } from 'src/services/version.service.js';
 
 @Command({
   name: 'version',

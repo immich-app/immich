@@ -1,12 +1,15 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:openapi/api.dart';
 
 SyncUserV1 _createUser({String id = 'user-1'}) {
@@ -25,26 +28,60 @@ SyncAssetV1 _createAsset({
   required String id,
   required String checksum,
   required String fileName,
-  String ownerId = 'user-1',
   int? width,
   int? height,
+  String? libraryId,
+  bool isFavorite = false,
+  DateTime? localDateTime,
+  bool withoutDates = false,
 }) {
   return SyncAssetV1(
     id: id,
     checksum: checksum,
     originalFileName: fileName,
     type: AssetTypeEnum.IMAGE,
-    ownerId: ownerId,
-    isFavorite: false,
-    fileCreatedAt: DateTime(2024, 1, 1),
+    ownerId: 'user-1',
+    isFavorite: isFavorite,
+    fileCreatedAt: withoutDates ? null : DateTime(2024, 1, 1),
     fileModifiedAt: DateTime(2024, 1, 1),
     createdAt: DateTime(2024, 1, 1),
-    localDateTime: DateTime(2024, 1, 1),
+    localDateTime: withoutDates ? null : localDateTime ?? DateTime(2024, 1, 1),
     visibility: AssetVisibility.timeline,
     width: width,
     height: height,
     deletedAt: null,
     duration: null,
+    libraryId: libraryId,
+    livePhotoVideoId: null,
+    stackId: null,
+    thumbhash: null,
+    isEdited: false,
+  );
+}
+
+SyncAssetV2 _createAssetV2({
+  required String id,
+  required String checksum,
+  required String fileName,
+  DateTime? localDateTime,
+  bool withoutDates = false,
+}) {
+  return SyncAssetV2(
+    id: id,
+    checksum: checksum,
+    originalFileName: fileName,
+    type: AssetTypeEnum.IMAGE,
+    ownerId: 'user-1',
+    isFavorite: false,
+    fileCreatedAt: withoutDates ? null : DateTime(2024, 1, 1),
+    fileModifiedAt: DateTime(2024, 1, 1),
+    createdAt: DateTime(2024, 1, 1),
+    localDateTime: withoutDates ? null : localDateTime ?? DateTime(2024, 1, 1),
+    visibility: AssetVisibility.timeline,
+    width: null,
+    height: null,
+    deletedAt: null,
+    duration: 0,
     libraryId: null,
     livePhotoVideoId: null,
     stackId: null,
@@ -238,6 +275,138 @@ void main() {
       expect(after.linkedRemoteAlbumId, isNull);
       expect(after.name, equals('Camera'));
       expect(after.backupSelection, equals(BackupSelection.none));
+    });
+  });
+
+  group('SyncStreamRepository - updateAssets upsert dedupe (#22522 #27186)', () {
+    Future<void> seedExif(String assetId) =>
+        db.remoteExifEntity.insertOne(RemoteExifEntityCompanion.insert(assetId: assetId));
+
+    Future<bool> exifExists(String assetId) async {
+      final rows = await (db.remoteExifEntity.select()..where((t) => t.assetId.equals(assetId))).get();
+      return rows.isNotEmpty;
+    }
+
+    test('same-id update keeps the child row and updates fields', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final asset = _createAsset(id: 'a', checksum: 'AAA', fileName: 'photo.jpg');
+      await sut.updateAssetsV1([asset]);
+      await seedExif(asset.id);
+
+      final renamed = _createAsset(id: asset.id, checksum: asset.checksum, fileName: 'renamed.jpg', isFavorite: true);
+      await sut.updateAssetsV1([renamed]);
+
+      expect(await exifExists(asset.id), isTrue, reason: 'DO UPDATE keeps the row, the child survives');
+      final row = await (db.remoteAssetEntity.select()..where((t) => t.id.equals(asset.id))).getSingle();
+      expect(row.name, renamed.originalFileName);
+      expect(row.isFavorite, isTrue);
+    });
+
+    test('reupload with a new id replaces the stale row and cascades its child', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final stale = _createAsset(id: 'stale', checksum: 'AAA', fileName: 'photo.jpg');
+      await sut.updateAssetsV1([stale]);
+      await seedExif(stale.id);
+
+      final fresh = _createAsset(id: 'fresh', checksum: stale.checksum, fileName: stale.originalFileName);
+      await sut.updateAssetsV1([fresh]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(1), reason: 'no 2067, stale row replaced away');
+      expect(rows.single.id, fresh.id);
+      expect(await exifExists(stale.id), isFalse, reason: 'the stale child cascades with the replaced row');
+
+      // same scenario through V2
+      final staleV2 = _createAssetV2(id: 'stale2', checksum: 'BBB', fileName: 'photo2.jpg');
+      await sut.updateAssetsV2([staleV2]);
+      await seedExif(staleV2.id);
+      final freshV2 = _createAssetV2(id: 'fresh2', checksum: staleV2.checksum, fileName: staleV2.originalFileName);
+      await sut.updateAssetsV2([freshV2]);
+
+      final rows2 = await db.remoteAssetEntity.select().get();
+      expect(rows2.map((r) => r.id), containsAll([fresh.id, freshV2.id]));
+      expect(await exifExists(staleV2.id), isFalse);
+    });
+
+    test('library variant replaces only the matching library row', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final staleLib = _createAsset(id: 'stale-lib', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1');
+      final keepNull = _createAsset(id: 'keep-null', checksum: staleLib.checksum, fileName: staleLib.originalFileName);
+      await sut.updateAssetsV1([staleLib, keepNull]);
+
+      final freshLib = _createAsset(
+        id: 'fresh-lib',
+        checksum: staleLib.checksum,
+        fileName: staleLib.originalFileName,
+        libraryId: staleLib.libraryId,
+      );
+      await sut.updateAssetsV1([freshLib]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows.map((r) => r.id).toSet(), {
+        freshLib.id,
+        keepNull.id,
+      }, reason: 'library NULL and NOT NULL match different partial indexes');
+    });
+
+    test('batch-internal duplicates keep the last payload asset', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final first = _createAsset(id: 'first-id', checksum: 'AAA', fileName: 'photo.jpg');
+      final last = _createAsset(id: 'last-id', checksum: first.checksum, fileName: first.originalFileName);
+      final firstLib = _createAsset(
+        id: 'first-lib',
+        checksum: 'BBB',
+        fileName: first.originalFileName,
+        libraryId: 'lib-1',
+      );
+      final lastLib = _createAsset(
+        id: 'last-lib',
+        checksum: firstLib.checksum,
+        fileName: firstLib.originalFileName,
+        libraryId: firstLib.libraryId,
+      );
+
+      await sut.updateAssetsV1([first, last, firstLib, lastLib]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(2), reason: 'REPLACE makes batch-internal duplicates last-wins, no crash');
+      expect(rows.map((r) => r.id).toSet(), {last.id, lastLib.id});
+    });
+  });
+
+  group('SyncStreamRepository - group_date without server dates', () {
+    Future<RemoteAssetEntityData> row(String id) =>
+        (db.remoteAssetEntity.select()..where((t) => t.id.equals(id))).getSingle();
+
+    test('assets without dates group on the stored created_at', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final known = _createAsset(id: 'known', checksum: 'AAA', fileName: 'a.jpg', localDateTime: DateTime(2024, 1, 5));
+      await sut.updateAssetsV1([known]);
+
+      await sut.updateAssetsV1([
+        _createAsset(id: 'known', checksum: 'AAA', fileName: 'a.jpg', withoutDates: true),
+        _createAsset(id: 'fresh', checksum: 'BBB', fileName: 'b.jpg', withoutDates: true),
+      ]);
+
+      final kept = await row('known');
+      expect(kept.createdAt, known.fileCreatedAt);
+      expect(kept.localDateTime, isNull);
+      expect(kept.groupDate, '2024-01-01', reason: 'the local day is gone, created_at stays');
+      final fresh = await row('fresh');
+      expect(fresh.groupDate, timelineGroupDate(fresh.createdAt.toLocal()));
+
+      // same scenario through V2
+      await sut.updateAssetsV2([
+        _createAssetV2(id: 'known2', checksum: 'CCC', fileName: 'c.jpg', localDateTime: DateTime(2024, 1, 5)),
+      ]);
+      await sut.updateAssetsV2([
+        _createAssetV2(id: 'known2', checksum: 'CCC', fileName: 'c.jpg', withoutDates: true),
+        _createAssetV2(id: 'fresh2', checksum: 'DDD', fileName: 'd.jpg', withoutDates: true),
+      ]);
+
+      expect((await row('known2')).groupDate, '2024-01-01');
+      final freshV2 = await row('fresh2');
+      expect(freshV2.groupDate, timelineGroupDate(freshV2.createdAt.toLocal()));
     });
   });
 }

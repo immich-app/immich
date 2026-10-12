@@ -6,12 +6,13 @@ import { Request, Response } from 'express';
 import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
-import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
+import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces/index.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { citiesFile, IWorker } from 'src/constants';
-import { Telemetry } from 'src/decorators';
-import { EnvSchema } from 'src/dtos/env.dto';
+import type { VectorExtension } from 'src/types.js';
+import { IWorker, citiesFile } from 'src/constants.js';
+import { Telemetry } from 'src/decorators.js';
+import { EnvSchema } from 'src/dtos/env.dto.js';
 import {
   DatabaseExtension,
   ImmichEnvironment,
@@ -21,9 +22,7 @@ import {
   LogFormat,
   LogLevel,
   QueueName,
-} from 'src/enum';
-import { VectorExtension } from 'src/types';
-import { setDifference } from 'src/utils/set';
+} from 'src/enum.js';
 
 export interface EnvData {
   host?: string;
@@ -90,6 +89,7 @@ export interface EnvData {
       admin1: string;
       admin2: string;
       cities500: string;
+      countryInfo: string;
       naturalEarthCountriesPath: string;
     };
     web: {
@@ -157,11 +157,7 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) =>
     return;
   }
 
-  helmetFile =
-    helmetFile === 'true'
-      ? // eslint-disable-next-line unicorn/prefer-module
-        join(__dirname, '..', '..', 'helmet.json')
-      : helmetFile;
+  helmetFile = helmetFile === 'true' ? join(import.meta.dirname, '..', '..', 'helmet.json') : helmetFile;
 
   try {
     return JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
@@ -184,7 +180,7 @@ const getEnv = (): EnvData => {
 
   const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.Api, ImmichWorker.Microservices]);
   const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);
-  const workers = [...setDifference(includedWorkers, excludedWorkers)];
+  const workers = [...includedWorkers.difference(excludedWorkers)];
   for (const worker of workers) {
     if (!WORKER_TYPES.has(worker)) {
       throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
@@ -223,7 +219,7 @@ const getEnv = (): EnvData => {
       : asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_INCLUDE, []);
 
   const excludedTelemetries = asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_EXCLUDE, []);
-  const telemetries = setDifference(includedTelemetries, excludedTelemetries);
+  const telemetries = includedTelemetries.difference(excludedTelemetries);
   for (const telemetry of telemetries) {
     if (!TELEMETRY_TYPES.has(telemetry)) {
       throw new Error(`Invalid telemetry found: ${telemetry}`);
@@ -342,6 +338,7 @@ const getEnv = (): EnvData => {
         admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
         admin2: join(folders.geodata, 'admin2Codes.txt'),
         cities500: join(folders.geodata, citiesFile),
+        countryInfo: join(folders.geodata, 'countryInfo.txt'),
         naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
       },
       web: {
@@ -396,6 +393,10 @@ export class ConfigRepository {
 
   isDev() {
     return this.getEnv().environment === ImmichEnvironment.Development;
+  }
+
+  isProduction() {
+    return this.getEnv().environment === ImmichEnvironment.Production;
   }
 
   getWorker() {

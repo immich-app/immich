@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
-import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
-import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { DB } from 'src/schema';
-import { BaseService } from 'src/services/base.service';
-import { newMediumService } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { DB } from 'src/schema/index.js';
+import { BaseService } from 'src/services/base.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

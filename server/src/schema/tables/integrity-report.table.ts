@@ -1,8 +1,16 @@
-import { Column, CreateDateColumn, ForeignKeyColumn, Generated, Table, Timestamp, Unique } from '@immich/sql-tools';
-import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
-import { IntegrityReport } from 'src/enum';
-import { AssetFileTable } from 'src/schema/tables/asset-file.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
+import {
+  Column,
+  CreateDateColumn,
+  ForeignKeyColumn,
+  type Generated,
+  Table,
+  Timestamp,
+  Unique,
+} from '@immich/sql-tools';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
+import { IntegrityReport } from 'src/enum.js';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('integrity_report')
 @Unique({ columns: ['type', 'path'] })

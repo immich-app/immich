@@ -1,11 +1,11 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Response } from 'express';
 import { of } from 'rxjs';
-import { AssetMediaResponseDto, AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
-import { ImmichHeader } from 'src/enum';
-import { AuthenticatedRequest } from 'src/middleware/auth.guard';
-import { AssetMediaService } from 'src/services/asset-media.service';
-import { fromMaybeArray } from 'src/utils/request';
+import { AssetMediaResponseDto, AssetMediaStatus } from 'src/dtos/asset-media-response.dto.js';
+import { ImmichHeader } from 'src/enum.js';
+import { AuthenticatedRequest } from 'src/middleware/auth.guard.js';
+import { AssetMediaService } from 'src/services/asset-media.service.js';
+import { fromMaybeArray } from 'src/utils/request.js';
 
 @Injectable()
 export class AssetUploadInterceptor implements NestInterceptor {

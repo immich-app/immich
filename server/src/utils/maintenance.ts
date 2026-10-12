@@ -1,10 +1,10 @@
 import { SignJWT } from 'jose';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
-import { StorageCore } from 'src/cores/storage.core';
-import { MaintenanceAuthDto, MaintenanceDetectInstallResponseDto } from 'src/dtos/maintenance.dto';
-import { StorageFolder } from 'src/enum';
-import { StorageRepository } from 'src/repositories/storage.repository';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { MaintenanceAuthDto, MaintenanceDetectInstallResponseDto } from 'src/dtos/maintenance.dto.js';
+import { StorageFolder } from 'src/enum.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
 
 export async function createMaintenanceLoginUrl(
   baseUrl: string,

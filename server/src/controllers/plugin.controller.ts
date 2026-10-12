@@ -1,17 +1,17 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   PluginMethodResponseDto,
   PluginMethodSearchDto,
   PluginResponseDto,
   PluginSearchDto,
   PluginTemplateResponseDto,
-} from 'src/dtos/plugin.dto';
-import { Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
-import { PluginService } from 'src/services/plugin.service';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/plugin.dto.js';
+import { Permission } from 'src/enum.js';
+import { Authenticated } from 'src/middleware/auth.guard.js';
+import { PluginService } from 'src/services/plugin.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags('Plugins')
 @Controller('plugins')

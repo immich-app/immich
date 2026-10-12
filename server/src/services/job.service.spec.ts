@@ -1,9 +1,9 @@
-import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
-import { JobService } from 'src/services/job.service';
-import { JobItem } from 'src/types';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import type { JobItem } from 'src/types.js';
+import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum.js';
+import { JobService } from 'src/services/job.service.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { newUuid } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(JobService.name, () => {
   let sut: JobService;
@@ -20,6 +20,18 @@ describe(JobService.name, () => {
   });
 
   describe('onJobRun', () => {
+    it('should queue metadata extraction when sidecar discovery is skipped', async () => {
+      const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
+      mocks.job.run.mockResolvedValue(JobStatus.Skipped);
+
+      await sut.onJobRun(QueueName.Sidecar, job);
+
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.AssetExtractMetadata,
+        data: job.data,
+      });
+    });
+
     it('should process a successful job', async () => {
       mocks.job.run.mockResolvedValue(JobStatus.Success);
 
@@ -32,15 +44,32 @@ describe(JobService.name, () => {
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
+    it.each([JobStatus.Success, JobStatus.Skipped])(
+      'should queue metadata extraction after a %s sidecar check and preserve its source',
+      async (status) => {
+        mocks.job.run.mockResolvedValue(status);
+        const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
+
+        await sut.onJobRun(QueueName.Sidecar, job);
+
+        expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+          name: JobName.AssetExtractMetadata,
+          data: { id: 'asset-1', source: 'upload' },
+        });
+        expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      },
+    );
+
+    it('should not queue metadata extraction after a failed sidecar check', async () => {
+      mocks.job.run.mockResolvedValue(JobStatus.Failed);
+
+      await sut.onJobRun(QueueName.Sidecar, { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } });
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
     const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
-      {
-        item: { name: JobName.SidecarCheck, data: { id: 'asset-1' } },
-        jobs: [JobName.AssetExtractMetadata],
-      },
-      {
-        item: { name: JobName.SidecarCheck, data: { id: 'asset-1' } },
-        jobs: [JobName.AssetExtractMetadata],
-      },
       {
         item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.AssetGenerateThumbnails],
@@ -50,7 +79,7 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.PersonGenerateThumbnail, data: { id: 'asset-1' } },
+        item: { name: JobName.PersonGenerateThumbnail, data: { ownerId: 'owner-1', personGroupId: 'person-group-1' } },
         jobs: [],
       },
       {
@@ -90,6 +119,7 @@ describe(JobService.name, () => {
     for (const { item, jobs, stub } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
         if (stub) {
+          mocks.asset.getById.mockResolvedValue(stub[0]);
           mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue(stub);
         }
 

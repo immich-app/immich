@@ -16,11 +16,8 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
-import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/ssl_client_cert_settings.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:logging/logging.dart';
 
 class AdvancedSettings extends HookConsumerWidget {

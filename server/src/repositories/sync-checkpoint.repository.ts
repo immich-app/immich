@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { type Insertable, type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { SyncEntityType } from 'src/enum';
-import { DB } from 'src/schema';
-import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { SyncEntityType } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table.js';
 
 @Injectable()
 export class SyncCheckpointRepository {

@@ -16,6 +16,7 @@ class GalleryPermissionNotifier extends StateNotifier<DevicePermissionStatus> {
 
   final DevicePermissionService _service;
 
+  // ignore: unused-code
   bool get hasPermission => state.hasAccess;
 
   Future<DevicePermissionStatus> requestGalleryPermission() async => state = await _service.requestGallery();

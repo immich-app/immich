@@ -1,4 +1,4 @@
-import { ApiService, render } from 'src/services/api.service';
+import { ApiService, render } from 'src/services/api.service.js';
 
 describe(ApiService.name, () => {
   describe('render', () => {

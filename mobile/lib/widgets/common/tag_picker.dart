@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 String _trimSlashes(String s) => s.replaceAll(RegExp(r'^/+|/+$'), '');
@@ -61,7 +61,7 @@ class _TagPickerModal extends HookWidget {
         height: MediaQuery.of(context).size.height * 0.6,
         child: TagPicker(
           onSelectExistingTag: onSelectExistingTag,
-          filter: selectedTagIds.value,
+          initialSelection: selectedTagIds.value,
           onSelectNewTag: onSelectNewTag,
         ),
       ),
@@ -70,9 +70,9 @@ class _TagPickerModal extends HookWidget {
 }
 
 class TagPicker extends HookConsumerWidget {
-  const TagPicker({super.key, required this.onSelectExistingTag, required this.filter, this.onSelectNewTag});
+  const TagPicker({super.key, required this.onSelectExistingTag, required this.initialSelection, this.onSelectNewTag});
 
-  final Set<String> filter;
+  final Set<String> initialSelection;
 
   /// Callback when existing tags are selected/deselected.
   final Function(Iterable<Tag>) onSelectExistingTag;
@@ -84,8 +84,8 @@ class TagPicker extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
     final searchQuery = useState('');
-    final tags = ref.watch(tagProvider);
-    final selectedTagIds = useState<Set<String>>(filter);
+    final tags = ref.watch(Store.tags.all());
+    final selectedTagIds = useState<Set<String>>(initialSelection);
     const borderRadius = BorderRadius.all(Radius.circular(10));
     final selectedNewTagValues = useState<Set<String>>({});
 

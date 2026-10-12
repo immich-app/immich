@@ -4,6 +4,7 @@
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
@@ -18,7 +19,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager, toastManager } from '@immich/ui';
-  import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
+  import { mdiAccountOff, mdiArrowLeftThin, mdiArrowRightThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
@@ -210,7 +211,7 @@
         shape="round"
         color="secondary"
         variant="ghost"
-        icon={mdiArrowLeftThin}
+        icon={languageManager.rtl ? mdiArrowRightThin : mdiArrowLeftThin}
         aria-label={$t('back')}
         onclick={onClose}
       />
@@ -237,7 +238,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
-          {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
+          {@const personName = face.person ? face.person.name : $t('face_unassigned')}
           {@const isHighlighted = assetViewerManager.highlightedFaces.some((b) => b.id === face.id)}
           <div class="relative h-29 w-24">
             <div
@@ -324,7 +325,7 @@
                 </p>
               {/if}
 
-              <div class="absolute inset-e-[-3px] top-[-3px] size-5 rounded-full">
+              <div class="absolute -inset-e-2.25 -top-2.25 flex flex-col gap-1 rounded-full">
                 {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
                   <IconButton
                     shape="round"
@@ -333,7 +334,6 @@
                     icon={mdiRestart}
                     aria-label={$t('reset')}
                     size="small"
-                    class="absolute inset-s-1/2 top-1/2 translate-[-50%] transform"
                     onclick={() => handleReset(face.id)}
                   />
                 {:else}
@@ -343,31 +343,23 @@
                     icon={mdiPencil}
                     aria-label={$t('select_new_face')}
                     size="small"
-                    class="absolute inset-s-1/2 top-1/2 translate-[-50%] transform"
                     onclick={() => handleFacePicker(face)}
                   />
                 {/if}
-              </div>
-              <div class="absolute inset-e-8 top-[-3px] size-5 rounded-full">
-                {#if !Object.hasOwn(selectedPersonToCreate, face.id) && !Object.hasOwn(selectedPersonToReassign, face.id) && !face.person}
-                  <div
-                    class="absolute inset-s-1/2 top-1/2 flex translate-[-50%] transform place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all"
-                  >
-                    <Icon color="primary" icon={mdiAccountOff} aria-hidden size="24" />
-                  </div>
-                {/if}
-              </div>
-              {#if face.person !== null}
-                <div class="absolute inset-e-[-3px] top-8 size-5 rounded-full">
+                {#if face.person !== null}
                   <IconButton
                     shape="round"
                     color="danger"
                     icon={mdiTrashCan}
                     aria-label={$t('delete_face')}
                     size="small"
-                    class="absolute inset-s-1/2 top-1/2 translate-[-50%] transform"
                     onclick={() => deleteAssetFace(face)}
                   />
+                {/if}
+              </div>
+              {#if !Object.hasOwn(selectedPersonToCreate, face.id) && !Object.hasOwn(selectedPersonToReassign, face.id) && !face.person}
+                <div class="absolute inset-e-7 -top-2.25 rounded-full bg-muted p-1">
+                  <Icon color="primary" icon={mdiAccountOff} aria-hidden size="24" />
                 </div>
               {/if}
             </div>

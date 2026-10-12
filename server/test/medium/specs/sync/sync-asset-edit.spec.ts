@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
-import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
-import { SyncEntityType, SyncRequestType } from 'src/enum';
-import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
-import { DB } from 'src/schema';
-import { SyncTestContext } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
+import { DB } from 'src/schema/index.js';
+import { SyncTestContext } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

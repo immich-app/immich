@@ -1,5 +1,5 @@
-import { SystemConfig } from 'src/config';
-import { DeepPartial } from 'src/types';
+import type { DeepPartial } from 'src/types.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
 
 export const systemConfigStub = {
   enabled: {

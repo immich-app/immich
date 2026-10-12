@@ -17,13 +17,6 @@ class ViewIntentFilePathNotifier extends Notifier<String?> {
     }
     state = null;
   }
-
-  void clearIfMatch(String path) {
-    if (state != path) {
-      return;
-    }
-    state = null;
-  }
 }
 
 final viewIntentFilePathProvider = NotifierProvider<ViewIntentFilePathNotifier, String?>(

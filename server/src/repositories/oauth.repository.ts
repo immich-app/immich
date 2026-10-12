@@ -1,27 +1,28 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { createRemoteJWKSet, jwtVerify, JWTVerifyGetKey } from 'jose';
+import { JWTVerifyGetKey, createRemoteJWKSet, jwtVerify } from 'jose';
 import {
+  ClientSecretBasic,
+  ClientSecretPost,
+  None,
+  type UserInfoResponse,
   allowInsecureRequests as allowInsecureRequestsExecute,
   authorizationCodeGrant,
   buildAuthorizationUrl,
   calculatePKCECodeChallenge,
-  ClientSecretBasic,
-  ClientSecretPost,
   discovery,
   fetchUserInfo,
-  None,
   randomPKCECodeVerifier,
   randomState,
   skipSubjectCheck,
-  type UserInfoResponse,
 } from 'openid-client';
-import { OAuthTokenEndpointAuthMethod } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { OAuthTokenEndpointAuthMethod } from 'src/enum.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 export type OAuthConfig = {
   clientId: string;
   clientSecret?: string;
   issuerUrl: string;
+  accountManagementUrl: string;
   endSessionEndpoint: string;
   mobileOverrideEnabled: boolean;
   mobileRedirectUri: string;
@@ -122,8 +123,7 @@ export class OAuthRepository {
         );
       }
 
-      this.logger.error(`OAuth login failed: ${error.message}`);
-      this.logger.error(error);
+      this.logger.error('OAuth login failed', error);
 
       throw new Error('OAuth login failed', { cause: error });
     }
@@ -135,10 +135,7 @@ export class OAuthRepository {
       throw new Error(`Failed to fetch picture: ${response.statusText}`);
     }
 
-    return {
-      data: await response.arrayBuffer(),
-      contentType: response.headers.get('content-type'),
-    };
+    return response.arrayBuffer();
   }
 
   private jwksClients: Map<string, JWTVerifyGetKey> = new Map(); // useful for caching and performnce
@@ -222,7 +219,7 @@ export class OAuthRepository {
         },
       );
     } catch (error: any | AggregateError) {
-      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
+      this.logger.error('Error in OAuth discovery', error);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
     }
   }

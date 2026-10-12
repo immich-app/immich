@@ -1,11 +1,11 @@
 import { createZodDto } from 'nestjs-zod';
-import { SharedLink } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
-import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto';
-import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import { SharedLink } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto.js';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const SharedLinkSearchSchema = z
   .object({
@@ -37,7 +37,7 @@ const SharedLinkCreateSchema = z
         if (!albumId) {
           ctx.addIssue(`albumId is required for type ${SharedLinkType.Album}`);
         }
-        if (assetIds) {
+        if (assetIds && assetIds.length > 0) {
           ctx.addIssue(`assetIds can only be used with type ${SharedLinkType.Individual}`);
         }
         return;

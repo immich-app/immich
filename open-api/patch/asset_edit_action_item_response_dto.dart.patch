@@ -1,0 +1,18 @@
+@@ -23,7 +23,7 @@
+   /// Asset edit ID
+   String id;
+ 
+-  AssetEditActionItemDtoParameters parameters;
++  Map<String, dynamic> parameters;
+ 
+   @override
+   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionItemResponseDto &&
+@@ -60,7 +60,7 @@
+       return AssetEditActionItemResponseDto(
+         action: AssetEditAction.fromJson(json[r'action'])!,
+         id: mapValueOfType<String>(json, r'id')!,
+-        parameters: AssetEditActionItemDtoParameters.fromJson(json[r'parameters'])!,
++        parameters: json[r'parameters'],
+       );
+     }
+     return null;

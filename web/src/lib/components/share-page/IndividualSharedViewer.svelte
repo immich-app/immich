@@ -44,7 +44,7 @@
   });
 
   const downloadAssets = async () => {
-    await downloadArchive(`immich-shared.zip`, { assetIds: assets.map((asset) => asset.id) });
+    await downloadArchive(`immich-shared`, { assetIds: assets.map((asset) => asset.id) });
   };
 
   const handleUploadAssets = async (files: File[] = []) => {
@@ -77,7 +77,11 @@
 </script>
 
 {#if sharedLink?.allowUpload || assets.length > 1}
-  <main class="isolate mx-4 mt-24 mb-40" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+  <main
+    class="isolate mx-4 mt-24 mb-40 max-h-screen"
+    bind:clientHeight={viewport.height}
+    bind:clientWidth={viewport.width}
+  >
     <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
   </main>
 
@@ -93,7 +97,7 @@
           onclick={handleSelectAll}
         />
         {#if sharedLink?.allowDownload}
-          <DownloadAction filename="immich-shared.zip" />
+          <DownloadAction filename="immich-shared" />
         {/if}
         {#if isOwned}
           <RemoveFromSharedLink bind:sharedLink />

@@ -6,8 +6,6 @@
 #include "armnn/INetwork.hpp"
 #include "armnn/Types.hpp"
 #include "armnnDeserializer/IDeserializer.hpp"
-#include "armnnTfLiteParser/ITfLiteParser.hpp"
-#include "armnnOnnxParser/IOnnxParser.hpp"
 
 using namespace armnn;
 
@@ -163,22 +161,9 @@ private:
     INetworkPtr loadModel(const char *modelPath)
     {
         const auto path = std::string(modelPath);
-        if (path.rfind(".tflite") == path.length() - 7) // endsWith()
-        {
-            auto parser = armnnTfLiteParser::ITfLiteParser::CreateRaw();
-            return parser->CreateNetworkFromBinaryFile(modelPath);
-        }
-        else if (path.rfind(".onnx") == path.length() - 5) // endsWith()
-        {
-            auto parser = armnnOnnxParser::IOnnxParser::CreateRaw();
-            return parser->CreateNetworkFromBinaryFile(modelPath);
-        }
-        else
-        {
-            std::ifstream ifs(path, std::ifstream::in | std::ifstream::binary);
-            auto parser = armnnDeserializer::IDeserializer::CreateRaw();
-            return parser->CreateNetworkFromBinary(ifs);
-        }
+        std::ifstream ifs(path, std::ifstream::in | std::ifstream::binary);
+        auto parser = armnnDeserializer::IDeserializer::CreateRaw();
+        return parser->CreateNetworkFromBinary(ifs);
     }
 
     static BindingPointInfo getInputTensorInfo(LayerBindingId inputBindingId, TensorInfo info)

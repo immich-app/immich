@@ -39,16 +39,16 @@ class CustomSourceProperties implements SourceProperties {
   }
 }
 
-class DriftMap extends ConsumerStatefulWidget {
+class MapView extends ConsumerStatefulWidget {
   final LatLng? initialLocation;
 
-  const DriftMap({super.key, this.initialLocation});
+  const MapView({super.key, this.initialLocation});
 
   @override
-  ConsumerState<DriftMap> createState() => _DriftMapState();
+  ConsumerState<MapView> createState() => _MapViewState();
 }
 
-class _DriftMapState extends ConsumerState<DriftMap> {
+class _MapViewState extends ConsumerState<MapView> {
   MapLibreMapController? mapController;
   final _reloadMutex = AsyncMutex();
   final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));

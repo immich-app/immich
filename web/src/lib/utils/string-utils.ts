@@ -3,5 +3,5 @@ export const removeAccents = (str: string) => {
 };
 
 export const normalizeSearchString = (str: string) => {
-  return removeAccents(str.toLocaleLowerCase());
+  return removeAccents(str.toLocaleLowerCase().trim());
 };

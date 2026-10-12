@@ -1,22 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
+import 'package:immich_mobile/data/db/main/dao/person.dart';
 
 import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late PeopleRepository sut;
+  late PeopleDatabaseRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = PeopleRepository(ctx.db);
+    sut = PeopleDatabaseRepository(ctx.db);
   });
 
   tearDown(() async {
     await ctx.dispose();
   });
 
-  group('getAssetPeople', () {
+  group('watchPeopleForAsset', () {
     test('does not duplicate a person with multiple face records on the same asset', () async {
       // Regression check for #20585: a join on asset_face_entity returned one row
       // per face, so a person appeared twice in the asset details panel when the
@@ -28,7 +28,7 @@ void main() {
       await ctx.newFace(assetId: asset.id, personId: person.id);
       await ctx.newFace(assetId: asset.id, personId: person.id);
 
-      final people = await sut.getAssetPeople(asset.id);
+      final people = await sut.watchPeopleForAsset(asset.id).first;
 
       expect(people, hasLength(1));
       expect(people.single.id, person.id);
@@ -43,7 +43,7 @@ void main() {
       await ctx.newFace(assetId: asset.id, personId: person1.id);
       await ctx.newFace(assetId: asset.id, personId: person2.id);
 
-      final people = await sut.getAssetPeople(asset.id);
+      final people = await sut.watchPeopleForAsset(asset.id).first;
 
       expect(people, hasLength(2));
       expect(people.map((person) => person.id), containsAll([person1.id, person2.id]));
@@ -56,7 +56,7 @@ void main() {
       final hidden = await ctx.newPerson(ownerId: user.id, isHidden: true);
       await ctx.newFace(assetId: asset.id, personId: hidden.id);
 
-      final people = await sut.getAssetPeople(asset.id);
+      final people = await sut.watchPeopleForAsset(asset.id).first;
 
       expect(people, isEmpty);
     });
@@ -69,7 +69,7 @@ void main() {
       final person = await ctx.newPerson(ownerId: user.id);
       await ctx.newFace(assetId: otherAsset.id, personId: person.id);
 
-      final people = await sut.getAssetPeople(asset.id);
+      final people = await sut.watchPeopleForAsset(asset.id).first;
 
       expect(people, isEmpty);
     });
