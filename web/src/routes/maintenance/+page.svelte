@@ -9,6 +9,7 @@
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import MaintenanceMigrateDatabaseFlow from './MaintenanceMigrateDatabaseFlow.svelte';
 
   type Props = {
     data: PageData;
@@ -67,6 +68,8 @@
       {/if}
     {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
       <MaintenanceRestoreFlow {end} expectedVersion={data.expectedVersion} />
+    {:else if $status?.action === MaintenanceAction.MigrateDatabase && $auth}
+      <MaintenanceMigrateDatabaseFlow {end} />
     {:else}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
       <p>

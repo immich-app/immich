@@ -23051,7 +23051,8 @@
           "start",
           "end",
           "select_database_restore",
-          "restore_database"
+          "restore_database",
+          "migrate_database"
         ],
         "type": "string"
       },

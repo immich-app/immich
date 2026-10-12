@@ -291,6 +291,9 @@ export class MaintenanceWorkerService {
       case MaintenanceAction.RestoreDatabase: {
         return this.runRestoreDatabase(action);
       }
+      case MaintenanceAction.MigrateDatabase: {
+        return this.databaseBackupService.createDatabaseBackup('database-migration-point-');
+      }
     }
   }
 
