@@ -65,13 +65,15 @@ describe(VersionService.name, () => {
 
   describe('getVersion', () => {
     it('should respond the server version', () => {
-      expect(sut.getVersion()).toEqual({
+      const version = sut.getVersion();
+      expect(version).toEqual({
         major: 3,
         minor: 0,
         patch: 0,
         prerelease: null,
         featureLevel: expect.any(Number),
       });
+      expect(Number.isSafeInteger(version.featureLevel)).toBe(true);
     });
   });
 

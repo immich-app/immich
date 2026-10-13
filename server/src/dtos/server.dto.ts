@@ -181,7 +181,7 @@ export class ServerAboutResponseDto extends createZodDto(ServerAboutResponseSche
 export class ServerApkLinksDto extends createZodDto(ServerApkLinksSchema) {}
 export class ServerStorageResponseDto extends createZodDto(ServerStorageResponseSchema) {}
 
-const serverFeatureLevel = Math.max(...(Object.values(ServerFeatureLevel) as number[]));
+const serverFeatureLevel = Math.max(...Object.values(ServerFeatureLevel).filter((value) => typeof value === 'number'));
 
 export class ServerVersionResponseDto extends createZodDto(ServerVersionResponseSchema) {
   static fromSemVer(value: SemVer): z.infer<typeof ServerVersionResponseSchema> {
