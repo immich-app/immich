@@ -32,7 +32,15 @@ where
   and "fileCreatedAt" is not null
   and "fileModifiedAt" is not null
   and "localDateTime" is not null
-  and "originalPath" like $3
-  and "originalPath" not like $4
+  and (
+    (
+      "originalPath" like $3
+      and "originalPath" not like $4
+    )
+    or (
+      "originalPath" like $5
+      and "originalPath" not like $6
+    )
+  )
 order by
-  regexp_replace("asset"."originalPath", $5, $6) asc
+  regexp_replace("asset"."originalPath", $7, $8) asc

@@ -5,6 +5,8 @@ import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { asUuid, withExif } from 'src/utils/database.js';
 
+const escapeLikePattern = (value: string) => value.replaceAll(/[\\%_]/g, String.raw`\$&`);
+
 export class ViewRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
@@ -34,6 +36,11 @@ export class ViewRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getAssetsByOriginalPath(userId: string, partialPath: string) {
     const normalizedPath = partialPath.replaceAll(/\/$/g, '');
+    // the mobile app strips the leading slash from the folder path
+    const directories =
+      normalizedPath === '' || normalizedPath.startsWith('/')
+        ? [normalizedPath]
+        : [normalizedPath, `/${normalizedPath}`];
 
     return this.db
       .selectFrom('asset')
@@ -45,8 +52,14 @@ export class ViewRepository {
       .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)
       .where('localDateTime', 'is not', null)
-      .where('originalPath', 'like', `%${normalizedPath}/%`)
-      .where('originalPath', 'not like', `%${normalizedPath}/%/%`)
+      .where((eb) =>
+        eb.or(
+          directories.map((directory) => {
+            const prefix = `${escapeLikePattern(directory)}/`;
+            return eb.and([eb('originalPath', 'like', `${prefix}%`), eb('originalPath', 'not like', `${prefix}%/%`)]);
+          }),
+        ),
+      )
       .orderBy(
         (eb) => eb.fn('regexp_replace', ['asset.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
         'asc',
