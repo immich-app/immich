@@ -1,3 +1,4 @@
+import { adjustLinearColors, encodeLinearColors } from '@immich/image-editor';
 import { Injectable } from '@nestjs/common';
 import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
@@ -6,6 +7,7 @@ import { Duration } from 'luxon';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
+import { setImmediate } from 'node:timers/promises';
 import sharp, { Sharp } from 'sharp';
 import type {
   Bitmap,
@@ -175,15 +177,6 @@ export class MediaRepository {
       ]);
     }
 
-    const color = edits.find((edit) => edit.action === 'color');
-    if (color) {
-      const brightness = 1 + color.parameters.brightness / 100;
-      const contrast = 1 + color.parameters.contrast / 100;
-
-      // Keep the contrast midpoint at middle gray, matching CSS brightness() and contrast().
-      pipeline = pipeline.linear(brightness * contrast, 128 * (1 - contrast));
-    }
-
     return pipeline;
   }
 
@@ -222,27 +215,40 @@ export class MediaRepository {
     return colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16';
   }
 
-  /* Resamples in linear light; averaging gamma-encoded values darkens the result and loses detail. `colorspace`
-   * always has a sRGB transfer function and scRGB applies no primaries matrix, so linearising as sRGB is exact. */
-  private transform(image: Bitmap, { size, fit = 'outside', edits = [] }: TransformOptions): Promise<Bitmap> {
+  /* Resample in float linear light, then adjust Oklab lightness before final sRGB encoding.
+   * Sharp's linear() casts Oklab to uchar, so the shared float implementation avoids that precision loss. */
+  private async transform(image: Bitmap, { size, fit = 'outside', edits = [] }: TransformOptions): Promise<Bitmap> {
     if (!size && edits.length === 0) {
-      return Promise.resolve(image);
+      return image;
     }
 
-    const colorEdits = edits.filter((edit) => edit.action === 'color');
+    const color = edits.find((edit) => edit.action === 'color');
     const geometryEdits = edits.filter((edit) => edit.action !== 'color');
+    const pipeline = this.edit(this.raw(image).pipelineColorspace('scrgb'), geometryEdits).resize(size, size, {
+      fit,
+      withoutEnlargement: true,
+    });
+    if (!color || (color.parameters.brightness === 0 && color.parameters.contrast === 0)) {
+      return pipeline.raw().toBuffer({ resolveWithObject: true });
+    }
 
-    return this.edit(this.raw(image).pipelineColorspace('scrgb'), geometryEdits)
-      .resize(size, size, { fit, withoutEnlargement: true })
-      .raw()
-      .toBuffer({ resolveWithObject: true })
-      .then((transformed) =>
-        colorEdits.length === 0
-          ? transformed
-          : this.edit(this.raw(transformed).pipelineColorspace('srgb'), colorEdits).raw().toBuffer({
-              resolveWithObject: true,
-            }),
-      );
+    // Keep resampling overshoot and fractional values: no intermediate encoding or 8-bit buffer.
+    const { data, info } = await pipeline
+      .toColourspace('scrgb')
+      .raw({ depth: 'float' })
+      .toBuffer({ resolveWithObject: true });
+    const pixels = new Float32Array(data.buffer, data.byteOffset, data.byteLength / Float32Array.BYTES_PER_ELEMENT);
+    const encoded = Buffer.allocUnsafe(pixels.length);
+    const batchSize = 65_536 * info.channels;
+    for (let offset = 0; offset < pixels.length; offset += batchSize) {
+      if (offset > 0) {
+        await setImmediate();
+      }
+      const batch = pixels.subarray(offset, offset + batchSize);
+      adjustLinearColors(batch, info.channels, color.parameters);
+      encoded.set(encodeLinearColors(batch, info.channels), offset);
+    }
+    return { data: encoded, info: { width: info.width, height: info.height, channels: info.channels } };
   }
 
   private raw({ data, info: raw }: Bitmap) {

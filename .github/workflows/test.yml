@@ -40,10 +40,12 @@ jobs:
               - 'web/**'
               - 'i18n/**'
               - 'packages/sdk/**'
+              - 'packages/image-editor/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
             server:
               - 'server/**'
+              - 'packages/image-editor/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
               - 'packages/plugin-core/**'
@@ -200,6 +202,9 @@ jobs:
       - name: Run tsc
         run: pnpm check
         if: ${{ !cancelled() }}
+
+      - name: Test shared image editor
+        run: node --test ../packages/image-editor/index.test.js
 
       - name: Run unit tests & coverage
         run: pnpm test

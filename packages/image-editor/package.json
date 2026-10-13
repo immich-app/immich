@@ -1,0 +1,16 @@
+{
+  "name": "@immich/image-editor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "AGPL-3.0"
+}
