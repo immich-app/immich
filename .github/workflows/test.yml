@@ -761,6 +761,10 @@ jobs:
             device: cuda
             group: cuda-libs
             provider: CUDAExecutionProvider
+          - runner: pokedex-dgpu-nvidia-turing
+            device: cuda
+            group: cuda-libs
+            provider: CUDAExecutionProvider
           - runner: pokedex-dgpu-nvidia-ampere
             device: cuda
             group: cuda-libs
