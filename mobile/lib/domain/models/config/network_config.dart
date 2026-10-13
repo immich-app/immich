@@ -11,6 +11,7 @@ abstract class NetworkConfig with _$NetworkConfig {
     @Default(false) bool autoEndpointSwitching,
     String? preferredWifiName,
     String? localEndpoint,
+    String? castingUrl,
     @Default([]) List<String> externalEndpointList,
     @Default({}) Map<String, String> customHeaders,
   }) = _NetworkConfig;
@@ -20,12 +21,14 @@ abstract class NetworkConfig with _$NetworkConfig {
     bool? autoEndpointSwitching,
     Option<String>? preferredWifiName,
     Option<String>? localEndpoint,
+    Option<String>? castingUrl,
     List<String>? externalEndpointList,
     Map<String, String>? customHeaders,
   }) => NetworkConfig(
     autoEndpointSwitching: autoEndpointSwitching ?? this.autoEndpointSwitching,
     preferredWifiName: preferredWifiName.patch(this.preferredWifiName),
     localEndpoint: localEndpoint.patch(this.localEndpoint),
+    castingUrl: castingUrl.patch(this.castingUrl),
     externalEndpointList: externalEndpointList ?? this.externalEndpointList,
     customHeaders: customHeaders ?? this.customHeaders,
   );

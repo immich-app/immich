@@ -23,6 +23,7 @@ class NetworkingSettings extends HookConsumerWidget {
     useValueChanged<bool, void>(featureEnabled.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.networkAutoEndpointSwitching, featureEnabled.value));
     });
+    final castingUrlController = useTextEditingController(text: ref.watch(appConfigProvider).network.castingUrl ?? '');
 
     Future<void> checkWifiReadPermission() async {
       final [hasLocationInUse, hasLocationAlways] = await Future.wait([
@@ -108,6 +109,7 @@ class NetworkingSettings extends HookConsumerWidget {
           title: context.t.current_server_address,
           icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
         ),
+        const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Card(
@@ -143,6 +145,42 @@ class NetworkingSettings extends HookConsumerWidget {
         const SizedBox(height: 16),
         SettingGroupTitle(title: context.t.external_network, icon: Icons.dns_outlined),
         ExternalNetworkPreference(enabled: featureEnabled.value),
+        Padding(
+          padding: const EdgeInsets.only(top: 10.0),
+          child: Divider(color: context.colorScheme.surfaceContainerHighest),
+        ),
+        SettingGroupTitle(title: context.t.casting_url_title, icon: Icons.cast_outlined),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
+              side: BorderSide(color: context.colorScheme.surfaceContainerHighest, width: 1),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: TextField(
+                controller: castingUrlController,
+                keyboardType: TextInputType.url,
+                autocorrect: false,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(border: InputBorder.none, hintText: "http://local-ip:2283"),
+                onChanged: (value) {
+                  final trimmed = value.trim();
+                  unawaited(ref.read(settingsProvider).write(.networkCastingUrl, trimmed.isEmpty ? null : trimmed));
+                },
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 4),
+          child: Text(
+            context.t.casting_url_description,
+            style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceVariant),
+          ),
+        ),
       ],
     );
   }

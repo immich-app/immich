@@ -30,6 +30,7 @@ enum SettingsKey<T> {
   networkCustomHeaders<Map<String, String>>(codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string)),
   networkPreferredWifiName<String?>(),
   networkLocalEndpoint<String?>(),
+  networkCastingUrl<String?>(),
 
   // Album
   albumSortMode<AlbumSortMode>(codec: EnumCodec(AlbumSortMode.values)),

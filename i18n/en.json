@@ -693,6 +693,8 @@
   "cannot_update_the_description": "Cannot update the description",
   "cast": "Cast",
   "cast_description": "Configure available cast destinations",
+  "casting_url_description": "The server URL your Chromecast will use during casting. This lets you expose only the endpoints required for casting. Leave blank to use the default server URL.",
+  "casting_url_title": "Casting URL",
   "change": "Change",
   "change_date": "Change date",
   "change_description": "Change description",

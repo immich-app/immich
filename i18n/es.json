@@ -693,6 +693,8 @@
   "cannot_update_the_description": "No se puede actualizar la descripción",
   "cast": "Transmitir",
   "cast_description": "Configura los posibles destinos de retransmisión",
+  "casting_url_description": "URL del servidor que utilizará tu Chromecast durante la reproducción. Permite exponer únicamente los endpoints necesarios para la reproducción. Déjala en blanco para usar la URL predeterminada del servidor.",
+  "casting_url_title": "URL para casting",
   "change": "Cambiar",
   "change_date": "Cambiar fecha",
   "change_description": "Cambiar descripción",
