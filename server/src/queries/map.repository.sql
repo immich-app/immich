@@ -23,29 +23,56 @@ order by
 -- MapRepository.getMapMarkers
 select
   "id",
-  "asset_exif"."latitude" as "lat",
-  "asset_exif"."longitude" as "lon",
-  "asset_exif"."city",
-  "asset_exif"."state",
-  "asset_exif"."country"
+  "lat",
+  "lon",
+  "city",
+  "state",
+  "country"
 from
-  "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  and "asset_exif"."latitude" is not null
-  and "asset_exif"."longitude" is not null
-where
-  "asset"."deletedAt" is null
-  and "asset"."visibility" = $1
-  and (
-    "ownerId" in ($2)
-    or exists (
-      select
-      from
-        "album_asset"
-      where
-        "asset"."id" = "album_asset"."assetId"
-        and "album_asset"."albumId" in ($3)
-    )
-  )
+  (
+    select
+      "id",
+      "asset_exif"."latitude" as "lat",
+      "asset_exif"."longitude" as "lon",
+      "asset_exif"."city",
+      "asset_exif"."state",
+      "asset_exif"."country",
+      "asset"."fileCreatedAt"
+    from
+      "asset"
+      inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+      and "asset_exif"."latitude" is not null
+      and "asset_exif"."longitude" is not null
+    where
+      "asset"."deletedAt" is null
+      and "asset"."visibility" = $1
+      and "asset"."ownerId" in ($2)
+    union all
+    select
+      "id",
+      "asset_exif"."latitude" as "lat",
+      "asset_exif"."longitude" as "lon",
+      "asset_exif"."city",
+      "asset_exif"."state",
+      "asset_exif"."country",
+      "asset"."fileCreatedAt"
+    from
+      "asset"
+      inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+      and "asset_exif"."latitude" is not null
+      and "asset_exif"."longitude" is not null
+    where
+      "asset"."deletedAt" is null
+      and "asset"."visibility" = $3
+      and "asset"."ownerId" not in ($4)
+      and exists (
+        select
+        from
+          "album_asset"
+        where
+          "asset"."id" = "album_asset"."assetId"
+          and "album_asset"."albumId" in ($5)
+      )
+  ) as "marker"
 order by
   "fileCreatedAt" desc

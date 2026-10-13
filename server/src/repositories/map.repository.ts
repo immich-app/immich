@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Expression, Insertable, Kysely, NotNull, SqlBool, sql } from 'kysely';
+import { Insertable, Kysely, NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -81,51 +81,70 @@ export class MapRepository {
     return this.mapMarkersQuery()
       .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
       .where('album_asset.albumId', '=', albumId)
+      .orderBy('fileCreatedAt', 'desc')
       .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID], [DummyValue.UUID]] })
-  getMapMarkers(
+  async getMapMarkers(
     authUserId: string,
     ownerIds: string[],
     albumIds: string[],
     { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
   ) {
-    return this.mapMarkersQuery()
-      .$if(isArchived === true, (qb) =>
-        qb.where((eb) =>
-          eb.or([
-            eb('asset.visibility', '=', AssetVisibility.Timeline),
-            eb.and([eb('asset.ownerId', '=', authUserId), eb('asset.visibility', '=', AssetVisibility.Archive)]),
-          ]),
-        ),
-      )
-      .$if(isArchived === false || isArchived === undefined, (qb) =>
-        qb.where('asset.visibility', '=', AssetVisibility.Timeline),
-      )
-      .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
-      .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
-      .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))
-      .where((eb) => {
-        const expression: Expression<SqlBool>[] = [];
+    const markers = () =>
+      this.mapMarkersQuery()
+        .select('asset.fileCreatedAt')
+        .$if(isArchived === true, (qb) =>
+          qb.where((eb) =>
+            eb.or([
+              eb('asset.visibility', '=', AssetVisibility.Timeline),
+              eb.and([eb('asset.ownerId', '=', authUserId), eb('asset.visibility', '=', AssetVisibility.Archive)]),
+            ]),
+          ),
+        )
+        .$if(isArchived === false || isArchived === undefined, (qb) =>
+          qb.where('asset.visibility', '=', AssetVisibility.Timeline),
+        )
+        .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
+        .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
+        .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!));
 
-        if (ownerIds.length > 0) {
-          expression.push(eb('ownerId', 'in', ownerIds));
-        }
+    // separate branches instead of `owned OR in album`, which can only be evaluated row by row over every asset
+    const branches = [];
+    if (ownerIds.length > 0) {
+      branches.push(markers().where('asset.ownerId', 'in', ownerIds));
+    }
 
-        if (albumIds.length > 0) {
-          expression.push(
+    if (albumIds.length > 0) {
+      branches.push(
+        markers()
+          // owned assets are already in the first branch
+          .$if(ownerIds.length > 0, (qb) => qb.where('asset.ownerId', 'not in', ownerIds))
+          .where((eb) =>
             eb.exists((eb) =>
               eb
                 .selectFrom('album_asset')
                 .whereRef('asset.id', '=', 'album_asset.assetId')
                 .where('album_asset.albumId', 'in', albumIds),
             ),
-          );
-        }
+          ),
+      );
+    }
 
-        return eb.or(expression);
-      })
+    if (branches.length === 0) {
+      return [];
+    }
+
+    let union = branches[0];
+    for (const branch of branches.slice(1)) {
+      union = union.unionAll(branch);
+    }
+
+    return this.db
+      .selectFrom(union.as('marker'))
+      .select(['id', 'lat', 'lon', 'city', 'state', 'country'])
+      .orderBy('fileCreatedAt', 'desc')
       .execute();
   }
 
@@ -139,7 +158,6 @@ export class MapRepository {
           .on('asset_exif.longitude', 'is not', null),
       )
       .where('asset.deletedAt', 'is', null)
-      .orderBy('fileCreatedAt', 'desc')
       .select([
         'id',
         'asset_exif.latitude as lat',
