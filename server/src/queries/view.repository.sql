@@ -2,12 +2,15 @@
 
 -- ViewRepository.getUniqueOriginalPaths
 select distinct
-  substring("asset"."originalPath", $1) as "directoryPath"
+  left(
+    "asset"."originalPath",
+    length("asset"."originalPath") - length(split_part("asset"."originalPath", '/', -1))
+  ) as "directoryPath"
 from
   "asset"
 where
-  "ownerId" = $2::uuid
-  and "visibility" = $3
+  "ownerId" = $1::uuid
+  and "visibility" = $2
   and "deletedAt" is null
   and "fileCreatedAt" is not null
   and "fileModifiedAt" is not null

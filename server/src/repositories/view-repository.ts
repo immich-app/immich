@@ -1,5 +1,5 @@
+import { type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import type { Kysely } from 'kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
@@ -10,9 +10,14 @@ export class ViewRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getUniqueOriginalPaths(userId: string) {
+    const originalPath = sql.ref('asset.originalPath');
     const results = await this.db
       .selectFrom('asset')
-      .select((eb) => eb.fn<string>('substring', ['asset.originalPath', eb.val('^(.*/)[^/]*$')]).as('directoryPath'))
+      .select(
+        sql<string>`left(${originalPath}, length(${originalPath}) - length(split_part(${originalPath}, '/', -1)))`.as(
+          'directoryPath',
+        ),
+      )
       .distinct()
       .where('ownerId', '=', asUuid(userId))
       .where('visibility', '=', AssetVisibility.Timeline)
