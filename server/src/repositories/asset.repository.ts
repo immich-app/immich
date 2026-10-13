@@ -973,24 +973,19 @@ export class AssetRepository {
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
   async getAssetIdByCity(ownerId: string, { minAssetsPerField, maxFields }: AssetExploreFieldOptions) {
     const items = await this.db
-      .with('cities', (qb) =>
-        qb
-          .selectFrom('asset_exif')
-          .select('city')
-          .where('city', 'is not', null)
-          .groupBy('city')
-          .having((eb) => eb.fn('count', [eb.ref('assetId')]), '>=', minAssetsPerField),
-      )
       .selectFrom('asset')
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .innerJoin('cities', 'asset_exif.city', 'cities.city')
-      .distinctOn('asset_exif.city')
-      .select(['assetId as data', 'asset_exif.city as value'])
+      .select((eb) => [sql<string>`(array_agg(${eb.ref('asset.id')}))[1]`.as('data'), 'asset_exif.city as value'])
       .$narrowType<{ value: NotNull }>()
       .where('ownerId', '=', asUuid(ownerId))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('type', '=', AssetType.Image)
       .where('deletedAt', 'is', null)
+      .where('asset_exif.city', 'is not', null)
+      .groupBy('asset_exif.city')
+      .having((eb) => eb.fn.countAll(), '>=', minAssetsPerField)
+      .orderBy((eb) => eb.fn.countAll(), 'desc')
+      .orderBy('asset_exif.city')
       .limit(maxFields)
       .execute();
 

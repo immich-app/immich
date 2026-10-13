@@ -477,31 +477,25 @@ from
   "agg"
 
 -- AssetRepository.getAssetIdByCity
-with
-  "cities" as (
-    select
-      "city"
-    from
-      "asset_exif"
-    where
-      "city" is not null
-    group by
-      "city"
-    having
-      count("assetId") >= $1
-  )
-select distinct
-  on ("asset_exif"."city") "assetId" as "data",
+select
+  (array_agg("asset"."id")) [1] as "data",
   "asset_exif"."city" as "value"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  inner join "cities" on "asset_exif"."city" = "cities"."city"
 where
-  "ownerId" = $2::uuid
-  and "visibility" = $3
-  and "type" = $4
+  "ownerId" = $1::uuid
+  and "visibility" = $2
+  and "type" = $3
   and "deletedAt" is null
+  and "asset_exif"."city" is not null
+group by
+  "asset_exif"."city"
+having
+  count(*) >= $4
+order by
+  count(*) desc,
+  "asset_exif"."city"
 limit
   $5
 
