@@ -857,10 +857,10 @@ jobs:
         run: |
           libs=(.venv/lib/python*/site-packages/nvidia/*/lib)
           export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
-          mise exec -- uv run --no-sync python scripts/diag_grouped_conv.py
-          mise exec -- uv pip install --quiet --no-deps nvidia-cudnn-cu12==9.27.0.42
-          mise exec -- uv run --no-sync python scripts/diag_grouped_conv.py
-          mise exec -- uv run --no-sync python scripts/diag_fp16.py ../e2e/test-assets
+          for version in 9.11.1.4 9.13.1.26 9.15.1.9 9.17.1.4 9.19.0.56 9.21.1.3 9.23.2.1 9.25.1.1; do
+            mise exec -- uv pip install --quiet --no-deps "nvidia-cudnn-cu12==$version"
+            mise exec -- uv run --no-sync python scripts/diag_grouped_conv.py
+          done
 
   github-files-formatting:
     name: .github Files Formatting

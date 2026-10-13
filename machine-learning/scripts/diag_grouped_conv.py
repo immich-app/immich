@@ -48,10 +48,14 @@ with tempfile.TemporaryDirectory() as work:
 
         results = []
         for search in ("EXHAUSTIVE", "HEURISTIC", "DEFAULT"):
-            session = ort.InferenceSession(
-                str(path), providers=[("CUDAExecutionProvider", {"cudnn_conv_algo_search": search})]
-            )
-            y = session.run(None, {"x": x})[0].astype(np.float32)
+            try:
+                session = ort.InferenceSession(
+                    str(path), providers=[("CUDAExecutionProvider", {"cudnn_conv_algo_search": search})]
+                )
+                y = session.run(None, {"x": x})[0].astype(np.float32)
+            except Exception as e:  # a cuDNN without kernels for this GPU fails here, and the sweep goes on
+                results.append(f"{search} {type(e).__name__}: {str(e).split('Status Message: ')[-1][:60]}")
+                continue
             rel = np.linalg.norm(np.nan_to_num(y, nan=1e9, posinf=1e9, neginf=1e9) - ref) / np.linalg.norm(ref)
             results.append(f"{search} rel err {rel:.3g} nonfinite {int((~np.isfinite(y)).sum())}")
         layer = f"group {groups} {cin}->{cout} at {height}x{width}{' + bias' if bias else ''}"
