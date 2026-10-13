@@ -126,28 +126,36 @@ where
 
 -- AccessRepository.asset.checkSharedLinkAccess
 select
-  "asset"."id" as "assetId",
-  "asset"."livePhotoVideoId" as "assetLivePhotoVideoId",
-  "albumAssets"."id" as "albumAssetId",
-  "albumAssets"."livePhotoVideoId" as "albumAssetLivePhotoVideoId"
+  "asset"."id",
+  "asset"."livePhotoVideoId"
 from
   "shared_link"
-  left join "album" on "album"."id" = "shared_link"."albumId"
-  and "album"."deletedAt" is null
-  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
-  left join "asset" on "asset"."id" = "shared_link_asset"."assetId"
+  inner join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
+  inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
   and "asset"."deletedAt" is null
-  left join "album_asset" on "album_asset"."albumId" = "album"."id"
-  left join "asset" as "albumAssets" on "albumAssets"."id" = "album_asset"."assetId"
-  and "albumAssets"."deletedAt" is null
 where
   "shared_link"."id" = $1
-  and array[
-    "asset"."id",
-    "asset"."livePhotoVideoId",
-    "albumAssets"."id",
-    "albumAssets"."livePhotoVideoId"
-  ] && array[$2]::uuid[]
+  and (
+    "asset"."id" = any ($2::uuid[])
+    or "asset"."livePhotoVideoId" = any ($3::uuid[])
+  )
+union all
+select
+  "asset"."id",
+  "asset"."livePhotoVideoId"
+from
+  "shared_link"
+  inner join "album" on "album"."id" = "shared_link"."albumId"
+  and "album"."deletedAt" is null
+  inner join "album_asset" on "album_asset"."albumId" = "album"."id"
+  inner join "asset" on "asset"."id" = "album_asset"."assetId"
+  and "asset"."deletedAt" is null
+where
+  "shared_link"."id" = $4
+  and (
+    "asset"."id" = any ($5::uuid[])
+    or "asset"."livePhotoVideoId" = any ($6::uuid[])
+  )
 
 -- AccessRepository.assetFile.checkOwnerAccess
 select
