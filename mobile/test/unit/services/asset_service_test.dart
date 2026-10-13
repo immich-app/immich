@@ -58,24 +58,19 @@ void main() {
   });
 
   group('AssetService.getStack', () {
-    test('sorts all stack assets from newest to oldest', () async {
-      final primary = RemoteAssetFactory.create(
-        id: 'primary',
-        stackId: 'stack',
-      ).copyWith(createdAt: DateTime(2026, 1, 2));
-      final beforePrimary = RemoteAssetFactory.create(
-        id: 'before-primary',
-        stackId: 'stack',
-      ).copyWith(createdAt: DateTime(2026, 1, 1));
-      final afterPrimary = RemoteAssetFactory.create(
-        id: 'after-primary',
-        stackId: 'stack',
-      ).copyWith(createdAt: DateTime(2026, 1, 3));
-      when(() => remoteRepository.getStackChildren(primary)).thenAnswer((_) async => [beforePrimary, afterPrimary]);
+    test('preserves the primary asset without changing repository order', () async {
+      final primary = RemoteAssetFactory.create(id: 'primary', stackId: 'stack', localId: 'local-primary');
+      final beforePrimary = RemoteAssetFactory.create(id: 'before-primary', stackId: 'stack');
+      final repositoryPrimary = RemoteAssetFactory.create(id: 'primary', stackId: 'stack');
+      final afterPrimary = RemoteAssetFactory.create(id: 'after-primary', stackId: 'stack');
+      when(
+        () => remoteRepository.getStack('stack'),
+      ).thenAnswer((_) async => [beforePrimary, repositoryPrimary, afterPrimary]);
 
       final stack = await sut.getStack(primary);
 
-      expect(stack.map((asset) => asset.id), ['after-primary', 'primary', 'before-primary']);
+      expect(stack.map((asset) => asset.id), [beforePrimary.id, primary.id, afterPrimary.id]);
+      expect(stack[1].localId, 'local-primary');
     });
   });
 
