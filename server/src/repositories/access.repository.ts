@@ -6,7 +6,7 @@ import { PersonUserRole } from 'src/dtos/person.dto.js';
 import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
 import { PersonId } from 'src/repositories/person.repository.js';
 import { DB } from 'src/schema/index.js';
-import { asUuid } from 'src/utils/database.js';
+import { anyUuid, asUuid } from 'src/utils/database.js';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
@@ -235,44 +235,40 @@ class AssetAccess {
       return new Set<string>();
     }
 
+    const ids = [...assetIds];
+
     return this.db
       .selectFrom('shared_link')
-      .leftJoin('album', (join) => join.onRef('album.id', '=', 'shared_link.albumId').on('album.deletedAt', 'is', null))
-      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
-      .leftJoin('asset', (join) =>
+      .innerJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
+      .innerJoin('asset', (join) =>
         join.onRef('asset.id', '=', 'shared_link_asset.assetId').on('asset.deletedAt', 'is', null),
       )
-      .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
-      .leftJoin('asset as albumAssets', (join) =>
-        join.onRef('albumAssets.id', '=', 'album_asset.assetId').on('albumAssets.deletedAt', 'is', null),
-      )
-      .select([
-        'asset.id as assetId',
-        'asset.livePhotoVideoId as assetLivePhotoVideoId',
-        'albumAssets.id as albumAssetId',
-        'albumAssets.livePhotoVideoId as albumAssetLivePhotoVideoId',
-      ])
+      .select(['asset.id', 'asset.livePhotoVideoId'])
       .where('shared_link.id', '=', sharedLinkId)
-      .where(
-        sql`array["asset"."id", "asset"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"]`,
-        '&&',
-        sql`array[${sql.join([...assetIds])}]::uuid[] `,
+      .where((eb) => eb.or([eb('asset.id', '=', anyUuid(ids)), eb('asset.livePhotoVideoId', '=', anyUuid(ids))]))
+      .unionAll((eb) =>
+        eb
+          .selectFrom('shared_link')
+          .innerJoin('album', (join) =>
+            join.onRef('album.id', '=', 'shared_link.albumId').on('album.deletedAt', 'is', null),
+          )
+          .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
+          .innerJoin('asset', (join) =>
+            join.onRef('asset.id', '=', 'album_asset.assetId').on('asset.deletedAt', 'is', null),
+          )
+          .select(['asset.id', 'asset.livePhotoVideoId'])
+          .where('shared_link.id', '=', sharedLinkId)
+          .where((eb) => eb.or([eb('asset.id', '=', anyUuid(ids)), eb('asset.livePhotoVideoId', '=', anyUuid(ids))])),
       )
       .execute()
       .then((rows) => {
         const allowedIds = new Set<string>();
         for (const row of rows) {
-          if (row.assetId && assetIds.has(row.assetId)) {
-            allowedIds.add(row.assetId);
+          if (assetIds.has(row.id)) {
+            allowedIds.add(row.id);
           }
-          if (row.assetLivePhotoVideoId && assetIds.has(row.assetLivePhotoVideoId)) {
-            allowedIds.add(row.assetLivePhotoVideoId);
-          }
-          if (row.albumAssetId && assetIds.has(row.albumAssetId)) {
-            allowedIds.add(row.albumAssetId);
-          }
-          if (row.albumAssetLivePhotoVideoId && assetIds.has(row.albumAssetLivePhotoVideoId)) {
-            allowedIds.add(row.albumAssetLivePhotoVideoId);
+          if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
+            allowedIds.add(row.livePhotoVideoId);
           }
         }
         return allowedIds;
