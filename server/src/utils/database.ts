@@ -561,18 +561,25 @@ type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
 const albumAssets = (eb: AssetExpressionBuilder) =>
   eb.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id');
 
+const visibleFaceRows = (eb: AssetExpressionBuilder) =>
+  eb.selectFrom('asset_face').where('asset_face.deletedAt', 'is', null).where('asset_face.isVisible', '=', true);
+
 const visibleFaces = (eb: AssetExpressionBuilder) =>
-  eb
-    .selectFrom('asset_face')
-    .whereRef('asset_face.assetId', '=', 'asset.id')
-    .where('asset_face.deletedAt', 'is', null)
-    .where('asset_face.isVisible', '=', true);
+  visibleFaceRows(eb).whereRef('asset_face.assetId', '=', 'asset.id');
 
 const tagAssets = (eb: AssetExpressionBuilder) =>
   eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id');
 
+const taggedAssetRows = (eb: AssetExpressionBuilder, tagIds: string[]) =>
+  eb
+    .selectFrom('tag_asset')
+    .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+    .where('tag_closure.id_ancestor', '=', anyUuid(tagIds));
+
 // shared any/all/none mechanics; `matchesAll` only receives deduplicated multi-id lists,
-// so its `count(distinct id) = ids.length` check stays satisfiable
+// so its `count(distinct id) = ids.length` check stays satisfiable. `matchesAll` is an
+// uncorrelated `asset.id in (... group by ... having ...)`: a correlated EXISTS with a
+// GROUP BY can't become a semi-join and would run once per candidate asset
 function idsPredicates(
   eb: AssetExpressionBuilder,
   { any, all, none }: IdsFilter = {},
@@ -596,13 +603,16 @@ function idsPredicates(
 }
 
 function albumIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
-  const matching = (ids: string[]) => albumAssets(eb).where('album_asset.albumId', '=', anyUuid(ids));
   return idsPredicates(eb, filter, {
-    matchesAny: (ids) => eb.exists(matching(ids)),
+    matchesAny: (ids) => eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(ids))),
     matchesAll: (ids) =>
-      eb.exists(
-        matching(ids)
+      eb(
+        'asset.id',
+        'in',
+        eb
+          .selectFrom('album_asset')
           .select('album_asset.assetId')
+          .where('album_asset.albumId', '=', anyUuid(ids))
           .groupBy('album_asset.assetId')
           .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
       ),
@@ -610,13 +620,15 @@ function albumIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
 }
 
 function personIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
-  const matching = (ids: string[]) => visibleFaces(eb).where('asset_face.personGroupId', '=', anyUuid(ids));
   return idsPredicates(eb, filter, {
-    matchesAny: (ids) => eb.exists(matching(ids)),
+    matchesAny: (ids) => eb.exists(visibleFaces(eb).where('asset_face.personGroupId', '=', anyUuid(ids))),
     matchesAll: (ids) =>
-      eb.exists(
-        matching(ids)
+      eb(
+        'asset.id',
+        'in',
+        visibleFaceRows(eb)
           .select('asset_face.assetId')
+          .where('asset_face.personGroupId', '=', anyUuid(ids))
           .groupBy('asset_face.assetId')
           .having((eb) => eb.fn.count('asset_face.personGroupId').distinct(), '=', ids.length),
       ),
@@ -624,15 +636,13 @@ function personIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
 }
 
 function tagIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
-  const matching = (ids: string[]) =>
-    tagAssets(eb)
-      .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
-      .where('tag_closure.id_ancestor', '=', anyUuid(ids));
   return idsPredicates(eb, filter, {
-    matchesAny: (ids) => eb.exists(matching(ids)),
+    matchesAny: (ids) => eb.exists(taggedAssetRows(eb, ids).whereRef('tag_asset.assetId', '=', 'asset.id')),
     matchesAll: (ids) =>
-      eb.exists(
-        matching(ids)
+      eb(
+        'asset.id',
+        'in',
+        taggedAssetRows(eb, ids)
           .select('tag_asset.assetId')
           .groupBy('tag_asset.assetId')
           .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '=', ids.length),

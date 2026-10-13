@@ -943,14 +943,13 @@ where
     "asset"."visibility" != $2
     or "asset"."ownerId" = $3
   )
-  and exists (
+  and "asset"."id" in (
     select
       "asset_face"."assetId"
     from
       "asset_face"
     where
-      "asset_face"."assetId" = "asset"."id"
-      and "asset_face"."deletedAt" is null
+      "asset_face"."deletedAt" is null
       and "asset_face"."isVisible" = $4
       and "asset_face"."personGroupId" = any ($5::uuid[])
     group by
@@ -1065,8 +1064,8 @@ where
       "tag_asset"
       inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
     where
-      "tag_asset"."assetId" = "asset"."id"
-      and "tag_closure"."id_ancestor" = any ($4::uuid[])
+      "tag_closure"."id_ancestor" = any ($4::uuid[])
+      and "tag_asset"."assetId" = "asset"."id"
   )
 order by
   "asset"."fileCreatedAt" desc,
@@ -1115,15 +1114,14 @@ where
     "asset"."visibility" != $2
     or "asset"."ownerId" = $3
   )
-  and exists (
+  and "asset"."id" in (
     select
       "tag_asset"."assetId"
     from
       "tag_asset"
       inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
     where
-      "tag_asset"."assetId" = "asset"."id"
-      and "tag_closure"."id_ancestor" = any ($4::uuid[])
+      "tag_closure"."id_ancestor" = any ($4::uuid[])
     group by
       "tag_asset"."assetId"
     having
@@ -1546,9 +1544,9 @@ where
       from
         "asset_face"
       where
-        "asset_face"."assetId" = "asset"."id"
-        and "asset_face"."deletedAt" is null
+        "asset_face"."deletedAt" is null
         and "asset_face"."isVisible" = $5
+        and "asset_face"."assetId" = "asset"."id"
         and "asset_face"."personGroupId" = any ($6::uuid[])
     )
   )
