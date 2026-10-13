@@ -23,6 +23,14 @@ import { asDateTimeString } from 'src/utils/date.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
+const mapAlbumMetadata = (metadata?: AlbumAssetCount) => ({
+  startDate: asDateTimeString(metadata?.startDate ?? undefined),
+  endDate: asDateTimeString(metadata?.endDate ?? undefined),
+  assetCount: metadata?.assetCount ?? 0,
+  // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+  lastModifiedAssetTimestamp: asDateTimeString(metadata?.lastModifiedAssetTimestamp ?? undefined),
+});
+
 @Injectable()
 export class AlbumService extends BaseService {
   async getStatistics(auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
@@ -61,11 +69,7 @@ export class AlbumService extends BaseService {
     return albums.map((album) => ({
       ...mapAlbum(album),
       sharedLinks: undefined,
-      startDate: asDateTimeString(albumMetadata[album.id]?.startDate ?? undefined),
-      endDate: asDateTimeString(albumMetadata[album.id]?.endDate ?? undefined),
-      assetCount: albumMetadata[album.id]?.assetCount ?? 0,
-      // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
-      lastModifiedAssetTimestamp: asDateTimeString(albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined),
+      ...mapAlbumMetadata(albumMetadata[album.id]),
     }));
   }
 
@@ -354,12 +358,6 @@ export class AlbumService extends BaseService {
 
   private async mapWithMetadata(album: MapAlbumDto): Promise<AlbumResponseDto> {
     const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
-    return {
-      ...mapAlbum(album),
-      startDate: asDateTimeString(metadata?.startDate ?? undefined),
-      endDate: asDateTimeString(metadata?.endDate ?? undefined),
-      assetCount: metadata?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: asDateTimeString(metadata?.lastModifiedAssetTimestamp ?? undefined),
-    };
+    return { ...mapAlbum(album), ...mapAlbumMetadata(metadata) };
   }
 }
