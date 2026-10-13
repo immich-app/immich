@@ -1236,6 +1236,8 @@ where
   "asset_face"."personGroupId" = $1
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
+limit
+  $2
 
 -- PersonRepository.getLatestFaceDate
 select
