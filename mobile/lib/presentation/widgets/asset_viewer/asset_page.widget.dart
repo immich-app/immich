@@ -57,7 +57,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
-  static const double _minVisiblePixelsAtMaxZoom = 25;
+  static const double _maxImagePixelSize = 12.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
@@ -352,7 +352,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required bool isPlayingMotionVideo,
     required String? localFilePath,
     required Size? remoteThumbnailSize,
-    required double maxScale,
   }) {
     final size = context.sizeData;
     final imageProvider = getFullImageProvider(
@@ -375,7 +374,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           filterQuality: FilterQuality.high,
           tightMode: true,
           enablePanAlways: true,
-          maxScale: maxScale,
+          maxScale: _maxImagePixelSize,
           disableScaleGestures: _showingDetails,
           scaleStateChangedCallback: _onScaleStateChanged,
           onPageBuild: _onPageBuild,
@@ -410,7 +409,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       basePosition: Alignment.center,
       disableScaleGestures: _showingDetails,
       minScale: PhotoViewComputedScale.contained,
-      maxScale: maxScale,
+      maxScale: _maxImagePixelSize,
       initialScale: PhotoViewComputedScale.contained,
       tightMode: true,
       onPageBuild: _onPageBuild,
@@ -458,7 +457,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final viewportWidth = MediaQuery.widthOf(context);
     final viewportHeight = MediaQuery.heightOf(context);
     final imageHeight = _getImageHeight(viewportWidth, viewportHeight, displayAsset);
-    final maxScale = math.min(viewportWidth, viewportHeight) / _minVisiblePixelsAtMaxZoom;
 
     final detailsOffset = (viewportHeight + imageHeight - kMinInteractiveDimension) / 2;
     final snapTarget = viewportHeight / 3;
@@ -492,7 +490,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     isPlayingMotionVideo: isPlayingMotionVideo,
                     localFilePath: viewIntentFilePath,
                     remoteThumbnailSize: thumbnailSize,
-                    maxScale: maxScale,
                   ),
                 ),
                 if (showingOcr && displayAsset.width != null && displayAsset.height != null)
