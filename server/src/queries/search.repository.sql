@@ -134,7 +134,14 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset_exif") as "exifInfo"
+  (
+    select
+      to_json("exif") as "exifInfo"
+    from
+      "asset_exif" as "exif"
+    where
+      "exif"."assetId" = "asset"."id"
+  ) as "exifInfo"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1439,7 +1446,14 @@ offset
 
 -- SearchRepository.searchMetadataV3 (order-rating-withExif)
 select
-  to_json("asset_exif") as "exifInfo",
+  (
+    select
+      to_json("exif") as "exifInfo"
+    from
+      "asset_exif" as "exif"
+    where
+      "exif"."assetId" = "asset"."id"
+  ) as "exifInfo",
   "asset"."id",
   "asset"."updateId",
   "asset"."createdAt",

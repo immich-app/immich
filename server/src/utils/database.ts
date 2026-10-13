@@ -122,10 +122,21 @@ export function withExif<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId').select(selectExifInfo);
 }
 
+// a correlated subquery is only evaluated for returned rows, so sorted and limited
+// searches don't serialize exif for every candidate row they discard
+const selectReturnedExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) =>
+  eb
+    .selectFrom('asset_exif as exif')
+    .select((eb) =>
+      eb.fn.toJson(eb.table('exif')).$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>().as('exifInfo'),
+    )
+    .whereRef('exif.assetId', '=', 'asset.id')
+    .as('exifInfo');
+
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb
     .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo'))
+    .select(selectReturnedExifInfo)
     .$narrowType<{ exifInfo: NotNull }>();
 }
 
@@ -809,7 +820,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       .selectFrom('asset')
       // postgres eliminates the left join when no exif column is referenced, so unused joins are free
       .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .$if(!!options.withExif, (qb) => qb.select(selectExifInfo))
+      .$if(!!options.withExif, (qb) => qb.select(selectReturnedExifInfo))
       .$if(scopeGlobally, (qb) => qb.where(ownershipPredicate))
       .where((eb) =>
         eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),
