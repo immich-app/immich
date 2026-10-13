@@ -147,37 +147,34 @@ export class IntegrityRepository {
   @GenerateSql({ params: [], stream: true })
   streamAssetPathsForMissingFiles() {
     return this.db
-      .selectFrom((eb) =>
-        eb
-          .selectFrom('asset')
-          .where('asset.deletedAt', 'is', null)
-          .select('asset.originalPath as path')
-          .select((eb) => [
-            eb.ref('asset.id').$castTo<string | null>().as('assetId'),
-            sql<string | null>`null::uuid`.as('fileAssetId'),
-          ])
-          .unionAll(
-            eb
-              .selectFrom('asset_file')
-              .select(['path'])
-              .select((eb) => [
-                sql<string | null>`null::uuid`.as('assetId'),
-                eb.ref('asset_file.id').$castTo<string | null>().as('fileAssetId'),
-              ]),
-          )
-          .as('allPaths'),
-      )
+      .selectFrom('asset')
       .leftJoin('integrity_report', (join) =>
         join
-          .on('integrity_report.type', '=', IntegrityReport.MissingFile)
-          .on((eb) =>
-            eb.or([
-              eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
-              eb('integrity_report.fileAssetId', '=', eb.ref('allPaths.fileAssetId')),
-            ]),
-          ),
+          .onRef('integrity_report.assetId', '=', 'asset.id')
+          .on('integrity_report.type', '=', IntegrityReport.MissingFile),
       )
-      .select(['allPaths.path as path', 'allPaths.assetId', 'allPaths.fileAssetId', 'integrity_report.id as reportId'])
+      .where('asset.deletedAt', 'is', null)
+      .select((eb) => [
+        'asset.originalPath as path',
+        eb.ref('asset.id').$castTo<string | null>().as('assetId'),
+        sql<string | null>`null::uuid`.as('fileAssetId'),
+        'integrity_report.id as reportId',
+      ])
+      .unionAll((eb) =>
+        eb
+          .selectFrom('asset_file')
+          .leftJoin('integrity_report', (join) =>
+            join
+              .onRef('integrity_report.fileAssetId', '=', 'asset_file.id')
+              .on('integrity_report.type', '=', IntegrityReport.MissingFile),
+          )
+          .select((eb) => [
+            'asset_file.path',
+            sql<string | null>`null::uuid`.as('assetId'),
+            eb.ref('asset_file.id').$castTo<string | null>().as('fileAssetId'),
+            'integrity_report.id as reportId',
+          ]),
+      )
       .stream() as AsyncIterableIterator<
       { path: string; reportId: string | null } & (
         { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }

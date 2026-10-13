@@ -117,33 +117,26 @@ from
 
 -- IntegrityRepository.streamAssetPathsForMissingFiles
 select
-  "allPaths"."path" as "path",
-  "allPaths"."assetId",
-  "allPaths"."fileAssetId",
+  "asset"."originalPath" as "path",
+  "asset"."id" as "assetId",
+  null::uuid as "fileAssetId",
   "integrity_report"."id" as "reportId"
 from
-  (
-    select
-      "asset"."originalPath" as "path",
-      "asset"."id" as "assetId",
-      null::uuid as "fileAssetId"
-    from
-      "asset"
-    where
-      "asset"."deletedAt" is null
-    union all
-    select
-      "path",
-      null::uuid as "assetId",
-      "asset_file"."id" as "fileAssetId"
-    from
-      "asset_file"
-  ) as "allPaths"
-  left join "integrity_report" on "integrity_report"."type" = $1
-  and (
-    "integrity_report"."assetId" = "allPaths"."assetId"
-    or "integrity_report"."fileAssetId" = "allPaths"."fileAssetId"
-  )
+  "asset"
+  left join "integrity_report" on "integrity_report"."assetId" = "asset"."id"
+  and "integrity_report"."type" = $1
+where
+  "asset"."deletedAt" is null
+union all
+select
+  "asset_file"."path",
+  null::uuid as "assetId",
+  "asset_file"."id" as "fileAssetId",
+  "integrity_report"."id" as "reportId"
+from
+  "asset_file"
+  left join "integrity_report" on "integrity_report"."fileAssetId" = "asset_file"."id"
+  and "integrity_report"."type" = $2
 
 -- IntegrityRepository.streamAssetChecksums
 select
