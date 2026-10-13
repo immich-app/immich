@@ -99,3 +99,4 @@
 1790616293884-PersonSharing
 1790693088454-AddPersonUserTableSharedBySharedWithConstraint
 1791893058715-AddAssetFaceUpdateIdIndex
+1791894205380-AddAssetOwnerIdUpdateIdIndex
