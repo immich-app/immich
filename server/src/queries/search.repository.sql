@@ -357,8 +357,8 @@ order by
   "asset_exif"."city"
 
 -- SearchRepository.getStates
-select distinct
-  on ("state") "state"
+select
+  "state"
 from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
@@ -368,10 +368,14 @@ where
   and "deletedAt" is null
   and "state" is not null
   and "state" != $3
+group by
+  "state"
+order by
+  "state"
 
 -- SearchRepository.getCities
-select distinct
-  on ("city") "city"
+select
+  "city"
 from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
@@ -381,10 +385,14 @@ where
   and "deletedAt" is null
   and "city" is not null
   and "city" != $3
+group by
+  "city"
+order by
+  "city"
 
 -- SearchRepository.getCameraMakes
-select distinct
-  on ("make") "make"
+select
+  "make"
 from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
@@ -394,10 +402,14 @@ where
   and "deletedAt" is null
   and "make" is not null
   and "make" != $3
+group by
+  "make"
+order by
+  "make"
 
 -- SearchRepository.getCameraModels
-select distinct
-  on ("model") "model"
+select
+  "model"
 from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
@@ -407,10 +419,14 @@ where
   and "deletedAt" is null
   and "model" is not null
   and "model" != $3
+group by
+  "model"
+order by
+  "model"
 
 -- SearchRepository.getCameraLensModels
-select distinct
-  on ("lensModel") "lensModel"
+select
+  "lensModel"
 from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
@@ -420,6 +436,10 @@ where
   and "deletedAt" is null
   and "lensModel" is not null
   and "lensModel" != $3
+group by
+  "lensModel"
+order by
+  "lensModel"
 
 -- SearchRepository.searchMetadataV3 (baseline)
 select

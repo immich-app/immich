@@ -597,12 +597,13 @@ export class SearchRepository {
     return this.db
       .selectFrom('asset_exif')
       .select(field)
-      .distinctOn(field)
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null)
-      .where(field, '!=', '');
+      .where(field, '!=', '')
+      .groupBy(field)
+      .orderBy(field);
   }
 }
