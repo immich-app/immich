@@ -74,6 +74,7 @@ body:
       required: true
     attributes:
       label: Your docker-compose.yml content
+      description: "If you don't use a docker compose deployment, then please detail exactly what deployment method you're using instead."
       render: YAML
 
   - type: textarea

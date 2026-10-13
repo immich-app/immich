@@ -181,6 +181,7 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_RKNN`                                     | Enable RKNN hardware acceleration if supported                                                      |           `True`            | machine learning |
 | `MACHINE_LEARNING_RKNN_THREADS`                             | How many threads of RKNN runtime should be spun up while inferencing.                               |             `1`             | machine learning |
 | `MACHINE_LEARNING_MODEL_ARENA`                              | Pre-allocates CPU memory to avoid memory fragmentation                                              |            true             | machine learning |
+| `MACHINE_LEARNING_MODEL_REVISION`                           | Model revision to download; `main` selects the original exports and `v2` selects the newer exports  |           `main`            | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 

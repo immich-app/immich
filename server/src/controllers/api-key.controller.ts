@@ -62,11 +62,7 @@ export class ApiKeyController {
   @Endpoint({
     summary: 'Update an API key',
     description: 'Updates the name and permissions of an API key by its ID. The current user must own this API key.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updateApiKey' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateApiKey(
     @Auth() auth: AuthDto,

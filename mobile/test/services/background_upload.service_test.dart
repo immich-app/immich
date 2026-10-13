@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -458,6 +459,20 @@ void main() {
 
       verify(() => mockAssetService.stackEditedUpload(asset.id, 'still', 'sha')).called(1);
       verifyNoMoreInteractions(mockAssetService);
+    });
+  });
+
+  group('cancel', () {
+    test('also cancels the live photo still group', () async {
+      when(() => mockStorageRepository.clearCache()).thenAnswer((_) async {});
+      when(() => mockUploadRepository.reset(any())).thenAnswer((_) async => 0);
+      when(() => mockUploadRepository.deleteDatabaseRecords(any())).thenAnswer((_) async {});
+      when(() => mockUploadRepository.getActiveTasks(any())).thenAnswer((_) async => []);
+
+      await sut.cancel();
+
+      verify(() => mockUploadRepository.reset(kBackupLivePhotoGroup)).called(1);
+      verify(() => mockUploadRepository.deleteDatabaseRecords(kBackupLivePhotoGroup)).called(1);
     });
   });
 }
