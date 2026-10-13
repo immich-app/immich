@@ -34,58 +34,56 @@ export class DuplicateRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getAll(userId: string) {
-    return (
-      this.db
-        .with('duplicates', (qb) =>
-          qb
-            .selectFrom('asset')
-            .$call(withDefaultVisibility)
-            // Use innerJoinLateral to build a composite object per asset that includes
-            // exifInfo and tags. This "asset2" object is then aggregated via jsonAgg.
-            // Tags must be included here (not via separate joins) so they appear in the
-            // final MapAsset[] output - needed for tag synchronization during resolution.
-            .innerJoinLateral(
-              (qb) =>
-                qb
-                  .selectFrom('asset_exif')
-                  .selectAll('asset')
-                  .select((eb) =>
-                    eb.fn
-                      .toJson('asset_exif')
-                      .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>()
-                      .as('exifInfo'),
-                  )
+    return this.db
+      .with('duplicates', (qb) =>
+        qb
+          .selectFrom('asset')
+          .$call(withDefaultVisibility)
+          // Use innerJoinLateral to build a composite object per asset that includes
+          // exifInfo and tags. This "asset2" object is then aggregated via jsonAgg.
+          // Tags must be included here (not via separate joins) so they appear in the
+          // final MapAsset[] output - needed for tag synchronization during resolution.
+          .innerJoinLateral(
+            (qb) =>
+              qb
+                .selectFrom('asset_exif')
+                .selectAll('asset')
+                .select((eb) =>
+                  eb.fn
+                    .toJson('asset_exif')
+                    .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>()
+                    .as('exifInfo'),
+                )
 
-                  .select((eb) =>
-                    jsonArrayFrom(
-                      eb
-                        .selectFrom('tag')
-                        .select(columns.tag)
-                        .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
-                        .whereRef('tag_asset.assetId', '=', 'asset.id'),
-                    ).as('tags'),
-                  )
-                  .whereRef('asset_exif.assetId', '=', 'asset.id')
-                  .as('asset2'),
-              (join) => join.onTrue(),
-            )
-            .select('asset.duplicateId')
-            .select((eb) =>
-              eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
-            )
-            .where('asset.ownerId', '=', asUuid(userId))
-            .where('asset.duplicateId', 'is not', null)
-            .$narrowType<{ duplicateId: NotNull }>()
-            .where('asset.deletedAt', 'is', null)
-            .where('asset.stackId', 'is', null)
-            .groupBy('asset.duplicateId'),
-        )
-        .selectFrom('duplicates')
-        .selectAll()
-        // Filter out singleton groups (only 1 asset) directly in the query
-        .where((eb) => eb(eb.fn('json_array_length', ['assets']), '>', 1))
-        .execute()
-    );
+                .select((eb) =>
+                  jsonArrayFrom(
+                    eb
+                      .selectFrom('tag')
+                      .select(columns.tag)
+                      .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+                      .whereRef('tag_asset.assetId', '=', 'asset.id'),
+                  ).as('tags'),
+                )
+                .whereRef('asset_exif.assetId', '=', 'asset.id')
+                .as('asset2'),
+            (join) => join.onTrue(),
+          )
+          .select('asset.duplicateId')
+          .select((eb) =>
+            eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
+          )
+          .where('asset.ownerId', '=', asUuid(userId))
+          .where('asset.duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
+          .where('asset.deletedAt', 'is', null)
+          .where('asset.stackId', 'is', null)
+          .groupBy('asset.duplicateId')
+          // Filter out singleton groups (only 1 asset) directly in the query
+          .having((eb) => eb.fn.countAll(), '>', 1),
+      )
+      .selectFrom('duplicates')
+      .selectAll()
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

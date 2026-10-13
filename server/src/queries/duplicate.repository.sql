@@ -48,13 +48,13 @@ with
       and "asset"."stackId" is null
     group by
       "asset"."duplicateId"
+    having
+      count(*) > $2
   )
 select
   *
 from
   "duplicates"
-where
-  json_array_length("assets") > $2
 
 -- DuplicateRepository.cleanupSingletonGroups
 with
