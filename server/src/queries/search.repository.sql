@@ -195,8 +195,7 @@ where
   and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 order by
-  smart_search.embedding <=> $5,
-  "asset"."id" asc
+  smart_search.embedding <=> $5
 limit
   $6
 offset
@@ -1794,8 +1793,7 @@ where
   )
   and true
 order by
-  smart_search.embedding <=> $4,
-  "asset"."id" asc
+  smart_search.embedding <=> $4
 limit
   $5
 offset
@@ -1850,8 +1848,7 @@ where
     and "asset"."fileCreatedAt" >= $5
   )
 order by
-  smart_search.embedding <=> $6,
-  "asset"."id" asc
+  smart_search.embedding <=> $6
 limit
   $7
 offset
@@ -1903,8 +1900,7 @@ where
   )
   and true
 order by
-  smart_search.embedding <=> $4,
-  "asset"."id" asc
+  smart_search.embedding <=> $4
 limit
   $5
 offset

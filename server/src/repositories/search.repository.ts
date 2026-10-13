@@ -328,7 +328,6 @@ export class SearchRepository {
         .select(columns.searchAsset)
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
-        .orderBy('asset.id', 'asc')
         .limit(pagination.size + 1)
         .offset((pagination.page - 1) * pagination.size)
         .execute();
@@ -577,7 +576,6 @@ export class SearchRepository {
         .select(columns.searchAsset)
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
-        .orderBy('asset.id', 'asc')
         .limit(pagination.take + 1)
         .offset(pagination.skip ?? 0)
         .execute();
