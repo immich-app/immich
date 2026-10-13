@@ -48,6 +48,18 @@ export class TagRepository {
   @GenerateSql({ params: [{ userId: DummyValue.UUID, value: DummyValue.STRING, parentId: DummyValue.UUID }] })
   async upsertValue({ userId, value, parentId: _parentId }: { userId: string; value: string; parentId?: string }) {
     const parentId = _parentId ?? null;
+
+    // the upsert always rewrites the row (and bumps updatedAt/updateId), so skip it for the common unchanged case
+    const existing = await this.db
+      .selectFrom('tag')
+      .selectAll()
+      .where('userId', '=', userId)
+      .where('value', '=', value)
+      .executeTakeFirst();
+    if (existing && existing.parentId === parentId) {
+      return existing;
+    }
+
     return this.insertTagWithClosures((db) =>
       db
         .insertInto('tag')

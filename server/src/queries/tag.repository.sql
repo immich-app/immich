@@ -37,6 +37,13 @@ where
   "tag_closure"."id_ancestor" = $1
 
 -- TagRepository.upsertValue
+select
+  *
+from
+  "tag"
+where
+  "userId" = $1
+  and "value" = $2
 with
   "created_tag" as (
     insert into
