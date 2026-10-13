@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   ForeignKeyColumn,
   type Generated,
+  Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
@@ -15,6 +16,7 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('asset_file')
 @Unique({ columns: ['assetId', 'type', 'isEdited'] })
+@Index({ name: 'asset_file_path_idx', using: 'hash', expression: '"path"' })
 @UpdatedAtTrigger('asset_file_updatedAt')
 export class AssetFileTable {
   @PrimaryGeneratedColumn()

@@ -44,10 +44,17 @@ from
   left join "asset_file" on "asset"."id" = "asset_file"."assetId"
   and "asset_file"."type" = $1
 where
-  (
-    "originalPath" in $2
-    or "asset_file"."path" in $3
-  )
+  "asset"."originalPath" in $2
+union all
+select
+  "asset"."originalPath",
+  "asset_file"."path" as "encodedVideoPath"
+from
+  "asset_file"
+  inner join "asset" on "asset"."id" = "asset_file"."assetId"
+where
+  "asset_file"."type" = $3
+  and "asset_file"."path" in $4
 
 -- IntegrityRepository.getAssetFilePathsByPaths
 select

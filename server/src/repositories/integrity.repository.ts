@@ -76,7 +76,15 @@ export class IntegrityRepository {
         join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', AssetFileType.EncodedVideo),
       )
       .select(['asset.originalPath', 'asset_file.path as encodedVideoPath'])
-      .where((eb) => eb.or([eb('originalPath', 'in', paths), eb('asset_file.path', 'in', paths)]))
+      .where('asset.originalPath', 'in', paths)
+      .unionAll((eb) =>
+        eb
+          .selectFrom('asset_file')
+          .innerJoin('asset', 'asset.id', 'asset_file.assetId')
+          .select(['asset.originalPath', 'asset_file.path as encodedVideoPath'])
+          .where('asset_file.type', '=', AssetFileType.EncodedVideo)
+          .where('asset_file.path', 'in', paths),
+      )
       .execute();
   }
 
