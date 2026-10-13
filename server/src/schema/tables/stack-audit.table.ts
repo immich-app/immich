@@ -9,7 +9,7 @@ export class StackAuditTable {
   @Column({ type: 'uuid' })
   stackId!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', index: true })
   userId!: string;
 
   @CreateDateColumn({ default: () => 'clock_timestamp()', index: true })

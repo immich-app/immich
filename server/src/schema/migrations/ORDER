@@ -100,3 +100,4 @@
 1790693088454-AddPersonUserTableSharedBySharedWithConstraint
 1791893058715-AddAssetFaceUpdateIdIndex
 1791894205380-AddAssetOwnerIdUpdateIdIndex
+1791894341265-AddStackSyncIndexes
