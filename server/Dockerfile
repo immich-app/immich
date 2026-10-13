@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202610021601@sha256:a97a4e83561eca4bee1a636d05642f354aefb8ceeb84c969f3ac372b4cde24a8 AS builder
+FROM ghcr.io/immich-app/base-server-dev:202610061109@sha256:87f024c82f4012b0faeddc9bce1f7bf43b4ee3f583424705c26707fe09596b6e AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -86,7 +86,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
-FROM ghcr.io/immich-app/base-server-prod:202610021601@sha256:bd94134f812c8231e9e997076f1db1e006fb0df5463e343b3e93286bd517abe8
+FROM ghcr.io/immich-app/base-server-prod:202610061109@sha256:d3c2a6c18d019a3de24d3444b8d1ae8a8a95e220e576831b34d6700309ba7783
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
