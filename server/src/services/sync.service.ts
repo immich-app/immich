@@ -634,7 +634,13 @@ export class SyncService extends BaseService {
         { ...options, ack: updateCheckpoint },
         createCheckpoint,
       );
+      // one row per album membership; duplicates of an asset share its updateId, so they are adjacent
+      let previousId: string | undefined;
       for await (const { updateId, ...data } of updates) {
+        if (data.id === previousId) {
+          continue;
+        }
+        previousId = data.id;
         await send(response, { type: updateType, ids: [updateId], data: mapSyncAssetV2(data) });
       }
     }
@@ -705,7 +711,12 @@ export class SyncService extends BaseService {
         { ...options, ack: upsertCheckpoint },
         createCheckpoint,
       );
+      let previousId: string | undefined;
       for await (const { updateId, ...data } of updates) {
+        if (data.assetId === previousId) {
+          continue;
+        }
+        previousId = data.assetId;
         await send(response, { type: updateType, ids: [updateId], data });
       }
     }
