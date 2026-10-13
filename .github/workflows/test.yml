@@ -850,6 +850,18 @@ jobs:
           export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
           mise exec -- uv run python scripts/diag_fp16.py ../e2e/test-assets
 
+      - name: Grouped conv across cuDNN versions
+        if: ${{ !cancelled() && matrix.device == 'cuda' }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          libs=(.venv/lib/python*/site-packages/nvidia/*/lib)
+          export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
+          mise exec -- uv run --no-sync python scripts/diag_grouped_conv.py
+          mise exec -- uv pip install --quiet --no-deps nvidia-cudnn-cu12==9.27.0.42
+          mise exec -- uv run --no-sync python scripts/diag_grouped_conv.py
+          mise exec -- uv run --no-sync python scripts/diag_fp16.py ../e2e/test-assets
+
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
