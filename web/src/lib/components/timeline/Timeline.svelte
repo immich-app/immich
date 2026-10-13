@@ -87,6 +87,7 @@
 
   timelineManager = new TimelineManager();
   onDestroy(() => timelineManager.destroy());
+  $effect(() => void (timelineManager.withStacked = withStacked));
   $effect(() => options && void timelineManager.updateOptions(options));
 
   let scrollableElement: HTMLElement | undefined = $state();

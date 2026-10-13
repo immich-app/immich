@@ -12,7 +12,12 @@ export function updateObject(target: any, source: any): boolean {
       continue;
     }
     const isDate = target[key] instanceof Date;
-    if (typeof target[key] === 'object' && !isDate) {
+    if (source[key] === null || source[key] === undefined) {
+      if (target[key] !== source[key]) {
+        target[key] = source[key];
+        updated = true;
+      }
+    } else if (typeof target[key] === 'object' && !isDate) {
       updated ||= updateObject(target[key], source[key]);
     } else {
       if (target[key] !== source[key]) {

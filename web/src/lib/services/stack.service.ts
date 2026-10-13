@@ -128,7 +128,7 @@ const handleKeepThisDeleteOthers = async (stack: StackResponseDto, asset: AssetR
     await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
 
     toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
-    eventManager.emit('StackDelete', { id: stack.id, assets: [asset] });
+    eventManager.emit('StackDelete', { id: stack.id, assets: stack.assets });
     eventManager.emit('AssetUpdate', { ...asset, stack: null });
   } catch (error) {
     handleError(error, $t('errors.failed_to_keep_this_delete_others'));
