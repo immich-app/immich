@@ -125,36 +125,52 @@ where
   and "asset"."id" in ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
-select
-  "asset"."id",
-  "asset"."livePhotoVideoId"
-from
-  "shared_link"
-  inner join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
-  inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
-  and "asset"."deletedAt" is null
-where
-  "shared_link"."id" = $1
-  and (
-    "asset"."id" = any ($2::uuid[])
-    or "asset"."livePhotoVideoId" = any ($3::uuid[])
+with
+  "target" as (
+    select
+      array[$1]::uuid[] as "ids"
+  ),
+  "link" as (
+    select
+      "shared_link"."id",
+      "shared_link"."albumId"
+    from
+      "shared_link"
+    where
+      "shared_link"."id" = $2
   )
-union all
 select
   "asset"."id",
   "asset"."livePhotoVideoId"
 from
-  "shared_link"
-  inner join "album" on "album"."id" = "shared_link"."albumId"
-  and "album"."deletedAt" is null
-  inner join "album_asset" on "album_asset"."albumId" = "album"."id"
-  inner join "asset" on "asset"."id" = "album_asset"."assetId"
-  and "asset"."deletedAt" is null
+  "asset"
+  cross join "target"
+  inner join lateral (
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "link"."id"
+    where
+      "shared_link_asset"."assetId" = "asset"."id"
+    union all
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "album" on "album"."id" = "link"."albumId"
+      and "album"."deletedAt" is null
+      inner join "album_asset" on "album_asset"."albumId" = "album"."id"
+    where
+      "album_asset"."assetId" = "asset"."id"
+    limit
+      $3
+  ) as "membership" on true
 where
-  "shared_link"."id" = $4
+  "asset"."deletedAt" is null
   and (
-    "asset"."id" = any ($5::uuid[])
-    or "asset"."livePhotoVideoId" = any ($6::uuid[])
+    "asset"."id" = any ("target"."ids")
+    or "asset"."livePhotoVideoId" = any ("target"."ids")
   )
 
 -- AccessRepository.assetFile.checkOwnerAccess

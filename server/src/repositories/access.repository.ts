@@ -6,7 +6,7 @@ import { PersonUserRole } from 'src/dtos/person.dto.js';
 import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
 import { PersonId } from 'src/repositories/person.repository.js';
 import { DB } from 'src/schema/index.js';
-import { anyUuid, asUuid } from 'src/utils/database.js';
+import { asUuid } from 'src/utils/database.js';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
@@ -235,30 +235,44 @@ class AssetAccess {
       return new Set<string>();
     }
 
-    const ids = [...assetIds];
-
     return this.db
-      .selectFrom('shared_link')
-      .innerJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
-      .innerJoin('asset', (join) =>
-        join.onRef('asset.id', '=', 'shared_link_asset.assetId').on('asset.deletedAt', 'is', null),
+      .with('target', (qb) => qb.selectNoFrom(sql<string[]>`array[${sql.join([...assetIds])}]::uuid[]`.as('ids')))
+      .with('link', (qb) =>
+        qb
+          .selectFrom('shared_link')
+          .select(['shared_link.id', 'shared_link.albumId'])
+          .where('shared_link.id', '=', sharedLinkId),
+      )
+      .selectFrom('asset')
+      .crossJoin('target')
+      .innerJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('link')
+            .innerJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'link.id')
+            .select(sql.lit(1).as('match'))
+            .whereRef('shared_link_asset.assetId', '=', 'asset.id')
+            .unionAll(
+              eb
+                .selectFrom('link')
+                .innerJoin('album', (join) =>
+                  join.onRef('album.id', '=', 'link.albumId').on('album.deletedAt', 'is', null),
+                )
+                .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
+                .select(sql.lit(1).as('match'))
+                .whereRef('album_asset.assetId', '=', 'asset.id'),
+            )
+            .limit(1)
+            .as('membership'),
+        (join) => join.onTrue(),
       )
       .select(['asset.id', 'asset.livePhotoVideoId'])
-      .where('shared_link.id', '=', sharedLinkId)
-      .where((eb) => eb.or([eb('asset.id', '=', anyUuid(ids)), eb('asset.livePhotoVideoId', '=', anyUuid(ids))]))
-      .unionAll((eb) =>
-        eb
-          .selectFrom('shared_link')
-          .innerJoin('album', (join) =>
-            join.onRef('album.id', '=', 'shared_link.albumId').on('album.deletedAt', 'is', null),
-          )
-          .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
-          .innerJoin('asset', (join) =>
-            join.onRef('asset.id', '=', 'album_asset.assetId').on('asset.deletedAt', 'is', null),
-          )
-          .select(['asset.id', 'asset.livePhotoVideoId'])
-          .where('shared_link.id', '=', sharedLinkId)
-          .where((eb) => eb.or([eb('asset.id', '=', anyUuid(ids)), eb('asset.livePhotoVideoId', '=', anyUuid(ids))])),
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          eb('asset.id', '=', eb.fn.any('target.ids')),
+          eb('asset.livePhotoVideoId', '=', eb.fn.any('target.ids')),
+        ]),
       )
       .execute()
       .then((rows) => {
