@@ -841,6 +841,15 @@ jobs:
           fi
           mise run test-full
 
+      - name: Compare CUDA against the CPU
+        if: ${{ !cancelled() && matrix.device == 'cuda' }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          libs=(.venv/lib/python*/site-packages/nvidia/*/lib)
+          export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
+          mise exec -- uv run python scripts/diag_fp16.py ../e2e/test-assets
+
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
