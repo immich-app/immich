@@ -5,6 +5,7 @@ import ctypes
 import os
 import sys
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -35,14 +36,33 @@ assets = Path(sys.argv[1] if len(sys.argv) > 1 else "../e2e/test-assets")
 GROUP = "https://raw.githubusercontent.com/deepinsight/insightface/master/python-package/insightface/data/images/t1.jpg"
 DIVERGED = 0.25  # healthy fp16 stays well under this in every layer
 
+# what the import left pending on this thread, which the first kernel run here would report as its own failure
+cudart = ctypes.CDLL("libcudart.so.12")
+cudart.cudaGetErrorName.restype = ctypes.c_char_p
+pending = cudart.cudaGetErrorName(cudart.cudaGetLastError()).decode()
+
 cuda = ctypes.CDLL("libcuda.so.1")
 cuda.cuInit(0)
-name, major, minor = ctypes.create_string_buffer(100), ctypes.c_int(), ctypes.c_int()
+count, major, minor = ctypes.c_int(), ctypes.c_int(), ctypes.c_int()
+cuda.cuDeviceGetCount(ctypes.byref(count))
+visible = []
+for index in range(count.value):
+    bus = ctypes.create_string_buffer(32)
+    cuda.cuDeviceGetPCIBusId(bus, 32, index)
+    visible.append(bus.value.decode().lower())
+pci = Path("/sys/bus/pci/devices")
+on_bus = sorted(
+    d.name
+    for d in pci.iterdir()
+    if (d / "vendor").read_text().strip() == "0x10de" and (d / "class").read_text().startswith("0x03")
+)
+name = ctypes.create_string_buffer(100)
 cuda.cuDeviceGetName(name, 100, 0)
 cuda.cuDeviceGetAttribute(ctypes.byref(major), 75, 0)
 cuda.cuDeviceGetAttribute(ctypes.byref(minor), 76, 0)
 cudnn = ctypes.CDLL("libcudnn.so.9").cudnnGetVersion()
 print(f"{name.value.decode()} sm{major.value}{minor.value}, cudnn {cudnn}, ort {ort.__version__}")
+print(f"nvidia gpus on the pci bus {on_bus}, visible to cuda {visible}, pending after the ort import: {pending}")
 
 # every graph the pipeline runs, with the first input it was given and what CUDA made of it
 calls: dict[Path, tuple[o.GraphSpec, Feed, Outputs]] = {}
@@ -61,23 +81,6 @@ class RecordingGraph(o.OrtGraph):
 
 
 o.OrtGraph = RecordingGraph  # type: ignore[misc]
-
-beer = Image.open(assets / "albums/text/craft-beer.jpg")
-detection = TextDetectionOptions(max_resolution=736, min_score=0.5)
-boxes = TextDetector.create("PP-OCRv5_mobile", detection).predict(beer, options=detection)
-texts = TextRecognizer("PP-OCRv5_mobile").predict(
-    beer, {k: v.copy() for k, v in boxes.items()}, options=TextRecognitionOptions(min_score=0.9)
-)
-print(f"ocr PP-OCRv5_mobile on craft-beer: {len(boxes['boxes'])} boxes, {len(texts['text'])} texts {texts['text'][:5]}")
-group: bytes | None
-try:
-    group = urllib.request.urlopen(GROUP, timeout=30).read()
-except OSError:
-    group = None
-for label, data in (("portrait", (assets / "metadata/faces/portrait.jpg").read_bytes()), ("group t1", group)):
-    if data is not None:
-        faces = FaceDetector("buffalo_l").predict(data, options=FaceDetectionOptions(min_score=0.5))
-        print(f"faces buffalo_l on {label}: {[round(float(s), 3) for s in faces['scores']]}")
 
 
 def run(path: Path, spec: o.GraphSpec, feed: Feed, provider: str, **options: str) -> Outputs:
@@ -110,22 +113,44 @@ def errors(got: Outputs, ref: Outputs) -> str:
     return "; ".join(error(g, r) for g, r in zip(got, ref))
 
 
-for path, (spec, feed, cuda_out) in calls.items():
-    print(f"\n== {path.relative_to(spec.model_path.parents[3])}  input {[list(v.shape) for v in feed.values()]}")
-    ref = run(path, spec, feed, "CPUExecutionProvider")
-    print(f"  cuda (immich)    : {errors(cuda_out, ref)}")
-    variants: dict[str, tuple[Path, dict[str, str]]] = {
-        f"cuda {search}": (path, {"cudnn_conv_algo_search": search}) for search in ("HEURISTIC", "DEFAULT")
-    }
-    variants["cuda fp32 source"] = (spec.model_path, {})
-    for label, (graph, cuda_options) in variants.items():
-        try:
-            reference = ref if graph == path else run(graph, spec, feed, "CPUExecutionProvider")
-            got = run(graph, spec, feed, "CUDAExecutionProvider", **cuda_options)
-            print(f"  {label:17s}: {errors(got, reference)}")
-        except Exception as e:  # one variant failing should not cost the rest of the round
-            print(f"  {label:17s}: {type(e).__name__}: {str(e)[:200]}")
+def diagnose() -> None:
+    beer = Image.open(assets / "albums/text/craft-beer.jpg")
+    detection = TextDetectionOptions(max_resolution=736, min_score=0.5)
+    boxes = TextDetector.create("PP-OCRv5_mobile", detection).predict(beer, options=detection)
+    texts = TextRecognizer("PP-OCRv5_mobile").predict(
+        beer, {k: v.copy() for k, v in boxes.items()}, options=TextRecognitionOptions(min_score=0.9)
+    )
+    print(f"ocr PP-OCRv5_mobile on craft-beer: {len(boxes['boxes'])} boxes, {len(texts['text'])} texts")
+    print(f"  first texts {texts['text'][:5]}")
+    group: bytes | None
+    try:
+        group = urllib.request.urlopen(GROUP, timeout=30).read()
+    except OSError:
+        group = None
+    for label, data in (("portrait", (assets / "metadata/faces/portrait.jpg").read_bytes()), ("group t1", group)):
+        if data is not None:
+            faces = FaceDetector("buffalo_l").predict(data, options=FaceDetectionOptions(min_score=0.5))
+            print(f"faces buffalo_l on {label}: {[round(float(s), 3) for s in faces['scores']]}")
 
+    for path, (spec, feed, cuda_out) in calls.items():
+        print(f"\n== {path.relative_to(spec.model_path.parents[3])}  input {[list(v.shape) for v in feed.values()]}")
+        ref = run(path, spec, feed, "CPUExecutionProvider")
+        print(f"  cuda (immich)    : {errors(cuda_out, ref)}")
+        variants: dict[str, tuple[Path, dict[str, str]]] = {
+            f"cuda {search}": (path, {"cudnn_conv_algo_search": search}) for search in ("HEURISTIC", "DEFAULT")
+        }
+        variants["cuda fp32 source"] = (spec.model_path, {})
+        for label, (graph, cuda_options) in variants.items():
+            try:
+                reference = ref if graph == path else run(graph, spec, feed, "CPUExecutionProvider")
+                got = run(graph, spec, feed, "CUDAExecutionProvider", **cuda_options)
+                print(f"  {label:17s}: {errors(got, reference)}")
+            except Exception as e:  # one variant failing should not cost the rest of the round
+                print(f"  {label:17s}: {type(e).__name__}: {str(e)[:200]}")
+        layers(path, spec, feed)
+
+
+def layers(path: Path, spec: o.GraphSpec, feed: Feed) -> None:
     m = onnx.load(str(path), load_external_data=False)
     types = {vi.name: vi.type.tensor_type.elem_type for vi in onnx.shape_inference.infer_shapes(m).graph.value_info}
     have = {out.name for out in m.graph.output}
@@ -157,6 +182,11 @@ for path, (spec, feed, cuda_out) in calls.items():
             )
             shown += 1
             if shown == 3:
-                break
+                return
     if not shown:
         print(f"  no layer diverges by more than {DIVERGED:.0%}; the most is {worst[0]:.3g} at {worst[1]}")
+
+
+# the server runs no kernel on the thread that imported ORT either
+with ThreadPoolExecutor(1) as pool:
+    pool.submit(diagnose).result()
