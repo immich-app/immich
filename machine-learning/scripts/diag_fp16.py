@@ -20,10 +20,12 @@ import immich_ml.sessions.ort as o
 
 o._providers_default = lambda: ["CUDAExecutionProvider", "CPUExecutionProvider"]
 from immich_ml.models.facial_recognition.detection import FaceDetector  # noqa: E402
+from immich_ml.models.facial_recognition.recognition import FaceRecognizer  # noqa: E402
 from immich_ml.models.ocr.detection import TextDetector  # noqa: E402
 from immich_ml.models.ocr.recognition import TextRecognizer  # noqa: E402
 from immich_ml.schemas import (  # noqa: E402
     FaceDetectionOptions,
+    FaceRecognitionOptions,
     ModelInput,
     TextDetectionOptions,
     TextRecognitionOptions,
@@ -127,10 +129,14 @@ def diagnose() -> None:
         group = urllib.request.urlopen(GROUP, timeout=30).read()
     except OSError:
         group = None
-    for label, data in (("portrait", (assets / "metadata/faces/portrait.jpg").read_bytes()), ("group t1", group)):
-        if data is not None:
-            faces = FaceDetector("buffalo_l").predict(data, options=FaceDetectionOptions(min_score=0.5))
-            print(f"faces buffalo_l on {label}: {[round(float(s), 3) for s in faces['scores']]}")
+    for pack in ("buffalo_l", "antelopev2"):
+        detector, recognizer = FaceDetector(pack), FaceRecognizer(pack)
+        for label, data in (("portrait", (assets / "metadata/faces/portrait.jpg").read_bytes()), ("group t1", group)):
+            if data is not None:
+                faces = detector.predict(data, options=FaceDetectionOptions(min_score=0.5))
+                embedded = recognizer.predict(data, faces, options=FaceRecognitionOptions())
+                scores = [round(float(s), 3) for s in faces["scores"]]
+                print(f"faces {pack} on {label}: {scores}, {len(embedded)} embedded")
 
     for path, (spec, feed, cuda_out) in calls.items():
         print(f"\n== {path.relative_to(spec.model_path.parents[3])}  input {[list(v.shape) for v in feed.values()]}")
