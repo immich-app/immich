@@ -36,7 +36,9 @@ with tempfile.TemporaryDirectory() as work:
             inits,
         )
         path = Path(work) / "conv.onnx"
-        onnx.save(onnx.helper.make_model(graph, opset_imports=[onnx.helper.make_opsetid("", 20)]), str(path))
+        # the exports' IR version: onnx otherwise writes its newest, which this onnxruntime may not read
+        model = onnx.helper.make_model(graph, opset_imports=[onnx.helper.make_opsetid("", 20)], ir_version=10)
+        onnx.save(model, str(path))
 
         xg = x.astype(np.float32).reshape(groups, cin // groups, height * width)
         wg = w.astype(np.float32).reshape(groups, cout // groups, cin // groups)
