@@ -867,7 +867,19 @@ export class AssetRepository {
 
             return withBoundingBox(withBoundingCircle, bbox);
           })
-          .where(truncatedDate(options.orderBy), '=', timeBucket.replace(/^[+-]/, ''))
+          .$call((qb) => {
+            const bucket = timeBucket.replace(/^[+-]/, '');
+            // there is no index on the truncated createdAt expression, so use the equivalent range instead
+            return options.orderBy === AssetOrderBy.CreatedAt
+              ? qb
+                  .where('asset.createdAt', '>=', sql<Date>`${bucket}::timestamp AT TIME ZONE 'UTC'`)
+                  .where(
+                    'asset.createdAt',
+                    '<',
+                    sql<Date>`(${bucket}::timestamp + interval '1 month') AT TIME ZONE 'UTC'`,
+                  )
+              : qb.where(truncatedDate(options.orderBy), '=', bucket);
+          })
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
               eb.exists(
