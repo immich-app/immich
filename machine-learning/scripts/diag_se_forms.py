@@ -1,4 +1,4 @@
-"""The PP-OCRv5 detector's merged SE gates written other ways: each form against the CPU and timed, per provider."""
+"""An OCR detector's merged SE gates written other ways: each form against the CPU and timed, per provider."""
 
 import argparse
 import os
@@ -33,9 +33,22 @@ def block_diagonal(w: NDArray[Any], groups: int) -> NDArray[Any]:
     return dense
 
 
+def pool_spatial_means(graph: onnx.GraphProto) -> None:
+    """ReduceMean over H and W -> GlobalAveragePool, as fix/cuda-reduce-mean does on CUDA: PP-OCRv6's fp16 overflow
+    there would otherwise hide what this measures."""
+    inits = {i.name: i for i in graph.initializer}
+    for node in graph.node:
+        keepdims = next((a.i for a in node.attribute if a.name == "keepdims"), 1)
+        if node.op_type != "ReduceMean" or len(node.input) < 2 or node.input[1] not in inits or keepdims != 1:
+            continue
+        if sorted(int(axis) % 4 for axis in numpy_helper.to_array(inits[node.input[1]])) == [2, 3]:
+            node.CopyFrom(helper.make_node("GlobalAveragePool", [node.input[0]], list(node.output), name=node.name))
+
+
 def build(src: Path, dst: Path, form: str) -> int:
     model = onnx.load(str(src))
     graph = model.graph
+    pool_spatial_means(graph)
     if form != "grouped":
         rewrite(graph, form)
     dst.mkdir(parents=True, exist_ok=True)
@@ -130,15 +143,17 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("image")
     p.add_argument("--work", required=True)
+    p.add_argument("--model", default="PP-OCRv5_mobile")
     p.add_argument("--providers", default="cuda,cpu")
     p.add_argument("--canvas", default="736x1120")
     p.add_argument("--seconds", type=float, default=0.5)
     p.add_argument("--rounds", type=int, default=6)
     args = p.parse_args()
     height, width = (int(v) for v in args.canvas.split("x"))
-    det = TextDetector("PP-OCRv5_mobile")
+    det = TextDetector(args.model)
     det.download()
-    work = Path(args.work)
+    work = Path(args.work) / args.model
+    print(f"== {args.model} at {height}x{width}")
     for form in FORMS:
         print(f"{form}: {build(det.model_dir / 'model.onnx', work / form / 'detection', form)} grouped convs left")
     feed = np.asarray(Image.open(args.image).convert("RGB").resize((width, height), Image.Resampling.LANCZOS))[None]

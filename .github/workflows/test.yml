@@ -857,8 +857,10 @@ jobs:
         run: |
           libs=(.venv/lib/python*/site-packages/nvidia/*/lib)
           export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
-          mise exec -- uv run python scripts/diag_se_forms.py ../e2e/test-assets/albums/text/craft-beer.jpg \
-            --work "$RUNNER_TEMP/se_forms" --providers cuda,rtx --rounds 8
+          for model in PP-OCRv5_mobile PP-OCRv6_small PP-OCRv6_tiny; do
+            mise exec -- uv run python scripts/diag_se_forms.py ../e2e/test-assets/albums/text/craft-beer.jpg \
+              --work "$RUNNER_TEMP/se_forms" --model "$model" --providers cuda,rtx --rounds 8
+          done
 
   github-files-formatting:
     name: .github Files Formatting
