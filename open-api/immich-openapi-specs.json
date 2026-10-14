@@ -27790,6 +27790,16 @@
         ],
         "type": "object"
       },
+      "ServerFeatureLevel": {
+        "description": "Server feature level",
+        "enum": [
+          1
+        ],
+        "type": "integer",
+        "x-enum-varnames": [
+          "FeatureLevel"
+        ]
+      },
       "ServerFeaturesDto": {
         "properties": {
           "configFile": {
@@ -28048,6 +28058,18 @@
       },
       "ServerVersionResponseDto": {
         "properties": {
+          "featureLevel": {
+            "description": "Highest feature level supported by the server, which increments independently of the release version",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              }
+            ]
+          },
           "major": {
             "description": "Major version number",
             "maximum": 9007199254740991,
@@ -28081,6 +28103,7 @@
           }
         },
         "required": [
+          "featureLevel",
           "major",
           "minor",
           "patch",
