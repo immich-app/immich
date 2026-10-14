@@ -97,7 +97,12 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const options = getAuthenticatedOptions(this.reflector, context.getHandler());
+    const request = context.switchToHttp().getRequest<AuthRequest>();
+
+    const options = request.path.startsWith('/api/yucca')
+      ? { sharedLink: false, admin: true, public: false, setup: false, permission: undefined }
+      : getAuthenticatedOptions(this.reflector, context.getHandler());
+
     if (!options) {
       throw new Error(`Route ${context.getHandler().name} does not declare @Authenticated()`);
     }
@@ -111,7 +116,6 @@ export class AuthGuard implements CanActivate {
     }
 
     const { admin: adminRoute, sharedLink: sharedLinkRoute, permission } = options;
-    const request = context.switchToHttp().getRequest<AuthRequest>();
 
     request.user = await this.authService.authenticate({
       headers: request.headers,
