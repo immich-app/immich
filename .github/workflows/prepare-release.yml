@@ -78,10 +78,6 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      # TODO move to mise
-      - name: Install uv
-        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-
       - name: Bump version
         env:
           RELEASE_TYPE: ${{ inputs.releaseType }}
