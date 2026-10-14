@@ -30,7 +30,7 @@
 
   let {
     timelineManager,
-    // eslint-disable-next-line no-useless-assignment
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
     invisible = $bindable(false),
     removeAction,
     withStacked = false,
