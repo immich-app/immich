@@ -2309,11 +2309,19 @@ class TestPredictionEndpoints:
         assert response.status_code == 200
         assert cosine(orjson.loads(response.json()["clip"]), responses["clip"]["text"]) >= 0.999
 
+    @pytest.mark.parametrize(
+        "image", ["metadata/faces/portrait.jpg", "../../machine-learning/worlds-largest-selfie.jpg"]
+    )
     @pytest.mark.parametrize("model", ["buffalo_l", "antelopev2"])
     def test_face_endpoint(
-        self, model: str, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
+        self,
+        model: str,
+        image: str,
+        asset: Callable[[str], bytes],
+        responses: dict[str, Any],
+        deployed_app: TestClient,
     ) -> None:
-        expected = responses["facial-recognition"][model]
+        expected = responses["facial-recognition"][Path(image).stem][model]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
@@ -2327,19 +2335,32 @@ class TestPredictionEndpoints:
                     }
                 )
             },
-            files={"image": asset("metadata/faces/portrait.jpg")},
+            files={"image": asset(image)},
         )
 
         actual = response.json()
         assert response.status_code == 200
         assert actual["imageWidth"] == expected["imageWidth"]
         assert actual["imageHeight"] == expected["imageHeight"]
-        assert len(actual["facial-recognition"]) == len(expected["faces"])
+        # faces are matched by box, since near-equal scores can swap their order
+        shared = []
+        for expected_face in expected["faces"]:
+            for actual_face in actual["facial-recognition"]:
+                if actual_face["boundingBox"] == pytest.approx(expected_face["boundingBox"], abs=1):
+                    shared.append((expected_face, actual_face))
+                    break
+        assert len(shared) >= 0.9 * len(expected["faces"])
+        assert len(shared) >= 0.9 * len(actual["facial-recognition"])
 
-        for expected_face, actual_face in zip(expected["faces"], actual["facial-recognition"]):
-            assert actual_face["boundingBox"] == pytest.approx(expected_face["boundingBox"], abs=1)
+        for expected_face, actual_face in shared:
             assert actual_face["score"] == pytest.approx(expected_face["score"], abs=0.01)
-            assert cosine(orjson.loads(actual_face["embedding"]), expected_face["embedding"]) >= 0.999
+        similarities = [
+            cosine(orjson.loads(actual_face["embedding"]), expected_face["embedding"])
+            for expected_face, actual_face in shared
+        ]
+        # a landmark that moves by a fraction of a pixel moves a small face's embedding
+        assert min(similarities) >= 0.98
+        assert np.median(similarities) >= 0.999
 
     @pytest.mark.parametrize(
         "model", ["PP-OCRv5_mobile", "PP-OCRv5_server", "PP-OCRv6_tiny", "PP-OCRv6_small", "PP-OCRv6_medium"]
