@@ -39,6 +39,7 @@ macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 [settings]
 pin = true
 lockfile = true
+java.shorthand_vendor = "openjdk"
 
 [tasks.release]
 run = [
