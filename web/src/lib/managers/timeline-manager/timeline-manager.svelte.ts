@@ -93,7 +93,6 @@ export class TimelineManager extends VirtualScrollManager {
   static #INIT_OPTIONS = {};
   #websocketSupport: WebsocketSupport | undefined;
   #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
-  withStacked = false;
   #updatingViewportProximities = false;
   #scrollableElement: HTMLElement | undefined = $state();
   #unsubscribes: Array<() => void> = [];
@@ -130,18 +129,22 @@ export class TimelineManager extends VirtualScrollManager {
           }
         },
         StackCreate: (stack) => {
-          if (this.withStacked) {
+          if (this.#options.withStacked) {
             updateStackedAssetInTimeline(this, stack);
           }
         },
         StackDelete: ({ assets }) => {
-          if (!this.withStacked) {
+          if (!this.#options.withStacked) {
             return;
           }
-          this.upsertAssets(assets.map((asset) => toTimelineAsset({ ...asset, stack: undefined })));
+          this.update(
+            assets.map((asset) => asset.id),
+            (asset) => (asset.stack = null),
+          );
+          this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
         },
         StackUpdate: (stack) => {
-          if (!this.withStacked) {
+          if (!this.#options.withStacked) {
             return;
           }
           // unstack and re-stack
