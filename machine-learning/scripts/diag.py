@@ -125,6 +125,8 @@ def diagnose() -> None:
             if spec.provider == "CUDAExecutionProvider"
             else {"precision ACCURACY": (path, {"precision": "ACCURACY"})}
         )
+        if spec.provider == "CUDAExecutionProvider":  # deselects cuDNN's tensor-core engines, for half precision too
+            variants["use_tf32 0"] = (path, {"use_tf32": "0"})
         variants["fp32 source"] = (spec.model_path, {"precision": "FP32"} if "OpenVINO" in spec.provider else {})
         for label, (graph, options) in variants.items():
             try:
