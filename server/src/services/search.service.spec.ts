@@ -244,10 +244,29 @@ describe(SearchService.name, () => {
       mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
       await sut.searchSmart(auth, { size: 100, filter: {}, query: 'test' });
       expect(mocks.search.searchSmartV3).toHaveBeenCalledWith(
-        { take: 100 },
+        { take: 100, skip: 0 },
         expect.objectContaining({ embedding: '[1, 2, 3]' }),
         expect.objectContaining({ lockedOwnerId: expect.any(String) }),
       );
+    });
+
+    it('should paginate smart search with a cursor', async () => {
+      const auth = AuthFactory.create();
+      mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
+
+      mocks.search.searchSmartV3.mockResolvedValue({ hasNextPage: true, items: [] });
+      const firstPage = await sut.searchSmart(auth, { size: 1, filter: {}, query: 'test' });
+      expect(firstPage.assets.nextPage).toBeNull();
+      expect(firstPage.assets.nextCursor).toEqual(expect.any(String));
+
+      mocks.search.searchSmartV3.mockResolvedValue({ hasNextPage: false, items: [] });
+      const secondPage = await sut.searchSmart(auth, { size: 1, query: 'test', cursor: firstPage.assets.nextCursor! });
+      expect(mocks.search.searchSmartV3).toHaveBeenLastCalledWith(
+        { take: 1, skip: 1 },
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(secondPage.assets.nextCursor).toBeNull();
     });
 
     it('should reject an invalid cursor', async () => {

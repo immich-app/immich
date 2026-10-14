@@ -2606,6 +2606,8 @@ export type SmartSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Cursor for the next page of results */
+    cursor?: string;
     filter?: SearchFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
