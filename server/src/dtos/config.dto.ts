@@ -58,6 +58,27 @@ const cronExpressionSchema = z
   })
   .describe('Cron expression');
 
+const httpsDomain = (label: string) =>
+  z.string().transform((value, ctx) => {
+    const candidate = value.includes('://') ? value : `https://${value}`;
+    const url = URL.parse(candidate);
+    if (!url || url.protocol !== 'https:') {
+      ctx.issues.push({ code: 'custom', message: `${label} must be a valid https URL`, input: value });
+      return z.NEVER;
+    }
+
+    if (url.href !== `${url.origin}/`) {
+      ctx.issues.push({
+        code: 'custom',
+        message: `${label} must not include a path, query, or fragment`,
+        input: value,
+      });
+      return z.NEVER;
+    }
+
+    return candidate;
+  });
+
 const emptyOrUrl = (error: string) =>
   z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
 
@@ -322,6 +343,39 @@ const AdminConfigSchemaWithVisibility = z
         return value;
       })
       .meta({ id: 'AdminConfigOAuthDto' }),
+    passkey: z
+      .object({
+        enabled: configBool.describe('Enabled').meta({ visibility: Public }),
+        domain: httpsDomain('Passkey domain').nullable().describe('Passkey domain'),
+        additionalDomains: z
+          .array(httpsDomain('Additional domain'))
+          .superRefine((domains, ctx) => {
+            const seen = new Set<string>();
+            for (const [index, value] of domains.entries()) {
+              const origin = new URL(value).origin;
+              if (seen.has(origin)) {
+                ctx.addIssue({ code: 'custom', message: `Duplicate domain ${origin}`, path: [index], input: value });
+              }
+
+              seen.add(origin);
+            }
+          })
+          .describe('Additional domains'),
+      })
+      .transform((value, ctx) => {
+        const origin = value.domain && new URL(value.domain).origin;
+        if (origin && value.additionalDomains.some((domain) => new URL(domain).origin === origin)) {
+          ctx.issues.push({
+            code: 'custom',
+            message: 'The passkey domain is always allowed and must not be listed as an additional domain',
+            input: value.additionalDomains,
+          });
+          return z.NEVER;
+        }
+
+        return value;
+      })
+      .meta({ id: 'AdminConfigPasskeyDto' }),
     passwordLogin: z
       .object({ enabled: configBool.describe('Enabled').meta({ visibility: Public }) })
       .meta({ id: 'AdminConfigPasswordLoginDto' }),
@@ -471,7 +525,12 @@ const applyVisibilityRecursive = (
 
   let visible: z.ZodType | undefined;
   if (Object.keys(shape).length > 0) {
-    visible = z.object(shape).meta({
+    const isComplete = Object.keys(shape).length === Object.keys(object.shape).length;
+    const rebuilt =
+      schema instanceof z.ZodPipe && isComplete
+        ? z.object(shape).pipe(schema.def.out as z.ZodTransform<unknown, Record<string, unknown>>)
+        : z.object(shape);
+    visible = rebuilt.meta({
       ...(id && { id: `${visibility}${id.slice(Admin.length)}` }),
       ...((override ?? description) && { description: override ?? description }),
     });
@@ -683,6 +742,11 @@ export const defaults = Object.freeze<SystemConfig>({
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
     allowInsecureRequests: false,
+  },
+  passkey: {
+    enabled: true,
+    domain: null,
+    additionalDomains: [],
   },
   passwordLogin: {
     enabled: true,

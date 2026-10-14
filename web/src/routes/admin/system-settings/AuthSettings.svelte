@@ -10,8 +10,8 @@
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
-  import { Button, Link, modalManager, Text, toastManager } from '@immich/ui';
-  import { mdiRestart } from '@mdi/js';
+  import { Button, IconButton, Link, modalManager, Text, toastManager } from '@immich/ui';
+  import { mdiPlus, mdiRestart, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import SettingSelect from './SettingSelect.svelte';
@@ -29,7 +29,8 @@
   };
 
   const onBeforeSave = async () => {
-    const allMethodsDisabled = !configToEdit.oauth.enabled && !configToEdit.passwordLogin.enabled;
+    const allMethodsDisabled =
+      !configToEdit.oauth.enabled && !configToEdit.passkey.enabled && !configToEdit.passwordLogin.enabled;
 
     if (allMethodsDisabled) {
       const confirmed = await modalManager.show(AuthDisableLoginConfirmModal);
@@ -300,6 +301,67 @@
         </SettingAccordion>
 
         <SettingAccordion
+          key="passkey"
+          title={$t('admin.passkey_settings')}
+          subtitle={$t('admin.passkey_settings_description')}
+        >
+          <div class="ms-4 mt-4 flex flex-col gap-4">
+            <SettingSwitch
+              title={$t('admin.passkey_enable_description')}
+              {disabled}
+              bind:checked={configToEdit.passkey.enabled}
+            />
+
+            <hr />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={$t('admin.passkey_domain')}
+              description={$t('admin.passkey_domain_description')}
+              placeholder="https://"
+              bind:value={
+                () => configToEdit.passkey.domain ?? '', (value) => (configToEdit.passkey.domain = value || null)
+              }
+              required={false}
+              disabled={disabled || !configToEdit.passkey.enabled}
+              isEdited={configToEdit.passkey.domain !== config.passkey.domain}
+            />
+
+            <div class="flex flex-col gap-2">
+              {#each configToEdit.passkey.additionalDomains as _, i (i)}
+                <SettingInputField
+                  inputType={SettingInputFieldType.TEXT}
+                  label={i === 0 ? $t('admin.passkey_additional_domains') : undefined}
+                  description={i === 0 ? $t('admin.passkey_additional_domains_description') : undefined}
+                  bind:value={configToEdit.passkey.additionalDomains[i]}
+                  disabled={disabled || !configToEdit.passkey.enabled}
+                >
+                  {#snippet trailingSnippet()}
+                    <IconButton
+                      aria-label=""
+                      onclick={() => configToEdit.passkey.additionalDomains.splice(i, 1)}
+                      icon={mdiTrashCanOutline}
+                      color="danger"
+                    />
+                  {/snippet}
+                </SettingInputField>
+              {/each}
+            </div>
+
+            <div class="flex justify-end">
+              <Button
+                class="mb-2"
+                size="small"
+                shape="round"
+                leadingIcon={mdiPlus}
+                onclick={() => void configToEdit.passkey.additionalDomains.push('')}
+                disabled={disabled || !configToEdit.passkey.enabled}>{$t('add_url')}</Button
+              >
+            </div>
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion
           key="password"
           title={$t('admin.password_settings')}
           subtitle={$t('admin.password_settings_description')}
@@ -315,7 +377,7 @@
           </div>
         </SettingAccordion>
 
-        <SettingButtonsRow bind:configToEdit keys={['passwordLogin', 'oauth']} {onBeforeSave} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['passkey', 'passwordLogin', 'oauth']} {onBeforeSave} {disabled} />
       </div>
     </form>
   </div>

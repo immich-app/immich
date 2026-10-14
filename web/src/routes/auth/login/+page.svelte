@@ -4,10 +4,12 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { Route } from '$lib/route';
+  import { handleLoginWithPasskey, isPasskeyCancelled, isPasskeySupported } from '$lib/services/passkey.service';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
+  import { mdiShieldKeyOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -22,11 +24,15 @@
   let email = $state('');
   let password = $state('');
   let oauthError = $state('');
+  let passkeyError = $state('');
   let loading = $state(false);
   let oauthLoading = $state(true);
+  let passkeyLoading = $state(false);
+  const passkeySupported = isPasskeySupported();
 
   const serverConfig = $derived(serverConfigManager.value);
   const publicConfig = $derived(data.publicConfig);
+  const passkeyEnabled = $derived(publicConfig.passkey.enabled && passkeySupported);
 
   const onSuccess = async (user: LoginResponseDto) => {
     await goto(data.continueUrl, { invalidateAll: true });
@@ -35,6 +41,28 @@
 
   const onFirstLogin = () => goto(Route.changePassword());
   const onOnboarding = () => goto(Route.onboarding());
+
+  const onLogin = async (user: LoginResponseDto) => {
+    if (user.isAdmin && !serverConfig.isOnboarded) {
+      await onOnboarding();
+      return;
+    }
+
+    // change the user password before we onboard them
+    if (!user.isAdmin && user.shouldChangePassword && publicConfig.passwordLogin.enabled) {
+      await onFirstLogin();
+      return;
+    }
+
+    // We want to onboard after the first login since their password will change
+    // and handleLogin will be called again (relogin). We then do onboarding on that next call.
+    if (!user.isOnboarded) {
+      await onOnboarding();
+      return;
+    }
+
+    await onSuccess(user);
+  };
 
   onMount(async () => {
     if (!publicConfig.oauth.enabled) {
@@ -82,31 +110,24 @@
       errorMessage = '';
       loading = true;
       const user = await login({ loginCredentialDto: { email, password } });
-
-      if (user.isAdmin && !serverConfig.isOnboarded) {
-        await onOnboarding();
-        return;
-      }
-
-      // change the user password before we onboard them
-      if (!user.isAdmin && user.shouldChangePassword) {
-        await onFirstLogin();
-        return;
-      }
-
-      // We want to onboard after the first login since their password will change
-      // and handleLogin will be called again (relogin). We then do onboarding on that next call.
-      if (!user.isOnboarded) {
-        await onOnboarding();
-        return;
-      }
-
-      await onSuccess(user);
-      return;
+      await onLogin(user);
     } catch (error) {
       errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
       loading = false;
-      return;
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    try {
+      passkeyError = '';
+      passkeyLoading = true;
+      const user = await handleLoginWithPasskey();
+      await onLogin(user);
+    } catch (error) {
+      if (!isPasskeyCancelled(error)) {
+        passkeyError = getServerErrorMessage(error) || $t('errors.something_went_wrong');
+      }
+      passkeyLoading = false;
     }
   };
 
@@ -125,6 +146,17 @@
     await handleLogin();
   };
 </script>
+
+{#snippet divider()}
+  <div class="my-4 inline-flex w-full items-center justify-center">
+    <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
+    <span
+      class="absolute inset-s-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 uppercase dark:bg-neutral-900 dark:text-white"
+    >
+      {$t('or')}
+    </span>
+  </div>
+{/snippet}
 
 <AuthPageLayout title={data.meta.title}>
   <Stack gap={4}>
@@ -153,16 +185,30 @@
       </form>
     {/if}
 
-    {#if publicConfig.oauth.enabled}
+    {#if !oauthLoading && passkeyEnabled}
       {#if publicConfig.passwordLogin.enabled}
-        <div class="my-4 inline-flex w-full items-center justify-center">
-          <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
-          <span
-            class="absolute inset-s-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 uppercase dark:bg-neutral-900 dark:text-white"
-          >
-            {$t('or')}
-          </span>
-        </div>
+        {@render divider()}
+      {/if}
+      {#if passkeyError}
+        <Alert color="danger" title={passkeyError} closable />
+      {/if}
+      <Button
+        shape="round"
+        leadingIcon={mdiShieldKeyOutline}
+        loading={passkeyLoading}
+        disabled={loading || passkeyLoading}
+        size="large"
+        fullWidth
+        color={publicConfig.passwordLogin.enabled ? 'secondary' : 'primary'}
+        onclick={handlePasskeyLogin}
+      >
+        {$t('login_with_passkey')}
+      </Button>
+    {/if}
+
+    {#if publicConfig.oauth.enabled}
+      {#if publicConfig.passwordLogin.enabled || passkeyEnabled}
+        {@render divider()}
       {/if}
       {#if oauthError}
         <Alert color="danger" title={oauthError} closable />
@@ -180,7 +226,7 @@
       </Button>
     {/if}
 
-    {#if !publicConfig.passwordLogin.enabled && !publicConfig.oauth.enabled}
+    {#if !publicConfig.passwordLogin.enabled && !passkeyEnabled && !publicConfig.oauth.enabled}
       <Alert color="warning" title={$t('login_has_been_disabled')} />
     {/if}
   </Stack>
