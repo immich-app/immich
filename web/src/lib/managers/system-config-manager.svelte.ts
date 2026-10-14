@@ -1,56 +1,28 @@
-import { getConfig, getConfigDefaults, type AdminConfigDto } from '@immich/sdk';
-import { cloneDeep } from 'lodash-es';
-import { eventManager } from '$lib/managers/event-manager.svelte';
+import { ManagerQueryState } from '$lib/queries/manager-query-state.svelte';
+import { systemConfigQueries } from '$lib/queries/system-config.query';
 
 class SystemConfigManager {
-  #value?: AdminConfigDto = $state();
-  #defaultValue?: AdminConfigDto = $state();
-
-  constructor() {
-    eventManager.on({
-      SystemConfigUpdate: (config) => (this.#value = config),
-    });
-  }
+  #config = new ManagerQueryState(systemConfigQueries.config);
+  #defaults = new ManagerQueryState(systemConfigQueries.defaults);
 
   async init() {
-    await this.#loadConfig();
-    await this.#loadDefault();
+    await Promise.all([this.#config.load(), this.#defaults.load()]);
   }
 
   get value() {
-    if (!this.#value) {
-      throw new Error('Server config manager must be initialized first');
-    }
-
-    return this.#value;
-  }
-
-  set value(config: AdminConfigDto) {
-    this.#value = config;
+    return this.#config.data;
   }
 
   get defaultValue() {
-    if (!this.#defaultValue) {
-      throw new Error('Server config manager must be initialized first');
-    }
-
-    return this.#defaultValue;
+    return this.#defaults.data;
   }
 
   cloneValue() {
-    return cloneDeep(this.value);
+    return this.#config.clone();
   }
 
   cloneDefaultValue() {
-    return cloneDeep(this.defaultValue);
-  }
-
-  async #loadConfig() {
-    this.#value = await getConfig();
-  }
-
-  async #loadDefault() {
-    this.#defaultValue = await getConfigDefaults();
+    return this.#defaults.clone();
   }
 }
 
