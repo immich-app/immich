@@ -50,10 +50,17 @@ checksum = "sha256:0cab9675ea5435817772176bf744b96358ec0f44f713853910f22538aec2e
 url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.39.1/dcm-linux-arm-release.zip"
 url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/522437777"
 
-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-arm64-musl"]
-checksum = "sha256:0cab9675ea5435817772176bf744b96358ec0f44f713853910f22538aec2e2c4"
-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.39.1/dcm-linux-arm-release.zip"
-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/522437777"
+[[tools."github:CQLabs/homebrew-dcm"]]
+version = "1.39.1"
+backend = "github:CQLabs/homebrew-dcm"
+
+[tools."github:CQLabs/homebrew-dcm".options]
+asset_pattern = "dcm-macos-x64-release.zip"
+
+[tools."github:CQLabs/homebrew-dcm"."platforms.macos-x64"]
+checksum = "sha256:3153dd96c60f0f25662ba52acd88537c53ccee7c9f179911885aa79c21bb72c2"
+url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.39.1/dcm-macos-x64-release.zip"
+url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/522437558"
 
 [[tools."github:CQLabs/homebrew-dcm"]]
 version = "1.39.1"
@@ -79,29 +86,12 @@ checksum = "sha256:a7a3033f16e03694db866d627865d0baf4befb04993f2c1111757f9613f02
 url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.39.1/dcm-linux-x64-release.zip"
 url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/522437735"
 
-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-x64-musl"]
-checksum = "sha256:a7a3033f16e03694db866d627865d0baf4befb04993f2c1111757f9613f02c62"
-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.39.1/dcm-linux-x64-release.zip"
-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/522437735"
-
-[[tools."github:CQLabs/homebrew-dcm"]]
-version = "1.39.1"
-backend = "github:CQLabs/homebrew-dcm"
-
-[tools."github:CQLabs/homebrew-dcm".options]
-asset_pattern = "dcm-macos-x64-release.zip"
-
-[tools."github:CQLabs/homebrew-dcm"."platforms.macos-x64"]
-checksum = "sha256:3153dd96c60f0f25662ba52acd88537c53ccee7c9f179911885aa79c21bb72c2"
-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.39.1/dcm-macos-x64-release.zip"
-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/522437558"
-
 [[tools.java]]
 version = "21.0.2"
 backend = "core:java"
 
 [tools.java.options]
-shorthand_vendor = "openjdk"
+shorthand_vendor = "temurin"
 
 [tools.java."platforms.linux-arm64"]
 checksum = "sha256:08db1392a48d4eb5ea5315cf8f18b89dbaf36cda663ba882cf03c704c9257ec2"
