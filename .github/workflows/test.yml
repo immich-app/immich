@@ -841,6 +841,18 @@ jobs:
           fi
           mise run test-full
 
+      - name: Compare against the CPU
+        if: ${{ !cancelled() && matrix.provider != 'nv_tensorrt_rtx' }}
+        env:
+          DEVICE: ${{ matrix.device }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ "$DEVICE" = cuda ]; then
+            libs=(.venv/lib/python*/site-packages/nvidia/*/lib)
+            export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
+          fi
+          mise exec -- uv run --no-sync python scripts/diag.py ../e2e/test-assets
+
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
