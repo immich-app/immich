@@ -24,6 +24,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
+import 'package:immich_mobile/utils/fallback_localizations.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
@@ -49,7 +50,7 @@ class BootstrapErrorWidget extends StatelessWidget {
         builder: (lCtx) => MaterialApp(
           title: 'Immich',
           debugShowCheckedModeBanner: true,
-          localizationsDelegates: lCtx.localizationDelegates,
+          localizationsDelegates: [...lCtx.localizationDelegates, ...fallbackLocalizationDelegates],
           supportedLocales: lCtx.supportedLocales,
           locale: lCtx.locale,
           themeMode: ThemeMode.system,
