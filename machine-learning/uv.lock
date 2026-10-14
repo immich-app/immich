@@ -777,7 +777,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.95.2,<1.0" },
     { name = "gunicorn", specifier = ">=21.1.0" },
     { name = "huggingface-hub", specifier = ">=1.0,<2.0" },
-    { name = "immich-model", git = "https://github.com/immich-app/ml-models.git?rev=8bf3fd1b44b0c8608f52fb6e50ddff52826576d8" },
+    { name = "immich-model", git = "https://github.com/immich-app/ml-models.git?rev=3e467b31848da55f25f6d47f0b11c6a1ef22d31d" },
     { name = "numpy", specifier = ">=2.4.0,<3.0" },
     { name = "onnx", specifier = ">=1.22.0" },
     { name = "onnxruntime", marker = "extra == 'armnn'", specifier = ">=1.23.2,<2" },
@@ -857,7 +857,7 @@ types = [
 [[package]]
 name = "immich-model"
 version = "0.2.0"
-source = { git = "https://github.com/immich-app/ml-models.git?rev=8bf3fd1b44b0c8608f52fb6e50ddff52826576d8#8bf3fd1b44b0c8608f52fb6e50ddff52826576d8" }
+source = { git = "https://github.com/immich-app/ml-models.git?rev=3e467b31848da55f25f6d47f0b11c6a1ef22d31d#3e467b31848da55f25f6d47f0b11c6a1ef22d31d" }
 dependencies = [
     { name = "numpy" },
     { name = "onnx" },
