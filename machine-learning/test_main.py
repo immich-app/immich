@@ -2266,7 +2266,8 @@ def test_ping_endpoint(deployed_app: TestClient) -> None:
 )
 class TestPredictionEndpoints:
     @pytest.fixture(autouse=True)
-    def providers(self, mocker: MockerFixture) -> Iterator[None]:
+    def providers(self, deployed_app: TestClient, mocker: MockerFixture) -> Iterator[None]:
+        # the app is set up before the spy, so it shuts down and unloads its models after the spy lets go of them
         sessions = mocker.spy(ort, "InferenceSession")
         yield
         if settings.test_provider:

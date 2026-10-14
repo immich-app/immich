@@ -27,7 +27,7 @@ def pil_image() -> Image.Image:
     return Image.new("RGB", (600, 800))
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def deployed_app() -> Iterator[TestClient]:
     with TestClient(app) as client:
         yield client
