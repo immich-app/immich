@@ -62,7 +62,7 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "fast-glob": "^3.3.2",
     "fastq": "^1.17.1",
     "lodash-es": "^4.17.21",
