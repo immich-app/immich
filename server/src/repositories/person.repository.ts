@@ -224,8 +224,6 @@ const asPerson = ({ ownedPerson, otherPeople, sharedBy, sharedWith }: PersonGrou
   sharedWith,
 });
 
-const faceCount = (eb: ExpressionBuilder<DB, 'asset'>) => eb.fn.count('asset.id');
-
 const withPerson = ({ viewingUserId }: WithPersonOptions) => {
   return (eb: ExpressionBuilder<DB, 'asset_face'>) =>
     jsonObjectFrom(
@@ -448,25 +446,40 @@ export class PersonRepository {
       .innerJoin('person as owned', (join) =>
         join.onRef('owned.personGroupId', '=', 'person_group.id').on('owned.ownerId', '=', userId),
       )
-      .innerJoin('asset_face', (join) =>
-        join
-          .onRef('asset_face.personGroupId', '=', 'person_group.id')
-          .on('asset_face.deletedAt', 'is', null)
-          .on('asset_face.isVisible', 'is', true),
+      .innerJoin(
+        (eb) =>
+          eb
+            .selectFrom('asset_face')
+            .innerJoin('asset', (join) =>
+              join
+                .onRef('asset.id', '=', 'asset_face.assetId')
+                .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                .on('asset.deletedAt', 'is', null)
+                .on((eb) =>
+                  eb.or([eb('asset.ownerId', '=', anyUuid([userId, ...partnerIds])), inSharedAlbum(eb, userId)]),
+                ),
+            )
+            .select('asset_face.personGroupId')
+            .select((eb) => eb.fn.count<number>('asset.id').as('faceCount'))
+            // an array instead of a join or `in`, which the planner may turn into a scan of every face in the instance
+            .where('asset_face.personGroupId', '=', (eb) => {
+              const ownedGroupIds = eb
+                .selectFrom('person')
+                .select('person.personGroupId')
+                .where('person.ownerId', '=', userId);
+              return eb.fn.any(eb.fn<string[]>('array', [ownedGroupIds]));
+            })
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true)
+            .groupBy('asset_face.personGroupId')
+            .as('faces'),
+        (join) => join.onRef('faces.personGroupId', '=', 'person_group.id'),
       )
-      .innerJoin('asset', (join) =>
-        join
-          .onRef('asset.id', '=', 'asset_face.assetId')
-          .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-          .on('asset.deletedAt', 'is', null)
-          .on((eb) => eb.or([eb('asset.ownerId', '=', anyUuid([userId, ...partnerIds])), inSharedAlbum(eb, userId)])),
-      )
-      .groupBy(['person_group.id', 'owned.ownerId', 'owned.personGroupId'])
-      .having((eb) =>
+      .where((eb) =>
         eb.or([
           eb('owned.name', '!=', ''),
           eb(
-            faceCount,
+            'faces.faceCount',
             '>=',
             sql<number>`COALESCE(
               (SELECT value -> 'people' ->> 'minimumFaces'
@@ -509,7 +522,7 @@ export class PersonRepository {
       .$if(!options.closestFaceAssetId, (qb) =>
         qb
           .orderBy(sql`NULLIF("owned"."name", '') is null`, 'asc')
-          .orderBy(faceCount, 'desc')
+          .orderBy('faces.faceCount', 'desc')
           .orderBy(sql`NULLIF("owned"."name", '')`, (om) => om.asc().nullsLast())
           .orderBy('owned.createdAt'),
       )

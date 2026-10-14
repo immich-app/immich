@@ -239,38 +239,52 @@ from
   "person_group"
   inner join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
   and "owned"."ownerId" = $5
-  inner join "asset_face" on "asset_face"."personGroupId" = "person_group"."id"
-  and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
-  inner join "asset" on "asset"."id" = "asset_face"."assetId"
-  and "asset"."visibility" = 'timeline'
-  and "asset"."deletedAt" is null
-  and (
-    "asset"."ownerId" = any ($6::uuid[])
-    or exists (
-      select
-        1 as "exists"
-      from
-        "album_asset"
-        inner join "album" on "album"."id" = "album_asset"."albumId"
-        and "album"."deletedAt" is null
-        inner join "album_user" on "album_user"."albumId" = "album"."id"
-        and "album_user"."userId" = $7::uuid
-      where
-        "album_asset"."assetId" = "asset"."id"
-    )
-  )
+  inner join (
+    select
+      "asset_face"."personGroupId",
+      count("asset"."id") as "faceCount"
+    from
+      "asset_face"
+      inner join "asset" on "asset"."id" = "asset_face"."assetId"
+      and "asset"."visibility" = 'timeline'
+      and "asset"."deletedAt" is null
+      and (
+        "asset"."ownerId" = any ($6::uuid[])
+        or exists (
+          select
+            1 as "exists"
+          from
+            "album_asset"
+            inner join "album" on "album"."id" = "album_asset"."albumId"
+            and "album"."deletedAt" is null
+            inner join "album_user" on "album_user"."albumId" = "album"."id"
+            and "album_user"."userId" = $7::uuid
+          where
+            "album_asset"."assetId" = "asset"."id"
+        )
+      )
+    where
+      "asset_face"."personGroupId" = any (
+        array(
+          (
+            select
+              "person"."personGroupId"
+            from
+              "person"
+            where
+              "person"."ownerId" = $8
+          )
+        )
+      )
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+    group by
+      "asset_face"."personGroupId"
+  ) as "faces" on "faces"."personGroupId" = "person_group"."id"
 where
-  "owned"."isHidden" = $8
-  and 1 = 1
-group by
-  "person_group"."id",
-  "owned"."ownerId",
-  "owned"."personGroupId"
-having
   (
     "owned"."name" != $9
-    or count("asset"."id") >= COALESCE(
+    or "faces"."faceCount" >= COALESCE(
       (
         SELECT
           value -> 'people' ->> 'minimumFaces'
@@ -283,17 +297,19 @@ having
       '3'
     )::int
   )
+  and "owned"."isHidden" = $11
+  and 1 = 1
 order by
   "owned"."isHidden" asc,
   "owned"."isFavorite" desc,
   NULLIF("owned"."name", '') is null asc,
-  count("asset"."id") desc,
+  "faces"."faceCount" desc,
   NULLIF("owned"."name", '') asc nulls last,
   "owned"."createdAt"
 limit
-  $11
-offset
   $12
+offset
+  $13
 
 -- PersonRepository.getAllWithoutFaces
 select
@@ -901,49 +917,65 @@ from
       "person_group"
       inner join "person" as "owned" on "owned"."personGroupId" = "person_group"."id"
       and "owned"."ownerId" = $2
-      inner join "asset_face" on "asset_face"."personGroupId" = "person_group"."id"
-      and "asset_face"."deletedAt" is null
-      and "asset_face"."isVisible" is true
-      inner join "asset" on "asset"."id" = "asset_face"."assetId"
-      and "asset"."visibility" = 'timeline'
-      and "asset"."deletedAt" is null
-      and (
-        "asset"."ownerId" = any ($3::uuid[])
-        or exists (
-          select
-            1 as "exists"
-          from
-            "album_asset"
-            inner join "album" on "album"."id" = "album_asset"."albumId"
-            and "album"."deletedAt" is null
-            inner join "album_user" on "album_user"."albumId" = "album"."id"
-            and "album_user"."userId" = $4::uuid
-          where
-            "album_asset"."assetId" = "asset"."id"
-        )
-      )
+      inner join (
+        select
+          "asset_face"."personGroupId",
+          count("asset"."id") as "faceCount"
+        from
+          "asset_face"
+          inner join "asset" on "asset"."id" = "asset_face"."assetId"
+          and "asset"."visibility" = 'timeline'
+          and "asset"."deletedAt" is null
+          and (
+            "asset"."ownerId" = any ($3::uuid[])
+            or exists (
+              select
+                1 as "exists"
+              from
+                "album_asset"
+                inner join "album" on "album"."id" = "album_asset"."albumId"
+                and "album"."deletedAt" is null
+                inner join "album_user" on "album_user"."albumId" = "album"."id"
+                and "album_user"."userId" = $4::uuid
+              where
+                "album_asset"."assetId" = "asset"."id"
+            )
+          )
+        where
+          "asset_face"."personGroupId" = any (
+            array(
+              (
+                select
+                  "person"."personGroupId"
+                from
+                  "person"
+                where
+                  "person"."ownerId" = $5
+              )
+            )
+          )
+          and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" is true
+        group by
+          "asset_face"."personGroupId"
+      ) as "faces" on "faces"."personGroupId" = "person_group"."id"
     where
-      1 = 1
-    group by
-      "person_group"."id",
-      "owned"."ownerId",
-      "owned"."personGroupId"
-    having
       (
-        "owned"."name" != $5
-        or count("asset"."id") >= COALESCE(
+        "owned"."name" != $6
+        or "faces"."faceCount" >= COALESCE(
           (
             SELECT
               value -> 'people' ->> 'minimumFaces'
             FROM
               user_metadata
             WHERE
-              "userId" = $6
+              "userId" = $7
               AND key = 'preferences'
           ),
           '3'
         )::int
       )
+      and 1 = 1
   ) as "people"
 
 -- PersonRepository.createGroup

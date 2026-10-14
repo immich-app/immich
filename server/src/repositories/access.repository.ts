@@ -236,43 +236,53 @@ class AssetAccess {
     }
 
     return this.db
-      .selectFrom('shared_link')
-      .leftJoin('album', (join) => join.onRef('album.id', '=', 'shared_link.albumId').on('album.deletedAt', 'is', null))
-      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
-      .leftJoin('asset', (join) =>
-        join.onRef('asset.id', '=', 'shared_link_asset.assetId').on('asset.deletedAt', 'is', null),
+      .with('target', (qb) => qb.selectNoFrom(sql<string[]>`array[${sql.join([...assetIds])}]::uuid[]`.as('ids')))
+      .with('link', (qb) =>
+        qb
+          .selectFrom('shared_link')
+          .select(['shared_link.id', 'shared_link.albumId'])
+          .where('shared_link.id', '=', sharedLinkId),
       )
-      .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
-      .leftJoin('asset as albumAssets', (join) =>
-        join.onRef('albumAssets.id', '=', 'album_asset.assetId').on('albumAssets.deletedAt', 'is', null),
+      .selectFrom('asset')
+      .crossJoin('target')
+      .innerJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('link')
+            .innerJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'link.id')
+            .select(sql.lit(1).as('match'))
+            .whereRef('shared_link_asset.assetId', '=', 'asset.id')
+            .unionAll(
+              eb
+                .selectFrom('link')
+                .innerJoin('album', (join) =>
+                  join.onRef('album.id', '=', 'link.albumId').on('album.deletedAt', 'is', null),
+                )
+                .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
+                .select(sql.lit(1).as('match'))
+                .whereRef('album_asset.assetId', '=', 'asset.id'),
+            )
+            .limit(1)
+            .as('membership'),
+        (join) => join.onTrue(),
       )
-      .select([
-        'asset.id as assetId',
-        'asset.livePhotoVideoId as assetLivePhotoVideoId',
-        'albumAssets.id as albumAssetId',
-        'albumAssets.livePhotoVideoId as albumAssetLivePhotoVideoId',
-      ])
-      .where('shared_link.id', '=', sharedLinkId)
-      .where(
-        sql`array["asset"."id", "asset"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"]`,
-        '&&',
-        sql`array[${sql.join([...assetIds])}]::uuid[] `,
+      .select(['asset.id', 'asset.livePhotoVideoId'])
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          eb('asset.id', '=', eb.fn.any('target.ids')),
+          eb('asset.livePhotoVideoId', '=', eb.fn.any('target.ids')),
+        ]),
       )
       .execute()
       .then((rows) => {
         const allowedIds = new Set<string>();
         for (const row of rows) {
-          if (row.assetId && assetIds.has(row.assetId)) {
-            allowedIds.add(row.assetId);
+          if (assetIds.has(row.id)) {
+            allowedIds.add(row.id);
           }
-          if (row.assetLivePhotoVideoId && assetIds.has(row.assetLivePhotoVideoId)) {
-            allowedIds.add(row.assetLivePhotoVideoId);
-          }
-          if (row.albumAssetId && assetIds.has(row.albumAssetId)) {
-            allowedIds.add(row.albumAssetId);
-          }
-          if (row.albumAssetLivePhotoVideoId && assetIds.has(row.albumAssetLivePhotoVideoId)) {
-            allowedIds.add(row.albumAssetLivePhotoVideoId);
+          if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
+            allowedIds.add(row.livePhotoVideoId);
           }
         }
         return allowedIds;
