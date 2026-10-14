@@ -101,17 +101,20 @@ def diagnose() -> None:
     recognition = TextRecognitionOptions(min_score=0.8)
     for model in MODELS:
         boxes = TextDetector.create(model, detection).predict(beer, options=detection)
-        recognizer = TextRecognizer(model)
-        texts = recognizer.predict(beer, {k: v.copy() for k, v in boxes.items()}, options=recognition)["text"]
-        expected = fixture[model]["text"]
-        print(f"\n{model}: {len(boxes['boxes'])} boxes, {len(texts)} lines (fixture {len(expected)})")
-        print(f"  missing {[t for t in expected if t not in texts]}")
-        print(f"  extra   {[t for t in texts if t not in expected]}")
         o._providers_default = lambda: ["CPUExecutionProvider"]
         cpu_boxes = TextDetector.create(model, detection).predict(beer, options=detection)
         o._providers_default = lambda: providers
-        # the CPU's boxes, so the recognizer runs here even where this provider's detector finds none
-        recognizer.predict(beer, cpu_boxes, options=recognition)
+        recognizer = TextRecognizer(model)
+        try:  # the decoder indexes the charset by what nonfinite logits make of an argmax; the graph is recorded first
+            texts = recognizer.predict(beer, {k: v.copy() for k, v in boxes.items()}, options=recognition)["text"]
+            expected = fixture[model]["text"]
+            print(f"\n{model}: {len(boxes['boxes'])} boxes, {len(texts)} lines (fixture {len(expected)})")
+            print(f"  missing {[t for t in expected if t not in texts]}")
+            print(f"  extra   {[t for t in texts if t not in expected]}")
+            # the CPU's boxes, so the recognizer runs here even where this provider's detector finds none
+            recognizer.predict(beer, cpu_boxes, options=recognition)
+        except Exception as e:
+            print(f"\n{model}: {len(boxes['boxes'])} boxes; recognition failed: {type(e).__name__}: {e}")
 
     for path, (spec, feed, out) in calls.items():
         print(f"\n== {path.relative_to(spec.model_path.parents[3])}  input {[list(v.shape) for v in feed.values()]}")
