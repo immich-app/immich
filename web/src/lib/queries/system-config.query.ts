@@ -1,45 +1,51 @@
-import { getConfig, getConfigDefaults } from '@immich/sdk';
-import { queryOptions } from '@tanstack/svelte-query';
+import { getConfig, getConfigDefaults, updateConfig, type AdminConfigDto } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
+import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
+import { isEqual } from 'lodash-es';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { queryClient } from '$lib/queries/client';
-import { websocketEvents } from '$lib/stores/websocket';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
-export const systemConfigKeys = {
-  all: ['system-config'] as const,
-  defaults: () => [...systemConfigKeys.all, 'defaults'] as const,
-};
-
-class SystemConfigQueries {
-  readonly config = queryOptions({
-    queryKey: systemConfigKeys.all,
+export const getConfigQuery = () =>
+  queryOptions({
+    queryKey: ['system-config'],
     queryFn: ({ signal }) => getConfig({ signal }),
     staleTime: Infinity,
   });
 
-  readonly defaults = queryOptions({
-    queryKey: systemConfigKeys.defaults(),
+export const getConfigDefaultsQuery = () =>
+  queryOptions({
+    queryKey: ['system-config', 'defaults'],
     queryFn: ({ signal }) => getConfigDefaults({ signal }),
     staleTime: Infinity,
   });
 
-  constructor() {
-    eventManager.on({
-      SystemConfigUpdate: (config) => queryClient.setQueryData(this.config.queryKey, config),
-      AuthLogout: () => queryClient.resetQueries({ queryKey: this.config.queryKey, exact: true }),
-    });
+export const updateConfigMutation = () =>
+  mutationOptions({
+    mutationFn: async (update: Partial<AdminConfigDto>) => {
+      const config = await getConfig();
+      const adminConfigDto = { ...config, ...update };
 
-    websocketEvents.on('on_config_update', () => void this.#refresh());
-  }
+      if (isEqual(config, adminConfigDto)) {
+        return;
+      }
 
-  #refresh() {
-    const loaded = queryClient.getQueryData(this.config.queryKey) !== undefined;
+      return updateConfig({ adminConfigDto });
+    },
+    onSuccess: async (config) => {
+      if (!config) {
+        return;
+      }
 
-    return queryClient.invalidateQueries({
-      queryKey: this.config.queryKey,
-      exact: true,
-      refetchType: loaded ? 'all' : 'none',
-    });
-  }
-}
+      queryClient.setQueryData(getConfigQuery().queryKey, config);
+      eventManager.emit('SystemConfigUpdate', config);
 
-export const systemConfigQueries = new SystemConfigQueries();
+      const $t = await getFormatter();
+      toastManager.primary($t('settings_saved'));
+    },
+    onError: async (error) => {
+      const $t = await getFormatter();
+      handleError(error, $t('errors.unable_to_save_settings'));
+    },
+  });

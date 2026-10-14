@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { cloneDeep } from 'lodash-es';
   import TemplateSettings from './TemplateSettings.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
@@ -7,17 +8,19 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { handleSystemConfigSave } from '$lib/services/system-config.service';
+  import { createDefinedQuery, executeMutation } from '$lib/queries/client';
+  import { getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
   import { handleError } from '$lib/utils/handle-error';
   import { sendTestEmailAdmin } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
+  const query = createDefinedQuery(getConfigQuery());
+  const config = $derived(query.data);
+
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  let configToEdit = $state(cloneDeep(config));
 
   let isSending = $state(false);
 
@@ -50,7 +53,7 @@
       );
 
       if (!disabled) {
-        await handleSystemConfigSave({ notifications: configToEdit.notifications });
+        await executeMutation(updateConfigMutation(), { notifications: configToEdit.notifications });
       }
     } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));

@@ -21,7 +21,8 @@
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { createDefinedQuery } from '$lib/queries/client';
+  import { getConfigQuery } from '$lib/queries/system-config.query';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
   import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
@@ -55,6 +56,8 @@
   };
 
   const { data }: Props = $props();
+
+  const config = createDefinedQuery(getConfigQuery());
 
   const settings: Array<{
     component: Component;
@@ -208,7 +211,7 @@
   );
 
   const { CopyToClipboard, Upload, Download } = $derived(
-    getSystemConfigActions($t, featureFlagsManager.value, systemConfigManager.value),
+    getSystemConfigActions($t, featureFlagsManager.value, config.data),
   );
 </script>
 

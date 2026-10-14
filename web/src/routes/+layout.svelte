@@ -12,6 +12,7 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
+  import { queryClient } from '$lib/queries/client';
   import { Route } from '$lib/route';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
@@ -37,6 +38,7 @@
   } from '@immich/ui';
   import { En } from 'media-chrome/lang/en';
   import { addTranslation } from 'media-chrome/utils/i18n';
+  import { QueryClientProvider } from '@tanstack/svelte-query';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -256,30 +258,32 @@
   {/if}
 </svelte:head>
 
-<TooltipProvider>
-  {#if page.data.error}
-    <ErrorLayout error={page.data.error}></ErrorLayout>
-  {:else}
-    {@render children?.()}
-  {/if}
+<QueryClientProvider client={queryClient}>
+  <TooltipProvider>
+    {#if page.data.error}
+      <ErrorLayout error={page.data.error}></ErrorLayout>
+    {:else}
+      {@render children?.()}
+    {/if}
 
-  {#if showNavigationLoadingBar}
-    <NavigationLoadingBar />
-  {/if}
+    {#if showNavigationLoadingBar}
+      <NavigationLoadingBar />
+    {/if}
 
-  <DownloadPanel />
-  <UploadPanel />
-  <ScreencastOverlay />
+    <DownloadPanel />
+    <UploadPanel />
+    <ScreencastOverlay />
 
-  <CommandPaletteProvider
-    providers={[
-      getPagesProvider($t),
-      getSettingsProvider($t),
-      defaultProvider({ name: $t('documentation'), types: ['doc', 'documentation'], actions: CORE_PAGE_COMMANDS }),
-      defaultProvider({ name: $t('support'), actions: PROJECT_SUPPORT_COMMANDS }),
-      defaultProvider({ name: 'Socials', types: ['social', 'socials'], actions: SOCIAL_COMMANDS }),
-      defaultProvider({ name: $t('mobile_app'), actions: MOBILE_APP_COMMANDS }),
-      defaultProvider({ name: 'Sites', types: ['site', 'sites'], actions: OTHER_SITE_COMMANDS }),
-    ]}
-  />
-</TooltipProvider>
+    <CommandPaletteProvider
+      providers={[
+        getPagesProvider($t),
+        getSettingsProvider($t),
+        defaultProvider({ name: $t('documentation'), types: ['doc', 'documentation'], actions: CORE_PAGE_COMMANDS }),
+        defaultProvider({ name: $t('support'), actions: PROJECT_SUPPORT_COMMANDS }),
+        defaultProvider({ name: 'Socials', types: ['social', 'socials'], actions: SOCIAL_COMMANDS }),
+        defaultProvider({ name: $t('mobile_app'), actions: MOBILE_APP_COMMANDS }),
+        defaultProvider({ name: 'Sites', types: ['site', 'sites'], actions: OTHER_SITE_COMMANDS }),
+      ]}
+    />
+  </TooltipProvider>
+</QueryClientProvider>

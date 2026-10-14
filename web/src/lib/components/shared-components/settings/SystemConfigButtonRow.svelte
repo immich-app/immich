@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { handleSystemConfigSave } from '$lib/services/system-config.service';
+  import { createDefinedQuery } from '$lib/queries/client';
+  import { getConfigDefaultsQuery, getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
   import type { AdminConfigDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
-  import { isEqual, pick } from 'lodash-es';
+  import { createMutation } from '@tanstack/svelte-query';
+  import { cloneDeep, isEqual, pick } from 'lodash-es';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -15,20 +16,19 @@
 
   let { disabled, keys, configToEdit = $bindable(), onBeforeSave }: Props = $props();
 
-  const showResetToDefault = $derived(
-    !isEqual(pick(systemConfigManager.value, keys), pick(systemConfigManager.defaultValue, keys)),
-  );
+  const config = createDefinedQuery(getConfigQuery());
+  const defaults = createDefinedQuery(getConfigDefaultsQuery());
+  const save = createMutation(updateConfigMutation);
+
+  const showResetToDefault = $derived(!isEqual(pick(config.data, keys), pick(defaults.data, keys)));
 
   const handleReset = () => {
-    configToEdit = systemConfigManager.cloneValue();
+    configToEdit = cloneDeep(config.data);
     toastManager.info($t('admin.reset_settings_to_recent_saved'));
   };
 
   const handleResetToDefault = () => {
-    const defaultConfig = systemConfigManager.cloneDefaultValue();
-
-    configToEdit = { ...configToEdit, ...pick(defaultConfig, keys) };
-
+    configToEdit = { ...configToEdit, ...cloneDeep(pick(defaults.data, keys)) };
     toastManager.info($t('admin.reset_settings_to_default'));
   };
 
@@ -36,7 +36,7 @@
     const shouldSave = await onBeforeSave?.();
 
     if (shouldSave ?? true) {
-      await handleSystemConfigSave(pick(configToEdit, keys));
+      save.mutate(pick(configToEdit, keys));
     }
   };
 </script>
@@ -52,6 +52,8 @@
 
   <div class="flex gap-1">
     <Button shape="round" {disabled} size="small" color="secondary" onclick={handleReset}>{$t('reset')}</Button>
-    <Button shape="round" type="submit" {disabled} size="small" onclick={handleSave}>{$t('save')}</Button>
+    <Button shape="round" type="submit" disabled={disabled || save.isPending} size="small" onclick={handleSave}>
+      {$t('save')}
+    </Button>
   </div>
 </div>
