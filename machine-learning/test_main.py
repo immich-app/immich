@@ -1797,7 +1797,7 @@ class TestOcr:
             mocker,
         )
         text_recognizer.decoder = mock.Mock()
-        text_recognizer.decoder.return_value = (["hello"], np.array([0.8], dtype=np.float32))
+        text_recognizer.decoder.return_value = (["hello"], np.array([0.75], dtype=np.float32))
         mocker.patch.object(text_recognizer, "_crop", return_value=np.zeros((48, 96, 3), dtype=np.uint8))
         image = Image.new("RGB", (100, 50))
         box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
@@ -1806,7 +1806,7 @@ class TestOcr:
             return {"boxes": box.copy(), "scores": np.array([0.9], dtype=np.float32)}
 
         assert text_recognizer._predict(image, texts(), TextRecognitionOptions(min_score=0.7))["text"] == ["hello"]
-        # the default (0.9) rejects a 0.8 score, and must be unaffected by the 0.7 request
+        # the default (0.8) rejects a 0.75 score, and must be unaffected by the 0.7 request
         assert text_recognizer._predict(image, texts(), TextRecognitionOptions())["text"] == []
 
     def test_rec_decodes_the_half_precision_probabilities_a_host_decode_graph_emits(self) -> None:
@@ -2124,7 +2124,7 @@ def test_reads_each_entrys_options_as_its_model_takes_them(tmp_path: Path) -> No
     # such as where a model is cached, goes nowhere
     assert {entry.options for entry in entries} == {
         TextDetectionOptions(max_resolution=736, min_score=0.3),
-        TextRecognitionOptions(min_score=0.9),
+        TextRecognitionOptions(min_score=0.8),
         TextualOptions(language="de"),
         FaceRecognitionOptions(),
     }
