@@ -353,7 +353,7 @@ const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) =
 };
 
 const filterField = SearchFilterSchema.optional().meta(ADDED_V3_2);
-const cursorField = z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_2);
+const cursorField = z.string().min(1).optional().describe('Cursor for the next page of results');
 
 const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
   withStacked: z.boolean().optional().describe('Include stacked assets'),
@@ -376,7 +376,7 @@ const MetadataSearchSchema = withShapeExclusivity(
     order: AssetOrderSchema.optional().describe('Sort order').meta(DEPRECATED_FLAT_FIELD),
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
     orderBy: SearchOrderSchema.optional().meta(ADDED_V3_2),
-    cursor: cursorField,
+    cursor: cursorField.meta(ADDED_V3_2),
   }),
 ).meta({ id: 'MetadataSearchDto' });
 
@@ -395,6 +395,7 @@ const SmartSearchSchema = withShapeExclusivity(
     language: z.string().optional().describe('Search language code'),
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
     filter: filterField,
+    cursor: cursorField.meta(new HistoryBuilder().added('v3.4.0').getExtensions()),
   }),
 ).meta({ id: 'SmartSearchDto' });
 
