@@ -6,9 +6,11 @@
   import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import Thumbhash from '$lib/components/Thumbhash.svelte';
+  import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
@@ -35,26 +37,34 @@
 
   let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
 
-  const { slideshowState, slideshowLook } = slideshowStore;
+  const { slideshowState, slideshowLook, slideshowTransition } = slideshowStore;
   const asset = $derived(cursor.current);
+  const shouldFadePhoto = $derived(
+    $slideshowState !== SlideshowState.None && $slideshowTransition && !mediaQueryManager.reducedMotion,
+  );
 
   let visibleImageReady: boolean = $state(false);
 
   let previousAssetId: string | undefined;
+  let hasPreviousAsset = false;
+  let fadeAnimation: Animation | undefined;
   $effect.pre(() => {
     const id = asset.id;
     if (id === previousAssetId) {
       return;
     }
+    hasPreviousAsset = previousAssetId !== undefined;
     previousAssetId = id;
     untrack(() => {
       assetViewerManager.resetZoomState();
       visibleImageReady = false;
       assetViewerManager.clearHighlightedFaces();
+      fadeAnimation?.cancel();
     });
   });
 
   onDestroy(() => {
+    fadeAnimation?.cancel();
     assetViewerManager.clearHighlightedFaces();
     assetViewerManager.hideHiddenPeople();
   });
@@ -232,6 +242,10 @@
     objectFit={$slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.Cover ? 'cover' : 'contain'}
     {onUrlChange}
     onImageReady={() => {
+      if (!visibleImageReady && hasPreviousAsset && shouldFadePhoto && element) {
+        fadeAnimation?.cancel();
+        fadeAnimation = element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: assetViewerFadeDuration });
+      }
       visibleImageReady = true;
       onReady?.();
     }}
