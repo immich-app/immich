@@ -216,6 +216,12 @@ describe(DatabaseBackupService.name, () => {
       `);
     });
 
+    it('should abort the backup and remove the temporary file when the signal is aborted', async () => {
+      await expect(sut.createDatabaseBackup('', AbortSignal.abort())).rejects.toThrow('The operation was aborted');
+      expect(mocks.storage.unlink).toHaveBeenCalled();
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+    });
+
     it('should run a database backup successfully', async () => {
       const result = await sut.handleBackupDatabase();
       expect(result).toBe(JobStatus.Success);

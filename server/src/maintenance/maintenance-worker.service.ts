@@ -1,9 +1,12 @@
+import { YuccaService } from '@futo-org/backups-orchestrator-api';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
+import { basename } from 'node:path';
 import type { MaintenanceModeState } from 'src/types.js';
 import { serverVersion } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
@@ -32,6 +35,7 @@ import { type VersionService as _VersionService } from 'src/services/version.ser
 import { getConfig } from 'src/utils/config.js';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance.js';
 import { getExternalDomain } from 'src/utils/misc.js';
+import { detectMediaLocation } from 'src/utils/storage.js';
 
 /**
  * This service is available inside of maintenance mode to manage maintenance mode
@@ -55,6 +59,7 @@ export class MaintenanceWorkerService {
     private processRepository: ProcessRepository,
     private databaseRepository: DatabaseRepository,
     private databaseBackupService: DatabaseBackupService,
+    private moduleRef: ModuleRef,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -158,30 +163,9 @@ export class MaintenanceWorkerService {
     };
   }
 
-  /**
-   * {@link _StorageService.detectMediaLocation}
-   */
   detectMediaLocation(): string {
     const envData = this.configRepository.getEnv();
-    if (envData.storage.mediaLocation) {
-      return envData.storage.mediaLocation;
-    }
-
-    const targets: string[] = [];
-    const candidates = ['/data', '/usr/src/app/upload'];
-
-    for (const candidate of candidates) {
-      const isExists = this.storageRepository.existsSync(candidate);
-      if (isExists) {
-        targets.push(candidate);
-      }
-    }
-
-    if (targets.length === 1) {
-      return targets[0];
-    }
-
-    return '/usr/src/app/upload';
+    return detectMediaLocation(envData.storage.mediaLocation, (path) => this.storageRepository.existsSync(path));
   }
 
   private get secret() {
@@ -291,6 +275,9 @@ export class MaintenanceWorkerService {
       case MaintenanceAction.RestoreDatabase: {
         return this.runRestoreDatabase(action);
       }
+      case MaintenanceAction.Rollback: {
+        return this.runRollback(action);
+      }
     }
   }
 
@@ -347,6 +334,67 @@ export class MaintenanceWorkerService {
     await this.setAction({
       action: MaintenanceAction.End,
     });
+  }
+
+  private async runRollback(action: SetMaintenanceModeDto) {
+    const isLock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
+    if (!isLock) {
+      return;
+    }
+
+    this.logger.log(`Running maintenance action ${action.action}`);
+
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret: this.secret,
+      action: {
+        action: MaintenanceAction.Start,
+      },
+    });
+
+    try {
+      if (!action.rollbackRepositoryId || !action.rollbackSnapshotId) {
+        throw new Error("Expected rollbackRepositoryId and rollbackSnapshotId but they're missing!");
+      }
+
+      await this.rollback(action.rollbackRepositoryId, action.rollbackSnapshotId);
+    } catch (error) {
+      this.logger.error(`Encountered error running action: ${error}`);
+      this.setStatus({
+        active: true,
+        action: action.action,
+        task: 'error',
+        error: '' + error,
+        yuccaLogId: this.#status.yuccaLogId,
+      });
+    }
+  }
+
+  private async rollback(repositoryId: string, snapshotId: string): Promise<void> {
+    this.setStatus({
+      active: true,
+      action: MaintenanceAction.Rollback,
+    });
+
+    const yucca = this.moduleRef.get(YuccaService, { strict: false });
+    const { logId, task, immichBackupFileName } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
+
+    this.setStatus({
+      active: true,
+      action: MaintenanceAction.Rollback,
+      yuccaLogId: logId,
+    });
+
+    await task;
+
+    if (!immichBackupFileName) {
+      return this.setAction({
+        action: MaintenanceAction.SelectDatabaseRestore,
+      });
+    }
+
+    const backupFileName = basename(immichBackupFileName);
+    await this.restoreBackup(backupFileName);
   }
 
   private async endMaintenance(): Promise<void> {

@@ -151,6 +151,7 @@ const AdminConfigSchemaWithVisibility = z
   .object({
     backup: z
       .object({
+        beta: configBool.default(false).optional().describe('Whether the backups feature is enabled'),
         database: z
           .object({
             enabled: configBool.describe('Enabled'),
@@ -545,6 +546,7 @@ export function mapPublicConfig(config: SystemConfig): PublicConfigDto {
 
 export const defaults = Object.freeze<SystemConfig>({
   backup: {
+    beta: false,
     database: {
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_2AM,
