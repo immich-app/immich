@@ -2299,10 +2299,11 @@ class TestPredictionEndpoints:
         assert response.status_code == 200
         assert cosine(orjson.loads(response.json()["clip"]), responses["clip"]["text"]) >= 0.999
 
+    @pytest.mark.parametrize("model", ["buffalo_l", "antelopev2"])
     def test_face_endpoint(
-        self, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
+        self, model: str, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
-        expected = responses["facial-recognition"]
+        expected = responses["facial-recognition"][model]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
@@ -2310,8 +2311,8 @@ class TestPredictionEndpoints:
                 "entries": json.dumps(
                     {
                         "facial-recognition": {
-                            "detection": {"modelName": "buffalo_l", "options": {"minScore": 0.7}},
-                            "recognition": {"modelName": "buffalo_l"},
+                            "detection": {"modelName": model, "options": {"minScore": 0.7}},
+                            "recognition": {"modelName": model},
                         }
                     }
                 )
@@ -2330,10 +2331,11 @@ class TestPredictionEndpoints:
             assert actual_face["score"] == pytest.approx(expected_face["score"], abs=0.01)
             assert cosine(orjson.loads(actual_face["embedding"]), expected_face["embedding"]) >= 0.999
 
+    @pytest.mark.parametrize("model", ["PP-OCRv5_mobile", "PP-OCRv6_tiny", "PP-OCRv6_small"])
     def test_ocr_endpoint(
-        self, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
+        self, model: str, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
-        expected = responses["ocr"]
+        expected = responses["ocr"][model]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
@@ -2341,11 +2343,8 @@ class TestPredictionEndpoints:
                 "entries": json.dumps(
                     {
                         "ocr": {
-                            "detection": {
-                                "modelName": "PP-OCRv5_mobile",
-                                "options": {"maxResolution": 736, "minScore": 0.5},
-                            },
-                            "recognition": {"modelName": "PP-OCRv5_mobile", "options": {"minScore": 0.9}},
+                            "detection": {"modelName": model, "options": {"maxResolution": 736, "minScore": 0.5}},
+                            "recognition": {"modelName": model, "options": {"minScore": 0.9}},
                         }
                     }
                 )
