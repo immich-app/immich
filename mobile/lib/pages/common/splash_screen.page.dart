@@ -288,21 +288,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
-    unawaited(
-      ref
-          .read(authProvider.notifier)
-          .setOpenApiServiceEndpoint()
-          .then(logConnectionInfo)
-          .whenComplete(() => resumeSession()),
-    );
-  }
-
-  void logConnectionInfo(String? endpoint) {
-    if (endpoint == null) {
-      return;
-    }
-
-    log.info("Resuming session at $endpoint");
+    unawaited(ref.read(authProvider.notifier).setOpenApiServiceEndpoint().whenComplete(() => resumeSession()));
   }
 
   Future<void> resumeSession() async {
