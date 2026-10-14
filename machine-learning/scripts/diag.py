@@ -132,7 +132,9 @@ def diagnose() -> None:
                 print(f"  {label}: {errors(run(graph, spec, feed, spec.provider, **options), reference)}")
             except Exception as e:  # one variant failing should not cost the rest of the round
                 print(f"  {label}: {type(e).__name__}: {str(e)[:200]}")
-        layers(path, spec, feed)
+        # every layer as an output takes GBs of host memory, which only a graph that leaves the CPU is worth
+        if any(np.issubdtype(r.dtype, np.floating) and relative(g, r) > DIVERGED for g, r in zip(out, ref)):
+            layers(path, spec, feed)
 
 
 def layers(path: Path, spec: o.GraphSpec, feed: Feed) -> None:
