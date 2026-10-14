@@ -246,6 +246,9 @@ class ImmichAPI {
       throw .invalidURL
     }
     var maxPixelSize = 512
+    // Decoding to fill the widget, a panorama's long edge can exceed the memory limit.
+    // To prevent this, cap the long side at 2x the widget.
+    let maxDecodeMultiplier = 2
 
     if let targetSize,
       let props = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any],
@@ -253,6 +256,7 @@ class ImmichAPI {
       let height = props[kCGImagePropertyPixelHeight] as? Int {
       let scale = max(targetSize.width / CGFloat(width), targetSize.height / CGFloat(height))
       maxPixelSize = Int(ceil(CGFloat(max(width, height)) * scale))
+      maxPixelSize = min(maxPixelSize, Int(max(targetSize.width, targetSize.height)) * maxDecodeMultiplier)
     }
 
     let decodeOptions: [NSString: Any] = [
