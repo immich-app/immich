@@ -321,6 +321,8 @@ importers:
         specifier: ^4.20.6
         version: 4.23.15
 
+  packages/image-editor: {}
+
   packages/plugin-core:
     devDependencies:
       '@extism/js-pdk':
@@ -404,6 +406,9 @@ importers:
 
   server:
     dependencies:
+      '@immich/image-editor':
+        specifier: workspace:*
+        version: link:../packages/image-editor
       '@extism/extism':
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
@@ -792,6 +797,9 @@ importers:
 
   web:
     dependencies:
+      '@immich/image-editor':
+        specifier: workspace:*
+        version: link:../packages/image-editor
       '@formatjs/icu-messageformat-parser':
         specifier: ^3.0.0
         version: 3.5.20

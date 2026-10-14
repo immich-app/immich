@@ -15,6 +15,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
 
 FROM builder AS sdk
 
+COPY ./packages/image-editor ./packages/image-editor/
+
 COPY ./packages/sdk/package.json ./packages/sdk/package.json
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/sdk install --frozen-lockfile
 

@@ -24,6 +24,7 @@
     "prepare": "svelte-kit sync"
   },
   "dependencies": {
+    "@immich/image-editor": "workspace:*",
     "@formatjs/icu-messageformat-parser": "^3.0.0",
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "workspace:*",

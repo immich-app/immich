@@ -1,12 +1,14 @@
 <script lang="ts">
   import { ResizeBoundary, transformManager } from '$lib/managers/edit/transform-manager.svelte';
   import { getAssetMediaUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import type { ColorPreviewRequest, ColorPreviewResponse } from './color-preview.worker';
 
   interface Props {
     asset: AssetResponseDto;
@@ -36,6 +38,70 @@
     return transforms.join(' ');
   });
 
+  let previewCanvas = $state<HTMLCanvasElement | null>(null);
+  let sourcePixels = $state<ImageData | null>(null);
+  let previewReady = $state(false);
+  let sourceSrc = $state('');
+  let worker = $state<Worker | null>(null);
+  let busy = false;
+  let pending: ColorPreviewRequest | undefined;
+  let sentSource: ImageData | null = null;
+
+  function sendPreview(request: ColorPreviewRequest) {
+    if (busy || !worker) {
+      pending = request;
+      return;
+    }
+    busy = true;
+    pending = undefined;
+    if (sourcePixels && sentSource !== sourcePixels) {
+      request.pixels = sourcePixels.data;
+      sentSource = sourcePixels;
+    }
+    worker.postMessage(request);
+  }
+  const useColorPreview = $derived(transformManager.brightness !== 0 || transformManager.contrast !== 0);
+
+  function loadColorPreview(event: Event) {
+    const image = event.currentTarget as HTMLImageElement;
+    sourcePixels = null;
+    previewReady = false;
+    try {
+      // Cache a bounded source once; slider changes only run the shared pixel calculation.
+      const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+      const source = document.createElement('canvas');
+      source.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      source.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = source.getContext('2d', { willReadFrequently: true });
+      if (!context) {
+        throw new Error('Unable to create the color preview');
+      }
+      context.drawImage(image, 0, 0, source.width, source.height);
+      sourcePixels = context.getImageData(0, 0, source.width, source.height);
+      sourceSrc = imageSrc;
+      sentSource = null;
+    } catch (error) {
+      handleError(error, 'ErrorLoadingImage');
+    }
+  }
+
+  $effect(() => {
+    const source = sourcePixels;
+    const src = imageSrc;
+    const brightness = transformManager.brightness;
+    const contrast = transformManager.contrast;
+    if (!source || sourceSrc !== src || !worker || !useColorPreview) {
+      previewReady = false;
+      pending = undefined;
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      // At most one running render and one pending render; newer slider values replace pending ones.
+      sendPreview({ src, width: source.width, height: source.height, brightness, contrast });
+    });
+    return () => cancelAnimationFrame(frame);
+  });
+
   const edges = [ResizeBoundary.Top, ResizeBoundary.Right, ResizeBoundary.Bottom, ResizeBoundary.Left];
   const corners = [
     ResizeBoundary.TopLeft,
@@ -48,6 +114,30 @@
   }
 
   onMount(() => {
+    worker = new Worker(new URL('color-preview.worker.ts', import.meta.url), { type: 'module' });
+    worker.addEventListener('message', ({ data }: MessageEvent<ColorPreviewResponse>) => {
+      busy = false;
+      if (data.src === imageSrc && previewCanvas && useColorPreview) {
+        const context = previewCanvas.getContext('2d');
+        if (context) {
+          previewCanvas.width = data.width;
+          previewCanvas.height = data.height;
+          context.putImageData(new ImageData(new Uint8ClampedArray(data.pixels), data.width, data.height), 0, 0);
+          previewReady = true;
+        } else {
+          handleError(new Error('Unable to create the color preview'), 'ErrorLoadingImage');
+        }
+      }
+      if (pending && pending.src === imageSrc && useColorPreview) {
+        sendPreview(pending);
+      } else {
+        pending = undefined;
+      }
+    });
+    worker.addEventListener('error', (error) => {
+      busy = false;
+      handleError(error, 'ErrorLoadingImage');
+    });
     const resizeObserver = new ResizeObserver(() => {
       transformManager.resizeCanvas();
     });
@@ -56,6 +146,7 @@
 
     return () => {
       resizeObserver.disconnect();
+      worker?.terminate();
     };
   });
 </script>
@@ -74,7 +165,16 @@
       alt={$getAltText(toTimelineAsset(asset))}
       class="h-full transition-transform select-none motion-reduce:transition-none"
       style:transform={imageTransform}
+      style:opacity={useColorPreview && previewReady && sourceSrc === imageSrc ? 0 : 1}
+      onload={loadColorPreview}
     />
+    <canvas
+      bind:this={previewCanvas}
+      class="pointer-events-none absolute top-0 size-full transition-transform motion-reduce:transition-none"
+      style:transform={imageTransform}
+      hidden={!useColorPreview || !previewReady || sourceSrc !== imageSrc}
+      aria-hidden="true"
+    ></canvas>
     <div
       class={[
         'overlay pointer-events-none absolute top-0 size-full transition-colors motion-reduce:transition-none',

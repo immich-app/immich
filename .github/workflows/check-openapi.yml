@@ -29,6 +29,7 @@ jobs:
         with:
           base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
           revision: open-api/immich-openapi-specs.json
+          err-ignore: open-api/oasdiff-approved-changes.txt
           fail-on: ERR
           review: false
 

@@ -500,6 +500,25 @@ where
 order by
   "asset_edit_audit"."id" asc
 
+-- SyncRepository.assetEdit.getUpsertsV1
+select
+  "asset_edit"."id",
+  "asset_edit"."assetId",
+  "asset_edit"."sequence",
+  "asset_edit"."action",
+  "asset_edit"."parameters",
+  "asset_edit"."updateId"
+from
+  "asset_edit" as "asset_edit"
+  inner join "asset" on "asset"."id" = "asset_edit"."assetId"
+where
+  "asset_edit"."updateId" < $1
+  and "asset_edit"."updateId" > $2
+  and "asset"."ownerId" = $3
+  and "asset_edit"."action" in ($4, $5, $6)
+order by
+  "asset_edit"."updateId" asc
+
 -- SyncRepository.assetEdit.getUpserts
 select
   "asset_edit"."id",

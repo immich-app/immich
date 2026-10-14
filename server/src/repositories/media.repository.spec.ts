@@ -1,3 +1,4 @@
+import { adjustColors } from '@immich/image-editor';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -163,6 +164,95 @@ describe(MediaRepository.name, () => {
       expect(await getPixelColor(bufferVertical, 10, 990)).toEqual({ r: 255, g: 0, b: 0 });
       // bottom-right should now be top-right (blue)
       expect(await getPixelColor(bufferVertical, 990, 990)).toEqual({ r: 0, g: 255, b: 0 });
+    });
+
+    it('should use the same colors as the browser preview, preserving alpha', async () => {
+      // Large enough to exercise multiple float-processing batches, with translucent and opaque pixels.
+      const width = 260;
+      const height = 260;
+      const data = Buffer.alloc(width * height * 4).fill(Buffer.from([70, 100, 140, 73, 240, 100, 20, 255]));
+      const image = await sharp(data, { raw: { width, height, channels: 4 } })
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const parameters = { brightness: 0, contrast: 80 };
+      const expected = Uint8ClampedArray.from(data);
+      adjustColors(expected, 4, parameters);
+      const result = await sut['transform'](image, {
+        edits: [{ action: AssetEditAction.Color, parameters }],
+      });
+      expect([...result.data]).toEqual([...expected]);
+    });
+
+    it('should leave neutral edits unchanged', async () => {
+      const image = await sharp(Buffer.from([255, 252, 248]), { raw: { width: 1, height: 1, channels: 3 } })
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const result = await sut['transform'](image, {
+        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: 0 } }],
+      });
+      expect([...result.data]).toEqual([...image.data]);
+    });
+
+    it('should apply contrast to Oklab lightness', async () => {
+      const image = await sharp({
+        create: {
+          width: 1,
+          height: 1,
+          channels: 4,
+          background: { r: 100, g: 150, b: 200, alpha: 1 },
+        },
+      })
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+
+      const result = await sut['transform'](image, {
+        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: 50 } }],
+      });
+
+      const output = await sharp(result.data, { raw: result.info }).png().toBuffer();
+      expect(await getPixelColor(output, 0, 0)).toEqual({ r: 124, g: 175, b: 226 });
+    });
+
+    it('should preserve Oklab chroma and match the native perceptual lightness model', async () => {
+      const data = Buffer.from([110, 140, 170]);
+      const raw = { width: 1, height: 1, channels: 3 as const };
+      const image = await sharp(data, { raw }).raw().toBuffer({ resolveWithObject: true });
+      const result = await sut['transform'](image, {
+        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: 25 } }],
+      });
+      const lab = async (buffer: Buffer) => {
+        const output = await sharp(buffer, { raw }).toColourspace('oklab').raw({ depth: 'float' }).toBuffer();
+        return new Float32Array(output.buffer, output.byteOffset, output.byteLength / 4);
+      };
+      const before = await lab(data);
+      const after = await lab(result.data);
+      expect(after[0]).toBeCloseTo((before[0] - 0.5) * 1.25 + 0.5, 2);
+      expect(after[1]).toBeCloseTo(before[1], 2);
+      expect(after[2]).toBeCloseTo(before[2], 2);
+    });
+
+    it('should preserve resampling overshoot until after contrast, without an intermediate sRGB buffer', async () => {
+      // Lanczos downsampling across a black/white edge produces negative values and values above 1.
+      const width = 8;
+      const height = 4;
+      const data = Buffer.alloc(width * height * 3);
+      for (let y = 0; y < height; y++) {
+        for (let x = width / 2; x < width; x++) {
+          data.fill(255, (y * width + x) * 3, (y * width + x) * 3 + 3);
+        }
+      }
+      const image = { data, info: { width, height, channels: 3 as const } };
+      const result = await sut['transform'](image, {
+        size: 4,
+        fit: 'inside',
+        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: -50 } }],
+      });
+      expect(result.info).toEqual({ width: 4, height: 2, channels: 3 });
+      // Clipping before the adjustment would turn these edge pixels into 34 and 174 instead.
+      expect(result.data[0]).toBeCloseTo(7, 0);
+      expect(result.data[9]).toBeCloseTo(175, 0);
+      expect(result.data[0]).toBe(result.data[1]);
+      expect(result.data[0]).toBe(result.data[2]);
     });
   });
 
