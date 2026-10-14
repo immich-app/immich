@@ -90,7 +90,9 @@ def diagnose() -> None:
     for pack in ("buffalo_l", "antelopev2"):
         faces = FaceDetector(pack).predict(selfie, options=FaceDetectionOptions(min_score=0.7))
         embedded = FaceRecognizer(pack).predict(selfie, faces, options=FaceRecognitionOptions())
-        bad = [i for i, face in enumerate(embedded) if not np.isfinite(json.loads(face["embedding"])).all()]
+        # orjson writes NaN as null, which float64 reads back as NaN
+        vectors = [np.array(json.loads(face["embedding"]), dtype=np.float64) for face in embedded]
+        bad = [i for i, vector in enumerate(vectors) if not np.isfinite(vector).all()]
         print(f"\n{pack} on the crowd: {len(embedded)} faces, {len(bad)} with a nonfinite embedding {bad[:8]}")
 
     fixture = json.loads(Path("responses.json").read_text())["ocr"]["bucketed"]
