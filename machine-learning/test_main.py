@@ -61,7 +61,16 @@ from immich_ml.schemas import (
     VisualOptions,
 )
 from immich_ml.sessions.ann import AnnSession
-from immich_ml.sessions.ort import Device, GraphSpec, OrtSession, flush_denormals, fresh, prepared
+from immich_ml.sessions.ort import (
+    DYNAMIC_PROVIDERS,
+    Device,
+    GraphSpec,
+    OrtSession,
+    _providers_default,
+    flush_denormals,
+    fresh,
+    prepared,
+)
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 from immich_ml.sessions.rknn import RknnSession, run_inference
 from immich_ml.sessions.rknn import model_path as rknn_model_path
@@ -2338,7 +2347,8 @@ class TestPredictionEndpoints:
     def test_ocr_endpoint(
         self, model: str, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
-        expected = responses["ocr"][model]
+        # the CPU EP reads each image at its own size, where the other providers pad it to a bucket
+        expected = responses["ocr"]["dynamic" if _providers_default()[0] in DYNAMIC_PROVIDERS else "bucketed"][model]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
