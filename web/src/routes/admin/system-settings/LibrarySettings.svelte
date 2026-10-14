@@ -6,13 +6,11 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 
@@ -36,7 +34,7 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.library_watching_enable_description')}
-              {disabled}
+              key="library.watch.enabled"
               bind:checked={configToEdit.library.watch.enabled}
             />
           </div>
@@ -50,23 +48,25 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.library_scanning_enable_description')}
-              {disabled}
+              key="library.scan.enabled"
               bind:checked={configToEdit.library.scan.enabled}
             />
 
             <SettingSelect
               options={cronExpressionOptions}
-              disabled={disabled || !configToEdit.library.scan.enabled}
+              disabled={!configToEdit.library.scan.enabled}
               name="expression"
               label={$t('admin.cron_expression_presets')}
+              key="library.scan.cronExpression"
               bind:value={configToEdit.library.scan.cronExpression}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={true}
-              disabled={disabled || !configToEdit.library.scan.enabled}
+              disabled={!configToEdit.library.scan.enabled}
               label={$t('admin.cron_expression')}
+              key="library.scan.cronExpression"
               bind:value={configToEdit.library.scan.cronExpression}
               isEdited={configToEdit.library.scan.cronExpression !== config.library.scan.cronExpression}
             >
@@ -87,7 +87,7 @@
           </div>
         </SettingAccordion>
 
-        <SettingButtonsRow bind:configToEdit keys={['library']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['library']} />
       </div>
     </form>
   </div>

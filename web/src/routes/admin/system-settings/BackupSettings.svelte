@@ -5,13 +5,11 @@
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 
@@ -29,23 +27,25 @@
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.backup_database_enable_description')}
-          {disabled}
+          key="backup.database.enabled"
           bind:checked={configToEdit.backup.database.enabled}
         />
 
         <SettingSelect
           options={cronExpressionOptions}
-          disabled={disabled || !configToEdit.backup.database.enabled}
+          disabled={!configToEdit.backup.database.enabled}
           name="expression"
           label={$t('admin.cron_expression_presets')}
+          key="backup.database.cronExpression"
           bind:value={configToEdit.backup.database.cronExpression}
         />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           required={true}
-          disabled={disabled || !configToEdit.backup.database.enabled}
+          disabled={!configToEdit.backup.database.enabled}
           label={$t('admin.cron_expression')}
+          key="backup.database.cronExpression"
           bind:value={configToEdit.backup.database.cronExpression}
           isEdited={configToEdit.backup.database.cronExpression !== config.backup.database.cronExpression}
         >
@@ -67,12 +67,13 @@
           inputType={SettingInputFieldType.NUMBER}
           required={true}
           label={$t('admin.backup_keep_last_amount')}
-          disabled={disabled || !configToEdit.backup.database.enabled}
+          disabled={!configToEdit.backup.database.enabled}
+          key="backup.database.keepLastAmount"
           bind:value={configToEdit.backup.database.keepLastAmount}
           isEdited={configToEdit.backup.database.keepLastAmount !== config.backup.database.keepLastAmount}
         />
 
-        <SettingButtonsRow {disabled} bind:configToEdit keys={['backup']} />
+        <SettingButtonsRow bind:configToEdit keys={['backup']} />
       </div>
     </form>
   </div>

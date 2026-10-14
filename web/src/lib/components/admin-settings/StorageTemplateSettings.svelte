@@ -5,7 +5,6 @@
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import StorageTemplateVariablesModal from '$lib/modals/StorageTemplateVariablesModal.svelte';
   import { Route } from '$lib/route';
@@ -38,12 +37,11 @@
 
   type StorageTemplateOption = (typeof StorageTemplateOption)[keyof typeof StorageTemplateOption];
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 
   // TODO remove once we support partial overwriting with database values
-  if (preselectDate && !featureFlagsManager.value.configFile && !configToEdit.storageTemplate.enabled) {
+  if (preselectDate && !configToEdit.storageTemplate.enabled) {
     configToEdit.storageTemplate.enabled = true;
     configToEdit.storageTemplate.template = DATE_TEMPLATE;
   }
@@ -162,14 +160,13 @@
   <div
     class="flex flex-col rounded-2xl border-2 p-4 transition-colors {selectedOption === option
       ? 'border-primary bg-primary/5'
-      : 'border-primary/10 hover:border-primary/20'} {disabled ? 'opacity-50' : ''}"
+      : 'border-primary/10 hover:border-primary/20'}"
   >
-    <label class="flex items-center gap-3 {disabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
+    <label class="flex items-center gap-3 cursor-pointer">
       <input
         type="radio"
         name="storage-template-option"
         class="accent-primary focus-visible:ring"
-        {disabled}
         checked={selectedOption === option}
         onchange={() => handleOptionSelection(option)}
       />
@@ -187,7 +184,6 @@
           </label>
           <select
             class="mt-2 immich-form-input rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
-            {disabled}
             name="presets"
             id="preset-select"
             bind:value={selectedPreset}
@@ -201,9 +197,9 @@
 
         <SettingInputField
           label={$t('template')}
-          {disabled}
           required
           inputType={SettingInputFieldType.TEXT}
+          key="storageTemplate.template"
           bind:value={configToEdit.storageTemplate.template}
           isEdited={configToEdit.storageTemplate.template !== config.storageTemplate.template}
         >
@@ -305,8 +301,8 @@
       {#if !minified}
         <SettingSwitch
           title={$t('admin.storage_template_hash_verification_enabled')}
-          {disabled}
           subtitle={$t('admin.storage_template_hash_verification_enabled_description')}
+          key="storageTemplate.hashVerificationEnabled"
           bind:checked={configToEdit.storageTemplate.hashVerificationEnabled}
           isEdited={configToEdit.storageTemplate.hashVerificationEnabled !==
             config.storageTemplate.hashVerificationEnabled}
@@ -332,7 +328,7 @@
           </div>
         {/if}
 
-        <SettingButtonsRow bind:configToEdit keys={['storageTemplate']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['storageTemplate']} />
       {/if}
     </div>
   {/await}

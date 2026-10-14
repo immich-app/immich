@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '$lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import { systemConfigManager, type ConfigKey } from '$lib/managers/system-config-manager.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { PasswordInput } from '@immich/ui';
   import { onMount, tick, type Snippet } from 'svelte';
@@ -17,6 +19,7 @@
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: ConfigKey;
     autofocus?: boolean;
     passwordAutocomplete?: AutoFill;
     descriptionSnippet?: Snippet;
@@ -42,6 +45,7 @@
     required = false,
     disabled = false,
     isEdited = false,
+    key,
     autofocus = false,
     passwordAutocomplete = 'current-password',
     descriptionSnippet,
@@ -77,6 +81,9 @@
         .catch((_) => {});
     }
   });
+
+  const field = $derived(key ? systemConfigManager.getField(key) : undefined);
+  const isDisabled = $derived(disabled || field?.isEditable === false);
 </script>
 
 <div class="mb-4 w-full">
@@ -123,7 +130,7 @@
           {required}
           bind:value
           onchange={handleChange}
-          {disabled}
+          disabled={isDisabled}
           {title}
         />
       {/if}
@@ -143,7 +150,7 @@
         {required}
         bind:value
         onchange={handleChange}
-        {disabled}
+        disabled={isDisabled}
         {title}
       />
 
@@ -159,10 +166,12 @@
       autocomplete={passwordAutocomplete}
       {required}
       bind:value={value as string}
-      {disabled}
+      disabled={isDisabled}
       {title}
     />
   {/if}
+
+  <SettingSourceHint {key} />
 </div>
 
 <style>

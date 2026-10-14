@@ -83,6 +83,7 @@
             <SettingTextarea
               {label}
               description={$t('admin.template_email_available_tags', { values: { tags: descriptionTags } })}
+              key={`templates.email.${templateKey}`}
               bind:value={config.templates.email[templateKey]}
               isEdited={isEdited(templateKey)}
               disabled={!config.notifications.smtp.enabled}

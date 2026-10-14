@@ -176,7 +176,10 @@ describe(DatabaseBackupService.name, () => {
       // create a service instance with a URL connection that includes libpqcompat
       const dbUrl = 'postgresql://postgres:pwd@host:5432/immich?sslmode=require&uselibpqcompat=true';
       const configMock = {
-        getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+        getEnv: () => ({
+          database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false },
+          configOverrides: {},
+        }),
         getWorker: () => ImmichWorker.Api,
         isDev: () => false,
       } as unknown as any;

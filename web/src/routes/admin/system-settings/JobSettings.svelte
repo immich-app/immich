@@ -2,13 +2,11 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { QueueName, type AdminConfigJobDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 
@@ -61,9 +59,9 @@
           {#if isSystemConfigJobDto(queueName)}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              {disabled}
               label={$t('admin.job_concurrency', { values: { job: queueTitles[queueName] } })}
               description=""
+              key={`job.${queueName}.concurrency`}
               bind:value={configToEdit.job[queueName].concurrency}
               required={true}
               isEdited={configToEdit.job[queueName].concurrency !== config.job[queueName].concurrency}
@@ -82,7 +80,7 @@
       {/each}
 
       <div class="ms-4">
-        <SettingButtonsRow bind:configToEdit keys={['job']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['job']} />
       </div>
     </form>
   </div>

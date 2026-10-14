@@ -5,13 +5,11 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
@@ -28,16 +26,16 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.integrity_checks_missing_files_enable_description')}
-              {disabled}
+              key="integrityChecks.missingFiles.enabled"
               bind:checked={configToEdit.integrityChecks.missingFiles.enabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
+              key="integrityChecks.missingFiles.cronExpression"
               bind:value={configToEdit.integrityChecks.missingFiles.cronExpression}
               required={true}
-              {disabled}
               isEdited={configToEdit.integrityChecks.missingFiles.cronExpression !==
                 config.integrityChecks.missingFiles.cronExpression}
             >
@@ -67,16 +65,16 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.integrity_checks_untracked_files_enable_description')}
-              {disabled}
+              key="integrityChecks.untrackedFiles.enabled"
               bind:checked={configToEdit.integrityChecks.untrackedFiles.enabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
+              key="integrityChecks.untrackedFiles.cronExpression"
               bind:value={configToEdit.integrityChecks.untrackedFiles.cronExpression}
               required={true}
-              {disabled}
               isEdited={configToEdit.integrityChecks.untrackedFiles.cronExpression !==
                 config.integrityChecks.untrackedFiles.cronExpression}
             >
@@ -106,16 +104,16 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.integrity_checks_checksum_files_enable_description')}
-              {disabled}
+              key="integrityChecks.checksumFiles.enabled"
               bind:checked={configToEdit.integrityChecks.checksumFiles.enabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
+              key="integrityChecks.checksumFiles.cronExpression"
               bind:value={configToEdit.integrityChecks.checksumFiles.cronExpression}
               required={true}
-              {disabled}
               isEdited={configToEdit.integrityChecks.checksumFiles.cronExpression !==
                 config.integrityChecks.checksumFiles.cronExpression}
             >
@@ -139,8 +137,8 @@
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.integrity_checks_checksum_files_time_limit')}
               description={$t('admin.integrity_checks_checksum_files_time_limit_description')}
+              key="integrityChecks.checksumFiles.timeLimit"
               bind:value={configToEdit.integrityChecks.checksumFiles.timeLimit}
-              {disabled}
               isEdited={configToEdit.integrityChecks.checksumFiles.timeLimit !==
                 config.integrityChecks.checksumFiles.timeLimit}
             />
@@ -149,18 +147,18 @@
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.integrity_checks_checksum_files_percentage_limit')}
               description={$t('admin.integrity_checks_checksum_files_percentage_limit_description')}
+              key="integrityChecks.checksumFiles.percentageLimit"
               bind:value={configToEdit.integrityChecks.checksumFiles.percentageLimit}
               step="0.01"
               min={0.01}
               max={1}
-              {disabled}
               isEdited={configToEdit.integrityChecks.checksumFiles.percentageLimit !==
                 config.integrityChecks.checksumFiles.percentageLimit}
             />
           </div>
         </SettingAccordion>
 
-        <SettingButtonsRow bind:configToEdit keys={['integrityChecks']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['integrityChecks']} />
       </div>
     </form>
   </div>
