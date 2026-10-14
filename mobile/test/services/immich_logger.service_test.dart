@@ -19,7 +19,7 @@ void main() {
       'ClientException: java.net.ConnectException: Failed to connect to gone.example.net/10.0.0.7:2283, uri=https://gone.example.net/api',
       'Retrying gone.example.net',
     ];
-    final hidden = ImmichLogger.sensitive([
+    final hidden = ImmichLogger.redactionPattern([
       'https://Immich.Example.com/api',
       'immich.example.com',
       'secret-token-123',

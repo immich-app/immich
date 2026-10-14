@@ -21,28 +21,24 @@ abstract final class ImmichLogger {
   static final _url = RegExp(r'''\w+://[^\s'",]+''');
 
   @visibleForTesting
-  static RegExp sensitive(Iterable<String> held, Iterable<String> logs) => RegExp(
+  static RegExp redactionPattern(Iterable<String> held, Iterable<String> logs) => RegExp(
     [
-      // the urls, hosts, token, wifi name and header values this install holds, and the host of every url in the
-      // logs, since a server it no longer holds still shows up in one; wherever an error puts them, like ios
-      // certificate errors (pretending to be “host”) or okhttp (Failed to connect to host/ip:port);
-      // shorter values would match normal words
+      // values this install holds and hosts from logged urls; under 8 chars would match normal words
       for (final value in {
         ...held,
         for (final log in logs)
           for (final url in _url.allMatches(log)) ?Uri.tryParse(url[0]!)?.host,
       })
         if (value.length >= 8) RegExp.escape(value),
-      // hosts it no longer holds: after :// in a url, in dart:io socket errors (host lookup: 'x', address = x,
-      // host: x), and the access token older app versions logged
+      // hosts after :// and in dart:io socket errors, and the token older versions logged
       r"(?<=://|host lookup: '|address = |host: |access token: )[^\s/?#,']+",
-      // IPv4 addresses, like the one okhttp prints after the host
+      // IPv4 addresses
       r'\b\d{1,3}(?:\.\d{1,3}){3}\b',
-      // emails, like the one the oauth login logs
+      // emails
       r'[\w.+-]+@[\w-]+(?:\.[\w-]+)+',
-      // the oauth code in a logged callback url
+      // oauth codes
       r'(?<=[?&]code=)[^&\s#]+',
-      // the values a failed sqlite statement was given, like the pin hash or an email in a sync upsert
+      // sqlite statement parameters
       r'(?<=, parameters: ).+',
     ].join('|'),
     caseSensitive: false,
@@ -66,7 +62,7 @@ abstract final class ImmichLogger {
 
   static Future<void> shareLogs(BuildContext context) async {
     final messages = await LogService.I.getMessages();
-    final hidden = sensitive(_held(), [
+    final hidden = redactionPattern(_held(), [
       for (final m in messages) ...[m.message, ?m.error, ?m.stack],
     ]);
     final tempDir = await getTemporaryDirectory();
