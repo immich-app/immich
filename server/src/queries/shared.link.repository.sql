@@ -97,75 +97,12 @@ from
               "album_user"."role" = 'owner'
               and "album_user"."albumId" = "album"."id"
           ) as agg
-      ) as "albumUsers",
-      coalesce(
-        json_agg(
-          "assets"
-          order by
-            "assets"."fileCreatedAt" asc
-        ) filter (
-          where
-            "assets"."id" is not null
-        ),
-        '[]'
-      ) as "assets"
+      ) as "albumUsers"
     from
       "album"
-      left join "album_asset" on "album_asset"."albumId" = "album"."id"
-      left join lateral (
-        select
-          "asset".*,
-          to_json("exifInfo") as "exifInfo"
-        from
-          "asset"
-          inner join lateral (
-            select
-              "asset_exif"."assetId",
-              "asset_exif"."autoStackId",
-              "asset_exif"."bitsPerSample",
-              "asset_exif"."city",
-              "asset_exif"."colorspace",
-              "asset_exif"."country",
-              "asset_exif"."dateTimeOriginal",
-              "asset_exif"."description",
-              "asset_exif"."exifImageHeight",
-              "asset_exif"."exifImageWidth",
-              "asset_exif"."exposureTime",
-              "asset_exif"."fileSizeInByte",
-              "asset_exif"."fNumber",
-              "asset_exif"."focalLength",
-              "asset_exif"."fps",
-              "asset_exif"."iso",
-              "asset_exif"."latitude",
-              "asset_exif"."lensModel",
-              "asset_exif"."livePhotoCID",
-              "asset_exif"."longitude",
-              "asset_exif"."make",
-              "asset_exif"."model",
-              "asset_exif"."modifyDate",
-              "asset_exif"."orientation",
-              "asset_exif"."profileDescription",
-              "asset_exif"."projectionType",
-              "asset_exif"."rating",
-              "asset_exif"."state",
-              "asset_exif"."tags",
-              "asset_exif"."timeZone"
-            from
-              "asset_exif"
-            where
-              "asset_exif"."assetId" = "asset"."id"
-          ) as "exifInfo" on true
-        where
-          "album_asset"."assetId" = "asset"."id"
-          and "asset"."deletedAt" is null
-        order by
-          "asset"."fileCreatedAt" asc
-      ) as "assets" on true
     where
       "album"."id" = "shared_link"."albumId"
       and "album"."deletedAt" is null
-    group by
-      "album"."id"
   ) as "album" on true
 where
   "shared_link"."id" = $1

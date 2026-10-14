@@ -44,6 +44,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
   'PeopleResponse': {'updateStrategy': 'everyone'},
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
+  'ServerVersionResponseDto': {'featureLevel': 0},
   'WorkflowResponseDto': {'logging': false},
 };
 
