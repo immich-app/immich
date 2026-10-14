@@ -80,7 +80,15 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 
     try {
       if (downloadInfo.archives.length > 1) {
-        downloadManager.add(downloadKey, url, archive.assetIds, archiveName, archive.size);
+        downloadManager.add(
+          downloadKey,
+          url,
+          archive.assetIds,
+          archiveName,
+          archive.size,
+          index + 1,
+          downloadInfo.archives.length,
+        );
       } else {
         downloadUrlPost(url, archive.assetIds, archiveName);
         const $t = await getFormatter();

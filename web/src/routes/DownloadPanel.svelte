@@ -24,7 +24,16 @@
     class="fixed inset-s-2 bottom-10 z-60 max-h-67.5 w-89 rounded-2xl border bg-subtle p-4 shadow-lg dark:border-white/10"
   >
     <div class="flex items-center justify-between gap-2">
-      <Heading size="tiny">{$t('prepared_archives')}</Heading>
+      <Heading size="tiny">
+        {$t('downloading')}
+        {#if downloadManager.archiveProgress}
+          <span
+            >{$t('x_of_total', {
+              values: { x: downloadManager.archiveProgress.index, total: downloadManager.archiveProgress.total },
+            })}</span
+          >
+        {/if}
+      </Heading>
       <CloseButton class="w-8" size="small" onclick={closePanel} />
     </div>
     <div class="my-2 mb-2 flex max-h-50 flex-col overflow-y-auto text-sm">
