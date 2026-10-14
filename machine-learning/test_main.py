@@ -2357,7 +2357,7 @@ class TestPredictionEndpoints:
                     {
                         "ocr": {
                             "detection": {"modelName": model, "options": {"maxResolution": 736, "minScore": 0.5}},
-                            "recognition": {"modelName": model, "options": {"minScore": 0.9}},
+                            "recognition": {"modelName": model, "options": {"minScore": 0.8}},
                         }
                     }
                 )
