@@ -8057,7 +8057,8 @@ export enum MaintenanceAction {
     Start = "start",
     End = "end",
     SelectDatabaseRestore = "select_database_restore",
-    RestoreDatabase = "restore_database"
+    RestoreDatabase = "restore_database",
+    MigrateDatabase = "migrate_database"
 }
 export enum StorageFolder {
     EncodedVideo = "encoded-video",

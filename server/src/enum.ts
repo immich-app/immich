@@ -1024,8 +1024,10 @@ export enum DatabaseLock {
 export enum MaintenanceAction {
   Start = 'start',
   End = 'end',
+  // TODO change to UpperCamelCase
   SelectDatabaseRestore = 'select_database_restore',
   RestoreDatabase = 'restore_database',
+  MigrateDatabase = 'migrate_database',
 }
 
 export const MaintenanceActionSchema = z

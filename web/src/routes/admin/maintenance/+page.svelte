@@ -28,7 +28,7 @@
   };
 
   const { data }: Props = $props();
-  const { StartMaintenance } = $derived(getMaintenanceAdminActions($t));
+  const { StartMaintenance, StartDatabaseMigration } = $derived(getMaintenanceAdminActions($t));
 
   let integrityReport: IntegrityReportSummaryResponseDto = $state(data.integrityReport);
 
@@ -109,7 +109,7 @@
 
 <OnEvents {onJobCreate} />
 
-<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance]}>
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance, StartDatabaseMigration]}>
   <Container size="large" center class="my-4 flex flex-col gap-6">
     <section class="w-full pb-4">
       <HStack>

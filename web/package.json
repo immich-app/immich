@@ -60,6 +60,7 @@
     "socket.io-client": "~4.8.0",
     "svelte-confetti": "^2.3.2",
     "svelte-gestures": "^5.2.2",
+    "svelte-highlight": "^7.23.1",
     "svelte-i18n": "^4.0.1",
     "svelte-jsoneditor": "^3.10.0",
     "svelte-maplibre": "^2.0.0",
