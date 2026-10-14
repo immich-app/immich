@@ -2331,7 +2331,9 @@ class TestPredictionEndpoints:
             assert actual_face["score"] == pytest.approx(expected_face["score"], abs=0.01)
             assert cosine(orjson.loads(actual_face["embedding"]), expected_face["embedding"]) >= 0.999
 
-    @pytest.mark.parametrize("model", ["PP-OCRv5_mobile", "PP-OCRv6_tiny", "PP-OCRv6_small"])
+    @pytest.mark.parametrize(
+        "model", ["PP-OCRv5_mobile", "PP-OCRv5_server", "PP-OCRv6_tiny", "PP-OCRv6_small", "PP-OCRv6_medium"]
+    )
     def test_ocr_endpoint(
         self, model: str, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
@@ -2355,8 +2357,10 @@ class TestPredictionEndpoints:
         actual = response.json()["ocr"]
         assert response.status_code == 200
         # lines are matched by text, since one read differently can move in reading order
-        found = {text: line for line, text in enumerate(actual["text"])}
-        shared = [(found[text], line) for line, text in enumerate(expected["text"]) if text in found]
+        found: dict[str, list[int]] = {}
+        for line, text in enumerate(actual["text"]):
+            found.setdefault(text, []).append(line)
+        shared = [(found[text].pop(0), line) for line, text in enumerate(expected["text"]) if found.get(text)]
         assert len(shared) >= 0.9 * len(expected["text"])
         assert len(shared) >= 0.9 * len(actual["text"])
         for found_line, expected_line in shared:
