@@ -48,6 +48,7 @@ import {
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { fromChecksum } from 'src/utils/request.js';
+import { MetadataCursor } from 'src/utils/search-cursor.js';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -838,10 +839,10 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
 }
 
 const searchOrderColumns = {
-  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
-  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
-  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
-  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
+  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false, type: 'timestamptz' },
+  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false, type: 'timestamptz' },
+  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true, type: 'bigint' },
+  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true, type: 'integer' },
 } as const;
 
 export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order?: SearchOrder) {
@@ -857,6 +858,37 @@ export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order
       // id tie-break for deterministic pagination
       .orderBy('asset.id', direction)
   );
+}
+
+/** The raw order column value of a row, as JSON to keep the microsecond precision of timestamps for the next cursor */
+export function searchOrderValue(order?: SearchOrder) {
+  const { column } = searchOrderColumns[(order ?? DEFAULT_SEARCH_ORDER).field];
+  return sql<string | number | null>`to_json(${sql.ref(column)})`.as('orderValue');
+}
+
+/** Rows that sort after the cursor position in the order applied by `withSearchOrder` */
+export function withSearchCursor(
+  qb: ReturnType<typeof searchAssetBuilder>,
+  order?: SearchOrder,
+  cursor?: MetadataCursor,
+) {
+  if (!cursor) {
+    return qb;
+  }
+
+  const { field, direction } = order ?? DEFAULT_SEARCH_ORDER;
+  const { column, nullable, type } = searchOrderColumns[field];
+  const op = direction === AssetOrder.Asc ? '>' : '<';
+
+  return qb.where((eb) => {
+    // nulls sort last, so a null cursor value means the previous page ended inside the null tail
+    if (cursor.value === null) {
+      return eb.and([eb(column, 'is', null), eb('asset.id', op, cursor.id)]);
+    }
+
+    const after = sql<SqlBool>`(${sql.ref(column)}, "asset"."id") ${sql.raw(op)} (cast(${cursor.value} as ${sql.raw(type)}), cast(${cursor.id} as uuid))`;
+    return nullable ? eb.or([after, eb(column, 'is', null)]) : after;
+  });
 }
 
 const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwnerId: DummyValue.UUID };
