@@ -1,4 +1,4 @@
-import { Body, Container, Font, Head, Hr, Html, Img, Preview, Section, Tailwind, Text } from '@react-email/components';
+import { Body, Container, Font, Head, Hr, Html, Img, Preview, Section, Tailwind, Text } from 'react-email';
 import * as React from 'react';
 import { ImmichFooter } from 'src/emails/components/footer.template.js';
 // @ts-expect-error
