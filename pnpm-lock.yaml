@@ -824,7 +824,7 @@ importers:
         version: 5.15.1(@photo-sphere-viewer/core@5.15.1)
       '@tanstack/svelte-query':
         specifier: ^6.3.2
-        version: 6.3.2(svelte@5.57.2(@typescript-eslint/types@8.71.1))
+        version: 6.3.2(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       '@types/geojson':
         specifier: ^7946.0.16
         version: 7946.0.16
@@ -17636,10 +17636,10 @@ snapshots:
 
   '@tanstack/query-core@5.104.2': {}
 
-  '@tanstack/svelte-query@6.3.2(svelte@5.57.2(@typescript-eslint/types@8.71.1))':
+  '@tanstack/svelte-query@6.3.2(svelte@5.57.2(@typescript-eslint/types@8.71.2))':
     dependencies:
       '@tanstack/query-core': 5.104.2
-      svelte: 5.57.2(@typescript-eslint/types@8.71.1)
+      svelte: 5.57.2(@typescript-eslint/types@8.71.2)
 
   '@testing-library/dom@10.4.1':
     dependencies:
