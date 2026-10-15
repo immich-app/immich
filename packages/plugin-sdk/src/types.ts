@@ -23,6 +23,7 @@ export type WorkflowEventData<T extends WorkflowType> = WorkflowEventMap[T];
 export enum WorkflowTrigger {
   AssetCreate = 'AssetCreate',
   AssetMetadataExtraction = 'AssetMetadataExtraction',
+  AssetOcrExtraction = 'AssetOcrExtraction',
   AssetTagged = 'AssetTagged',
   // PersonRecognized = 'PersonRecognized',
 }
@@ -127,6 +128,11 @@ export type AssetV1 = {
       tags: string[] | null;
       updatedAt: string | null;
     } | null;
+    ocr?: {
+      text: string;
+      textScore: number;
+      boxScore: number;
+    }[]
   };
 };
 

@@ -3,6 +3,7 @@ import { AssetFileType, JobStatus } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
@@ -19,7 +20,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(OcrService, {
     database: db || defaultDatabase,
     real: [AssetRepository, AssetJobRepository, ConfigRepository, OcrRepository, SystemMetadataRepository],
-    mock: [JobRepository, LoggingRepository, MachineLearningRepository],
+    mock: [EventRepository, JobRepository, LoggingRepository, MachineLearningRepository],
   });
 };
 
@@ -38,6 +39,7 @@ describe(OcrService.name, () => {
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id });
     await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
+    ctx.getMock(EventRepository).emit.mockResolvedValue();
 
     const machineLearningMock = ctx.getMock(MachineLearningRepository);
     machineLearningMock.ocr.mockResolvedValue({
@@ -90,6 +92,7 @@ describe(OcrService.name, () => {
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id });
     await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
+    ctx.getMock(EventRepository).emit.mockResolvedValue();
 
     const machineLearningMock = ctx.getMock(MachineLearningRepository);
     machineLearningMock.ocr.mockResolvedValue({
@@ -214,6 +217,7 @@ describe(OcrService.name, () => {
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id });
     await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
+    ctx.getMock(EventRepository).emit.mockResolvedValue();
 
     const machineLearningMock = ctx.getMock(MachineLearningRepository);
     machineLearningMock.ocr.mockResolvedValue({ box: [], boxScore: [], text: [], textScore: [] });
@@ -239,6 +243,7 @@ describe(OcrService.name, () => {
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id });
     await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
+    ctx.getMock(EventRepository).emit.mockResolvedValue();
 
     const machineLearningMock = ctx.getMock(MachineLearningRepository);
     machineLearningMock.ocr.mockResolvedValue({
