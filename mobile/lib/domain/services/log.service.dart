@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -14,6 +16,17 @@ import 'package:logging/logging.dart';
 /// writes them to a persistent [LogRepository], and manages log levels via
 /// [SettingsRepository].
 class LogService {
+  static final _url = RegExp(r'''\b\w+://[^\s'",]+''');
+  static final _kinds = [
+    (RegExp(r'\b\d{1,3}(?:\.\d{1,3}){3}\b'), 'ip'),
+    (RegExp(r"(?<=://|host lookup: '|address = |host: )[^\s/?#,'<]+"), 'host'),
+    (RegExp(r'\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+'), 'email'),
+    (RegExp(r'(?<=[?&]code=)[^&\s#]+'), 'oauth code'),
+    (RegExp(r'(?<=, parameters: ).+'), 'parameters'),
+    // older versions logged it when a resumed session failed
+    (RegExp(r'(?<=access token: )[^\s<]+'), 'access token'),
+  ];
+
   final LogRepository _logRepository;
   final SettingsRepository _settingsRepository;
 
@@ -97,7 +110,60 @@ class LogService {
 
   Future<List<LogMessage>> getMessages() async {
     final logsFromDb = await _logRepository.getAll();
-    return [..._msgBuffer.reversed, ...logsFromDb];
+    return _redact([..._msgBuffer.reversed, ...logsFromDb]);
+  }
+
+  List<LogMessage> _redact(List<LogMessage> messages) {
+    final names = {
+      // a library can print a url's host on its own
+      for (final m in messages)
+        for (final text in [m.message, ?m.error, ?m.stack])
+          for (final url in _url.allMatches(text)) ?Uri.tryParse(url[0]!)?.host: 'host',
+      for (final MapEntry(key: value, value: name) in _held().entries) value.toLowerCase(): name,
+    };
+    // under 8 chars would match normal words
+    final values = [
+      for (final value in names.keys)
+        if (value.length >= 8) RegExp.escape(value),
+    ];
+    final named = RegExp('(?<!\\w)(?:${values.join('|')})(?!\\w)', caseSensitive: false);
+
+    String redact(String text) {
+      var redacted = values.isEmpty ? text : text.replaceAllMapped(named, (m) => '<${names[m[0]!.toLowerCase()]}>');
+      for (final (pattern, kind) in _kinds) {
+        redacted = redacted.replaceAll(pattern, '<$kind>');
+      }
+      return redacted;
+    }
+
+    return [
+      for (final m in messages)
+        m.copyWith(
+          message: redact(m.message),
+          error: m.error == null ? null : redact(m.error!),
+          stack: m.stack == null ? null : redact(m.stack!),
+        ),
+    ];
+  }
+
+  // the values this install holds, by the name a reader of the logs knows them by
+  Map<String, String> _held() {
+    final network = _settingsRepository.appConfig.network;
+    final urls = {
+      ?Store.tryGet(StoreKey.serverUrl): 'server url',
+      ?Store.tryGet(StoreKey.serverEndpoint): 'server url',
+      ?network.localEndpoint: 'local endpoint',
+      for (final (i, url) in network.externalEndpointList.indexed) url: 'external endpoint ${i + 1}',
+    };
+    // later entries win, so a server that is also a switching configuration reads as that configuration
+    final hosts = {for (final MapEntry(key: url, value: name) in urls.entries) ?Uri.tryParse(url)?.host: name};
+    return {
+      ...hosts,
+      for (final MapEntry(key: url, value: name) in urls.entries) url: hosts[Uri.tryParse(url)?.host] ?? name,
+      ?Store.tryGet(StoreKey.accessToken): 'access token',
+      ?network.preferredWifiName: 'wifi name',
+      for (final (i, value) in network.customHeaders.values.indexed) value: 'header ${i + 1}',
+    };
   }
 
   Future<void> clearLogs() async {
