@@ -460,7 +460,11 @@ describe(SearchService.name, () => {
       expect(firstPage.items[0].id).toBe(assetIds[0]);
       expect(firstPage.hasNextPage).toBe(true);
 
-      const secondPage = await searchRepository.searchSmartV3({ take: 2, skip: 2 }, options, scope);
+      const secondPage = await searchRepository.searchSmartV3(
+        { take: 2, cursor: { id: firstPage.items[1].id } },
+        options,
+        scope,
+      );
       expect(secondPage.items.length).toBe(1);
       expect(secondPage.hasNextPage).toBe(false);
     });

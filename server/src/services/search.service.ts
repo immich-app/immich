@@ -5,6 +5,7 @@ import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { PersonResponseDto, mapPerson } from 'src/dtos/person.dto.js';
 import {
+  DEFAULT_SEARCH_ORDER,
   LargeAssetSearchDto,
   MetadataSearchDto,
   PlacesResponseDto,
@@ -28,7 +29,13 @@ import { BaseService } from 'src/services/base.service.js';
 import { requireElevatedPermission } from 'src/utils/access.js';
 import { getMyPartnerIds } from 'src/utils/asset.util.js';
 import { isSmartSearchEnabled } from 'src/utils/misc.js';
-import { decodeSearchCursor, encodeSearchCursor } from 'src/utils/search-cursor.js';
+import {
+  MetadataCursor,
+  decodeMetadataCursor,
+  decodeSmartCursor,
+  encodeMetadataCursor,
+  encodeSmartCursor,
+} from 'src/utils/search-cursor.js';
 import { applyLockedVisibilityPolicy, collectFilterIds } from 'src/utils/search-filter.js';
 
 @Injectable()
@@ -239,23 +246,29 @@ export class SearchService extends BaseService {
   }
 
   private async searchMetadataV3(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
+    const order = dto.orderBy ?? DEFAULT_SEARCH_ORDER;
+    const cursor = decodeMetadataCursor(dto.cursor, order.field);
     const { filter, scope } = await this.resolveSearchScopeV3(auth, dto);
 
-    const { offset } = decodeSearchCursor(dto.cursor);
-    const size = dto.size;
     const { hasNextPage, items } = await this.searchRepository.searchMetadataV3(
-      { take: size, skip: offset },
+      { take: dto.size, cursor },
       {
         filter,
         withExif: dto.withExif,
         withPeople: dto.withPeople,
         withStacked: dto.withStacked,
-        order: dto.orderBy,
+        order,
       },
       scope,
     );
 
-    return this.mapResponse(items, { auth }, { nextCursor: hasNextPage ? encodeSearchCursor(offset + size) : null });
+    const last = items.at(-1);
+    const nextCursor =
+      hasNextPage && last
+        ? encodeMetadataCursor({ field: order.field, value: last.orderValue, id: last.id } as MetadataCursor)
+        : null;
+
+    return this.mapResponse(items, { auth }, { nextCursor });
   }
 
   private async searchStatisticsV3(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
@@ -284,21 +297,22 @@ export class SearchService extends BaseService {
       throw new BadRequestException('Smart search is not enabled');
     }
 
+    const cursor = decodeSmartCursor(dto.cursor);
     const [{ filter, scope }, embedding] = await Promise.all([
       this.resolveSearchScopeV3(auth, dto),
       this.resolveEmbedding(auth, dto, machineLearning),
     ]);
 
-    // the cursor encodes an offset, until a rank-aware strategy replaces it
-    const { offset } = decodeSearchCursor(dto.cursor);
-    const size = dto.size;
     const { hasNextPage, items } = await this.searchRepository.searchSmartV3(
-      { take: size, skip: offset },
+      { take: dto.size, cursor },
       { filter, withExif: dto.withExif, embedding },
       scope,
     );
 
-    return this.mapResponse(items, { auth }, { nextCursor: hasNextPage ? encodeSearchCursor(offset + size) : null });
+    const last = items.at(-1);
+    const nextCursor = hasNextPage && last ? encodeSmartCursor({ id: last.id }) : null;
+
+    return this.mapResponse(items, { auth }, { nextCursor });
   }
 
   private async resolveSearchScopeV3(

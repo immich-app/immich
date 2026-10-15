@@ -1065,8 +1065,31 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
     ],
   },
   {
-    name: 'cursor-offset',
-    params: [{ take: 100, skip: 100 }, { filter: { isFavorite: { eq: true } } }, scopeExample],
+    name: 'cursor',
+    params: [
+      {
+        take: 100,
+        cursor: { field: SearchOrderField.FileCreatedAt, value: DummyValue.TIME_BUCKET, id: DummyValue.UUID },
+      },
+      { filter: { isFavorite: { eq: true } } },
+      scopeExample,
+    ],
+  },
+  {
+    name: 'cursor-nullable-order',
+    params: [
+      { take: 100, cursor: { field: SearchOrderField.Rating, value: 3, id: DummyValue.UUID } },
+      { order: { field: SearchOrderField.Rating, direction: AssetOrder.Desc } },
+      scopeExample,
+    ],
+  },
+  {
+    name: 'cursor-null-tail',
+    params: [
+      { take: 100, cursor: { field: SearchOrderField.Rating, value: null, id: DummyValue.UUID } },
+      { order: { field: SearchOrderField.Rating, direction: AssetOrder.Desc } },
+      scopeExample,
+    ],
   },
 ];
 
@@ -1095,8 +1118,8 @@ export const searchSmartV3Examples: GenerateSqlQueries[] = [
     ],
   },
   {
-    name: 'cursor-offset',
-    params: [{ take: 100, skip: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
+    name: 'cursor',
+    params: [{ take: 100, cursor: { id: DummyValue.UUID } }, { embedding: DummyValue.VECTOR }, scopeExample],
   },
 ];
 
