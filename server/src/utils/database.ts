@@ -845,7 +845,7 @@ const searchOrderColumns = {
   [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
 } as const;
 
-// timestamps stay ISO strings to keep their microsecond precision, which a JS Date would truncate
+// timestamps stay ISO strings, see orderValue
 const cursorValue = (cursor: MetadataCursor) => {
   switch (cursor.field) {
     case SearchOrderField.FileCreatedAt:

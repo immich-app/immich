@@ -3,14 +3,14 @@ import z from 'zod';
 import { SearchOrder } from 'src/dtos/search.dto.js';
 import { AssetOrder, SearchOrderField } from 'src/enum.js';
 
-// timestamps keep the database's microsecond precision, which a JS Date would truncate
-const timestampValue = z.iso.datetime({ offset: true });
-
 const position = { direction: z.enum(AssetOrder), id: z.uuidv4() };
 
 const MetadataCursorSchema = z.discriminatedUnion('field', [
-  z.strictObject({ field: z.literal(SearchOrderField.FileCreatedAt), value: timestampValue, ...position }),
-  z.strictObject({ field: z.literal(SearchOrderField.LocalDateTime), value: timestampValue, ...position }),
+  z.strictObject({
+    field: z.literal([SearchOrderField.FileCreatedAt, SearchOrderField.LocalDateTime]),
+    value: z.iso.datetime({ offset: true }),
+    ...position,
+  }),
   z.strictObject({ field: z.literal(SearchOrderField.FileSizeInBytes), value: z.int().min(0).nullable(), ...position }),
   z.strictObject({ field: z.literal(SearchOrderField.Rating), value: z.int32().nullable(), ...position }),
 ]);
