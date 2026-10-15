@@ -579,18 +579,24 @@ export class SearchRepository {
     const { cursor } = pagination;
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
-      const distance = sql<number>`smart_search.embedding <=> ${options.embedding}`;
-      const items = await searchAssetBuilder(trx, options, scope)
-        .select(columns.searchAsset)
-        .select(distance.as('distance'))
-        .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+      const items = await trx
+        .with('cte', () =>
+          searchAssetBuilder(trx, options, scope)
+            .select(columns.searchAsset)
+            .select(sql<number>`smart_search.embedding <=> ${options.embedding}`.as('distance'))
+            .innerJoin('smart_search', 'asset.id', 'smart_search.assetId'),
+        )
+        .selectFrom('cte')
+        .selectAll()
         .$if(!!cursor, (qb) =>
-          qb.where((eb) => eb(eb.refTuple(distance, 'asset.id'), '>', eb.tuple(cursor!.distance, asUuid(cursor!.id)))),
+          qb.where((eb) =>
+            eb(eb.refTuple('cte.distance', 'cte.id'), '>', eb.tuple(cursor!.distance, asUuid(cursor!.id))),
+          ),
         )
         // the keyset needs an exact total order: identical images tie on distance, and the vector index only
         // approximates the distance order, so it must not drive this sort
-        .orderBy('distance')
-        .orderBy('asset.id', 'asc')
+        .orderBy('cte.distance')
+        .orderBy('cte.id', 'asc')
         .limit(pagination.take + 1)
         .execute();
       return paginationHelper(items, pagination.take);

@@ -1813,50 +1813,57 @@ limit
 begin
 set
   local vchordrq.probes = 1
-select
-  "asset"."id",
-  "asset"."updateId",
-  "asset"."createdAt",
-  "asset"."updatedAt",
-  "asset"."deletedAt",
-  "asset"."status",
-  "asset"."checksum",
-  "asset"."checksumAlgorithm",
-  "asset"."duplicateId",
-  "asset"."duration",
-  "asset"."fileCreatedAt",
-  "asset"."fileModifiedAt",
-  "asset"."isExternal",
-  "asset"."isFavorite",
-  "asset"."isOffline",
-  "asset"."isEdited",
-  "asset"."visibility",
-  "asset"."libraryId",
-  "asset"."livePhotoVideoId",
-  "asset"."localDateTime",
-  "asset"."originalFileName",
-  "asset"."originalPath",
-  "asset"."ownerId",
-  "asset"."stackId",
-  "asset"."thumbhash",
-  "asset"."type",
-  "asset"."width",
-  "asset"."height",
-  smart_search.embedding <=> $1 as "distance"
-from
-  "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
-where
-  "asset"."ownerId" = any ($2::uuid[])
-  and (
-    "asset"."visibility" != $3
-    or "asset"."ownerId" = $4
+with
+  "cte" as (
+    select
+      "asset"."id",
+      "asset"."updateId",
+      "asset"."createdAt",
+      "asset"."updatedAt",
+      "asset"."deletedAt",
+      "asset"."status",
+      "asset"."checksum",
+      "asset"."checksumAlgorithm",
+      "asset"."duplicateId",
+      "asset"."duration",
+      "asset"."fileCreatedAt",
+      "asset"."fileModifiedAt",
+      "asset"."isExternal",
+      "asset"."isFavorite",
+      "asset"."isOffline",
+      "asset"."isEdited",
+      "asset"."visibility",
+      "asset"."libraryId",
+      "asset"."livePhotoVideoId",
+      "asset"."localDateTime",
+      "asset"."originalFileName",
+      "asset"."originalPath",
+      "asset"."ownerId",
+      "asset"."stackId",
+      "asset"."thumbhash",
+      "asset"."type",
+      "asset"."width",
+      "asset"."height",
+      smart_search.embedding <=> $1 as "distance"
+    from
+      "asset"
+      left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+      inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+    where
+      "asset"."ownerId" = any ($2::uuid[])
+      and (
+        "asset"."visibility" != $3
+        or "asset"."ownerId" = $4
+      )
+      and true
   )
-  and true
+select
+  *
+from
+  "cte"
 order by
-  "distance",
-  "asset"."id" asc
+  "cte"."distance",
+  "cte"."id" asc
 limit
   $5
 commit
@@ -1865,53 +1872,60 @@ commit
 begin
 set
   local vchordrq.probes = 1
+with
+  "cte" as (
+    select
+      "asset"."id",
+      "asset"."updateId",
+      "asset"."createdAt",
+      "asset"."updatedAt",
+      "asset"."deletedAt",
+      "asset"."status",
+      "asset"."checksum",
+      "asset"."checksumAlgorithm",
+      "asset"."duplicateId",
+      "asset"."duration",
+      "asset"."fileCreatedAt",
+      "asset"."fileModifiedAt",
+      "asset"."isExternal",
+      "asset"."isFavorite",
+      "asset"."isOffline",
+      "asset"."isEdited",
+      "asset"."visibility",
+      "asset"."libraryId",
+      "asset"."livePhotoVideoId",
+      "asset"."localDateTime",
+      "asset"."originalFileName",
+      "asset"."originalPath",
+      "asset"."ownerId",
+      "asset"."stackId",
+      "asset"."thumbhash",
+      "asset"."type",
+      "asset"."width",
+      "asset"."height",
+      smart_search.embedding <=> $1 as "distance"
+    from
+      "asset"
+      left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+      inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+    where
+      "asset"."ownerId" = any ($2::uuid[])
+      and (
+        "asset"."visibility" != $3
+        or "asset"."ownerId" = $4
+      )
+      and (
+        "asset"."fileCreatedAt" < $5
+        and "asset"."fileCreatedAt" >= $6
+      )
+  )
 select
-  "asset"."id",
-  "asset"."updateId",
-  "asset"."createdAt",
-  "asset"."updatedAt",
-  "asset"."deletedAt",
-  "asset"."status",
-  "asset"."checksum",
-  "asset"."checksumAlgorithm",
-  "asset"."duplicateId",
-  "asset"."duration",
-  "asset"."fileCreatedAt",
-  "asset"."fileModifiedAt",
-  "asset"."isExternal",
-  "asset"."isFavorite",
-  "asset"."isOffline",
-  "asset"."isEdited",
-  "asset"."visibility",
-  "asset"."libraryId",
-  "asset"."livePhotoVideoId",
-  "asset"."localDateTime",
-  "asset"."originalFileName",
-  "asset"."originalPath",
-  "asset"."ownerId",
-  "asset"."stackId",
-  "asset"."thumbhash",
-  "asset"."type",
-  "asset"."width",
-  "asset"."height",
-  smart_search.embedding <=> $1 as "distance"
+  *
 from
-  "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
-where
-  "asset"."ownerId" = any ($2::uuid[])
-  and (
-    "asset"."visibility" != $3
-    or "asset"."ownerId" = $4
-  )
-  and (
-    "asset"."fileCreatedAt" < $5
-    and "asset"."fileCreatedAt" >= $6
-  )
+  "cte"
 order by
-  "distance",
-  "asset"."id" asc
+  "cte"."distance",
+  "cte"."id" asc
 limit
   $7
 commit
@@ -1920,53 +1934,61 @@ commit
 begin
 set
   local vchordrq.probes = 1
-select
-  "asset"."id",
-  "asset"."updateId",
-  "asset"."createdAt",
-  "asset"."updatedAt",
-  "asset"."deletedAt",
-  "asset"."status",
-  "asset"."checksum",
-  "asset"."checksumAlgorithm",
-  "asset"."duplicateId",
-  "asset"."duration",
-  "asset"."fileCreatedAt",
-  "asset"."fileModifiedAt",
-  "asset"."isExternal",
-  "asset"."isFavorite",
-  "asset"."isOffline",
-  "asset"."isEdited",
-  "asset"."visibility",
-  "asset"."libraryId",
-  "asset"."livePhotoVideoId",
-  "asset"."localDateTime",
-  "asset"."originalFileName",
-  "asset"."originalPath",
-  "asset"."ownerId",
-  "asset"."stackId",
-  "asset"."thumbhash",
-  "asset"."type",
-  "asset"."width",
-  "asset"."height",
-  smart_search.embedding <=> $1 as "distance"
-from
-  "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
-where
-  "asset"."ownerId" = any ($2::uuid[])
-  and (
-    "asset"."visibility" != $3
-    or "asset"."ownerId" = $4
+with
+  "cte" as (
+    select
+      "asset"."id",
+      "asset"."updateId",
+      "asset"."createdAt",
+      "asset"."updatedAt",
+      "asset"."deletedAt",
+      "asset"."status",
+      "asset"."checksum",
+      "asset"."checksumAlgorithm",
+      "asset"."duplicateId",
+      "asset"."duration",
+      "asset"."fileCreatedAt",
+      "asset"."fileModifiedAt",
+      "asset"."isExternal",
+      "asset"."isFavorite",
+      "asset"."isOffline",
+      "asset"."isEdited",
+      "asset"."visibility",
+      "asset"."libraryId",
+      "asset"."livePhotoVideoId",
+      "asset"."localDateTime",
+      "asset"."originalFileName",
+      "asset"."originalPath",
+      "asset"."ownerId",
+      "asset"."stackId",
+      "asset"."thumbhash",
+      "asset"."type",
+      "asset"."width",
+      "asset"."height",
+      smart_search.embedding <=> $1 as "distance"
+    from
+      "asset"
+      left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+      inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+    where
+      "asset"."ownerId" = any ($2::uuid[])
+      and (
+        "asset"."visibility" != $3
+        or "asset"."ownerId" = $4
+      )
+      and true
   )
-  and true
-  and (smart_search.embedding <=> $5, "asset"."id") > ($6, $7::uuid)
+select
+  *
+from
+  "cte"
+where
+  ("cte"."distance", "cte"."id") > ($5, $6::uuid)
 order by
-  "distance",
-  "asset"."id" asc
+  "cte"."distance",
+  "cte"."id" asc
 limit
-  $8
+  $7
 commit
 
 -- SearchRepository.searchStatisticsV3 (baseline)
