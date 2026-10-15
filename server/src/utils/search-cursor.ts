@@ -34,13 +34,12 @@ const decode = <T extends z.ZodType>(schema: T, cursor?: string): z.infer<T> | u
   }
 };
 
-/** The position of a page's last row, validated so that the server never hands out a cursor it would reject */
+/** Validated so that the server never hands out a cursor it would reject */
 export const encodeMetadataCursor = (
   { field, direction }: SearchOrder,
   { orderValue, id }: { orderValue: unknown; id: string },
 ): string => encode(MetadataCursorSchema.parse({ field, direction, value: orderValue, id }));
 
-/** A metadata cursor is a position in one ordering, so it must belong to the requested order */
 export const decodeMetadataCursor = (order: SearchOrder, cursor?: string): MetadataCursor | undefined => {
   const decoded = decode(MetadataCursorSchema, cursor);
   if (decoded && (decoded.field !== order.field || decoded.direction !== order.direction)) {
