@@ -30,7 +30,6 @@ import { requireElevatedPermission } from 'src/utils/access.js';
 import { getMyPartnerIds } from 'src/utils/asset.util.js';
 import { isSmartSearchEnabled } from 'src/utils/misc.js';
 import {
-  MetadataCursor,
   decodeMetadataCursor,
   decodeSmartCursor,
   encodeMetadataCursor,
@@ -247,7 +246,7 @@ export class SearchService extends BaseService {
 
   private async searchMetadataV3(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
     const order = dto.orderBy ?? DEFAULT_SEARCH_ORDER;
-    const cursor = decodeMetadataCursor(dto.cursor, order.field);
+    const cursor = decodeMetadataCursor(order, dto.cursor);
     const { filter, scope } = await this.resolveSearchScopeV3(auth, dto);
 
     const { hasNextPage, items } = await this.searchRepository.searchMetadataV3(
@@ -262,12 +261,7 @@ export class SearchService extends BaseService {
       scope,
     );
 
-    const last = items.at(-1);
-    const nextCursor =
-      hasNextPage && last
-        ? encodeMetadataCursor({ field: order.field, value: last.orderValue, id: last.id } as MetadataCursor)
-        : null;
-
+    const nextCursor = hasNextPage ? encodeMetadataCursor(order, items.at(-1)!) : null;
     return this.mapResponse(items, { auth }, { nextCursor });
   }
 
@@ -309,9 +303,7 @@ export class SearchService extends BaseService {
       scope,
     );
 
-    const last = items.at(-1);
-    const nextCursor = hasNextPage && last ? encodeSmartCursor({ id: last.id }) : null;
-
+    const nextCursor = hasNextPage ? encodeSmartCursor(items.at(-1)!) : null;
     return this.mapResponse(items, { auth }, { nextCursor });
   }
 

@@ -266,7 +266,15 @@ describe(SearchService.name, () => {
       mocks.search.searchMetadataV3.mockResolvedValue({ hasNextPage: false, items: [] });
       const secondPage = await sut.searchMetadata(auth, { size: 1, cursor: firstPage.assets.nextCursor! });
       expect(mocks.search.searchMetadataV3).toHaveBeenLastCalledWith(
-        { take: 1, cursor: { field: SearchOrderField.FileCreatedAt, value: orderValue, id: asset.id } },
+        {
+          take: 1,
+          cursor: {
+            field: SearchOrderField.FileCreatedAt,
+            direction: AssetOrder.Desc,
+            value: orderValue,
+            id: asset.id,
+          },
+        },
         expect.anything(),
         expect.anything(),
       );
@@ -286,15 +294,18 @@ describe(SearchService.name, () => {
           cursor: assets.nextCursor!,
           orderBy: { field: SearchOrderField.Rating, direction: AssetOrder.Desc },
         }),
-      ).rejects.toThrowError(new BadRequestException('Cursor is for ordering by fileCreatedAt, not rating'));
+      ).rejects.toThrowError(new BadRequestException('Cursor is for ordering by fileCreatedAt desc, not rating desc'));
     });
 
-    it('should paginate smart search with the last asset as cursor', async () => {
+    it('should paginate smart search from the distance of the last asset', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
       mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
 
-      mocks.search.searchSmartV3.mockResolvedValue({ hasNextPage: true, items: [getForAsset(asset)] as never });
+      mocks.search.searchSmartV3.mockResolvedValue({
+        hasNextPage: true,
+        items: [{ ...getForAsset(asset), distance: 0.25 }] as never,
+      });
       const firstPage = await sut.searchSmart(auth, { size: 1, filter: {}, query: 'test' });
       expect(firstPage.assets.nextPage).toBeNull();
       expect(firstPage.assets.nextCursor).toEqual(expect.any(String));
@@ -302,7 +313,7 @@ describe(SearchService.name, () => {
       mocks.search.searchSmartV3.mockResolvedValue({ hasNextPage: false, items: [] });
       const secondPage = await sut.searchSmart(auth, { size: 1, query: 'test', cursor: firstPage.assets.nextCursor! });
       expect(mocks.search.searchSmartV3).toHaveBeenLastCalledWith(
-        { take: 1, cursor: { id: asset.id } },
+        { take: 1, cursor: { distance: 0.25, id: asset.id } },
         expect.anything(),
         expect.anything(),
       );
