@@ -18,6 +18,12 @@ let defaultDatabase: Kysely<DB>;
 
 const unitVector = (index: number) => JSON.stringify(Array.from({ length: 512 }, (_, i) => (i === index ? 1 : 0)));
 
+// unit vectors at increasing angles from unitVector(0), so every asset has a distinct distance to it
+const angledVector = (step: number) =>
+  JSON.stringify(
+    Array.from({ length: 512 }, (_, i) => (i === 0 ? Math.cos(step * 0.3) : i === 1 ? Math.sin(step * 0.3) : 0)),
+  );
+
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SearchService, {
     database: db || defaultDatabase,
@@ -31,6 +37,19 @@ const setup = (db?: Kysely<DB>) => {
     ],
     mock: [LoggingRepository],
   });
+};
+
+const collectPages = async (
+  search: (cursor?: string) => Promise<{ assets: { items: { id: string }[]; nextCursor: string | null } }>,
+) => {
+  const ids: string[] = [];
+  let cursor: string | undefined;
+  do {
+    const { assets } = await search(cursor);
+    ids.push(...assets.items.map(({ id }) => id));
+    cursor = assets.nextCursor ?? undefined;
+  } while (cursor);
+  return ids;
 };
 
 beforeAll(async () => {
@@ -421,6 +440,97 @@ describe(SearchService.name, () => {
       expect(new Set(ids).size).toBe(3);
     });
 
+    it('should not repeat rows when an asset is added between pages', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const assetIds: string[] = [];
+      for (const day of ['01', '02', '03']) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, fileCreatedAt: new Date(`2024-05-${day}T10:00:00Z`) });
+        assetIds.push(asset.id);
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const firstPage = await sut.searchMetadata(auth, { filter: {}, size: 2 });
+      expect(firstPage.assets.items.map(({ id }) => id)).toEqual([assetIds[2], assetIds[1]]);
+
+      await ctx.newAsset({ ownerId: user.id, fileCreatedAt: new Date('2024-05-04T10:00:00Z') });
+
+      const secondPage = await sut.searchMetadata(auth, { cursor: firstPage.assets.nextCursor!, size: 2 });
+      expect(secondPage.assets.items.map(({ id }) => id)).toEqual([assetIds[0]]);
+      expect(secondPage.assets.nextCursor).toBeNull();
+    });
+
+    it('should keep the microsecond precision of the order value in the cursor', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const assetIds: string[] = [];
+      // all within the same millisecond, which a JS Date cannot tell apart
+      for (const fileCreatedAt of [
+        '2024-05-01T10:00:00.123001Z',
+        '2024-05-01T10:00:00.123002Z',
+        '2024-05-01T10:00:00.123003Z',
+      ]) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, fileCreatedAt });
+        assetIds.push(asset.id);
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const ids = await collectPages((cursor) =>
+        sut.searchMetadata(auth, {
+          filter: {},
+          size: 1,
+          cursor,
+          orderBy: { field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Asc },
+        }),
+      );
+
+      expect(ids).toEqual(assetIds);
+    });
+
+    it('should page into the null tail of a nullable order field', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const assetIds: string[] = [];
+      for (const rating of [5, 3, null, null]) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id });
+        await ctx.newExif({ assetId: asset.id, rating });
+        assetIds.push(asset.id);
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const ids = await collectPages((cursor) =>
+        sut.searchMetadata(auth, {
+          filter: {},
+          size: 1,
+          cursor,
+          orderBy: { field: SearchOrderField.Rating, direction: AssetOrder.Desc },
+        }),
+      );
+
+      expect(ids.slice(0, 2)).toEqual([assetIds[0], assetIds[1]]);
+      expect(ids.slice(2).toSorted()).toEqual([assetIds[2], assetIds[3]].toSorted());
+    });
+
+    it('should reject a cursor for a different order field', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      for (let i = 0; i < 2; i++) {
+        await ctx.newAsset({ ownerId: user.id });
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const { assets } = await sut.searchMetadata(auth, { filter: {}, size: 1 });
+
+      await expect(
+        sut.searchMetadata(auth, {
+          size: 1,
+          cursor: assets.nextCursor!,
+          orderBy: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc },
+        }),
+      ).rejects.toThrowError('Cursor is for ordering by fileCreatedAt, not fileSizeInBytes');
+    });
+
     it('should order by fileSizeInBytes', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
@@ -441,32 +551,29 @@ describe(SearchService.name, () => {
       expect(response.assets.items.map(({ id }) => id)).toEqual([assetIds[1], assetIds[0], assetIds[2]]);
     });
 
-    it('should order smart search results by embedding distance with cursor offsets', async () => {
+    it('should page smart search results by embedding distance with an asset cursor', async () => {
       const { ctx } = setup();
       const { user } = await ctx.newUser();
       const searchRepository = ctx.get(SearchRepository);
 
       const assetIds: string[] = [];
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 5; i++) {
         const { asset } = await ctx.newAsset({ ownerId: user.id });
-        await searchRepository.upsert(asset.id, unitVector(i));
+        await searchRepository.upsert(asset.id, angledVector(i));
         assetIds.push(asset.id);
       }
 
       const options = { filter: {}, embedding: unitVector(0) };
       const scope = { userIds: [user.id], lockedOwnerId: user.id };
-      const firstPage = await searchRepository.searchSmartV3({ take: 2 }, options, scope);
-      expect(firstPage.items.length).toBe(2);
-      expect(firstPage.items[0].id).toBe(assetIds[0]);
-      expect(firstPage.hasNextPage).toBe(true);
+      const ids: string[] = [];
+      let cursor: { id: string } | undefined;
+      do {
+        const page = await searchRepository.searchSmartV3({ take: 2, cursor }, options, scope);
+        ids.push(...page.items.map(({ id }) => id));
+        cursor = page.hasNextPage ? { id: page.items.at(-1)!.id } : undefined;
+      } while (cursor);
 
-      const secondPage = await searchRepository.searchSmartV3(
-        { take: 2, cursor: { id: firstPage.items[1].id } },
-        options,
-        scope,
-      );
-      expect(secondPage.items.length).toBe(1);
-      expect(secondPage.hasNextPage).toBe(false);
+      expect(ids).toEqual(assetIds);
     });
   });
 });
