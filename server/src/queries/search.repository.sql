@@ -1610,7 +1610,7 @@ where
     or "asset"."ownerId" = $3
   )
   and "asset"."isFavorite" = $4
-  and ("asset"."fileCreatedAt", "asset"."id") < ($5, $6)
+  and ("asset"."fileCreatedAt", "asset"."id") < ($5::timestamptz, $6::uuid)
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
@@ -1659,7 +1659,7 @@ where
   )
   and true
   and (
-    ("asset_exif"."rating", "asset"."id") < ($4, $5)
+    ("asset_exif"."rating", "asset"."id") < ($4, $5::uuid)
     or "asset_exif"."rating" is null
   )
 order by
@@ -1711,7 +1711,7 @@ where
   and true
   and (
     "asset_exif"."rating" is null
-    and "asset"."id" < $4
+    and "asset"."id" < $4::uuid
   )
 order by
   "asset_exif"."rating" desc nulls last,
@@ -1961,7 +1961,7 @@ where
     or "asset"."ownerId" = $4
   )
   and true
-  and (smart_search.embedding <=> $5, "asset"."id") > ($6, $7)
+  and (smart_search.embedding <=> $5, "asset"."id") > ($6, $7::uuid)
 order by
   "distance",
   "asset"."id" asc

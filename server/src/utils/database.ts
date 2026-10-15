@@ -845,6 +845,20 @@ const searchOrderColumns = {
   [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
 } as const;
 
+// timestamps stay ISO strings to keep their microsecond precision, which a JS Date would truncate
+const cursorValue = (cursor: MetadataCursor) => {
+  switch (cursor.field) {
+    case SearchOrderField.FileCreatedAt:
+    case SearchOrderField.LocalDateTime: {
+      return sql<Date>`${cursor.value}::timestamptz`;
+    }
+    case SearchOrderField.FileSizeInBytes:
+    case SearchOrderField.Rating: {
+      return cursor.value!;
+    }
+  }
+};
+
 /**
  * Orders by the search order and selects each row's `orderValue` for the next cursor.
  * A cursor carries its own order, and only the rows after its position are kept (keyset pagination).
@@ -864,15 +878,10 @@ export function withSearchOrder<O>(
           const { value, id } = cursor!;
           // nulls sort last, so a null cursor value means the previous page ended inside the null tail
           if (value === null) {
-            return eb.and([eb(column, 'is', null), eb('asset.id', op, id)]);
+            return eb.and([eb(column, 'is', null), eb('asset.id', op, asUuid(id))]);
           }
 
-          // timestamps stay ISO strings to keep their microsecond precision
-          const after = eb(
-            eb.refTuple(column, 'asset.id').$castTo<[string | number, string]>(),
-            op,
-            eb.tuple(value, id),
-          );
+          const after = eb(eb.refTuple(column, 'asset.id'), op, eb.tuple(cursorValue(cursor!), asUuid(id)));
           return nullable ? eb.or([after, eb(column, 'is', null)]) : after;
         }),
       )
