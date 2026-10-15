@@ -853,18 +853,18 @@ jobs:
           fi
           mise exec -- uv run --no-sync python scripts/diag.py ../e2e/test-assets
 
-      - name: Run every cuDNN engine on the failing convolutions
+      - name: Run the full tests with cuDNN engine 14 refused
         if: ${{ !cancelled() && matrix.provider == 'CUDAExecutionProvider' }}
+        env:
+          MACHINE_LEARNING_TEST_PROVIDER: ${{ matrix.provider }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           libs=(.venv/lib/python*/site-packages/nvidia/*/lib)
           export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
-          # the frontend ORT pins has no wheel for the venv's Python, so it runs beside the venv on the same cuDNN,
-          # in a plain venv: it looks for cuDNN only in its own site-packages, which an overlay of `uv run --with` is not
-          cudnn=$(mise exec -- uv pip show nvidia-cudnn-cu12 | sed -n 's/^Version: //p')
-          mise exec -- uv venv --python 3.12 "$RUNNER_TEMP/engines"
-          mise exec -- uv pip install --python "$RUNNER_TEMP/engines/bin/python" numpy nvidia-cudnn-frontend==1.12.0 \
-            "nvidia-cudnn-cu12==$cudnn"
-          "$RUNNER_TEMP/engines/bin/python" scripts/diag_engines.py "$cudnn"
+          # zig's cc, as the runner need not have a compiler
+          mise exec -- uv run --no-project --with ziglang==0.15.1 python -m ziglang cc -shared -fPIC -O2 \
+            -o "$RUNNER_TEMP/libcudnn_block_engines.so" scripts/cudnn_block_engines.c
+          LD_PRELOAD="$RUNNER_TEMP/libcudnn_block_engines.so" BLOCKED_CUDNN_ENGINES=14 mise run test-full
 
   github-files-formatting:
     name: .github Files Formatting
