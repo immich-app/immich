@@ -15,13 +15,16 @@ import {
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
+  searchOrderValue,
   searchRandomV3Examples,
   searchSmartV3Examples,
   searchStatisticsV3Examples,
   withExifInner,
+  withSearchCursor,
   withSearchOrder,
 } from 'src/utils/database.js';
-import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.js';
+import { paginationHelper } from 'src/utils/pagination.js';
+import { MetadataCursor, SmartCursor } from 'src/utils/search-cursor.js';
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
@@ -118,6 +121,11 @@ export interface SearchOrderOptions {
 export interface SearchPaginationOptions {
   page: number;
   size: number;
+}
+
+export interface SearchCursorPagination<TCursor> {
+  take: number;
+  cursor?: TCursor;
 }
 
 type BaseAssetSearchOptions = SearchDateOptions &
@@ -541,11 +549,16 @@ export class SearchRepository {
 
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchMetadataV3Examples)
-  async searchMetadataV3(pagination: PaginationOptions, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
-    const items = await withSearchOrder(searchAssetBuilder(this.db, options, scope), options.order)
+  async searchMetadataV3(
+    pagination: SearchCursorPagination<MetadataCursor>,
+    options: AssetSearchBuilderV3Options,
+    scope: AssetSearchScope,
+  ) {
+    const qb = withSearchCursor(searchAssetBuilder(this.db, options, scope), options.order, pagination.cursor);
+    const items = await withSearchOrder(qb, options.order)
       .select(columns.searchAsset)
+      .select(searchOrderValue(options.order))
       .limit(pagination.take + 1)
-      .offset(pagination.skip ?? 0)
       .execute();
     return paginationHelper(items, pagination.take);
   }
@@ -567,19 +580,27 @@ export class SearchRepository {
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchSmartV3Examples)
   searchSmartV3(
-    pagination: PaginationOptions,
+    pagination: SearchCursorPagination<SmartCursor>,
     options: Omit<AssetSearchBuilderV3Options, 'order'> & { embedding: string },
     scope: AssetSearchScope,
   ) {
+    const { cursor } = pagination;
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       const items = await searchAssetBuilder(trx, options, scope)
         .select(columns.searchAsset)
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+        // distances of different assets practically never tie, so the cursor asset's distance alone marks the position
+        .$if(!!cursor, (qb) =>
+          qb.where(
+            sql`smart_search.embedding <=> ${options.embedding}`,
+            '>',
+            sql`(select cursor_asset.embedding <=> ${options.embedding} from smart_search cursor_asset where cursor_asset."assetId" = ${cursor!.id})`,
+          ),
+        )
+        // no id tie-break: a secondary sort key keeps the query from using the vector index
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
-        .orderBy('asset.id', 'asc')
         .limit(pagination.take + 1)
-        .offset(pagination.skip ?? 0)
         .execute();
       return paginationHelper(items, pagination.take);
     });
