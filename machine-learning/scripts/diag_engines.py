@@ -1,7 +1,7 @@
 """Every engine cuDNN's heuristics offer for the convolutions that break on Turing, built as ORT builds them (fp16 data,
-fp32 compute, NCHW, the convolution alone) and run on random, zero and one inputs against an fp32 reference: which
-engines are wrong, and how. Needs nvidia-cudnn-frontend, numpy and the CUDA runtime on LD_LIBRARY_PATH.
-Run: diag_engines.py <the nvidia-cudnn-cu12 version it must load>."""
+fp32 compute, the convolution alone) in NCHW and in prefer_nhwc's NHWC, and run on random, zero and one inputs against
+an fp32 reference: which engines are wrong, and how. Needs nvidia-cudnn-frontend, numpy and the CUDA runtime on
+LD_LIBRARY_PATH. Run: diag_engines.py <the nvidia-cudnn-cu12 version it must load>."""
 
 import ctypes
 import sys
@@ -20,7 +20,7 @@ CASES = [
     ("PP-OCRv6_medium rec node_Conv_9", (6, 128, 24, 112), (64, 128, 3, 3), 2, 1),
     ("PP-OCRv5_mobile det merged SE up (grouped)", (1, 96, 1, 1), (384, 24, 1, 1), 1, 0),
 ]
-ENGINES = {cudnn.heur_mode.A: 12, cudnn.heur_mode.B: 12, cudnn.heur_mode.FALLBACK: 3}  # the first few of each list
+MODES = {cudnn.heur_mode.A: 4, cudnn.heur_mode.B: 4}  # the first few of each list
 
 cudart = ctypes.CDLL("libcudart.so.12")
 cudart.cudaGetErrorName.restype = ctypes.c_char_p
@@ -51,8 +51,13 @@ class Buffer:
         cudart.cudaFree(self.ptr)
 
 
-def packed(dims: tuple[int, ...]) -> list[int]:
-    return [int(np.prod(dims[i + 1 :])) for i in range(len(dims))]
+def strides(dims: tuple[int, ...], nhwc: bool) -> list[int]:
+    n, c, h, w = dims
+    return [c * h * w, 1, w * c, c] if nhwc else [c * h * w, h * w, w, 1]
+
+
+def laid(array: NDArray[np.float16], nhwc: bool) -> NDArray[np.float16]:
+    return np.ascontiguousarray(array.transpose(0, 2, 3, 1)) if nhwc else array
 
 
 def reference(x: NDArray[np.float16], w: NDArray[np.float16], stride: int, pad: int) -> NDArray[np.float32]:
@@ -104,16 +109,21 @@ def verdict(got: NDArray[np.float16], ref: NDArray[np.float32]) -> tuple[bool, s
 
 
 def graph(
-    handle: int, xs: tuple[int, ...], ws: tuple[int, ...], ys: tuple[int, ...], stride: int, pad: int, mode: Any
+    handle: int,
+    xs: tuple[int, ...],
+    ws: tuple[int, ...],
+    ys: tuple[int, ...],
+    stride: int,
+    pad: int,
+    mode: Any,
+    nhwc: bool,
 ) -> tuple[Any, dict[str, int]]:
+    half = cudnn.data_type.HALF
     g = cudnn.pygraph(
-        io_data_type=cudnn.data_type.HALF,
-        intermediate_data_type=cudnn.data_type.HALF,
-        compute_data_type=cudnn.data_type.FLOAT,
-        handle=handle,
+        io_data_type=half, intermediate_data_type=half, compute_data_type=cudnn.data_type.FLOAT, handle=handle
     )
-    x = g.tensor(name="x", dim=list(xs), stride=packed(xs), data_type=cudnn.data_type.HALF)
-    w = g.tensor(name="w", dim=list(ws), stride=packed(ws), data_type=cudnn.data_type.HALF)
+    x = g.tensor(name="x", dim=list(xs), stride=strides(xs, nhwc), data_type=half)
+    w = g.tensor(name="w", dim=list(ws), stride=strides(ws, nhwc), data_type=half)
     y = g.conv_fprop(
         image=x,
         weight=w,
@@ -123,7 +133,7 @@ def graph(
         compute_data_type=cudnn.data_type.FLOAT,
         name="conv",
     )
-    y.set_output(True).set_dim(list(ys)).set_stride(packed(ys))
+    y.set_output(True).set_dim(list(ys)).set_stride(strides(ys, nhwc))
     g.validate()
     g.build_operation_graph()
     g.create_execution_plans([mode])
@@ -151,61 +161,65 @@ def main() -> None:
         }
         refs = {label: reference(x, w, stride, pad) for label, x in inputs.items()}
         xb, wb, yb = Buffer(int(np.prod(xs)) * 2), Buffer(w.nbytes), Buffer(int(np.prod(ys)) * 2)
-        wb.put(w)
         print(f"\n== {name}: x {list(xs)} w {list(ws)} stride {stride} pad {pad} -> y {list(ys)}")
-        for mode, limit in ENGINES.items():
-            # the tensor-core engines are the ones ORT's use_tf32=0 deselects, for half precision too
-            plans, uids = graph(handle, xs, ws, ys, stride, pad, mode)
-            plans.deselect_numeric_notes([cudnn.numerical_note.TENSOR_CORE])
-            everything: tuple[Any, dict[str, int]] | None = None
-            picks: dict[str, int] = {}
-            count = plans.get_execution_plan_count()
-            print(f"  {mode.name}: {count} engine configs")
-            for index in range(count):
-                past = index >= limit  # past the first few, only the engine use_tf32=0 would run is worth a look
-                if past and "use_tf32=0" in picks:
-                    break
-                engine = plans.get_plan_name_at_index(index)
-                built, built_uids, tensor_core = plans, uids, False
-                try:
-                    plans.build_plan_at_index(index)
-                except Exception as e:
-                    if "Deselecting" not in str(e):
-                        print(f"    {index:2} {engine}: does not build ({str(e).splitlines()[0][:100]})")
-                        continue
-                    if past:
-                        continue
-                    tensor_core = True
-                    everything = everything or graph(handle, xs, ws, ys, stride, pad, mode)
-                    built, built_uids = everything
+        for layout, nhwc in (("NCHW", False), ("NHWC", True)):  # NHWC strides, as prefer_nhwc has ORT build it
+            wb.put(laid(w, nhwc))
+            got_shape = (n, ys[2], ys[3], k) if nhwc else ys
+            for mode, limit in MODES.items():
+                # the tensor-core engines are the ones ORT's use_tf32=0 deselects, for half precision too
+                plans, uids = graph(handle, xs, ws, ys, stride, pad, mode, nhwc)
+                plans.deselect_numeric_notes([cudnn.numerical_note.TENSOR_CORE])
+                everything: tuple[Any, dict[str, int]] | None = None
+                picks: dict[str, int] = {}
+                count = plans.get_execution_plan_count()
+                print(f"  {layout}, {mode.name}: {count} engine configs")
+                for index in range(count):
+                    past = index >= limit  # past the first few, only the engine use_tf32=0 would run is worth a look
+                    if past and "use_tf32=0" in picks:
+                        break
+                    engine = plans.get_plan_name_at_index(index)
+                    built, built_uids, tensor_core = plans, uids, False
                     try:
-                        built.build_plan_at_index(index)
+                        plans.build_plan_at_index(index)
                     except Exception as e:
-                        print(f"    {index:2} {engine} [tensor core]: does not build ({str(e).splitlines()[0][:100]})")
-                        continue
-                picks.setdefault("ORT default", index)
-                if not tensor_core:
-                    picks.setdefault("use_tf32=0", index)
-                workspace = Buffer(built.get_workspace_size_plan_at_index(index))
-                results = []
-                for label, x in inputs.items():
-                    xb.put(x)
-                    pack = {built_uids["x"]: xb.ptr.value, built_uids["w"]: wb.ptr.value, built_uids["y"]: yb.ptr.value}
-                    try:
-                        built._execute_plan_at_index(pack, workspace.ptr.value, index, None)
-                        cuda(cudart.cudaDeviceSynchronize())
-                        cuda(cudart.cudaGetLastError())
-                        results.append((label, *verdict(yb.get(ys), refs[label])))
-                    except Exception as e:
-                        results.append((label, False, f"{type(e).__name__}: {str(e).splitlines()[0][:120]}"))
-                tag = " [tensor core]" if tensor_core else ""
-                if all(ok for _, ok, _ in results):
-                    print(f"    {index:2} {engine}{tag}: ok")
-                else:
-                    print(f"    {index:2} {engine}{tag}: WRONG")
-                    for label, ok, text in results:
-                        print(f"         {label}: {text}")
-            print(f"    picked: {picks}")
+                        if "Deselecting" not in str(e):
+                            print(f"    {index:2} {engine}: does not build ({str(e).splitlines()[0][:100]})")
+                            continue
+                        if past:
+                            continue
+                        tensor_core = True
+                        everything = everything or graph(handle, xs, ws, ys, stride, pad, mode, nhwc)
+                        built, built_uids = everything
+                        try:
+                            built.build_plan_at_index(index)
+                        except Exception as e:
+                            error = str(e).splitlines()[0][:100]
+                            print(f"    {index:2} {engine} [tensor core]: does not build ({error})")
+                            continue
+                    picks.setdefault("ORT default", index)
+                    if not tensor_core:
+                        picks.setdefault("use_tf32=0", index)
+                    workspace = Buffer(built.get_workspace_size_plan_at_index(index))
+                    results = []
+                    for label, x in inputs.items():
+                        xb.put(laid(x, nhwc))
+                        pack = {built_uids[t]: buffer.ptr.value for t, buffer in (("x", xb), ("w", wb), ("y", yb))}
+                        try:
+                            built._execute_plan_at_index(pack, workspace.ptr.value, index, None)
+                            cuda(cudart.cudaDeviceSynchronize())
+                            cuda(cudart.cudaGetLastError())
+                            got = yb.get(got_shape)
+                            results.append((label, *verdict(got.transpose(0, 3, 1, 2) if nhwc else got, refs[label])))
+                        except Exception as e:
+                            results.append((label, False, f"{type(e).__name__}: {str(e).splitlines()[0][:120]}"))
+                    tag = " [tensor core]" if tensor_core else ""
+                    if all(ok for _, ok, _ in results):
+                        print(f"    {index:2} {engine}{tag}: ok")
+                    else:
+                        print(f"    {index:2} {engine}{tag}: WRONG")
+                        for label, ok, text in results:
+                            print(f"         {label}: {text}")
+                print(f"    picked: {picks}")
 
 
 main()
