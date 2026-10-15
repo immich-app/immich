@@ -26,6 +26,35 @@ Immich automatically queues a Sidecar Write job after editing the description, r
 All other fields (e.g. `Creator`, `Source`, IPTC, Lightroom edits) remain in the `.xmp` file and are **not searchable** in Immich.
 :::
 
+## Lightroom Development Edits
+
+Immich applies supported Lightroom development settings from XMP when generating
+thumbnails, previews and enabled full-size caches. Keep the original photo and its
+sidecar together; no exported copy needs to be added to the library. The renderer
+is included in the server image and does not require the Lightcraft application.
+
+The same asset displays the developed result in the web and mobile apps.
+Downloading the unedited original returns the source bytes. Immich's own crop and
+rotation edits are applied after the Lightroom development settings.
+
+External sidecars take precedence over embedded XMP. Library scans and sidecar
+synchronization detect changes; library watching also detects sidecar additions,
+changes and removals. Removing a sidecar refreshes the asset without deleting its
+original. If rendering fails, Immich retains the last successfully generated caches
+and logs the error.
+
+Rendering uses [Lightcraft](https://github.com/storytold/lightcraft) and approximates
+Lightroom's appearance. Support varies by adjustment and source format; color,
+camera profiles, noise reduction and sharpening can differ. AI edits, lens blur and
+external profile-table resources are not reproduced. Unsupported settings are
+reported in the server logs. A saved Lightroom edit is not a guarantee of matching
+Lightroom output.
+
+For existing photos, run **Sidecar → Sync** to reread linked sidecars or
+**Sidecar → Discover** to find newly added files, then allow the queued preview
+generation jobs to finish. Run **Generate Thumbnails → All** after changing the
+renderer version to refresh already generated previews.
+
 ## File Naming Rules
 
 A sidecar must share the base name of the media file:

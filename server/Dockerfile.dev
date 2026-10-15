@@ -1,4 +1,4 @@
-FROM rust:1.90.0-trixie@sha256:e227f20ec42af3ea9a3c9c1dd1b2012aa15f12279b5e9d5fb890ca1c2bb5726c AS sidecar-renderer
+FROM rust:1.98.0-trixie@sha256:620dbcd124499c59e2406d3741574b5c5838cf9eb9656f0c3a03948f79b02959 AS sidecar-renderer
 
 ARG TARGETPLATFORM
 

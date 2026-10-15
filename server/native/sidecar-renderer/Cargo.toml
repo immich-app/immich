@@ -2,18 +2,18 @@
 name = "immich-sidecar-renderer"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.90"
+rust-version = "1.94"
 publish = false
 
 [dependencies]
 bytemuck = "1"
-lightcraft-engine = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4", default-features = false }
-lightcraft-meta = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
-lightcraft-codecs = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4", default-features = false }
-lightcraft-color = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
-lightcraft-geom = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
-lightcraft-raster = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
-lightcraft-raw = { git = "https://github.com/ilyador/lightcraft", rev = "172ec37ce5749524faa6606a1a5d0e74024ad5b4" }
+lightcraft-engine = { git = "https://github.com/ilyador/lightcraft", rev = "80b44dee4e7d37f41871a0ee03d733a5679a5f0a", default-features = false }
+lightcraft-meta = { git = "https://github.com/ilyador/lightcraft", rev = "80b44dee4e7d37f41871a0ee03d733a5679a5f0a" }
+lightcraft-codecs = { git = "https://github.com/ilyador/lightcraft", rev = "80b44dee4e7d37f41871a0ee03d733a5679a5f0a", default-features = false }
+lightcraft-color = { git = "https://github.com/ilyador/lightcraft", rev = "80b44dee4e7d37f41871a0ee03d733a5679a5f0a" }
+lightcraft-geom = { git = "https://github.com/ilyador/lightcraft", rev = "80b44dee4e7d37f41871a0ee03d733a5679a5f0a" }
+lightcraft-raster = { git = "https://github.com/ilyador/lightcraft", rev = "80b44dee4e7d37f41871a0ee03d733a5679a5f0a" }
+lightcraft-raw = { git = "https://github.com/ilyador/lightcraft", rev = "80b44dee4e7d37f41871a0ee03d733a5679a5f0a" }
 quick-xml = "0.38"
 roxmltree = "0.21"
 serde = { version = "1", features = ["derive"] }

@@ -4,19 +4,20 @@ This server helper develops an original photo using Lightroom XMP and streams an
 RGBA bitmap into Immich's existing preview pipeline. It writes no image files.
 Lightcraft is a pinned Cargo Git dependency: its public XMP mapper and CPU pipeline
 are called directly, without copying their implementation or running its app.
-The current [fork pin](https://github.com/ilyador/lightcraft/commit/172ec37ce5749524faa6606a1a5d0e74024ad5b4)
+The current [fork pin](https://github.com/ilyador/lightcraft/commit/80b44dee4e7d37f41871a0ee03d733a5679a5f0a)
 keeps camera-preview calibration active, respects declared embedded-preview
 color spaces before resizing, retains saved numeric white balance,
 selects Enhanced DNG pixels and provides a source loader independent of external
 camera-profile configuration. It also retains imported-profile monochrome
 treatment and supported profile parameters, curves and conventional detail
-controls. Local mask sharpening is independent of global Detail-panel Masking.
-All eight Lightcraft CI gates pass at this revision; Lightroom fidelity results
-remain mixed. Camera support follows file metadata and decoder capabilities;
-the Immich adapter has no camera-model branches.
+controls. It consumes the rendering work in
+[Lightcraft PR #1226](https://github.com/storytold/lightcraft/pull/1226);
+Lightroom fidelity remains incomplete, including source color/exposure, profiles,
+curve refinement, noise reduction and sharpening. Camera support follows file
+metadata and decoder capabilities; the Immich adapter has no camera-model branches.
 
-Build with Rust and the system LibRaw development package (`libraw-dev` on Debian
-or Ubuntu; version 0.21 or newer):
+Build with Rust 1.94 or newer (Docker and CI use 1.98.0) and the system LibRaw
+development package (`libraw-dev` on Debian or Ubuntu; version 0.21 or newer):
 
 ```sh
 cargo build --release --locked
@@ -63,7 +64,7 @@ Stdout contains a single JSON line (at most 64 KiB), then exactly
 ```json
 {
   "version": 1,
-  "rendererVersion": "immich-sidecar-renderer/0.1.0/adapter/BUILD_HASH/lightcraft/172ec37ce5749524faa6606a1a5d0e74024ad5b4/libraw/0.21.5-Release",
+  "rendererVersion": "immich-sidecar-renderer/0.1.0/adapter/BUILD_HASH/lightcraft/80b44dee4e7d37f41871a0ee03d733a5679a5f0a/libraw/0.21.5-Release",
   "status": "developed",
   "isDeveloped": true,
   "width": 2160,
@@ -140,17 +141,13 @@ Enable switches and unsupported nonzero local sliders/blend modes are reported. 
 appearance remains approximate. Transparent inputs with applicable edits are
 rejected because the current Lightcraft pipeline discards source alpha.
 
-The current local helper passes 26 tests (7 unit and 19 protocol), locked Clippy
-with warnings denied and formatting checks. Unit and protocol tests cover orientation combinations,
-rotated crop corner round trips, the subprocess contract, exposure, crop, short-edge sizing,
-upscale clamping, native RAW dimensions, embedded grayscale/crop settings,
-external precedence, AlreadyApplied handling, decoded-source white-balance
-targets, missing runtime profile tables, Amount-0 monochrome treatment,
-output color space, orientation, skipped packets and malformed
-XML/transparency errors. Real camera samples are local validation data and must
-not be committed or modified. An offline DSC_0045 check against `2d2465b1`,
-before the local-sharpening correction, returned 900 × 600 from its
-6000 × 4000 native base, with maximum 8-bit RGB channel range 1 and unchanged
-source/XMP hashes. This verifies monochrome
-preservation, not Lightroom appearance parity. `LIGHTCRAFT_PROFILE=1` enables source and existing
-pipeline timing diagnostics on stderr.
+Unit and protocol tests cover orientation combinations, rotated crop corner round
+trips, the subprocess contract, exposure, crop, short-edge sizing, upscale
+clamping, native RAW dimensions, embedded grayscale/crop settings, external
+precedence, AlreadyApplied handling, decoded-source white-balance targets, missing
+runtime profile tables, Amount-0 monochrome treatment, output color space, skipped
+packets and malformed XML/transparency errors. Fixtures are generated in the
+tests; no private photographs or Lightroom exports are required. These checks
+verify the integration contract, not Lightroom appearance parity.
+
+`LIGHTCRAFT_PROFILE=1` enables source and pipeline timing diagnostics on stderr.

@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 const LIGHTCRAFT_REV: &str = match option_env!("IMMICH_LIGHTCRAFT_REV") {
     Some(revision) => revision,
-    None => "172ec37ce5749524faa6606a1a5d0e74024ad5b4",
+    None => "80b44dee4e7d37f41871a0ee03d733a5679a5f0a",
 };
 
 fn version() -> String {

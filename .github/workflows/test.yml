@@ -48,6 +48,10 @@ jobs:
               - 'mise.toml'
               - 'packages/plugin-core/**'
               - 'packages/plugin-sdk/**'
+            sidecar-renderer:
+              - 'server/native/sidecar-renderer/**'
+              - 'server/Dockerfile'
+              - 'server/Dockerfile.dev'
             cli:
               - 'packages/cli/**'
               - 'packages/sdk/**'
@@ -197,6 +201,38 @@ jobs:
 
       - name: Run ci-unit
         run: mise run //server:ci-unit
+
+  sidecar-renderer-tests:
+    name: Test & Lint Sidecar Renderer
+    needs: pre-job
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run)['sidecar-renderer'] == true }}
+    runs-on: ubuntu-latest
+    container:
+      image: rust:1.98.0-trixie@sha256:620dbcd124499c59e2406d3741574b5c5838cf9eb9656f0c3a03948f79b02959
+    env:
+      CARGO_BUILD_JOBS: 2
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: server/native/sidecar-renderer
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install LibRaw development package
+        run: apt-get update && apt-get install -y --no-install-recommends libraw-dev pkg-config
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Run clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Run tests
+        run: cargo test --locked
 
   cli-unit-tests:
     name: Unit Test CLI

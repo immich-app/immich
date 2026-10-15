@@ -51,7 +51,7 @@ fn frame(output: &Output) -> (Value, &[u8]) {
             pixels.len() as u64,
             header["width"].as_u64().unwrap() * header["height"].as_u64().unwrap() * 4
         );
-        assert!(pixels.chunks_exact(4).all(|p| p[3] == 255));
+        assert!(pixels.as_chunks::<4>().0.iter().all(|p| p[3] == 255));
     } else {
         assert!(pixels.is_empty());
     }
@@ -167,7 +167,13 @@ fn raw_without_external_xmp_decodes_native_pixels_and_reports_the_logical_base()
         ),
         (Some(48), Some(32))
     );
-    assert!(pixels.chunks_exact(4).any(|p| p[0].abs_diff(p[2]) > 10));
+    assert!(
+        pixels
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .any(|p| p[0].abs_diff(p[2]) > 10)
+    );
 }
 
 #[test]
@@ -187,7 +193,9 @@ fn embedded_xmp_applies_black_and_white_and_crop_at_native_resolution() {
     );
     assert!(
         pixels
-            .chunks_exact(4)
+            .as_chunks::<4>()
+            .0
+            .iter()
             .all(|p| p[0].abs_diff(p[1]) <= 1 && p[1].abs_diff(p[2]) <= 1)
     );
 }
@@ -200,7 +208,13 @@ fn external_xmp_takes_precedence_over_embedded_development() {
     let output = call_raw(&dir, &["--sidecar", sidecar.to_str().unwrap()]);
     let (header, pixels) = frame(&output);
     assert_eq!(header["isDeveloped"], true);
-    assert!(pixels.chunks_exact(4).any(|p| p[0].abs_diff(p[2]) > 10));
+    assert!(
+        pixels
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .any(|p| p[0].abs_diff(p[2]) > 10)
+    );
 }
 
 #[test]
@@ -234,7 +248,9 @@ fn missing_runtime_profile_table_is_reported_and_amount_zero_preserves_monochrom
     }));
     assert!(
         pixels
-            .chunks_exact(4)
+            .as_chunks::<4>()
+            .0
+            .iter()
             .all(|p| p[0].abs_diff(p[1]) <= 1 && p[1].abs_diff(p[2]) <= 1)
     );
 
@@ -246,7 +262,9 @@ fn missing_runtime_profile_table_is_reported_and_amount_zero_preserves_monochrom
     }));
     assert!(
         pixels
-            .chunks_exact(4)
+            .as_chunks::<4>()
+            .0
+            .iter()
             .all(|p| p[0].abs_diff(p[1]) <= 1 && p[1].abs_diff(p[2]) <= 1)
     );
 }
@@ -340,7 +358,13 @@ fn external_supported_neutral_profiles_override_embedded_monochrome() {
         let (header, pixels) = frame(&output);
         assert_eq!(header["status"], "developed", "{definition}");
         assert_eq!(header["isDeveloped"], true, "{definition}");
-        assert!(pixels.chunks_exact(4).any(|p| p[0].abs_diff(p[2]) > 10));
+        assert!(
+            pixels
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .any(|p| p[0].abs_diff(p[2]) > 10)
+        );
         assert!(!header["unmapped"].as_array().unwrap().iter().any(|name| {
             name.as_str()
                 .is_some_and(|name| name.contains("missing resource"))
@@ -356,7 +380,9 @@ fn exposure_changes_pixels_and_crop_preserves_short_edge_size() {
     let mean = |output: &Output| {
         let (_, pixels) = frame(output);
         pixels
-            .chunks_exact(4)
+            .as_chunks::<4>()
+            .0
+            .iter()
             .map(|p| p[0] as u64 + p[1] as u64 + p[2] as u64)
             .sum::<u64>() as f64
             / (pixels.len() as f64 * 0.75)
@@ -569,7 +595,7 @@ fn rotated_crop_selects_the_original_sensor_region() {
         (Some(100), Some(80))
     );
     // The x ramp comes from the selected right half even after rotation (source red >=60).
-    assert!(rotated_pixels.chunks_exact(4).all(|p| p[0] >= 60));
+    assert!(rotated_pixels.as_chunks::<4>().0.iter().all(|p| p[0] >= 60));
 }
 
 #[test]
