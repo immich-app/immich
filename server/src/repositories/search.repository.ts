@@ -12,6 +12,7 @@ import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import {
   anyUuid,
+  asUuid,
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
@@ -584,7 +585,7 @@ export class SearchRepository {
         .select(distance.as('distance'))
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .$if(!!cursor, (qb) =>
-          qb.where((eb) => eb(eb.refTuple(distance, 'asset.id'), '>', eb.tuple(cursor!.distance, cursor!.id))),
+          qb.where((eb) => eb(eb.refTuple(distance, 'asset.id'), '>', eb.tuple(cursor!.distance, asUuid(cursor!.id)))),
         )
         // the keyset needs an exact total order: identical images tie on distance, and the vector index only
         // approximates the distance order, so it must not drive this sort
