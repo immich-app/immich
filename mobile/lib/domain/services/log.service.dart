@@ -110,16 +110,16 @@ class LogService {
 
   Future<List<LogMessage>> getMessages() async {
     final logsFromDb = await _logRepository.getAll();
-    return _redact([..._msgBuffer.reversed, ...logsFromDb]);
+    return redact([..._msgBuffer.reversed, ...logsFromDb], held());
   }
 
-  List<LogMessage> _redact(List<LogMessage> messages) {
+  static List<LogMessage> redact(List<LogMessage> messages, [Map<String, String> held = const {}]) {
     final names = {
       // a library can print a url's host on its own
       for (final m in messages)
         for (final text in [m.message, ?m.error, ?m.stack])
           for (final url in _url.allMatches(text)) ?Uri.tryParse(url[0]!)?.host: 'host',
-      for (final MapEntry(key: value, value: name) in _held().entries) value.toLowerCase(): name,
+      for (final MapEntry(key: value, value: name) in held.entries) value.toLowerCase(): name,
     };
     // under 8 chars would match normal words
     final values = [
@@ -147,7 +147,7 @@ class LogService {
   }
 
   // the values this install holds, by the name a reader of the logs knows them by
-  Map<String, String> _held() {
+  Map<String, String> held() {
     final network = _settingsRepository.appConfig.network;
     final urls = {
       ?Store.tryGet(StoreKey.serverUrl): 'server url',
