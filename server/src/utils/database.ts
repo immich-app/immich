@@ -847,13 +847,14 @@ const searchOrderColumns = {
 
 /**
  * Orders by the search order and selects each row's `orderValue` for the next cursor.
- * With a cursor, only the rows after its position are kept (keyset pagination).
+ * A cursor carries its own order, and only the rows after its position are kept (keyset pagination).
  */
 export function withSearchOrder<O>(
   qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', O>,
-  { field, direction }: SearchOrder = DEFAULT_SEARCH_ORDER,
-  cursor?: MetadataCursor,
+  order: SearchOrder | MetadataCursor = DEFAULT_SEARCH_ORDER,
 ) {
+  const { field, direction } = order;
+  const cursor = 'id' in order ? order : undefined;
   const { column, nullable } = searchOrderColumns[field];
   const op = direction === AssetOrder.Asc ? '>' : '<';
   return (
