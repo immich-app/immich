@@ -594,8 +594,7 @@ export class SearchRepository {
           ),
         )
         // The keyset needs an exact total order: identical images tie on distance, and the vector index only
-        // approximates the distance order. Ordering by (distance, id) keeps the index from driving the sort, so each
-        // page scans and sorts every matching embedding. Probes stay set in case the planner still uses the index.
+        // approximates the distance order. Probes stay set in case the planner still uses the index.
         .orderBy('cte.distance')
         .orderBy('cte.id', 'asc')
         .limit(pagination.take + 1)

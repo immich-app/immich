@@ -65,7 +65,6 @@ const collectSmartPages = (search: (cursor?: SmartCursor) => Promise<{ items: Sm
     return { ids: items.map(({ id }) => id), next: hasNextPage ? items.at(-1) : undefined };
   });
 
-// one asset per step, with an embedding at that step's angle from the query
 const seedSmartSearch = async ({ ctx }: ReturnType<typeof setup>, steps: number[]) => {
   const { user } = await ctx.newUser();
   const searchRepository = ctx.get(SearchRepository);
@@ -571,7 +570,6 @@ describe(SearchService.name, () => {
     });
 
     it('should not skip smart search results at the same distance as the cursor', async () => {
-      // identical images have identical embeddings, so the middle three tie on their distance to any query
       const { searchRepository, assetIds, options, scope } = await seedSmartSearch(setup(), [0, 1, 1, 1, 2]);
       const ids = await collectSmartPages((cursor) =>
         searchRepository.searchSmartV3({ take: 2, cursor }, options, scope),

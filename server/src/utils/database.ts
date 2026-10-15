@@ -859,10 +859,6 @@ const cursorValue = (cursor: MetadataCursor) => {
   }
 };
 
-/**
- * Orders by the search order and selects each row's `orderValue` for the next cursor.
- * A cursor carries its own order, and only the rows after its position are kept (keyset pagination).
- */
 export function withSearchOrder<O>(
   qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', O>,
   order: SearchOrder | MetadataCursor = DEFAULT_SEARCH_ORDER,
@@ -876,7 +872,6 @@ export function withSearchOrder<O>(
       .$if(!!cursor, (qb) =>
         qb.where((eb) => {
           const { value, id } = cursor!;
-          // nulls sort last, so a null cursor value means the previous page ended inside the null tail
           if (value === null) {
             return eb.and([eb(column, 'is', null), eb('asset.id', op, asUuid(id))]);
           }
