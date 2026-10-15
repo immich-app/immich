@@ -548,7 +548,7 @@ export class SearchRepository {
     scope: AssetSearchScope,
   ) {
     const qb = searchAssetBuilder(this.db, options, scope).select(columns.searchAsset);
-    const items = await withSearchOrder(qb, options.order, pagination.cursor)
+    const items = await withSearchOrder(qb, pagination.cursor ?? options.order)
       .limit(pagination.take + 1)
       .execute();
     return paginationHelper(items, pagination.take);
