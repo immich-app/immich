@@ -20,7 +20,8 @@ struct ImageEntry: TimelineEntry {
     asset: Asset,
     dateOffset: Int,
     subtitle: String? = nil,
-    forceFullColor: Bool = true
+    forceFullColor: Bool = true,
+    targetSize: CGSize? = nil
   )
     async throws -> Self
   {
@@ -29,7 +30,7 @@ struct ImageEntry: TimelineEntry {
       value: dateOffset * 20,
       to: Date.now
     )!
-    let image = try await api.fetchImage(asset: asset)
+    let image = try await api.fetchImage(asset: asset, targetSize: targetSize)
 
     return Self(
       date: entryDate,
@@ -133,7 +134,8 @@ func generateRandomEntries(
   count: Int,
   filter: SearchFilter = Album.NONE.filter,
   subtitle: String? = nil,
-  forceFullColor: Bool = true
+  forceFullColor: Bool = true,
+  targetSize: CGSize? = nil
 )
   async throws -> [ImageEntry]
 {
@@ -150,7 +152,8 @@ func generateRandomEntries(
           asset: asset,
           dateOffset: dateOffset,
           subtitle: subtitle,
-          forceFullColor: forceFullColor
+          forceFullColor: forceFullColor,
+          targetSize: targetSize
         )
       }
     }

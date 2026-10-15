@@ -17,7 +17,7 @@ config_roots = [
 
 [tools]
 node = "24.21.0"
-pnpm = "11.27.1"
+pnpm = "11.28.5"
 terragrunt = "1.1.6"
 opentofu = "1.12.6"
 "npm:@openapitools/openapi-generator-cli" = "2.41.0"
@@ -39,6 +39,13 @@ macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 [settings]
 pin = true
 lockfile = true
+lockfile_platforms = [
+  "linux-x64",
+  "linux-arm64",
+  "macos-x64",
+  "macos-arm64",
+  "windows-x64",
+]
 
 [tasks.release]
 run = [

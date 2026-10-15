@@ -108,7 +108,7 @@
     "prettier-plugin-sort-json": "^4.1.1",
     "prettier-plugin-svelte": "^4.0.0",
     "rollup-plugin-visualizer": "^7.0.0",
-    "svelte": "5.57.1",
+    "svelte": "5.57.2",
     "svelte-check": "^4.4.6",
     "svelte-eslint-parser": "^1.8.1",
     "tailwindcss": "^4.2.4",

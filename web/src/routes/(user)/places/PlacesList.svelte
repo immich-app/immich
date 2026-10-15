@@ -21,10 +21,10 @@
   let {
     places = $bindable([]),
     searchQuery = '',
-    // eslint-disable-next-line no-useless-assignment
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
     searchResultCount = $bindable(0),
     userSettings,
-    // eslint-disable-next-line no-useless-assignment
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
     placesGroupIds = $bindable([]),
   }: Props = $props();
 
