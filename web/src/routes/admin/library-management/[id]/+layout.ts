@@ -1,4 +1,4 @@
-import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
+import { getLibrary, type LibraryResponseDto } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { Route } from '$lib/route';
 import { authenticate } from '$lib/utils/auth';
@@ -17,12 +17,10 @@ export const load = (async ({ params: { id }, url, depends }) => {
     redirect(307, Route.libraries());
   }
 
-  const statisticsPromise = getLibraryStatistics({ id });
   const $t = await getFormatter();
 
   return {
     library,
-    statisticsPromise,
     meta: {
       title: $t('admin.library_details'),
     },

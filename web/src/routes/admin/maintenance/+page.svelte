@@ -143,7 +143,7 @@
           <ServerStatisticsCard
             title={$t(getReportTypeTranslation(reportType))}
             tooltip={$t(getReportTypeDescriptionKey(reportType))}
-            valuePromise={{ value: integrityReport[reportType] }}
+            value={{ value: integrityReport[reportType] }}
           >
             {#snippet footer()}
               <HStack gap={1} class="justify-between">

@@ -3,9 +3,10 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
-  import { userInteraction } from '$lib/stores/user.svelte';
+  import { getStorageQuery } from '$lib/queries/server.query';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, Input, Link, NumberInput, Switch, Text } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -15,6 +16,9 @@
   };
 
   let { data }: Props = $props();
+
+  const query = createQuery(() => getStorageQuery());
+  const serverInfo = $derived(query.data);
 
   const user = $derived(data.user);
   let { isAdmin, name, email } = $derived(user);
@@ -28,10 +32,7 @@
   const quotaSizeBytes = $derived(typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null);
 
   let quotaSizeWarning = $derived(
-    previousQuota !== quotaSizeBytes &&
-      !!quotaSizeBytes &&
-      userInteraction.serverInfo &&
-      quotaSizeBytes > userInteraction.serverInfo.diskSizeRaw,
+    previousQuota !== quotaSizeBytes && !!quotaSizeBytes && serverInfo && quotaSizeBytes > serverInfo.diskSizeRaw,
   );
 
   const onClose = async () => {

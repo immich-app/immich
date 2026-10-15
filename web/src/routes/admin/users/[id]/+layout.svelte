@@ -122,20 +122,12 @@
         </div>
         <div class="col-span-full">
           <div class="flex w-full flex-col gap-4 lg:flex-row">
-            <ServerStatisticsCard
-              icon={mdiCameraIris}
-              title={$t('photos')}
-              valuePromise={Promise.resolve({ value: userStatistics.images })}
-            />
-            <ServerStatisticsCard
-              icon={mdiPlayCircle}
-              title={$t('videos')}
-              valuePromise={Promise.resolve({ value: userStatistics.videos })}
-            />
+            <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={{ value: userStatistics.images }} />
+            <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={{ value: userStatistics.videos }} />
             <ServerStatisticsCard
               icon={mdiChartPie}
               title={$t('storage')}
-              valuePromise={Promise.resolve({ value: statsUsage, unit: statsUsageUnit })}
+              value={{ value: statsUsage, unit: statsUsageUnit }}
             />
           </div>
         </div>

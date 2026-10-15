@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ByteUnit } from '$lib/utils/byte-units';
-  import { Icon, Text, type MaybePromise } from '@immich/ui';
+  import { Icon, Text } from '@immich/ui';
   import type { Snippet } from 'svelte';
 
   type ValueData = {
@@ -11,12 +11,12 @@
   interface Props {
     icon?: string;
     title: string;
-    valuePromise: MaybePromise<ValueData>;
+    value?: ValueData;
     tooltip?: string;
     footer?: Snippet;
   }
 
-  let { icon, title, valuePromise, tooltip, footer }: Props = $props();
+  let { icon, title, value, tooltip, footer }: Props = $props();
   const zeros = (data?: ValueData) => {
     let length = 13;
     if (data) {
@@ -36,22 +36,18 @@
     <Text size="giant" fontWeight="medium" title={tooltip}>{title}</Text>
   </div>
 
-  {#await valuePromise}
+  {#if value}
+    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{value.value} {value.unit ?? ''}">
+      <span class="text-gray-300 dark:text-gray-600">{zeros(value)}</span><span>{value.value}</span>
+      {#if value.unit}
+        <code class="font-mono text-base font-normal">{value.unit}</code>
+      {/if}
+    </div>
+  {:else}
     <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="0">
       <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros()}</span>
     </div>
-  {:then data}
-    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{data.value} {data.unit ?? ''}">
-      <span class="text-gray-300 dark:text-gray-600">{zeros(data)}</span><span>{data.value}</span>
-      {#if data.unit}
-        <code class="font-mono text-base font-normal">{data.unit}</code>
-      {/if}
-    </div>
-  {:catch _}
-    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="0">
-      <span class="text-gray-300 dark:text-gray-600">{zeros()}</span>
-    </div>
-  {/await}
+  {/if}
 
   {@render footer?.()}
 </div>
