@@ -1,6 +1,7 @@
 FROM rust:1.98.0-trixie@sha256:620dbcd124499c59e2406d3741574b5c5838cf9eb9656f0c3a03948f79b02959 AS sidecar-renderer
 
 ARG TARGETPLATFORM
+ARG CARGO_BUILD_JOBS=2
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends libraw-dev pkg-config && \
