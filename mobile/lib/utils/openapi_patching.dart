@@ -35,6 +35,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
       darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
     ).toJson(),
     'ffmpeg': PublicConfigFFmpegDto(realtime: PublicConfigFFmpegRealtimeDto(enabled: false)).toJson(),
+    'passkey': {'enabled': false},
   },
   'ServerConfigDto': {
     'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
@@ -53,15 +54,12 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'PeopleResponse': {'updateStrategy': 'everyone'},
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'ServerVersionResponseDto': {'featureLevel': 0},
-  'UserConfigDto': {'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson()},
   'WorkflowResponseDto': {'logging': false},
   'AdminConfigDto': {
     'passkey': {'enabled': false, 'domain': null, 'additionalDomains': const []},
   },
-  'PublicConfigDto': {
-    'passkey': {'enabled': false},
-  },
   'UserConfigDto': {
+    'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson(),
     'passkey': {'enabled': false},
   },
 };

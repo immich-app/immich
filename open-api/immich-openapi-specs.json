@@ -19914,12 +19914,14 @@
           "additionalDomains": {
             "description": "Additional domains",
             "items": {
+              "format": "uri",
               "type": "string"
             },
             "type": "array"
           },
           "domain": {
             "description": "Passkey domain",
+            "format": "uri",
             "nullable": true,
             "type": "string"
           },
@@ -25333,74 +25335,36 @@
         ],
         "type": "object"
       },
-      "PasskeyAssertionResponseDto": {
-        "properties": {
-          "authenticatorData": {
-            "description": "Authenticator data (base64url)",
-            "type": "string"
-          },
-          "clientDataJSON": {
-            "description": "Client data JSON (base64url)",
-            "type": "string"
-          },
-          "signature": {
-            "description": "Signature (base64url)",
-            "type": "string"
-          },
-          "userHandle": {
-            "description": "User handle (base64url)",
-            "type": "string"
-          }
-        },
-        "required": [
-          "authenticatorData",
-          "clientDataJSON",
-          "signature"
-        ],
-        "type": "object"
-      },
-      "PasskeyAttestationResponseDto": {
-        "properties": {
-          "attestationObject": {
-            "description": "Attestation object (base64url)",
-            "type": "string"
-          },
-          "authenticatorData": {
-            "description": "Authenticator data (base64url)",
-            "type": "string"
-          },
-          "clientDataJSON": {
-            "description": "Client data JSON (base64url)",
-            "type": "string"
-          },
-          "publicKey": {
-            "description": "Public key (base64url)",
-            "type": "string"
-          },
-          "publicKeyAlgorithm": {
-            "description": "COSE algorithm identifier",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "transports": {
-            "description": "Authenticator transports",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "attestationObject",
-          "clientDataJSON"
-        ],
-        "type": "object"
-      },
       "PasskeyAuthenticationFinishDto": {
         "properties": {
           "response": {
-            "$ref": "#/components/schemas/PasskeyAuthenticationResponseDto"
+            "additionalProperties": {},
+            "description": "Response returned by @simplewebauthn/browser's `startAuthentication()`",
+            "properties": {
+              "id": {
+                "description": "Credential ID",
+                "format": "base64url",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "type": "string"
+              },
+              "response": {
+                "additionalProperties": {},
+                "properties": {
+                  "userHandle": {
+                    "description": "User handle",
+                    "format": "base64url",
+                    "pattern": "^[A-Za-z0-9_-]*$",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "response"
+            ],
+            "type": "object"
           }
         },
         "required": [
@@ -25409,189 +25373,8 @@
         "type": "object"
       },
       "PasskeyAuthenticationOptionsDto": {
-        "properties": {
-          "allowCredentials": {
-            "description": "Allowed credentials",
-            "items": {
-              "$ref": "#/components/schemas/PasskeyCredentialDescriptorDto"
-            },
-            "type": "array"
-          },
-          "challenge": {
-            "description": "Challenge (base64url)",
-            "type": "string"
-          },
-          "extensions": {
-            "$ref": "#/components/schemas/PasskeyExtensionsDto"
-          },
-          "hints": {
-            "description": "Authenticator hints",
-            "items": {
-              "description": "Authenticator hint (hybrid, security-key, client-device)",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "rpId": {
-            "description": "Relying party ID",
-            "type": "string"
-          },
-          "timeout": {
-            "description": "Timeout in milliseconds",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "userVerification": {
-            "description": "User verification (discouraged, preferred, required)",
-            "type": "string"
-          }
-        },
-        "required": [
-          "challenge"
-        ],
-        "type": "object"
-      },
-      "PasskeyAuthenticationResponseDto": {
-        "properties": {
-          "authenticatorAttachment": {
-            "description": "Authenticator attachment (platform, cross-platform)",
-            "type": "string"
-          },
-          "clientExtensionResults": {
-            "$ref": "#/components/schemas/PasskeyExtensionResultsDto"
-          },
-          "id": {
-            "description": "Credential ID (base64url)",
-            "type": "string"
-          },
-          "rawId": {
-            "description": "Raw credential ID (base64url)",
-            "type": "string"
-          },
-          "response": {
-            "$ref": "#/components/schemas/PasskeyAssertionResponseDto"
-          },
-          "type": {
-            "description": "Credential type (public-key)",
-            "type": "string"
-          }
-        },
-        "required": [
-          "clientExtensionResults",
-          "id",
-          "rawId",
-          "response",
-          "type"
-        ],
-        "type": "object"
-      },
-      "PasskeyAuthenticatorSelectionDto": {
-        "properties": {
-          "authenticatorAttachment": {
-            "description": "Authenticator attachment (platform, cross-platform)",
-            "type": "string"
-          },
-          "requireResidentKey": {
-            "description": "Require resident key",
-            "type": "boolean"
-          },
-          "residentKey": {
-            "description": "Resident key requirement (discouraged, preferred, required)",
-            "type": "string"
-          },
-          "userVerification": {
-            "description": "User verification (discouraged, preferred, required)",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "PasskeyCredentialDescriptorDto": {
-        "properties": {
-          "id": {
-            "description": "Credential ID (base64url)",
-            "type": "string"
-          },
-          "transports": {
-            "description": "Authenticator transports",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "type": {
-            "description": "Credential type",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "type"
-        ],
-        "type": "object"
-      },
-      "PasskeyCredentialParametersDto": {
-        "properties": {
-          "alg": {
-            "description": "COSE algorithm identifier",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "type": {
-            "description": "Credential type (public-key)",
-            "type": "string"
-          }
-        },
-        "required": [
-          "alg",
-          "type"
-        ],
-        "type": "object"
-      },
-      "PasskeyExtensionResultsDto": {
-        "properties": {
-          "appid": {
-            "description": "App ID extension result",
-            "type": "boolean"
-          },
-          "credProps": {
-            "description": "Credential properties extension result",
-            "properties": {
-              "rk": {
-                "description": "Resident key",
-                "type": "boolean"
-              }
-            },
-            "type": "object"
-          },
-          "hmacCreateSecret": {
-            "description": "HMAC create secret extension result",
-            "type": "boolean"
-          }
-        },
-        "type": "object"
-      },
-      "PasskeyExtensionsDto": {
-        "properties": {
-          "appid": {
-            "description": "App ID extension",
-            "type": "string"
-          },
-          "credProps": {
-            "description": "Credential properties extension",
-            "type": "boolean"
-          },
-          "hmacCreateSecret": {
-            "description": "HMAC create secret extension",
-            "type": "boolean"
-          },
-          "minPinLength": {
-            "description": "Minimum PIN length extension",
-            "type": "boolean"
-          }
-        },
+        "additionalProperties": {},
+        "description": "Response returned by @simplewebauthn/server's `generateAuthenticationOptions`",
         "type": "object"
       },
       "PasskeyRegistrationFinishDto": {
@@ -25601,7 +25384,7 @@
             "type": "string"
           },
           "response": {
-            "$ref": "#/components/schemas/PasskeyRegistrationResponseDto"
+            "description": "Response returned by @simplewebauthn/browser's `startAuthentication()`"
           }
         },
         "required": [
@@ -25610,119 +25393,8 @@
         "type": "object"
       },
       "PasskeyRegistrationOptionsDto": {
-        "properties": {
-          "attestation": {
-            "description": "Attestation preference (none, direct, enterprise, indirect)",
-            "type": "string"
-          },
-          "attestationFormats": {
-            "description": "Attestation formats",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "authenticatorSelection": {
-            "$ref": "#/components/schemas/PasskeyAuthenticatorSelectionDto"
-          },
-          "challenge": {
-            "description": "Challenge (base64url)",
-            "type": "string"
-          },
-          "excludeCredentials": {
-            "description": "Credentials to exclude",
-            "items": {
-              "$ref": "#/components/schemas/PasskeyCredentialDescriptorDto"
-            },
-            "type": "array"
-          },
-          "extensions": {
-            "$ref": "#/components/schemas/PasskeyExtensionsDto"
-          },
-          "hints": {
-            "description": "Authenticator hints",
-            "items": {
-              "description": "Authenticator hint (hybrid, security-key, client-device)",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "pubKeyCredParams": {
-            "description": "Supported public key algorithms",
-            "items": {
-              "$ref": "#/components/schemas/PasskeyCredentialParametersDto"
-            },
-            "type": "array"
-          },
-          "rp": {
-            "$ref": "#/components/schemas/PasskeyRelyingPartyDto"
-          },
-          "timeout": {
-            "description": "Timeout in milliseconds",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "user": {
-            "$ref": "#/components/schemas/PasskeyUserDto"
-          }
-        },
-        "required": [
-          "challenge",
-          "pubKeyCredParams",
-          "rp",
-          "user"
-        ],
-        "type": "object"
-      },
-      "PasskeyRegistrationResponseDto": {
-        "properties": {
-          "authenticatorAttachment": {
-            "description": "Authenticator attachment (platform, cross-platform)",
-            "type": "string"
-          },
-          "clientExtensionResults": {
-            "$ref": "#/components/schemas/PasskeyExtensionResultsDto"
-          },
-          "id": {
-            "description": "Credential ID (base64url)",
-            "type": "string"
-          },
-          "rawId": {
-            "description": "Raw credential ID (base64url)",
-            "type": "string"
-          },
-          "response": {
-            "$ref": "#/components/schemas/PasskeyAttestationResponseDto"
-          },
-          "type": {
-            "description": "Credential type (public-key)",
-            "type": "string"
-          }
-        },
-        "required": [
-          "clientExtensionResults",
-          "id",
-          "rawId",
-          "response",
-          "type"
-        ],
-        "type": "object"
-      },
-      "PasskeyRelyingPartyDto": {
-        "properties": {
-          "id": {
-            "description": "Relying party ID",
-            "type": "string"
-          },
-          "name": {
-            "description": "Relying party name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
+        "additionalProperties": {},
+        "description": "Response returned by @simplewebauthn/server's `generateRegistrationOptions`",
         "type": "object"
       },
       "PasskeyResponseDto": {
@@ -25780,28 +25452,6 @@
           }
         },
         "required": [
-          "name"
-        ],
-        "type": "object"
-      },
-      "PasskeyUserDto": {
-        "properties": {
-          "displayName": {
-            "description": "User display name",
-            "type": "string"
-          },
-          "id": {
-            "description": "User handle (base64url)",
-            "type": "string"
-          },
-          "name": {
-            "description": "User name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "displayName",
-          "id",
           "name"
         ],
         "type": "object"

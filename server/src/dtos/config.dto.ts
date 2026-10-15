@@ -59,25 +59,16 @@ const cronExpressionSchema = z
   .describe('Cron expression');
 
 const httpsDomain = (label: string) =>
-  z.string().transform((value, ctx) => {
-    const candidate = value.includes('://') ? value : `https://${value}`;
-    const url = URL.parse(candidate);
-    if (!url || url.protocol !== 'https:') {
-      ctx.issues.push({ code: 'custom', message: `${label} must be a valid https URL`, input: value });
-      return z.NEVER;
-    }
-
-    if (url.href !== `${url.origin}/`) {
-      ctx.issues.push({
-        code: 'custom',
-        message: `${label} must not include a path, query, or fragment`,
-        input: value,
-      });
-      return z.NEVER;
-    }
-
-    return candidate;
-  });
+  z
+    .url({ protocol: /^https$/, hostname: z.regexes.domain })
+    .normalize()
+    .refine((url) => {
+      try {
+        return new URL(url).href === `${new URL(url).origin}/`;
+      } catch {
+        return true;
+      }
+    }, `${label} must not include a path, query, or fragment`);
 
 const emptyOrUrl = (error: string) =>
   z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
@@ -349,31 +340,21 @@ const AdminConfigSchemaWithVisibility = z
         domain: httpsDomain('Passkey domain').nullable().describe('Passkey domain'),
         additionalDomains: z
           .array(httpsDomain('Additional domain'))
-          .superRefine((domains, ctx) => {
-            const seen = new Set<string>();
-            for (const [index, value] of domains.entries()) {
-              const origin = new URL(value).origin;
-              if (seen.has(origin)) {
-                ctx.addIssue({ code: 'custom', message: `Duplicate domain ${origin}`, path: [index], input: value });
-              }
-
-              seen.add(origin);
-            }
-          })
+          .refine(
+            (domains) => domains.length === new Set(domains.map((domain) => new URL(domain).origin)).size,
+            'Duplicate domain',
+          )
           .describe('Additional domains'),
       })
-      .transform((value, ctx) => {
+      .superRefine((value, ctx) => {
         const origin = value.domain && new URL(value.domain).origin;
         if (origin && value.additionalDomains.some((domain) => new URL(domain).origin === origin)) {
-          ctx.issues.push({
+          ctx.addIssue({
             code: 'custom',
             message: 'The passkey domain is always allowed and must not be listed as an additional domain',
             input: value.additionalDomains,
           });
-          return z.NEVER;
         }
-
-        return value;
       })
       .meta({ id: 'AdminConfigPasskeyDto' }),
     passwordLogin: z
@@ -557,7 +538,7 @@ const stripVisibilityMetadata = <T extends z.ZodType>(schema: T): T => {
   return schema;
 };
 
-const AdminConfigSchema = applyVisibility(Admin)! as z.ZodType<SystemConfig>;
+const AdminConfigSchema = AdminConfigSchemaWithVisibility;
 const UserConfigSchema = applyVisibility(User)! as z.ZodType<DeepPartial<SystemConfig>>;
 const PublicConfigSchema = applyVisibility(Public)! as z.ZodType<DeepPartial<SystemConfig>>;
 

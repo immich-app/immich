@@ -2023,155 +2023,30 @@ export type PasskeyResponseDto = {
     /** Last used date */
     usedAt: string | null;
 };
-export type PasskeyExtensionResultsDto = {
-    /** App ID extension result */
-    appid?: boolean;
-    /** Credential properties extension result */
-    credProps?: {
-        /** Resident key */
-        rk?: boolean;
-    };
-    /** HMAC create secret extension result */
-    hmacCreateSecret?: boolean;
-};
-export type PasskeyAssertionResponseDto = {
-    /** Authenticator data (base64url) */
-    authenticatorData: string;
-    /** Client data JSON (base64url) */
-    clientDataJSON: string;
-    /** Signature (base64url) */
-    signature: string;
-    /** User handle (base64url) */
-    userHandle?: string;
-};
-export type PasskeyAuthenticationResponseDto = {
-    /** Authenticator attachment (platform, cross-platform) */
-    authenticatorAttachment?: string;
-    clientExtensionResults: PasskeyExtensionResultsDto;
-    /** Credential ID (base64url) */
-    id: string;
-    /** Raw credential ID (base64url) */
-    rawId: string;
-    response: PasskeyAssertionResponseDto;
-    /** Credential type (public-key) */
-    "type": string;
-};
 export type PasskeyAuthenticationFinishDto = {
-    response: PasskeyAuthenticationResponseDto;
-};
-export type PasskeyCredentialDescriptorDto = {
-    /** Credential ID (base64url) */
-    id: string;
-    /** Authenticator transports */
-    transports?: string[];
-    /** Credential type */
-    "type": string;
-};
-export type PasskeyExtensionsDto = {
-    /** App ID extension */
-    appid?: string;
-    /** Credential properties extension */
-    credProps?: boolean;
-    /** HMAC create secret extension */
-    hmacCreateSecret?: boolean;
-    /** Minimum PIN length extension */
-    minPinLength?: boolean;
+    /** Response returned by @simplewebauthn/browser's `startAuthentication()` */
+    response: {
+        /** Credential ID */
+        id: string;
+        response: {
+            /** User handle */
+            userHandle?: string;
+            [key: string]: any;
+        };
+        [key: string]: any;
+    };
 };
 export type PasskeyAuthenticationOptionsDto = {
-    /** Allowed credentials */
-    allowCredentials?: PasskeyCredentialDescriptorDto[];
-    /** Challenge (base64url) */
-    challenge: string;
-    extensions?: PasskeyExtensionsDto;
-    /** Authenticator hints */
-    hints?: string[];
-    /** Relying party ID */
-    rpId?: string;
-    /** Timeout in milliseconds */
-    timeout?: number;
-    /** User verification (discouraged, preferred, required) */
-    userVerification?: string;
-};
-export type PasskeyAttestationResponseDto = {
-    /** Attestation object (base64url) */
-    attestationObject: string;
-    /** Authenticator data (base64url) */
-    authenticatorData?: string;
-    /** Client data JSON (base64url) */
-    clientDataJSON: string;
-    /** Public key (base64url) */
-    publicKey?: string;
-    /** COSE algorithm identifier */
-    publicKeyAlgorithm?: number;
-    /** Authenticator transports */
-    transports?: string[];
-};
-export type PasskeyRegistrationResponseDto = {
-    /** Authenticator attachment (platform, cross-platform) */
-    authenticatorAttachment?: string;
-    clientExtensionResults: PasskeyExtensionResultsDto;
-    /** Credential ID (base64url) */
-    id: string;
-    /** Raw credential ID (base64url) */
-    rawId: string;
-    response: PasskeyAttestationResponseDto;
-    /** Credential type (public-key) */
-    "type": string;
+    [key: string]: any;
 };
 export type PasskeyRegistrationFinishDto = {
     /** Passkey name */
     name?: string;
-    response: PasskeyRegistrationResponseDto;
-};
-export type PasskeyAuthenticatorSelectionDto = {
-    /** Authenticator attachment (platform, cross-platform) */
-    authenticatorAttachment?: string;
-    /** Require resident key */
-    requireResidentKey?: boolean;
-    /** Resident key requirement (discouraged, preferred, required) */
-    residentKey?: string;
-    /** User verification (discouraged, preferred, required) */
-    userVerification?: string;
-};
-export type PasskeyCredentialParametersDto = {
-    /** COSE algorithm identifier */
-    alg: number;
-    /** Credential type (public-key) */
-    "type": string;
-};
-export type PasskeyRelyingPartyDto = {
-    /** Relying party ID */
-    id?: string;
-    /** Relying party name */
-    name: string;
-};
-export type PasskeyUserDto = {
-    /** User display name */
-    displayName: string;
-    /** User handle (base64url) */
-    id: string;
-    /** User name */
-    name: string;
+    /** Response returned by @simplewebauthn/browser's `startAuthentication()` */
+    response: any;
 };
 export type PasskeyRegistrationOptionsDto = {
-    /** Attestation preference (none, direct, enterprise, indirect) */
-    attestation?: string;
-    /** Attestation formats */
-    attestationFormats?: string[];
-    authenticatorSelection?: PasskeyAuthenticatorSelectionDto;
-    /** Challenge (base64url) */
-    challenge: string;
-    /** Credentials to exclude */
-    excludeCredentials?: PasskeyCredentialDescriptorDto[];
-    extensions?: PasskeyExtensionsDto;
-    /** Authenticator hints */
-    hints?: string[];
-    /** Supported public key algorithms */
-    pubKeyCredParams: PasskeyCredentialParametersDto[];
-    rp: PasskeyRelyingPartyDto;
-    /** Timeout in milliseconds */
-    timeout?: number;
-    user: PasskeyUserDto;
+    [key: string]: any;
 };
 export type PasskeyUpdateDto = {
     /** Passkey name */

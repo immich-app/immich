@@ -20,7 +20,10 @@
   };
 
   const onPasskeyUpdate = (update: PasskeyResponseDto) => {
-    passkeys = passkeys.map((passkey) => (passkey.id === update.id ? update : passkey));
+    const index = passkeys.findIndex((passkey) => passkey.id === update.id);
+    if (index !== -1) {
+      passkeys[index] = update;
+    }
   };
 
   const onPasskeyDelete = ({ id }: PasskeyResponseDto) => {
@@ -58,7 +61,7 @@
           {#each passkeys as passkey (passkey.id)}
             {@const { Update, Delete } = getPasskeyActions($t, passkey)}
             <TableRow>
-              <TableCell>{passkey.name ?? $t('passkey')}</TableCell>
+              <TableCell>{passkey.name ?? $t('passkeys', { values: { count: 1 } })}</TableCell>
               <TableCell>{new Date(passkey.createdAt).toLocaleDateString($locale, dateFormats.settings)}</TableCell>
               <TableCell>
                 {passkey.usedAt
