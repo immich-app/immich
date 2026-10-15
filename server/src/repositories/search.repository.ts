@@ -21,7 +21,7 @@ import {
   withExifInner,
   withSearchOrder,
 } from 'src/utils/database.js';
-import { paginationHelper } from 'src/utils/pagination.js';
+import { type CursorPaginationOptions, paginationHelper } from 'src/utils/pagination.js';
 import { MetadataCursor, SmartCursor } from 'src/utils/search-cursor.js';
 
 export interface SearchAssetIdOptions {
@@ -119,11 +119,6 @@ export interface SearchOrderOptions {
 export interface SearchPaginationOptions {
   page: number;
   size: number;
-}
-
-export interface SearchCursorPaginationOptions<TCursor> {
-  take: number;
-  cursor?: TCursor;
 }
 
 type BaseAssetSearchOptions = SearchDateOptions &
@@ -548,7 +543,7 @@ export class SearchRepository {
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchMetadataV3Examples)
   async searchMetadataV3(
-    pagination: SearchCursorPaginationOptions<MetadataCursor>,
+    pagination: CursorPaginationOptions<MetadataCursor>,
     options: AssetSearchBuilderV3Options,
     scope: AssetSearchScope,
   ) {
@@ -576,7 +571,7 @@ export class SearchRepository {
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchSmartV3Examples)
   searchSmartV3(
-    pagination: SearchCursorPaginationOptions<SmartCursor>,
+    pagination: CursorPaginationOptions<SmartCursor>,
     options: Omit<AssetSearchBuilderV3Options, 'order'> & { embedding: string },
     scope: AssetSearchScope,
   ) {
