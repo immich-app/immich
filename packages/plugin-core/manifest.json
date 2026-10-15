@@ -75,6 +75,32 @@
         }
       ],
       "uiHints": ["SmartAlbum"]
+    },
+    {
+      "name": "receipts",
+      "title": "Receipts",
+      "description": "Automatically add receipt assets to an album",
+      "trigger": "AssetOcrExtraction",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetOcrFilter",
+          "config": {
+            "caseSensitive": false,
+            "pattern": "receipt.+total",
+            "matchType": "regex",
+            "matchScope": "full",
+            "minScore": 0
+          }
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumName": "Receipts",
+            "albumIds": []
+          }
+        }
+      ],
+      "uiHints": ["SmartAlbum"]
     }
   ],
   "methods": [
@@ -425,6 +451,50 @@
           }
         },
         "required": ["property", "pattern"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
+      "name": "assetOcrFilter",
+      "title": "Filter by OCR text",
+      "description": "Filter assets by OCR text pattern using text matching or regular expressions",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "title": "OCR text pattern",
+            "description": "Text or regex pattern to match against OCR text"
+          },
+          "matchType": {
+            "type": "string",
+            "enum": ["contains", "startsWith", "exact", "regex"],
+            "default": "contains",
+            "title": "Match type",
+            "description": "Type of pattern matching to perform"
+          },
+          "caseSensitive": {
+            "type": "boolean",
+            "default": false,
+            "title": "Case sensitive",
+            "description": "Whether matching should be case-sensitive"
+          },
+          "minScore": {
+            "type": "number",
+            "default": 0,
+            "title": "Minimum score",
+            "description": "Minimum OCR confidence score to match"
+          },
+          "matchScope": {
+            "type": "string",
+            "enum": ["full", "box"],
+            "default": "full",
+            "title": "Match scope",
+            "description": "Scope of the OCR text to match against"
+          }
+        },
+        "required": ["pattern"]
       },
       "uiHints": ["Filter"]
     },
