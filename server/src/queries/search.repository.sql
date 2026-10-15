@@ -1610,7 +1610,7 @@ where
     or "asset"."ownerId" = $3
   )
   and "asset"."isFavorite" = $4
-  and ("asset"."fileCreatedAt", "asset"."id") < (cast($5 as timestamptz), cast($6 as uuid))
+  and ("asset"."fileCreatedAt", "asset"."id") < ($5, $6)
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
@@ -1659,7 +1659,7 @@ where
   )
   and true
   and (
-    ("asset_exif"."rating", "asset"."id") < (cast($4 as integer), cast($5 as uuid))
+    ("asset_exif"."rating", "asset"."id") < ($4, $5)
     or "asset_exif"."rating" is null
   )
 order by
@@ -1841,20 +1841,22 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  smart_search.embedding <=> $1 as "distance"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
-  "asset"."ownerId" = any ($1::uuid[])
+  "asset"."ownerId" = any ($2::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    "asset"."visibility" != $3
+    or "asset"."ownerId" = $4
   )
   and true
 order by
-  smart_search.embedding <=> $4
+  "distance",
+  "asset"."id" asc
 limit
   $5
 commit
@@ -1891,23 +1893,25 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  smart_search.embedding <=> $1 as "distance"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
-  "asset"."ownerId" = any ($1::uuid[])
+  "asset"."ownerId" = any ($2::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    "asset"."visibility" != $3
+    or "asset"."ownerId" = $4
   )
   and (
-    "asset"."fileCreatedAt" < $4
-    and "asset"."fileCreatedAt" >= $5
+    "asset"."fileCreatedAt" < $5
+    and "asset"."fileCreatedAt" >= $6
   )
 order by
-  smart_search.embedding <=> $6
+  "distance",
+  "asset"."id" asc
 limit
   $7
 commit
@@ -1944,28 +1948,23 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  smart_search.embedding <=> $1 as "distance"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
-  "asset"."ownerId" = any ($1::uuid[])
+  "asset"."ownerId" = any ($2::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    "asset"."visibility" != $3
+    or "asset"."ownerId" = $4
   )
   and true
-  and smart_search.embedding <=> $4 > (
-    select
-      cursor_asset.embedding <=> $5
-    from
-      smart_search cursor_asset
-    where
-      cursor_asset."assetId" = $6
-  )
+  and (smart_search.embedding <=> $5, "asset"."id") > ($6, $7)
 order by
-  smart_search.embedding <=> $7
+  "distance",
+  "asset"."id" asc
 limit
   $8
 commit

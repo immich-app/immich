@@ -839,17 +839,44 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
 }
 
 const searchOrderColumns = {
-  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false, type: 'timestamptz' },
-  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false, type: 'timestamptz' },
-  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true, type: 'bigint' },
-  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true, type: 'integer' },
+  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
+  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
+  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
+  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
 } as const;
 
-export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order?: SearchOrder) {
-  const { field, direction } = order ?? DEFAULT_SEARCH_ORDER;
+/**
+ * Orders by the search order and selects each row's `orderValue` for the next cursor.
+ * With a cursor, only the rows after its position are kept (keyset pagination).
+ */
+export function withSearchOrder<O>(
+  qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', O>,
+  { field, direction }: SearchOrder = DEFAULT_SEARCH_ORDER,
+  cursor?: MetadataCursor,
+) {
   const { column, nullable } = searchOrderColumns[field];
+  const op = direction === AssetOrder.Asc ? '>' : '<';
   return (
     qb
+      .$if(!!cursor, (qb) =>
+        qb.where((eb) => {
+          const { value, id } = cursor!;
+          // nulls sort last, so a null cursor value means the previous page ended inside the null tail
+          if (value === null) {
+            return eb.and([eb(column, 'is', null), eb('asset.id', op, id)]);
+          }
+
+          // timestamps stay ISO strings to keep their microsecond precision
+          const after = eb(
+            eb.refTuple(column, 'asset.id').$castTo<[string | number, string]>(),
+            op,
+            eb.tuple(value, id),
+          );
+          return nullable ? eb.or([after, eb(column, 'is', null)]) : after;
+        }),
+      )
+      // as JSON to keep the microsecond precision of timestamps, which a JS Date would truncate
+      .select((eb) => eb.fn<string | number | null>('to_json', [column]).as('orderValue'))
       .orderBy(column, (ob) => {
         const ordered = direction === AssetOrder.Asc ? ob.asc() : ob.desc();
         // nulls last: assets without an asset_exif row would otherwise lead descending results
@@ -858,37 +885,6 @@ export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order
       // id tie-break for deterministic pagination
       .orderBy('asset.id', direction)
   );
-}
-
-/** The raw order column value of a row, as JSON to keep the microsecond precision of timestamps for the next cursor */
-export function searchOrderValue(order?: SearchOrder) {
-  const { column } = searchOrderColumns[(order ?? DEFAULT_SEARCH_ORDER).field];
-  return sql<string | number | null>`to_json(${sql.ref(column)})`.as('orderValue');
-}
-
-/** Rows that sort after the cursor position in the order applied by `withSearchOrder` */
-export function withSearchCursor(
-  qb: ReturnType<typeof searchAssetBuilder>,
-  order?: SearchOrder,
-  cursor?: MetadataCursor,
-) {
-  if (!cursor) {
-    return qb;
-  }
-
-  const { field, direction } = order ?? DEFAULT_SEARCH_ORDER;
-  const { column, nullable, type } = searchOrderColumns[field];
-  const op = direction === AssetOrder.Asc ? '>' : '<';
-
-  return qb.where((eb) => {
-    // nulls sort last, so a null cursor value means the previous page ended inside the null tail
-    if (cursor.value === null) {
-      return eb.and([eb(column, 'is', null), eb('asset.id', op, cursor.id)]);
-    }
-
-    const after = sql<SqlBool>`(${sql.ref(column)}, "asset"."id") ${sql.raw(op)} (cast(${cursor.value} as ${sql.raw(type)}), cast(${cursor.id} as uuid))`;
-    return nullable ? eb.or([after, eb(column, 'is', null)]) : after;
-  });
 }
 
 const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwnerId: DummyValue.UUID };
@@ -1069,7 +1065,12 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
     params: [
       {
         take: 100,
-        cursor: { field: SearchOrderField.FileCreatedAt, value: DummyValue.TIME_BUCKET, id: DummyValue.UUID },
+        cursor: {
+          field: SearchOrderField.FileCreatedAt,
+          direction: AssetOrder.Desc,
+          value: DummyValue.TIME_BUCKET,
+          id: DummyValue.UUID,
+        },
       },
       { filter: { isFavorite: { eq: true } } },
       scopeExample,
@@ -1078,7 +1079,10 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'cursor-nullable-order',
     params: [
-      { take: 100, cursor: { field: SearchOrderField.Rating, value: 3, id: DummyValue.UUID } },
+      {
+        take: 100,
+        cursor: { field: SearchOrderField.Rating, direction: AssetOrder.Desc, value: 3, id: DummyValue.UUID },
+      },
       { order: { field: SearchOrderField.Rating, direction: AssetOrder.Desc } },
       scopeExample,
     ],
@@ -1086,7 +1090,10 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'cursor-null-tail',
     params: [
-      { take: 100, cursor: { field: SearchOrderField.Rating, value: null, id: DummyValue.UUID } },
+      {
+        take: 100,
+        cursor: { field: SearchOrderField.Rating, direction: AssetOrder.Desc, value: null, id: DummyValue.UUID },
+      },
       { order: { field: SearchOrderField.Rating, direction: AssetOrder.Desc } },
       scopeExample,
     ],
@@ -1119,7 +1126,11 @@ export const searchSmartV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'cursor',
-    params: [{ take: 100, cursor: { id: DummyValue.UUID } }, { embedding: DummyValue.VECTOR }, scopeExample],
+    params: [
+      { take: 100, cursor: { distance: 0.5, id: DummyValue.UUID } },
+      { embedding: DummyValue.VECTOR },
+      scopeExample,
+    ],
   },
 ];
 

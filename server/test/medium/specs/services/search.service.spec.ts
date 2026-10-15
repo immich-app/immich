@@ -10,6 +10,7 @@ import { PersonRepository } from 'src/repositories/person.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SearchService } from 'src/services/search.service.js';
+import { SmartCursor } from 'src/utils/search-cursor.js';
 import { newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
@@ -48,6 +49,19 @@ const collectPages = async (
     const { assets } = await search(cursor);
     ids.push(...assets.items.map(({ id }) => id));
     cursor = assets.nextCursor ?? undefined;
+  } while (cursor);
+  return ids;
+};
+
+const collectSmartPages = async (
+  search: (cursor?: SmartCursor) => Promise<{ items: SmartCursor[]; hasNextPage: boolean }>,
+) => {
+  const ids: string[] = [];
+  let cursor: SmartCursor | undefined;
+  do {
+    const page = await search(cursor);
+    ids.push(...page.items.map(({ id }) => id));
+    cursor = page.hasNextPage ? page.items.at(-1) : undefined;
   } while (cursor);
   return ids;
 };
@@ -528,7 +542,7 @@ describe(SearchService.name, () => {
           cursor: assets.nextCursor!,
           orderBy: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc },
         }),
-      ).rejects.toThrowError('Cursor is for ordering by fileCreatedAt, not fileSizeInBytes');
+      ).rejects.toThrowError('Cursor is for ordering by fileCreatedAt desc, not fileSizeInBytes desc');
     });
 
     it('should order by fileSizeInBytes', async () => {
@@ -551,7 +565,7 @@ describe(SearchService.name, () => {
       expect(response.assets.items.map(({ id }) => id)).toEqual([assetIds[1], assetIds[0], assetIds[2]]);
     });
 
-    it('should page smart search results by embedding distance with an asset cursor', async () => {
+    it('should page smart search results by embedding distance', async () => {
       const { ctx } = setup();
       const { user } = await ctx.newUser();
       const searchRepository = ctx.get(SearchRepository);
@@ -565,15 +579,55 @@ describe(SearchService.name, () => {
 
       const options = { filter: {}, embedding: unitVector(0) };
       const scope = { userIds: [user.id], lockedOwnerId: user.id };
-      const ids: string[] = [];
-      let cursor: { id: string } | undefined;
-      do {
-        const page = await searchRepository.searchSmartV3({ take: 2, cursor }, options, scope);
-        ids.push(...page.items.map(({ id }) => id));
-        cursor = page.hasNextPage ? { id: page.items.at(-1)!.id } : undefined;
-      } while (cursor);
+      const ids = await collectSmartPages((cursor) =>
+        searchRepository.searchSmartV3({ take: 2, cursor }, options, scope),
+      );
 
       expect(ids).toEqual(assetIds);
+    });
+
+    it('should not skip smart search results at the same distance as the cursor', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const searchRepository = ctx.get(SearchRepository);
+
+      // identical images have identical embeddings, so the middle three tie on their distance to any query
+      const assetIds: string[] = [];
+      for (const step of [0, 1, 1, 1, 2]) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id });
+        await searchRepository.upsert(asset.id, angledVector(step));
+        assetIds.push(asset.id);
+      }
+
+      const options = { filter: {}, embedding: unitVector(0) };
+      const scope = { userIds: [user.id], lockedOwnerId: user.id };
+      const ids = await collectSmartPages((cursor) =>
+        searchRepository.searchSmartV3({ take: 2, cursor }, options, scope),
+      );
+
+      expect(ids).toEqual([assetIds[0], ...assetIds.slice(1, 4).toSorted(), assetIds[4]]);
+    });
+
+    it('should continue smart search pages after the cursor asset is deleted', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const searchRepository = ctx.get(SearchRepository);
+
+      const assetIds: string[] = [];
+      for (let i = 0; i < 4; i++) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id });
+        await searchRepository.upsert(asset.id, angledVector(i));
+        assetIds.push(asset.id);
+      }
+
+      const options = { filter: {}, embedding: unitVector(0) };
+      const scope = { userIds: [user.id], lockedOwnerId: user.id };
+      const firstPage = await searchRepository.searchSmartV3({ take: 2 }, options, scope);
+      const cursor = firstPage.items.at(-1)!;
+      await ctx.database.deleteFrom('asset').where('id', '=', cursor.id).execute();
+
+      const secondPage = await searchRepository.searchSmartV3({ take: 2, cursor }, options, scope);
+      expect(secondPage.items.map(({ id }) => id)).toEqual([assetIds[2], assetIds[3]]);
     });
   });
 });
