@@ -1,25 +1,32 @@
 import { BadRequestException } from '@nestjs/common';
 import z from 'zod';
-import { SearchOrderField } from 'src/enum.js';
+import { SearchOrder } from 'src/dtos/search.dto.js';
+import { AssetOrder, SearchOrderField } from 'src/enum.js';
 
 // timestamps keep the database's microsecond precision, which a JS Date would truncate
 const timestampValue = z.iso.datetime({ offset: true });
 
+const position = { direction: z.enum(AssetOrder), id: z.uuidv4() };
+
 const MetadataCursorSchema = z.discriminatedUnion('field', [
-  z.object({ field: z.literal(SearchOrderField.FileCreatedAt), value: timestampValue, id: z.uuidv4() }),
-  z.object({ field: z.literal(SearchOrderField.LocalDateTime), value: timestampValue, id: z.uuidv4() }),
-  z.object({ field: z.literal(SearchOrderField.FileSizeInBytes), value: z.int().min(0).nullable(), id: z.uuidv4() }),
-  z.object({ field: z.literal(SearchOrderField.Rating), value: z.int().nullable(), id: z.uuidv4() }),
+  z.strictObject({ field: z.literal(SearchOrderField.FileCreatedAt), value: timestampValue, ...position }),
+  z.strictObject({ field: z.literal(SearchOrderField.LocalDateTime), value: timestampValue, ...position }),
+  z.strictObject({ field: z.literal(SearchOrderField.FileSizeInBytes), value: z.int().min(0).nullable(), ...position }),
+  z.strictObject({ field: z.literal(SearchOrderField.Rating), value: z.int32().nullable(), ...position }),
 ]);
 
-const SmartCursorSchema = z.object({ id: z.uuidv4() });
+const SmartCursorSchema = z.strictObject({ distance: z.number(), id: z.uuidv4() });
 
 export type MetadataCursor = z.infer<typeof MetadataCursorSchema>;
 export type SmartCursor = z.infer<typeof SmartCursorSchema>;
 
 const encode = (payload: object) => Buffer.from(JSON.stringify(payload)).toString('base64url');
 
-const decode = <T extends z.ZodType>(cursor: string, schema: T): z.infer<T> => {
+const decode = <T extends z.ZodType>(schema: T, cursor?: string): z.infer<T> | undefined => {
+  if (cursor === undefined) {
+    return;
+  }
+
   try {
     return schema.parse(JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')));
   } catch {
@@ -27,26 +34,24 @@ const decode = <T extends z.ZodType>(cursor: string, schema: T): z.infer<T> => {
   }
 };
 
-export const encodeMetadataCursor = (cursor: MetadataCursor): string => encode(cursor);
+/** The position of a page's last row, validated so that the server never hands out a cursor it would reject */
+export const encodeMetadataCursor = (
+  { field, direction }: SearchOrder,
+  { orderValue, id }: { orderValue: unknown; id: string },
+): string => encode(MetadataCursorSchema.parse({ field, direction, value: orderValue, id }));
 
-/** A metadata cursor is a position in one ordering, so it must belong to the requested order field */
-export const decodeMetadataCursor = (
-  cursor: string | undefined,
-  field: SearchOrderField,
-): MetadataCursor | undefined => {
-  if (cursor === undefined) {
-    return;
-  }
-
-  const decoded = decode(cursor, MetadataCursorSchema);
-  if (decoded.field !== field) {
-    throw new BadRequestException(`Cursor is for ordering by ${decoded.field}, not ${field}`);
+/** A metadata cursor is a position in one ordering, so it must belong to the requested order */
+export const decodeMetadataCursor = (order: SearchOrder, cursor?: string): MetadataCursor | undefined => {
+  const decoded = decode(MetadataCursorSchema, cursor);
+  if (decoded && (decoded.field !== order.field || decoded.direction !== order.direction)) {
+    throw new BadRequestException(
+      `Cursor is for ordering by ${decoded.field} ${decoded.direction}, not ${order.field} ${order.direction}`,
+    );
   }
 
   return decoded;
 };
 
-export const encodeSmartCursor = (cursor: SmartCursor): string => encode(cursor);
+export const encodeSmartCursor = ({ distance, id }: SmartCursor): string => encode({ distance, id });
 
-export const decodeSmartCursor = (cursor?: string): SmartCursor | undefined =>
-  cursor === undefined ? undefined : decode(cursor, SmartCursorSchema);
+export const decodeSmartCursor = (cursor?: string): SmartCursor | undefined => decode(SmartCursorSchema, cursor);
