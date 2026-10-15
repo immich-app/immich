@@ -1,4 +1,4 @@
-import { Link, Section, Text } from '@react-email/components';
+import { Link, Section, Text } from 'react-email';
 import * as React from 'react';
 import { ImmichButton } from 'src/emails/components/button.component.js';
 import FutoLayout from 'src/emails/components/futo.layout.js';
