@@ -113,7 +113,9 @@ const handleDeletePasskey = async (passkey: PasskeyResponseDto) => {
   try {
     await deletePasskey({ id: passkey.id });
     eventManager.emit('PasskeyDelete', passkey);
-    toastManager.primary($t('removed_passkey', { values: { name: passkey.name ?? $t('passkey') } }));
+    toastManager.primary(
+      $t('removed_passkey', { values: { name: passkey.name ?? $t('passkeys', { values: { count: 1 } }) } }),
+    );
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }

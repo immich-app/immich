@@ -21,7 +21,7 @@
   };
 </script>
 
-<FormModal title={$t('passkey')} icon={mdiShieldKeyOutline} {onClose} {onSubmit}>
+<FormModal title={$t('passkeys', { values: { count: 1 } })} icon={mdiShieldKeyOutline} {onClose} {onSubmit}>
   <Field label={$t('name')}>
     <Input bind:value={name} />
   </Field>

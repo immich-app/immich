@@ -1,7 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import aaguids from 'aaguids';
 import { DateTime, Duration } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import type { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/server';
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+  VerifiedAuthenticationResponse,
+  VerifiedRegistrationResponse,
+} from '@simplewebauthn/server';
 import type { LoginDetails } from 'src/services/auth.service.js';
 import { OnJob } from 'src/decorators.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
@@ -19,7 +25,6 @@ import {
 import { AuthChallengeType, JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';
-import { getPasskeyName } from 'src/utils/passkey.js';
 
 const RP_NAME = 'Immich';
 
@@ -78,8 +83,9 @@ export class PasskeyService extends BaseService {
 
     const { rpId, origin } = this.getRelyingParty(config, headers);
 
-    const result = await this.webAuthnRepository
-      .verifyRegistrationResponse({
+    let result: VerifiedRegistrationResponse;
+    try {
+      result = await this.webAuthnRepository.verifyRegistrationResponse({
         response: dto.response as RegistrationResponseJSON,
         expectedChallenge: async (challenge) => {
           const record = await this.authChallengeRepository.consume({
@@ -90,11 +96,11 @@ export class PasskeyService extends BaseService {
         },
         expectedOrigin: origin,
         expectedRPID: rpId,
-      })
-      .catch((error: Error) => {
-        this.logger.warn(`Passkey registration failed for user ${auth.user.id}: ${error.message}`);
-        throw new BadRequestException('Passkey registration failed');
       });
+    } catch (error: any) {
+      this.logger.warn(`Passkey registration failed for user ${auth.user.id}: ${error.message}`);
+      throw new BadRequestException('Passkey registration failed');
+    }
 
     if (!result.verified) {
       throw new BadRequestException('Passkey registration failed');
@@ -106,10 +112,13 @@ export class PasskeyService extends BaseService {
     if (duplicate) {
       throw new BadRequestException('Passkey is already registered');
     }
-
     const passkey = await this.passkeyRepository.create({
       userId: auth.user.id,
-      name: dto.name || getPasskeyName(aaguid, loginDetails),
+      name:
+        dto.name ||
+        (aaguids as unknown as Record<string, string>)[aaguid] ||
+        [loginDetails.deviceType, loginDetails.deviceOS].filter(Boolean).join(' on ') ||
+        'Passkey',
       credentialId: credential.id,
       publicKey: Buffer.from(credential.publicKey),
       counter: credential.counter,
@@ -158,9 +167,10 @@ export class PasskeyService extends BaseService {
       throw new UnauthorizedException('Invalid passkey');
     }
 
-    const result = await this.webAuthnRepository
-      .verifyAuthenticationResponse({
-        response: dto.response as AuthenticationResponseJSON,
+    let result: VerifiedAuthenticationResponse;
+    try {
+      result = await this.webAuthnRepository.verifyAuthenticationResponse({
+        response: dto.response as unknown as AuthenticationResponseJSON,
         expectedChallenge: async (challenge) => {
           const record = await this.authChallengeRepository.consume({
             type: AuthChallengeType.PasskeyAuthentication,
@@ -176,11 +186,11 @@ export class PasskeyService extends BaseService {
           counter: passkey.counter,
           transports: passkey.transports,
         },
-      })
-      .catch((error: Error) => {
-        this.logger.warn(`Failed passkey login attempt from ip address ${loginDetails.clientIp}: ${error.message}`);
-        throw new UnauthorizedException('Invalid passkey');
       });
+    } catch (error: any) {
+      this.logger.warn(`Failed passkey login attempt from ip address ${loginDetails.clientIp}: ${error.message}`);
+      throw new UnauthorizedException('Invalid passkey');
+    }
 
     if (!result.verified) {
       throw new UnauthorizedException('Invalid passkey');

@@ -65,6 +65,7 @@
     "@react-email/render": "^2.0.0",
     "@simplewebauthn/server": "14.0.3",
     "@socket.io/redis-adapter": "^8.3.0",
+    "aaguids": "^0.0.71",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^6.0.0",

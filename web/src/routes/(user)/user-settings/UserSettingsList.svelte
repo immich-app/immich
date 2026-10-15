@@ -133,7 +133,7 @@
   <SettingAccordion
     icon={mdiShieldKeyOutline}
     key="passkeys"
-    title={$t('passkeys')}
+    title={$t('passkeys', { values: { count: passkeys.length } })}
     subtitle={$t('manage_your_passkeys')}
   >
     <UserPasskeyList bind:passkeys />
