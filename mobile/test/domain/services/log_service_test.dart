@@ -1,11 +1,18 @@
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
+import 'package:immich_mobile/domain/models/config/network_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -30,6 +37,16 @@ void main() {
   late LogService sut;
   late LogRepository mockLogRepo;
   late MockSettingsRepository mockSettingsRepository;
+  late Drift db;
+
+  setUpAll(() async {
+    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
+  });
+
+  tearDownAll(() async {
+    await db.close();
+  });
 
   setUp(() async {
     mockLogRepo = MockLogRepository();
@@ -50,6 +67,7 @@ void main() {
 
   tearDown(() async {
     await sut.dispose();
+    await StoreService.I.clear();
   });
 
   group("Log Service Init:", () {
@@ -174,6 +192,82 @@ void main() {
 
         expect(messages.elementAtOrNull(1), _kInfoLog);
       });
+    });
+  });
+
+  group("Log Service Redaction:", () {
+    test('Returns stored rows with held values by name and other values by kind', () async {
+      await StoreService.I.put(StoreKey.serverUrl, 'https://Immich.Example.com/api');
+      await StoreService.I.put(StoreKey.accessToken, 'tKq3Zr8WbN2xYp5aLm7c');
+      await StoreService.I.put(StoreKey.serverEndpoint, 'http://192.168.1.5:2283/api');
+      when(() => mockSettingsRepository.appConfig).thenReturn(
+        const AppConfig(
+          network: NetworkConfig(
+            preferredWifiName: 'Home',
+            localEndpoint: 'http://192.168.1.5:2283',
+            externalEndpointList: ['https://ext.example.net', 'http://10.0.0.7:2283'],
+          ),
+        ),
+      );
+      const rows = {
+        'Resuming session at https://immich.example.com/api': 'Resuming session at <server url>',
+        'Failed to connect to ext.example.net/203.0.113.9:443, uri=https://ext.example.net/api':
+            'Failed to connect to <external endpoint 1>/<ip>:443, uri=<external endpoint 1>/api',
+        'GET http://10.0.0.7:2283/api/server/ping': 'GET <external endpoint 2>/api/server/ping',
+        'failed to connect to /192.168.1.5 (port 2283) from /192.168.1.52 (port 51234) after 5000ms':
+            'failed to connect to /<local endpoint> (port 2283) from /<ip> (port 51234) after 5000ms',
+        'Failed to connect to typo.example.org/198.51.100.4:443, uri=https://typo.example.org/api':
+            'Failed to connect to <host>/<ip>:443, uri=https://<host>/api',
+        "Failed host lookup: 'old-server.lan'": "Failed host lookup: '<host>'",
+        'Bearer tKq3Zr8WbN2xYp5aLm7c': 'Bearer <access token>',
+        'Failed to update auth info with access token: tKq3Zr8WbN2xYp5aLm7c':
+            'Failed to update auth info with access token: <access token>',
+        'Failed to update auth info with access token: old-token-456':
+            'Failed to update auth info with access token: <access token>',
+        'Received OAuth callback: app.immich:///oauth-callback?code=abc123&state=xyz':
+            'Received OAuth callback: app.immich:///oauth-callback?code=<oauth code>&state=xyz',
+        'login response: someone@example.com': 'login response: <email>',
+        'Causing statement: INSERT INTO "auth_user_entity", parameters: a, pin-hash-789':
+            'Causing statement: INSERT INTO "auth_user_entity", parameters: <parameters>',
+        'Home screen loaded': 'Home screen loaded',
+      };
+      when(
+        () => mockLogRepo.getAll(),
+      ).thenAnswer((_) async => [for (final row in rows.keys) _kInfoLog.copyWith(message: row)]);
+
+      expect((await sut.getMessages()).map((m) => m.message), rows.values);
+    });
+
+    test('Names a server by its switching configuration', () async {
+      await StoreService.I.put(StoreKey.serverUrl, 'https://immich.example.com/api');
+      await StoreService.I.put(StoreKey.serverEndpoint, 'https://immich.example.com/api');
+      when(
+        () => mockSettingsRepository.appConfig,
+      ).thenReturn(const AppConfig(network: NetworkConfig(externalEndpointList: ['https://immich.example.com'])));
+
+      Logger('Test').severe(
+        'Using external endpoint 1',
+        'Failed to connect to immich.example.com/203.0.113.9:443, uri=https://immich.example.com/api/server/ping',
+        StackTrace.fromString('#0 ping (https://immich.example.com/api/server/ping)'),
+      );
+
+      final message = (await sut.getMessages()).single;
+      expect(message.message, 'Using external endpoint 1');
+      expect(
+        message.error,
+        'Failed to connect to <external endpoint 1>/<ip>:443, uri=<external endpoint 1>/server/ping',
+      );
+      expect(message.stack, '#0 ping (<external endpoint 1>/server/ping)');
+    });
+
+    test('Names a server endpoint on another host as the server url', () async {
+      await StoreService.I.put(StoreKey.serverUrl, 'https://immich.example.com/api');
+      await StoreService.I.put(StoreKey.serverEndpoint, 'https://api.example.org/api');
+      when(
+        () => mockLogRepo.getAll(),
+      ).thenAnswer((_) async => [_kInfoLog.copyWith(message: 'Using server URL: https://api.example.org/api')]);
+
+      expect((await sut.getMessages()).single.message, 'Using server URL: <server url>');
     });
   });
 }
