@@ -8,6 +8,7 @@ import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MediaRepository } from 'src/repositories/media.repository.js';
 import { MetadataRepository } from 'src/repositories/metadata.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
@@ -42,7 +43,7 @@ const setup = (db?: Kysely<DB>, { realStorage = false } = {}) => {
       TagRepository,
       ...(realStorage ? [StorageRepository] : []),
     ],
-    mock: [EventRepository, LoggingRepository, ...(realStorage ? [] : [StorageRepository])],
+    mock: [EventRepository, LoggingRepository, MediaRepository, ...(realStorage ? [] : [StorageRepository])],
   });
 
   if (!realStorage) {

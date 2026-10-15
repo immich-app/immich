@@ -89,6 +89,7 @@ import { MetadataService } from 'src/services/metadata.service.js';
 import { SyncService } from 'src/services/sync.service.js';
 import { getConfig, updateConfig } from 'src/utils/config.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
+import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock.js';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock.js';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory.js';
 import { automock, wait } from 'test/utils.js';
@@ -623,6 +624,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
 
     case MachineLearningRepository: {
       return automock(MachineLearningRepository, { args: [{ setContext: () => {} }] });
+    }
+
+    case MediaRepository: {
+      return newMediaRepositoryMock();
     }
 
     case StorageRepository: {

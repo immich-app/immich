@@ -8,6 +8,7 @@ import { StorageCore } from 'src/cores/storage.core.js';
 import { AssetFileType, AssetStatus, JobName, JobStatus } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
@@ -15,7 +16,9 @@ import { EventRepository } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MediaRepository } from 'src/repositories/media.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
@@ -56,8 +59,8 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
 
     this.metadataService = newMediumService(MetadataService, {
       database,
-      real: [AssetRepository, AssetJobRepository, StorageRepository],
-      mock: [LoggingRepository],
+      real: [AssetRepository, AssetJobRepository, ConfigRepository, StorageRepository, SystemMetadataRepository],
+      mock: [LoggingRepository, MediaRepository],
     }).sut;
   }
 
