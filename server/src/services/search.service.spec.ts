@@ -253,11 +253,10 @@ describe(SearchService.name, () => {
     it('should paginate metadata search with a cursor at the last row', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
-      const orderValue = '2024-05-01T10:00:00.123456+00:00';
 
       mocks.search.searchMetadataV3.mockResolvedValue({
         hasNextPage: true,
-        items: [{ ...getForAsset(asset), orderValue }] as never,
+        items: [{ ...getForAsset(asset), fileSizeInByte: null, rating: null }] as never,
       });
       const firstPage = await sut.searchMetadata(auth, { size: 1, filter: {} });
       expect(firstPage.assets.nextPage).toBeNull();
@@ -271,7 +270,7 @@ describe(SearchService.name, () => {
           cursor: {
             field: SearchOrderField.FileCreatedAt,
             direction: AssetOrder.Desc,
-            value: orderValue,
+            value: asset.fileCreatedAt,
             id: asset.id,
           },
         },
@@ -284,7 +283,7 @@ describe(SearchService.name, () => {
     it('should reject a metadata cursor for a different order field', async () => {
       mocks.search.searchMetadataV3.mockResolvedValue({
         hasNextPage: true,
-        items: [{ ...getForAsset(AssetFactory.create()), orderValue: '2024-05-01T10:00:00+00:00' }] as never,
+        items: [{ ...getForAsset(AssetFactory.create()), fileSizeInByte: null, rating: null }] as never,
       });
       const { assets } = await sut.searchMetadata(AuthFactory.create(), { size: 1, filter: {} });
 

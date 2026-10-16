@@ -23,10 +23,8 @@ import { LockableProperty, Person, columns, lockableProperties } from 'src/datab
 import { DummyValue, GenerateSqlQueries } from 'src/decorators.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
-  DEFAULT_SEARCH_ORDER,
   IdsFilter,
   SearchFilterBranch,
-  SearchOrder,
   StringFilter,
   StringPatternFilter,
   isAlbumConfined,
@@ -48,7 +46,6 @@ import {
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { fromChecksum } from 'src/utils/request.js';
-import { MetadataCursor } from 'src/utils/search-cursor.js';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -835,60 +832,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         }
         return predicates.length > 0 ? eb.and(predicates) : eb.lit(true);
       })
-  );
-}
-
-const searchOrderColumns = {
-  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
-  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
-  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
-  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
-} as const;
-
-// timestamps stay ISO strings, see orderValue
-const cursorValue = (cursor: MetadataCursor) => {
-  switch (cursor.field) {
-    case SearchOrderField.FileCreatedAt:
-    case SearchOrderField.LocalDateTime: {
-      return sql<Date>`${cursor.value}::timestamptz`;
-    }
-    case SearchOrderField.FileSizeInBytes:
-    case SearchOrderField.Rating: {
-      return cursor.value!;
-    }
-  }
-};
-
-export function withSearchOrder<O>(
-  qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', O>,
-  order: SearchOrder | MetadataCursor = DEFAULT_SEARCH_ORDER,
-) {
-  const { field, direction } = order;
-  const cursor = 'id' in order ? order : undefined;
-  const { column, nullable } = searchOrderColumns[field];
-  const op = direction === AssetOrder.Asc ? '>' : '<';
-  return (
-    qb
-      .$if(!!cursor, (qb) =>
-        qb.where((eb) => {
-          const { value, id } = cursor!;
-          if (value === null) {
-            return eb.and([eb(column, 'is', null), eb('asset.id', op, asUuid(id))]);
-          }
-
-          const after = eb(eb.refTuple(column, 'asset.id'), op, eb.tuple(cursorValue(cursor!), asUuid(id)));
-          return nullable ? eb.or([after, eb(column, 'is', null)]) : after;
-        }),
-      )
-      // as JSON to keep the microsecond precision of timestamps, which a JS Date would truncate
-      .select((eb) => eb.fn<string | number | null>('to_json', [column]).as('orderValue'))
-      .orderBy(column, (ob) => {
-        const ordered = direction === AssetOrder.Asc ? ob.asc() : ob.desc();
-        // nulls last: assets without an asset_exif row would otherwise lead descending results
-        return nullable ? ordered.nullsLast() : ordered;
-      })
-      // id tie-break for deterministic pagination
-      .orderBy('asset.id', direction)
   );
 }
 
