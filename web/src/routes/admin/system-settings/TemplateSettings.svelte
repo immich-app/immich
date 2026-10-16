@@ -18,7 +18,7 @@
 
   let { config = $bindable() }: Props = $props();
 
-  const saved = createDefinedQuery(getConfigQuery());
+  const query = createDefinedQuery(getConfigQuery());
 
   let loadingPreview = $state(false);
 
@@ -56,7 +56,7 @@
   ];
 
   const isEdited = (templateKey: keyof AdminConfigTemplateEmailsDto) =>
-    config.templates.email[templateKey] !== saved.data.templates.email[templateKey];
+    config.templates.email[templateKey] !== query.data.templates.email[templateKey];
 
   const onsubmit = (event: Event) => {
     event.preventDefault();

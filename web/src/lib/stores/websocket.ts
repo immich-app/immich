@@ -8,6 +8,7 @@ import {
   type SyncAssetEditV1,
   type SyncAssetV2,
 } from '@immich/sdk';
+import { isEqual } from 'lodash-es';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { page } from '$app/state';
@@ -69,7 +70,13 @@ websocket
     websocketStore.connected.set(true);
   })
   .on('disconnect', () => websocketStore.connected.set(false))
-  .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
+  .on('on_server_version', (serverVersion) => {
+    const previous = get(websocketStore.serverVersion);
+    websocketStore.serverVersion.set(serverVersion);
+    if (previous && !isEqual(previous, serverVersion)) {
+      void queryClient.invalidateQueries({ queryKey: ['server'] });
+    }
+  })
   .on(
     'on_config_update',
     () => void queryClient.invalidateQueries({ queryKey: getConfigQuery().queryKey, exact: true }),

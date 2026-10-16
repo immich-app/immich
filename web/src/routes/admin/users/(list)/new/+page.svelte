@@ -3,10 +3,14 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
-  import { userInteraction } from '$lib/stores/user.svelte';
+  import { getStorageQuery } from '$lib/queries/server.query';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, HelperText, Input, PasswordInput, Stack, Switch } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+
+  const query = createQuery(() => getStorageQuery());
+  const serverInfo = $derived(query.data);
 
   let success = $state(false);
 
@@ -22,9 +26,7 @@
   let isCreatingUser = $state(false);
 
   let quotaSizeInBytes = $derived(quotaSize === null ? null : convertToBytes(Number(quotaSize), ByteUnit.GiB));
-  let quotaSizeWarning = $derived(
-    quotaSizeInBytes && userInteraction.serverInfo && quotaSizeInBytes > userInteraction.serverInfo.diskSizeRaw,
-  );
+  let quotaSizeWarning = $derived(quotaSizeInBytes && serverInfo && quotaSizeInBytes > serverInfo.diskSizeRaw);
 
   const passwordMismatch = $derived(password !== passwordConfirm && passwordConfirm.length > 0);
   const passwordMismatchMessage = $derived(passwordMismatch ? $t('password_does_not_match') : '');

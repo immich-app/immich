@@ -5,11 +5,10 @@
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { Route } from '$lib/route';
-  import { userInteraction } from '$lib/stores/user.svelte';
-  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
+  import { getAboutInfoQuery } from '$lib/queries/server.query';
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import UserAvatar from '../UserAvatar.svelte';
@@ -20,11 +19,8 @@
 
   let { onClose }: Props = $props();
 
-  let info: ServerAboutResponseDto | undefined = $state();
-
-  onMount(async () => {
-    info = userInteraction.aboutInfo ?? (await getAboutInfo());
-  });
+  const query = createQuery(() => getAboutInfoQuery());
+  const info = $derived(query.data);
 </script>
 
 <div
