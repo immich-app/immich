@@ -138,6 +138,7 @@ def ort_session() -> Iterator[mock.Mock]:
     with (
         mock.patch("immich_ml.sessions.ort.ort.InferenceSession") as mocked,
         mock.patch("immich_ml.sessions.ort.prepared", side_effect=lambda spec: spec.model_path),
+        mock.patch("immich_ml.sessions.ort._turing_cudnn"),
     ):
         yield mocked
 

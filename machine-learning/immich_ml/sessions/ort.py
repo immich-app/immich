@@ -170,6 +170,8 @@ class GraphSpec:
         )
 
     def session(self, graph: Path, sess_options: ort.SessionOptions | None = None) -> ort.InferenceSession:
+        if self.provider == "CUDAExecutionProvider":
+            _turing_cudnn()
         return ort.InferenceSession(
             graph.as_posix(),
             providers=self.providers,
@@ -390,17 +392,32 @@ def _intel_gpu(device: str) -> Device:
 
 
 @cache
-def _nvidia_gpu(index: int) -> Device:
+def _compute_capability(index: int) -> tuple[int, int]:
     cuda, device, major, minor = ctypes.CDLL("libcuda.so.1"), ctypes.c_int(), ctypes.c_int(), ctypes.c_int()
     if cuda.cuInit(0) or cuda.cuDeviceGet(ctypes.byref(device), index):  # honors CUDA_VISIBLE_DEVICES
         raise LookupError(f"CUDA has no device {index}")
     cuda.cuDeviceGetAttribute(ctypes.byref(major), 75, device)  # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR
     cuda.cuDeviceGetAttribute(ctypes.byref(minor), 76, device)  # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR
+    return major.value, minor.value
+
+
+@cache
+def _nvidia_gpu(index: int) -> Device:
+    major, minor = _compute_capability(index)
     nvml, driver = ctypes.CDLL("libnvidia-ml.so.1"), ctypes.create_string_buffer(80)
     nvml.nvmlInit_v2()
     nvml.nvmlSystemGetDriverVersion(driver, 80)
     tensorrt_rtx = ctypes.CDLL("libtensorrt_rtx.so.1").getInferLibVersion()
-    return Device(f"sm{major.value}{minor.value}", f"{driver.value.decode()} {tensorrt_rtx}")
+    return Device(f"sm{major}{minor}", f"{driver.value.decode()} {tensorrt_rtx}")
+
+
+@cache
+def _turing_cudnn() -> None:
+    # cuDNN's engine 14 turns Turing's fp16 convolutions into NaN and garbage: the library has cuDNN pass it over, and
+    # takes cuDNN's place only if it loads before ORT loads cuDNN
+    if _compute_capability(int(settings.device_id)) == (7, 5):
+        ctypes.CDLL(str(Path(__file__).with_name("libcudnn_turing.so")), mode=ctypes.RTLD_GLOBAL)
+        log.info("Passing over cuDNN's engine 14 on Turing")
 
 
 @cache

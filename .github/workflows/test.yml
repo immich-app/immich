@@ -824,6 +824,13 @@ jobs:
           GROUP: ${{ matrix.group }}
         run: mise run install --extra "$DEVICE" ${GROUP:+--group "$GROUP"}
 
+      - name: Build the cuDNN fix for Turing
+        if: ${{ matrix.device == 'cuda' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc libc6-dev
+          gcc -shared -fPIC -O2 -o immich_ml/sessions/libcudnn_turing.so immich_ml/sessions/cudnn_turing.c
+
       - name: Run the full tests
         env:
           DEVICE: ${{ matrix.device }}
