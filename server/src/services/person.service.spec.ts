@@ -1198,6 +1198,66 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
     });
 
+    it('should match metadata face stored at a different resolution', async () => {
+      const face = AssetFaceFactory.create({
+        sourceType: SourceType.Exif,
+        imageWidth: 2736,
+        imageHeight: 3648,
+        boundingBoxX1: 1225,
+        boundingBoxY1: 1453,
+        boundingBoxX2: 1436,
+        boundingBoxY2: 1732,
+      });
+      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).exif().build();
+      mocks.machineLearning.detectFaces.mockResolvedValue({
+        imageWidth: 1440,
+        imageHeight: 1920,
+        faces: [{ boundingBox: { x1: 645, y1: 765, x2: 756, y2: 912 }, embedding: '[1, 2, 3, 4]', score: 0.9 }],
+      });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([], [], [{ faceId: face.id, embedding: '[1, 2, 3, 4]' }]);
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should prefer metadata face over overlapping machine learning face', async () => {
+      const mlFace = AssetFaceFactory.create({
+        imageWidth: 1440,
+        imageHeight: 1920,
+        boundingBoxX1: 645,
+        boundingBoxY1: 765,
+        boundingBoxX2: 756,
+        boundingBoxY2: 912,
+      });
+      const exifFace = AssetFaceFactory.create({
+        sourceType: SourceType.Exif,
+        imageWidth: 2736,
+        imageHeight: 3648,
+        boundingBoxX1: 1225,
+        boundingBoxY1: 1453,
+        boundingBoxX2: 1436,
+        boundingBoxY2: 1732,
+      });
+      const asset = AssetFactory.from()
+        .face(mlFace)
+        .face(exifFace)
+        .file({ type: AssetFileType.Preview })
+        .exif()
+        .build();
+      mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(mlFace));
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
+        [],
+        [mlFace.id],
+        [{ faceId: exifFace.id, embedding: '[1, 2, 3, 4]' }],
+      );
+    });
+
     it('should not add embedding to non-matching metadata face', async () => {
       const assetId = newUuid();
       const face = AssetFaceFactory.create({ assetId, sourceType: SourceType.Exif });
