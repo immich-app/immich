@@ -162,6 +162,7 @@ class AuthService {
       final localEndpoint = _authRepository.getLocalEndpoint();
       if (localEndpoint != null) {
         await _apiService.resolveAndSetEndpoint(localEndpoint);
+        _log.info("Using local endpoint");
         return localEndpoint;
       }
     } catch (error, stackTrace) {
@@ -181,9 +182,11 @@ class AuthService {
       return null;
     }
 
-    for (final endpoint in endpointList) {
+    for (final (i, endpoint) in endpointList.indexed) {
       try {
-        return await _apiService.resolveAndSetEndpoint(endpoint.url);
+        final url = await _apiService.resolveAndSetEndpoint(endpoint.url);
+        _log.info("Using external endpoint ${i + 1}");
+        return url;
       } on ApiException catch (error) {
         _log.severe("Cannot resolve endpoint", error);
         continue;
