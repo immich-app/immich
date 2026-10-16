@@ -1599,6 +1599,13 @@ export type UserConfigMapDto = {
     /** Light map style URL */
     lightStyle: string;
 };
+export type UserConfigSmtpDto = {
+    /** Whether SMTP email notifications are enabled */
+    enabled: boolean;
+};
+export type UserConfigNotificationsDto = {
+    smtp: UserConfigSmtpDto;
+};
 export type UserConfigOAuthDto = {
     /** Auto launch */
     autoLaunch: boolean;
@@ -1642,6 +1649,7 @@ export type UserConfigDto = {
     image: UserConfigImageDto;
     machineLearning: UserConfigMachineLearningDto;
     map: UserConfigMapDto;
+    notifications: UserConfigNotificationsDto;
     oauth: UserConfigOAuthDto;
     passwordLogin: UserConfigPasswordLoginDto;
     reverseGeocoding: UserConfigReverseGeocodingDto;

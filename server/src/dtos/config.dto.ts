@@ -131,7 +131,7 @@ const AdminConfigFFmpegSchema = z
 
 const AdminConfigSmtpSchema = z
   .object({
-    enabled: configBool.describe('Whether SMTP email notifications are enabled'),
+    enabled: configBool.describe('Whether SMTP email notifications are enabled').meta({ visibility: User }),
     from: z.string().describe('Email address to send from'),
     replyTo: z.string().describe('Email address for replies'),
     transport: z

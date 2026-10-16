@@ -59,6 +59,12 @@ describe('config visibility', () => {
     expect(config.notifications).toBeUndefined();
   });
 
+  it('should expose only whether smtp is enabled to users', () => {
+    const config = mapUserConfig(defaults) as Record<string, any>;
+
+    expect(config.notifications).toEqual({ smtp: { enabled: defaults.notifications.smtp.enabled } });
+  });
+
   it('should keep the visibility metadata out of the schemas', () => {
     for (const schema of [AdminConfigDto.schema, UserConfigDto.schema, PublicConfigDto.schema]) {
       const json = JSON.stringify(z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }));
