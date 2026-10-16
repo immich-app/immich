@@ -29,15 +29,7 @@
   const statisticsQuery = createQuery(() => getLibraryStatisticsQuery(library.id));
   const stats = $derived(statisticsQuery.data);
 
-  const photos = $derived(stats && { value: stats.photos });
-  const videos = $derived(stats && { value: stats.videos });
-  const usage = $derived.by(() => {
-    if (!stats) {
-      return;
-    }
-    const [value, unit] = getBytesWithUnit(stats.usage);
-    return { value, unit };
-  });
+  const [usage, usageUnit] = $derived(stats ? getBytesWithUnit(stats.usage) : [undefined, undefined]);
 
   const { Edit, Delete, AddFolder, AddExclusionPattern, Scan } = $derived(getLibraryActions($t, library));
 </script>
@@ -52,9 +44,9 @@
     <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
       <Heading tag="h1" size="large" class="col-span-full my-4">{library.name}</Heading>
       <div class="col-span-full flex flex-col gap-4 lg:flex-row">
-        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={photos} />
-        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={videos} />
-        <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} value={usage} />
+        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={stats?.photos} />
+        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={stats?.videos} />
+        <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} value={usage} unit={usageUnit} />
       </div>
 
       <AdminCard icon={mdiFolderOutline} title={$t('folders')} headerAction={AddFolder}>

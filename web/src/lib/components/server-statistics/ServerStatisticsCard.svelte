@@ -3,29 +3,17 @@
   import { Icon, Text } from '@immich/ui';
   import type { Snippet } from 'svelte';
 
-  type ValueData = {
-    value: number;
-    unit?: ByteUnit | undefined;
-  };
-
   interface Props {
     icon?: string;
     title: string;
-    value?: ValueData;
+    value?: number;
+    unit?: ByteUnit;
     tooltip?: string;
     footer?: Snippet;
   }
 
-  let { icon, title, value, tooltip, footer }: Props = $props();
-  const zeros = (data?: ValueData) => {
-    let length = 13;
-    if (data) {
-      const valueLength = data.value.toString().length;
-      length -= valueLength;
-    }
-
-    return '0'.repeat(length);
-  };
+  let { icon, title, value, unit, tooltip, footer }: Props = $props();
+  const zeros = (value?: number) => '0'.repeat(13 - (value?.toString().length ?? 0));
 </script>
 
 <div class="flex h-35 w-full flex-col justify-between rounded-3xl bg-subtle p-5 text-primary">
@@ -36,11 +24,11 @@
     <Text size="giant" fontWeight="medium" title={tooltip}>{title}</Text>
   </div>
 
-  {#if value}
-    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{value.value} {value.unit ?? ''}">
-      <span class="text-gray-300 dark:text-gray-600">{zeros(value)}</span><span>{value.value}</span>
-      {#if value.unit}
-        <code class="font-mono text-base font-normal">{value.unit}</code>
+  {#if value !== undefined}
+    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{value} {unit ?? ''}">
+      <span class="text-gray-300 dark:text-gray-600">{zeros(value)}</span><span>{value}</span>
+      {#if unit}
+        <code class="font-mono text-base font-normal">{unit}</code>
       {/if}
     </div>
   {:else}
