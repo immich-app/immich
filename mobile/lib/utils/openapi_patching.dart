@@ -45,6 +45,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'PeopleResponse': {'updateStrategy': 'everyone'},
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'ServerVersionResponseDto': {'featureLevel': 0},
+  'UserConfigDto': {'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson()},
   'WorkflowResponseDto': {'logging': false},
 };
 
