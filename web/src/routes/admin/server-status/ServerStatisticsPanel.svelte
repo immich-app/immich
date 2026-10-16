@@ -1,9 +1,10 @@
 <script lang="ts">
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { getServerStatisticsQuery } from '$lib/queries/server.query';
+  import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import type { UserAdminResponseDto } from '@immich/sdk';
   import {
     Code,
     FormatBytes,
@@ -20,11 +21,8 @@
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  type Props = {
-    users: UserAdminResponseDto[];
-  };
-
-  const { users }: Props = $props();
+  const usersQuery = createPreloadedQuery(searchUsersAdminQuery);
+  const users = $derived(usersQuery.data);
 
   const query = createQuery(() => ({ ...getServerStatisticsQuery(), refetchInterval: 5000 }));
   const stats = $derived(query.data);
@@ -34,15 +32,7 @@
     return getBytesWithUnit(usage, usage > TiB ? 2 : 0);
   };
 
-  const photos = $derived(stats && { value: stats.photos });
-  const videos = $derived(stats && { value: stats.videos });
-  const storage = $derived.by(() => {
-    if (!stats) {
-      return;
-    }
-    const [value, unit] = getStorageUsageWithUnit(stats.usage);
-    return { value, unit };
-  });
+  const [storage, storageUnit] = $derived(stats ? getStorageUsageWithUnit(stats.usage) : [undefined, undefined]);
 
   const zeros = (value: number, maxLength = 13) => {
     const valueLength = value.toString().length;
@@ -65,9 +55,9 @@
     <Text class="mb-2" fontWeight="medium">{$t('total_usage')}</Text>
 
     <div class="hidden justify-between gap-4 lg:flex">
-      <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={photos} />
-      <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={videos} />
-      <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={storage} />
+      <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={stats?.photos} />
+      <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={stats?.videos} />
+      <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={storage} unit={storageUnit} />
     </div>
 
     <div class="mt-5 flex lg:hidden">

@@ -13,6 +13,6 @@
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   <Container size="large" center>
-    <ServerStatisticsPanel users={data.users} />
+    <ServerStatisticsPanel />
   </Container>
 </AdminPageLayout>

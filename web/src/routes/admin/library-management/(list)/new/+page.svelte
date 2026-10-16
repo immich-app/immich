@@ -11,7 +11,7 @@
 
   let ownerId: string = $state(authManager.user.id);
   const query = createPreloadedQuery(searchUsersAdminQuery);
-  const users = $derived(query.data.filter((user) => !user.deletedAt));
+  const users = $derived(query.data);
 
   const onClose = async () => {
     await goto(Route.libraries());
