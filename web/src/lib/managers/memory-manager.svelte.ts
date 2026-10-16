@@ -86,13 +86,17 @@ class MemoryManager {
     return this.initialize();
   }
 
-  applyPreferences() {
+  get preferenceFilters(): MemoriesSearchDto {
     const { showUpcoming, onlyFavorites } = userPreferencesManager.memories;
-    this.setFilters({
+    return {
       order: MemorySearchOrder.Desc,
       isSaved: onlyFavorites || undefined,
       isUpcoming: showUpcoming && undefined,
-    });
+    };
+  }
+
+  applyPreferences() {
+    this.setFilters(this.preferenceFilters);
 
     return this.refresh();
   }

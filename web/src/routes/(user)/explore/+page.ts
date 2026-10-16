@@ -1,4 +1,4 @@
-import { getAllPeople, getExploreData, MemorySearchOrder } from '@immich/sdk';
+import { getAllPeople, getExploreData, searchMemories } from '@immich/sdk';
 import { memoryManager } from '$lib/managers/memory-manager.svelte';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
@@ -6,20 +6,18 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  memoryManager.setFilters({ size: 12, order: MemorySearchOrder.Desc });
-  await memoryManager.applyPreferences();
 
-  const [explore, people] = await Promise.all([
+  const peoplePromise = getAllPeople({ withHidden: false });
+  const [explore, memories] = await Promise.all([
     getExploreData(),
-    getAllPeople({ withHidden: false }),
-    memoryManager.refresh(),
+    searchMemories({ ...memoryManager.preferenceFilters, page: 1 }),
   ]);
   const $t = await getFormatter();
 
   return {
     explore,
-    people,
-    memories: memoryManager.memories,
+    peoplePromise,
+    memories,
     meta: {
       title: $t('explore'),
     },
