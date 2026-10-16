@@ -14,10 +14,17 @@ type OrderValue<
 const orderValueSchema = <F extends SearchOrderField, T extends z.ZodType>(field: F, schema: T) =>
   (searchOrderColumns[field].nullable ? schema.nullable() : schema) as OrderValue<F, T>;
 
+const timestamp = z.iso.datetime({ offset: true }).transform((value) => new Date(value));
+
 const MetadataCursorSchema = z.discriminatedUnion('field', [
   z.strictObject({
-    field: z.literal([SearchOrderField.FileCreatedAt, SearchOrderField.LocalDateTime]),
-    value: z.iso.datetime({ offset: true }).transform((value) => new Date(value)),
+    field: z.literal(SearchOrderField.FileCreatedAt),
+    value: orderValueSchema(SearchOrderField.FileCreatedAt, timestamp),
+    ...position,
+  }),
+  z.strictObject({
+    field: z.literal(SearchOrderField.LocalDateTime),
+    value: orderValueSchema(SearchOrderField.LocalDateTime, timestamp),
     ...position,
   }),
   z.strictObject({
@@ -59,7 +66,7 @@ type MetadataCursorRow = {
   rating: number | null;
 };
 
-const orderValue = (field: SearchOrderField, row: MetadataCursorRow) => {
+const orderValue = (field: MetadataCursor['field'], row: MetadataCursorRow) => {
   switch (field) {
     case SearchOrderField.FileCreatedAt: {
       return row.fileCreatedAt.toISOString();
