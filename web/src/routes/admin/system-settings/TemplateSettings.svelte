@@ -3,7 +3,7 @@
   import SettingTextarea from './SettingTextarea.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { createPreloadedQuery } from '$lib/queries/client';
-  import { getConfigQuery } from '$lib/queries/system-config.query';
+  import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { type AdminConfigDto, type AdminConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
@@ -18,7 +18,7 @@
 
   let { config = $bindable() }: Props = $props();
 
-  const query = createPreloadedQuery(getConfigQuery);
+  const query = createPreloadedQuery(getAdminConfigQuery);
 
   let loadingPreview = $state(false);
 

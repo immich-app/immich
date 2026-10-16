@@ -2,13 +2,17 @@
   import { goto } from '$app/navigation';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { oauth } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { Button, LoadingSpinner, toastManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   let loading = $state(true);
 
@@ -47,7 +51,7 @@
         <div class="flex place-content-center place-items-center">
           <LoadingSpinner />
         </div>
-      {:else if featureFlagsManager.value.oauth}
+      {:else if config.oauth.enabled}
         {#if authManager.user.oauthId}
           {#if serverConfigManager.value.oauthAccountManagementUrl}
             <Button shape="round" size="small" href={serverConfigManager.value.oauthAccountManagementUrl}

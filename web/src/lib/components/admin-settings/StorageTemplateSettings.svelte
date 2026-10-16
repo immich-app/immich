@@ -7,7 +7,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
+  import { getAdminConfigQuery, updateAdminConfigMutation } from '$lib/queries/config-admin.query';
   import StorageTemplateVariablesModal from '$lib/modals/StorageTemplateVariablesModal.svelte';
   import { Route } from '$lib/route';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
@@ -40,7 +40,7 @@
   type StorageTemplateOption = (typeof StorageTemplateOption)[keyof typeof StorageTemplateOption];
 
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const query = createPreloadedQuery(getConfigQuery);
+  const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
   let configToEdit = $state(cloneDeep(config));
 
@@ -155,7 +155,7 @@
 
   onDestroy(() => {
     if (saveOnClose) {
-      void executeMutation(updateConfigMutation, { storageTemplate: configToEdit.storageTemplate });
+      void executeMutation(updateAdminConfigMutation, { storageTemplate: configToEdit.storageTemplate });
     }
   });
 </script>

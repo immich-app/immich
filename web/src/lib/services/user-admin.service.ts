@@ -13,11 +13,11 @@ import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
-import { executeMutation } from '$lib/queries/client';
+import { executeMutation, readPreloadedQuery } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { updateUserAdminMutation } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
 import type { HeaderButtonActionItem } from '$lib/types';
@@ -59,7 +59,9 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   };
 
   const getDeleteDate = (deletedAt: string): Date =>
-    DateTime.fromISO(deletedAt).plus({ days: serverConfigManager.value.userDeleteDelay }).toJSDate();
+    DateTime.fromISO(deletedAt)
+      .plus({ days: readPreloadedQuery(getUserConfigQuery()).user.deleteDelay })
+      .toJSDate();
 
   const Restore: HeaderButtonActionItem = {
     icon: mdiDeleteRestore,

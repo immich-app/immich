@@ -18,11 +18,13 @@
 
   const { library }: Props = $props();
 
-  const ownerQuery = createPreloadedQuery(() => getUserAdminQuery(library.ownerId));
-  const owner = $derived(ownerQuery.data);
+  const queries = {
+    owner: createPreloadedQuery(() => getUserAdminQuery(library.ownerId)),
+    statistics: createQuery(() => getLibraryStatisticsQuery(library.id)),
+  };
 
-  const query = createQuery(() => getLibraryStatisticsQuery(library.id));
-  const stats = $derived(query.data);
+  const owner = $derived(queries.owner.data);
+  const stats = $derived(queries.statistics.data);
 
   const actions = $derived.by(() => {
     const { Detail, Scan, Edit, Delete } = getLibraryActions($t, library);

@@ -13,10 +13,13 @@
 
   const { serverVersion, connected } = websocketStore;
 
-  const aboutQuery = createQuery(getAboutInfoQuery);
-  const info = $derived(aboutQuery.data);
-  const historyQuery = createQuery(getVersionHistoryQuery);
-  const versions = $derived(historyQuery.data ?? []);
+  const queries = {
+    about: createQuery(getAboutInfoQuery),
+    history: createQuery(getVersionHistoryQuery),
+  };
+
+  const info = $derived(queries.about.data);
+  const versions = $derived(queries.history.data ?? []);
   let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
   let version = $derived($serverVersion ? semverToName($serverVersion) : null);
 

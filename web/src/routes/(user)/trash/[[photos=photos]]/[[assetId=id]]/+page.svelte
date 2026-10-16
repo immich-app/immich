@@ -9,14 +9,17 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getTrashActions } from '$lib/services/trash.service';
   import { handlePromiseError } from '$lib/utils';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   type Props = {
     data: PageData;
@@ -27,7 +30,7 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { isTrashed: true };
 
-  if (!featureFlagsManager.value.trash) {
+  if (!config.trash.enabled) {
     handlePromiseError(goto(Route.photos()));
   }
 
@@ -43,7 +46,7 @@
   const { Empty, RestoreAll } = $derived(getTrashActions($t, timelineManager?.assetCount ?? 0));
 </script>
 
-{#if featureFlagsManager.value.trash}
+{#if config.trash.enabled}
   <UserPageLayout
     hideNavbar={assetMultiSelectManager.selectionActive}
     actions={assetMultiSelectManager.selectionActive ? [] : [Empty, RestoreAll]}
@@ -59,7 +62,7 @@
     >
       <p class="p-4 font-medium text-gray-500/60 dark:text-gray-300/60">
         {$t('trashed_items_will_be_permanently_deleted_after', {
-          values: { days: serverConfigManager.value.trashDays },
+          values: { days: config.trash.days },
         })}
       </p>
       {#snippet empty()}

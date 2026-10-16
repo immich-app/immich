@@ -15,7 +15,6 @@ import { page } from '$app/state';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { queryClient } from '$lib/queries/client';
-import { getConfigQuery } from '$lib/queries/system-config.query';
 import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
@@ -78,10 +77,7 @@ websocket
       void queryClient.invalidateQueries({ queryKey: ['server'] });
     }
   })
-  .on(
-    'on_config_update',
-    () => void queryClient.invalidateQueries({ queryKey: getConfigQuery().queryKey, exact: true }),
-  )
+  .on('on_config_update', () => void queryClient.invalidateQueries({ queryKey: ['config'] }))
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
   .on('MaintenanceStatusV1', (status) => {
     maintenanceStore.status.set(status);

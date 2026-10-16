@@ -1,6 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 import { DateTime } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { Route } from '$lib/route';
 
 export interface AuthOptions {
@@ -11,6 +13,10 @@ export interface AuthOptions {
 export const authenticate = async (url: URL, options?: AuthOptions) => {
   const { public: publicRoute, admin: adminRoute } = options || {};
   await authManager.load();
+
+  if (authManager.authenticated) {
+    await queryClient.query(getUserConfigQuery());
+  }
 
   if (publicRoute) {
     return;
