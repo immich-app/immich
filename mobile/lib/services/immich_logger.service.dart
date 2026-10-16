@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/data/db/logger/database.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -15,15 +19,35 @@ import 'package:share_plus/share_plus.dart';
 /// Logs can be shared by calling the `shareLogs` method, which will open a share dialog
 /// and generate a csv file.
 abstract final class ImmichLogger {
-  static Future<void> shareLogs(BuildContext context) async {
+  // the startup error screen can show before the log service starts, maybe before the store and settings too, so
+  // without it the logs come straight from their file and are cleaned without the values this install holds
+  static Future<(List<LogMessage>, Map<String, String>)> _read() async {
+    try {
+      return (await LogService.I.getMessages(), LogService.I.held());
+    } on LoggerUnInitializedException {
+      final logs = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
+      try {
+        return (LogService.redact(await LogRepository(logs).getAll()), const <String, String>{});
+      } finally {
+        await logs.close();
+      }
+    }
+  }
+
+  static Future<void> shareLogs(BuildContext context, {String? startupError}) async {
+    final (messages, held) = await _read();
     final tempDir = await getTemporaryDirectory();
     final dateTime = DateTime.now().toIso8601String();
     final filePath = '${tempDir.path}/Immich_log_$dateTime.log';
     final logFile = await File(filePath).create();
     final io = logFile.openWrite();
     try {
+      if (startupError != null) {
+        final error = LogMessage(message: startupError, level: LogLevel.severe, createdAt: DateTime.now());
+        io.write('${LogService.redact([error], held).single.message}\n\n');
+      }
       // Write messages
-      for (final m in await LogService.I.getMessages()) {
+      for (final m in messages) {
         final created = m.createdAt;
         final level = m.level.name.padRight(8);
         final logger = (m.logger ?? "<UNKNOWN_LOGGER>").padRight(20);
