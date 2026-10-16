@@ -44,6 +44,7 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const Update: ActionItem = {
     icon: mdiPencilOutline,
     title: $t('edit'),
+    $if: () => !user.deletedAt,
     onAction: () => goto(Route.editUser(user)),
   };
 
@@ -74,13 +75,14 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const ResetPassword: ActionItem = {
     icon: mdiLockReset,
     title: $t('reset_password'),
-    $if: () => authManager.user.id !== user.id,
+    $if: () => authManager.user.id !== user.id && !user.deletedAt,
     onAction: () => handleResetPasswordUserAdmin(user),
   };
 
   const ResetPinCode: ActionItem = {
     icon: mdiLockSmart,
     title: $t('reset_pin_code'),
+    $if: () => !user.deletedAt,
     onAction: () => handleResetPinCodeUserAdmin(user),
   };
 

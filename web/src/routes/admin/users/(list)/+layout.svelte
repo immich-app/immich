@@ -39,8 +39,8 @@
   const { Create } = $derived(getUserAdminsActions($t));
 
   const getActionsForUser = (user: UserAdminResponseDto) => {
-    const { Detail, Update, Delete, ResetPassword, ResetPinCode } = getUserAdminActions($t, user);
-    return [Detail, Update, ResetPassword, ResetPinCode, MenuItemType.Divider, Delete];
+    const { Detail, Update, Delete, Restore, ResetPassword, ResetPinCode } = getUserAdminActions($t, user);
+    return [Detail, Update, ResetPassword, ResetPinCode, MenuItemType.Divider, Restore, Delete];
   };
 
   const classes = {
