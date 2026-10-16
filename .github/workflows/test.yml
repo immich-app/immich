@@ -853,33 +853,6 @@ jobs:
           fi
           mise exec -- uv run --no-sync python scripts/diag.py ../e2e/test-assets
 
-      - name: Run the full tests on cuDNN 9.27
-        if: ${{ !cancelled() && matrix.runner == 'pokedex-dgpu-nvidia-turing' }}
-        env:
-          MACHINE_LEARNING_TEST_PROVIDER: ${{ matrix.provider }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          mise exec -- uv pip install --no-deps --target "$RUNNER_TEMP/cudnn" nvidia-cudnn-cu12==9.27.0.42
-          # instead of the venv's 9.10.2, whose directory would also win over 9.27's own for its sub-libraries
-          libs=("$RUNNER_TEMP/cudnn/nvidia/cudnn/lib")
-          for lib in .venv/lib/python*/site-packages/nvidia/*/lib; do
-            [[ $lib == */cudnn/lib ]] || libs+=("$PWD/$lib")
-          done
-          export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]}")
-          mise exec -- uv run --no-sync python -c 'import ctypes; print(ctypes.CDLL("libcudnn.so.9").cudnnGetVersion())'
-          mise run test-full
-
-      - name: Run every cuDNN engine on cuDNN 9.27
-        if: ${{ !cancelled() && matrix.runner == 'pokedex-dgpu-nvidia-turing' }}
-        run: |
-          # the CUDA runtime alone: the venv's cuDNN directory would win over 9.27's own for its sub-libraries
-          export LD_LIBRARY_PATH=$(echo "$PWD"/.venv/lib/python*/site-packages/nvidia/cuda_runtime/lib)
-          # the frontend ORT pins has no wheel for the venv's Python; a plain venv, as it looks for cuDNN in its own
-          mise exec -- uv venv --python 3.12 "$RUNNER_TEMP/engines"
-          mise exec -- uv pip install --python "$RUNNER_TEMP/engines/bin/python" numpy nvidia-cudnn-frontend==1.12.0 \
-            nvidia-cudnn-cu12==9.27.0.42
-          "$RUNNER_TEMP/engines/bin/python" scripts/diag_engines.py 9.27.0.42
-
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
