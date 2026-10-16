@@ -822,6 +822,9 @@ importers:
       '@photo-sphere-viewer/video-plugin':
         specifier: ^5.14.0
         version: 5.15.1(@photo-sphere-viewer/core@5.15.1)
+      '@tanstack/svelte-query':
+        specifier: ^6.3.2
+        version: 6.3.2(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       '@types/geojson':
         specifier: ^7946.0.16
         version: 7946.0.16
@@ -4716,6 +4719,14 @@ packages:
     resolution: {integrity: sha512-yYU8cogLeSh/ms2jh8Fj7jaba/EWa7Ja6GoUqYZaraEuCI5YS6ms6ObZgjjedm+jm6XZjdNRWBpPP6Z86oOxcw==}
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
+
+  '@tanstack/query-core@5.104.2':
+    resolution: {integrity: sha512-/qbsxJK5c3Ve1aFIULWYNcT2jeRUAiD4HME6Eu2ZdpofHoVgAjpkQhLg5xHuOoBkTPQUJLfP7zOxy0qsBcqROA==}
+
+  '@tanstack/svelte-query@6.3.2':
+    resolution: {integrity: sha512-bMPh3iyijRxqLlulDqJO80wm6mJughvVVTV4SZFMgTNSiA5AJJoOHJ3btQtYpeHgN0dMALhfo4R8chwB/9JA2Q==}
+    peerDependencies:
+      svelte: ^5.25.0
 
   '@testing-library/dom@10.4.1':
     resolution: {integrity: sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg==}
@@ -17622,6 +17633,13 @@ snapshots:
       '@tailwindcss/oxide': 4.3.3
       tailwindcss: 4.3.3
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)
+
+  '@tanstack/query-core@5.104.2': {}
+
+  '@tanstack/svelte-query@6.3.2(svelte@5.57.2(@typescript-eslint/types@8.71.2))':
+    dependencies:
+      '@tanstack/query-core': 5.104.2
+      svelte: 5.57.2(@typescript-eslint/types@8.71.2)
 
   '@testing-library/dom@10.4.1':
     dependencies:
