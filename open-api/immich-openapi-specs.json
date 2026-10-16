@@ -25925,6 +25925,12 @@
       "PublicConfigDto": {
         "description": "Configuration properties that are visible to everyone",
         "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/PublicConfigFFmpegDto"
+          },
+          "map": {
+            "$ref": "#/components/schemas/PublicConfigMapDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/PublicConfigOAuthDto"
           },
@@ -25933,16 +25939,61 @@
           },
           "server": {
             "$ref": "#/components/schemas/PublicConfigServerDto"
-          },
-          "theme": {
-            "$ref": "#/components/schemas/PublicConfigThemeDto"
           }
         },
         "required": [
+          "ffmpeg",
+          "map",
           "oauth",
           "passwordLogin",
-          "server",
-          "theme"
+          "server"
+        ],
+        "type": "object"
+      },
+      "PublicConfigFFmpegDto": {
+        "properties": {
+          "realtime": {
+            "$ref": "#/components/schemas/PublicConfigFFmpegRealtimeDto"
+          }
+        },
+        "required": [
+          "realtime"
+        ],
+        "type": "object"
+      },
+      "PublicConfigFFmpegRealtimeDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enable real-time HLS transcoding (alpha)",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "PublicConfigMapDto": {
+        "properties": {
+          "darkStyle": {
+            "description": "Dark map style URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "lightStyle": {
+            "description": "Light map style URL",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "darkStyle",
+          "enabled",
+          "lightStyle"
         ],
         "type": "object"
       },
@@ -25989,18 +26040,6 @@
         },
         "required": [
           "loginPageMessage"
-        ],
-        "type": "object"
-      },
-      "PublicConfigThemeDto": {
-        "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
-          }
-        },
-        "required": [
-          "customCss"
         ],
         "type": "object"
       },
@@ -33099,9 +33138,6 @@
           "server": {
             "$ref": "#/components/schemas/UserConfigServerDto"
           },
-          "theme": {
-            "$ref": "#/components/schemas/UserConfigThemeDto"
-          },
           "trash": {
             "$ref": "#/components/schemas/UserConfigTrashDto"
           },
@@ -33119,7 +33155,6 @@
           "passwordLogin",
           "reverseGeocoding",
           "server",
-          "theme",
           "trash",
           "user"
         ],
@@ -33392,18 +33427,6 @@
         },
         "required": [
           "enabled"
-        ],
-        "type": "object"
-      },
-      "UserConfigThemeDto": {
-        "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
-          }
-        },
-        "required": [
-          "customCss"
         ],
         "type": "object"
       },

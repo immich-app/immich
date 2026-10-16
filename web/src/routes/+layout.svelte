@@ -10,7 +10,6 @@
   import VersionAnnouncement from './VersionAnnouncement.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { queryClient } from '$lib/queries/client';
   import { Route } from '$lib/route';
@@ -241,21 +240,6 @@
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="white" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="black" media="(prefers-color-scheme: dark)" />
-
-  {#if page.data.meta}
-    <meta name="description" content={page.data.meta.description} />
-
-    <!-- Facebook Meta Tags -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={page.data.meta.title} />
-    <meta property="og:description" content={page.data.meta.description} />
-    {#if page.data.meta.imageUrl}
-      <meta
-        property="og:image"
-        content={new URL(page.data.meta.imageUrl, serverConfigManager.value.externalDomain || location.origin).href}
-      />
-    {/if}
-  {/if}
 </svelte:head>
 
 <QueryClientProvider client={queryClient}>
