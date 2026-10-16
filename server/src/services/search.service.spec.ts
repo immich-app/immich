@@ -296,14 +296,14 @@ describe(SearchService.name, () => {
       ).rejects.toThrowError(new BadRequestException('Cursor is for ordering by fileCreatedAt desc, not rating desc'));
     });
 
-    it('should paginate smart search from the distance of the last asset', async () => {
+    it('should paginate smart search from the last asset', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
       mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
 
       mocks.search.searchSmartV3.mockResolvedValue({
         hasNextPage: true,
-        items: [{ ...getForAsset(asset), distance: 0.25 }] as never,
+        items: [getForAsset(asset)] as never,
       });
       const firstPage = await sut.searchSmart(auth, { size: 1, filter: {}, query: 'test' });
       expect(firstPage.assets.nextPage).toBeNull();
@@ -312,7 +312,7 @@ describe(SearchService.name, () => {
       mocks.search.searchSmartV3.mockResolvedValue({ hasNextPage: false, items: [] });
       const secondPage = await sut.searchSmart(auth, { size: 1, query: 'test', cursor: firstPage.assets.nextCursor! });
       expect(mocks.search.searchSmartV3).toHaveBeenLastCalledWith(
-        { take: 1, cursor: { distance: 0.25, id: asset.id } },
+        { take: 1, cursor: { id: asset.id } },
         expect.anything(),
         expect.anything(),
       );

@@ -1076,11 +1076,7 @@ export const searchSmartV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'cursor',
-    params: [
-      { take: 100, cursor: { distance: 0.5, id: DummyValue.UUID } },
-      { embedding: DummyValue.VECTOR },
-      scopeExample,
-    ],
+    params: [{ take: 100, cursor: { id: DummyValue.UUID } }, { embedding: DummyValue.VECTOR }, scopeExample],
   },
 ];
 

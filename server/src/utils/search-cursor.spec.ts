@@ -76,21 +76,21 @@ describe('metadata cursor', () => {
     ],
     ['an unknown field', encodePayload({ ...order, field: 'id', value: id, id })],
     ['an unknown key', encodePayload({ ...order, value: '2024-05-01T10:00:00Z', id, offset: 250 })],
-    ['a smart cursor', encodeSmartCursor({ distance: 0.5, id })],
+    ['a smart cursor', encodeSmartCursor({ id })],
   ])('should reject %s', (_, cursor) => {
     expect(() => decodeMetadataCursor(order, cursor)).toThrowError(new BadRequestException('Invalid cursor'));
   });
 });
 
 describe('smart cursor', () => {
-  it('should round-trip the distance and asset id', () => {
-    const cursor = { distance: 0.1 + 0.2, id };
+  it('should round-trip the asset id', () => {
+    const cursor = { id };
     expect(decodeSmartCursor(encodeSmartCursor(cursor))).toEqual(cursor);
   });
 
   it('should only encode the position of a row', () => {
-    const row = { distance: 0.5, id, originalPath: '/photos/a.jpg' };
-    expect(decodeSmartCursor(encodeSmartCursor(row))).toEqual({ distance: 0.5, id });
+    const row = { id, originalPath: '/photos/a.jpg' };
+    expect(decodeSmartCursor(encodeSmartCursor(row))).toEqual({ id });
   });
 
   it('should treat a missing cursor as the first page', () => {
@@ -99,7 +99,7 @@ describe('smart cursor', () => {
 
   it.each([
     ['an offset cursor', encodePayload({ offset: 2 })],
-    ['an asset id without a distance', encodePayload({ id })],
+    ['a cursor with a distance', encodePayload({ distance: 0.5, id })],
     [
       'a metadata cursor',
       encodeMetadataCursor({ field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Desc }, row),

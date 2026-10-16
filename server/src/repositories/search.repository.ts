@@ -608,24 +608,20 @@ export class SearchRepository {
     const { cursor } = pagination;
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
-      const items = await trx
-        .with('cte', () =>
-          searchAssetBuilder(trx, options, scope)
-            .select(columns.searchAsset)
-            .select(sql<number>`smart_search.embedding <=> ${options.embedding}`.as('distance'))
-            .innerJoin('smart_search', 'asset.id', 'smart_search.assetId'),
-        )
-        .selectFrom('cte')
-        .selectAll()
+      const distance = sql<number>`smart_search.embedding <=> ${options.embedding}`;
+      const items = await searchAssetBuilder(trx, options, scope)
+        .select(columns.searchAsset)
+        .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .$if(!!cursor, (qb) =>
-          qb.where((eb) =>
-            eb(eb.refTuple('cte.distance', 'cte.id'), '>', eb.tuple(cursor!.distance, asUuid(cursor!.id))),
+          qb.where(distance, '>', (eb) =>
+            eb
+              .selectFrom('smart_search as cursor_asset')
+              .select(sql<number>`cursor_asset.embedding <=> ${options.embedding}`.as('distance'))
+              .where('cursor_asset.assetId', '=', asUuid(cursor!.id)),
           ),
         )
-        // The keyset needs an exact total order: identical images tie on distance, and the vector index only
-        // approximates the distance order. Probes stay set in case the planner still uses the index.
-        .orderBy('cte.distance')
-        .orderBy('cte.id', 'asc')
+        // no id tie-break: a secondary sort key keeps the query from using the vector index
+        .orderBy(distance)
         .limit(pagination.take + 1)
         .execute();
       return paginationHelper(items, pagination.take);
