@@ -4,21 +4,18 @@ import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
 import { isEqual } from 'lodash-es';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { queryClient } from '$lib/queries/client';
-import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
 export const getConfigQuery = () =>
   queryOptions({
     queryKey: ['system-config'],
     queryFn: ({ signal }) => getConfig({ signal }),
-    staleTime: Infinity,
   });
 
 export const getConfigDefaultsQuery = () =>
   queryOptions({
     queryKey: ['system-config', 'defaults'],
     queryFn: ({ signal }) => getConfigDefaults({ signal }),
-    staleTime: Infinity,
   });
 
 export const updateConfigMutation = () =>
@@ -44,8 +41,5 @@ export const updateConfigMutation = () =>
       const $t = await getFormatter();
       toastManager.primary($t('settings_saved'));
     },
-    onError: async (error) => {
-      const $t = await getFormatter();
-      handleError(error, $t('errors.unable_to_save_settings'));
-    },
+    meta: { error: { toast: 'errors.unable_to_save_settings' } },
   });

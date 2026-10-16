@@ -2,7 +2,7 @@
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingTextarea from './SettingTextarea.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { createDefinedQuery } from '$lib/queries/client';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { getConfigQuery } from '$lib/queries/system-config.query';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -18,7 +18,7 @@
 
   let { config = $bindable() }: Props = $props();
 
-  const query = createDefinedQuery(getConfigQuery());
+  const query = createPreloadedQuery(getConfigQuery);
 
   let loadingPreview = $state(false);
 

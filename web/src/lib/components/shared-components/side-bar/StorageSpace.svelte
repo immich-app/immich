@@ -7,7 +7,7 @@
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
-  const query = createQuery(() => getStorageQuery());
+  const query = createQuery(getStorageQuery);
   const serverInfo = $derived(query.data);
 
   let hasQuota = $derived(authManager.user.quotaSizeInBytes !== null);

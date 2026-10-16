@@ -1,15 +1,13 @@
 <script lang="ts">
-  import { goto, invalidate } from '$app/navigation';
   import emptyFoldersUrl from '$lib/assets/empty-folders.svg';
   import AdminCard from '$lib/components/AdminCard.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import TableButton from '$lib/components/TableButton.svelte';
   import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
-  import { queryClient } from '$lib/queries/client';
-  import { getLibraryStatisticsQuery } from '$lib/queries/library.query';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getLibraryQuery, getLibraryStatisticsQuery } from '$lib/queries/library.query';
   import { Route } from '$lib/route';
   import {
     getLibraryActions,
@@ -20,21 +18,16 @@
   import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
-  import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import type { LayoutData } from './$types';
+  import type { LayoutProps } from './$types';
 
-  type Props = {
-    children?: Snippet;
-    data: LayoutData;
-  };
+  const { children, params }: LayoutProps = $props();
 
-  const { children, data }: Props = $props();
+  const libraryQuery = createPreloadedQuery(() => getLibraryQuery(params.id));
+  const library = $derived(libraryQuery.data);
 
-  const library = $derived(data.library);
-
-  const query = createQuery(() => getLibraryStatisticsQuery(library.id));
-  const stats = $derived(query.data);
+  const statisticsQuery = createQuery(() => getLibraryStatisticsQuery(library.id));
+  const stats = $derived(statisticsQuery.data);
 
   const photos = $derived(stats && { value: stats.photos });
   const videos = $derived(stats && { value: stats.videos });
@@ -46,21 +39,8 @@
     return { value, unit };
   });
 
-  const onLibraryUpdate = async () => {
-    await invalidate('app:library');
-    await queryClient.invalidateQueries({ queryKey: getLibraryStatisticsQuery(library.id).queryKey });
-  };
-
-  const onLibraryDelete = async ({ id }: { id: string }) => {
-    if (id === library.id) {
-      await goto(Route.libraries());
-    }
-  };
-
   const { Edit, Delete, AddFolder, AddExclusionPattern, Scan } = $derived(getLibraryActions($t, library));
 </script>
-
-<OnEvents {onLibraryUpdate} {onLibraryDelete} />
 
 <CommandPaletteDefaultProvider name={$t('library')} actions={[Edit, Delete, AddFolder, AddExclusionPattern, Scan]} />
 
