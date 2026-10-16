@@ -424,7 +424,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final partnerSharedWithAsync = ref.watch(sharedWithPartnerProvider);
     final partners = partnerSharedWithAsync.valueOrNull ?? [];
-
+    const tileRadius = 20.0;
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
       sliver: SliverToBoxAdapter(
@@ -448,12 +448,10 @@ class _QuickAccessButtonList extends ConsumerWidget {
             physics: const NeverScrollableScrollPhysics(),
             children: [
               ListTile(
-                shape: RoundedRectangleBorder(
+                shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(20),
-                    topRight: const Radius.circular(20),
-                    bottomLeft: Radius.circular(partners.isEmpty ? 20 : 0),
-                    bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
+                    topLeft: Radius.circular(tileRadius),
+                    topRight: Radius.circular(tileRadius),
                   ),
                 ),
                 leading: const Icon(Icons.folder_outlined, size: 26),
@@ -472,6 +470,12 @@ class _QuickAccessButtonList extends ConsumerWidget {
                 onTap: () => context.pushRoute(const LockedFolderRoute()),
               ),
               ListTile(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(tileRadius),
+                    bottomRight: Radius.circular(tileRadius),
+                  ),
+                ),
                 leading: const Icon(Icons.group_outlined, size: 26),
                 title: Text(
                   context.t.partners,
