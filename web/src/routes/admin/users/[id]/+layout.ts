@@ -1,6 +1,7 @@
-import { getUserPreferencesAdmin, getUserSessionsAdmin, getUserStatisticsAdmin, searchUsersAdmin } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { UUID_REGEX } from '$lib/constants';
+import { queryClient } from '$lib/queries/client';
+import { getUserAdminQuery } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
@@ -13,24 +14,11 @@ export const load = (async ({ params, url }) => {
     redirect(307, Route.users());
   }
 
-  const [user] = await searchUsersAdmin({ id: params.id, withDeleted: true }).catch(() => []);
-  if (!user) {
-    redirect(307, Route.users());
-  }
-
-  const [userPreferences, userStatistics, userSessions] = await Promise.all([
-    getUserPreferencesAdmin({ id: user.id }),
-    getUserStatisticsAdmin({ id: user.id }),
-    getUserSessionsAdmin({ id: user.id }),
-  ]);
+  await queryClient.query(getUserAdminQuery(params.id)).catch(() => redirect(307, Route.users()));
 
   const $t = await getFormatter();
 
   return {
-    user,
-    userPreferences,
-    userStatistics,
-    userSessions,
     meta: {
       title: $t('admin.user_details'),
     },
