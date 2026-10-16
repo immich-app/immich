@@ -2,7 +2,7 @@
   import type { ComponentProps } from 'svelte';
   import { Confetti } from 'svelte-confetti';
 
-  const props: ComponentProps<typeof Confetti> = $props();
+  const { amount = 50, ...props }: ComponentProps<typeof Confetti> = $props();
 
   const colorArray = [
     'var(--color-logo-red)',
@@ -11,6 +11,12 @@
     'var(--color-logo-blue)',
     'var(--color-logo-green)',
   ];
+
+  // lib supports one shape per instance
+  const shapes = [{ rounded: false }, { rounded: true }];
+  const amountPerShape = $derived(Math.round(amount / shapes.length));
 </script>
 
-<Confetti {colorArray} disableForReducedMotion {...props} />
+{#each shapes as shape, i (i)}
+  <Confetti {colorArray} disableForReducedMotion amount={amountPerShape} {...shape} {...props} />
+{/each}

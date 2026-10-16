@@ -109,8 +109,10 @@ const createWorkflow = async (template: WorkflowTemplate) => {
 
 let ctx: WorkflowTestContext;
 
+let db: Kysely<DB>;
+
 beforeAll(async () => {
-  const db = await getKyselyDB();
+  db = await getKyselyDB();
   ctx = new WorkflowTestContext(db);
   await ctx.init();
 }, 30_000);
@@ -748,6 +750,39 @@ describe('core plugin', () => {
 
     afterEach(() => {
       vi.unstubAllGlobals();
+    });
+  });
+
+  describe('step order', () => {
+    it('should run steps by their order, not by the order the rows come back', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, originalFileName: 'nomatch.jpg' });
+
+      // Insert the action BEFORE the filter so a plain scan returns it first, then give the filter order 0.
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          { method: 'immich-plugin-core#assetFavorite' },
+          { method: 'immich-plugin-core#assetFileFilter', config: { matchType: 'contains', pattern: 'screenshot' } },
+        ],
+      });
+      const steps = await db
+        .selectFrom('workflow_step')
+        .innerJoin('plugin_method', 'plugin_method.id', 'workflow_step.pluginMethodId')
+        .select(['workflow_step.id', 'plugin_method.name'])
+        .where('workflow_step.workflowId', '=', workflow.id)
+        .execute();
+      for (const step of steps) {
+        await db
+          .updateTable('workflow_step')
+          .set({ order: step.name === 'assetFileFilter' ? 0 : 1 })
+          .where('id', '=', step.id)
+          .execute();
+      }
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
     });
   });
 });

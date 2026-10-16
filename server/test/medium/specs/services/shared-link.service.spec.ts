@@ -2,6 +2,7 @@ import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { AlbumUserRole, SharedLinkType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
@@ -18,7 +19,7 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SharedLinkService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, SharedLinkRepository, SharedLinkAssetRepository],
+    real: [AccessRepository, AlbumRepository, DatabaseRepository, SharedLinkRepository, SharedLinkAssetRepository],
     mock: [LoggingRepository, StorageRepository],
   });
 };
@@ -57,8 +58,8 @@ describe(SharedLinkService.name, () => {
 
       await expect(sut.get(auth, sharedLink.id)).resolves.toMatchObject({
         album: expect.objectContaining({
-          startDate: '2020-01-01T00:00:00+00:00',
-          endDate: '2022-01-01T00:00:00+00:00',
+          startDate: '2020-01-01T00:00:00.000Z',
+          endDate: '2022-01-01T00:00:00.000Z',
         }),
       });
     });

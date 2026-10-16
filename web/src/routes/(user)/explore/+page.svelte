@@ -1,5 +1,6 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '$lib/components/faces-page/PersonIndicator.svelte';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
@@ -10,8 +11,7 @@
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
-  import { Icon, ImageCarousel } from '@immich/ui';
-  import { mdiHeart } from '@mdi/js';
+  import { ImageCarousel } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -81,19 +81,17 @@
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
           {#each people.slice(0, itemCount) as person (person.id)}
-            <a href={Route.viewPerson(person)} class="relative text-center">
-              <ImageThumbnail
-                circle
-                shadow
-                url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-              {#if person.isFavorite}
-                <div class="absolute inset-s-2 top-2">
-                  <Icon icon={mdiHeart} size="24" class="text-white" />
-                </div>
-              {/if}
+            <a href={Route.viewPerson(person)} class="text-center">
+              <div class="@container relative">
+                <ImageThumbnail
+                  circle
+                  shadow
+                  url={getPeopleThumbnailUrl(person)}
+                  altText={person.name}
+                  widthStyle="100%"
+                />
+                <PersonIndicator {person} />
+              </div>
               <p class="mt-2 text-sm font-medium text-ellipsis dark:text-white">{person.name}</p>
             </a>
           {/each}

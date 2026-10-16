@@ -113,7 +113,7 @@ void main() {
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
     when(
       () => mockServerApi.getServerVersion(),
-    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null));
+    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null, featureLevel: 1));
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
@@ -131,7 +131,7 @@ void main() {
     when(
       () => mockSyncStreamRepo.updateAssetsExifV1(any(), debugLabel: any(named: 'debugLabel')),
     ).thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateMemoriesV2(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoriesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateMemoryAssetsV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any())).thenAnswer(successHandler);
@@ -320,7 +320,7 @@ void main() {
       await simulateEvents(events);
 
       verifyInOrder([
-        () => mockSyncStreamRepo.updateMemoriesV1(any()),
+        () => mockSyncStreamRepo.updateMemoriesV2(any()),
         () => mockSyncApiRepo.ack(["5"]),
         () => mockSyncStreamRepo.deleteMemoriesV1(any()),
         () => mockSyncApiRepo.ack(["6"]),
@@ -349,14 +349,14 @@ void main() {
         () => mockSyncApiRepo.ack(["1"]),
         () => mockSyncStreamRepo.updateMemoryAssetsV1(any()),
         () => mockSyncApiRepo.ack(["7"]),
-        () => mockSyncStreamRepo.updateMemoriesV1(any()),
+        () => mockSyncStreamRepo.updateMemoriesV2(any()),
         () => mockSyncApiRepo.ack(["5"]),
       ]);
       verifyNever(() => mockAbortCallbackWrapper());
     });
 
     test("handles memory sync failure gracefully", () async {
-      when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenThrow(Exception("Memory sync failed"));
+      when(() => mockSyncStreamRepo.updateMemoriesV2(any())).thenThrow(Exception("Memory sync failed"));
 
       final events = [SyncStreamStub.memoryV1, SyncStreamStub.userV1Admin];
 
@@ -386,8 +386,21 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockSyncStreamRepo.updateMemoriesV1(any())).called(1);
+      verify(() => mockSyncStreamRepo.updateMemoriesV2(any())).called(1);
       verify(() => mockSyncApiRepo.ack(["5"])).called(1);
+    });
+
+    test("processes memory v2 events", () async {
+      final events = [SyncStreamStub.memoryV2, SyncStreamStub.memoryToAssetV2];
+
+      await simulateEvents(events);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.updateMemoriesV2(any()),
+        () => mockSyncApiRepo.ack(["9"]),
+        () => mockSyncStreamRepo.updateMemoryAssetsV1(any()),
+        () => mockSyncApiRepo.ack(["10"]),
+      ]);
     });
   });
 
@@ -554,7 +567,7 @@ void main() {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
       when(
         () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null, featureLevel: 1));
 
       await sut.sync();
 
@@ -582,7 +595,7 @@ void main() {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
       when(
         () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null));
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null, featureLevel: 1));
       await sut.sync();
 
       verifyInOrder([
@@ -612,7 +625,7 @@ void main() {
 
       when(
         () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null, featureLevel: 1));
 
       await sut.sync();
 

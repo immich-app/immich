@@ -13,6 +13,7 @@ enum ServerCapability {
   syncAssetFacesV3(SemVer(major: 3, minor: 3, patch: 0)),
   syncAssetOcrV1(SemVer(major: 3, minor: 0, patch: 0)),
   syncAuthUsersV2(SemVer(major: 3, minor: 3, patch: 0)),
+  syncMemoriesV2(SemVer(major: 3, minor: 3, patch: 0)),
 
   // Migrations
   assetPayloadChange20260128(SemVer(major: 2, minor: 5, patch: 0)),

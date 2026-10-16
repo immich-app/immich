@@ -63,7 +63,7 @@ jobs:
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
+        uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -131,10 +131,31 @@ jobs:
           persist-credentials: false
 
       - name: Download APK
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-apk-signed
           github-token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
+        with:
+          github_token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          TAG: ${{ needs.tag.outputs.version }}
+          PRERELEASE: ${{ needs.tag.outputs.rc }}
+        run: |
+          tags=$(git -c versionsort.suffix=-rc tag --list 'v[0-9]*' --sort=-v:refname)
+          if [[ "${PRERELEASE}" != 'true' ]]; then
+            tags=$(grep -v -- '-rc.' <<< "${tags}")
+          fi
+          previous=$(grep -A1 -xF "${TAG}" <<< "${tags}" | tail -1)
+          echo "generating notes from ${previous}"
+
+          mise //:notes --tag "${TAG}" --previous "${previous}" > "${RUNNER_TEMP}/notes.md"
+          cat "${RUNNER_TEMP}/notes.md"
 
       - name: Create draft release
         env:
@@ -144,22 +165,13 @@ jobs:
           PRERELEASE: ${{ needs.tag.outputs.rc }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          tags=$(git -c versionsort.suffix=-rc tag --list 'v[0-9]*' --sort=-v:refname)
-          if [[ "${PRERELEASE}" != 'true' ]]; then
-            tags=$(grep -v -- '-rc.' <<< "${tags}")
-          fi
-          previous=$(grep -A1 -xF "${TAG}" <<< "${tags}" | tail -1)
-          echo "generating notes from ${previous}"
-
           gh release create "${TAG}" \
             --repo "${REPO}" \
             --target "${BRANCH}" \
             --draft \
             --verify-tag \
             --prerelease="${PRERELEASE}" \
-            --notes-file misc/release/notes.tmpl \
-            --generate-notes \
-            --notes-start-tag "${previous}" \
+            --notes-file "${RUNNER_TEMP}/notes.md" \
             docker/docker-compose.yml \
             docker/docker-compose.rootless.yml \
             docker/example.env \

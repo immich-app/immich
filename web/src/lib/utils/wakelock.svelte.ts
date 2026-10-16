@@ -10,7 +10,7 @@ export async function acquireWakeLock() {
   if (!isSupported) {
     return;
   }
-  // eslint-disable-next-line tscompat/tscompat
+
   if (sentinel && !sentinel.released) {
     return;
   }
@@ -19,7 +19,6 @@ export async function acquireWakeLock() {
   }
   acquiring = true;
   try {
-    // eslint-disable-next-line tscompat/tscompat
     sentinel = await navigator.wakeLock.request('screen');
   } catch (error) {
     console.warn('Failed to acquire wake lock:', error);
@@ -37,7 +36,6 @@ export async function releaseWakeLock() {
   // Unset first to avoid race condition after await
   sentinel = undefined;
 
-  // eslint-disable-next-line tscompat/tscompat
   await toReleaseSentinel.release();
 }
 
