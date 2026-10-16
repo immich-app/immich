@@ -19,7 +19,7 @@
 
   let { onClose }: Props = $props();
 
-  const query = createQuery(() => getAboutInfoQuery());
+  const query = createQuery(getAboutInfoQuery);
   const info = $derived(query.data);
 </script>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createDefinedQuery } from '$lib/queries/client';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { getConfigDefaultsQuery, getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
   import type { AdminConfigDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
@@ -16,8 +16,8 @@
 
   let { disabled, keys, configToEdit = $bindable(), onBeforeSave }: Props = $props();
 
-  const config = createDefinedQuery(getConfigQuery());
-  const defaults = createDefinedQuery(getConfigDefaultsQuery());
+  const config = createPreloadedQuery(getConfigQuery);
+  const defaults = createPreloadedQuery(getConfigDefaultsQuery);
   const save = createMutation(updateConfigMutation);
 
   const showResetToDefault = $derived(!isEqual(pick(config.data, keys), pick(defaults.data, keys)));

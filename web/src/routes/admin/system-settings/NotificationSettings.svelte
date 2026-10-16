@@ -8,7 +8,7 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { createDefinedQuery, executeMutation } from '$lib/queries/client';
+  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
   import { getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
   import { handleError } from '$lib/utils/handle-error';
   import { sendTestEmailAdmin } from '@immich/sdk';
@@ -16,7 +16,7 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const query = createDefinedQuery(getConfigQuery());
+  const query = createPreloadedQuery(getConfigQuery);
   const config = $derived(query.data);
 
   const disabled = $derived(featureFlagsManager.value.configFile);
@@ -53,7 +53,7 @@
       );
 
       if (!disabled) {
-        await executeMutation(updateConfigMutation(), { notifications: configToEdit.notifications });
+        await executeMutation(updateConfigMutation, { notifications: configToEdit.notifications });
       }
     } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));

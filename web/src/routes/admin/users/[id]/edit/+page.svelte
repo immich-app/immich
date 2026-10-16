@@ -17,7 +17,7 @@
 
   let { data }: Props = $props();
 
-  const query = createQuery(() => getStorageQuery());
+  const query = createQuery(getStorageQuery);
   const serverInfo = $derived(query.data);
 
   const user = $derived(data.user);

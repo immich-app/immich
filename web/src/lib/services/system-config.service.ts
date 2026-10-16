@@ -55,7 +55,7 @@ const handleUploadConfig = () => {
     }
     const reader = async () => {
       const text = await file.text();
-      await executeMutation(updateConfigMutation(), JSON.parse(text));
+      await executeMutation(updateConfigMutation, JSON.parse(text));
     };
     reader()
       .catch((error) => console.error('Error handling JSON config upload', error))

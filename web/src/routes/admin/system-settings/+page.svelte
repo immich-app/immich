@@ -21,7 +21,7 @@
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { createDefinedQuery } from '$lib/queries/client';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { getConfigQuery } from '$lib/queries/system-config.query';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
   import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
@@ -57,7 +57,7 @@
 
   const { data }: Props = $props();
 
-  const config = createDefinedQuery(getConfigQuery());
+  const config = createPreloadedQuery(getConfigQuery);
 
   const settings: Array<{
     component: Component;

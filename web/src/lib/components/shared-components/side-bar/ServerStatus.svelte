@@ -13,9 +13,9 @@
 
   const { serverVersion, connected } = websocketStore;
 
-  const aboutQuery = createQuery(() => getAboutInfoQuery());
+  const aboutQuery = createQuery(getAboutInfoQuery);
   const info = $derived(aboutQuery.data);
-  const historyQuery = createQuery(() => getVersionHistoryQuery());
+  const historyQuery = createQuery(getVersionHistoryQuery);
   const versions = $derived(historyQuery.data ?? []);
   let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
   let version = $derived($serverVersion ? semverToName($serverVersion) : null);

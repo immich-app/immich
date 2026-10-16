@@ -7,7 +7,7 @@
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
-  import { createDefinedQuery } from '$lib/queries/client';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { getConfigQuery } from '$lib/queries/system-config.query';
   import { handleError } from '$lib/utils/handle-error';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
@@ -18,7 +18,7 @@
   import { fade } from 'svelte/transition';
   import SettingSelect from './SettingSelect.svelte';
 
-  const query = createDefinedQuery(getConfigQuery());
+  const query = createPreloadedQuery(getConfigQuery);
   const config = $derived(query.data);
 
   const disabled = $derived(featureFlagsManager.value.configFile);

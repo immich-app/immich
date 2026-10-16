@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createDefinedQuery } from '$lib/queries/client';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { getConfigQuery } from '$lib/queries/system-config.query';
   import { cloneDeep } from 'lodash-es';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
@@ -10,7 +10,7 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const query = createDefinedQuery(getConfigQuery());
+  const query = createPreloadedQuery(getConfigQuery);
   const config = $derived(query.data);
 
   const disabled = $derived(featureFlagsManager.value.configFile);
