@@ -15,7 +15,7 @@ const MetadataCursorSchema = z.discriminatedUnion('field', [
   z.strictObject({ field: z.literal(SearchOrderField.Rating), value: z.int32().nullable(), ...position }),
 ]);
 
-const SmartCursorSchema = z.strictObject({ distance: z.number(), id: z.uuidv4() });
+const SmartCursorSchema = z.strictObject({ id: z.uuidv4() });
 
 export type MetadataCursor = z.infer<typeof MetadataCursorSchema>;
 export type SmartCursor = z.infer<typeof SmartCursorSchema>;
@@ -77,6 +77,6 @@ export const decodeMetadataCursor = (order: SearchOrder, cursor?: string): Metad
   return decoded;
 };
 
-export const encodeSmartCursor = ({ distance, id }: SmartCursor): string => encode({ distance, id });
+export const encodeSmartCursor = ({ id }: SmartCursor): string => encode({ id });
 
 export const decodeSmartCursor = (cursor?: string): SmartCursor | undefined => decode(SmartCursorSchema, cursor);

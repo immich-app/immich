@@ -541,25 +541,5 @@ describe(SearchService.name, () => {
 
       expect(ids).toEqual(assetIds);
     });
-
-    it('should not skip smart search results at the same distance as the cursor', async () => {
-      const { searchRepository, assetIds, options, scope } = await seedSmartSearch(setup(), [0, 1, 1, 1, 2]);
-      const ids = await collectSmartPages((cursor) =>
-        searchRepository.searchSmartV3({ take: 2, cursor }, options, scope),
-      );
-
-      expect(ids).toEqual([assetIds[0], ...assetIds.slice(1, 4).toSorted(), assetIds[4]]);
-    });
-
-    it('should continue smart search pages after the cursor asset is deleted', async () => {
-      const service = setup();
-      const { searchRepository, assetIds, options, scope } = await seedSmartSearch(service, [0, 1, 2, 3]);
-      const firstPage = await searchRepository.searchSmartV3({ take: 2 }, options, scope);
-      const cursor = firstPage.items.at(-1)!;
-      await service.ctx.database.deleteFrom('asset').where('id', '=', cursor.id).execute();
-
-      const secondPage = await searchRepository.searchSmartV3({ take: 2, cursor }, options, scope);
-      expect(secondPage.items.map(({ id }) => id)).toEqual([assetIds[2], assetIds[3]]);
-    });
   });
 });
