@@ -17,7 +17,7 @@
   const onClose = () => void goto(Route.viewLibrary(library));
 
   const onSubmit = async () => {
-    await executeMutation(updateLibraryMutation(), [{ id: library.id, updateLibraryDto: { name } }], {
+    await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { name } }], {
       onSuccess: onClose,
     });
   };

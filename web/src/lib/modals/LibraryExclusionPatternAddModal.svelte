@@ -17,7 +17,7 @@
 
   const onSubmit = async () => {
     const exclusionPatterns = [...library.exclusionPatterns, value];
-    await executeMutation(updateLibraryMutation(), [{ id: library.id, updateLibraryDto: { exclusionPatterns } }], {
+    await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { exclusionPatterns } }], {
       onSuccess: onClose,
     });
   };

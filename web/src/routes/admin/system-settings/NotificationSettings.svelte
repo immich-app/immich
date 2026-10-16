@@ -53,7 +53,7 @@
       );
 
       if (!disabled) {
-        await executeMutation(updateConfigMutation(), { notifications: configToEdit.notifications });
+        await executeMutation(updateConfigMutation, { notifications: configToEdit.notifications });
       }
     } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));

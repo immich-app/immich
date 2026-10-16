@@ -18,7 +18,7 @@
   };
 
   const onSubmit = async () => {
-    await executeMutation(createLibraryMutation(), [{ createLibraryDto: { ownerId } }], {
+    await executeMutation(createLibraryMutation, [{ createLibraryDto: { ownerId } }], {
       onSuccess: (library) => void goto(Route.viewLibrary(library), { replaceState: true }),
     });
   };

@@ -155,7 +155,7 @@
 
   onDestroy(() => {
     if (saveOnClose) {
-      void executeMutation(updateConfigMutation(), { storageTemplate: configToEdit.storageTemplate });
+      void executeMutation(updateConfigMutation, { storageTemplate: configToEdit.storageTemplate });
     }
   });
 </script>

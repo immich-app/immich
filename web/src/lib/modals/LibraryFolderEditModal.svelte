@@ -18,7 +18,7 @@
 
   const onSubmit = async () => {
     const importPaths = library.importPaths.map((path) => (path === oldValue ? newValue : path));
-    await executeMutation(updateLibraryMutation(), [{ id: library.id, updateLibraryDto: { importPaths } }], {
+    await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { importPaths } }], {
       onSuccess: onClose,
     });
   };

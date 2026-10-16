@@ -21,7 +21,7 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
 type ToastMeta =
-  Translations | { color: 'primary' | 'success' | 'info' | 'warning' | 'danger'; description: Translations };
+  true | Translations | { color: 'primary' | 'success' | 'info' | 'warning' | 'danger'; description: Translations };
 
 declare module '@tanstack/svelte-query' {
   interface Register {
@@ -44,6 +44,11 @@ const createQueryClient = () => {
       onSuccess: async (_data, _variables, _onMutateResult, { meta }) => {
         const toast = meta?.success?.toast;
         if (!toast) {
+          return;
+        }
+
+        if (toast === true) {
+          toastManager.primary();
           return;
         }
 
@@ -101,10 +106,10 @@ type MutationArgs<TData, TError, TVariables, TContext> = TVariables extends void
   : [variables: TVariables, mutateOptions?: MutateOptions<TData, TError, TVariables, TContext>];
 
 export const executeMutation = <TData, TError, TVariables, TContext>(
-  options: CreateMutationOptions<TData, TError, TVariables, TContext>,
+  options: () => CreateMutationOptions<TData, TError, TVariables, TContext>,
   ...[variables, mutateOptions]: MutationArgs<TData, TError, TVariables, TContext>
 ) => {
-  const observer = new MutationObserver(queryClient, options);
+  const observer = new MutationObserver(queryClient, options());
   const unsubscribe = observer.subscribe(noop);
   return observer
     .mutate(variables as TVariables, mutateOptions)

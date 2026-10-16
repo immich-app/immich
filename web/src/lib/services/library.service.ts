@@ -17,7 +17,7 @@ export const getLibrariesActions = ($t: MessageFormatter) => {
   const ScanAll: ActionItem = {
     title: $t('scan_all_libraries'),
     icon: mdiSync,
-    onAction: () => executeMutation(scanAllLibrariesMutation()),
+    onAction: () => executeMutation(scanAllLibrariesMutation),
     shortcuts: { shift: true, key: 'r' },
   };
 
@@ -69,7 +69,7 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
   const Scan: ActionItem = {
     icon: mdiSync,
     title: $t('scan_library'),
-    onAction: () => executeMutation(scanLibraryMutation(), [{ id: library.id }]),
+    onAction: () => executeMutation(scanLibraryMutation, [{ id: library.id }]),
     shortcuts: { shift: true, key: 'r' },
   };
 
@@ -132,7 +132,7 @@ const handleDeleteLibrary = async (library: LibraryResponseDto) => {
     }
   }
 
-  await executeMutation(deleteLibraryMutation(), [{ id: library.id }], {
+  await executeMutation(deleteLibraryMutation, [{ id: library.id }], {
     onSuccess: () => void goto(Route.libraries()),
   });
 };
@@ -150,7 +150,7 @@ const handleDeleteLibraryFolder = async (library: LibraryResponseDto, folder: st
   }
 
   const importPaths = library.importPaths.filter((path) => path !== folder);
-  await executeMutation(updateLibraryMutation(), [{ id: library.id, updateLibraryDto: { importPaths } }]);
+  await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { importPaths } }]);
 };
 
 const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusionPattern: string) => {
@@ -162,5 +162,5 @@ const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusi
   }
 
   const exclusionPatterns = library.exclusionPatterns.filter((pattern) => pattern !== exclusionPattern);
-  await executeMutation(updateLibraryMutation(), [{ id: library.id, updateLibraryDto: { exclusionPatterns } }]);
+  await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { exclusionPatterns } }]);
 };

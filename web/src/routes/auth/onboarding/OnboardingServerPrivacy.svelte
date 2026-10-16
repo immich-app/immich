@@ -10,7 +10,7 @@
   const configToEdit = $state(cloneDeep(query.data));
 
   onDestroy(() => {
-    void executeMutation(updateConfigMutation(), {
+    void executeMutation(updateConfigMutation, {
       map: configToEdit.map,
       newVersionCheck: configToEdit.newVersionCheck,
     });
