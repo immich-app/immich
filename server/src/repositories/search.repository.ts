@@ -6,7 +6,7 @@ import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import { DEFAULT_SEARCH_ORDER, SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
-import { AssetOrder, AssetStatus, AssetType, AssetVisibility, SearchOrderField, VectorIndex } from 'src/enum.js';
+import { AssetOrder, AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum.js';
 import { probes } from 'src/repositories/database.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
@@ -16,6 +16,7 @@ import {
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
+  searchOrderColumns,
   searchRandomV3Examples,
   searchSmartV3Examples,
   searchStatisticsV3Examples,
@@ -208,13 +209,6 @@ export interface GetCameraLensModelsOptions {
   make?: string;
   model?: string;
 }
-
-const searchOrderColumns = {
-  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
-  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
-  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
-  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
-} as const;
 
 @Injectable()
 export class SearchRepository {
