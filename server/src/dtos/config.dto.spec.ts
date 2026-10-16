@@ -10,12 +10,15 @@ import {
 import { getKeysDeep } from 'src/utils/misc.js';
 
 const PUBLIC_PROPERTIES = [
+  'ffmpeg.realtime.enabled',
+  'map.darkStyle',
+  'map.enabled',
+  'map.lightStyle',
   'oauth.autoLaunch',
   'oauth.buttonText',
   'oauth.enabled',
   'passwordLogin.enabled',
   'server.loginPageMessage',
-  'theme.customCss',
 ];
 
 describe('config visibility', () => {
