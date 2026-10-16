@@ -1,4 +1,5 @@
 <script lang="ts">
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import PurchaseActivationSuccess from '$lib/components/shared-components/purchasing/PurchaseActivationSuccess.svelte';
   import PurchaseContent from '$lib/components/shared-components/purchasing/PurchaseContent.svelte';
 
@@ -13,17 +14,14 @@
   let showProductActivated = $state(false);
 </script>
 
+<OnEvents onLicenseActivated={() => (showProductActivated = true)} />
+
 <Modal title=" " {onClose} size="large">
   <ModalBody>
     {#if showProductActivated}
       <PurchaseActivationSuccess onDone={onClose} />
     {:else}
-      <PurchaseContent
-        onActivate={() => {
-          showProductActivated = true;
-        }}
-        showMessage={false}
-      />
+      <PurchaseContent showMessage={false} />
     {/if}
   </ModalBody>
 </Modal>

@@ -3,6 +3,7 @@
   import { OpenQueryParam } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { licenseManager } from '$lib/managers/license-manager.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
   import { Route } from '$lib/route';
   import { getAccountAge } from '$lib/utils/auth';
@@ -70,7 +71,7 @@
 </script>
 
 <div class="license-status ps-4 text-sm">
-  {#if authManager.isPurchased && authManager.preferences.purchase.showSupportBadge}
+  {#if licenseManager.license && authManager.preferences.purchase.showSupportBadge}
     <button
       onclick={() => goto(Route.userSettings({ isOpen: OpenQueryParam.PURCHASE_SETTINGS }))}
       class="mt-2 w-full"
@@ -78,7 +79,7 @@
     >
       <SupporterBadge size="small" effect="always" />
     </button>
-  {:else if !authManager.isPurchased && showBuyButton && getAccountAge() > 14}
+  {:else if !licenseManager.license && showBuyButton && getAccountAge() > 14}
     <button
       type="button"
       onclick={openPurchaseModal}

@@ -1,18 +1,12 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { releaseManager } from '$lib/managers/release-manager.svelte';
+  import { serverManager } from '$lib/managers/server-manager.svelte';
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import { semverToName } from '$lib/utils';
-  import { requestServerInfo } from '$lib/utils/auth';
-  import {
-    getAboutInfo,
-    getVersionHistory,
-    type ReleaseEventV1,
-    type ServerAboutResponseDto,
-    type ServerVersionHistoryResponseDto,
-  } from '@immich/sdk';
+  import { getVersionHistory, type ReleaseEventV1, type ServerVersionHistoryResponseDto } from '@immich/sdk';
   import { Icon, modalManager, Text } from '@immich/ui';
   import { mdiAlert, mdiNewBox } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -20,21 +14,19 @@
 
   const { serverVersion, connected } = websocketStore;
 
-  let info: ServerAboutResponseDto | undefined = $state();
-  let versions: ServerVersionHistoryResponseDto[] = $state([]);
+  let versions: ServerVersionHistoryResponseDto[] = $state(userInteraction.versions ?? []);
 
   onMount(async () => {
-    if (userInteraction.aboutInfo && userInteraction.versions && $serverVersion) {
-      info = userInteraction.aboutInfo;
-      versions = userInteraction.versions;
+    if (userInteraction.versions && $serverVersion) {
       return;
     }
-    await requestServerInfo();
-    [info, versions] = await Promise.all([getAboutInfo(), getVersionHistory()]);
-    userInteraction.aboutInfo = info;
+
+    versions = await getVersionHistory();
     userInteraction.versions = versions;
   });
-  let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
+  let isMain = $derived(
+    serverManager.about?.sourceRef === 'main' && serverManager.about.repository === 'immich-app/immich',
+  );
   let version = $derived($serverVersion ? semverToName($serverVersion) : null);
 
   const getReleaseInfo = (release?: ReleaseEventV1) => {
@@ -74,11 +66,12 @@
     {#if $connected && version}
       <button
         type="button"
-        onclick={() => info && modalManager.show(ServerAboutModal, { versions, info })}
+        onclick={() =>
+          serverManager.about && modalManager.show(ServerAboutModal, { versions, info: serverManager.about })}
         class="flex place-content-center place-items-center gap-1 dark:text-immich-gray"
       >
         {#if isMain}
-          <Icon icon={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
+          <Icon icon={mdiAlert} size="1.5em" color="#ffcc4d" /> {serverManager.about?.sourceRef}
         {:else}
           {version}
         {/if}
