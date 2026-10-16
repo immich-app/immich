@@ -33084,6 +33084,9 @@
           "map": {
             "$ref": "#/components/schemas/UserConfigMapDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/UserConfigNotificationsDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/UserConfigOAuthDto"
           },
@@ -33111,6 +33114,7 @@
           "image",
           "machineLearning",
           "map",
+          "notifications",
           "oauth",
           "passwordLogin",
           "reverseGeocoding",
@@ -33288,6 +33292,17 @@
         ],
         "type": "object"
       },
+      "UserConfigNotificationsDto": {
+        "properties": {
+          "smtp": {
+            "$ref": "#/components/schemas/UserConfigSmtpDto"
+          }
+        },
+        "required": [
+          "smtp"
+        ],
+        "type": "object"
+      },
       "UserConfigOAuthDto": {
         "properties": {
           "autoLaunch": {
@@ -33365,6 +33380,18 @@
           "externalDomain",
           "loginPageMessage",
           "publicUsers"
+        ],
+        "type": "object"
+      },
+      "UserConfigSmtpDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether SMTP email notifications are enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },
