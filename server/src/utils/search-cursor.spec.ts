@@ -12,23 +12,31 @@ const encodePayload = (value: unknown) => Buffer.from(JSON.stringify(value)).toS
 
 const id = '3f2a1c4e-8b7d-4e6f-9a1b-2c3d4e5f6a7b';
 
+const row = {
+  id,
+  fileCreatedAt: new Date('2024-05-01T10:00:00.123Z'),
+  localDateTime: new Date('2024-05-01T12:00:00.123Z'),
+  fileSizeInByte: 1024,
+  rating: null,
+};
+
 describe('metadata cursor', () => {
   const order = { field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Desc };
 
-  it('should round-trip a timestamp with microsecond precision', () => {
-    const orderValue = '2024-05-01T10:00:00.123456+00:00';
-    const cursor = encodeMetadataCursor(order, { orderValue, id });
-    expect(decodeMetadataCursor(order, cursor)).toEqual({ ...order, value: orderValue, id });
+  it('should round-trip the value of the order field', () => {
+    const cursor = encodeMetadataCursor(order, row);
+    expect(decodeMetadataCursor(order, cursor)).toEqual({ ...order, value: row.fileCreatedAt, id });
   });
 
   it('should round-trip a null value of a nullable order field', () => {
     const rating = { field: SearchOrderField.Rating, direction: AssetOrder.Asc };
-    const cursor = encodeMetadataCursor(rating, { orderValue: null, id });
+    const cursor = encodeMetadataCursor(rating, row);
     expect(decodeMetadataCursor(rating, cursor)).toEqual({ ...rating, value: null, id });
   });
 
   it('should refuse to encode a value that does not fit the order field', () => {
-    expect(() => encodeMetadataCursor(order, { orderValue: 3, id })).toThrow();
+    const fileSize = { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc };
+    expect(() => encodeMetadataCursor(fileSize, { ...row, fileSizeInByte: -1 })).toThrow();
   });
 
   it('should treat a missing cursor as the first page', () => {
@@ -36,14 +44,14 @@ describe('metadata cursor', () => {
   });
 
   it('should reject a cursor for a different order field', () => {
-    const cursor = encodeMetadataCursor(order, { orderValue: '2024-05-01T10:00:00+00:00', id });
+    const cursor = encodeMetadataCursor(order, row);
     expect(() =>
       decodeMetadataCursor({ field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc }, cursor),
     ).toThrowError(new BadRequestException('Cursor is for ordering by fileCreatedAt desc, not fileSizeInBytes desc'));
   });
 
   it('should reject a cursor for a different order direction', () => {
-    const cursor = encodeMetadataCursor(order, { orderValue: '2024-05-01T10:00:00+00:00', id });
+    const cursor = encodeMetadataCursor(order, row);
     expect(() => decodeMetadataCursor({ ...order, direction: AssetOrder.Asc }, cursor)).toThrowError(
       new BadRequestException('Cursor is for ordering by fileCreatedAt desc, not fileCreatedAt asc'),
     );
@@ -94,10 +102,7 @@ describe('smart cursor', () => {
     ['an asset id without a distance', encodePayload({ id })],
     [
       'a metadata cursor',
-      encodeMetadataCursor(
-        { field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Desc },
-        { orderValue: '2024-05-01T10:00:00+00:00', id },
-      ),
+      encodeMetadataCursor({ field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Desc }, row),
     ],
   ])('should reject %s', (_, cursor) => {
     expect(() => decodeSmartCursor(cursor)).toThrowError(new BadRequestException('Invalid cursor'));

@@ -8,7 +8,7 @@ const position = { direction: z.enum(AssetOrder), id: z.uuidv4() };
 const MetadataCursorSchema = z.discriminatedUnion('field', [
   z.strictObject({
     field: z.literal([SearchOrderField.FileCreatedAt, SearchOrderField.LocalDateTime]),
-    value: z.iso.datetime({ offset: true }),
+    value: z.iso.datetime({ offset: true }).transform((value) => new Date(value)),
     ...position,
   }),
   z.strictObject({ field: z.literal(SearchOrderField.FileSizeInBytes), value: z.int().min(0).nullable(), ...position }),
@@ -34,11 +34,37 @@ const decode = <T extends z.ZodType>(schema: T, cursor?: string): z.infer<T> | u
   }
 };
 
+type MetadataCursorRow = {
+  id: string;
+  fileCreatedAt: Date;
+  localDateTime: Date;
+  fileSizeInByte: number | null;
+  rating: number | null;
+};
+
+const orderValue = (field: SearchOrderField, row: MetadataCursorRow) => {
+  switch (field) {
+    case SearchOrderField.FileCreatedAt: {
+      return row.fileCreatedAt.toISOString();
+    }
+    case SearchOrderField.LocalDateTime: {
+      return row.localDateTime.toISOString();
+    }
+    case SearchOrderField.FileSizeInBytes: {
+      return row.fileSizeInByte;
+    }
+    case SearchOrderField.Rating: {
+      return row.rating;
+    }
+  }
+};
+
 /** Validated so that the server never hands out a cursor it would reject */
-export const encodeMetadataCursor = (
-  { field, direction }: SearchOrder,
-  { orderValue, id }: { orderValue: unknown; id: string },
-): string => encode(MetadataCursorSchema.parse({ field, direction, value: orderValue, id }));
+export const encodeMetadataCursor = ({ field, direction }: SearchOrder, row: MetadataCursorRow): string => {
+  const payload = { field, direction, value: orderValue(field, row), id: row.id };
+  MetadataCursorSchema.parse(payload);
+  return encode(payload);
+};
 
 export const decodeMetadataCursor = (order: SearchOrder, cursor?: string): MetadataCursor | undefined => {
   const decoded = decode(MetadataCursorSchema, cursor);

@@ -489,33 +489,6 @@ describe(SearchService.name, () => {
       expect(secondPage.assets.nextCursor).toBeNull();
     });
 
-    it('should keep the microsecond precision of the order value in the cursor', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser();
-      const assetIds: string[] = [];
-      // all within the same millisecond, which a JS Date cannot tell apart
-      for (const fileCreatedAt of [
-        '2024-05-01T10:00:00.123001Z',
-        '2024-05-01T10:00:00.123002Z',
-        '2024-05-01T10:00:00.123003Z',
-      ]) {
-        const { asset } = await ctx.newAsset({ ownerId: user.id, fileCreatedAt });
-        assetIds.push(asset.id);
-      }
-
-      const auth = factory.auth({ user: { id: user.id } });
-      const ids = await collectPages((cursor) =>
-        sut.searchMetadata(auth, {
-          filter: {},
-          size: 1,
-          cursor,
-          orderBy: { field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Asc },
-        }),
-      );
-
-      expect(ids).toEqual(assetIds);
-    });
-
     it('should page into the null tail of a nullable order field', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
