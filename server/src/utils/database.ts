@@ -835,13 +835,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   );
 }
 
-export const searchOrderColumns = {
-  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
-  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
-  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
-  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
-} as const;
-
 const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwnerId: DummyValue.UUID };
 
 export const searchMetadataV3Examples: GenerateSqlQueries[] = [
