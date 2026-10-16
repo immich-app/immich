@@ -182,9 +182,9 @@ class AuthService {
       return null;
     }
 
-    for (final (i, endpoint) in endpointList.indexed) {
+    for (var i = 0; i < endpointList.length; i++) {
       try {
-        final url = await _apiService.resolveAndSetEndpoint(endpoint.url);
+        final url = await _apiService.resolveAndSetEndpoint(endpointList[i].url);
         _log.info("Using external endpoint ${i + 1}");
         return url;
       } on ApiException catch (error) {

@@ -1,14 +1,16 @@
 import 'dart:async';
 
+import 'package:http/http.dart' show ClientException;
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart' show ApiException;
 
 /// Service responsible for handling application logging.
 ///
@@ -16,19 +18,12 @@ import 'package:logging/logging.dart';
 /// writes them to a persistent [LogRepository], and manages log levels via
 /// [SettingsRepository].
 class LogService {
-  static final _url = RegExp(r'''\b\w+://[^\s'",]+''');
-  static final _kinds = [
-    (RegExp(r'\b\d{1,3}(?:\.\d{1,3}){3}\b'), 'ip'),
-    (RegExp(r"(?<=://|host lookup: '|address = |host: )[^\s/?#,'<]+"), 'host'),
-    (RegExp(r'\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+'), 'email'),
-    (RegExp(r'(?<=[?&]code=)[^&\s#]+'), 'oauth code'),
-    (RegExp(r'(?<=, parameters: ).+'), 'parameters'),
-    // older versions logged it when a resumed session failed
-    (RegExp(r'(?<=access token: )[^\s<]+'), 'access token'),
-  ];
+  static final _urlAddress = RegExp(r'''https?://[^\s/?#'"<>(),]*''');
+  static final _ipAddress = RegExp(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b');
 
   final LogRepository _logRepository;
   final SettingsRepository _settingsRepository;
+  final StoreService _storeService;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -52,11 +47,13 @@ class LogService {
   static Future<LogService> init({
     required LogRepository logRepository,
     required SettingsRepository settingsRepository,
+    required StoreService storeService,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
       logRepository: logRepository,
       settingsRepository: settingsRepository,
+      storeService: storeService,
       shouldBuffer: shouldBuffer,
     );
     return _instance!;
@@ -65,16 +62,17 @@ class LogService {
   static Future<LogService> create({
     required LogRepository logRepository,
     required SettingsRepository settingsRepository,
+    required StoreService storeService,
     bool shouldBuffer = true,
   }) async {
-    final instance = LogService._(logRepository, settingsRepository, shouldBuffer);
+    final instance = LogService._(logRepository, settingsRepository, storeService, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
     final level = instance._settingsRepository.appConfig.logLevel;
     Logger.root.level = Level.LEVELS.elementAtOrNull(level.index) ?? Level.INFO;
     return instance;
   }
 
-  LogService._(this._logRepository, this._settingsRepository, this._shouldBuffer) {
+  LogService._(this._logRepository, this._settingsRepository, this._storeService, this._shouldBuffer) {
     _logSubscription = Logger.root.onRecord.listen(_handleLogRecord);
   }
 
@@ -87,12 +85,12 @@ class LogService {
     );
 
     final record = LogMessage(
-      message: r.message,
+      message: _redact(r.message),
       level: r.level.toLogLevel(),
       createdAt: r.time,
       logger: r.loggerName,
-      error: r.error?.toString(),
-      stack: r.stackTrace?.toString(),
+      error: r.error == null ? null : _redactError(r.error!),
+      stack: r.stackTrace == null ? null : _redact(r.stackTrace.toString()),
     );
 
     if (_shouldBuffer) {
@@ -110,60 +108,62 @@ class LogService {
 
   Future<List<LogMessage>> getMessages() async {
     final logsFromDb = await _logRepository.getAll();
-    return _redact([..._msgBuffer.reversed, ...logsFromDb]);
+    return [..._msgBuffer.reversed, ...logsFromDb];
   }
 
-  List<LogMessage> _redact(List<LogMessage> messages) {
-    final names = {
-      // a library can print a url's host on its own
-      for (final m in messages)
-        for (final text in [m.message, ?m.error, ?m.stack])
-          for (final url in _url.allMatches(text)) ?Uri.tryParse(url[0]!)?.host: 'host',
-      for (final MapEntry(key: value, value: name) in _held().entries) value.toLowerCase(): name,
-    };
-    // under 8 chars would match normal words
-    final values = [
-      for (final value in names.keys)
-        if (value.length >= 8) RegExp.escape(value),
-    ];
-    final named = RegExp('(?<!\\w)(?:${values.join('|')})(?!\\w)', caseSensitive: false);
+  String _redact(String text) {
+    var redacted = text.replaceAllMapped(_urlAddress, (match) => _urlLabel(Uri.tryParse(match[0]!)));
+    final accessToken = _storeService.tryGet(StoreKey.accessToken);
+    if (accessToken != null) {
+      redacted = redacted.replaceAll(accessToken, '[ACCESS TOKEN]');
+    }
+    // as a header map prints it, so a short value like "1" can't match other text
+    for (final header in _settingsRepository.appConfig.network.customHeaders.entries) {
+      redacted = redacted.replaceAll('${header.key}: ${header.value}', '${header.key}: [HEADER VALUE]');
+    }
+    return redacted;
+  }
 
-    String redact(String text) {
-      var redacted = values.isEmpty ? text : text.replaceAllMapped(named, (m) => '<${names[m[0]!.toLowerCase()]}>');
-      for (final (pattern, kind) in _kinds) {
-        redacted = redacted.replaceAll(pattern, '<$kind>');
-      }
+  String _redactError(Object error) {
+    final redacted = _redact(error.toString());
+    final httpError = error is ApiException ? error.innerException : error;
+    if (httpError is! ClientException) {
       return redacted;
     }
 
-    return [
-      for (final m in messages)
-        m.copyWith(
-          message: redact(m.message),
-          error: m.error == null ? null : redact(m.error!),
-          stack: m.stack == null ? null : redact(m.stack!),
-        ),
-    ];
+    // ok_http also prints the host and its ip on their own: "Failed to connect to host/203.0.113.9:443"
+    final url = httpError.uri;
+    final withoutHost = url == null || url.host.isEmpty
+        ? redacted
+        : redacted.replaceAll(RegExp('\\b${RegExp.escape(url.host)}\\b'), _urlLabel(url));
+    return withoutHost.replaceAll(_ipAddress, '[IP ADDRESS]');
   }
 
-  // the values this install holds, by the name a reader of the logs knows them by
-  Map<String, String> _held() {
+  String _urlLabel(Uri? url) {
+    if (url == null) {
+      return '[OTHER URL]';
+    }
+
+    // a server url that is also a switching entry gets the entry's label
     final network = _settingsRepository.appConfig.network;
-    final urls = {
-      ?Store.tryGet(StoreKey.serverUrl): 'server url',
-      ?Store.tryGet(StoreKey.serverEndpoint): 'server url',
-      ?network.localEndpoint: 'local endpoint',
-      for (final (i, url) in network.externalEndpointList.indexed) url: 'external endpoint ${i + 1}',
-    };
-    // later entries win, so a server that is also a switching configuration reads as that configuration
-    final hosts = {for (final MapEntry(key: url, value: name) in urls.entries) ?Uri.tryParse(url)?.host: name};
-    return {
-      ...hosts,
-      for (final MapEntry(key: url, value: name) in urls.entries) url: hosts[Uri.tryParse(url)?.host] ?? name,
-      ?Store.tryGet(StoreKey.accessToken): 'access token',
-      ?network.preferredWifiName: 'wifi name',
-      for (final (i, value) in network.customHeaders.values.indexed) value: 'header ${i + 1}',
-    };
+    for (var i = 0; i < network.externalEndpointList.length; i++) {
+      if (_isSameAddress(url, network.externalEndpointList[i])) {
+        return '[EXTERNAL URL ${i + 1}]';
+      }
+    }
+    if (_isSameAddress(url, network.localEndpoint)) {
+      return '[LOCAL URL]';
+    }
+    if (_isSameAddress(url, _storeService.tryGet(StoreKey.serverUrl)) ||
+        _isSameAddress(url, _storeService.tryGet(StoreKey.serverEndpoint))) {
+      return '[SERVER URL]';
+    }
+    return '[OTHER URL]';
+  }
+
+  bool _isSameAddress(Uri url, String? savedUrl) {
+    final saved = savedUrl == null ? null : Uri.tryParse(savedUrl);
+    return saved != null && saved.scheme == url.scheme && saved.host == url.host && saved.port == url.port;
   }
 
   Future<void> clearLogs() async {

@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' show ClientException;
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
@@ -12,9 +13,11 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:openapi/api.dart' show ApiException;
 
 import '../../infrastructure/repository.mock.dart';
 import '../../test_utils.dart';
@@ -62,7 +65,11 @@ void main() {
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
 
-    sut = await LogService.create(logRepository: mockLogRepo, settingsRepository: mockSettingsRepository);
+    sut = await LogService.create(
+      logRepository: mockLogRepo,
+      settingsRepository: mockSettingsRepository,
+      storeService: StoreService.I,
+    );
   });
 
   tearDown(() async {
@@ -105,6 +112,7 @@ void main() {
         sut = await LogService.create(
           logRepository: mockLogRepo,
           settingsRepository: mockSettingsRepository,
+          storeService: StoreService.I,
           shouldBuffer: true,
         );
 
@@ -123,6 +131,7 @@ void main() {
         sut = await LogService.create(
           logRepository: mockLogRepo,
           settingsRepository: mockSettingsRepository,
+          storeService: StoreService.I,
           shouldBuffer: true,
         );
 
@@ -144,6 +153,7 @@ void main() {
         sut = await LogService.create(
           logRepository: mockLogRepo,
           settingsRepository: mockSettingsRepository,
+          storeService: StoreService.I,
           shouldBuffer: false,
         );
 
@@ -178,6 +188,7 @@ void main() {
         sut = await LogService.create(
           logRepository: mockLogRepo,
           settingsRepository: mockSettingsRepository,
+          storeService: StoreService.I,
           shouldBuffer: true,
         );
 
@@ -196,78 +207,112 @@ void main() {
   });
 
   group("Log Service Redaction:", () {
-    test('Returns stored rows with held values by name and other values by kind', () async {
-      await StoreService.I.put(StoreKey.serverUrl, 'https://Immich.Example.com/api');
-      await StoreService.I.put(StoreKey.accessToken, 'tKq3Zr8WbN2xYp5aLm7c');
-      await StoreService.I.put(StoreKey.serverEndpoint, 'http://192.168.1.5:2283/api');
+    const accessToken = 'Kq3Zr8WbN2xYp5aLm7cT9vQ4sD6fH1jE0gU2iO5wA8y';
+
+    test('Replaces urls, the access token and header values when a line is logged', () async {
+      await StoreService.I.put(StoreKey.serverUrl, 'https://immich.example.com');
+      await StoreService.I.put(StoreKey.serverEndpoint, 'https://api.example.com/api');
+      await StoreService.I.put(StoreKey.accessToken, accessToken);
       when(() => mockSettingsRepository.appConfig).thenReturn(
         const AppConfig(
           network: NetworkConfig(
-            preferredWifiName: 'Home',
             localEndpoint: 'http://192.168.1.5:2283',
-            externalEndpointList: ['https://ext.example.net', 'http://10.0.0.7:2283'],
+            externalEndpointList: ['https://immich.example.com', 'http://nas.lan:2283'],
+            customHeaders: {'X-Proxy-Key': 'cf-secret-abcdef0123', 'X-Debug': '1'},
           ),
         ),
       );
       const rows = {
-        'Resuming session at https://immich.example.com/api': 'Resuming session at <server url>',
-        'Failed to connect to ext.example.net/203.0.113.9:443, uri=https://ext.example.net/api':
-            'Failed to connect to <external endpoint 1>/<ip>:443, uri=<external endpoint 1>/api',
-        'GET http://10.0.0.7:2283/api/server/ping': 'GET <external endpoint 2>/api/server/ping',
-        'failed to connect to /192.168.1.5 (port 2283) from /192.168.1.52 (port 51234) after 5000ms':
-            'failed to connect to /<local endpoint> (port 2283) from /<ip> (port 51234) after 5000ms',
-        'Failed to connect to typo.example.org/198.51.100.4:443, uri=https://typo.example.org/api':
-            'Failed to connect to <host>/<ip>:443, uri=https://<host>/api',
-        "Failed host lookup: 'old-server.lan'": "Failed host lookup: '<host>'",
-        'Bearer tKq3Zr8WbN2xYp5aLm7c': 'Bearer <access token>',
-        'Failed to update auth info with access token: tKq3Zr8WbN2xYp5aLm7c':
-            'Failed to update auth info with access token: <access token>',
-        'Failed to update auth info with access token: old-token-456':
-            'Failed to update auth info with access token: <access token>',
-        'Received OAuth callback: app.immich:///oauth-callback?code=abc123&state=xyz':
-            'Received OAuth callback: app.immich:///oauth-callback?code=<oauth code>&state=xyz',
-        'login response: someone@example.com': 'login response: <email>',
-        'Causing statement: INSERT INTO "auth_user_entity", parameters: a, pin-hash-789':
-            'Causing statement: INSERT INTO "auth_user_entity", parameters: <parameters>',
-        'Home screen loaded': 'Home screen loaded',
+        'Resuming session at https://immich.example.com/api': 'Resuming session at [EXTERNAL URL 1]/api',
+        'GET http://nas.lan:2283/api/server/ping': 'GET [EXTERNAL URL 2]/api/server/ping',
+        'GET http://192.168.1.5:2283/api/server/ping': 'GET [LOCAL URL]/api/server/ping',
+        'Using server URL: https://api.example.com/api': 'Using server URL: [SERVER URL]/api',
+        'Received Authorization URL: https://auth.example.org/authorize':
+            'Received Authorization URL: [OTHER URL]/authorize',
+        'Causing statement: INSERT INTO "store_entity", parameters: 11, $accessToken':
+            'Causing statement: INSERT INTO "store_entity", parameters: 11, [ACCESS TOKEN]',
+        'Could not enqueue task DownloadTask{headers: {X-Proxy-Key: cf-secret-abcdef0123, X-Debug: 1}, retries: 1}':
+            'Could not enqueue task DownloadTask{headers: {X-Proxy-Key: [HEADER VALUE], X-Debug: [HEADER VALUE]}, retries: 1}',
+        'Uploaded 1 assets in 1.2s': 'Uploaded 1 assets in 1.2s',
       };
-      when(
-        () => mockLogRepo.getAll(),
-      ).thenAnswer((_) async => [for (final row in rows.keys) _kInfoLog.copyWith(message: row)]);
+      for (final row in rows.keys) {
+        Logger('Test').info(row);
+      }
+      await sut.flush();
 
-      expect((await sut.getMessages()).map((m) => m.message), rows.values);
+      final stored = verify(() => mockLogRepo.insertAll(captureAny())).captured.single as List<LogMessage>;
+      expect(stored.map((m) => m.message), rows.values);
     });
 
-    test('Names a server by its switching configuration', () async {
-      await StoreService.I.put(StoreKey.serverUrl, 'https://immich.example.com/api');
-      await StoreService.I.put(StoreKey.serverEndpoint, 'https://immich.example.com/api');
+    test('Hides the host and ip in http client errors', () async {
       when(
         () => mockSettingsRepository.appConfig,
-      ).thenReturn(const AppConfig(network: NetworkConfig(externalEndpointList: ['https://immich.example.com'])));
+      ).thenReturn(const AppConfig(network: NetworkConfig(externalEndpointList: ['http://immich:2283'])));
+      final connectError = ClientException(
+        'java.net.ConnectException: Failed to connect to immich/192.168.1.5:2283',
+        Uri.parse('http://immich:2283/api/server/ping'),
+      );
+      final unknownHostError = ClientException(
+        'java.net.UnknownHostException: Unable to resolve host "typo.example.org": No address associated with hostname',
+        Uri.parse('https://alice:secret@typo.example.org/api/users/me'),
+      );
 
       Logger('Test').severe(
-        'Using external endpoint 1',
-        'Failed to connect to immich.example.com/203.0.113.9:443, uri=https://immich.example.com/api/server/ping',
-        StackTrace.fromString('#0 ping (https://immich.example.com/api/server/ping)'),
+        'Error while checking server availability',
+        ApiException.withInner(
+          400,
+          'HTTP connection failed: GET /server/ping',
+          connectError,
+          StackTrace.fromString('#0 ApiService._isEndpointAvailable (package:immich_mobile/services/api.service.dart)'),
+        ),
       );
+      Logger('Test').severe('Error validating auxiliary endpoint', unknownHostError);
+      await sut.flush();
 
-      final message = (await sut.getMessages()).single;
-      expect(message.message, 'Using external endpoint 1');
+      final stored = verify(() => mockLogRepo.insertAll(captureAny())).captured.single as List<LogMessage>;
       expect(
-        message.error,
-        'Failed to connect to <external endpoint 1>/<ip>:443, uri=<external endpoint 1>/server/ping',
+        stored.first.error,
+        'ApiException 400: HTTP connection failed: GET /server/ping (Inner exception: ClientException: '
+        'java.net.ConnectException: Failed to connect to [EXTERNAL URL 1]/[IP ADDRESS]:2283, '
+        'uri=[EXTERNAL URL 1]/api/server/ping)\n\n'
+        '#0 ApiService._isEndpointAvailable (package:immich_mobile/services/api.service.dart)',
       );
-      expect(message.stack, '#0 ping (<external endpoint 1>/server/ping)');
+      expect(
+        stored.last.error,
+        'ClientException: java.net.UnknownHostException: Unable to resolve host "[OTHER URL]": '
+        'No address associated with hostname, uri=[OTHER URL]/api/users/me',
+      );
     });
 
-    test('Names a server endpoint on another host as the server url', () async {
-      await StoreService.I.put(StoreKey.serverUrl, 'https://immich.example.com/api');
-      await StoreService.I.put(StoreKey.serverEndpoint, 'https://api.example.org/api');
-      when(
-        () => mockLogRepo.getAll(),
-      ).thenAnswer((_) async => [_kInfoLog.copyWith(message: 'Using server URL: https://api.example.org/api')]);
+    test('Keeps the labels of a line logged before a logout', () async {
+      final settings = await SettingsRepository.ensureInitialized(db);
+      addTearDown(SettingsRepository.reset);
+      await settings.write(SettingsKey.networkExternalEndpointList, ['https://immich.example.com']);
+      await StoreService.I.put(StoreKey.accessToken, accessToken);
+      await sut.dispose();
+      sut = await LogService.create(
+        logRepository: mockLogRepo,
+        settingsRepository: settings,
+        storeService: StoreService.I,
+      );
 
-      expect((await sut.getMessages()).single.message, 'Using server URL: <server url>');
+      Logger('Test').info('Resuming session at https://immich.example.com/api with $accessToken');
+      // the store and settings changes of AuthService.clearLocalData
+      await StoreService.I.delete(StoreKey.accessToken);
+      await settings.clear(const [
+        .networkAutoEndpointSwitching,
+        .networkPreferredWifiName,
+        .networkLocalEndpoint,
+        .networkExternalEndpointList,
+      ]);
+      Logger('Test').info('Resuming session at https://immich.example.com/api');
+      await sut.flush();
+
+      final stored = verify(() => mockLogRepo.insertAll(captureAny())).captured.single as List<LogMessage>;
+      expect(stored.map((m) => m.message), [
+        'Resuming session at [EXTERNAL URL 1]/api with [ACCESS TOKEN]',
+        'Resuming session at [OTHER URL]/api',
+      ]);
     });
   });
 }
