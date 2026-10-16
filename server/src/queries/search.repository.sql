@@ -492,7 +492,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -539,7 +540,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -598,7 +600,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -645,7 +648,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -692,7 +696,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -739,7 +744,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -786,7 +792,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -833,7 +840,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -887,7 +895,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -940,7 +949,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1001,7 +1011,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1054,7 +1065,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1109,7 +1121,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1169,7 +1182,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1222,7 +1236,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1276,7 +1291,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1326,7 +1342,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1373,7 +1390,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1423,7 +1441,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset_exif"."fileSizeInByte") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1512,7 +1531,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset_exif"."rating") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1559,7 +1579,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1618,7 +1639,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1681,7 +1703,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset"."fileCreatedAt") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1692,7 +1715,7 @@ where
     or "asset"."ownerId" = $3
   )
   and "asset"."isFavorite" = $4
-  and ("asset"."fileCreatedAt", "asset"."id") < ($5::timestamptz, $6::uuid)
+  and ("asset"."fileCreatedAt", "asset"."id") < ($5, $6::uuid)
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
@@ -1729,7 +1752,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset_exif"."rating") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1780,7 +1804,8 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset_exif"."rating") as "orderValue"
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"

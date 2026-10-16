@@ -5,8 +5,8 @@ import z from 'zod';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
-import { SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
-import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum.js';
+import { DEFAULT_SEARCH_ORDER, SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
+import { AssetOrder, AssetStatus, AssetType, AssetVisibility, SearchOrderField, VectorIndex } from 'src/enum.js';
 import { probes } from 'src/repositories/database.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
@@ -20,7 +20,6 @@ import {
   searchSmartV3Examples,
   searchStatisticsV3Examples,
   withExifInner,
-  withSearchOrder,
 } from 'src/utils/database.js';
 import { type CursorPaginationOptions, paginationHelper } from 'src/utils/pagination.js';
 import { MetadataCursor, SmartCursor } from 'src/utils/search-cursor.js';
@@ -209,6 +208,13 @@ export interface GetCameraLensModelsOptions {
   make?: string;
   model?: string;
 }
+
+const searchOrderColumns = {
+  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
+  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
+  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
+  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
+} as const;
 
 @Injectable()
 export class SearchRepository {
@@ -548,8 +554,31 @@ export class SearchRepository {
     options: AssetSearchBuilderV3Options,
     scope: AssetSearchScope,
   ) {
-    const qb = searchAssetBuilder(this.db, options, scope).select(columns.searchAsset);
-    const items = await withSearchOrder(qb, pagination.cursor ?? options.order)
+    const { cursor } = pagination;
+    const { field, direction } = options.order ?? DEFAULT_SEARCH_ORDER;
+    const { column, nullable } = searchOrderColumns[field];
+    const op = direction === AssetOrder.Asc ? '>' : '<';
+    const items = await searchAssetBuilder(this.db, options, scope)
+      .select(columns.searchAsset)
+      .select(['asset_exif.fileSizeInByte', 'asset_exif.rating'])
+      .$if(!!cursor, (qb) =>
+        qb.where((eb) => {
+          const { value, id } = cursor!;
+          if (value === null) {
+            return eb.and([eb(column, 'is', null), eb('asset.id', op, asUuid(id))]);
+          }
+
+          const after = eb(eb.refTuple(column, 'asset.id'), op, eb.tuple(value, asUuid(id)));
+          return nullable ? eb.or([after, eb(column, 'is', null)]) : after;
+        }),
+      )
+      .orderBy(column, (ob) => {
+        const ordered = direction === AssetOrder.Asc ? ob.asc() : ob.desc();
+        // nulls last: assets without an asset_exif row would otherwise lead descending results
+        return nullable ? ordered.nullsLast() : ordered;
+      })
+      // id tie-break for deterministic pagination
+      .orderBy('asset.id', direction)
       .limit(pagination.take + 1)
       .execute();
     return paginationHelper(items, pagination.take);
