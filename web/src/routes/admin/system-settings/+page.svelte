@@ -22,7 +22,7 @@
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { createPreloadedQuery } from '$lib/queries/client';
-  import { getConfigQuery } from '$lib/queries/system-config.query';
+  import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
   import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
@@ -57,7 +57,8 @@
 
   const { data }: Props = $props();
 
-  const config = createPreloadedQuery(getConfigQuery);
+  const query = createPreloadedQuery(getAdminConfigQuery);
+  const config = $derived(query.data);
 
   const settings: Array<{
     component: Component;
@@ -205,14 +206,12 @@
 
   let filteredSettings = $derived(
     settings.filter(({ title, subtitle }) => {
-      const query = searchQuery.toLowerCase();
-      return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
+      const term = searchQuery.toLowerCase();
+      return title.toLowerCase().includes(term) || subtitle.toLowerCase().includes(term);
     }),
   );
 
-  const { CopyToClipboard, Upload, Download } = $derived(
-    getSystemConfigActions($t, featureFlagsManager.value, config.data),
-  );
+  const { CopyToClipboard, Upload, Download } = $derived(getSystemConfigActions($t, featureFlagsManager.value, config));
 </script>
 
 <CommandPaletteDefaultProvider name={$t('admin.system_settings')} actions={[CopyToClipboard, Upload, Download]} />

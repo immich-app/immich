@@ -29,7 +29,6 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
@@ -68,6 +67,11 @@
   import AlbumTitle from './AlbumTitle.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import { delay } from '$lib/utils/asset-utils';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   interface Props {
     data: PageData;
@@ -518,7 +522,7 @@
 
             <ActionButton action={Actions.Share} />
 
-            {#if featureFlagsManager.value.map}
+            {#if config.map.enabled}
               <AlbumMap {album} />
             {/if}
 

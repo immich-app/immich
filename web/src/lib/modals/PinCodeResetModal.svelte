@@ -1,9 +1,13 @@
 <script lang="ts">
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { handleResetPinCode } from '$lib/services/user.service';
   import { BasicModal, Field, FormModal, HelperText, PasswordInput, Stack, type ModalSize } from '@immich/ui';
   import { mdiLockReset } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   type Props = {
     onClose: (success?: true) => void;
@@ -23,7 +27,7 @@
   const common = $derived({ title: $t('reset'), size: 'small' as ModalSize, icon: mdiLockReset, onClose });
 </script>
 
-{#if featureFlagsManager.value.passwordLogin}
+{#if config.passwordLogin.enabled}
   <FormModal {...common} submitColor="danger" submitText={$t('reset')} disabled={!password} {onSubmit}>
     <Stack gap={4}>
       <div>{$t('reset_pin_code_description')}</div>
