@@ -324,7 +324,7 @@ export class NotificationService extends BaseService {
 
   @OnJob({ name: JobName.NotifyAlbumInvite, queue: QueueName.Notification })
   async handleAlbumInvite({ id, recipientId, senderName }: JobOf<JobName.NotifyAlbumInvite>) {
-    const album = await this.albumRepository.getById(id, { withAssets: false });
+    const album = await this.albumRepository.getById(id);
     if (!album) {
       return JobStatus.Skipped;
     }
@@ -374,7 +374,7 @@ export class NotificationService extends BaseService {
 
   @OnJob({ name: JobName.NotifyAlbumUpdate, queue: QueueName.Notification })
   async handleAlbumUpdate({ id, recipientId }: JobOf<JobName.NotifyAlbumUpdate>) {
-    const album = await this.albumRepository.getById(id, { withAssets: false });
+    const album = await this.albumRepository.getById(id);
 
     if (!album) {
       return JobStatus.Skipped;

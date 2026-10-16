@@ -532,7 +532,7 @@ where
   and "libraryId" = $5::uuid
   and (
     not "originalPath" like $6
-    or "originalPath" ~ $7
+    or "originalPath" ~* $7
   )
 
 -- AssetRepository.filterNewExternalAssetPaths

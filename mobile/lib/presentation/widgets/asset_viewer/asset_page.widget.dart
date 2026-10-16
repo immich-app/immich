@@ -58,7 +58,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
-  static const double _maxScaleMultiplier = 20.0;
+  static const double _maxImagePixelSize = 12.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
@@ -380,7 +380,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           filterQuality: FilterQuality.high,
           tightMode: true,
           enablePanAlways: true,
-          maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
+          maxScale: _maxImagePixelSize,
           disableScaleGestures: _showingDetails,
           scaleStateChangedCallback: _onScaleStateChanged,
           onPageBuild: _onPageBuild,
@@ -415,7 +415,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       basePosition: Alignment.center,
       disableScaleGestures: _showingDetails,
       minScale: PhotoViewComputedScale.contained,
-      maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
+      maxScale: _maxImagePixelSize,
       initialScale: PhotoViewComputedScale.contained,
       tightMode: true,
       onPageBuild: _onPageBuild,

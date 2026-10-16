@@ -19,7 +19,7 @@ export class AssetExifFactory {
       bitsPerSample: null,
       city: 'Austin',
       colorspace: null,
-      country: 'United States of America',
+      country: 'United States',
       dateTimeOriginal: factory.date(),
       description: '',
       exifImageHeight: 420,

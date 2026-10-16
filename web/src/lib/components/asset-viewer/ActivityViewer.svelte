@@ -67,9 +67,9 @@
     hour12: false,
   };
 
-  const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
+  const handleDeleteReaction = async (reaction: ActivityResponseDto) => {
     try {
-      await activityManager.deleteActivity(reaction, index);
+      await activityManager.deleteActivity(reaction);
 
       const deleteMessages: Record<ReactionType, string> = {
         [ReactionType.Comment]: $t('comment_deleted'),
@@ -118,7 +118,7 @@
   };
 </script>
 
-{#snippet reactionMenu(reaction: ActivityResponseDto, index: number, title: string)}
+{#snippet reactionMenu(reaction: ActivityResponseDto, title: string)}
   {#if reaction.user.id === authManager.user.id || isAlbumOwner}
     <ContextMenuButton
       translations={{ open_menu: title }}
@@ -130,7 +130,7 @@
           icon: mdiTrashCanOutline,
           title: $t('remove'),
           color: 'danger',
-          onAction: () => handleDeleteReaction(reaction, index),
+          onAction: () => handleDeleteReaction(reaction),
         },
       ]}
     />
@@ -176,7 +176,7 @@
                   />
                 </a>
               {/if}
-              {@render reactionMenu(reaction, index, $t('comment_options'))}
+              {@render reactionMenu(reaction, $t('comment_options'))}
             </div>
 
             {#if (index !== activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
@@ -209,7 +209,7 @@
                     />
                   </a>
                 {/if}
-                {@render reactionMenu(reaction, index, $t('reaction_options'))}
+                {@render reactionMenu(reaction, $t('reaction_options'))}
               </div>
               {#if (index !== activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
                 <div

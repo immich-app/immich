@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import { shortcuts } from '$lib/actions/shortcut';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import BirthdayConfetti from '$lib/components/memories/BirthdayConfetti.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
@@ -10,11 +11,9 @@
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -27,7 +26,7 @@
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo, MemoryType } from '@immich/sdk';
-  import { ActionButton, Icon, IconButton, Text } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text } from '@immich/ui';
   import {
     mdiCakeVariant,
     mdiCardsOutline,
@@ -279,7 +278,9 @@
   <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t)}
-      <CreateSharedLink />
+      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+
+      <ActionButton action={Actions.CreateSharedLink} />
       <IconButton
         shape="round"
         color="secondary"
@@ -299,9 +300,7 @@
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={handleHideAssets} />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets menuItem onAssetDelete={handleHideAssets} />
       </ButtonContextMenu>
     </AssetSelectControlBar>

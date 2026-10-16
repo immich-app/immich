@@ -73,6 +73,8 @@ jobs:
             mobile:
               - 'mobile/**'
               - 'open-api/**'
+              - 'i18n/**'
+              - 'native/**'
           force-filters: |
             - '.github/workflows/build-mobile.yml'
           force-events: 'workflow_call,workflow_dispatch'
@@ -101,8 +103,22 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
+      - name: Restore Rust Cache
+        id: cache-rust-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/native_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          restore-keys: |
+            build-mobile-rust-${{ runner.os }}-
+
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
+        uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
         with:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
@@ -113,11 +129,6 @@ jobs:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         working-directory: ./mobile
         run: printf "%s" $KEY_JKS | base64 -d > android/key.jks
-
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
-        with:
-          distribution: 'zulu'
-          java-version: '17'
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
@@ -131,7 +142,7 @@ jobs:
           key: build-mobile-gradle-${{ runner.os }}-main
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
         with:
           packages: ''
 
@@ -158,14 +169,14 @@ jobs:
 
       - name: Publish Android Artifact
         id: upload-apk
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
 
       - name: Comment APK download link on PR
         if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork }}
-        uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
+        uses: immich-app/devtools/actions/sticky-comment@5f79a5a552b30a23aa7984ffa06c3dbfaf4330f6 # sticky-comment-action-v1.1.0
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           APK_URL: ${{ steps.upload-apk.outputs.artifact-url }}
@@ -196,6 +207,19 @@ jobs:
             mobile/android/.gradle
           key: ${{ steps.cache-gradle-restore.outputs.cache-primary-key }}
 
+      - name: Save Rust Cache
+        id: cache-rust-save
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cache-rust-restore.outputs.cache-primary-key }}
+
   build-sign-ios:
     name: Build and sign iOS
     needs: pre-job
@@ -222,14 +246,28 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
+      - name: Restore Rust Cache
+        id: cache-rust-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: build-mobile-rust-${{ runner.os }}-${{ hashFiles('native/crates/native_core_ffi/rust-toolchain.toml', 'native/Cargo.lock') }}
+          restore-keys: |
+            build-mobile-rust-${{ runner.os }}-
+
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
+        uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
         with:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@984c0c890880bbf811283d6f09c4607c62d210a4 # v1.323.0
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: '3.4'
           bundler-cache: true # zizmor: ignore[cache-poisoning] release branches cannot read caches written by pull requests
@@ -309,7 +347,20 @@ jobs:
           security delete-keychain build.keychain || true
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa
+
+      - name: Save Rust Cache
+        id: cache-rust-save
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cache-rust-restore.outputs.cache-primary-key }}

@@ -90,8 +90,8 @@ class MemoryManager {
     const { showUpcoming, onlyFavorites } = userPreferencesManager.memories;
     this.setFilters({
       order: MemorySearchOrder.Desc,
-      isSaved: onlyFavorites ? true : undefined,
-      isUpcoming: showUpcoming ? undefined : false,
+      isSaved: onlyFavorites || undefined,
+      isUpcoming: showUpcoming && undefined,
     });
 
     return this.refresh();

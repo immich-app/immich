@@ -1,4 +1,6 @@
 import { Selectable } from 'kysely';
+import { PersonUser } from 'src/database.js';
+import { PersonUserRole } from 'src/dtos/person.dto.js';
 import { OAuthProfile } from 'src/repositories/oauth.repository.js';
 import { ActivityTable } from 'src/schema/tables/activity.table.js';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table.js';
@@ -30,7 +32,12 @@ export type AlbumUserLike = Partial<Selectable<AlbumUserTable>>;
 export type SharedLinkLike = Partial<Selectable<SharedLinkTable>>;
 export type UserLike = Partial<Selectable<UserTable>>;
 export type AssetFaceLike = Partial<Selectable<AssetFaceTable>>;
-export type PersonLike = Partial<Selectable<PersonTable>>;
+export type PersonRow = Selectable<PersonTable> & {
+  otherPeople: { sharedById: string; role: PersonUserRole; name: string; birthDate: string | null }[];
+  sharedBy: PersonUser[];
+  sharedWith: PersonUser[];
+};
+export type PersonLike = Partial<PersonRow>;
 export type PersonGroupLike = Partial<Selectable<PersonGroupTable>>;
 export type ClusterGroupLike = Partial<Selectable<ClusterGroupTable>>;
 export type StackLike = Partial<Selectable<StackTable>>;

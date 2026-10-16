@@ -19,14 +19,14 @@ from immich_ml.models.transforms import (
     serialize_np_array,
     to_numpy,
 )
-from immich_ml.schemas import ModelGraph, ModelInput, ModelSession, ModelTask, ModelType
+from immich_ml.schemas import ModelGraph, ModelInput, ModelSession, ModelSource, ModelTask, ModelType, VisualOptions
 
 
-class BaseCLIPVisualEncoder(InferenceModel):
+class BaseCLIPVisualEncoder(InferenceModel[VisualOptions]):
     depends = []
     identity = (ModelType.VISUAL, ModelTask.SEARCH)
 
-    def _predict(self, inputs: Image.Image | bytes) -> str:
+    def _predict(self, inputs: Image.Image | bytes, options: VisualOptions) -> str:
         image = decode_pil(inputs)
         session = self.session.for_shape(self.shape_policy.dims[0])
         res: NDArray[np.float32] = session.run(None, self.transform(session, image))[0][0]
@@ -60,6 +60,8 @@ class BaseCLIPVisualEncoder(InferenceModel):
 
 
 class OpenClipVisualEncoder(BaseCLIPVisualEncoder):
+    sources = (ModelSource.OPENCLIP, ModelSource.MCLIP)
+
     def _load(self) -> ModelSession:
         size: list[int] | int = self.preprocess_cfg["size"]
         self.size = size[0] if isinstance(size, list) else size
