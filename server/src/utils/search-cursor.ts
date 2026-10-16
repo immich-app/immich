@@ -2,8 +2,17 @@ import { BadRequestException } from '@nestjs/common';
 import z from 'zod';
 import { SearchOrder } from 'src/dtos/search.dto.js';
 import { AssetOrder, SearchOrderField } from 'src/enum.js';
+import { searchOrderColumns } from 'src/utils/database.js';
 
 const position = { direction: z.enum(AssetOrder), id: z.uuidv4() };
+
+type OrderValue<
+  F extends SearchOrderField,
+  T extends z.ZodType,
+> = (typeof searchOrderColumns)[F]['nullable'] extends true ? z.ZodNullable<T> : T;
+
+const orderValueSchema = <F extends SearchOrderField, T extends z.ZodType>(field: F, schema: T) =>
+  (searchOrderColumns[field].nullable ? schema.nullable() : schema) as OrderValue<F, T>;
 
 const MetadataCursorSchema = z.discriminatedUnion('field', [
   z.strictObject({
@@ -11,8 +20,16 @@ const MetadataCursorSchema = z.discriminatedUnion('field', [
     value: z.iso.datetime({ offset: true }).transform((value) => new Date(value)),
     ...position,
   }),
-  z.strictObject({ field: z.literal(SearchOrderField.FileSizeInBytes), value: z.int().min(0).nullable(), ...position }),
-  z.strictObject({ field: z.literal(SearchOrderField.Rating), value: z.int32().nullable(), ...position }),
+  z.strictObject({
+    field: z.literal(SearchOrderField.FileSizeInBytes),
+    value: orderValueSchema(SearchOrderField.FileSizeInBytes, z.int().min(0)),
+    ...position,
+  }),
+  z.strictObject({
+    field: z.literal(SearchOrderField.Rating),
+    value: orderValueSchema(SearchOrderField.Rating, z.int32()),
+    ...position,
+  }),
 ]);
 
 const SmartCursorSchema = z.strictObject({ id: z.uuidv4() });
