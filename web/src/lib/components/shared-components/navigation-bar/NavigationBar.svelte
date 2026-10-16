@@ -9,7 +9,6 @@
   import SearchBar from '$lib/components/shared-components/search-bar/SearchBar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
@@ -82,25 +81,21 @@
     </div>
     <div class="flex justify-between gap-4 pe-6 lg:gap-8">
       <div class="hidden w-full max-w-5xl flex-1 sm:block tall:ps-0">
-        {#if featureFlagsManager.value.search}
-          <SearchBar grayTheme={true} />
-        {/if}
+        <SearchBar grayTheme={true} />
       </div>
 
       <section class="flex w-full place-items-center justify-end gap-1 sm:w-auto md:gap-2">
-        {#if featureFlagsManager.value.search}
-          <IconButton
-            color="secondary"
-            shape="round"
-            variant="ghost"
-            size="medium"
-            icon={mdiMagnify}
-            href={Route.search()}
-            id="search-button"
-            class="sm:hidden"
-            aria-label={$t('go_to_search')}
-          />
-        {/if}
+        <IconButton
+          color="secondary"
+          shape="round"
+          variant="ghost"
+          size="medium"
+          icon={mdiMagnify}
+          href={Route.search()}
+          id="search-button"
+          class="sm:hidden"
+          aria-label={$t('go_to_search')}
+        />
 
         {#if !page.url.pathname.includes('/admin') && onUploadClick}
           <Button
