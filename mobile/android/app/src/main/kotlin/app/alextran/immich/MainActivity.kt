@@ -18,6 +18,7 @@ import app.alextran.immich.images.LocalImageApi
 import app.alextran.immich.images.LocalImagesImpl
 import app.alextran.immich.images.RemoteImageApi
 import app.alextran.immich.images.RemoteImagesImpl
+import app.alextran.immich.media.AssetMediaApiImpl
 import app.alextran.immich.permission.PermissionApi
 import app.alextran.immich.permission.PermissionApiImpl
 import app.alextran.immich.sync.NativeSyncApi
@@ -66,6 +67,7 @@ class MainActivity : FlutterFragmentActivity() {
       flutterEngine.plugins.add(backgroundEngineLockImpl)
       flutterEngine.plugins.add(nativeSyncApiImpl)
       flutterEngine.plugins.add(permissionApiImpl)
+      flutterEngine.plugins.add(AssetMediaApiImpl(ctx))
     }
 
     fun cancelPlugins(flutterEngine: FlutterEngine) {
@@ -75,6 +77,8 @@ class MainActivity : FlutterFragmentActivity() {
       nativeApi?.detachFromEngine()
       val permissionApi = flutterEngine.plugins.get(PermissionApiImpl::class.java) as ImmichPlugin?
       permissionApi?.detachFromEngine()
+      val assetMediaApi = flutterEngine.plugins.get(AssetMediaApiImpl::class.java) as ImmichPlugin?
+      assetMediaApi?.detachFromEngine()
     }
   }
 }
