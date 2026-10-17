@@ -9,7 +9,11 @@ export function updateGeometry(timelineManager: TimelineManager, month: Timeline
   }
   if (!month.isLoaded) {
     const viewportWidth = timelineManager.viewportWidth;
-    if (!month.isHeightActual) {
+    // A hidden timeline has no width, and dividing by it would make the height
+    // infinite. The height setter would then propagate that as an infinite top
+    // to every following month, leaving the whole timeline unpositioned.
+    // updateViewportGeometry recomputes the heights once the viewport is back.
+    if (!month.isHeightActual && viewportWidth > 0) {
       const unwrappedWidth = (3 / 2) * month.assetsCount * timelineManager.rowHeight * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewportWidth);
       const height = timelineManager.headerHeight + Math.max(1, rows) * timelineManager.rowHeight;
