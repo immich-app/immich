@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import type { UserMetadataItem } from 'src/types.js';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
 import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
 import { toEmail } from 'src/validation.js';
 
@@ -31,7 +32,18 @@ const LoginResponseSchema = z
     accessToken: z.string().describe('Access token'),
     userId: z.uuidv4().describe('User ID'),
     userEmail: toEmail.describe('User email'),
-    name: z.string().describe('User name'),
+    name: z
+      .string()
+      .describe('User name')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .getExtensions(),
+      }),
     profileImagePath: z.string().describe('Profile image path'),
     isAdmin: z.boolean().describe('Is admin user'),
     shouldChangePassword: z.boolean().describe('Should change password'),
@@ -48,7 +60,8 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
     accessToken,
     userId: entity.id,
     userEmail: entity.email,
-    name: entity.name,
+    // TODO(v4): remove the mapping and make `name` nullable
+    name: entity.name ?? '',
     isAdmin: entity.isAdmin,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
@@ -64,7 +77,22 @@ const LogoutResponseSchema = z
   .meta({ id: 'LogoutResponseDto' });
 
 const SignUpSchema = LoginCredentialSchema.extend({
-  name: z.string().describe('User name').meta({ example: 'Admin' }),
+  // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+  name: z
+    .string()
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
+    .describe('User name')
+    .meta({
+      example: 'Admin',
+      ...new HistoryBuilder()
+        .added('v1')
+        .updated(
+          'v3',
+          'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+        )
+        .getExtensions(),
+    }),
 }).meta({ id: 'SignUpDto' });
 
 const ChangePasswordSchema = z

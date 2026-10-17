@@ -45,10 +45,18 @@ describe(UserAdminController.name, () => {
       expect(service.create).toHaveBeenCalledWith(expect.objectContaining({ avatarColor: null }));
     });
 
+    it('should allow a null name', async () => {
+      await request(ctx.getHttpServer()).post(`/admin/users`).send({
+        name: null,
+        email: 'test@immich.cloud',
+        password: 'password',
+      });
+      expect(service.create).toHaveBeenCalledWith(expect.objectContaining({ name: null }));
+    });
+
     for (const [key, message] of [
       ['password', 'Invalid input: expected string, received null'],
       ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
       ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
       ['notify', 'Invalid input: expected boolean, received null'],
     ] as const) {
@@ -109,10 +117,15 @@ describe(UserAdminController.name, () => {
       expect(service.update).toHaveBeenCalledWith(undefined, id, expect.objectContaining({ avatarColor: null }));
     });
 
+    it('should allow a null name', async () => {
+      const id = factory.uuid();
+      await request(ctx.getHttpServer()).put(`/admin/users/${id}`).send({ name: null });
+      expect(service.update).toHaveBeenCalledWith(undefined, id, expect.objectContaining({ name: null }));
+    });
+
     for (const [key, message] of [
       ['password', 'Invalid input: expected string, received null'],
       ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
       ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
     ] as const) {
       it(`should not allow null ${key}`, async () => {

@@ -23,7 +23,7 @@ import { PluginTable } from 'src/schema/tables/plugin.table.js';
 export type AuthUser = {
   id: string;
   isAdmin: boolean;
-  name: string;
+  name: string | null;
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
@@ -126,7 +126,7 @@ export type Asset = {
 
 export type User = {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
   avatarColor: UserAvatarColor | null;
   profileImagePath: string;

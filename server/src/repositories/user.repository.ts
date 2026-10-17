@@ -18,7 +18,7 @@ export interface UserListFilter {
 
 export interface UserStatsQueryResponse {
   userId: string;
-  userName: string;
+  userName: string | null;
   photos: number;
   videos: number;
   usage: number;
