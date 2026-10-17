@@ -177,8 +177,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return true;
   }
 
-  Future<void> saveWifiName(String wifiName) async {
-    await _ref.read(settingsProvider).write(.networkPreferredWifiName, wifiName);
+  Future<void> saveWifiNetworks(Map<String, String> networks) async {
+    final settings = _ref.read(settingsProvider);
+    await settings.write(.networkLocalWifiNetworks, networks);
+    //single SSID is only a read fallback, clear it so removed networks don't reappear
+    await settings.write(.networkPreferredWifiName, null);
+    await _apiService.updateHeaders();
   }
 
   Future<void> saveLocalEndpoint(String url) async {
@@ -186,8 +190,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _apiService.updateHeaders();
   }
 
-  String? getSavedWifiName() {
-    return _ref.read(appConfigProvider).network.preferredWifiName;
+  Map<String, String> getSavedWifiNetworks() {
+    return _ref.read(appConfigProvider).network.wifiNetworks;
   }
 
   String? getSavedLocalEndpoint() {
