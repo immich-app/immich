@@ -10,6 +10,7 @@ import { PersonRepository } from 'src/repositories/person.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SearchService } from 'src/services/search.service.js';
+import { SmartCursor } from 'src/utils/search-cursor.js';
 import { newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
@@ -17,6 +18,12 @@ import { getKyselyDB } from 'test/utils.js';
 let defaultDatabase: Kysely<DB>;
 
 const unitVector = (index: number) => JSON.stringify(Array.from({ length: 512 }, (_, i) => (i === index ? 1 : 0)));
+
+// unit vectors at increasing angles from unitVector(0), so every asset has a distinct distance to it
+const angledVector = (step: number) =>
+  JSON.stringify(
+    Array.from({ length: 512 }, (_, i) => (i === 0 ? Math.cos(step * 0.3) : i === 1 ? Math.sin(step * 0.3) : 0)),
+  );
 
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SearchService, {
@@ -31,6 +38,46 @@ const setup = (db?: Kysely<DB>) => {
     ],
     mock: [LoggingRepository],
   });
+};
+
+const collectIds = async <C>(page: (cursor?: C) => Promise<{ ids: string[]; next?: C }>) => {
+  const ids: string[] = [];
+  let cursor: C | undefined;
+  do {
+    const { ids: pageIds, next } = await page(cursor);
+    ids.push(...pageIds);
+    cursor = next;
+  } while (cursor);
+  return ids;
+};
+
+const collectPages = (
+  search: (cursor?: string) => Promise<{ assets: { items: { id: string }[]; nextCursor: string | null } }>,
+) =>
+  collectIds(async (cursor?: string) => {
+    const { assets } = await search(cursor);
+    return { ids: assets.items.map(({ id }) => id), next: assets.nextCursor ?? undefined };
+  });
+
+const collectSmartPages = (search: (cursor?: SmartCursor) => Promise<{ items: SmartCursor[]; hasNextPage: boolean }>) =>
+  collectIds(async (cursor?: SmartCursor) => {
+    const { items, hasNextPage } = await search(cursor);
+    return { ids: items.map(({ id }) => id), next: hasNextPage ? items.at(-1) : undefined };
+  });
+
+const seedSmartSearch = async ({ ctx }: ReturnType<typeof setup>, steps: number[]) => {
+  const { user } = await ctx.newUser();
+  const searchRepository = ctx.get(SearchRepository);
+  const assetIds: string[] = [];
+  for (const step of steps) {
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await searchRepository.upsert(asset.id, angledVector(step));
+    assetIds.push(asset.id);
+  }
+
+  const options = { filter: {}, embedding: unitVector(0) };
+  const scope = { userIds: [user.id], lockedOwnerId: user.id };
+  return { searchRepository, assetIds, options, scope };
 };
 
 beforeAll(async () => {
@@ -421,6 +468,51 @@ describe(SearchService.name, () => {
       expect(new Set(ids).size).toBe(3);
     });
 
+    it('should not repeat rows when an asset is added between pages', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const assetIds: string[] = [];
+      for (const day of ['01', '02', '03']) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, fileCreatedAt: new Date(`2024-05-${day}T10:00:00Z`) });
+        assetIds.push(asset.id);
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const firstPage = await sut.searchMetadata(auth, { filter: {}, size: 2 });
+      expect(firstPage.assets.items.map(({ id }) => id)).toEqual([assetIds[2], assetIds[1]]);
+
+      await ctx.newAsset({ ownerId: user.id, fileCreatedAt: new Date('2024-05-04T10:00:00Z') });
+
+      const secondPage = await sut.searchMetadata(auth, { cursor: firstPage.assets.nextCursor!, size: 2 });
+      expect(secondPage.assets.items.map(({ id }) => id)).toEqual([assetIds[0]]);
+      expect(secondPage.assets.nextCursor).toBeNull();
+    });
+
+    it('should page into the null tail of a nullable order field', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const assetIds: string[] = [];
+      for (const rating of [5, 3, null, null]) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id });
+        await ctx.newExif({ assetId: asset.id, rating });
+        assetIds.push(asset.id);
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const ids = await collectPages((cursor) =>
+        sut.searchMetadata(auth, {
+          filter: {},
+          size: 1,
+          cursor,
+          orderBy: { field: SearchOrderField.Rating, direction: AssetOrder.Desc },
+        }),
+      );
+
+      expect(ids.slice(0, 2)).toEqual([assetIds[0], assetIds[1]]);
+      expect(ids.slice(2).toSorted()).toEqual([assetIds[2], assetIds[3]].toSorted());
+    });
+
     it('should order by fileSizeInBytes', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
@@ -441,28 +533,13 @@ describe(SearchService.name, () => {
       expect(response.assets.items.map(({ id }) => id)).toEqual([assetIds[1], assetIds[0], assetIds[2]]);
     });
 
-    it('should order smart search results by embedding distance with cursor offsets', async () => {
-      const { ctx } = setup();
-      const { user } = await ctx.newUser();
-      const searchRepository = ctx.get(SearchRepository);
+    it('should page smart search results by embedding distance', async () => {
+      const { searchRepository, assetIds, options, scope } = await seedSmartSearch(setup(), [0, 1, 2, 3, 4]);
+      const ids = await collectSmartPages((cursor) =>
+        searchRepository.searchSmartV3({ take: 2, cursor }, options, scope),
+      );
 
-      const assetIds: string[] = [];
-      for (let i = 0; i < 3; i++) {
-        const { asset } = await ctx.newAsset({ ownerId: user.id });
-        await searchRepository.upsert(asset.id, unitVector(i));
-        assetIds.push(asset.id);
-      }
-
-      const options = { filter: {}, embedding: unitVector(0) };
-      const scope = { userIds: [user.id], lockedOwnerId: user.id };
-      const firstPage = await searchRepository.searchSmartV3({ take: 2 }, options, scope);
-      expect(firstPage.items.length).toBe(2);
-      expect(firstPage.items[0].id).toBe(assetIds[0]);
-      expect(firstPage.hasNextPage).toBe(true);
-
-      const secondPage = await searchRepository.searchSmartV3({ take: 2, skip: 2 }, options, scope);
-      expect(secondPage.items.length).toBe(1);
-      expect(secondPage.hasNextPage).toBe(false);
+      expect(ids).toEqual(assetIds);
     });
   });
 });
