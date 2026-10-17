@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/cleanup.provider.dart';
@@ -423,7 +424,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   ),
                   subtitle: hasDate
                       ? Text(
-                          DateFormat.yMMMd().format(state.selectedDate!),
+                          DateFormat.yMMMd(resolvedDateTimeLocale()).format(state.selectedDate!),
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: context.colorScheme.primary,
                             fontWeight: FontWeight.w500,
@@ -628,7 +629,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                                   Text(
                                     context.t.cleanup_step4_summary(
                                       count: state.assetsToDelete.length,
-                                      date: DateFormat.yMMMd().format(state.selectedDate!),
+                                      date: DateFormat.yMMMd(resolvedDateTimeLocale()).format(state.selectedDate!),
                                     ),
                                     style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
                                   ),
@@ -687,7 +688,10 @@ class _DeleteConfirmationDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(context.t.cleanup_confirm_prompt_title),
       content: Text(
-        context.t.cleanup_confirm_description(count: assetCount, date: DateFormat.yMMMd().format(cutoffDate)),
+        context.t.cleanup_confirm_description(
+          count: assetCount,
+          date: DateFormat.yMMMd(resolvedDateTimeLocale()).format(cutoffDate),
+        ),
         style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
       ),
       actions: [
