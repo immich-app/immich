@@ -320,6 +320,11 @@ export class WorkflowExecutionService extends BaseService {
     return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetMetadataExtraction });
   }
 
+  @OnEvent({ name: 'AssetOcrExtracted' })
+  onAssetOcrExtracted({ userId, assetId }: ArgOf<'AssetOcrExtracted'>) {
+    return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetOcrExtraction });
+  }
+
   @OnEvent({ name: 'AssetTag' })
   onAssetTagged({ assetId, userId }: ArgOf<'AssetTag'>) {
     return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetTagged });
@@ -336,7 +341,7 @@ export class WorkflowExecutionService extends BaseService {
   }
 
   @OnJob({ name: JobName.WorkflowAssetTrigger, queue: QueueName.Workflow })
-  handleAssetTrigger({ workflowId, assetId }: JobOf<JobName.WorkflowAssetTrigger>) {
+  handleAssetTrigger({ workflowId, assetId, trigger }: JobOf<JobName.WorkflowAssetTrigger>) {
     return this.execute(workflowId, (type) => {
       const assetService = BaseService.create(AssetService, this);
 
@@ -344,7 +349,7 @@ export class WorkflowExecutionService extends BaseService {
         case WorkflowType.AssetV1: {
           return {
             read: async () => {
-              const asset = await this.workflowRepository.getForAssetV1(assetId);
+              const asset = await this.workflowRepository.getForAssetV1(assetId, trigger);
               return {
                 data: { asset } as any,
                 authUserId: asset.ownerId,

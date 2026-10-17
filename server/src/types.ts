@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
 import { Mocked } from 'vitest';
 import { VECTOR_EXTENSIONS } from 'src/constants.js';
@@ -446,7 +447,7 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string } }
+  | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string; trigger: WorkflowTrigger } }
 
   // Integrity
   | { name: JobName.IntegrityUntrackedFilesQueueAll; data?: IIntegrityJob }

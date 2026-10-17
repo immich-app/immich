@@ -34020,6 +34020,7 @@
         "enum": [
           "AssetCreate",
           "AssetMetadataExtraction",
+          "AssetOcrExtraction",
           "AssetTagged"
         ],
         "type": "string"
