@@ -2,8 +2,9 @@
   import { goto } from '$app/navigation';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
+  import { executeMutation } from '$lib/queries/client';
   import { getStorageQuery } from '$lib/queries/server.query';
+  import { createUserAdminMutation } from '$lib/queries/user-admin.query';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, HelperText, Input, PasswordInput, Stack, Switch } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
@@ -45,19 +46,11 @@
 
     isCreatingUser = true;
 
-    const user = await handleCreateUserAdmin({
-      email,
-      password,
-      shouldChangePassword,
-      name,
-      quotaSizeInBytes,
-      notify,
-      isAdmin,
-    });
-
-    if (user) {
-      await goto(Route.viewUser(user), { replaceState: true });
-    }
+    await executeMutation(
+      createUserAdminMutation,
+      [{ userAdminCreateDto: { email, password, shouldChangePassword, name, quotaSizeInBytes, notify, isAdmin } }],
+      { onSuccess: (user) => void goto(Route.viewUser(user), { replaceState: true }) },
+    );
 
     isCreatingUser = false;
   };

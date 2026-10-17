@@ -16,6 +16,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { queryClient } from '$lib/queries/client';
 import { getConfigQuery } from '$lib/queries/system-config.query';
+import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
@@ -93,7 +94,11 @@ websocket
   })
   .on('on_new_release', (event) => eventManager.emit('ReleaseEvent', event))
   .on('on_session_delete', () => eventManager.emit('SessionDelete'))
-  .on('on_user_delete', (id) => eventManager.emit('UserAdminDeleted', { id }))
+  .on('on_user_delete', (id) => {
+    queryClient.removeQueries({ queryKey: ['user-admin', id] });
+    void queryClient.invalidateQueries({ queryKey: searchUsersAdminQuery().queryKey, exact: true });
+    eventManager.emit('UserAdminDeleted', { id });
+  })
   .on('on_asset_delete', (asset) => eventManager.emit('AssetsDelete', [asset]))
   .on('on_asset_trash', (assets) => eventManager.emit('AssetsDelete', assets))
   .on('on_asset_update', (asset) => eventManager.emit('AssetUpdate', asset))

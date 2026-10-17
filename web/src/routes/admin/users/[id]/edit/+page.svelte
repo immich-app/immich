@@ -2,25 +2,23 @@
   import { goto } from '$app/navigation';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
-  import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
+  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
   import { getStorageQuery } from '$lib/queries/server.query';
+  import { getUserAdminQuery, updateUserAdminMutation } from '$lib/queries/user-admin.query';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, Input, Link, NumberInput, Switch, Text } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
+  import type { PageProps } from './$types';
 
-  type Props = {
-    data: PageData;
-  };
-
-  let { data }: Props = $props();
+  const { params }: PageProps = $props();
 
   const query = createQuery(getStorageQuery);
   const serverInfo = $derived(query.data);
 
-  const user = $derived(data.user);
+  const userQuery = createPreloadedQuery(() => getUserAdminQuery(params.id));
+  const user = $derived(userQuery.data);
   let { isAdmin, name, email } = $derived(user);
   let storageLabel = $derived(user.storageLabel || '');
   const previousQuota = $derived(user.quotaSizeInBytes);
@@ -35,24 +33,16 @@
     previousQuota !== quotaSizeBytes && !!quotaSizeBytes && serverInfo && quotaSizeBytes > serverInfo.diskSizeRaw,
   );
 
-  const onClose = async () => {
-    await goto(Route.viewUser(user));
-  };
+  const onClose = () => void goto(Route.viewUser(user));
 
   const onSubmit = async (event: Event) => {
     event.preventDefault();
 
-    const success = await handleUpdateUserAdmin(user, {
-      email,
-      name,
-      storageLabel,
-      quotaSizeInBytes: typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null,
-      isAdmin,
-    });
-
-    if (success) {
-      await onClose();
-    }
+    await executeMutation(
+      updateUserAdminMutation,
+      [{ id: user.id, userAdminUpdateDto: { email, name, storageLabel, quotaSizeInBytes: quotaSizeBytes, isAdmin } }],
+      { onSuccess: onClose },
+    );
   };
 </script>
 

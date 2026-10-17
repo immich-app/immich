@@ -10,7 +10,7 @@ import {
 import { queryOptions } from '@tanstack/svelte-query';
 import { asMutation, queryClient } from '$lib/queries/client';
 
-const findLibrary = (libraries: LibraryResponseDto[], id: string) => {
+const findOrFail = (libraries: LibraryResponseDto[], id: string) => {
   const library = libraries.find((library) => library.id === id);
   if (!library) {
     throw new Error(`Library ${id} not found`);
@@ -27,7 +27,7 @@ export const getAllLibrariesQuery = () =>
 export const getLibraryQuery = (id: string) =>
   queryOptions({
     ...getAllLibrariesQuery(),
-    select: (libraries) => findLibrary(libraries, id),
+    select: (libraries) => findOrFail(libraries, id),
   });
 
 export const getLibraryStatisticsQuery = (id: string) =>
